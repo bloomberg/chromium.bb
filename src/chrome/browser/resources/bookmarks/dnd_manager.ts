@@ -5,7 +5,7 @@
 import './folder_node.js';
 import './item.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {isTextInputElement} from 'chrome://resources/js/util.m.js';
 
@@ -14,7 +14,6 @@ import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
 import {DropPosition, ROOT_NODE_ID} from './constants.js';
 import {Debouncer} from './debouncer.js';
 import {BookmarksFolderNodeElement} from './folder_node.js';
-import {BookmarksItemElement} from './item.js';
 import {Store} from './store.js';
 import {BookmarkElement, BookmarkNode, DragData, DropDestination, NodeMap, ObjectMap} from './types.js';
 import {canEditNode, canReorderChildren, getDisplayedList, hasChildFolders, isShowingSearch, normalizeNode} from './util.js';
@@ -23,8 +22,6 @@ type NormalizedDragData = {
   elements: BookmarkNode[],
   sameProfile: boolean,
 };
-
-const DRAG_THRESHOLD: number = 15;
 
 function isBookmarkItem(element: Element): boolean {
   return element.tagName === 'BOOKMARKS-ITEM';
@@ -137,11 +134,12 @@ export class DragInfo {
   }
 }
 
+const EXPAND_FOLDER_DELAY: number = 400;
+
 /**
  * Manages auto expanding of sidebar folders on hover while dragging.
  */
 class AutoExpander {
-  EXPAND_FOLDER_DELAY: number = 400;
   private lastElement_: BookmarkElement|null = null;
   private debouncer_: Debouncer;
 
@@ -153,7 +151,7 @@ class AutoExpander {
     });
   }
 
-  update(e: Event, overElement: BookmarkElement|null) {
+  update(_e: Event, overElement: BookmarkElement|null) {
     const itemId = overElement ? overElement.itemId : null;
     const store = Store.getInstance();
 
@@ -168,7 +166,7 @@ class AutoExpander {
 
     // If dragging over the same node, reset the expander delay.
     if (overElement && overElement === this.lastElement_) {
-      this.debouncer_.restartTimeout(this.EXPAND_FOLDER_DELAY);
+      this.debouncer_.restartTimeout(EXPAND_FOLDER_DELAY);
       return;
     }
 
@@ -325,7 +323,7 @@ export class DNDManager {
     let draggedNodes = [];
 
     if (isBookmarkItem(dragElement)) {
-      const displayingItems = assert(getDisplayedList(state));
+      const displayingItems = getDisplayedList(state);
       // TODO(crbug.com/980427): Make this search more time efficient to avoid
       // delay on large amount of bookmark dragging.
       for (const itemId of displayingItems) {
@@ -398,9 +396,6 @@ export class DNDManager {
       return;
     }
 
-    const state = Store.getInstance().data;
-    const items = this.dragInfo_!.dragData!.elements;
-
     const overElement = getBookmarkElement(e.composedPath());
     this.autoExpander_!.update(e, overElement);
     if (!overElement) {
@@ -467,7 +462,8 @@ export class DNDManager {
 
       // Drops between items in the normal list and the sidebar use the drop
       // destination node's parent.
-      parentId = assert(node.parentId!);
+      assert(node.parentId);
+      parentId = node.parentId;
       index = state.nodes[parentId]!.children!.indexOf(node.id);
 
       if (position === DropPosition.BELOW) {

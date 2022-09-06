@@ -11,7 +11,6 @@
 
 struct scalar_norm1_op {
   typedef RealScalar result_type;
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_norm1_op)
   inline RealScalar operator() (const Scalar& a) const { return numext::norm1(a); }
 };
 namespace Eigen {

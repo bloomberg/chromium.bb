@@ -21,6 +21,7 @@
 #include "media/gpu/chromeos/image_processor_with_pool.h"
 #include "media/gpu/chromeos/video_frame_converter.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap.h"
@@ -140,7 +141,8 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
-      std::unique_ptr<MediaLog> media_log);
+      std::unique_ptr<MediaLog> media_log,
+      mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder);
 
   static absl::optional<SupportedVideoDecoderConfigs> GetSupportedConfigs(
       const gpu::GpuDriverBugWorkarounds& workarounds);
@@ -198,9 +200,11 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   void ResetTask(base::OnceClosure reset_cb);
   void DecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
 
-  void OnInitializeDone(InitCB init_cb, CdmContext* cdm_context, Status status);
+  void OnInitializeDone(InitCB init_cb,
+                        CdmContext* cdm_context,
+                        DecoderStatus status);
 
-  void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, Status status);
+  void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecoderStatus status);
   void OnResetDone(base::OnceClosure reset_cb);
   void OnError(const std::string& msg);
 
@@ -222,7 +226,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   void CallApplyResolutionChangeIfNeeded();
 
   // Call |client_flush_cb_| with |status|.
-  void CallFlushCbIfNeeded(DecodeStatus status);
+  void CallFlushCbIfNeeded(DecoderStatus status);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Callback for when transcryption of a buffer completes.

@@ -27,16 +27,21 @@
 
 #include "absl/debugging/failure_signal_handler.h"
 #include "absl/debugging/symbolize.h"
+#include "absl/strings/match.h"
+#include "absl/strings/strip.h"
 
 #include <grpc/grpc.h>
 #include <grpc/impl/codegen/gpr_types.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 
+#include "src/core/lib/gpr/env.h"
 #include "src/core/lib/gpr/string.h"
 #include "src/core/lib/gpr/useful.h"
 #include "src/core/lib/gprpp/examine_stack.h"
 #include "src/core/lib/surface/init.h"
+#include "test/core/event_engine/test_init.h"
+#include "test/core/util/build.h"
 #include "test/core/util/stack_tracer.h"
 
 int64_t g_fixture_slowdown_factor = 1;
@@ -51,70 +56,6 @@ static unsigned seed(void) { return static_cast<unsigned>(getpid()); }
 #include <process.h>
 static unsigned seed(void) { return (unsigned)_getpid(); }
 #endif
-
-bool BuiltUnderValgrind() {
-#ifdef RUNNING_ON_VALGRIND
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool BuiltUnderTsan() {
-#if defined(__has_feature)
-#if __has_feature(thread_sanitizer)
-  return true;
-#else
-  return false;
-#endif
-#else
-#ifdef THREAD_SANITIZER
-  return true;
-#else
-  return false;
-#endif
-#endif
-}
-
-bool BuiltUnderAsan() {
-#if defined(__has_feature)
-#if __has_feature(address_sanitizer)
-  return true;
-#else
-  return false;
-#endif
-#else
-#ifdef ADDRESS_SANITIZER
-  return true;
-#else
-  return false;
-#endif
-#endif
-}
-
-bool BuiltUnderMsan() {
-#if defined(__has_feature)
-#if __has_feature(memory_sanitizer)
-  return true;
-#else
-  return false;
-#endif
-#else
-#ifdef MEMORY_SANITIZER
-  return true;
-#else
-  return false;
-#endif
-#endif
-}
-
-bool BuiltUnderUbsan() {
-#ifdef GRPC_UBSAN
-  return true;
-#else
-  return false;
-#endif
-}
 
 int64_t grpc_test_sanitizer_slowdown_factor() {
   int64_t sanitizer_multiplier = 1;
@@ -153,11 +94,50 @@ gpr_timespec grpc_timeout_milliseconds_to_deadline(int64_t time_ms) {
           GPR_TIMESPAN));
 }
 
-void grpc_test_init(int /*argc*/, char** argv) {
+namespace {
+void RmArg(int i, int* argc, char** argv) {
+  --(*argc);
+  if (i < *argc) {
+    memmove(argv + i, argv + i + 1, *argc - i);
+  }
+}
+
+void ParseTestArgs(int* argc, char** argv) {
+  if (argc == nullptr || *argc <= 1) return;
+  // flags to look for and consume
+  const absl::string_view poller_flag{"--poller="};
+  const absl::string_view engine_flag{"--engine="};
+  int i = 1;
+  while (i < *argc) {
+    if (absl::StartsWith(argv[i], poller_flag)) {
+      gpr_setenv("GRPC_POLL_STRATEGY", argv[i] + poller_flag.length());
+      // remove the spent argv
+      RmArg(i, argc, argv);
+      continue;
+    }
+    if (absl::StartsWith(argv[i], engine_flag)) {
+      absl::Status engine_set =
+          grpc_event_engine::experimental::InitializeTestingEventEngineFactory(
+              argv[i] + engine_flag.length());
+      if (!engine_set.ok()) {
+        gpr_log(GPR_ERROR, "%s", engine_set.ToString().c_str());
+        GPR_ASSERT(false);
+      }
+      // remove the spent argv
+      RmArg(i, argc, argv);
+      continue;
+    }
+    ++i;
+  }
+}
+}  // namespace
+
+void grpc_test_init(int* argc, char** argv) {
+  gpr_log_verbosity_init();
+  ParseTestArgs(argc, argv);
   grpc_core::testing::InitializeStackTracer(argv[0]);
   absl::FailureSignalHandlerOptions options;
   absl::InstallFailureSignalHandler(options);
-  gpr_log_verbosity_init();
   gpr_log(GPR_DEBUG,
           "test slowdown factor: sanitizer=%" PRId64 ", fixture=%" PRId64
           ", poller=%" PRId64 ", total=%" PRId64,
@@ -184,7 +164,7 @@ bool grpc_wait_until_shutdown(int64_t time_s) {
 namespace grpc {
 namespace testing {
 
-TestEnvironment::TestEnvironment(int argc, char** argv) {
+TestEnvironment::TestEnvironment(int* argc, char** argv) {
   grpc_test_init(argc, argv);
 }
 

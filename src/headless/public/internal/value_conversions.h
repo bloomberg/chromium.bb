@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/values.h"
-#include "headless/lib/browser/protocol/base_string_adapter.h"
 #include "headless/public/util/error_reporter.h"
 
 namespace headless {
@@ -70,8 +69,8 @@ template <typename T>
 std::unique_ptr<base::Value> ToValue(const std::vector<T>& vector_of_values) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (const T& value : vector_of_values)
-    result->Append(ToValue(value));
-  return std::move(result);
+    result->GetList().Append(base::Value::FromUniquePtrValue(ToValue(value)));
+  return result;
 }
 
 template <>
@@ -179,7 +178,7 @@ struct FromValue<std::vector<T>> {
       return result;
     }
     errors->Push();
-    for (const auto& item : value.GetList())
+    for (const auto& item : value.GetListDeprecated())
       result.push_back(FromValue<T>::Parse(item, errors));
     errors->Pop();
     return result;

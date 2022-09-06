@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 
 namespace {
 
@@ -33,6 +34,8 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
           std::make_unique<GeolocationPermissionContextDelegate>(profile));
   return permission_contexts;
 }
+
+}  // namespace
 
 // PermissionManager subclass that enables the test below to deterministically
 // wait until there is a permission status subscription from a service worker.
@@ -52,14 +55,16 @@ class SubscriptionInterceptingPermissionManager
   }
 
   SubscriptionId SubscribePermissionStatusChange(
-      content::PermissionType permission,
+      blink::PermissionType permission,
+      content::RenderProcessHost* render_process_host,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
       override {
     SubscriptionId result =
         permissions::PermissionManager::SubscribePermissionStatusChange(
-            permission, render_frame_host, requesting_origin, callback);
+            permission, render_process_host, render_frame_host,
+            requesting_origin, callback);
     std::move(callback_).Run();
 
     return result;
@@ -68,8 +73,6 @@ class SubscriptionInterceptingPermissionManager
  private:
   base::RepeatingClosure callback_;
 };
-
-}  // namespace
 
 class PermissionManagerBrowserTest : public InProcessBrowserTest {
  public:
@@ -126,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
 
 // Disable the test as it's flaky on Win7 dbg.
 // crbug.com/1068190
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if BUILDFLAG(IS_WIN) && !defined(NDEBUG)
 #define MAYBE_ServiceWorkerPermissionAfterRendererCrash \
   DISABLED_ServiceWorkerPermissionAfterRendererCrash
 #else

@@ -49,7 +49,6 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
                              Maybe<double> margin_left,
                              Maybe<double> margin_right,
                              Maybe<String> page_ranges,
-                             Maybe<bool> ignore_invalid_page_ranges,
                              Maybe<String> header_template,
                              Maybe<String> footer_template,
                              Maybe<bool> prefer_css_page_size,
@@ -65,7 +64,7 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
 
   absl::variant<printing::mojom::PrintPagesParamsPtr, std::string>
       print_pages_params = print_to_pdf::GetPrintPagesParams(
-          web_contents_->GetMainFrame()->GetLastCommittedURL(),
+          web_contents_->GetPrimaryMainFrame()->GetLastCommittedURL(),
           OptionalFromMaybe<bool>(landscape),
           OptionalFromMaybe<bool>(display_header_footer),
           OptionalFromMaybe<bool>(print_background),
@@ -92,8 +91,7 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
                           Page::PrintToPDF::TransferModeEnum::ReturnAsStream;
   print_to_pdf::PdfPrintManager::FromWebContents(web_contents_.get())
       ->PrintToPdf(
-          web_contents_->GetMainFrame(), page_ranges.fromMaybe(""),
-          ignore_invalid_page_ranges.fromMaybe(false),
+          web_contents_->GetPrimaryMainFrame(), page_ranges.fromMaybe(""),
           std::move(absl::get<printing::mojom::PrintPagesParamsPtr>(
               print_pages_params)),
           base::BindOnce(&PageHandler::PDFCreated, weak_factory_.GetWeakPtr(),

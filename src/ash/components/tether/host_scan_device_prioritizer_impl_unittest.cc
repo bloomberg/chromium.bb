@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/device_id_tether_network_guid_map.h"
 #include "ash/components/tether/tether_host_response_recorder.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -205,4 +205,4 @@ TEST_F(HostScanDevicePrioritizerImplTest,
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

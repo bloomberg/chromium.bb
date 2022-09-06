@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
 #include "chrome/browser/ui/app_list/search/ranking/types.h"
@@ -24,6 +25,11 @@ class ChromeSearchResult;
 
 namespace ash {
 enum class AppListSearchResultType;
+}
+
+namespace base {
+class Time;
+class TimeDelta;
 }
 
 namespace app_list {
@@ -69,7 +75,9 @@ class SearchController {
 
   virtual void InitializeRankers() {}
 
-  virtual void Start(const std::u16string& query) = 0;
+  virtual void StartSearch(const std::u16string& query) = 0;
+  virtual void StartZeroState(base::OnceClosure on_done,
+                              base::TimeDelta timeout) = 0;
   // TODO(crbug.com/1199206): We should rename this to AppListClosing for
   // consistency with AppListShown.
   virtual void ViewClosing() = 0;
@@ -87,8 +95,9 @@ class SearchController {
 
   // Update the controller with the given results. Used only if the categorical
   // search feature flag is enabled.
-  virtual void SetResults(ash::AppListSearchResultType provider_type,
-                          Results results) = 0;
+  virtual void SetResults(const SearchProvider* provider, Results results) = 0;
+  // Publishes results to ash.
+  virtual void Publish() = 0;
 
   virtual ChromeSearchResult* FindSearchResult(
       const std::string& result_id) = 0;
@@ -97,9 +106,6 @@ class SearchController {
 
   // Sends training signal to each |providers_|
   virtual void Train(LaunchData&& launch_data) = 0;
-
-  // Invoked when the app list is shown.
-  virtual void AppListShown() = 0;
 
   // Gets the length of the most recent query.
   // TODO(crbug.com/1199206): This should be replaced with calls to
@@ -123,6 +129,8 @@ class SearchController {
 
   virtual void set_results_changed_callback_for_test(
       ResultsChangedCallback callback) = 0;
+
+  virtual void disable_ranking_for_test() = 0;
 };
 
 }  // namespace app_list

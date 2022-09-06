@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -66,12 +67,11 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
   view_state_ = LocalCardMigrationDialogState::kOffered;
   // Need to create the icon first otherwise the dialog will not be shown.
   UpdateLocalCardMigrationIcon();
-  local_card_migration_dialog_ =
-      CreateLocalCardMigrationDialogView(this, &GetWebContents());
+  local_card_migration_dialog_ = CreateLocalCardMigrationDialogView(this);
   start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
   migratable_credit_cards_ = migratable_credit_cards;
   user_email_ = user_email;
-  local_card_migration_dialog_->ShowDialog();
+  local_card_migration_dialog_->ShowDialog(GetWebContents());
   UpdateLocalCardMigrationIcon();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 
@@ -105,9 +105,8 @@ void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
   AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SHOWN);
 
-  local_card_migration_dialog_ =
-      CreateLocalCardMigrationDialogView(this, &GetWebContents());
-  local_card_migration_dialog_->ShowDialog();
+  local_card_migration_dialog_ = CreateLocalCardMigrationDialogView(this);
+  local_card_migration_dialog_->ShowDialog(GetWebContents());
   UpdateLocalCardMigrationIcon();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
@@ -116,10 +115,9 @@ void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
   AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SERVER_ERROR_SHOWN);
 
-  local_card_migration_dialog_ =
-      CreateLocalCardMigrationErrorDialogView(this, &GetWebContents());
+  local_card_migration_dialog_ = CreateLocalCardMigrationErrorDialogView(this);
   UpdateLocalCardMigrationIcon();
-  local_card_migration_dialog_->ShowDialog();
+  local_card_migration_dialog_->ShowDialog(GetWebContents());
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
 

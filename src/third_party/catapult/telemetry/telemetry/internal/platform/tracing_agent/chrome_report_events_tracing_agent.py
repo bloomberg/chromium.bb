@@ -6,11 +6,12 @@ from __future__ import absolute_import
 from telemetry.internal.platform.tracing_agent import chrome_tracing_agent
 
 
+# TODO(crbug.com/1315761): Remove this  class.
 # A class that uses ReportEvents mode for chrome tracing.
 class ChromeReportEventsTracingAgent(chrome_tracing_agent.ChromeTracingAgent):
   @classmethod
   def IsSupported(cls, platform_backend):
-    return platform_backend.GetOSName() == 'fuchsia'
+    return False
 
   def _GetTransferMode(self):
     return 'ReportEvents'

@@ -7,12 +7,14 @@
 :host {
   flex: none;
   padding: 0 2px;
+
+  --toolbar-height: 26px;
 }
 
 .toolbar-shadow {
   position: relative;
   white-space: nowrap;
-  height: 26px;
+  height: var(--toolbar-height);
   overflow: hidden;
   z-index: 12;
   display: flex;
@@ -43,7 +45,7 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  height: 26px;
+  height: var(--toolbar-height);
   border: none;
   white-space: pre;
 }
@@ -55,7 +57,7 @@
 
 .toolbar-shadow.vertical .toolbar-item {
   height: auto;
-  min-height: 26px;
+  min-height: var(--toolbar-height);
   white-space: normal;
 }
 
@@ -80,7 +82,6 @@ select.toolbar-item:disabled + .toolbar-dropdown-arrow {
   min-width: 28px;
   background: transparent;
   border-radius: 0;
-  cursor: pointer;
 }
 
 .toolbar-text {
@@ -166,7 +167,7 @@ be fixed to the right so it never goes out of the viewport even if other items
 push it. And the main menu button next to it that needs to make some space for
 it. */
 .toolbar-button.close-devtools {
-  position: fixed;
+  position: absolute;
   right: 0;
 }
 
@@ -176,12 +177,51 @@ it. */
   margin-inline-end: 28px;
 }
 
+.toolbar-button.copied-to-clipboard::after {
+  content: attr(data-content);
+  position: fixed;
+  margin-top: calc(2 * var(--toolbar-height));
+  padding: 3px 5px;
+  color: var(--color-text-secondary);
+  background: var(--color-background-elevation-1);
+  animation: 2s fade-out;
+  font-weight: normal;
+  border: 1px solid var(--color-details-hairline);
+  border-radius: 3px;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 100%;
+  }
+
+  to {
+    opacity: 0%;
+  }
+}
+
 .toolbar-button.toolbar-state-on .toolbar-glyph {
   background-color: var(--color-primary);
 }
 
 .toolbar-button.toolbar-state-on .toolbar-icon {
   --icon-color: var(--color-primary);
+}
+
+.toolbar-state-on.toolbar-toggle-with-dot .toolbar-icon::after,
+.toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  background-color: var(--color-primary);
+  width: 4.5px;
+  height: 4.5px;
+  border: 2px solid var(--override-toolbar-background-color, --color-background);
+  border-radius: 50%;
+}
+
+.toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
+  right: 0;
 }
 
 .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
@@ -294,6 +334,7 @@ select.toolbar-item:disabled {
   opacity: 50%;
 }
 
+button.toolbar-item:focus-visible,
 select.toolbar-item:focus-visible {
   background: var(--color-background-elevation-2);
   border-radius: 2px;
@@ -353,6 +394,7 @@ select.toolbar-item:focus-visible > * {
   overflow: hidden;
   white-space: nowrap;
   cursor: auto;
+  color: var(--color-text-primary);
 }
 /* Separator */
 
@@ -393,6 +435,7 @@ input[is="history-input"] {
   border: 1px solid transparent;
   line-height: 16px;
   padding: 1px;
+  color: var(--color-text-primary);
 }
 
 input[is="history-input"]:hover {
@@ -416,8 +459,16 @@ input[is="history-input"]:not(:placeholder-shown) {
   z-index: -1;
 }
 
-.toolbar-item.highlight {
+.toolbar-item.highlight > .title {
   color: var(--color-button-primary-text);
+}
+
+.toolbar-item.highlight:hover:not(:active) > .title {
+  color: var(--color-button-primary-text-hover);
+}
+
+.toolbar-item.highlight:focus-visible {
+  background: var(--color-primary-variant);
 }
 
 .toolbar-item.highlight > .icon-mask {
@@ -529,5 +580,11 @@ devtools-icon.leading-issue-icon {
 
   .toolbar-item .devtools-link {
     color: linktext;
+  }
+
+  .toolbar-has-dropdown {
+    forced-color-adjust: none;
+    background: ButtonFace;
+    color: ButtonText;
   }
 }

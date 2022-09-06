@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.UnownedUserData;
 import org.chromium.base.UnownedUserDataHost;
 import org.chromium.base.UnownedUserDataKey;
@@ -26,6 +27,7 @@ import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.messages.MessageIdentifier;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -58,23 +60,26 @@ public class SyncErrorMessage implements SyncStateChangedListener, UnownedUserDa
      * @param context The {@link Context} to get string and drawable resources.
      */
     public static void maybeShowMessageUi(WindowAndroid windowAndroid, Context context) {
-        if (!SyncErrorPromptUtils.shouldShowPrompt(
-                    SyncErrorPromptUtils.getSyncErrorUiType(SyncSettingsUtils.getSyncError()))) {
-            return;
-        }
+        try (TraceEvent t = TraceEvent.scoped("SyncErrorMessage.maybeShowMessageUi")) {
+            if (!SyncErrorPromptUtils.shouldShowPrompt(SyncErrorPromptUtils.getSyncErrorUiType(
+                        SyncSettingsUtils.getSyncError()))) {
+                return;
+            }
 
-        MessageDispatcher dispatcher = MessageDispatcherProvider.from(windowAndroid);
-        if (dispatcher == null) {
-            // Show prompt UI next time when there is a valid dispatcher attached to this window.
-            return;
-        }
+            MessageDispatcher dispatcher = MessageDispatcherProvider.from(windowAndroid);
+            if (dispatcher == null) {
+                // Show prompt UI next time when there is a valid dispatcher attached to this
+                // window.
+                return;
+            }
 
-        UnownedUserDataHost host = windowAndroid.getUnownedUserDataHost();
-        if (SYNC_ERROR_MESSAGE_KEY.retrieveDataFromHost(host) != null) {
-            // Show prompt UI next time when the previous message has disappeared.
-            return;
+            UnownedUserDataHost host = windowAndroid.getUnownedUserDataHost();
+            if (SYNC_ERROR_MESSAGE_KEY.retrieveDataFromHost(host) != null) {
+                // Show prompt UI next time when the previous message has disappeared.
+                return;
+            }
+            SYNC_ERROR_MESSAGE_KEY.attachToHost(host, new SyncErrorMessage(dispatcher, context));
         }
-        SYNC_ERROR_MESSAGE_KEY.attachToHost(host, new SyncErrorMessage(dispatcher, context));
     }
 
     private SyncErrorMessage(MessageDispatcher dispatcher, Context context) {
@@ -94,7 +99,7 @@ public class SyncErrorMessage implements SyncStateChangedListener, UnownedUserDa
                                  ApiCompatibilityUtils.getDrawable(
                                          resources, R.drawable.ic_sync_error_legacy_24dp))
                          .with(MessageBannerProperties.ICON_TINT_COLOR,
-                                 ApiCompatibilityUtils.getColor(resources, R.color.default_red))
+                                 context.getColor(R.color.default_red))
                          .with(MessageBannerProperties.ON_PRIMARY_ACTION, this::onAccepted)
                          .with(MessageBannerProperties.ON_DISMISSED, this::onDismissed)
                          .build();
@@ -117,9 +122,10 @@ public class SyncErrorMessage implements SyncStateChangedListener, UnownedUserDa
         }
     }
 
-    private void onAccepted() {
+    private @PrimaryActionClickBehavior int onAccepted() {
         SyncErrorPromptUtils.onUserAccepted(mType);
         recordHistogram(SyncErrorPromptAction.BUTTON_CLICKED);
+        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
     }
 
     private void onDismissed(@DismissReason int reason) {

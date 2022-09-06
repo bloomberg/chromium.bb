@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,10 +15,8 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/policy_service.h"
@@ -70,7 +70,7 @@ class ComponentActiveDirectoryPolicyTest
  protected:
   ComponentActiveDirectoryPolicyTest()
       : install_attributes_(
-            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
+            ash::StubInstallAttributes::CreateActiveDirectoryManaged(
                 kTestDomain,
                 kTestDeviceId)) {
     builder_.policy_data().set_policy_type(
@@ -82,22 +82,22 @@ class ComponentActiveDirectoryPolicyTest
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     // Log in as Active Directory user.
-    command_line->AppendSwitchASCII(::chromeos::switches::kLoginUser,
+    command_line->AppendSwitchASCII(::ash::switches::kLoginUser,
                                     ::user_manager::kStubAdUserEmail);
 
     // Without this, user manager code will shut down Chrome since it can't
     // find any policy.
     command_line->AppendSwitchASCII(
-        ::chromeos::switches::kAllowFailedPolicyFetchForTest, "true");
+        ::ash::switches::kAllowFailedPolicyFetchForTest, "true");
   }
 
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     // Install the initial extension.
-    ExtensionTestMessageListener ready_listener("ready", false);
-    event_listener_ =
-        std::make_unique<ExtensionTestMessageListener>("event", true);
+    ExtensionTestMessageListener ready_listener("ready");
+    event_listener_ = std::make_unique<ExtensionTestMessageListener>(
+        "event", ReplyBehavior::kWillReply);
     extension_ = LoadExtension(kTestExtensionPath);
     ASSERT_TRUE(extension_.get());
     ASSERT_EQ(kTestExtensionId, extension_->id());
@@ -160,7 +160,7 @@ class ComponentActiveDirectoryPolicyTest
 
   scoped_refptr<const extensions::Extension> extension_;
   std::unique_ptr<ExtensionTestMessageListener> event_listener_;
-  chromeos::ScopedStubInstallAttributes install_attributes_;
+  ash::ScopedStubInstallAttributes install_attributes_;
   ComponentActiveDirectoryPolicyBuilder builder_;
 };
 
@@ -168,7 +168,7 @@ class ComponentActiveDirectoryPolicyTest
 IN_PROC_BROWSER_TEST_F(ComponentActiveDirectoryPolicyTest,
                        FetchExtensionPolicy) {
   // Read the initial policy.
-  ExtensionTestMessageListener policy_listener(kTestPolicyJSON, false);
+  ExtensionTestMessageListener policy_listener(kTestPolicyJSON);
   event_listener_->Reply("get-policy-Name");
   EXPECT_TRUE(policy_listener.WaitUntilSatisfied());
 }
@@ -185,11 +185,12 @@ IN_PROC_BROWSER_TEST_F(ComponentActiveDirectoryPolicyTest,
   EXPECT_TRUE(event_listener_->WaitUntilSatisfied());
 
   // This policy was removed.
-  ExtensionTestMessageListener policy_listener1(kEmptyPolicy, true);
+  ExtensionTestMessageListener policy_listener1(kEmptyPolicy,
+                                                ReplyBehavior::kWillReply);
   event_listener_->Reply("get-policy-Name");
   EXPECT_TRUE(policy_listener1.WaitUntilSatisfied());
 
-  ExtensionTestMessageListener policy_listener2(kTestPolicy2JSON, false);
+  ExtensionTestMessageListener policy_listener2(kTestPolicy2JSON);
   policy_listener1.Reply("get-policy-Another");
   EXPECT_TRUE(policy_listener2.WaitUntilSatisfied());
 }
@@ -204,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(ComponentActiveDirectoryPolicyTest,
 
   // Installing a new extension should trigger a schema update, which should
   // trigger a policy refresh.
-  ExtensionTestMessageListener result_listener("ok", false);
+  ExtensionTestMessageListener result_listener("ok");
   result_listener.set_failure_message("fail");
   scoped_refptr<const extensions::Extension> extension2 =
       LoadExtension(kTestExtension2Path);

@@ -85,27 +85,27 @@ void aom_sadMxNx4d_avx2(int M, int N, const uint8_t *src, int src_stride,
   }
 }
 
-#define sadMxN_avx2(m, n)                                                      \
+#define SADMXN_AVX2(m, n)                                                      \
   void aom_sad##m##x##n##x4d_avx2(const uint8_t *src, int src_stride,          \
                                   const uint8_t *const ref[4], int ref_stride, \
                                   uint32_t res[4]) {                           \
     aom_sadMxNx4d_avx2(m, n, src, src_stride, ref, ref_stride, res);           \
   }
 
-sadMxN_avx2(32, 8);
-sadMxN_avx2(32, 16);
-sadMxN_avx2(32, 32);
-sadMxN_avx2(32, 64);
+SADMXN_AVX2(32, 8)
+SADMXN_AVX2(32, 16)
+SADMXN_AVX2(32, 32)
+SADMXN_AVX2(32, 64)
 
-sadMxN_avx2(64, 16);
-sadMxN_avx2(64, 32);
-sadMxN_avx2(64, 64);
-sadMxN_avx2(64, 128);
+SADMXN_AVX2(64, 16)
+SADMXN_AVX2(64, 32)
+SADMXN_AVX2(64, 64)
+SADMXN_AVX2(64, 128)
 
-sadMxN_avx2(128, 64);
-sadMxN_avx2(128, 128);
+SADMXN_AVX2(128, 64)
+SADMXN_AVX2(128, 128)
 
-#define sad_skip_MxN_avx2(m, n)                                             \
+#define SAD_SKIP_MXN_AVX2(m, n)                                             \
   void aom_sad_skip_##m##x##n##x4d_avx2(const uint8_t *src, int src_stride, \
                                         const uint8_t *const ref[4],        \
                                         int ref_stride, uint32_t res[4]) {  \
@@ -117,15 +117,15 @@ sadMxN_avx2(128, 128);
     res[3] <<= 1;                                                           \
   }
 
-sad_skip_MxN_avx2(32, 8);
-sad_skip_MxN_avx2(32, 16);
-sad_skip_MxN_avx2(32, 32);
-sad_skip_MxN_avx2(32, 64);
+SAD_SKIP_MXN_AVX2(32, 8)
+SAD_SKIP_MXN_AVX2(32, 16)
+SAD_SKIP_MXN_AVX2(32, 32)
+SAD_SKIP_MXN_AVX2(32, 64)
 
-sad_skip_MxN_avx2(64, 16);
-sad_skip_MxN_avx2(64, 32);
-sad_skip_MxN_avx2(64, 64);
-sad_skip_MxN_avx2(64, 128);
+SAD_SKIP_MXN_AVX2(64, 16)
+SAD_SKIP_MXN_AVX2(64, 32)
+SAD_SKIP_MXN_AVX2(64, 64)
+SAD_SKIP_MXN_AVX2(64, 128)
 
-sad_skip_MxN_avx2(128, 64);
-sad_skip_MxN_avx2(128, 128);
+SAD_SKIP_MXN_AVX2(128, 64)
+SAD_SKIP_MXN_AVX2(128, 128)

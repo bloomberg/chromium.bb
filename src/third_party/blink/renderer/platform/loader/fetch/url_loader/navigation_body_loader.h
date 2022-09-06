@@ -13,6 +13,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -62,10 +63,13 @@ class NavigationBodyLoader : public WebNavigationBodyLoader,
   //
   // StartLoadingBody
   //   request code cache
+  //   Note: If the kEarlyBodyLoad feature is enabled, BindURLLoaderAndContinue
+  //   can run in parallel with requesting the code cache. The client will get a
+  //   completion signal for both these events.
   // ContinueWithCodeCache
   //   notify client about cache
   // BindURLLoaderAndContinue
-  // OnStartLoadingResponseBody
+  // OnReceiveResponse
   //   start reading from the pipe
   // OnReadable (zero or more times)
   //   notify client about data
@@ -86,8 +90,8 @@ class NavigationBodyLoader : public WebNavigationBodyLoader,
 
   // network::mojom::URLLoaderClient implementation.
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -96,8 +100,6 @@ class NavigationBodyLoader : public WebNavigationBodyLoader,
                         OnUploadProgressCallback callback) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   void CodeCacheReceived(base::Time response_time, mojo_base::BigBuffer data);

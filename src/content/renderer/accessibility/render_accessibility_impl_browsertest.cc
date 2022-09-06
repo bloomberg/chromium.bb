@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/adapters.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,7 +32,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "ppapi/c/private/ppp_pdf.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
@@ -63,13 +63,13 @@ using testing::ElementsAre;
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 bool IsSelected(const WebAXObject& obj) {
   ui::AXNodeData node_data;
   obj.Serialize(&node_data, ui::kAXModeComplete);
   return node_data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -756,8 +756,7 @@ TEST_F(RenderAccessibilityImplTest, TestBoundsForFixedNodeAfterScroll) {
 
   // Prepare the expected information from the tree.
   const std::vector<ui::AXTreeUpdate>& updates = GetHandledAccUpdates();
-  for (auto iter = updates.rbegin(); iter != updates.rend(); ++iter) {
-    const ui::AXTreeUpdate& update = *iter;
+  for (const auto& update : base::Reversed(updates)) {
     for (const ui::AXNodeData& node : update.nodes) {
       std::string name;
       if (node.GetStringAttribute(ax::mojom::StringAttribute::kName, &name) &&
@@ -1156,7 +1155,7 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
 
   gfx::RectF expected_bounds;
   blink::WebAXObject offset_container;
-  skia::Matrix44 container_transform;
+  gfx::Transform container_transform;
   input_checkbox.GetRelativeBounds(offset_container, expected_bounds,
                                    container_transform);
   gfx::Rect actual_bounds = input_checkbox_action_target->GetRelativeBounds();
@@ -1172,7 +1171,7 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
   EXPECT_GE(scroller_action_target->MaximumScrollOffset().y(), 900);
 
   // Android does not produce accessible items for option elements.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(IsSelected(option));
   EXPECT_TRUE(option_action_target->SetSelected(true));
   // Seleting option requires layout to be clean.

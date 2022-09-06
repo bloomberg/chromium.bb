@@ -233,6 +233,7 @@ void InitBuiltInResources(ShBuiltInResources *resources)
     resources->EXT_texture_buffer                             = 0;
     resources->OES_sample_variables                           = 0;
     resources->EXT_clip_cull_distance                         = 0;
+    resources->KHR_blend_equation_advanced                    = 0;
 
     resources->MaxClipDistances                = 8;
     resources->MaxCullDistances                = 8;
@@ -592,14 +593,14 @@ int GetVertexShaderNumViews(const ShHandle handle)
     return compiler->getNumViews();
 }
 
-bool HasEarlyFragmentTestsOptimization(const ShHandle handle)
+bool EnablesPerSampleShading(const ShHandle handle)
 {
     TCompiler *compiler = GetCompilerFromHandle(handle);
     if (compiler == nullptr)
     {
         return false;
     }
-    return compiler->isEarlyFragmentTestsOptimized();
+    return compiler->enablesPerSampleShading();
 }
 
 uint32_t GetShaderSpecConstUsageBits(const ShHandle handle)
@@ -925,6 +926,14 @@ unsigned int GetShaderSharedMemorySize(const ShHandle handle)
     return sharedMemorySize;
 }
 
+uint32_t GetAdvancedBlendEquations(const ShHandle handle)
+{
+    TCompiler *compiler = GetCompilerFromHandle(handle);
+    ASSERT(compiler);
+
+    return compiler->getAdvancedBlendEquations().bits();
+}
+
 void InitializeGlslang()
 {
     if (initializeGlslangRefCount == 0)
@@ -967,13 +976,13 @@ const char kDriverUniformsVarName[]   = "ANGLEUniforms";
 // Interface block array name used for atomic counter emulation
 const char kAtomicCountersBlockName[] = "ANGLEAtomicCounters";
 
-const char kLineRasterEmulationPosition[] = "ANGLEPosition";
-
 const char kXfbEmulationGetOffsetsFunctionName[] = "ANGLEGetXfbOffsets";
 const char kXfbEmulationCaptureFunctionName[]    = "ANGLECaptureXfb";
 const char kXfbEmulationBufferBlockName[]        = "ANGLEXfbBuffer";
 const char kXfbEmulationBufferName[]             = "ANGLEXfb";
 const char kXfbEmulationBufferFieldName[]        = "xfbOut";
+
+const char kTransformPositionFunctionName[] = "ANGLETransformPosition";
 
 const char kXfbExtensionPositionOutName[] = "ANGLEXfbPosition";
 

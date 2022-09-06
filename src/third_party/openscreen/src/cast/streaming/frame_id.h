@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <limits>
 #include <sstream>
 
 #include "cast/streaming/expanded_value_base.h"
@@ -40,6 +41,8 @@ class FrameId : public ExpandedValueBase<int64_t, FrameId> {
   // The "null" FrameId constructor.  Represents a FrameId field that has not
   // been set and/or a "not applicable" indicator.
   constexpr FrameId() : FrameId(std::numeric_limits<int64_t>::min()) {}
+
+  constexpr explicit FrameId(int64_t value) : ExpandedValueBase(value) {}
 
   // Allow copy construction and assignment.
   constexpr FrameId(const FrameId&) = default;
@@ -104,14 +107,11 @@ class FrameId : public ExpandedValueBase<int64_t, FrameId> {
   // begins.
   static constexpr FrameId leader() { return FrameId(-1); }
 
+  constexpr int64_t value() const { return value_; }
+
  private:
   friend class ExpandedValueBase<int64_t, FrameId>;
   friend std::ostream& operator<<(std::ostream& out, const FrameId rhs);
-
-  constexpr explicit FrameId(int64_t value) : ExpandedValueBase(value) {}
-
-  // Accessor used by ostream output function.
-  constexpr int64_t value() const { return value_; }
 };
 
 }  // namespace cast

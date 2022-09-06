@@ -8,12 +8,11 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/deferred_sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits_extension.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_io_thread.h"
@@ -21,7 +20,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
 #endif
 
@@ -40,14 +39,6 @@ namespace features {
 // of all chrometto performance improvements.
 constexpr base::Feature kBrowserPrioritizeInputQueue{
     "BrowserPrioritizeInputQueue", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// When TreatBootstrapAsDefault is enabled, the browser will execute tasks with
-// the kBootstrap task type on the default task queues (based on priority of
-// the task) rather than a dedicated high-priority task queue. Intended to
-// evaluate the impact of the already-launched prioritization of bootstrap
-// tasks (crbug.com/1258621).
-const base::Feature kTreatBootstrapTaskTypeAsDefault{
-    "TreatBootstrapAsDefault", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When TreatPreconnectAsDefault is enabled, the browser will execute tasks with
 // the kPreconnect task type on the default task queues (based on priority of
@@ -115,14 +106,14 @@ BaseBrowserTaskExecutor::CreateSingleThreadTaskRunner(
   return GetTaskRunner(ExtractBrowserThreadId(traits), traits);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 scoped_refptr<base::SingleThreadTaskRunner>
 BaseBrowserTaskExecutor::CreateCOMSTATaskRunner(
     const base::TaskTraits& traits,
     base::SingleThreadTaskRunnerThreadMode thread_mode) {
   return GetTaskRunner(ExtractBrowserThreadId(traits), traits);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 scoped_refptr<base::SingleThreadTaskRunner>
 BaseBrowserTaskExecutor::GetTaskRunner(BrowserThread::ID identifier,
@@ -154,7 +145,7 @@ QueueType BaseBrowserTaskExecutor::GetQueueType(
     switch (task_type) {
       case BrowserTaskType::kBootstrap:
         if (base::FeatureList::IsEnabled(
-                features::kTreatBootstrapTaskTypeAsDefault)) {
+                ::features::kTreatBootstrapAsDefault)) {
           // Defer to traits.priority() below rather than executing this task on
           // the dedicated bootstrap queue.
           break;
@@ -189,6 +180,9 @@ QueueType BaseBrowserTaskExecutor::GetQueueType(
         }
         // Defer to traits.priority() below.
         break;
+
+      case BrowserTaskType::kServiceWorkerStorageControlResponse:
+        return QueueType::kServiceWorkerStorageControlResponse;
 
       case BrowserTaskType::kDefault:
         // Defer to traits.priority() below.
@@ -261,7 +255,7 @@ void BrowserTaskExecutor::CreateInternal(
   g_browser_task_executor->browser_ui_thread_handle_
       ->EnableAllExceptBestEffortQueues();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerReady();
 #endif
 }
@@ -277,7 +271,7 @@ BrowserTaskExecutor* BrowserTaskExecutor::Get() {
 
 // static
 void BrowserTaskExecutor::ResetForTesting() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerShutdownForTesting();
 #endif
   if (g_browser_task_executor) {
@@ -351,9 +345,9 @@ void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
 }
 
 // static
-void BrowserTaskExecutor::EnableAllQueues() {
-  Get()->browser_ui_thread_handle_->EnableAllQueues();
-  Get()->browser_io_thread_handle_->EnableAllQueues();
+void BrowserTaskExecutor::OnStartupComplete() {
+  Get()->browser_ui_thread_handle_->OnStartupComplete();
+  Get()->browser_io_thread_handle_->OnStartupComplete();
 }
 
 // static

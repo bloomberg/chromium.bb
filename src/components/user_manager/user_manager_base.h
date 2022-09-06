@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user.h"
@@ -28,7 +29,6 @@
 class PrefRegistrySimple;
 
 namespace base {
-class ListValue;
 class SingleThreadTaskRunner;
 }
 
@@ -111,6 +111,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   std::u16string GetUserDisplayName(const AccountId& account_id) const override;
   void SaveUserDisplayEmail(const AccountId& account_id,
                             const std::string& display_email) override;
+  UserType GetUserType(const AccountId& account_id) override;
   void SaveUserType(const User* user) override;
   void UpdateUserAccountData(const AccountId& account_id,
                              const UserAccountData& account_data) override;
@@ -141,6 +142,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       UserManager::UserSessionStateObserver* obs) override;
   void NotifyLocalStateChanged() override;
   void NotifyUserImageChanged(const User& user) override;
+  void NotifyUserImageIsEnterpriseManagedChanged(
+      const User& user,
+      bool is_enterprise_managed) override;
   void NotifyUserProfileImageUpdateFailed(const User& user) override;
   void NotifyUserProfileImageUpdated(
       const User& user,
@@ -158,7 +162,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Helper function that converts users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
   // skipped.
-  void ParseUserList(const base::ListValue& users_list,
+  void ParseUserList(const base::Value::ConstListView& users_list,
                      const std::set<AccountId>& existing_users,
                      std::vector<AccountId>* users_vector,
                      std::set<AccountId>* users_set);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/link_to_text/link_to_text_mediator.h"
+#include "base/time/time.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -71,7 +72,6 @@ class FakeJSFeature : public LinkToTextJavaScriptFeature {
  public:
   void GetLinkToText(
       web::WebState* web_state,
-      web::WebFrame* frame,
       base::OnceCallback<void(LinkToTextResponse*)> callback) override {
     std::move(callback).Run([LinkToTextResponse
         linkToTextResponseWithValue:response_

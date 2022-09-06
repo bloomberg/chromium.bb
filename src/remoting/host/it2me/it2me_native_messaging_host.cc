@@ -43,12 +43,12 @@
 #include "remoting/signaling/xmpp_log_to_server.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 
 #include "remoting/host/win/elevated_native_messaging_host.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
 
@@ -56,12 +56,12 @@ using protocol::ErrorCode;
 
 namespace {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const base::FilePath::CharType kBaseHostBinaryName[] =
     FILE_PATH_LITERAL("remote_assistance_host.exe");
 const base::FilePath::CharType kElevatedHostBinaryName[] =
     FILE_PATH_LITERAL("remote_assistance_host_uiaccess.exe");
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 constexpr char kAnonymousUserName[] = "anonymous_user";
 
@@ -204,7 +204,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
     return;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Requests that the support host is launched with UiAccess on Windows.
   // This value, in conjuction with the platform policy, is used to determine
   // if an elevated host should be used.
@@ -423,8 +423,8 @@ void It2MeNativeMessagingHost::ProcessIncomingIq(
 
 void It2MeNativeMessagingHost::SendOutgoingIq(const std::string& iq) {
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
-  message->SetString(kMessageType, kSendOutgoingIqMessage);
-  message->SetString(kIq, iq);
+  message->SetStringKey(kMessageType, kSendOutgoingIqMessage);
+  message->SetStringKey(kIq, iq);
 
   SendMessageToClient(std::move(message));
 }
@@ -433,10 +433,11 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
     std::unique_ptr<base::DictionaryValue> response,
     protocol::ErrorCode error_code) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
-  response->SetString(kMessageType, kErrorMessage);
-  response->SetString(kErrorMessageCode, ErrorCodeToString(error_code));
+  response->SetStringKey(kMessageType, kErrorMessage);
+  response->SetStringKey(kErrorMessageCode, ErrorCodeToString(error_code));
   // TODO(kelvinp): Remove this after M61 Webapp is pushed to 100%.
-  response->SetString(kErrorMessageDescription, ErrorCodeToString(error_code));
+  response->SetStringKey(kErrorMessageDescription,
+                         ErrorCodeToString(error_code));
   SendMessageToClient(std::move(response));
 
   // Trigger a host shutdown by sending an empty message.
@@ -447,7 +448,7 @@ void It2MeNativeMessagingHost::SendPolicyErrorAndExit() const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   auto message = std::make_unique<base::DictionaryValue>();
-  message->SetString(kMessageType, kPolicyErrorMessage);
+  message->SetStringKey(kMessageType, kPolicyErrorMessage);
   SendMessageToClient(std::move(message));
   client_->CloseChannel(std::string());
 }
@@ -460,22 +461,22 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state,
 
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
-  message->SetString(kMessageType, kHostStateChangedMessage);
-  message->SetString(kState, It2MeHostStateToString(state));
+  message->SetStringKey(kMessageType, kHostStateChangedMessage);
+  message->SetStringKey(kState, It2MeHostStateToString(state));
 
   switch (state_) {
     case It2MeHostState::kReceivedAccessCode:
-      message->SetString(kAccessCode, access_code_);
-      message->SetInteger(kAccessCodeLifetime,
-                          access_code_lifetime_.InSeconds());
+      message->SetStringKey(kAccessCode, access_code_);
+      message->SetIntKey(kAccessCodeLifetime,
+                         access_code_lifetime_.InSeconds());
       break;
 
     case It2MeHostState::kConnected:
-      message->SetString(kClient, client_username_);
+      message->SetStringKey(kClient, client_username_);
       break;
 
     case It2MeHostState::kDisconnected:
-      message->SetString(kDisconnectReason, ErrorCodeToString(error_code));
+      message->SetStringKey(kDisconnectReason, ErrorCodeToString(error_code));
       client_username_.clear();
       break;
 
@@ -483,11 +484,11 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state,
       // kError is an internal-only state, sent to the web-app by a separate
       // "error" message so that errors that occur before the "connect" message
       // is sent can be communicated.
-      message->SetString(kMessageType, kErrorMessage);
-      message->SetString(kErrorMessageCode, ErrorCodeToString(error_code));
+      message->SetStringKey(kMessageType, kErrorMessage);
+      message->SetStringKey(kErrorMessageCode, ErrorCodeToString(error_code));
       // TODO(kelvinp): Remove this after M61 Webapp is pushed to 100%.
-      message->SetString(kErrorMessageDescription,
-                         ErrorCodeToString(error_code));
+      message->SetStringKey(kErrorMessageDescription,
+                            ErrorCodeToString(error_code));
       break;
 
     default:
@@ -509,10 +510,10 @@ void It2MeNativeMessagingHost::OnNatPoliciesChanged(
 
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
-  message->SetString(kMessageType, kNatPolicyChangedMessage);
-  message->SetBoolean(kNatPolicyChangedMessageNatEnabled,
+  message->SetStringKey(kMessageType, kNatPolicyChangedMessage);
+  message->SetBoolKey(kNatPolicyChangedMessageNatEnabled,
                       nat_traversal_enabled);
-  message->SetBoolean(kNatPolicyChangedMessageRelayEnabled,
+  message->SetBoolKey(kNatPolicyChangedMessageRelayEnabled,
                       relay_connections_allowed);
   SendMessageToClient(std::move(message));
 }
@@ -562,7 +563,7 @@ void It2MeNativeMessagingHost::OnPolicyUpdate(
 absl::optional<bool>
 It2MeNativeMessagingHost::GetAllowElevatedHostPolicyValue() {
   DCHECK(policy_received_);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::unique_ptr<base::DictionaryValue> platform_policies =
       policy_watcher_->GetPlatformPolicies();
   if (platform_policies) {
@@ -575,7 +576,7 @@ It2MeNativeMessagingHost::GetAllowElevatedHostPolicyValue() {
       return value;
     }
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   return absl::nullopt;
 }
@@ -641,7 +642,7 @@ std::string It2MeNativeMessagingHost::ExtractAccessToken(
   return auth_service_with_token.substr(strlen(kOAuth2ServicePrefix));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 bool It2MeNativeMessagingHost::DelegateToElevatedHost(
     std::unique_ptr<base::DictionaryValue> message) {
@@ -672,7 +673,7 @@ bool It2MeNativeMessagingHost::DelegateToElevatedHost(
   return false;
 }
 
-#else  // !defined(OS_WIN)
+#else  // !BUILDFLAG(IS_WIN)
 
 bool It2MeNativeMessagingHost::DelegateToElevatedHost(
     std::unique_ptr<base::DictionaryValue> message) {
@@ -680,6 +681,6 @@ bool It2MeNativeMessagingHost::DelegateToElevatedHost(
   return false;
 }
 
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
 }  // namespace remoting

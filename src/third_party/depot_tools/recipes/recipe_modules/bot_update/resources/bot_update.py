@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -205,7 +205,7 @@ def call(*args, **kwargs):  # pragma: no cover
   try:
     proc = subprocess.Popen(args, **kwargs)
   except:
-    print('\t%s failed to exectute.' % ' '.join(args)) 
+    print('\t%s failed to execute.' % ' '.join(args))
     raise
   observers = [
       RepeatingTimer(300, _print_pstree),
@@ -231,7 +231,7 @@ def call(*args, **kwargs):  # pragma: no cover
       if not buf:
         break
       if hanging_cr:
-        buf = '\r' + buf
+        buf = b'\r' + buf
       hanging_cr = buf.endswith(b'\r')
       if hanging_cr:
         buf = buf[:-1]
@@ -414,7 +414,7 @@ def git_config_if_not_set(key, value):
 def gclient_sync(
     with_branch_heads, with_tags, revisions,
     patch_refs, gerrit_reset,
-    gerrit_rebase_patch_ref):
+    gerrit_rebase_patch_ref, download_topics=False):
   args = ['sync', '--verbose', '--reset', '--force',
           '--nohooks', '--noprehooks', '--delete_unversioned_trees']
   if with_branch_heads:
@@ -433,6 +433,8 @@ def gclient_sync(
       args.append('--no-reset-patch-ref')
     if not gerrit_rebase_patch_ref:
       args.append('--no-rebase-patch-ref')
+    if download_topics:
+      args.append('--download-topics')
 
   try:
     call_gclient(*args)
@@ -829,7 +831,8 @@ def emit_json(out_file, did_run, **kwargs):
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, patch_refs, gerrit_rebase_patch_ref,
                     no_fetch_tags, refs, git_cache_dir, cleanup_dir,
-                    gerrit_reset, enforce_fetch, experiments):
+                    gerrit_reset, enforce_fetch, experiments,
+                    download_topics=False):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -863,7 +866,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       gc_revisions,
       patch_refs,
       gerrit_reset,
-      gerrit_rebase_patch_ref)
+      gerrit_rebase_patch_ref,
+      download_topics)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -923,8 +927,6 @@ def parse_args():
 
   parse.add_option('--experiments',
                    help='Comma separated list of experiments to enable')
-  parse.add_option('--root', dest='patch_root',
-                   help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
   parse.add_option('--patch_ref', dest='patch_refs', action='append', default=[],
                    help='Git repository & ref to apply, as REPO@REF.')
@@ -954,10 +956,10 @@ def parse_args():
       help=('Enforce a new fetch to refresh the git cache, even if the '
             'solution revision passed in already exists in the current '
             'git cache.'))
+  parse.add_option(
+      '--download_topics',
+      action='store_true')
 
-  # TODO(machenbach): Remove the flag when all uses have been removed.
-  parse.add_option('--output_manifest', action='store_true',
-                   help=('Deprecated.'))
   parse.add_option('--clobber', action='store_true',
                    help='Delete checkout first, always')
   parse.add_option('--output_json',
@@ -1096,6 +1098,7 @@ def checkout(options, git_slns, specs, revisions, step_text):
           patch_root=options.patch_root,
           patch_refs=options.patch_refs,
           gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,
+          download_topics=options.download_topics,
 
           # Control how the fetch step will occur.
           no_fetch_tags=options.no_fetch_tags,

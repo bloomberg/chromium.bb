@@ -10,6 +10,7 @@
 
 #include "include/core/SkData.h"
 #include "include/core/SkTypes.h"
+#include "include/third_party/skcms/skcms.h"
 #include "src/core/SkUtils.h"  // unaligned_{load,store}
 #include <cstdint>
 
@@ -1957,6 +1958,12 @@ STAGE(store_a8, const SkRasterPipeline_MemoryCtx* ctx) {
     U8 packed = pack(pack(to_unorm(a, 255)));
     store(ptr, packed, tail);
 }
+STAGE(store_r8, const SkRasterPipeline_MemoryCtx* ctx) {
+    auto ptr = ptr_at_xy<uint8_t>(ctx, dx,dy);
+
+    U8 packed = pack(pack(to_unorm(r, 255)));
+    store(ptr, packed, tail);
+}
 
 STAGE(load_565, const SkRasterPipeline_MemoryCtx* ctx) {
     auto ptr = ptr_at_xy<const uint16_t>(ctx, dx,dy);
@@ -2356,6 +2363,15 @@ STAGE(alpha_to_gray_dst, Ctx::None) {
     dr = dg = db = da;
     da = 1;
 }
+STAGE(alpha_to_red, Ctx::None) {
+    r = a;
+    a = 1;
+}
+STAGE(alpha_to_red_dst, Ctx::None) {
+    dr = da;
+    da = 1;
+}
+
 STAGE(bt709_luminance_or_luma_to_alpha, Ctx::None) {
     a = r*0.2126f + g*0.7152f + b*0.0722f;
     r = g = b = 0;
@@ -2636,16 +2652,11 @@ STAGE(bilinear_py, SkRasterPipeline_SamplerCtx* ctx) { bilinear_y<+1>(ctx, &g); 
 // In bicubic interpolation, the 16 pixels and +/- 0.5 and +/- 1.5 offsets from the sample
 // pixel center are combined with a non-uniform cubic filter, with higher values near the center.
 //
-// We break this function into two parts, one for near 0.5 offsets and one for far 1.5 offsets.
-// See GrCubicEffect for details of this particular filter.
+// This helper computes the total weight along one axis (our bicubic filter is separable), given one
+// column of the sampling matrix, and a fractional pixel offset. See SkCubicResampler for details.
 
-SI F bicubic_near(F t) {
-    // 1/18 + 9/18t + 27/18t^2 - 21/18t^3 == t ( t ( -21/18t + 27/18) + 9/18) + 1/18
-    return mad(t, mad(t, mad((-21/18.0f), t, (27/18.0f)), (9/18.0f)), (1/18.0f));
-}
-SI F bicubic_far(F t) {
-    // 0/18 + 0/18*t - 6/18t^2 + 7/18t^3 == t^2 (7/18t - 6/18)
-    return (t*t)*mad((7/18.0f), t, (-6/18.0f));
+SI F bicubic_wts(F t, float A, float B, float C, float D) {
+    return mad(t, mad(t, mad(t, D, C), B), A);
 }
 
 template <int kScale>
@@ -2654,10 +2665,11 @@ SI void bicubic_x(SkRasterPipeline_SamplerCtx* ctx, F* x) {
     F fx = sk_unaligned_load<F>(ctx->fx);
 
     F scalex;
-    if (kScale == -3) { scalex = bicubic_far (1.0f - fx); }
-    if (kScale == -1) { scalex = bicubic_near(1.0f - fx); }
-    if (kScale == +1) { scalex = bicubic_near(       fx); }
-    if (kScale == +3) { scalex = bicubic_far (       fx); }
+    const float* w = ctx->weights;
+    if (kScale == -3) { scalex = bicubic_wts(fx, w[0], w[4], w[ 8], w[12]); }
+    if (kScale == -1) { scalex = bicubic_wts(fx, w[1], w[5], w[ 9], w[13]); }
+    if (kScale == +1) { scalex = bicubic_wts(fx, w[2], w[6], w[10], w[14]); }
+    if (kScale == +3) { scalex = bicubic_wts(fx, w[3], w[7], w[11], w[15]); }
     sk_unaligned_store(ctx->scalex, scalex);
 }
 template <int kScale>
@@ -2666,10 +2678,11 @@ SI void bicubic_y(SkRasterPipeline_SamplerCtx* ctx, F* y) {
     F fy = sk_unaligned_load<F>(ctx->fy);
 
     F scaley;
-    if (kScale == -3) { scaley = bicubic_far (1.0f - fy); }
-    if (kScale == -1) { scaley = bicubic_near(1.0f - fy); }
-    if (kScale == +1) { scaley = bicubic_near(       fy); }
-    if (kScale == +3) { scaley = bicubic_far (       fy); }
+    const float* w = ctx->weights;
+    if (kScale == -3) { scaley = bicubic_wts(fy, w[0], w[4], w[ 8], w[12]); }
+    if (kScale == -1) { scaley = bicubic_wts(fy, w[1], w[5], w[ 9], w[13]); }
+    if (kScale == +1) { scaley = bicubic_wts(fy, w[2], w[6], w[10], w[14]); }
+    if (kScale == +3) { scaley = bicubic_wts(fy, w[3], w[7], w[11], w[15]); }
     sk_unaligned_store(ctx->scaley, scaley);
 }
 
@@ -2773,8 +2786,15 @@ STAGE(bilinear, const SkRasterPipeline_SamplerCtx2* ctx) {
 STAGE(bicubic, SkRasterPipeline_SamplerCtx2* ctx) {
     F x = r, fx = fract(x + 0.5f),
       y = g, fy = fract(y + 0.5f);
-    const F wx[] = { bicubic_far(1-fx), bicubic_near(1-fx), bicubic_near(fx), bicubic_far(fx) };
-    const F wy[] = { bicubic_far(1-fy), bicubic_near(1-fy), bicubic_near(fy), bicubic_far(fy) };
+    const float* w = ctx->weights;
+    const F wx[] = {bicubic_wts(fx, w[0], w[4], w[ 8], w[12]),
+                    bicubic_wts(fx, w[1], w[5], w[ 9], w[13]),
+                    bicubic_wts(fx, w[2], w[6], w[10], w[14]),
+                    bicubic_wts(fx, w[3], w[7], w[11], w[15])};
+    const F wy[] = {bicubic_wts(fy, w[0], w[4], w[ 8], w[12]),
+                    bicubic_wts(fy, w[1], w[5], w[ 9], w[13]),
+                    bicubic_wts(fy, w[2], w[6], w[10], w[14]),
+                    bicubic_wts(fy, w[3], w[7], w[11], w[15])};
 
     sampler(ctx, x,y, wx,wy, &r,&g,&b,&a);
 }
@@ -2835,14 +2855,15 @@ STAGE(bicubic_clamp_8888, const SkRasterPipeline_GatherCtx* ctx) {
     // We'll accumulate the color of all four samples into {r,g,b,a} directly.
     r = g = b = a = 0;
 
-    const F scaley[4] = {
-        bicubic_far (1.0f - fy), bicubic_near(1.0f - fy),
-        bicubic_near(       fy), bicubic_far (       fy),
-    };
-    const F scalex[4] = {
-        bicubic_far (1.0f - fx), bicubic_near(1.0f - fx),
-        bicubic_near(       fx), bicubic_far (       fx),
-    };
+    const float* w = ctx->weights;
+    const F scaley[4] = {bicubic_wts(fy, w[0], w[4], w[ 8], w[12]),
+                         bicubic_wts(fy, w[1], w[5], w[ 9], w[13]),
+                         bicubic_wts(fy, w[2], w[6], w[10], w[14]),
+                         bicubic_wts(fy, w[3], w[7], w[11], w[15])};
+    const F scalex[4] = {bicubic_wts(fx, w[0], w[4], w[ 8], w[12]),
+                         bicubic_wts(fx, w[1], w[5], w[ 9], w[13]),
+                         bicubic_wts(fx, w[2], w[6], w[10], w[14]),
+                         bicubic_wts(fx, w[3], w[7], w[11], w[15])};
 
     F sample_y = cy - 1.5f;
     for (int yy = 0; yy <= 3; ++yy) {
@@ -2868,7 +2889,7 @@ STAGE(bicubic_clamp_8888, const SkRasterPipeline_GatherCtx* ctx) {
     }
 }
 
-// ~~~~~~ GrSwizzle stage ~~~~~~ //
+// ~~~~~~ skgpu::Swizzle stage ~~~~~~ //
 
 STAGE(swizzle, void* ctx) {
     auto ir = r, ig = g, ib = b, ia = a;
@@ -3833,6 +3854,9 @@ STAGE_GP(gather_a8, const SkRasterPipeline_GatherCtx* ctx) {
     r = g = b = 0;
     a = cast<U16>(gather<U8>(ptr, ix));
 }
+STAGE_PP(store_r8, const SkRasterPipeline_MemoryCtx* ctx) {
+    store_8(ptr_at_xy<uint8_t>(ctx, dx,dy), tail, r);
+}
 
 STAGE_PP(alpha_to_gray, Ctx::None) {
     r = g = b = a;
@@ -3842,6 +3866,15 @@ STAGE_PP(alpha_to_gray_dst, Ctx::None) {
     dr = dg = db = da;
     da = 255;
 }
+STAGE_PP(alpha_to_red, Ctx::None) {
+    r = a;
+    a = 255;
+}
+STAGE_PP(alpha_to_red_dst, Ctx::None) {
+    dr = da;
+    da = 255;
+}
+
 STAGE_PP(bt709_luminance_or_luma_to_alpha, Ctx::None) {
     a = (r*54 + g*183 + b*19)/256;  // 0.2126, 0.7152, 0.0722 with 256 denominator.
     r = g = b = 0;
@@ -4223,7 +4256,7 @@ STAGE_PP(srcover_rgba_8888, const SkRasterPipeline_MemoryCtx* ctx) {
     store_8888_(ptr, tail, r,g,b,a);
 }
 
-// ~~~~~~ GrSwizzle stage ~~~~~~ //
+// ~~~~~~ skgpu::Swizzle stage ~~~~~~ //
 
 STAGE_PP(swizzle, void* ctx) {
     auto ir = r, ig = g, ib = b, ia = a;

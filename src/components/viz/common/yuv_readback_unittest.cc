@@ -25,7 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 namespace viz {
 
@@ -49,17 +49,9 @@ class YUVReadbackTest : public testing::Test {
 
     context_ = std::make_unique<gpu::GLInProcessContext>();
     auto result = context_->Initialize(
-        TestGpuServiceHolder::GetInstance()->task_executor(),
-        nullptr,                 /* surface */
-        true,                    /* offscreen */
-        gpu::kNullSurfaceHandle, /* window */
-        attributes, gpu::SharedMemoryLimits(),
-        nullptr, /* gpu_memory_buffer_manager */
-        nullptr, /* image_factory */
-        nullptr, /* gpu::GpuTaskSchedulerHelper */
-        nullptr,
-        /* gpu::DisplayCompositorMemoryAndTaskControllerOnGpu */
-        base::ThreadTaskRunnerHandle::Get());
+        TestGpuServiceHolder::GetInstance()->task_executor(), attributes,
+        gpu::SharedMemoryLimits(),
+        /*image_factory=*/nullptr);
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
@@ -113,7 +105,7 @@ class YUVReadbackTest : public testing::Test {
         << json_data;
 
     CHECK(parsed_json.value->is_list());
-    for (const base::Value& dict : parsed_json.value->GetList()) {
+    for (const base::Value& dict : parsed_json.value->GetListDeprecated()) {
       CHECK(dict.is_dict());
       const std::string* name = dict.FindStringPath("name");
       CHECK(name);
@@ -514,8 +506,8 @@ TEST_P(YUVReadbackPixelTest, Test) {
   unsigned int x = std::get<2>(GetParam());
   unsigned int y = std::get<3>(GetParam());
 
-  for (unsigned int ox = x; ox < base::size(kYUVReadbackSizes); ox++) {
-    for (unsigned int oy = y; oy < base::size(kYUVReadbackSizes); oy++) {
+  for (unsigned int ox = x; ox < std::size(kYUVReadbackSizes); ox++) {
+    for (unsigned int oy = y; oy < std::size(kYUVReadbackSizes); oy++) {
       // If output is a subsection of the destination frame, (letterbox)
       // then try different variations of where the subsection goes.
       for (Margin xm = x < ox ? MarginLeft : MarginRight; xm <= MarginRight;
@@ -546,8 +538,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
         ::testing::Bool(),
         ::testing::Bool(),
-        ::testing::Range<unsigned int>(0, base::size(kYUVReadbackSizes)),
-        ::testing::Range<unsigned int>(0, base::size(kYUVReadbackSizes))));
+        ::testing::Range<unsigned int>(0, std::size(kYUVReadbackSizes)),
+        ::testing::Range<unsigned int>(0, std::size(kYUVReadbackSizes))));
 
 }  // namespace viz
 

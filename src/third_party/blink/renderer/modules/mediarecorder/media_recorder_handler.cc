@@ -184,7 +184,7 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   static const char* const kAudioCodecs[] = {"opus", "pcm"};
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   const int codecs_count =
-      video ? base::size(kVideoCodecs) : base::size(kAudioCodecs);
+      video ? std::size(kVideoCodecs) : std::size(kAudioCodecs);
 
   std::vector<std::string> codecs_list;
   media::SplitCodecs(web_codecs.Utf8(), &codecs_list);
@@ -308,11 +308,11 @@ bool MediaRecorderHandler::Start(int timeslice) {
     MediaStreamVideoTrack* const video_track =
         static_cast<MediaStreamVideoTrack*>(
             video_tracks_[0]->GetPlatformTrack());
-    DCHECK(video_track->source());
     base::OnceClosure on_track_source_changed_cb = media::BindToCurrentLoop(
         WTF::Bind(&MediaRecorderHandler::OnSourceReadyStateChanged,
                   WrapWeakPersistent(this)));
     const bool use_encoded_source_output =
+        video_track->source() != nullptr &&
         video_track->source()->SupportsEncodedOutput();
     if (passthrough_enabled_ && use_encoded_source_output) {
       const VideoTrackRecorder::OnEncodedVideoCB on_passthrough_video_cb =

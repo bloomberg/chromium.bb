@@ -4,7 +4,9 @@
 
 import logging
 import os
-from chrome_ent_test.infra.core import environment, before_all, test
+from chrome_ent_test.infra.core import before_all
+from chrome_ent_test.infra.core import environment
+from chrome_ent_test.infra.core import test
 from infra import ChromeEnterpriseTestCase
 
 
@@ -42,7 +44,7 @@ class UrlAllowlistTest(ChromeEnterpriseTestCase):
 
   @test
   def test_AllowedUrlCanVisit(self):
-    output = self.openPage('https://youtube.com/yt/about/')
+    output = self.openPage('https://youtube.com')
     self.assertNotIn("ERR_BLOCKED_BY_ADMINISTRATOR", output)
 
   @test
@@ -52,7 +54,7 @@ class UrlAllowlistTest(ChromeEnterpriseTestCase):
 
   @test
   def test_AllowedUrlCanVisitIncognito(self):
-    output = self.openPage('https://youtube.com/yt/about/', incognito=True)
+    output = self.openPage('https://youtube.com', incognito=True)
     self.assertNotIn("ERR_BLOCKED_BY_ADMINISTRATOR", output)
 
   @test

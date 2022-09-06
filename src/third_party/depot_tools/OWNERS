@@ -1,16 +1,16 @@
 set noparent
 
-apolito@google.com
-dpranke@google.com
-jochen@chromium.org
+ajp@google.com
+aravindvasudev@google.com
 gavinmak@google.com
 sokcevic@google.com
 
 per-file ninja*=thakis@chromium.org
-per-file ninja*=scottmg@chromium.org
 
 per-file autoninja*=brucedawson@chromium.org
 per-file post_build_ninja_summary.py=brucedawson@chromium.org
+
+per-file presubmit*.py=brucedawson@chromium.org
 
 per-file ninjalog*=tikuta@chromium.org
 

@@ -8,12 +8,16 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
+#import "ios/chrome/browser/ui/permissions/permissions_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol BrowserCommands;
+@protocol PermissionsDelegate;
 
 // View Controller for displaying the page info.
-@interface PageInfoViewController : ChromeTableViewController
+@interface PageInfoViewController
+    : ChromeTableViewController <PermissionsConsumer,
+                                 UIAdaptivePresentationControllerDelegate>
 
 // Designated initializer.
 - (instancetype)initWithSiteSecurityDescription:
@@ -23,7 +27,12 @@
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Handler used to navigate outside the page info.
+// TODO(crbug.com/1323758): This should just be id<PageInfoCommands>.
 @property(nonatomic, weak) id<BrowserCommands> handler;
+
+// Delegate used to handle permission actions.
+@property(nonatomic, weak) id<PermissionsDelegate> permissionsDelegate
+    API_AVAILABLE(ios(15.0));
 
 @end
 

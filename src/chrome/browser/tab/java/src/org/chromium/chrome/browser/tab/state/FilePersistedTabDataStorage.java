@@ -114,6 +114,21 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
     @MainThread
     @Override
+    public <U extends PersistedTabDataResult> U restore(
+            int tabId, String dataId, PersistedTabDataMapper<U> mapper) {
+        return new FileRestoreAndMapRequest<U>(tabId, dataId, null, mapper).executeSyncTask();
+    }
+
+    @MainThread
+    @Override
+    public <U extends PersistedTabDataResult> void restore(
+            int tabId, String dataId, Callback<U> callback, PersistedTabDataMapper<U> mapper) {
+        addStorageRequestAndProcessNext(
+                new FileRestoreAndMapRequest<U>(tabId, dataId, callback, mapper));
+    }
+
+    @MainThread
+    @Override
     public void delete(int tabId, String dataId) {
         delete(tabId, dataId, NO_OP_CALLBACK);
     }
@@ -226,16 +241,25 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
         @Override
         public Void executeSyncTask() {
-            ByteBuffer data = mDataSupplier.get();
+            ByteBuffer data = null;
+            try {
+                data = mDataSupplier.get();
+            } catch (OutOfMemoryError e) {
+                // Log and exit FileSaveRequest early on OutOfMemoryError.
+                // Not saving a Tab is better than crashing the app.
+                Log.e(TAG, "OutOfMemoryError. Details: " + e.getMessage());
+            }
             if (data == null) {
                 mDataSupplier = null;
                 return null;
             }
             FileOutputStream outputStream = null;
+            AtomicFile atomicFile = null;
             boolean success = false;
             try {
                 long startTime = SystemClock.elapsedRealtime();
-                outputStream = new FileOutputStream(mFile);
+                atomicFile = new AtomicFile(mFile);
+                outputStream = atomicFile.startWrite();
                 FileChannel fileChannel = outputStream.getChannel();
                 fileChannel.write(data);
                 success = true;
@@ -257,6 +281,13 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                                 mFile, e.getMessage()));
             } finally {
                 StreamUtil.closeQuietly(outputStream);
+                if (atomicFile != null) {
+                    if (success) {
+                        atomicFile.finishWrite(outputStream);
+                    } else {
+                        atomicFile.failWrite(outputStream);
+                    }
+                }
             }
             RecordHistogram.recordBooleanHistogram(
                     "Tabs.PersistedTabData.Storage.Save." + getUmaTag(), success);
@@ -273,7 +304,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
                 @Override
                 protected void onPostExecute(Void result) {
-                    PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                             () -> { mCallback.onResult(DECREMENT_SEMAPHORE_VAL); });
                     processNextItemOnQueue();
                 }
@@ -336,7 +367,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
                 @Override
                 protected void onPostExecute(Void result) {
-                    PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                             () -> { mCallback.onResult(DECREMENT_SEMAPHORE_VAL); });
                     processNextItemOnQueue();
                 }
@@ -403,7 +434,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             }
             RecordHistogram.recordBooleanHistogram(
                     "Tabs.PersistedTabData.Storage.Restore." + getUmaTag(), success);
-            return res;
+            return success ? res : null;
         }
 
         @Override
@@ -425,6 +456,73 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         @Override
         public boolean equals(Object other) {
             if (!(other instanceof FileRestoreRequest)) return false;
+            return super.equals(other);
+        }
+
+        @Override
+        @StorageRequestType
+        int getStorageRequestType() {
+            return StorageRequestType.RESTORE;
+        }
+    }
+
+    protected class FileRestoreAndMapRequest<U extends PersistedTabDataResult>
+            extends StorageRequest<U> {
+        protected Callback<U> mCallback;
+        protected PersistedTabDataMapper<U> mMapper;
+
+        /**
+         * @param tabId identifier for the {@link Tab}
+         * @param dataId identifier for the {@link PersistedTabData}
+         * @param callback - callback to return the retrieved serialized
+         * {@link PersistedTabData} in
+         */
+        FileRestoreAndMapRequest(
+                int tabId, String dataId, Callback<U> callback, PersistedTabDataMapper<U> mapper) {
+            super(tabId, dataId);
+            mCallback = callback;
+            mMapper = mapper;
+        }
+
+        @Override
+        public U executeSyncTask() {
+            long startTime = SystemClock.elapsedRealtime();
+            ByteBuffer restoredData =
+                    new FileRestoreRequest(mTabId, mDataId, null).executeSyncTask();
+            long mapStartTime = SystemClock.elapsedRealtime();
+            U mappedResult = mMapper.map(restoredData);
+            long finishTime = SystemClock.elapsedRealtime();
+            // Only loading and mapping a non-empty ByteBuffer should be recorded in
+            // the metrics. Adding in a empty ByteBuffer will skew the metrics.
+            if (restoredData != null && restoredData.limit() > 0) {
+                RecordHistogram.recordTimesHistogram(
+                        "Tabs.PersistedTabData.Storage.LoadAndMapTime.File",
+                        finishTime - startTime);
+                RecordHistogram.recordTimesHistogram(
+                        "Tabs.PersistedTabData.Storage.MapTime.File", finishTime - mapStartTime);
+            }
+            return mappedResult;
+        }
+
+        @Override
+        public AsyncTask getAsyncTask() {
+            return new AsyncTask<U>() {
+                @Override
+                protected U doInBackground() {
+                    return executeSyncTask();
+                }
+
+                @Override
+                protected void onPostExecute(U res) {
+                    PostTask.postTask(
+                            UiThreadTaskTraits.DEFAULT, () -> { mCallback.onResult(res); });
+                    processNextItemOnQueue();
+                }
+            };
+        }
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof FileRestoreAndMapRequest)) return false;
             return super.equals(other);
         }
 
@@ -497,6 +595,22 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                 return true;
             }
             return null;
+        }
+    }
+
+    /**
+     * @param tabId {@link Tab} identifier
+     * @param isIncognito if the {@link Tab} is incognito
+     * @return true if a file exists for this {@link Tab}
+     */
+    @VisibleForTesting
+    public static boolean exists(int tabId, boolean isIncognito) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            String dataId =
+                    PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, isIncognito)
+                            .getId();
+            File file = FilePersistedTabDataStorage.getFile(tabId, dataId);
+            return file != null && file.exists();
         }
     }
 }

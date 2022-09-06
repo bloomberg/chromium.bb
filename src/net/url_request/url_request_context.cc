@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/cookies/cookie_store.h"
@@ -28,35 +29,10 @@
 
 namespace net {
 
-URLRequestContext::URLRequestContext()
-    : net_log_(nullptr),
-      host_resolver_(nullptr),
-      cert_verifier_(nullptr),
-      http_auth_handler_factory_(nullptr),
-      proxy_resolution_service_(nullptr),
-      proxy_delegate_(nullptr),
-      ssl_config_service_(nullptr),
-      network_delegate_(nullptr),
-      http_server_properties_(nullptr),
-      http_user_agent_settings_(nullptr),
-      cookie_store_(nullptr),
-      transport_security_state_(nullptr),
-      ct_policy_enforcer_(nullptr),
-      sct_auditing_delegate_(nullptr),
-      http_transaction_factory_(nullptr),
-      job_factory_(nullptr),
-      throttler_manager_(nullptr),
-      quic_context_(nullptr),
-      network_quality_estimator_(nullptr),
-#if BUILDFLAG(ENABLE_REPORTING)
-      reporting_service_(nullptr),
-      network_error_logging_service_(nullptr),
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-      url_requests_(std::make_unique<std::set<const URLRequest*>>()),
-      enable_brotli_(false),
-      check_cleartext_permitted_(false),
-      require_network_isolation_key_(false) {
-}
+URLRequestContext::URLRequestContext(
+    base::PassKey<URLRequestContextBuilder> pass_key)
+    : url_requests_(std::make_unique<std::set<const URLRequest*>>()),
+      bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle) {}
 
 URLRequestContext::~URLRequestContext() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -87,7 +63,8 @@ const HttpNetworkSessionContext* URLRequestContext::GetNetworkSessionContext()
 
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if !defined(OS_WIN) && !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !BUILDFLAG(IS_WIN) && \
+    !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 std::unique_ptr<URLRequest> URLRequestContext::CreateRequest(
     const GURL& url,
     RequestPriority priority,

@@ -2,7 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertNotNullOrUndefined, click, enableExperiment, getBrowserAndPages, goToResource, waitForAria, waitForNone} from '../../shared/helper.js';
+import {
+  assertNotNullOrUndefined,
+  click,
+  enableExperiment,
+  getBrowserAndPages,
+  goToResource,
+  waitForAria,
+  waitForNone,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {toggleAccessibilityTree} from '../helpers/elements-helpers.js';
 
@@ -19,7 +27,7 @@ describe('Accessibility Tree in the Elements Tab', async function() {
     await enableExperiment('fullAccessibilityTree');
     await goToResource('elements/accessibility-iframe-page.html');
     await toggleAccessibilityTree();
-    waitForAria('RootWebArea\xa0"Page with nested iframe" [role="treeitem"]');
+    void waitForAria('RootWebArea\xa0"Page with nested iframe" [role="treeitem"]');
     const iframeDoc = await waitForAria(
         'RootWebArea\xa0"Simple page with aria labeled element"\xa0focusable:\xa0true [role="treeitem"]');
     assertNotNullOrUndefined(iframeDoc);
@@ -41,8 +49,7 @@ describe('Accessibility Tree in the Elements Tab', async function() {
     await waitForAria('link\xa0"dogs"\xa0focusable:\xa0true[role="treeitem"]');
   });
 
-  // Skipped while investigating root cause.
-  it.skip('[crbug.com/1277397]: listen for changes to properties and redraws tree', async () => {
+  it('listens for changes to properties and redraws tree', async () => {
     await enableExperiment('fullAccessibilityTree');
     await goToResource('elements/accessibility-simple-page.html');
     await toggleAccessibilityTree();

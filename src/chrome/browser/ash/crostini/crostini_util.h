@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -32,13 +32,10 @@ namespace views {
 class Widget;
 }  // namespace views
 
+class PrefService;
 class Profile;
 
 namespace crostini {
-
-// web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
-//     GURL("chrome-untrusted://terminal/html/terminal.html"))
-extern const char kCrostiniTerminalSystemAppId[];
 
 extern const char kCrostiniImageAliasPattern[];
 extern const char kCrostiniContainerDefaultVersion[];
@@ -75,7 +72,7 @@ struct ContainerId {
   explicit ContainerId(const base::Value&) noexcept;
 
   base::flat_map<std::string, std::string> ToMap() const;
-  base::Value ToDictValue() const;
+  base::Value::Dict ToDictValue() const;
 
   static ContainerId GetDefault();
 
@@ -105,10 +102,6 @@ bool ShouldAllowContainerUpgrade(Profile* profile);
 // Returns whether default Crostini container should be configured according to
 // the configuration specified by CrostiniAnsiblePlaybook user policy.
 bool ShouldConfigureDefaultContainer(Profile* profile);
-
-// Returns whether a dialog from Crostini is blocking the immediate launch.
-bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
-                                         CrostiniResult result);
 
 using LaunchArg = absl::variant<storage::FileSystemURL, std::string>;
 
@@ -151,8 +144,7 @@ enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
 // functions below.
 
 // Shows the Crostini Uninstaller dialog.
-void ShowCrostiniUninstallerView(Profile* profile,
-                                 CrostiniUISurface ui_surface);
+void ShowCrostiniUninstallerView(Profile* profile);
 bool IsCrostiniRecoveryViewShowing();
 
 // Shows the Crostini App installer dialog.
@@ -165,10 +157,6 @@ views::Widget* ShowCrostiniForceCloseDialog(
     const std::string& app_name,
     views::Widget* closable_widget,
     base::OnceClosure force_close_callback);
-// Shows the Crostini Termina Upgrade dialog (for blocking crostini start until
-// Termina version matches).
-void ShowCrostiniUpdateComponentView(Profile* profile,
-                                     CrostiniUISurface ui_surface);
 // Shows the ui with the error message when installing a package fails.
 void ShowCrostiniPackageInstallFailureView(const std::string& error_message);
 
@@ -196,6 +184,12 @@ void ShowCrostiniRecoveryView(Profile* profile,
                               int64_t display_id,
                               const std::vector<LaunchArg>& args,
                               CrostiniSuccessCallback callback);
+
+// Remove duplicate containers in the existing kCrostiniContainers pref.
+void RemoveDuplicateContainerEntries(PrefService* prefs);
+
+// Returns a list of all containers in prefs.
+std::vector<ContainerId> GetContainers(Profile* profile);
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,
@@ -242,6 +236,10 @@ bool IsCrostiniWindow(const aura::Window* window);
 void RecordAppLaunchHistogram(CrostiniAppLaunchAppType app_type);
 void RecordAppLaunchResultHistogram(CrostiniAppLaunchAppType type,
                                     crostini::CrostiniResult reason);
+
+// Tests whether or not the specified Container is the last one running on it's
+// VM. Returns true if the VM should be stopped.
+bool ShouldStopVm(Profile* profile, const ContainerId& container_id);
 
 }  // namespace crostini
 

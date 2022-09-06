@@ -105,6 +105,7 @@ class FramebufferState final : angle::NonCopyable
     GLint getDefaultSamples() const { return mDefaultSamples; }
     bool getDefaultFixedSampleLocations() const { return mDefaultFixedSampleLocations; }
     GLint getDefaultLayers() const { return mDefaultLayers; }
+    bool getFlipY() const { return mFlipY; }
 
     bool hasDepth() const;
     bool hasStencil() const;
@@ -168,6 +169,7 @@ class FramebufferState final : angle::NonCopyable
     GLint mDefaultSamples;
     bool mDefaultFixedSampleLocations;
     GLint mDefaultLayers;
+    bool mFlipY;
 
     // It's necessary to store all this extra state so we can restore attachments
     // when DEPTH_STENCIL/DEPTH/STENCIL is unbound in WebGL 1.
@@ -295,11 +297,13 @@ class Framebuffer final : public angle::ObserverInterface,
     GLint getDefaultSamples() const;
     bool getDefaultFixedSampleLocations() const;
     GLint getDefaultLayers() const;
+    bool getFlipY() const;
     void setDefaultWidth(const Context *context, GLint defaultWidth);
     void setDefaultHeight(const Context *context, GLint defaultHeight);
     void setDefaultSamples(const Context *context, GLint defaultSamples);
     void setDefaultFixedSampleLocations(const Context *context, bool defaultFixedSampleLocations);
     void setDefaultLayers(GLint defaultLayers);
+    void setFlipY(bool flipY);
 
     void invalidateCompletenessCache();
     ANGLE_INLINE bool cachedStatusValid() { return mCachedStatus.valid(); }
@@ -394,6 +398,7 @@ class Framebuffer final : public angle::ObserverInterface,
         DIRTY_BIT_DEFAULT_FIXED_SAMPLE_LOCATIONS,
         DIRTY_BIT_DEFAULT_LAYERS,
         DIRTY_BIT_FRAMEBUFFER_SRGB_WRITE_CONTROL_MODE,
+        DIRTY_BIT_FLIP_Y,
         DIRTY_BIT_UNKNOWN,
         DIRTY_BIT_MAX = DIRTY_BIT_UNKNOWN
     };
@@ -513,6 +518,8 @@ class Framebuffer final : public angle::ObserverInterface,
     // we don't set a dirty bit that isn't already set, when inside the dirty bits syncState.
     mutable Optional<DirtyBits> mDirtyBitsGuard;
 };
+
+using UniqueFramebufferPointer = angle::UniqueObjectPointer<Framebuffer, Context>;
 
 }  // namespace gl
 

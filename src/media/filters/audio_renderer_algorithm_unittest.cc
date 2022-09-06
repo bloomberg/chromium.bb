@@ -20,7 +20,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/cxx17_backports.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -115,6 +114,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
       format = media::AudioParameters::AUDIO_BITSTREAM_AC3;
     else if (sample_format == kSampleFormatEac3)
       format = media::AudioParameters::AUDIO_BITSTREAM_EAC3;
+    else if (sample_format == kSampleFormatDts)
+      format = media::AudioParameters::AUDIO_BITSTREAM_DTS;
 
     AudioParameters params(format, channel_layout, samples_per_second,
                            frames_per_buffer);
@@ -159,6 +160,13 @@ class AudioRendererAlgorithmTest : public testing::Test {
             sample_format_, channel_layout_,
             ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
             1, 1, frame_size, kNoTimestamp);
+        break;
+      case kSampleFormatDts:
+      case kSampleFormatDtsxP2:
+        buffer = MakeBitstreamAudioBuffer(
+            sample_format_, channel_layout_,
+            ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
+            1, 1, frame_size, kFrameSize, kNoTimestamp);
         break;
       default:
         NOTREACHED() << "Unrecognized format " << sample_format_;
@@ -819,7 +827,7 @@ TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
   // filled appropriately at normal, above normal, and below normal.
   const int kHalfSize = kFrameSize / 2;
   const float kAudibleRates[] = {1.0f, 2.0f, 0.5f, 5.0f, 0.25f};
-  for (size_t i = 0; i < base::size(kAudibleRates); ++i) {
+  for (size_t i = 0; i < std::size(kAudibleRates); ++i) {
     SCOPED_TRACE(kAudibleRates[i]);
     bus->Zero();
 

@@ -6,11 +6,13 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
-import string
-
 from google.appengine.ext import ndb
 
 from dashboard.common import namespaced_stored_object
+
+import six
+if six.PY2:
+  import string
 
 BOT_CONFIGURATIONS_KEY = 'bot_configurations'
 
@@ -43,7 +45,11 @@ def GetAliasesAsync(bot):
 
 def List():
   bot_configurations = namespaced_stored_object.Get(BOT_CONFIGURATIONS_KEY)
+  if not bot_configurations:
+    return []
   canonical_names = [
       name for name, value in bot_configurations.items() if 'alias' not in value
   ]
-  return sorted(canonical_names, key=string.lower)
+  if six.PY2:
+    return sorted(canonical_names, key=string.lower)
+  return sorted(canonical_names, key=str.lower)

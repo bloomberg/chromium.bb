@@ -9,8 +9,11 @@ from __future__ import absolute_import
 import json
 import logging
 import shlex
+import six
+import uuid
 
 from dashboard.api import api_request_handler
+from dashboard.api import api_auth
 from dashboard.common import bot_configurations
 from dashboard.common import utils
 from dashboard.pinpoint.models import change
@@ -22,6 +25,8 @@ from dashboard.pinpoint.models import scheduler
 from dashboard.pinpoint.models import task as task_module
 from dashboard.pinpoint.models.tasks import performance_bisection
 from dashboard.pinpoint.models.tasks import read_value
+if utils.IsRunningFlask():
+  from flask import request
 
 _ERROR_BUG_ID = 'Bug ID must be an integer.'
 _ERROR_TAGS_DICT = 'Tags must be a dict of key/value string pairs.'
@@ -60,18 +65,19 @@ for test in SUFFIXED_REGULAR_TELEMETRY_TESTS:
     REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS[test + suffix] = test
 
 
-class New(api_request_handler.ApiRequestHandler):
-  """Handler that cooks up a fresh Pinpoint job."""
+if utils.IsRunningFlask():
 
-  def _CheckUser(self):
-    self._CheckIsLoggedIn()
+  def _CheckUser():
+    if utils.IsDevAppserver():
+      return
+    api_auth.Authorize()
     if not utils.IsTryjobUser():
       raise api_request_handler.ForbiddenError()
 
-  def Post(self, *args, **kwargs):
-    del args, kwargs  # Unused.
+  @api_request_handler.RequestHandlerDecoratorFactory(_CheckUser)
+  def NewHandlerPost():
     # TODO(dberris): Validate the inputs based on the type of job requested.
-    job = _CreateJob(self.request)
+    job = _CreateJob(request)
 
     # We apply the cost-based scheduling at job creation time, so that we can
     # roll out the feature as jobs come along.
@@ -83,11 +89,39 @@ class New(api_request_handler.ApiRequestHandler):
         'jobId': job.job_id,
         'jobUrl': job.url,
     }
+else:
+  # pylint: disable=abstract-method
+  class New(api_request_handler.ApiRequestHandler):
+    """Handler that cooks up a fresh Pinpoint job."""
+
+    def _CheckUser(self):
+      self._CheckIsLoggedIn()
+      if not utils.IsTryjobUser():
+        raise api_request_handler.ForbiddenError()
+
+    def Post(self, *args, **kwargs):
+      del args, kwargs  # Unused.
+      # TODO(dberris): Validate the inputs based on the type of job requested.
+      job = _CreateJob(self.request)
+
+      # We apply the cost-based scheduling at job creation time, so that we can
+      # roll out the feature as jobs come along.
+      scheduler.Schedule(job, scheduler.Cost(job))
+
+      job.PostCreationUpdate()
+
+      return {
+          'jobId': job.job_id,
+          'jobUrl': job.url,
+      }
 
 
-def _CreateJob(request):
+def _CreateJob(req):
   """Creates a new Pinpoint job from WebOb request arguments."""
-  original_arguments = request.params.mixed()
+  if utils.IsRunningFlask():
+    original_arguments = utils.RequestParamsMixed(req)
+  else:
+    original_arguments = req.params.mixed()
   logging.debug('Received Params: %s', original_arguments)
 
   # This call will fail if some of the required arguments are not in the
@@ -134,11 +168,21 @@ def _CreateJob(request):
 
     # First we check whether there's a quest that's of type 'RunTelemetryTest'.
     is_telemetry_test = any(
-        [isinstance(q, quest_module.RunTelemetryTest) for q in quests])
+        isinstance(q, quest_module.RunTelemetryTest) for q in quests)
     if is_telemetry_test and ('story' not in arguments
                               and 'story_tags' not in arguments):
       raise ValueError(
           'Missing either "story" or "story_tags" as arguments for try jobs.')
+
+  batch_id = arguments.get('batch_id')
+  if batch_id is None or batch_id == '':
+    batch_id = str(uuid.uuid4())
+
+  initial_attempt_count = arguments.get('initial_attempt_count')
+  try:
+    initial_attempt_count = int(initial_attempt_count)
+  except (TypeError, ValueError):
+    initial_attempt_count = None
 
   # Create job.
   job = job_module.Job.New(
@@ -157,7 +201,10 @@ def _CreateJob(request):
       priority=priority,
       use_execution_engine=use_execution_engine,
       project=project,
-      batch_id=arguments.get('batch_id'))
+      batch_id=batch_id,
+      initial_attempt_count=initial_attempt_count,
+      dimensions=arguments.get('dimensions'),
+      swarming_server=arguments.get('swarming_server'))
 
   if use_execution_engine:
     # TODO(dberris): We need to figure out a way to get the arguments to be more
@@ -225,9 +272,10 @@ def _ArgumentsWithConfiguration(original_arguments):
   if configuration:
     try:
       default_arguments = bot_configurations.Get(configuration)
-    except ValueError:
+    except ValueError as e:
       # Reraise with a clearer message.
-      raise ValueError("Bot Config: %s doesn't exist." % configuration)
+      six.raise_from(
+          ValueError("Bot Config: %s doesn't exist." % configuration), e)
     logging.info('Bot Config: %s', default_arguments)
 
     if default_arguments:
@@ -263,8 +311,8 @@ def _ValidateBugId(bug_id, project):
     # we might need to update the scopes we're asking for. For now trust that
     # the inputs are valid.
     return int(bug_id), project
-  except ValueError:
-    raise ValueError(_ERROR_BUG_ID)
+  except ValueError as e:
+    six.raise_from(ValueError(_ERROR_BUG_ID), e)
 
 
 def _ValidatePriority(priority):
@@ -273,8 +321,8 @@ def _ValidatePriority(priority):
 
   try:
     return int(priority)
-  except ValueError:
-    raise ValueError(_ERROR_PRIORITY)
+  except ValueError as e:
+    six.raise_from(ValueError(_ERROR_PRIORITY), e)
 
 
 def _ValidateChangesForTry(arguments):
@@ -352,8 +400,7 @@ def _ValidateChanges(comparison_mode, arguments):
       return _ValidateChangesForTry(arguments)
 
     # Everything else that follows only applies to bisections.
-    assert (comparison_mode == job_state.FUNCTIONAL
-            or comparison_mode == job_state.PERFORMANCE)
+    assert comparison_mode in (job_state.FUNCTIONAL, job_state.PERFORMANCE)
 
     if 'start_git_hash' not in arguments or 'end_git_hash' not in arguments:
       raise ValueError(
@@ -381,7 +428,7 @@ def _ValidateChanges(comparison_mode, arguments):
 
     return change_1, change_2
   except errors.BuildGerritURLInvalid as e:
-    raise ValueError(str(e))
+    six.raise_from(ValueError(str(e)), e)
 
 
 def _ValidatePatch(patch_data):
@@ -389,7 +436,7 @@ def _ValidatePatch(patch_data):
     try:
       patch_details = change.GerritPatch.FromData(patch_data)
     except errors.BuildGerritURLInvalid as e:
-      raise ValueError(str(e))
+      six.raise_from(ValueError(str(e)), e)
     return patch_details.server, patch_details.change
   return None, None
 
@@ -424,7 +471,7 @@ def _GenerateQuests(arguments):
   """
   quests = arguments.get('quests')
   if quests:
-    if isinstance(quests, basestring):
+    if isinstance(quests, six.string_types):
       quests = quests.split(',')
     quest_classes = []
     for quest in quests:
@@ -495,7 +542,8 @@ def _ValidateTags(tags):
     raise ValueError(_ERROR_TAGS_DICT)
 
   for k, v in tags_dict.items():
-    if not isinstance(k, basestring) or not isinstance(v, basestring):
+    if not isinstance(k, six.string_types) or \
+       not isinstance(v, six.string_types):
       raise ValueError(_ERROR_TAGS_DICT)
 
   return tags_dict

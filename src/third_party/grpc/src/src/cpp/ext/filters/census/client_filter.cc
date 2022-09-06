@@ -95,48 +95,43 @@ OpenCensusCallTracer::OpenCensusCallAttemptTracer::OpenCensusCallAttemptTracer(
 
 void OpenCensusCallTracer::OpenCensusCallAttemptTracer::
     RecordSendInitialMetadata(grpc_metadata_batch* send_initial_metadata,
-                              uint32_t /* flags */) {
+                              uint32_t /*flags*/) {
   char tracing_buf[kMaxTraceContextLen];
   size_t tracing_len = TraceContextSerialize(context_.Context(), tracing_buf,
                                              kMaxTraceContextLen);
   if (tracing_len > 0) {
-    GRPC_LOG_IF_ERROR(
-        "census grpc_filter",
-        send_initial_metadata->Append(grpc_mdelem_from_slices(
-            GRPC_MDSTR_GRPC_TRACE_BIN,
-            grpc_core::UnmanagedMemorySlice(tracing_buf, tracing_len))));
+    send_initial_metadata->Set(
+        grpc_core::GrpcTraceBinMetadata(),
+        grpc_core::Slice::FromCopiedBuffer(tracing_buf, tracing_len));
   }
   grpc_slice tags = grpc_empty_slice();
   // TODO(unknown): Add in tagging serialization.
   size_t encoded_tags_len = StatsContextSerialize(kMaxTagsLen, &tags);
   if (encoded_tags_len > 0) {
-    GRPC_LOG_IF_ERROR("census grpc_filter",
-                      send_initial_metadata->Append(grpc_mdelem_from_slices(
-                          GRPC_MDSTR_GRPC_TAGS_BIN, tags)));
+    send_initial_metadata->Set(grpc_core::GrpcTagsBinMetadata(),
+                               grpc_core::Slice(tags));
   }
 }
 
 void OpenCensusCallTracer::OpenCensusCallAttemptTracer::RecordSendMessage(
-    const grpc_core::ByteStream& /* send_message */) {
+    const grpc_core::ByteStream& /*send_message*/) {
   ++sent_message_count_;
 }
 
 void OpenCensusCallTracer::OpenCensusCallAttemptTracer::RecordReceivedMessage(
-    const grpc_core::ByteStream& /* recv_message */) {
+    const grpc_core::ByteStream& /*recv_message*/) {
   ++recv_message_count_;
 }
 
 namespace {
 
 void FilterTrailingMetadata(grpc_metadata_batch* b, uint64_t* elapsed_time) {
-  if (b->legacy_index()->named.grpc_server_stats_bin != nullptr) {
+  absl::optional<grpc_core::Slice> grpc_server_stats_bin =
+      b->Take(grpc_core::GrpcServerStatsBinMetadata());
+  if (grpc_server_stats_bin.has_value()) {
     ServerStatsDeserialize(
-        reinterpret_cast<const char*>(GRPC_SLICE_START_PTR(
-            GRPC_MDVALUE(b->legacy_index()->named.grpc_server_stats_bin->md))),
-        GRPC_SLICE_LENGTH(
-            GRPC_MDVALUE(b->legacy_index()->named.grpc_server_stats_bin->md)),
-        elapsed_time);
-    b->Remove(b->legacy_index()->named.grpc_server_stats_bin);
+        reinterpret_cast<const char*>(grpc_server_stats_bin->data()),
+        grpc_server_stats_bin->size(), elapsed_time);
   }
 }
 
@@ -145,21 +140,25 @@ void FilterTrailingMetadata(grpc_metadata_batch* b, uint64_t* elapsed_time) {
 void OpenCensusCallTracer::OpenCensusCallAttemptTracer::
     RecordReceivedTrailingMetadata(
         absl::Status status, grpc_metadata_batch* recv_trailing_metadata,
-        const grpc_transport_stream_stats& transport_stream_stats) {
-  FilterTrailingMetadata(recv_trailing_metadata, &elapsed_time_);
-  const uint64_t request_size = transport_stream_stats.outgoing.data_bytes;
-  const uint64_t response_size = transport_stream_stats.incoming.data_bytes;
+        const grpc_transport_stream_stats* transport_stream_stats) {
+  status_code_ = status.code();
+  if (recv_trailing_metadata == nullptr || transport_stream_stats == nullptr) {
+    return;
+  }
+  uint64_t elapsed_time = 0;
+  FilterTrailingMetadata(recv_trailing_metadata, &elapsed_time);
   std::vector<std::pair<opencensus::tags::TagKey, std::string>> tags =
       context_.tags().tags();
   tags.emplace_back(ClientMethodTagKey(), std::string(parent_->method_));
-  status_code_ = status.code();
   std::string final_status = absl::StatusCodeToString(status_code_);
   tags.emplace_back(ClientStatusTagKey(), final_status);
   ::opencensus::stats::Record(
-      {{RpcClientSentBytesPerRpc(), static_cast<double>(request_size)},
-       {RpcClientReceivedBytesPerRpc(), static_cast<double>(response_size)},
+      {{RpcClientSentBytesPerRpc(),
+        static_cast<double>(transport_stream_stats->outgoing.data_bytes)},
+       {RpcClientReceivedBytesPerRpc(),
+        static_cast<double>(transport_stream_stats->incoming.data_bytes)},
        {RpcClientServerLatency(),
-        ToDoubleMilliseconds(absl::Nanoseconds(elapsed_time_))}},
+        ToDoubleMilliseconds(absl::Nanoseconds(elapsed_time))}},
       tags);
 }
 
@@ -170,7 +169,7 @@ void OpenCensusCallTracer::OpenCensusCallAttemptTracer::RecordCancel(
 }
 
 void OpenCensusCallTracer::OpenCensusCallAttemptTracer::RecordEnd(
-    const gpr_timespec& /* latency */) {
+    const gpr_timespec& /*latency*/) {
   double latency_ms = absl::ToDoubleMilliseconds(absl::Now() - start_time_);
   std::vector<std::pair<opencensus::tags::TagKey, std::string>> tags =
       context_.tags().tags();
@@ -204,7 +203,7 @@ void OpenCensusCallTracer::OpenCensusCallAttemptTracer::RecordEnd(
 OpenCensusCallTracer::OpenCensusCallTracer(const grpc_call_element_args* args)
     : call_context_(args->context),
       path_(grpc_slice_ref_internal(args->path)),
-      method_(GetMethod(&path_)),
+      method_(GetMethod(path_)),
       arena_(args->arena) {}
 
 OpenCensusCallTracer::~OpenCensusCallTracer() {
@@ -216,7 +215,6 @@ OpenCensusCallTracer::~OpenCensusCallTracer() {
        {RpcClientTransparentRetriesPerCall(), transparent_retries_},
        {RpcClientRetryDelayPerCall(), ToDoubleMilliseconds(retry_delay_)}},
       tags);
-  grpc_slice_unref_internal(path_);
 }
 
 void OpenCensusCallTracer::GenerateContext() {

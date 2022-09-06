@@ -28,7 +28,7 @@ typedef struct AV1LfMTInfo {
   int mi_row;
   int plane;
   int dir;
-  int is_realtime;
+  int lpf_opt_level;
 } AV1LfMTInfo;
 
 // Loopfilter row synchronization
@@ -157,9 +157,8 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                               struct macroblockd *xd, int plane_start,
                               int plane_end, int partial_frame,
                               AVxWorker *workers, int num_workers,
-                              AV1LfSync *lf_sync, int is_realtime);
+                              AV1LfSync *lf_sync, int lpf_opt_level);
 
-#if !CONFIG_REALTIME_ONLY
 void av1_loop_restoration_filter_frame_mt(YV12_BUFFER_CONFIG *frame,
                                           struct AV1Common *cm,
                                           int optimized_lr, AVxWorker *workers,
@@ -169,7 +168,6 @@ void av1_loop_restoration_dealloc(AV1LrSync *lr_sync, int num_workers);
 void av1_loop_restoration_alloc(AV1LrSync *lr_sync, AV1_COMMON *cm,
                                 int num_workers, int num_rows_lr,
                                 int num_planes, int width);
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <bitset>
 #include "base/auto_reset.h"
+#include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -126,6 +126,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoAfter:
     case CSSSelector::kPseudoMarker:
     case CSSSelector::kPseudoModal:
+    case CSSSelector::kPseudoSelectorFragmentAnchor:
     case CSSSelector::kPseudoBackdrop:
     case CSSSelector::kPseudoLang:
     case CSSSelector::kPseudoDir:
@@ -175,7 +176,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoListBox:
     case CSSSelector::kPseudoMultiSelectFocus:
     case CSSSelector::kPseudoHostHasAppearance:
-    case CSSSelector::kPseudoPopupOpen:
+    case CSSSelector::kPseudoTopLayer:
     case CSSSelector::kPseudoSlotted:
     case CSSSelector::kPseudoVideoPersistent:
     case CSSSelector::kPseudoVideoPersistentAncestor:
@@ -187,6 +188,11 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoSpellingError:
     case CSSSelector::kPseudoGrammarError:
     case CSSSelector::kPseudoHas:
+    case CSSSelector::kPseudoPageTransition:
+    case CSSSelector::kPseudoPageTransitionContainer:
+    case CSSSelector::kPseudoPageTransitionImageWrapper:
+    case CSSSelector::kPseudoPageTransitionIncomingImage:
+    case CSSSelector::kPseudoPageTransitionOutgoingImage:
       return true;
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
@@ -268,7 +274,7 @@ bool InvalidationSetMapsEqual(const MapType& a, const MapType& b) {
     auto it = b.find(entry.key);
     if (it == b.end())
       return false;
-    if (!DataEquivalent(entry.value, it->value))
+    if (!base::ValuesEquivalent(entry.value, it->value))
       return false;
   }
   return true;
@@ -409,8 +415,15 @@ RuleFeatureSet::~RuleFeatureSet() {
   ids_in_has_argument_.clear();
   tag_names_in_has_argument_.clear();
   universal_in_has_argument_ = false;
+  not_pseudo_in_has_argument_ = false;
+  pseudos_in_has_argument_.clear();
 
   is_alive_ = false;
+}
+
+void RuleFeatureSet::Trace(Visitor* visitor) const {
+  visitor->Trace(viewport_dependent_media_query_results_);
+  visitor->Trace(device_dependent_media_query_results_);
 }
 
 bool RuleFeatureSet::operator==(const RuleFeatureSet& other) const {
@@ -424,13 +437,14 @@ bool RuleFeatureSet::operator==(const RuleFeatureSet& other) const {
              other.attribute_invalidation_sets_) &&
          InvalidationSetMapsEqual<CSSSelector::PseudoType>(
              pseudo_invalidation_sets_, other.pseudo_invalidation_sets_) &&
-         DataEquivalent(universal_sibling_invalidation_set_,
-                        other.universal_sibling_invalidation_set_) &&
-         DataEquivalent(nth_invalidation_set_, other.nth_invalidation_set_) &&
-         DataEquivalent(universal_sibling_invalidation_set_,
-                        other.universal_sibling_invalidation_set_) &&
-         DataEquivalent(type_rule_invalidation_set_,
-                        other.type_rule_invalidation_set_) &&
+         base::ValuesEquivalent(universal_sibling_invalidation_set_,
+                                other.universal_sibling_invalidation_set_) &&
+         base::ValuesEquivalent(nth_invalidation_set_,
+                                other.nth_invalidation_set_) &&
+         base::ValuesEquivalent(universal_sibling_invalidation_set_,
+                                other.universal_sibling_invalidation_set_) &&
+         base::ValuesEquivalent(type_rule_invalidation_set_,
+                                other.type_rule_invalidation_set_) &&
          viewport_dependent_media_query_results_ ==
              other.viewport_dependent_media_query_results_ &&
          device_dependent_media_query_results_ ==
@@ -440,6 +454,8 @@ bool RuleFeatureSet::operator==(const RuleFeatureSet& other) const {
          ids_in_has_argument_ == other.ids_in_has_argument_ &&
          tag_names_in_has_argument_ == other.tag_names_in_has_argument_ &&
          universal_in_has_argument_ == other.universal_in_has_argument_ &&
+         not_pseudo_in_has_argument_ == other.not_pseudo_in_has_argument_ &&
+         pseudos_in_has_argument_ == other.pseudos_in_has_argument_ &&
          is_alive_ == other.is_alive_;
 }
 
@@ -479,18 +495,20 @@ ALWAYS_INLINE InvalidationSet& RuleFeatureSet::EnsurePseudoInvalidationSet(
 }
 
 void RuleFeatureSet::UpdateFeaturesFromCombinator(
-    const CSSSelector& last_in_compound,
+    CSSSelector::RelationType combinator,
     const CSSSelector* last_compound_in_adjacent_chain,
     InvalidationSetFeatures& last_compound_in_adjacent_chain_features,
     InvalidationSetFeatures*& sibling_features,
-    InvalidationSetFeatures& descendant_features) {
-  if (last_in_compound.IsAdjacentSelector()) {
+    InvalidationSetFeatures& descendant_features,
+    bool for_logical_combination_in_has) {
+  if (CSSSelector::IsAdjacentRelation(combinator)) {
     if (!sibling_features) {
       sibling_features = &last_compound_in_adjacent_chain_features;
       if (last_compound_in_adjacent_chain) {
         ExtractInvalidationSetFeaturesFromCompound(
             *last_compound_in_adjacent_chain,
-            last_compound_in_adjacent_chain_features, kAncestor);
+            last_compound_in_adjacent_chain_features, kAncestor,
+            for_logical_combination_in_has);
         if (!last_compound_in_adjacent_chain_features.HasFeatures()) {
           last_compound_in_adjacent_chain_features.invalidation_flags
               .SetWholeSubtreeInvalid(true);
@@ -501,7 +519,7 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
         SiblingInvalidationSet::kDirectAdjacentMax) {
       return;
     }
-    if (last_in_compound.Relation() == CSSSelector::kDirectAdjacent) {
+    if (combinator == CSSSelector::kDirectAdjacent) {
       ++sibling_features->max_direct_adjacent_selectors;
     } else {
       sibling_features->max_direct_adjacent_selectors =
@@ -510,16 +528,37 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
     return;
   }
 
+  descendant_features.descendant_features_depth++;
+
   if (sibling_features &&
       last_compound_in_adjacent_chain_features.max_direct_adjacent_selectors)
     last_compound_in_adjacent_chain_features = InvalidationSetFeatures();
 
   sibling_features = nullptr;
 
-  if (last_in_compound.IsUAShadowSelector())
+  if (combinator == CSSSelector::kUAShadow)
     descendant_features.invalidation_flags.SetTreeBoundaryCrossing(true);
-  if (last_in_compound.Relation() == CSSSelector::kShadowSlot)
+  if (combinator == CSSSelector::kShadowSlot)
     descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
+}
+
+// A rule like @scope (.a) { .b {} } needs features equivalent to
+// :is (.a .b, .a.b), because the scope established by @scope *includes* the
+// scoping root. This function provides .a.b, i.e. the second part of the :is().
+// The first part is handled by `AddFeaturesToInvalidationSetsForStyleScope`.
+void RuleFeatureSet::UpdateFeaturesFromStyleScope(
+    const StyleScope& style_scope,
+    InvalidationSetFeatures& descendant_features) {
+  for (const StyleScope* scope = &style_scope; scope; scope = scope->Parent()) {
+    for (const CSSSelector* selector = scope->From().First(); selector;
+         selector = CSSSelectorList::Next(*selector)) {
+      InvalidationSetFeatures scope_features;
+      ExtractInvalidationSetFeaturesFromCompound(
+          *selector, scope_features, kSubject,
+          /* for_logical_combination_in_has */ false);
+      descendant_features.Add(scope_features);
+    }
+  }
 }
 
 void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
@@ -619,7 +658,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoInRange:
       case CSSSelector::kPseudoOutOfRange:
       case CSSSelector::kPseudoDefined:
-      case CSSSelector::kPseudoPopupOpen:
+      case CSSSelector::kPseudoTopLayer:
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
       case CSSSelector::kPseudoXrOverlay:
@@ -627,6 +666,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoHasDatalist:
       case CSSSelector::kPseudoMultiSelectFocus:
       case CSSSelector::kPseudoModal:
+      case CSSSelector::kPseudoSelectorFragmentAnchor:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:
@@ -637,6 +677,11 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoNthLastChild:
       case CSSSelector::kPseudoNthLastOfType:
         return &EnsureNthInvalidationSet();
+      case CSSSelector::kPseudoHas:
+        return position == kAncestor
+                   ? &EnsurePseudoInvalidationSet(selector.GetPseudoType(),
+                                                  type, position)
+                   : nullptr;
       case CSSSelector::kPseudoPart:
       default:
         break;
@@ -645,21 +690,26 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
   return nullptr;
 }
 
-void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data) {
+void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data,
+                                            const StyleScope* style_scope) {
   InvalidationSetFeatures features;
   FeatureInvalidationType feature_invalidation_type =
-      UpdateInvalidationSetsForComplex(rule_data->Selector(), features,
-                                       kSubject, CSSSelector::kPseudoUnknown);
+      UpdateInvalidationSetsForComplex(rule_data->Selector(), style_scope,
+                                       features, kSubject,
+                                       CSSSelector::kPseudoUnknown);
   if (feature_invalidation_type ==
       FeatureInvalidationType::kRequiresSubtreeInvalidation) {
     features.invalidation_flags.SetWholeSubtreeInvalid(true);
   }
+  if (style_scope)
+    UpdateFeaturesFromStyleScope(*style_scope, features);
   UpdateRuleSetInvalidation(features);
 }
 
 RuleFeatureSet::FeatureInvalidationType
 RuleFeatureSet::UpdateInvalidationSetsForComplex(
     const CSSSelector& complex,
+    const StyleScope* style_scope,
     InvalidationSetFeatures& features,
     PositionType position,
     CSSSelector::PseudoType pseudo_type) {
@@ -675,7 +725,9 @@ RuleFeatureSet::UpdateInvalidationSetsForComplex(
   InvalidationSetFeatures* sibling_features = nullptr;
 
   const CSSSelector* last_in_compound =
-      ExtractInvalidationSetFeaturesFromCompound(complex, features, position);
+      ExtractInvalidationSetFeaturesFromCompound(
+          complex, features, position,
+          /* for_logical_combination_in_has */ false);
 
   bool was_whole_subtree_invalid =
       features.invalidation_flags.WholeSubtreeInvalid();
@@ -697,14 +749,22 @@ RuleFeatureSet::UpdateInvalidationSetsForComplex(
 
   const CSSSelector* next_compound =
       last_in_compound ? last_in_compound->TagHistory() : &complex;
-  if (!next_compound)
-    return kNormalInvalidation;
-  if (last_in_compound) {
-    UpdateFeaturesFromCombinator(*last_in_compound, nullptr, features,
-                                 sibling_features, features);
+
+  if (next_compound) {
+    if (last_in_compound) {
+      UpdateFeaturesFromCombinator(last_in_compound->Relation(), nullptr,
+                                   features, sibling_features, features,
+                                   /* for_logical_combination_in_has */ false);
+    }
+
+    AddFeaturesToInvalidationSets(*next_compound, sibling_features, features);
   }
 
-  AddFeaturesToInvalidationSets(*next_compound, sibling_features, features);
+  if (style_scope)
+    AddFeaturesToInvalidationSetsForStyleScope(*style_scope, features);
+
+  if (!next_compound)
+    return kNormalInvalidation;
 
   // We need to differentiate between no features (HasFeatures()==false)
   // and RequiresSubtreeInvalidation at the callsite. Hence we reset the flag
@@ -740,6 +800,7 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
     InvalidationSetFeatures& features,
     PositionType position) {
   AutoRestoreMaxDirectAdjacentSelectors restore_max(&features);
+  AutoRestoreDescendantFeaturesDepth restore_depth(&features);
 
   const CSSSelectorList* selector_list = simple_selector.SelectorList();
   if (!selector_list)
@@ -749,8 +810,7 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
   // For the :has pseudo class, we should not extract invalidation set features
   // here because the :has invalidation direction is different with others.
   // (preceding-sibling/ancestors/preceding-sibling-of-ancestors)
-  // TODO(blee@igalia.com) Need to add :has invalidation
-  if (UNLIKELY(pseudo_type == CSSSelector::kPseudoHas))
+  if (pseudo_type == CSSSelector::kPseudoHas)
     return;
 
   DCHECK(SupportsInvalidationWithSelectorList(pseudo_type));
@@ -763,9 +823,9 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
 
   for (; sub_selector; sub_selector = CSSSelectorList::Next(*sub_selector)) {
     InvalidationSetFeatures complex_features;
-    if (UpdateInvalidationSetsForComplex(*sub_selector, complex_features,
-                                         position, pseudo_type) ==
-        kRequiresSubtreeInvalidation) {
+    if (UpdateInvalidationSetsForComplex(
+            *sub_selector, nullptr /* style_scope */, complex_features,
+            position, pseudo_type) == kRequiresSubtreeInvalidation) {
       features.invalidation_flags.SetWholeSubtreeInvalid(true);
       continue;
     }
@@ -801,7 +861,8 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
 const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     const CSSSelector& compound,
     InvalidationSetFeatures& features,
-    PositionType position) {
+    PositionType position,
+    bool for_logical_combination_in_has) {
   // Extract invalidation set features and return a pointer to the the last
   // simple selector of the compound, or nullptr if one of the selectors
   // requiresSubtreeInvalidation().
@@ -837,8 +898,19 @@ const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     if (features.invalidation_flags.InvalidatesParts())
       metadata_.invalidates_parts = true;
 
-    if (simple_selector->GetPseudoType() == CSSSelector::kPseudoHas)
+    // While adding features to invalidation sets for logical combinations
+    // inside :has(), ExtractInvalidationSetFeaturesFromCompound() can be
+    // called again to extract features from the compound selector containing
+    // the :has() pseudo class. (e.g. '.a:has(:is(.b ~ .c)) .d')
+    // To avoid infinite recursive call, skip adding features for :has() if
+    // ExtractInvalidationSetFeaturesFromCompound() is invoked for the logical
+    // combinations inside :has().
+    if (simple_selector->GetPseudoType() == CSSSelector::kPseudoHas &&
+        !for_logical_combination_in_has) {
       CollectValuesInHasArgument(*simple_selector);
+      AddFeaturesToInvalidationSetsForHasPseudoClass(
+          *simple_selector, &compound, nullptr, features);
+    }
 
     if (!simple_selector->TagHistory() ||
         simple_selector->Relation() != CSSSelector::kSubSelector) {
@@ -860,7 +932,7 @@ void RuleFeatureSet::CollectValuesInHasArgument(
 
     bool value_added = false;
     const CSSSelector* simple = relative_selector;
-    while (simple->GetPseudoType() != CSSSelector::kPseudoRelativeLeftmost) {
+    while (simple->GetPseudoType() != CSSSelector::kPseudoRelativeAnchor) {
       value_added |= AddValueOfSimpleSelectorInHasArgument(*simple);
 
       if (simple->Relation() != CSSSelector::kSubSelector) {
@@ -871,6 +943,333 @@ void RuleFeatureSet::CollectValuesInHasArgument(
 
       simple = simple->TagHistory();
       DCHECK(simple);
+    }
+  }
+}
+
+void RuleFeatureSet::AddFeaturesToInvalidationSetsForHasPseudoClass(
+    const CSSSelector& pseudo_has,
+    const CSSSelector* compound_containing_has,
+    InvalidationSetFeatures* sibling_features,
+    InvalidationSetFeatures& descendant_features) {
+  DCHECK(compound_containing_has);
+  DCHECK_EQ(pseudo_has.GetPseudoType(), CSSSelector::kPseudoHas);
+
+  // Add features to invalidation sets only when the :has() pseudo class
+  // contains logical combinations containing a complex selector as argument.
+  if (!pseudo_has.ContainsComplexLogicalCombinationsInsideHasPseudoClass())
+    return;
+
+  // Set descendant features as WholeSubtreeInvalid if the descendant features
+  // haven't been extracted yet. (e.g. '.a :has(:is(.b .c)).d {}')
+  AutoRestoreWholeSubtreeInvalid restore_whole_subtree(descendant_features);
+  if (!descendant_features.HasFeatures())
+    descendant_features.invalidation_flags.SetWholeSubtreeInvalid(true);
+
+  // Use descendant features as sibling features if the :has() pseudo class is
+  // in subject position.
+  if (!sibling_features && descendant_features.descendant_features_depth == 0)
+    sibling_features = &descendant_features;
+
+  DCHECK(pseudo_has.SelectorList());
+
+  for (const CSSSelector* relative = pseudo_has.SelectorList()->First();
+       relative; relative = CSSSelectorList::Next(*relative)) {
+    for (const CSSSelector* simple = relative;
+         simple->GetPseudoType() != CSSSelector::kPseudoRelativeAnchor;
+         simple = simple->TagHistory()) {
+      switch (simple->GetPseudoType()) {
+        case CSSSelector::kPseudoIs:
+        case CSSSelector::kPseudoWhere:
+        case CSSSelector::kPseudoNot:
+          // Add features for each method to handle sibling descendant
+          // relationship in the logical combination.
+          // - For '.a:has(:is(.b ~ .c .d))',
+          //   -> '.b ~ .c .a' (kForAllNonRightmostCompounds)
+          //   -> '.b ~ .a' (kForCompoundImmediatelyFollowsAdjacentRelation)
+          AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
+              *simple, compound_containing_has, sibling_features,
+              descendant_features, CSSSelector::kSubSelector,
+              kForAllNonRightmostCompounds);
+          AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
+              *simple, compound_containing_has, sibling_features,
+              descendant_features, CSSSelector::kSubSelector,
+              kForCompoundImmediatelyFollowsAdjacentRelation);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+const CSSSelector*
+RuleFeatureSet::SkipAddingAndGetLastInCompoundForLogicalCombinationInHas(
+    const CSSSelector* compound_in_logical_combination,
+    const CSSSelector* compound_containing_has,
+    InvalidationSetFeatures* sibling_features,
+    InvalidationSetFeatures& descendant_features,
+    CSSSelector::RelationType previous_combinator,
+    AddFeaturesMethodForLogicalCombinationInHas add_features_method) {
+  const CSSSelector* simple = compound_in_logical_combination;
+  for (; simple; simple = simple->TagHistory()) {
+    switch (simple->GetPseudoType()) {
+      case CSSSelector::kPseudoIs:
+      case CSSSelector::kPseudoWhere:
+      case CSSSelector::kPseudoNot:
+        // Nested logical combinations in righmost compound of a first-depth
+        // logical combination inside :has()
+        // (e.g. '.a:has(.a :is(.b :is(.c .d))) {}')
+        AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
+            *simple, compound_containing_has, sibling_features,
+            descendant_features, previous_combinator, add_features_method);
+        break;
+      default:
+        break;
+    }
+    if (simple->Relation() != CSSSelector::kSubSelector)
+      break;
+  }
+  return simple;
+}
+
+const CSSSelector*
+RuleFeatureSet::AddFeaturesAndGetLastInCompoundForLogicalCombinationInHas(
+    const CSSSelector* compound_in_logical_combination,
+    const CSSSelector* compound_containing_has,
+    InvalidationSetFeatures* sibling_features,
+    InvalidationSetFeatures& descendant_features,
+    CSSSelector::RelationType previous_combinator,
+    AddFeaturesMethodForLogicalCombinationInHas add_features_method) {
+  DCHECK(compound_in_logical_combination);
+  bool compound_has_features_for_rule_set_invalidation = false;
+  const CSSSelector* simple = compound_in_logical_combination;
+
+  for (; simple; simple = simple->TagHistory()) {
+    base::AutoReset<bool> reset_has_features(
+        &descendant_features.has_features_for_rule_set_invalidation, false);
+    switch (simple->GetPseudoType()) {
+      case CSSSelector::kPseudoIs:
+      case CSSSelector::kPseudoWhere:
+      case CSSSelector::kPseudoNot:
+        // Nested logical combination inside :has()
+        // (e.g. '.a:has(:is(:is(.a .b) .c)) {}')
+        AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
+            *simple, compound_containing_has, sibling_features,
+            descendant_features, previous_combinator, add_features_method);
+        break;
+      default:
+        AddFeaturesToInvalidationSetsForSimpleSelector(
+            *simple, *compound_in_logical_combination, sibling_features,
+            descendant_features);
+        break;
+    }
+    if (descendant_features.has_features_for_rule_set_invalidation)
+      compound_has_features_for_rule_set_invalidation = true;
+
+    if (simple->Relation() != CSSSelector::kSubSelector)
+      break;
+  }
+
+  // If the compound selector has features for invalidation, mark the
+  // related flag in the descendant_features.
+  // Otherwise add features to universal sibling invalidation set if
+  // sibling_features exists. (e.g. '.a:has(:is(* .b)) ~ .c .d {}')
+  if (compound_has_features_for_rule_set_invalidation) {
+    descendant_features.has_features_for_rule_set_invalidation = true;
+  } else if (sibling_features) {
+    AddFeaturesToUniversalSiblingInvalidationSet(*sibling_features,
+                                                 descendant_features);
+  }
+
+  return simple;
+}
+
+// Context for adding features for a compound selector in a logical combination
+// inside :has(). This struct provides these information so that the features
+// can be added correctly for the compound in logical combination.
+// - needs_skip_adding_features:
+//     - whether adding features needs to be skipped.
+// - needs_update_features:
+//     - whether updating features is needed.
+// - last_compound_in_adjacent_chain:
+//     - last compound in adjacent chain used for updating features.
+// - use_indirect_adjacent_combinator_for_updating_features:
+//     - whether we need to use adjacent combinator for updating features.
+// Please check the comments in the constructor for more details.
+struct AddFeaturesToInvalidationSetsForLogicalCombinationInHasContext {
+  bool needs_skip_adding_features;
+  bool needs_update_features;
+  const CSSSelector* last_compound_in_adjacent_chain;
+  bool use_indirect_adjacent_combinator_for_updating_features;
+
+  AddFeaturesToInvalidationSetsForLogicalCombinationInHasContext(
+      const CSSSelector* compound_in_logical_combination,
+      const CSSSelector* compound_containing_has,
+      CSSSelector::RelationType previous_combinator,
+      RuleFeatureSet::AddFeaturesMethodForLogicalCombinationInHas
+          add_features_method) {
+    last_compound_in_adjacent_chain = nullptr;
+    needs_skip_adding_features = false;
+    needs_update_features = false;
+    use_indirect_adjacent_combinator_for_updating_features = false;
+
+    bool is_in_has_argument_checking_scope =
+        previous_combinator == CSSSelector::kSubSelector;
+    bool add_features_for_compound_immediately_follows_adjacent_relation =
+        add_features_method ==
+        RuleFeatureSet::kForCompoundImmediatelyFollowsAdjacentRelation;
+
+    if (is_in_has_argument_checking_scope) {
+      // If the compound in the logical combination is for the element in the
+      // :has() argument checking scope, skip adding features.
+      needs_skip_adding_features = true;
+
+      // If the compound in the logical combination is for the element in the
+      // :has() argument checking scope, update features before moving to the
+      // next compound.
+      needs_update_features = true;
+
+      // For the rightmost compound that need to be skipped, use the compound
+      // selector containing :has() as last_compound_in_adjacent_chain for
+      // updating features so that the features can be added as if the next
+      // compounds are prepended to the compound containing :has().
+      // (e.g. '.a:has(:is(.b .c ~ .d)) .e' -> '.b .c ~ .a .e')
+      // The selector pointer of '.a:has(:is(.b .c ~ .d))' is passed though
+      // the argument 'compound_containing_has'.
+      last_compound_in_adjacent_chain = compound_containing_has;
+
+      // In case of adding features only for adjacent combinator and its
+      // next compound selector, update features as if the relation of the
+      // last-in-compound is indirect adjacent combinator ('~').
+      if (add_features_for_compound_immediately_follows_adjacent_relation)
+        use_indirect_adjacent_combinator_for_updating_features = true;
+    } else {
+      // If this method call is for the compound immediately follows an
+      // adjacent combinator in the logical combination but the compound
+      // doesn't follow any adjacent combinator, skip adding features.
+      if (add_features_for_compound_immediately_follows_adjacent_relation &&
+          !CSSSelector::IsAdjacentRelation(previous_combinator)) {
+        needs_skip_adding_features = true;
+      }
+
+      // Update features from the previous combinator when we add features
+      // for all non-rightmost compound selectors. In case of adding features
+      // only for adjacent combinator and its next compound selector, do not
+      // update features so that we can use the same features that was
+      // updated at the compound in :has() argument checking scope.
+      if (add_features_method == RuleFeatureSet::kForAllNonRightmostCompounds)
+        needs_update_features = true;
+
+      last_compound_in_adjacent_chain = compound_in_logical_combination;
+    }
+  }
+};
+
+void RuleFeatureSet::AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
+    const CSSSelector& logical_combination,
+    const CSSSelector* compound_containing_has,
+    InvalidationSetFeatures* sibling_features,
+    InvalidationSetFeatures& descendant_features,
+    CSSSelector::RelationType previous_combinator,
+    AddFeaturesMethodForLogicalCombinationInHas add_features_method) {
+  DCHECK(logical_combination.SelectorList());
+  DCHECK(compound_containing_has);
+
+  for (const CSSSelector* complex = logical_combination.SelectorList()->First();
+       complex; complex = CSSSelectorList::Next(*complex)) {
+    base::AutoReset<CSSSelector::RelationType> restore_previous_combinator(
+        &previous_combinator, previous_combinator);
+    AutoRestoreMaxDirectAdjacentSelectors restore_max(sibling_features);
+    AutoRestoreDescendantFeaturesDepth restore_depth(&descendant_features);
+    AutoRestoreTreeBoundaryCrossingFlag restore_tree_boundary(
+        descendant_features);
+    AutoRestoreInsertionPointCrossingFlag restore_insertion_point(
+        descendant_features);
+
+    const CSSSelector* compound_in_logical_combination = complex;
+    InvalidationSetFeatures last_compound_in_adjacent_chain_features;
+    while (compound_in_logical_combination) {
+      AddFeaturesToInvalidationSetsForLogicalCombinationInHasContext context(
+          compound_in_logical_combination, compound_containing_has,
+          previous_combinator, add_features_method);
+
+      const CSSSelector* last_in_compound;
+      if (context.needs_skip_adding_features) {
+        last_in_compound =
+            SkipAddingAndGetLastInCompoundForLogicalCombinationInHas(
+                compound_in_logical_combination, compound_containing_has,
+                sibling_features, descendant_features, previous_combinator,
+                add_features_method);
+      } else {
+        last_in_compound =
+            AddFeaturesAndGetLastInCompoundForLogicalCombinationInHas(
+                compound_in_logical_combination, compound_containing_has,
+                sibling_features, descendant_features, previous_combinator,
+                add_features_method);
+      }
+
+      if (!last_in_compound)
+        break;
+
+      previous_combinator = last_in_compound->Relation();
+
+      if (context.needs_update_features) {
+        UpdateFeaturesFromCombinatorForLogicalCombinationInHas(
+            context.use_indirect_adjacent_combinator_for_updating_features
+                ? CSSSelector::kIndirectAdjacent
+                : previous_combinator,
+            context.last_compound_in_adjacent_chain,
+            last_compound_in_adjacent_chain_features, sibling_features,
+            descendant_features);
+      }
+
+      compound_in_logical_combination = last_in_compound->TagHistory();
+    }
+  }
+}
+
+void RuleFeatureSet::UpdateFeaturesFromCombinatorForLogicalCombinationInHas(
+    CSSSelector::RelationType combinator,
+    const CSSSelector* last_compound_in_adjacent_chain,
+    InvalidationSetFeatures& last_compound_in_adjacent_chain_features,
+    InvalidationSetFeatures*& sibling_features,
+    InvalidationSetFeatures& descendant_features) {
+  // Always use indirect relation to add features to invalidation sets for
+  // logical combinations inside :has() since it is too difficult to limit
+  // invalidation distance by counting successive indirect relations in the
+  // logical combinations inside :has().
+  // (e.g. '.a:has(:is(:is(.a > .b) .c)) {}', '.a:has(~ :is(.b + .c + .d)) {}'
+  switch (combinator) {
+    case CSSSelector::CSSSelector::kDescendant:
+    case CSSSelector::CSSSelector::kChild:
+      combinator = CSSSelector::kDescendant;
+      break;
+    case CSSSelector::CSSSelector::kDirectAdjacent:
+    case CSSSelector::CSSSelector::kIndirectAdjacent:
+      combinator = CSSSelector::kIndirectAdjacent;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  UpdateFeaturesFromCombinator(combinator, last_compound_in_adjacent_chain,
+                               last_compound_in_adjacent_chain_features,
+                               sibling_features, descendant_features,
+                               /* for_logical_combination_in_has */ true);
+}
+
+void RuleFeatureSet::AddValuesInComplexSelectorInsideIsWhereNot(
+    const CSSSelectorList* selector_list) {
+  DCHECK(selector_list);
+  for (const CSSSelector* complex = selector_list->First(); complex;
+       complex = CSSSelectorList::Next(*complex)) {
+    DCHECK(complex);
+
+    for (const CSSSelector* simple = complex; simple;
+         simple = simple->TagHistory()) {
+      AddValueOfSimpleSelectorInHasArgument(*simple);
     }
   }
 }
@@ -892,6 +1291,26 @@ bool RuleFeatureSet::AddValueOfSimpleSelectorInHasArgument(
   if (selector.Match() == CSSSelector::kTag &&
       selector.TagQName().LocalName() != CSSSelector::UniversalSelectorAtom()) {
     tag_names_in_has_argument_.insert(selector.TagQName().LocalName());
+    return true;
+  }
+  if (selector.Match() == CSSSelector::kPseudoClass) {
+    CSSSelector::PseudoType pseudo_type = selector.GetPseudoType();
+
+    switch (pseudo_type) {
+      case CSSSelector::kPseudoNot:
+        not_pseudo_in_has_argument_ = true;
+        [[fallthrough]];
+      case CSSSelector::kPseudoIs:
+      case CSSSelector::kPseudoWhere:
+        AddValuesInComplexSelectorInsideIsWhereNot(selector.SelectorList());
+        break;
+      case CSSSelector::kPseudoVisited:
+        // Ignore :visited to prevent history leakage.
+        break;
+      default:
+        pseudos_in_has_argument_.insert(pseudo_type);
+        break;
+    }
     return true;
   }
   return false;
@@ -958,6 +1377,7 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSelectorList(
            simple_selector.SelectorList()->First();
        sub_selector; sub_selector = CSSSelectorList::Next(*sub_selector)) {
     AutoRestoreMaxDirectAdjacentSelectors restore_max(sibling_features);
+    AutoRestoreDescendantFeaturesDepth restore_depth(&descendant_features);
     AutoRestoreTreeBoundaryCrossingFlag restore_tree_boundary(
         descendant_features);
     AutoRestoreInsertionPointCrossingFlag restore_insertion_point(
@@ -980,12 +1400,42 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSelectorList(
       !selector_list_contains_universal;
 }
 
+// See also UpdateFeaturesFromStyleScope.
+void RuleFeatureSet::AddFeaturesToInvalidationSetsForStyleScope(
+    const StyleScope& style_scope,
+    InvalidationSetFeatures& descendant_features) {
+  auto add_features = [this](const CSSSelectorList& selector_list,
+                             InvalidationSetFeatures& features) {
+    for (const CSSSelector* selector = selector_list.First(); selector;
+         selector = CSSSelectorList::Next(*selector)) {
+      AddFeaturesToInvalidationSets(*selector, nullptr /* sibling_features */,
+                                    features);
+    }
+  };
+
+  for (const StyleScope* scope = &style_scope; scope; scope = scope->Parent()) {
+    add_features(scope->From(), descendant_features);
+
+    if (scope->To())
+      add_features(*scope->To(), descendant_features);
+  }
+}
+
 void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
     const CSSSelector& simple_selector,
+    const CSSSelector& compound,
     InvalidationSetFeatures* sibling_features,
     InvalidationSetFeatures& descendant_features) {
   if (simple_selector.IsIdClassOrAttributeSelector())
     descendant_features.has_features_for_rule_set_invalidation = true;
+
+  CSSSelector::PseudoType pseudo_type = simple_selector.GetPseudoType();
+
+  if (pseudo_type == CSSSelector::kPseudoHas) {
+    CollectValuesInHasArgument(simple_selector);
+    AddFeaturesToInvalidationSetsForHasPseudoClass(
+        simple_selector, &compound, sibling_features, descendant_features);
+  }
 
   if (InvalidationSet* invalidation_set = InvalidationSetForSimpleSelector(
           simple_selector,
@@ -1023,13 +1473,10 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
     return;
   }
 
-  CSSSelector::PseudoType pseudo_type = simple_selector.GetPseudoType();
-
   // For the :has pseudo class, we should not extract invalidation set features
   // here because the :has invalidation direction is different with others.
   // (preceding-sibling/ancestors/preceding-sibling-of-ancestors)
-  // TODO(blee@igalia.com) Need to add :has invalidation
-  if (UNLIKELY(pseudo_type == CSSSelector::kPseudoHas))
+  if (pseudo_type == CSSSelector::kPseudoHas)
     return;
 
   if (pseudo_type == CSSSelector::kPseudoPart)
@@ -1050,7 +1497,7 @@ RuleFeatureSet::AddFeaturesToInvalidationSetsForCompoundSelector(
     base::AutoReset<bool> reset_has_features(
         &descendant_features.has_features_for_rule_set_invalidation, false);
     AddFeaturesToInvalidationSetsForSimpleSelector(
-        *simple_selector, sibling_features, descendant_features);
+        *simple_selector, compound, sibling_features, descendant_features);
     if (descendant_features.has_features_for_rule_set_invalidation)
       compound_has_features_for_rule_set_invalidation = true;
     if (simple_selector->Relation() != CSSSelector::kSubSelector)
@@ -1084,15 +1531,17 @@ void RuleFeatureSet::AddFeaturesToInvalidationSets(
         AddFeaturesToInvalidationSetsForCompoundSelector(
             *compound, sibling_features, descendant_features);
     DCHECK(last_in_compound);
-    UpdateFeaturesFromCombinator(*last_in_compound, compound,
+    UpdateFeaturesFromCombinator(last_in_compound->Relation(), compound,
                                  last_compound_in_sibling_chain_features,
-                                 sibling_features, descendant_features);
+                                 sibling_features, descendant_features,
+                                 /* for_logical_combination_in_has */ false);
     compound = last_in_compound->TagHistory();
   }
 }
 
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromRuleData(
-    const RuleData* rule_data) {
+    const RuleData* rule_data,
+    const StyleScope* style_scope) {
   CHECK(is_alive_);
   FeatureMetadata metadata;
   const unsigned max_direct_adjacent_selectors = 0;
@@ -1101,12 +1550,10 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromRuleData(
       kSelectorNeverMatches) {
     return kSelectorNeverMatches;
   }
-  metadata.uses_container_queries |=
-      static_cast<bool>(rule_data->GetContainerQuery());
 
   metadata_.Add(metadata);
 
-  UpdateInvalidationSets(rule_data);
+  UpdateInvalidationSets(rule_data, style_scope);
   return kSelectorMayMatch;
 }
 
@@ -1138,7 +1585,25 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
           return kSelectorNeverMatches;
         }
         found_host_pseudo = true;
-        FALLTHROUGH;
+        // We fall through here to reach the "default" case. Entering the cases
+        // for kPseudoIs/Where has no effect, since :host[-context]() can't
+        // produce empty argument lists.
+        DCHECK(!current->SelectorList() || current->SelectorList()->IsValid());
+        [[fallthrough]];
+      case CSSSelector::kPseudoIs:
+      case CSSSelector::kPseudoWhere:
+        if (const CSSSelectorList* selector_list = current->SelectorList()) {
+          // An empty list (!IsValid) is possible here because of the forgiving
+          // selector list parsing [1], in which empty lists are not syntax
+          // errors, but also don't match anything [2].
+          //
+          // [1]
+          // https://drafts.csswg.org/selectors/#typedef-forgiving-selector-list
+          // [2] https://drafts.csswg.org/selectors/#matches
+          if (!selector_list->IsValid())
+            return kSelectorNeverMatches;
+        }
+        [[fallthrough]];
       default:
         if (const CSSSelectorList* selector_list = current->SelectorList()) {
           for (const CSSSelector* sub_selector = selector_list->First();
@@ -1175,7 +1640,6 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
 void RuleFeatureSet::FeatureMetadata::Add(const FeatureMetadata& other) {
   uses_first_line_rules |= other.uses_first_line_rules;
   uses_window_inactive_selector |= other.uses_window_inactive_selector;
-  uses_container_queries |= other.uses_container_queries;
   max_direct_adjacent_selectors = std::max(max_direct_adjacent_selectors,
                                            other.max_direct_adjacent_selectors);
 }
@@ -1183,7 +1647,6 @@ void RuleFeatureSet::FeatureMetadata::Add(const FeatureMetadata& other) {
 void RuleFeatureSet::FeatureMetadata::Clear() {
   uses_first_line_rules = false;
   uses_window_inactive_selector = false;
-  uses_container_queries = false;
   needs_full_recalc_for_rule_set_invalidation = false;
   max_direct_adjacent_selectors = 0;
   invalidates_parts = false;
@@ -1193,7 +1656,6 @@ bool RuleFeatureSet::FeatureMetadata::operator==(
     const FeatureMetadata& other) const {
   return uses_first_line_rules == other.uses_first_line_rules &&
          uses_window_inactive_selector == other.uses_window_inactive_selector &&
-         uses_container_queries == other.uses_container_queries &&
          needs_full_recalc_for_rule_set_invalidation ==
              other.needs_full_recalc_for_rule_set_invalidation &&
          max_direct_adjacent_selectors == other.max_direct_adjacent_selectors &&
@@ -1239,6 +1701,9 @@ void RuleFeatureSet::Add(const RuleFeatureSet& other) {
   for (const auto& tag_name : other.tag_names_in_has_argument_)
     tag_names_in_has_argument_.insert(tag_name);
   universal_in_has_argument_ |= other.universal_in_has_argument_;
+  not_pseudo_in_has_argument_ |= other.not_pseudo_in_has_argument_;
+  for (const auto& pseudo_type : other.pseudos_in_has_argument_)
+    pseudos_in_has_argument_.insert(pseudo_type);
 }
 
 void RuleFeatureSet::Clear() {
@@ -1253,11 +1718,19 @@ void RuleFeatureSet::Clear() {
   type_rule_invalidation_set_ = nullptr;
   viewport_dependent_media_query_results_.clear();
   device_dependent_media_query_results_.clear();
+  media_query_unit_flags_ = 0;
   classes_in_has_argument_.clear();
   attributes_in_has_argument_.clear();
   ids_in_has_argument_.clear();
   tag_names_in_has_argument_.clear();
   universal_in_has_argument_ = false;
+  not_pseudo_in_has_argument_ = false;
+  pseudos_in_has_argument_.clear();
+}
+
+bool RuleFeatureSet::HasDynamicViewportDependentMediaQueries() const {
+  return media_query_unit_flags_ &
+         MediaQueryExpValue::UnitFlags::kDynamicViewport;
 }
 
 void RuleFeatureSet::CollectInvalidationSetsForClass(
@@ -1515,7 +1988,11 @@ bool RuleFeatureSet::NeedsHasInvalidationForTagName(
          tag_names_in_has_argument_.Contains(tag_name);
 }
 
-bool RuleFeatureSet::NeedsHasInvalidationForElement(Element& element) const {
+bool RuleFeatureSet::NeedsHasInvalidationForInsertedOrRemovedElement(
+    Element& element) const {
+  if (not_pseudo_in_has_argument_)
+    return true;
+
   if (element.HasID()) {
     if (NeedsHasInvalidationForId(element.IdForStyleResolution()))
       return true;
@@ -1529,12 +2006,13 @@ bool RuleFeatureSet::NeedsHasInvalidationForElement(Element& element) const {
     }
   }
 
-  for (const Attribute& attribute : element.Attributes()) {
-    if (NeedsHasInvalidationForAttribute(attribute.GetName()))
-      return true;
-  }
+  return !attributes_in_has_argument_.IsEmpty() ||
+         NeedsHasInvalidationForTagName(element.LocalNameForSelectorMatching());
+}
 
-  return NeedsHasInvalidationForTagName(element.LocalNameForSelectorMatching());
+bool RuleFeatureSet::NeedsHasInvalidationForPseudoClass(
+    CSSSelector::PseudoType pseudo_type) const {
+  return pseudos_in_has_argument_.Contains(pseudo_type);
 }
 
 void RuleFeatureSet::InvalidationSetFeatures::Add(
@@ -1691,7 +2169,6 @@ String RuleFeatureSet::ToString() const {
   StringBuilder metadata;
   metadata.Append(metadata_.uses_first_line_rules ? "F" : "");
   metadata.Append(metadata_.uses_window_inactive_selector ? "W" : "");
-  metadata.Append(metadata_.uses_container_queries ? "C" : "");
   metadata.Append(metadata_.needs_full_recalc_for_rule_set_invalidation ? "R"
                                                                         : "");
   metadata.Append(metadata_.invalidates_parts ? "P" : "");

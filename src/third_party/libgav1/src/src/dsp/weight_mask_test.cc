@@ -54,42 +54,42 @@ constexpr int kCompoundPredictionRange[3][2] = {
 
 const char* GetDigest8bpp(int id) {
   static const char* const kDigest[] = {
-      "035267cb2ac5a0f8ff50c2d30ad52226",
-      "3231f4972dd858b734e0cc48c4cd001e",
-      "7e163b69721a13ec9f75b5cd74ffee3f",
+      "eaca5b6a96dcfe5e44f3926a071b48b3",
+      "1d82c75cfdf8e57925eb1d5301647538",
+      "25bd455d74fb891b97b133c528f8db60",
       "" /*kBlock4x16*/,
-      "b75e90abc224acca8754c82039b3ba93",
-      "9f555f3a2c1a933a663d6103b8118dea",
-      "8539e54f34cd6668ff6e6606210be201",
-      "20f85c9db7c878c21fbf2052936f269e",
-      "620ec166de57b0639260b2d72eebfc3e",
-      "be666394b5a894d78f4097b6cca272fe",
-      "57a96816e84cdb381f596c23827b5922",
-      "f2e0d348f608f246b6d8d799b66c189e",
-      "161ac051f38372d9339d36728b9926ba",
-      "d5fad48aaf132a81cb62bba4f07bbebb",
-      "e10be2dca2f7dae38dae75150fc1612d",
-      "7f744481eb551bbc224b5236c82cbade",
+      "1d82c75cfdf8e57925eb1d5301647538",
+      "25bd455d74fb891b97b133c528f8db60",
+      "62a08776db35a186406a11ab92dee71c",
+      "95131d1dc0e05fcf4bd234d5ce9eea11",
+      "25bd455d74fb891b97b133c528f8db60",
+      "62a08776db35a186406a11ab92dee71c",
+      "95131d1dc0e05fcf4bd234d5ce9eea11",
+      "0b3c75272e0fb0747b9850145d340c4c",
+      "95131d1dc0e05fcf4bd234d5ce9eea11",
+      "0b3c75272e0fb0747b9850145d340c4c",
+      "f26c43d4bc823a89c1ed47ab8708bc06",
+      "0d99bbf31ecddc1c2d5063a68c0e9375",
       "0d99bbf31ecddc1c2d5063a68c0e9375",
       "5fb8ec5f582f0ebfe519ed55860f67c4",
 
       // mask_is_inverse = true.
-      "a4250ca39daa700836138371d36d465f",
-      "abe9a9a1c3a5accda9bfefd4d6e81ccb",
-      "e95b08878d0bb5f2293c27c3a6fe0253",
+      "96811f3b192828ff679e4c9ad8069d7d",
+      "a04dc180c028d55af70240163445523a",
+      "8513e3988233d0a7de316a0179bb6139",
       "" /*kBlock4x16*/,
-      "e1c52be02ce9ab2800015bb08b866c31",
-      "eea1dc73811f73866edfeb4555865f20",
-      "3178e64085645bd819256a8ab43c7b0a",
-      "ee83884e4d5cd2c9ac04879116bab681",
-      "d107eff7d5ae9ba14d2c6b3b8d9fca49",
-      "400aeea7d299626fc336c46b1ad7a9d8",
-      "e9e26a400f67f3ad36350fe4171fc613",
-      "4c31ad714f470f34127febaf1bac714b",
-      "bbdcb1097c66d561dd4ea16b3fb73f97",
-      "3a21dfbf53e4c964e303a75a3308ce15",
-      "3416dab4512fd0dc61d788b433cd624e",
-      "68ace8f01fdd74aec3fee528c8167738",
+      "a04dc180c028d55af70240163445523a",
+      "8513e3988233d0a7de316a0179bb6139",
+      "f7356d42fb44a6ccb41253ba35b8b3c7",
+      "3d2d61ffc203ee64fe91c9d16168a19d",
+      "8513e3988233d0a7de316a0179bb6139",
+      "f7356d42fb44a6ccb41253ba35b8b3c7",
+      "3d2d61ffc203ee64fe91c9d16168a19d",
+      "87a2011ac69fb597ca4f71bb3c35ebb0",
+      "3d2d61ffc203ee64fe91c9d16168a19d",
+      "87a2011ac69fb597ca4f71bb3c35ebb0",
+      "97100a3639d567046dc8a99fcb84cb2e",
+      "9fabe05a6523da81a45150e19f75acff",
       "9fabe05a6523da81a45150e19f75acff",
       "7c0643e4d02421d06d7ca71822a94e1d",
   };
@@ -99,48 +99,94 @@ const char* GetDigest8bpp(int id) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
 const char* GetDigest10bpp(int id) {
   static const char* const kDigest[] = {
-      "1dc9bdd042e5228705b857b42798e364",
-      "c054c8644bd482ce78a139d8e063e013",
-      "bbe4ac48f013f34c84779da05b0bcbe0",
+      "5ae8d64b65a671301a457b8a73368ab5",
+      "61535217f179054d4b76a8d9352a223d",
+      "1aa6614773570e7b021cd509849c4180",
       "" /*kBlock4x16*/,
-      "13d4759277637a607f25439182553708",
-      "f089667610561a47d50f9f930ad7c454",
-      "46715e6f7819f59725bdb083f4403255",
-      "3774541c339ae3af920ef2b1d6abf6a1",
-      "94913b01d226cb5eb273dfee84b51f65",
-      "be0c0847629dfff8e0e991ed67697a7d",
-      "716b5398b77d7459274d4ea9c91ebd8e",
-      "f5c1b0b461df4182529949472242b421",
-      "5e9576ea4cf107249ce4ae89a72b9c95",
-      "da021bcdf7936f7bd9a2399c69e4d37c",
-      "b3a310a39c1900e00f992839ff188656",
-      "9f3a15351af5945615f296242ec56a38",
+      "61535217f179054d4b76a8d9352a223d",
+      "1aa6614773570e7b021cd509849c4180",
+      "f04c2825cfb6408c7778658f71fa176e",
+      "e1694ea1f026dac7fe7e86a84482cf86",
+      "1aa6614773570e7b021cd509849c4180",
+      "f04c2825cfb6408c7778658f71fa176e",
+      "e1694ea1f026dac7fe7e86a84482cf86",
+      "9c4855d44c013fbddb373b2e9e311080",
+      "e1694ea1f026dac7fe7e86a84482cf86",
+      "9c4855d44c013fbddb373b2e9e311080",
+      "f510e743c3efe3b83374a98ef8a30838",
+      "b6e0bd03c521c5f00e90530daa7d4432",
       "b6e0bd03c521c5f00e90530daa7d4432",
       "3270d7f621d488aec5b76bcf121debd0",
 
       // mask_is_inverse = true.
-      "33df96dd246683133eefe4caea6e3f7d",
-      "73e0ccc5d42806548a4b59f856256c1e",
-      "3561a0358cf831aee9477d07feafae2d",
+      "9aa00fcfe21b71e30c5393699122a020",
+      "4d8ce33262cf6b5375f363530815189a",
+      "428625c51ac1bd4585988f7b36dff1db",
       "" /*kBlock4x16*/,
-      "c5a2e633c0cd6925e68f21f47f0e2d84",
-      "8755a2d3840dde5fd6a0cce6bd6642c5",
-      "85ec538b72cecd6ea1fddab5ce3b4e64",
-      "a53e0dec84c675c4c6b1f5792b0232ff",
-      "86180da325f9727670a98cf2dbf7410e",
-      "a5fdc95104948047e179b2bc3d47f51d",
-      "9b95b3858187838e4669180e2ddb295e",
-      "6e40ca55608f6bf2f8cd91c8dbf3ddbf",
-      "d3a092672e921b588279d57e50b31888",
-      "9883eb19b733ee9f1cb6a6b6a1a00bb5",
-      "dd34764e068b228b7820321b06864e63",
-      "6c743dc9c8c87c7044151d29993e5042",
+      "4d8ce33262cf6b5375f363530815189a",
+      "428625c51ac1bd4585988f7b36dff1db",
+      "1ef63c06a2d9c42da293fdf924032981",
+      "5dd3f201d755d1c22c126a633bfbb3c0",
+      "428625c51ac1bd4585988f7b36dff1db",
+      "1ef63c06a2d9c42da293fdf924032981",
+      "5dd3f201d755d1c22c126a633bfbb3c0",
+      "fe1e6843e6f214939da516dcbea04a79",
+      "5dd3f201d755d1c22c126a633bfbb3c0",
+      "fe1e6843e6f214939da516dcbea04a79",
+      "240187f27389b5e89f9ec6bdbd7d20a7",
+      "44925dab01011a98b8ab1f0308fa852a",
       "44925dab01011a98b8ab1f0308fa852a",
       "6d984b2ccfa056278e2130771127a943",
   };
   return kDigest[id];
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetDigest12bpp(int id) {
+  static const char* const kDigest[] = {
+      "57629d3872fd52ff4bbec439c5517ec5",
+      "dba421ceeb534756c77167e00ae91a2c",
+      "72e8ac1d450ef0c6c6b03e93856d5cc2",
+      "" /*kBlock4x16*/,
+      "dba421ceeb534756c77167e00ae91a2c",
+      "72e8ac1d450ef0c6c6b03e93856d5cc2",
+      "ae573eb368df04e6a0133b4e15471728",
+      "ceede597b2729357b15e0d08bb9bb760",
+      "72e8ac1d450ef0c6c6b03e93856d5cc2",
+      "ae573eb368df04e6a0133b4e15471728",
+      "ceede597b2729357b15e0d08bb9bb760",
+      "c4976af803d7ad3f92ef26f25b9f3754",
+      "ceede597b2729357b15e0d08bb9bb760",
+      "c4976af803d7ad3f92ef26f25b9f3754",
+      "1d957d49f71bb7f304705a11a597f0cb",
+      "9522d5713fb951b79f42d78fbff914cf",
+      "9522d5713fb951b79f42d78fbff914cf",
+      "422c046013f79a9f46e2c855967570ba",
+
+      // mask_is_inverse = true.
+      "a585cca9bc459d10e081bc0eb847b6e3",
+      "2fa4ec5f74fad2831d216c51c2cdad5a",
+      "d6c9ac69a9eb3059f5bb6e42b486ebcd",
+      "" /*kBlock4x16*/,
+      "2fa4ec5f74fad2831d216c51c2cdad5a",
+      "d6c9ac69a9eb3059f5bb6e42b486ebcd",
+      "2ddd8c8a1841501964011030e2557e20",
+      "97ef2575023dda008711015cf08d7590",
+      "d6c9ac69a9eb3059f5bb6e42b486ebcd",
+      "2ddd8c8a1841501964011030e2557e20",
+      "97ef2575023dda008711015cf08d7590",
+      "d69aff1e0d43395ce305c9be0dfb4c89",
+      "97ef2575023dda008711015cf08d7590",
+      "d69aff1e0d43395ce305c9be0dfb4c89",
+      "48786f640191dcbee5b3321672778519",
+      "6ad4718230353440b01f2bb78348157e",
+      "6ad4718230353440b01f2bb78348157e",
+      "ad49bd7af0ea17c84f434c7dfd0a911d",
+  };
+  return kDigest[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 struct WeightMaskTestParam {
   WeightMaskTestParam(int width, int height, bool mask_is_inverse)
@@ -159,6 +205,7 @@ template <int bitdepth>
 class WeightMaskTest : public testing::TestWithParam<WeightMaskTestParam>,
                        public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   WeightMaskTest() = default;
   ~WeightMaskTest() override = default;
 
@@ -276,7 +323,7 @@ void WeightMaskTest<bitdepth>::Test(const int num_runs,
   SetInputData(use_fixed_values, value_1, value_2);
   const absl::Time start = absl::Now();
   for (int i = 0; i < num_runs; ++i) {
-    func_(block_1_, block_2_, mask_, kMaxPredictionSize);
+    func_(block_1_, block_2_, mask_, width_);
   }
   const absl::Duration elapsed_time = absl::Now() - start;
   if (use_fixed_values) {
@@ -284,8 +331,7 @@ void WeightMaskTest<bitdepth>::Test(const int num_runs,
     if (mask_is_inverse_) fixed_value = 64 - fixed_value;
     for (int y = 0; y < height_; ++y) {
       for (int x = 0; x < width_; ++x) {
-        ASSERT_EQ(static_cast<int>(mask_[y * kMaxPredictionSize + x]),
-                  fixed_value)
+        ASSERT_EQ(static_cast<int>(mask_[y * width_ + x]), fixed_value)
             << "x: " << x << " y: " << y;
       }
     }
@@ -293,17 +339,26 @@ void WeightMaskTest<bitdepth>::Test(const int num_runs,
     const int id_offset = mask_is_inverse_ ? kMaxBlockSizes - 4 : 0;
     const int id = id_offset +
                    static_cast<int>(DimensionsToBlockSize(width_, height_)) - 4;
-    if (bitdepth == 8) {
-      test_utils::CheckMd5Digest(
-          absl::StrFormat("BlockSize %dx%d", width_, height_).c_str(),
-          "WeightMask", GetDigest8bpp(id), mask_, sizeof(mask_), elapsed_time);
+    const char* expected_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        expected_digest = GetDigest8bpp(id);
+        break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-    } else {
-      test_utils::CheckMd5Digest(
-          absl::StrFormat("BlockSize %dx%d", width_, height_).c_str(),
-          "WeightMask", GetDigest10bpp(id), mask_, sizeof(mask_), elapsed_time);
+      case 10:
+        expected_digest = GetDigest10bpp(id);
+        break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        expected_digest = GetDigest12bpp(id);
+        break;
 #endif
     }
+    ASSERT_NE(expected_digest, nullptr);
+    test_utils::CheckMd5Digest(
+        absl::StrFormat("BlockSize %dx%d", width_, height_).c_str(),
+        "WeightMask", expected_digest, mask_, sizeof(mask_), elapsed_time);
   }
 }
 
@@ -384,6 +439,28 @@ INSTANTIATE_TEST_SUITE_P(SSE41, WeightMaskTest10bpp,
                          testing::ValuesIn(weight_mask_test_param));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using WeightMaskTest12bpp = WeightMaskTest<12>;
+
+TEST_P(WeightMaskTest12bpp, FixedValues) {
+  const int min = kCompoundPredictionRange[2][0];
+  const int max = kCompoundPredictionRange[2][1];
+  Test(1, true, min, min);
+  Test(1, true, min, max);
+  Test(1, true, max, min);
+  Test(1, true, max, max);
+}
+
+TEST_P(WeightMaskTest12bpp, RandomValues) { Test(1, false, -1, -1); }
+
+TEST_P(WeightMaskTest12bpp, DISABLED_Speed) {
+  Test(kNumSpeedTests, false, -1, -1);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, WeightMaskTest12bpp,
+                         testing::ValuesIn(weight_mask_test_param));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

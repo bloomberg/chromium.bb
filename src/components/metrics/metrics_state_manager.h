@@ -37,10 +37,14 @@ class MetricsProvider;
 // which the browser process starts; does some work, e.g. servicing a sync; and
 // ends without ever becoming visible. Note that the point in startup at which
 // this value is determined is likely before the UI is visible.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class StartupVisibility {
   kUnknown = 0,
   kBackground = 1,
   kForeground = 2,
+  kMaxValue = kForeground,
 };
 
 // Denotes the type of EntropyProvider to use for one-time randomization.
@@ -125,19 +129,23 @@ class MetricsStateManager final {
   // that Chrome crashed or otherwise did not shut down cleanly, e.g. maybe the
   // OS crashed.
   //
-  // If |write_synchronously| is true, then |has_session_shutdown_cleanly| is
+  // If |is_extended_safe_mode| is true, then |has_session_shutdown_cleanly| is
   // written to disk synchronously. If false, a write is scheduled, and for
   // clients in the Extended Variations Safe Mode experiment, a synchronous
   // write is done, too.
   //
-  // Note: |write_synchronously| should be true only for the Extended Variations
-  // Safe Mode experiment.
+  // Note: |is_extended_safe_mode| should be true only for the Extended
+  // Variations Safe Mode experiment.
   void LogHasSessionShutdownCleanly(bool has_session_shutdown_cleanly,
-                                    bool write_synchronously = false);
+                                    bool is_extended_safe_mode = false);
 
   // Forces the client ID to be generated. This is useful in case it's needed
   // before recording.
   void ForceClientIdCreation();
+
+  // Sets the external client id. Useful for callers that want explicit control
+  // of the next metrics client id.
+  void SetExternalClientId(const std::string& id);
 
   // Checks if this install was cloned or imaged from another machine. If a
   // clone is detected, resets the client id and low entropy source. This
@@ -207,7 +215,7 @@ class MetricsStateManager final {
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
                            ProvisionalClientId_PromotedToClientId);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
-                           ProvisionalClientId_NotPersisted);
+                           ProvisionalClientId_PersistedAcrossFirstRuns);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, ResetBackup);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, ResetMetricsIDs);
 
@@ -276,7 +284,7 @@ class MetricsStateManager final {
   // Returns the high entropy source for this client, which is composed of a
   // client ID and the low entropy source. This is intended to be unique for
   // each install. UMA must be enabled (and |client_id_| must be set) or
-  // |provisional_client_id_| must be set before calling this.
+  // |kMetricsProvisionalClientID| must be set before calling this.
   std::string GetHighEntropySource();
 
   // Returns the old low entropy source for this client.
@@ -300,6 +308,8 @@ class MetricsStateManager final {
   // Reset the client id and low entropy source if the kMetricsResetMetricIDs
   // pref is true.
   void ResetMetricsIDsIfNecessary();
+
+  bool ShouldGenerateProvisionalClientId(bool is_first_run);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Log to structured metrics when the client id is changed.
@@ -332,14 +342,6 @@ class MetricsStateManager final {
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;
-
-  // A provisional client id that's generated at start up before we know whether
-  // metrics consent has been received from the client. This id becomes the
-  // |client_id_| if consent is given within the same session, or is cleared
-  // otherwise. Does not control transmission of UMA metrics, only used for the
-  // high entropy source used for field trial randomization so that field
-  // trials don't toggle state between first and second run.
-  std::string provisional_client_id_;
 
   // The client id that was used do field trial randomization. This field should
   // only be changed when we need to do group assignment. |initial_client_id|
@@ -376,6 +378,10 @@ class MetricsStateManager final {
   // used only during startup. On Android WebLayer, Android WebView, and iOS,
   // the visibility is unknown at this point in startup.
   const StartupVisibility startup_visibility_;
+
+  // Force enables the creation of a provisional client ID on first run even if
+  // this is not a Chrome-branded build. Used for testing.
+  static bool enable_provisional_client_id_for_testing_;
 };
 
 }  // namespace metrics

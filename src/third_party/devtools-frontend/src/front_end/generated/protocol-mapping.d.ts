@@ -405,6 +405,10 @@ export namespace ProtocolMapping {
      * when bfcache navigation fails.
      */
     'Page.backForwardCacheNotUsed': [Protocol.Page.BackForwardCacheNotUsedEvent];
+    /**
+     * Fired when a prerender attempt is completed.
+     */
+    'Page.prerenderAttemptCompleted': [Protocol.Page.PrerenderAttemptCompletedEvent];
     'Page.loadEventFired': [Protocol.Page.LoadEventFiredEvent];
     /**
      * Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
@@ -470,6 +474,10 @@ export namespace ProtocolMapping {
      * The origin's IndexedDB database list has been modified.
      */
     'Storage.indexedDBListUpdated': [Protocol.Storage.IndexedDBListUpdatedEvent];
+    /**
+     * One of the interest groups was accessed by the associated page.
+     */
+    'Storage.interestGroupAccessed': [Protocol.Storage.InterestGroupAccessedEvent];
     /**
      * Issued when attached to target because of auto-attach or `attachToTarget` command.
      */
@@ -973,6 +981,14 @@ export namespace ProtocolMapping {
     'CSS.getStyleSheetText':
         {paramsType: [Protocol.CSS.GetStyleSheetTextRequest]; returnType: Protocol.CSS.GetStyleSheetTextResponse;};
     /**
+     * Returns all layers parsed by the rendering engine for the tree scope of a node.
+     * Given a DOM element identified by nodeId, getLayersForNode returns the root
+     * layer for the nearest ancestor document or shadow root. The layer root contains
+     * the full layer tree for the tree scope and their ordering.
+     */
+    'CSS.getLayersForNode':
+        {paramsType: [Protocol.CSS.GetLayersForNodeRequest]; returnType: Protocol.CSS.GetLayersForNodeResponse;};
+    /**
      * Starts tracking the given computed styles for updates. The specified array of properties
      * replaces the one previously specified. Pass empty array to disable tracking.
      * Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.
@@ -1007,6 +1023,11 @@ export namespace ProtocolMapping {
     'CSS.setContainerQueryText': {
       paramsType: [Protocol.CSS.SetContainerQueryTextRequest]; returnType: Protocol.CSS.SetContainerQueryTextResponse;
     };
+    /**
+     * Modifies the expression of a supports at-rule.
+     */
+    'CSS.setSupportsText':
+        {paramsType: [Protocol.CSS.SetSupportsTextRequest]; returnType: Protocol.CSS.SetSupportsTextResponse;};
     /**
      * Modifies the rule selector.
      */
@@ -1134,7 +1155,7 @@ export namespace ProtocolMapping {
     /**
      * Enables DOM agent for the given page.
      */
-    'DOM.enable': {paramsType: []; returnType: void;};
+    'DOM.enable': {paramsType: [Protocol.DOM.EnableRequest?]; returnType: void;};
     /**
      * Focuses the given element.
      */
@@ -1580,15 +1601,22 @@ export namespace ProtocolMapping {
     'Emulation.setVisibleSize': {paramsType: [Protocol.Emulation.SetVisibleSizeRequest]; returnType: void;};
     'Emulation.setDisabledImageTypes':
         {paramsType: [Protocol.Emulation.SetDisabledImageTypesRequest]; returnType: void;};
+    'Emulation.setHardwareConcurrencyOverride':
+        {paramsType: [Protocol.Emulation.SetHardwareConcurrencyOverrideRequest]; returnType: void;};
     /**
      * Allows overriding user agent with the given string.
      */
     'Emulation.setUserAgentOverride': {paramsType: [Protocol.Emulation.SetUserAgentOverrideRequest]; returnType: void;};
     /**
+     * Allows overriding the automation flag.
+     */
+    'Emulation.setAutomationOverride':
+        {paramsType: [Protocol.Emulation.SetAutomationOverrideRequest]; returnType: void;};
+    /**
      * Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
      * screenshot from the resulting frame. Requires that the target was created with enabled
      * BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
-     * https://goo.gl/3zHXhB for more background.
+     * https://goo.gle/chrome-headless-rendering for more background.
      */
     'HeadlessExperimental.beginFrame': {
       paramsType: [Protocol.HeadlessExperimental.BeginFrameRequest?];
@@ -2096,7 +2124,7 @@ export namespace ProtocolMapping {
     'Overlay.setShowScrollBottleneckRects':
         {paramsType: [Protocol.Overlay.SetShowScrollBottleneckRectsRequest]; returnType: void;};
     /**
-     * Requests that backend shows hit-test borders on layers
+     * Deprecated, no longer has any effect.
      */
     'Overlay.setShowHitTestBorders': {paramsType: [Protocol.Overlay.SetShowHitTestBordersRequest]; returnType: void;};
     /**
@@ -2443,6 +2471,13 @@ export namespace ProtocolMapping {
     'ServiceWorker.updateRegistration':
         {paramsType: [Protocol.ServiceWorker.UpdateRegistrationRequest]; returnType: void;};
     /**
+     * Returns a storage key given a frame id.
+     */
+    'Storage.getStorageKeyForFrame': {
+      paramsType: [Protocol.Storage.GetStorageKeyForFrameRequest];
+      returnType: Protocol.Storage.GetStorageKeyForFrameResponse;
+    };
+    /**
      * Clears storage for origin.
      */
     'Storage.clearDataForOrigin': {paramsType: [Protocol.Storage.ClearDataForOriginRequest]; returnType: void;};
@@ -2501,6 +2536,18 @@ export namespace ProtocolMapping {
     'Storage.clearTrustTokens': {
       paramsType: [Protocol.Storage.ClearTrustTokensRequest]; returnType: Protocol.Storage.ClearTrustTokensResponse;
     };
+    /**
+     * Gets details for a named interest group.
+     */
+    'Storage.getInterestGroupDetails': {
+      paramsType: [Protocol.Storage.GetInterestGroupDetailsRequest];
+      returnType: Protocol.Storage.GetInterestGroupDetailsResponse;
+    };
+    /**
+     * Enables/Disables issuing of interestGroupAccessed events.
+     */
+    'Storage.setInterestGroupTracking':
+        {paramsType: [Protocol.Storage.SetInterestGroupTrackingRequest]; returnType: void;};
     /**
      * Returns information about the system.
      */
@@ -2710,7 +2757,7 @@ export namespace ProtocolMapping {
      * Enable the WebAuthn domain and start intercepting credential storage and
      * retrieval with a virtual authenticator.
      */
-    'WebAuthn.enable': {paramsType: []; returnType: void;};
+    'WebAuthn.enable': {paramsType: [Protocol.WebAuthn.EnableRequest?]; returnType: void;};
     /**
      * Disable the WebAuthn domain.
      */
@@ -2824,7 +2871,19 @@ export namespace ProtocolMapping {
      */
     'Debugger.removeBreakpoint': {paramsType: [Protocol.Debugger.RemoveBreakpointRequest]; returnType: void;};
     /**
-     * Restarts particular call frame from the beginning.
+     * Restarts particular call frame from the beginning. The old, deprecated
+     * behavior of `restartFrame` is to stay paused and allow further CDP commands
+     * after a restart was scheduled. This can cause problems with restarting, so
+     * we now continue execution immediatly after it has been scheduled until we
+     * reach the beginning of the restarted frame.
+     *
+     * To stay back-wards compatible, `restartFrame` now expects a `mode`
+     * parameter to be present. If the `mode` parameter is missing, `restartFrame`
+     * errors out.
+     *
+     * The various return values are deprecated and `callFrames` is always empty.
+     * Use the call frames from the `Debugger#paused` events instead, that fires
+     * once V8 pauses at the beginning of the restarted function.
      */
     'Debugger.restartFrame':
         {paramsType: [Protocol.Debugger.RestartFrameRequest]; returnType: Protocol.Debugger.RestartFrameResponse;};
@@ -3099,6 +3158,17 @@ export namespace ProtocolMapping {
      * unsubscribes current runtime agent from Runtime.bindingCalled notifications.
      */
     'Runtime.removeBinding': {paramsType: [Protocol.Runtime.RemoveBindingRequest]; returnType: void;};
+    /**
+     * This method tries to lookup and populate exception details for a
+     * JavaScript Error object.
+     * Note that the stackTrace portion of the resulting exceptionDetails will
+     * only be populated if the Runtime domain was enabled at the time when the
+     * Error was thrown.
+     */
+    'Runtime.getExceptionDetails': {
+      paramsType: [Protocol.Runtime.GetExceptionDetailsRequest];
+      returnType: Protocol.Runtime.GetExceptionDetailsResponse;
+    };
     /**
      * Returns supported domains.
      */

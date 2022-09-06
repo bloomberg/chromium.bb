@@ -39,9 +39,12 @@
 int dav1d_task_create_tile_sbrow(Dav1dFrameContext *f, int pass, int cond_signal);
 void dav1d_task_frame_init(Dav1dFrameContext *f);
 
+void dav1d_task_delayed_fg(Dav1dContext *c, Dav1dPicture *out, const Dav1dPicture *in);
+
 void *dav1d_worker_task(void *data);
 
 int dav1d_decode_frame_init(Dav1dFrameContext *f);
+int dav1d_decode_frame_init_cdf(Dav1dFrameContext *f);
 int dav1d_decode_frame_main(Dav1dFrameContext *f);
 void dav1d_decode_frame_exit(Dav1dFrameContext *f, int retval);
 int dav1d_decode_frame(Dav1dFrameContext *f);

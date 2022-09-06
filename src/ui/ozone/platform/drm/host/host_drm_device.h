@@ -18,9 +18,9 @@
 #include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
+#include "ui/ozone/platform/drm/mojom/device_cursor.mojom.h"
+#include "ui/ozone/platform/drm/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/mojom/device_cursor.mojom.h"
-#include "ui/ozone/public/mojom/drm_device.mojom.h"
 
 namespace ui {
 class DrmDisplayHostManager;
@@ -62,6 +62,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void GpuAddGraphicsDevice(const base::FilePath& path,
                             base::ScopedFD fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
+  void GpuShouldDisplayEventTriggerConfiguration(
+      const EventPropertyMap& event_props) override;
 
   // Services needed by DrmDisplayHost
   void GpuConfigureNativeDisplays(
@@ -100,6 +102,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void GpuRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
   void GpuTakeDisplayControlCallback(bool success) const;
   void GpuRelinquishDisplayControlCallback(bool success) const;
+  void GpuShouldDisplayEventTriggerConfigurationCallback(
+      bool should_trigger) const;
   void GpuGetHDCPStateCallback(
       int64_t display_id,
       bool success,

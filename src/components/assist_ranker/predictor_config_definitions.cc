@@ -5,11 +5,12 @@
 #include "components/assist_ranker/predictor_config_definitions.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 #include "components/assist_ranker/base_predictor.h"
 
 namespace assist_ranker {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const base::Feature kContextualSearchRankerQuery{
     "ContextualSearchRankerQuery", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -46,40 +47,7 @@ float GetContextualSearchRankerThresholdFeatureParam() {
 // the UKM generated API.
 const base::flat_set<std::string>* GetContextualSearchFeatureAllowlist() {
   static auto* kContextualSearchFeatureAllowlist =
-      new base::flat_set<std::string>({"DidOptIn",
-                                       "DurationAfterScrollMs",
-                                       "EntityImpressionsCount",
-                                       "EntityOpensCount",
-                                       "FontSize",
-                                       "IsEntity",
-                                       "IsEntityEligible",
-                                       "IsHttp",
-                                       "IsLanguageMismatch",
-                                       "IsLongWord",
-                                       "IsSecondTapOverride",
-                                       "IsShortWord",
-                                       "IsWordEdge",
-                                       "OpenCount",
-                                       "OutcomeRankerDidPredict",
-                                       "OutcomeRankerPrediction",
-                                       "OutcomeRankerPredictionScore",
-                                       "OutcomeWasCardsDataShown",
-                                       "OutcomeWasPanelOpened",
-                                       "OutcomeWasQuickActionClicked",
-                                       "OutcomeWasQuickAnswerSeen",
-                                       "PortionOfElement",
-                                       "Previous28DayCtrPercent",
-                                       "Previous28DayImpressionsCount",
-                                       "PreviousWeekCtrPercent",
-                                       "PreviousWeekImpressionsCount",
-                                       "QuickActionImpressionsCount",
-                                       "QuickActionsIgnored",
-                                       "QuickActionsTaken",
-                                       "QuickAnswerCount",
-                                       "ScreenTopDps",
-                                       "TapCount",
-                                       "TapDurationMs",
-                                       "WasScreenBottom"});
+      new base::flat_set<std::string>();
   return kContextualSearchFeatureAllowlist;
 }
 
@@ -94,6 +62,6 @@ const PredictorConfig GetContextualSearchPredictorConfig() {
       GetContextualSearchRankerThresholdFeatureParam()));
   return kContextualSearchPredictorConfig;
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace assist_ranker

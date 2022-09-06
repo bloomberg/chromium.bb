@@ -79,27 +79,20 @@ class StatsCounter;
   V(thread_in_wasm_flag_address_address,                                       \
     "Isolate::thread_in_wasm_flag_address_address")                            \
   V(javascript_execution_assert, "javascript_execution_assert")                \
-  EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_EXTERNAL_CODE_SPACE(V)                  \
-  EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_HEAP_SANDBOX(V)
+  EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_SANDBOXED_EXTERNAL_POINTERS(V)
 
-#ifdef V8_EXTERNAL_CODE_SPACE
-#define EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_EXTERNAL_CODE_SPACE(V) \
-  V(builtins_code_data_container_table, "builtins_code_data_container_table")
-#else
-#define EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_EXTERNAL_CODE_SPACE(V)
-#endif  // V8_EXTERNAL_CODE_SPACE
-
-#ifdef V8_HEAP_SANDBOX
-#define EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_HEAP_SANDBOX(V) \
-  V(external_pointer_table_address,                          \
-    "Isolate::external_pointer_table_address("               \
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+#define EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_SANDBOXED_EXTERNAL_POINTERS(V) \
+  V(external_pointer_table_address,                                         \
+    "Isolate::external_pointer_table_address("                              \
     ")")
 #else
-#define EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_HEAP_SANDBOX(V)
-#endif  // V8_HEAP_SANDBOX
+#define EXTERNAL_REFERENCE_LIST_WITH_ISOLATE_SANDBOXED_EXTERNAL_POINTERS(V)
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 
 #define EXTERNAL_REFERENCE_LIST(V)                                             \
   V(abort_with_reason, "abort_with_reason")                                    \
+  V(address_of_FLAG_trace_osr, "FLAG_trace_osr")                               \
   V(address_of_builtin_subclassing_flag, "FLAG_builtin_subclassing")           \
   V(address_of_double_abs_constant, "double_absolute_constant")                \
   V(address_of_double_neg_constant, "double_negate_constant")                  \
@@ -112,6 +105,7 @@ class StatsCounter;
     "FLAG_mock_arraybuffer_allocator")                                         \
   V(address_of_one_half, "LDoubleConstant::one_half")                          \
   V(address_of_runtime_stats_flag, "TracingFlags::runtime_stats")              \
+  V(address_of_shared_string_table_flag, "FLAG_shared_string_table")           \
   V(address_of_the_hole_nan, "the_hole_nan")                                   \
   V(address_of_uint32_bias, "uint32_bias")                                     \
   V(baseline_pc_for_bytecode_offset, "BaselinePCForBytecodeOffset")            \
@@ -192,8 +186,12 @@ class StatsCounter;
   V(external_two_byte_string_get_chars, "external_two_byte_string_get_chars")  \
   V(smi_lexicographic_compare_function, "smi_lexicographic_compare_function")  \
   V(string_to_array_index_function, "String::ToArrayIndex")                    \
+  V(array_indexof_includes_smi_or_object,                                      \
+    "array_indexof_includes_smi_or_object")                                    \
+  V(array_indexof_includes_double, "array_indexof_includes_double")            \
   V(try_string_to_index_or_lookup_existing,                                    \
     "try_string_to_index_or_lookup_existing")                                  \
+  V(string_from_forward_table, "string_from_forward_table")                    \
   IF_WASM(V, wasm_call_trap_callback_for_testing,                              \
           "wasm::call_trap_callback_for_testing")                              \
   IF_WASM(V, wasm_f32_ceil, "wasm::f32_ceil_wrapper")                          \
@@ -243,6 +241,7 @@ class StatsCounter;
   IF_WASM(V, wasm_memory_copy, "wasm::memory_copy")                            \
   IF_WASM(V, wasm_memory_fill, "wasm::memory_fill")                            \
   IF_WASM(V, wasm_array_copy, "wasm::array_copy")                              \
+  IF_WASM(V, wasm_array_fill_with_zeroes, "wasm::array_fill_with_zeroes")      \
   V(address_of_wasm_i8x16_swizzle_mask, "wasm_i8x16_swizzle_mask")             \
   V(address_of_wasm_i8x16_popcnt_mask, "wasm_i8x16_popcnt_mask")               \
   V(address_of_wasm_i8x16_splat_0x01, "wasm_i8x16_splat_0x01")                 \
@@ -257,6 +256,7 @@ class StatsCounter;
   V(address_of_wasm_int32_max_as_double, "wasm_int32_max_as_double")           \
   V(address_of_wasm_uint32_max_as_double, "wasm_uint32_max_as_double")         \
   V(address_of_wasm_int32_overflow_as_float, "wasm_int32_overflow_as_float")   \
+  V(supports_cetss_address, "CpuFeatures::supports_cetss_address")             \
   V(write_barrier_marking_from_code_function, "WriteBarrier::MarkingFromCode") \
   V(call_enqueue_microtask_function, "MicrotaskQueue::CallEnqueueMicrotask")   \
   V(call_enter_context_function, "call_enter_context_function")                \
@@ -306,8 +306,8 @@ class StatsCounter;
   V(re_experimental_match_for_call_from_js,                                    \
     "ExperimentalRegExp::MatchForCallFromJs")                                  \
   EXTERNAL_REFERENCE_LIST_INTL(V)                                              \
-  EXTERNAL_REFERENCE_LIST_VIRTUAL_MEMORY_CAGE(V)                               \
-  EXTERNAL_REFERENCE_LIST_HEAP_SANDBOX(V)
+  EXTERNAL_REFERENCE_LIST_SANDBOX(V)                                           \
+  EXTERNAL_REFERENCE_LIST_SANDBOXED_EXTERNAL_POINTERS(V)
 #ifdef V8_INTL_SUPPORT
 #define EXTERNAL_REFERENCE_LIST_INTL(V)                               \
   V(intl_convert_one_byte_to_lower, "intl_convert_one_byte_to_lower") \
@@ -318,22 +318,22 @@ class StatsCounter;
 #define EXTERNAL_REFERENCE_LIST_INTL(V)
 #endif  // V8_INTL_SUPPORT
 
-#ifdef V8_CAGED_POINTERS
-#define EXTERNAL_REFERENCE_LIST_VIRTUAL_MEMORY_CAGE(V)               \
-  V(virtual_memory_cage_base_address, "V8VirtualMemoryCage::base()") \
-  V(virtual_memory_cage_end_address, "V8VirtualMemoryCage::end()")   \
+#ifdef V8_SANDBOXED_POINTERS
+#define EXTERNAL_REFERENCE_LIST_SANDBOX(V)   \
+  V(sandbox_base_address, "Sandbox::base()") \
+  V(sandbox_end_address, "Sandbox::end()")   \
   V(empty_backing_store_buffer, "EmptyBackingStoreBuffer()")
 #else
-#define EXTERNAL_REFERENCE_LIST_VIRTUAL_MEMORY_CAGE(V)
-#endif  // V8_CAGED_POINTERS
+#define EXTERNAL_REFERENCE_LIST_SANDBOX(V)
+#endif  // V8_SANDBOXED_POINTERS
 
-#ifdef V8_HEAP_SANDBOX
-#define EXTERNAL_REFERENCE_LIST_HEAP_SANDBOX(V) \
-  V(external_pointer_table_grow_table_function, \
-    "ExternalPointerTable::GrowTable")
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+#define EXTERNAL_REFERENCE_LIST_SANDBOXED_EXTERNAL_POINTERS(V) \
+  V(external_pointer_table_allocate_entry,                     \
+    "ExternalPointerTable::AllocateEntry")
 #else
-#define EXTERNAL_REFERENCE_LIST_HEAP_SANDBOX(V)
-#endif  // V8_HEAP_SANDBOX
+#define EXTERNAL_REFERENCE_LIST_SANDBOXED_EXTERNAL_POINTERS(V)
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 
 // An ExternalReference represents a C++ address used in the generated
 // code. All references to C++ functions and variables must be encapsulated

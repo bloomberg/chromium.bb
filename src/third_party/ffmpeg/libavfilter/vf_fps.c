@@ -351,7 +351,7 @@ static int activate(AVFilterContext *ctx)
     if (s->frames_count > 0) {
         ret = write_frame(ctx, s, outlink, &again);
         /* Couldn't generate a frame, so schedule us to perform another step */
-        if (again)
+        if (again && ff_inoutlink_check_flow(inlink, outlink))
             ff_filter_set_ready(ctx, 100);
         return ret;
     }
@@ -388,6 +388,7 @@ const AVFilter ff_vf_fps = {
     .priv_size   = sizeof(FPSContext),
     .priv_class  = &fps_class,
     .activate    = activate,
+    .flags       = AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(avfilter_vf_fps_inputs),
     FILTER_OUTPUTS(avfilter_vf_fps_outputs),
 };

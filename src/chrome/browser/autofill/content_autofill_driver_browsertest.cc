@@ -96,8 +96,9 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
         ContentAutofillDriverFactory::
             kContentAutofillDriverFactoryWebContentsUserDataKey);
     ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-        web_contents, &autofill_client(), "en-US",
-        BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+        web_contents, &autofill_client(),
+        base::BindRepeating(&autofill::BrowserDriverInitHook,
+                            &autofill_client(), "en-US"));
 
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -281,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverPrerenderBrowserTest,
   // Set a dummy form data to simulate to submit a form. And, OnFormSubmitted
   // method will be called upon navigation.
   ContentAutofillDriverFactory::FromWebContents(web_contents())
-      ->DriverForFrame(web_contents()->GetMainFrame())
+      ->DriverForFrame(web_contents()->GetPrimaryMainFrame())
       ->SetFormToBeProbablySubmitted(absl::make_optional<FormData>());
 
   base::HistogramTester histogram_tester;

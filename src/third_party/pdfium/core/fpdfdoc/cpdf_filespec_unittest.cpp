@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/fpdfdoc/cpdf_filespec.h"
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -12,11 +14,9 @@
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
-#include "core/fpdfdoc/cpdf_filespec.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/test_support.h"
-#include "third_party/base/cxx17_backports.h"
 
 TEST(cpdf_filespec, EncodeDecodeFileName) {
   static const std::vector<pdfium::NullTermWstrFuncTestData> test_data = {
@@ -24,7 +24,7 @@ TEST(cpdf_filespec, EncodeDecodeFileName) {
     {L"", L""},
     // only file name.
     {L"test.pdf", L"test.pdf"},
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // With drive identifier.
     {L"r:\\pdfdocs\\spec.pdf", L"/r/pdfdocs/spec.pdf"},
     // Relative path.
@@ -35,7 +35,7 @@ TEST(cpdf_filespec, EncodeDecodeFileName) {
     {L"\\\\pdfdocs\\spec.pdf", L"/pdfdocs/spec.pdf"},
 // Network resource name. It is not supported yet.
 // {L"pclib/eng:\\pdfdocs\\spec.pdf", L"/pclib/eng/pdfdocs/spec.pdf"},
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
     // Absolute path with colon separator.
     {L"Mac HD:PDFDocs:spec.pdf", L"/Mac HD/PDFDocs/spec.pdf"},
     // Relative path with colon separator.
@@ -62,10 +62,10 @@ TEST(cpdf_filespec, GetFileName) {
   {
     // String object.
     static const pdfium::NullTermWstrFuncTestData test_data = {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       L"/C/docs/test.pdf",
       L"C:\\docs\\test.pdf"
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
       L"/Mac HD/docs/test.pdf",
       L"Mac HD:docs:test.pdf"
 #else
@@ -80,13 +80,13 @@ TEST(cpdf_filespec, GetFileName) {
   {
     // Dictionary object.
     static const pdfium::NullTermWstrFuncTestData test_data[] = {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       {L"/C/docs/test.pdf", L"C:\\docs\\test.pdf"},
       {L"/D/docs/test.pdf", L"D:\\docs\\test.pdf"},
       {L"/E/docs/test.pdf", L"E:\\docs\\test.pdf"},
       {L"/F/docs/test.pdf", L"F:\\docs\\test.pdf"},
       {L"/G/docs/test.pdf", L"G:\\docs\\test.pdf"},
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
       {L"/Mac HD/docs1/test.pdf", L"Mac HD:docs1:test.pdf"},
       {L"/Mac HD/docs2/test.pdf", L"Mac HD:docs2:test.pdf"},
       {L"/Mac HD/docs3/test.pdf", L"Mac HD:docs3:test.pdf"},
@@ -102,12 +102,11 @@ TEST(cpdf_filespec, GetFileName) {
     };
     // Keyword fields in reverse order of precedence to retrieve the file name.
     const char* const keywords[] = {"Unix", "Mac", "DOS", "F", "UF"};
-    static_assert(pdfium::size(test_data) == pdfium::size(keywords),
-                  "size mismatch");
+    static_assert(std::size(test_data) == std::size(keywords), "size mismatch");
     auto dict_obj = pdfium::MakeRetain<CPDF_Dictionary>();
     CPDF_FileSpec file_spec(dict_obj.Get());
     EXPECT_TRUE(file_spec.GetFileName().IsEmpty());
-    for (size_t i = 0; i < pdfium::size(keywords); ++i) {
+    for (size_t i = 0; i < std::size(keywords); ++i) {
       dict_obj->SetNewFor<CPDF_String>(keywords[i], test_data[i].input);
       EXPECT_STREQ(test_data[i].expected, file_spec.GetFileName().c_str());
     }
@@ -138,10 +137,10 @@ TEST(cpdf_filespec, GetFileName) {
 
 TEST(cpdf_filespec, SetFileName) {
   static const pdfium::NullTermWstrFuncTestData test_data = {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     L"C:\\docs\\test.pdf",
     L"/C/docs/test.pdf"
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
     L"Mac HD:docs:test.pdf",
     L"/Mac HD/docs/test.pdf"
 #else
@@ -198,12 +197,12 @@ TEST(cpdf_filespec, GetFileStream) {
     const wchar_t file_name[] = L"test.pdf";
     const char* const keys[] = {"Unix", "Mac", "DOS", "F", "UF"};
     const char* const streams[] = {"test1", "test2", "test3", "test4", "test5"};
-    static_assert(pdfium::size(keys) == pdfium::size(streams), "size mismatch");
+    static_assert(std::size(keys) == std::size(streams), "size mismatch");
     CPDF_Dictionary* file_dict =
         file_spec.GetObj()->AsDictionary()->GetDictFor("EF");
 
     // Keys in reverse order of precedence to retrieve the file content stream.
-    for (size_t i = 0; i < pdfium::size(keys); ++i) {
+    for (size_t i = 0; i < std::size(keys); ++i) {
       // Set the file name.
       dict_obj->SetNewFor<CPDF_String>(keys[i], file_name);
 

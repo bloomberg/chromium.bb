@@ -105,7 +105,7 @@ base::TimeDelta GetNoInputCloseTimeout() {
 }
 
 void UseHighPriority() {
-#if (!defined(OS_FUCHSIA) && !defined(OS_ANDROID))
+#if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_ANDROID)
   struct sched_param params;
   params.sched_priority = sched_get_priority_max(SCHED_FIFO);
   pthread_setschedparam(pthread_self(), SCHED_FIFO, &params);
@@ -1044,6 +1044,20 @@ void StreamMixer::SetVolumeMultiplierOnThread(MixerInput::Source* source,
     it->second->SetVolumeMultiplier(multiplier);
   }
   UpdateStreamCountsOnThread();
+}
+
+void StreamMixer::SetSimulatedClockRate(MixerInput::Source* source,
+                                        double new_clock_rate) {
+  RUN_ON_MIXER_THREAD(SetSimulatedClockRateOnThread, source, new_clock_rate);
+}
+
+void StreamMixer::SetSimulatedClockRateOnThread(MixerInput::Source* source,
+                                                double new_clock_rate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(mixer_sequence_checker_);
+  auto it = inputs_.find(source);
+  if (it != inputs_.end()) {
+    it->second->SetSimulatedClockRate(new_clock_rate);
+  }
 }
 
 void StreamMixer::SetPostProcessorConfig(std::string name, std::string config) {

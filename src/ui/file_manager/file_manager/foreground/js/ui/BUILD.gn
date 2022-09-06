@@ -25,7 +25,7 @@ group("js_modules") {
     ":action_model_ui",
     ":actions_submenu",
     ":autocomplete_list",
-    ":banners",
+    ":breadcrumb_controller",
     ":combobutton",
     ":commandbutton",
     ":default_task_dialog",
@@ -47,7 +47,6 @@ group("js_modules") {
     ":import_crostini_image_dialog",
     ":install_linux_package_dialog",
     ":list_container",
-    ":location_line",
     ":multi_menu",
     ":multi_menu_button",
     ":progress_center_panel",
@@ -75,8 +74,8 @@ js_type_check("closure_compile_jsmodules") {
     ":action_model_ui",
     ":actions_submenu",
     ":autocomplete_list",
-    ":banners",
     ":breadcrumb",
+    ":breadcrumb_controller",
     ":combobutton",
     ":commandbutton",
     ":default_task_dialog",
@@ -98,7 +97,6 @@ js_type_check("closure_compile_jsmodules") {
     ":import_crostini_image_dialog",
     ":install_linux_package_dialog",
     ":list_container",
-    ":location_line",
     ":multi_menu",
     ":multi_menu_button",
     ":progress_center_panel",
@@ -145,24 +143,10 @@ js_unittest("actions_submenu_unittest.m") {
   ]
 }
 
-js_library("banners") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:util",
-    "//ui/file_manager/file_manager/common/js:volume_manager_types",
-    "//ui/file_manager/file_manager/externs:volume_info",
-    "//ui/file_manager/file_manager/externs:volume_manager",
-    "//ui/file_manager/file_manager/foreground/js:constants",
-    "//ui/file_manager/file_manager/foreground/js:directory_model",
-    "//ui/file_manager/file_manager/foreground/js:holding_space_util",
-    "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:util.m",
-    "//ui/webui/resources/js/cr:event_target.m",
-  ]
-}
-
 js_library("breadcrumb") {
-  deps = [ "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu" ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu_externs.js",
+  ]
 }
 
 js_unittest("breadcrumb_unittest.m") {
@@ -330,7 +314,7 @@ js_library("file_manager_ui") {
     ":a11y_announce",
     ":action_model_ui",
     ":actions_submenu",
-    ":banners",
+    ":breadcrumb_controller",
     ":combobutton",
     ":default_task_dialog",
     ":dialog_footer",
@@ -344,7 +328,6 @@ js_library("file_manager_ui") {
     ":import_crostini_image_dialog",
     ":install_linux_package_dialog",
     ":list_container",
-    ":location_line",
     ":multi_menu",
     ":multi_menu_button",
     ":progress_center_panel",
@@ -547,15 +530,13 @@ js_library("list_container") {
   ]
 }
 
-js_library("location_line") {
+js_library("breadcrumb_controller") {
   deps = [
     ":breadcrumb",
     ":list_container",
     "//ui/file_manager/file_manager/common/js:metrics",
-    "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
     "//ui/file_manager/file_manager/externs:volume_manager",
-    "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
     "//ui/file_manager/file_manager/foreground/js:path_component",
     "//ui/webui/resources/js/cr:event_target.m",
   ]

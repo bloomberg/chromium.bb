@@ -19,7 +19,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "url/gurl.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -37,13 +37,6 @@ class OSExchangeDataTest : public PlatformTest {
 };
 
 TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
-#if defined(OS_MAC)
-  if (base::mac::IsAtMostOS10_11()) {
-    GTEST_SKIP() << "macOS 10.11 and earlier are flaky and hang in pasteboard "
-                    "code. https://crbug.com/1232472";
-  }
-#endif  // OS_MAC
-
   OSExchangeData data;
   std::u16string input = u"I can has cheezburger?";
   EXPECT_FALSE(data.HasString());
@@ -66,13 +59,6 @@ TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
 }
 
 TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
-#if defined(OS_MAC)
-  if (base::mac::IsAtMostOS10_11()) {
-    GTEST_SKIP() << "macOS 10.11 and earlier are flaky and hang in pasteboard "
-                    "code. https://crbug.com/1232472";
-  }
-#endif  // OS_MAC
-
   OSExchangeData data;
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
@@ -103,13 +89,6 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
 // Test that setting the URL does not overwrite a previously set custom string
 // and that the synthesized URL shortcut file is ignored by GetFileContents().
 TEST_F(OSExchangeDataTest, URLStringFileContents) {
-#if defined(OS_MAC)
-  if (base::mac::IsAtMostOS10_11()) {
-    GTEST_SKIP() << "macOS 10.11 and earlier are flaky and hang in pasteboard "
-                    "code. https://crbug.com/1232472";
-  }
-#endif  // OS_MAC
-
   OSExchangeData data;
   std::u16string string = u"I can has cheezburger?";
   data.SetString(string);
@@ -140,13 +119,6 @@ TEST_F(OSExchangeDataTest, URLStringFileContents) {
 }
 
 TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
-#if defined(OS_MAC)
-  if (base::mac::IsAtMostOS10_11()) {
-    GTEST_SKIP() << "macOS 10.11 and earlier are flaky and hang in pasteboard "
-                    "code. https://crbug.com/1232472";
-  }
-#endif  // OS_MAC
-
   OSExchangeData data;
   EXPECT_FALSE(data.HasURL(FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES));
   EXPECT_FALSE(data.HasURL(FilenameToURLPolicy::CONVERT_FILENAMES));
@@ -187,13 +159,6 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
 }
 
 TEST_F(OSExchangeDataTest, TestPickledData) {
-#if defined(OS_MAC)
-  if (base::mac::IsAtMostOS10_11()) {
-    GTEST_SKIP() << "macOS 10.11 and earlier are flaky and hang in pasteboard "
-                    "code. https://crbug.com/1232472";
-  }
-#endif  // OS_MAC
-
   const ClipboardFormatType kTestFormat =
       ClipboardFormatType::GetType("application/vnd.chromium.test");
 
@@ -218,14 +183,7 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
 }
 
 TEST_F(OSExchangeDataTest, TestFilenames) {
-#if defined(OS_MAC)
-  if (base::mac::IsAtMostOS10_11()) {
-    GTEST_SKIP() << "macOS 10.11 and earlier are flaky and hang in pasteboard "
-                    "code. https://crbug.com/1232472";
-  }
-#endif  // OS_MAC
-
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const std::vector<FileInfo> kTestFilenames = {
       {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file1")),
        base::FilePath()},

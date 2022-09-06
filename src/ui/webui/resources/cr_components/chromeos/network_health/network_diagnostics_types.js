@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-// #import 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-lite.js';
-// clang-format on
+import {RoutineResult, RoutineType} from 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-webui.js';
 
 /**
  * @fileoverview
@@ -15,31 +12,31 @@
 /**
  * A routine response from the Network Diagnostics mojo service.
  * @typedef {{
- *   result: chromeos.networkDiagnostics.mojom.RoutineResult,
+ *   result: RoutineResult,
  * }}
  */
-/* #export */ let RoutineResponse;
+export let RoutineResponse;
 
 /**
  * A network diagnostics routine. Holds descriptive information about the
  * routine, and it's transient state.
  * @typedef {{
  *   name: string,
- *   type: !chromeos.networkDiagnostics.mojom.RoutineType,
+ *   type: !RoutineType,
  *   group: !RoutineGroup,
  *   func: function(),
  *   running: boolean,
  *   resultMsg: string,
- *   result: ?chromeos.networkDiagnostics.mojom.RoutineResult,
+ *   result: ?RoutineResult,
  * }}
  */
-/* #export */ let Routine;
+export let Routine;
 
 /**
  * Definition for different groups of network routines.
  * @enum {number}
  */
-/* #export */ const RoutineGroup = {
+export const RoutineGroup = {
   CONNECTION: 0,
   WIFI: 1,
   PORTAL: 2,
@@ -50,7 +47,7 @@
   ARC: 7
 };
 
-/* #export */ const Icons = {
+export const Icons = {
   TEST_FAILED: 'test_failed.png',
   TEST_NOT_RUN: 'test_not_run.png',
   TEST_PASSED: 'test_passed.png'

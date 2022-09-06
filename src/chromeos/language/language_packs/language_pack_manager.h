@@ -13,13 +13,13 @@
 #include "base/strings/strcat.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
-namespace chromeos {
-namespace language_packs {
+namespace chromeos::language_packs {
 
 // All Language Pack IDs are listed here.
 constexpr char kHandwritingFeatureId[] = "LP_ID_HANDWRITING";
+constexpr char kTtsFeatureId[] = "LP_ID_TTS";
 
-// Status contains information about the status of an operation.
+// Status contains information about the status of a Language Pack operation.
 struct PackResult {
   // This string contains the error returns by DLC Service.
   std::string operation_error;
@@ -79,8 +79,11 @@ using GetPackStateCallback =
     base::OnceCallback<void(const PackResult& pack_result)>;
 using OnUninstallCompleteCallback =
     base::OnceCallback<void(const PackResult& pack_result)>;
+using OnInstallBasePayloadCompleteCallback =
+    base::OnceCallback<void(const PackResult& pack_result)>;
 
-// This class manages all Language Packs on the device.
+// This class manages all Language Packs and their dependencies (called Base
+// Payloads) on the device.
 // This is a Singleton and needs to be accessed via Get().
 class LanguagePackManager : public DlcserviceClient::Observer {
  public:
@@ -95,15 +98,22 @@ class LanguagePackManager : public DlcserviceClient::Observer {
     virtual void OnPackStateChanged(const PackResult& pack_result) = 0;
   };
 
+  // Disallow copy and assign.
+  LanguagePackManager(const LanguagePackManager&) = delete;
+  LanguagePackManager& operator=(const LanguagePackManager&) = delete;
+
   // Returns true if the given Language Pack exists and can be installed on
   // this device.
   // TODO(claudiomagni): Check per board.
-  bool IsPackAvailable(const std::string& pack_id, const std::string& locale);
+  bool IsPackAvailable(const std::string& feature_id,
+                       const std::string& locale);
 
   // Installs the Language Pack.
   // It takes a callback that will be triggered once the operation is done.
   // A state is passed to the callback.
-  void InstallPack(const std::string& pack_id,
+  // TODO(crbug.com/1320137): If |feature_id| has a corresponding Base Payload,
+  // then the Base Payload should be installed first.
+  void InstallPack(const std::string& feature_id,
                    const std::string& locale,
                    OnInstallCompleteCallback callback);
 
@@ -113,7 +123,7 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // If the state marks the Language Pack as ready, then there's no need to
   // call Install(), otherwise the client should call Install() and not call
   // this method a second time.
-  void GetPackState(const std::string& pack_id,
+  void GetPackState(const std::string& feature_id,
                     const std::string& locale,
                     GetPackStateCallback callback);
 
@@ -123,9 +133,13 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // when that will happen.
   // TODO(claudiomagni): Allow callers to force immediate removal. Useful to
   //                     clear space on disk for another language.
-  void RemovePack(const std::string& pack_id,
+  void RemovePack(const std::string& feature_id,
                   const std::string& locale,
                   OnUninstallCompleteCallback callback);
+
+  // Explicitly installs the base payload for |feature_id|.
+  void InstallBasePayload(const std::string& feature_id,
+                          OnInstallBasePayloadCompleteCallback callback);
 
   // Adds an observer to the observer list.
   void AddObserver(Observer* observer);
@@ -150,16 +164,6 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   LanguagePackManager();
   ~LanguagePackManager() override;
 
-  // Disallow copy and assign.
-  LanguagePackManager(const LanguagePackManager&) = delete;
-  LanguagePackManager& operator=(const LanguagePackManager&) = delete;
-
-  // Finds the ID of the DLC corresponding to the given spec.
-  // Returns true if the DLC exists or false otherwise.
-  bool GetDlcId(const std::string& pack_id,
-                const std::string& locale,
-                std::string* dlc_id);
-
   // DlcserviceClient::Observer overrides.
   void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;
 
@@ -169,7 +173,6 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   base::ObserverList<Observer> observers_;
 };
 
-}  // namespace language_packs
-}  // namespace chromeos
+}  // namespace chromeos::language_packs
 
 #endif  // CHROMEOS_LANGUAGE_LANGUAGE_PACKS_LANGUAGE_PACK_MANAGER_H_

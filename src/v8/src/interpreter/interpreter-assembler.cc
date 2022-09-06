@@ -313,7 +313,7 @@ void InterpreterAssembler::StoreRegisterForShortStar(TNode<Object> value,
   constexpr int short_star_to_operand =
       Register(0).ToOperand() - static_cast<int>(Bytecode::kStar0);
   // Make sure the values count in the right direction.
-  STATIC_ASSERT(short_star_to_operand ==
+  static_assert(short_star_to_operand ==
                 Register(1).ToOperand() - static_cast<int>(Bytecode::kStar1));
 
   TNode<IntPtrT> offset =
@@ -683,9 +683,12 @@ InterpreterAssembler::LoadAndUntagConstantPoolEntryAtOperandIndex(
   return SmiUntag(CAST(LoadConstantPoolEntryAtOperandIndex(operand_index)));
 }
 
+TNode<JSFunction> InterpreterAssembler::LoadFunctionClosure() {
+  return CAST(LoadRegister(Register::function_closure()));
+}
+
 TNode<HeapObject> InterpreterAssembler::LoadFeedbackVector() {
-  TNode<JSFunction> function = CAST(LoadRegister(Register::function_closure()));
-  return CodeStubAssembler::LoadFeedbackVector(function);
+  return CodeStubAssembler::LoadFeedbackVector(LoadFunctionClosure());
 }
 
 void InterpreterAssembler::CallPrologue() {
@@ -713,20 +716,14 @@ void InterpreterAssembler::CallJSAndDispatch(
   DCHECK_EQ(Bytecodes::GetReceiverMode(bytecode_), receiver_mode);
 
   TNode<Word32T> args_count = args.reg_count();
-  const bool receiver_included =
-      receiver_mode != ConvertReceiverMode::kNullOrUndefined;
-  if (kJSArgcIncludesReceiver && !receiver_included) {
-    // Add receiver if we want to include it in argc and it isn't already.
+  if (receiver_mode == ConvertReceiverMode::kNullOrUndefined) {
+    // Add receiver. It is not included in args as it is implicit.
     args_count = Int32Add(args_count, Int32Constant(kJSArgcReceiverSlots));
-  } else if (!kJSArgcIncludesReceiver && receiver_included) {
-    // Subtract receiver if we don't want to include it, but it is included.
-    TNode<Int32T> receiver_count = Int32Constant(1);
-    args_count = Int32Sub(args_count, receiver_count);
   }
 
   Callable callable = CodeFactory::InterpreterPushArgsThenCall(
       isolate(), receiver_mode, InterpreterPushArgsMode::kOther);
-  TNode<Code> code_target = HeapConstant(callable.code());
+  TNode<CodeT> code_target = HeapConstant(callable.code());
 
   TailCallStubThenBytecodeDispatch(callable.descriptor(), code_target, context,
                                    args_count, args.base_reg_location(),
@@ -747,7 +744,7 @@ void InterpreterAssembler::CallJSAndDispatch(TNode<Object> function,
          bytecode_ == Bytecode::kInvokeIntrinsic);
   DCHECK_EQ(Bytecodes::GetReceiverMode(bytecode_), receiver_mode);
   Callable callable = CodeFactory::Call(isolate());
-  TNode<Code> code_target = HeapConstant(callable.code());
+  TNode<CodeT> code_target = HeapConstant(callable.code());
 
   arg_count = JSParameterCount(arg_count);
   if (receiver_mode == ConvertReceiverMode::kNullOrUndefined) {
@@ -792,13 +789,9 @@ void InterpreterAssembler::CallJSWithSpreadAndDispatch(
   Callable callable = CodeFactory::InterpreterPushArgsThenCall(
       isolate(), ConvertReceiverMode::kAny,
       InterpreterPushArgsMode::kWithFinalSpread);
-  TNode<Code> code_target = HeapConstant(callable.code());
+  TNode<CodeT> code_target = HeapConstant(callable.code());
 
   TNode<Word32T> args_count = args.reg_count();
-  if (!kJSArgcIncludesReceiver) {
-    TNode<Int32T> receiver_count = Int32Constant(1);
-    args_count = Int32Sub(args_count, receiver_count);
-  }
   TailCallStubThenBytecodeDispatch(callable.descriptor(), code_target, context,
                                    args_count, args.base_reg_location(),
                                    function);
@@ -981,7 +974,7 @@ TNode<T> InterpreterAssembler::CallRuntimeN(TNode<Uint32T> function_id,
   DCHECK(Bytecodes::MakesCallAlongCriticalPath(bytecode_));
   DCHECK(Bytecodes::IsCallRuntime(bytecode_));
   Callable callable = CodeFactory::InterpreterCEntry(isolate(), return_count);
-  TNode<Code> code_target = HeapConstant(callable.code());
+  TNode<CodeT> code_target = HeapConstant(callable.code());
 
   // Get the function entry from the function id.
   TNode<RawPtrT> function_table = ReinterpretCast<RawPtrT>(ExternalConstant(
@@ -1038,11 +1031,10 @@ void InterpreterAssembler::UpdateInterruptBudget(TNode<Int32T> weight,
 
     BIND(&interrupt_check);
     // JumpLoop should do a stack check as part of the interrupt.
-    CallRuntime(
-        bytecode() == Bytecode::kJumpLoop
-            ? Runtime::kBytecodeBudgetInterruptWithStackCheckFromBytecode
-            : Runtime::kBytecodeBudgetInterruptFromBytecode,
-        GetContext(), function);
+    CallRuntime(bytecode() == Bytecode::kJumpLoop
+                    ? Runtime::kBytecodeBudgetInterruptWithStackCheck
+                    : Runtime::kBytecodeBudgetInterrupt,
+                GetContext(), function);
     Goto(&done);
 
     BIND(&ok);
@@ -1184,9 +1176,9 @@ void InterpreterAssembler::StarDispatchLookahead(TNode<WordT> target_bytecode) {
   // opcodes are never deliberately written, so we can use a one-sided check.
   // This is no less secure than the normal-length Star handler, which performs
   // no validation on its operand.
-  STATIC_ASSERT(static_cast<int>(Bytecode::kLastShortStar) + 1 ==
+  static_assert(static_cast<int>(Bytecode::kLastShortStar) + 1 ==
                 static_cast<int>(Bytecode::kIllegal));
-  STATIC_ASSERT(Bytecode::kIllegal == Bytecode::kLast);
+  static_assert(Bytecode::kIllegal == Bytecode::kLast);
   TNode<Int32T> first_short_star_bytecode =
       Int32Constant(static_cast<int>(Bytecode::kFirstShortStar));
   TNode<BoolT> is_star = Uint32GreaterThanOrEqual(
@@ -1318,16 +1310,18 @@ void InterpreterAssembler::UpdateInterruptBudgetOnReturn() {
   // length of the back-edge, so we just have to correct for the non-zero offset
   // of the first bytecode.
 
-  const int kFirstBytecodeOffset = BytecodeArray::kHeaderSize - kHeapObjectTag;
   TNode<Int32T> profiling_weight =
       Int32Sub(TruncateIntPtrToInt32(BytecodeOffset()),
                Int32Constant(kFirstBytecodeOffset));
   UpdateInterruptBudget(profiling_weight, true);
 }
 
-TNode<Int8T> InterpreterAssembler::LoadOsrNestingLevel() {
-  return LoadObjectField<Int8T>(BytecodeArrayTaggedPointer(),
-                                BytecodeArray::kOsrLoopNestingLevelOffset);
+TNode<Int8T> InterpreterAssembler::LoadOsrState(
+    TNode<FeedbackVector> feedback_vector) {
+  // We're loading an 8-bit field, mask it.
+  return UncheckedCast<Int8T>(Word32And(
+      LoadObjectField<Int8T>(feedback_vector, FeedbackVector::kOsrStateOffset),
+      0xFF));
 }
 
 void InterpreterAssembler::Abort(AbortReason abort_reason) {
@@ -1348,23 +1342,69 @@ void InterpreterAssembler::AbortIfWordNotEqual(TNode<WordT> lhs,
   BIND(&ok);
 }
 
-void InterpreterAssembler::OnStackReplacement(TNode<Context> context,
-                                              TNode<IntPtrT> relative_jump) {
-  TNode<JSFunction> function = CAST(LoadRegister(Register::function_closure()));
-  TNode<HeapObject> shared_info = LoadJSFunctionSharedFunctionInfo(function);
-  TNode<Object> sfi_data =
-      LoadObjectField(shared_info, SharedFunctionInfo::kFunctionDataOffset);
-  TNode<Uint16T> data_type = LoadInstanceType(CAST(sfi_data));
+void InterpreterAssembler::OnStackReplacement(
+    TNode<Context> context, TNode<FeedbackVector> feedback_vector,
+    TNode<IntPtrT> relative_jump, TNode<Int32T> loop_depth,
+    TNode<IntPtrT> feedback_slot, TNode<Int8T> osr_state,
+    OnStackReplacementParams params) {
+  // Three cases may cause us to attempt OSR, in the following order:
+  //
+  // 1) Presence of cached OSR Turbofan code.
+  // 2) Presence of cached OSR Sparkplug code.
+  // 3) The OSR urgency exceeds the current loop depth - in that case, trigger
+  //    a Turbofan OSR compilation.
+  TVARIABLE(Object, maybe_target_code, SmiConstant(0));
+  Label osr_to_turbofan(this), osr_to_sparkplug(this);
 
-  Label baseline(this);
-  GotoIf(InstanceTypeEqual(data_type, CODET_TYPE), &baseline);
+  // Case 1).
+  {
+    Label next(this);
+    TNode<MaybeObject> maybe_cached_osr_code =
+        LoadFeedbackVectorSlot(feedback_vector, feedback_slot);
+    GotoIf(IsCleared(maybe_cached_osr_code), &next);
+    maybe_target_code = GetHeapObjectAssumeWeak(maybe_cached_osr_code);
+
+    // Is it marked_for_deoptimization? If yes, clear the slot.
+    GotoIfNot(IsMarkedForDeoptimization(CAST(maybe_target_code.value())),
+              &osr_to_turbofan);
+    StoreFeedbackVectorSlot(feedback_vector, Unsigned(feedback_slot),
+                            ClearedValue(), UNSAFE_SKIP_WRITE_BARRIER);
+    maybe_target_code = SmiConstant(0);
+
+    Goto(&next);
+    BIND(&next);
+  }
+
+  // Case 2).
+  if (params == OnStackReplacementParams::kBaselineCodeIsCached) {
+    Goto(&osr_to_sparkplug);
+  } else {
+    DCHECK_EQ(params, OnStackReplacementParams::kDefault);
+    TNode<SharedFunctionInfo> sfi = LoadObjectField<SharedFunctionInfo>(
+        LoadFunctionClosure(), JSFunction::kSharedFunctionInfoOffset);
+    TNode<HeapObject> sfi_data = LoadObjectField<HeapObject>(
+        sfi, SharedFunctionInfo::kFunctionDataOffset);
+    GotoIf(InstanceTypeEqual(LoadInstanceType(sfi_data), CODET_TYPE),
+           &osr_to_sparkplug);
+
+    // Case 3).
+    {
+      static_assert(FeedbackVector::OsrUrgencyBits::kShift == 0);
+      TNode<Int32T> osr_urgency = Word32And(
+          osr_state, Int32Constant(FeedbackVector::OsrUrgencyBits::kMask));
+      GotoIf(Uint32LessThan(loop_depth, osr_urgency), &osr_to_turbofan);
+      JumpBackward(relative_jump);
+    }
+  }
+
+  BIND(&osr_to_turbofan);
   {
     Callable callable = CodeFactory::InterpreterOnStackReplacement(isolate());
-    CallStub(callable, context);
+    CallStub(callable, context, maybe_target_code.value());
     JumpBackward(relative_jump);
   }
 
-  BIND(&baseline);
+  BIND(&osr_to_sparkplug);
   {
     Callable callable =
         CodeFactory::InterpreterOnStackReplacement_ToBaseline(isolate());
@@ -1462,7 +1502,7 @@ TNode<FixedArray> InterpreterAssembler::ExportParametersAndRegisterFile(
     Label loop(this, &var_index), done_loop(this);
 
     TNode<IntPtrT> reg_base =
-        IntPtrConstant(Register::FromParameterIndex(0, 1).ToOperand() + 1);
+        IntPtrConstant(Register::FromParameterIndex(0).ToOperand() + 1);
 
     Goto(&loop);
     BIND(&loop);

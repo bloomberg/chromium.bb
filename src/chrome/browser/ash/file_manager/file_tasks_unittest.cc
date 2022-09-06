@@ -10,9 +10,13 @@
 #include <set>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
+#include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
@@ -26,10 +30,11 @@
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -44,7 +49,6 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "net/base/escape.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -300,31 +304,6 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackHtmlTextApp) {
   EXPECT_TRUE(tasks[0].is_default);
 }
 
-// Test that Audio Player is chosen as default even if nothing is set in the
-// preferences.
-TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackAudioPlayer) {
-  TestingPrefServiceSimple pref_service;
-  RegisterDefaultTaskPreferences(&pref_service);
-
-  // The Audio Player app was found for "sound.wav".
-  TaskDescriptor files_app_task(kAudioPlayerAppId, TASK_TYPE_FILE_HANDLER,
-                                "Audio Player");
-  std::vector<FullTaskDescriptor> tasks;
-  tasks.emplace_back(
-      files_app_task, "Audio Player", Verb::VERB_OPEN_WITH,
-      GURL("chrome://extension-icon/cjbfomnbifhcdnihkgipgfcihmgjfhbf/32/1"),
-      false /* is_default */, false /* is_generic_file_handler */,
-      false /* is_file_extension_match */);
-  std::vector<extensions::EntryInfo> entries;
-  entries.emplace_back(base::FilePath::FromUTF8Unsafe("sound.wav"), "audio/wav",
-                       false);
-
-  // The Audio Player app should be chosen as default, as it's a fallback file
-  // browser handler.
-  ChooseAndSetDefaultTask(pref_service, entries, &tasks);
-  EXPECT_TRUE(tasks[0].is_default);
-}
-
 // Test that Office Editing is chosen as default even if nothing is set in the
 // preferences.
 TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
@@ -350,6 +329,47 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
   // file browser handler.
   ChooseAndSetDefaultTask(pref_service, entries, &tasks);
   EXPECT_TRUE(tasks[0].is_default);
+}
+
+// Test that for changes of default app for PDF files, a metric is recorded.
+TEST(FileManagerFileTasksTest, UpdateDefaultTask_RecordsPdfDefaultAppChanges) {
+  base::test::ScopedFeatureList scoped_feature_list{
+      ash::features::kMediaAppHandlesPdf};
+  TestingPrefServiceSimple pref_service;
+  RegisterDefaultTaskPreferences(&pref_service);
+  base::UserActionTester user_action_tester;
+
+  // Non-PDF file types are not recorded.
+  TaskDescriptor other_app_task("other-app-id", TASK_TYPE_FILE_HANDLER,
+                                "action-id");
+  UpdateDefaultTask(&pref_service, other_app_task, {".txt"}, {"text/plain"});
+  // Even if it's the Media App.
+  TaskDescriptor media_app_task(web_app::kMediaAppId, TASK_TYPE_FILE_HANDLER,
+                                "action-id");
+  UpdateDefaultTask(&pref_service, media_app_task, {"tiff"}, {"image/tiff"});
+
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "MediaApp.PDF.DefaultApp.SwitchedAway"));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "MediaApp.PDF.DefaultApp.SwitchedTo"));
+
+  // PDF files are recorded.
+  UpdateDefaultTask(&pref_service, media_app_task, {".pdf"},
+                    {"application/pdf"});
+
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "MediaApp.PDF.DefaultApp.SwitchedTo"));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "MediaApp.PDF.DefaultApp.SwitchedAway"));
+  user_action_tester.ResetCounts();
+
+  UpdateDefaultTask(&pref_service, other_app_task, {".pdf"},
+                    {"application/pdf"});
+
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "MediaApp.PDF.DefaultApp.SwitchedTo"));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "MediaApp.PDF.DefaultApp.SwitchedAway"));
 }
 
 // Test FileHandlerIsEnabled which returns whether a file handler should be
@@ -524,7 +544,7 @@ class FileManagerFileTasksCrostiniTest
       : crostini_test_helper_(std::make_unique<crostini::CrostiniTestHelper>(
             test_profile_.get())),
         crostini_folder_(util::GetCrostiniMountDirectory(test_profile_.get())) {
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     vm_tools::apps::App text_app =
         crostini::CrostiniTestHelper::BasicApp("text_app");
@@ -567,7 +587,7 @@ class FileManagerFileTasksCrostiniTest
   ~FileManagerFileTasksCrostiniTest() override {
     crostini_test_helper_.reset();
     test_profile_.reset();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
   }
 
   void SetUp() override {
@@ -583,7 +603,7 @@ class FileManagerFileTasksCrostiniTest
   }
 
   GURL PathToURL(const std::string& path) {
-    std::string virtual_path = net::EscapeUrlEncodedData(
+    std::string virtual_path = base::EscapeUrlEncodedData(
         util::GetDownloadsMountPointName(test_profile_.get()) + "/" + path,
         /*use_plus=*/false);
     return GURL("filesystem:chrome-extension://id/external/" + virtual_path);

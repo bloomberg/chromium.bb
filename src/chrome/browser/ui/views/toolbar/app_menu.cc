@@ -57,6 +57,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
@@ -66,7 +67,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -100,7 +100,7 @@ namespace {
 // Horizontal padding on the edges of the in-menu buttons.
 const int kHorizontalPadding = 15;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 // Extra horizontal space to reserve for the fullscreen button.
 const int kFullscreenPadding = 74;
 // Padding to left and right of the XX% label.
@@ -161,10 +161,11 @@ class InMenuButtonBackground : public views::Background {
       params.menu_separator.paint_rect = &separator_bounds;
       params.menu_separator.type = ui::VERTICAL_SEPARATOR;
       view->GetNativeTheme()->Paint(
-          canvas->sk_canvas(), ui::NativeTheme::kMenuPopupSeparator,
-          ui::NativeTheme::kNormal, separator_bounds, params);
-      bounds.Inset(
-          gfx::Insets(0, MenuConfig::instance().separator_thickness, 0, 0));
+          canvas->sk_canvas(), view->GetColorProvider(),
+          ui::NativeTheme::kMenuPopupSeparator, ui::NativeTheme::kNormal,
+          separator_bounds, params);
+      bounds.Inset(gfx::Insets::TLBR(
+          0, MenuConfig::instance().separator_thickness, 0, 0));
     }
 
     // Fill in background for state.
@@ -187,6 +188,7 @@ class InMenuButtonBackground : public views::Background {
         params.menu_item.corner_radius = kBackgroundCornerRadius;
       }
       view->GetNativeTheme()->Paint(canvas->sk_canvas(),
+                                    view->GetColorProvider(),
                                     ui::NativeTheme::kMenuItemBackground,
                                     ui::NativeTheme::kHovered, bounds, params);
     }
@@ -231,8 +233,8 @@ class InMenuButton : public LabelButton {
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
     SetBackground(std::make_unique<InMenuButtonBackground>(type));
-    SetBorder(
-        views::CreateEmptyBorder(0, kHorizontalPadding, 0, kHorizontalPadding));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(0, kHorizontalPadding, 0, kHorizontalPadding)));
     label()->SetFontList(MenuConfig::instance().font_list);
   }
 
@@ -491,8 +493,8 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label_ = new Label(base::FormatPercent(100));
     zoom_label_->SetAutoColorReadabilityEnabled(false);
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    zoom_label_->SetBorder(views::CreateEmptyBorder(
-        0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
+    zoom_label_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding)));
     zoom_label_->SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::NO_BORDER));
 
@@ -912,16 +914,6 @@ ui::mojom::DragOperation AppMenu::GetDropOperation(
              : ui::mojom::DragOperation::kNone;
 }
 
-ui::mojom::DragOperation AppMenu::OnPerformDrop(
-    MenuItemView* menu,
-    DropPosition position,
-    const ui::DropTargetEvent& event) {
-  auto drop_cb = GetDropCallback(menu, position, event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(event, output_drag_op);
-  return output_drag_op;
-}
-
 views::View::DropCallback AppMenu::GetDropCallback(
     views::MenuItemView* menu,
     DropPosition position,
@@ -1114,7 +1106,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
     if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
         model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
       // ChromeOS adds extra vertical space for the menu buttons.

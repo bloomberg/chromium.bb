@@ -1475,7 +1475,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_mb_interp_filter(xd, features->interp_filter,
                         cm->seq_params->enable_dual_filter, mbmi, r);
 
-#if !CONFIG_REALTIME_ONLY
   if (mbmi->motion_mode == WARPED_CAUSAL) {
     const int mi_row = xd->mi_row;
     const int mi_col = xd->mi_col;
@@ -1496,7 +1495,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->wm_params.invalid = 1;
     }
   }
-#endif
 
   xd->cfl.store_y = store_cfl_required(cm, xd);
 

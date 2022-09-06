@@ -109,6 +109,18 @@ message ChromeUserPopulation {
   // Note: This field is set as repeated to support tokens from multiple
   // sources.
   repeated PageLoadToken page_load_tokens = 14;
+
+  // The current state of account-level enhanced safe browsing (A-ESB) as is
+  // known by the client. This is an optional field and represents the state of
+  // A-ESB as the client has observed it to be. This value will be set for sync
+  // users as well as signed-in users. The state on the server may be
+  // different from the value that the client has when setting this field.
+  // See: go/esb-mms-integration-dd.
+  optional bool is_aesb_enabled = 15;
+
+  // The time when the account-level enhanced safe browsing (A-ESB) bit state
+  // was last sent updated on the client. This is an optional field.
+  optional int64 aesb_last_update_time_windows_epoch_micros = 16;
 }
 
 message ClientPhishingRequest {
@@ -148,6 +160,9 @@ message ClientPhishingRequest {
   // sent to the scorer and which resulted in client_score being computed.
   repeated Feature feature_map = 5;
 
+  // The version of the DOM model used for classification
+  optional int32 dom_model_version = 27;
+
   // The version number of the model that was used to compute the client-score.
   // Copied from ClientSideModel.version().
   optional int32 model_version = 6;
@@ -180,15 +195,11 @@ message ClientPhishingRequest {
   reserved 15;
   reserved 16;
 
-  // Basic visual information of the URL.
-  // This section will be filled for SBER users only.
-  optional bytes screenshot_digest = 17;
-  optional bytes screenshot_phash = 18;
-  optional int32 phash_dimension_size = 19;
-
-  // The visual feature match results.
-  // Allow multiple results if there are more than one matched target.
-  repeated VisionMatchResult vision_match = 20;
+  // Deprecated fields
+  reserved 17;
+  reserved 18;
+  reserved 19;
+  reserved 20;
 
   // Indicates whether the request is due to a match on the DOM features.
   optional bool is_dom_match = 21;
@@ -215,14 +226,11 @@ message ClientPhishingRequest {
   // Whether the TFLite model believed the page was phishy.
   optional bool is_tflite_match = 25;
 
-  // next available tag number: 26.
-}
+  // Visual features of the current page. Only filled in for extended reporting
+  // users.
+  optional VisualFeatures visual_features = 26;
 
-// Vision match result for one target image.
-message VisionMatchResult {
-  optional bytes matched_target_digest = 1;
-  optional double vision_matched_phash_score = 2;
-  optional double vision_matched_emd_score = 3;
+  // next available tag number: 28.
 }
 
 message ClientPhishingResponse {
@@ -515,32 +523,7 @@ message LoginReputationClientResponse {
 
 // This message encapsulates all the visual features of the current page.
 message VisualFeatures {
-  // One bin in a color histogram.
-  message ColorHistogramBin {
-    // The average x-coordinate of the pixels in this bin.
-    optional float centroid_x = 1;
-
-    // The average y-coordinate of the pixels in this bin.
-    optional float centroid_y = 2;
-
-    // The quantized R-value for this bin.
-    optional int32 quantized_r = 3;
-
-    // The quantized G-value for this bin.
-    optional int32 quantized_g = 4;
-
-    // The quantized B-value for this bin.
-    optional int32 quantized_b = 5;
-
-    // The normalized weight of this bin.
-    optional float weight = 6;
-  }
-
-  // Represents the color histogram of a login page.
-  message ColorHistogram { repeated ColorHistogramBin bins = 1; }
-
-  // Color histogram of the current page.
-  optional ColorHistogram color_histogram = 1;
+  reserved 1;
 
   // Represents the blurred, downsampled image of the login page.
   message BlurredImage {
@@ -818,11 +801,11 @@ message ClientDownloadRequest {
   // True if the .zip or DMG, etc, was 100% successfully unpacked.
   optional bool archive_valid = 26;
 
-  // True if this ClientDownloadRequest is from a whitelisted domain.
-  optional bool skipped_url_whitelist = 28;
+  // True if this ClientDownloadRequest is from a allowlisted domain.
+  optional bool skipped_url_allowlist = 28;
 
-  // True if this ClientDownloadRequest contains a whitelisted certificate.
-  optional bool skipped_certificate_whitelist = 31;
+  // True if this ClientDownloadRequest contains a allowlist certificate.
+  optional bool skipped_certificate_allowlist = 31;
 
   // PPAPI_SAVE_REQUEST type messages may have more than one suggested filetype.
   // Each element in this collection indicates an alternate extension including
@@ -1384,7 +1367,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 26
+// Next tag: 27
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -1560,6 +1543,8 @@ message ClientSafeBrowsingReportRequest {
   // The SafetyNet ID of the Android device.
   // Deprecated, not launched.
   optional string safety_net_id = 25 [deprecated = true];
+
+  optional ChromeUserPopulation population = 26;
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).
@@ -1607,11 +1592,91 @@ message ExtensionWebStoreInstallRequest {
 message ExtensionTelemetryReportRequest {
   // Information about the Chrome extension.
   message ExtensionInfo {
+    enum Type {
+      UNKNOWN_TYPE = 0;            // Unknown (hopefully never used)
+      EXTENSION = 1;               // A browser extension
+      THEME = 2;                   // A browser theme
+      USER_SCRIPT = 3;             // An extension converted from a user script
+      HOSTED_APP = 4;              // A hosted app
+      LEGACY_PACKAGED_APP = 5;     // A (deprecated) v1 packaged app
+      PLATFORM_APP = 6;            // A platform app
+      SHARED_MODULE = 7;           // A shared module
+      LOGIN_SCREEN_EXTENSION = 8;  // An extension running on the login screen
+    }
+
+    enum InstallLocation {
+      UNKNOWN_LOCATION = 0;  // Unknown (hopefully never used)
+      INTERNAL = 1;  // A crx file from the internal Extensions directory; most
+                     // webstore-installed extensions fall into this category.
+      EXTERNAL_PREF = 2;  // A crx file from an external directory (via prefs).
+      EXTERNAL_REGISTRY = 3;  // A crx file from an external directory (via the
+                              // Windows registry)
+      UNPACKED = 4;   // An unpacked extension loaded from chrome://extensions.
+      COMPONENT = 5;  // An internal component extension.
+      EXTERNAL_PREF_DOWNLOAD = 6;    // A crx file from an external directory
+                                     // (via prefs), downloaded from an update
+                                     // URL.
+      EXTERNAL_POLICY_DOWNLOAD = 7;  // A crx file from an external directory
+                                     // (via admin policies), downloaded from an
+                                     // update URL.
+      COMMAND_LINE = 8;  // Loaded from the commandline (e.g. --load-extension).
+      EXTERNAL_POLICY = 9;  // A crx file from an external directory (via admin
+                            // policies), cached locally and installed from the
+                            // cache.
+      EXTERNAL_COMPONENT = 10;  // A component extension that was downloaded
+                                // externally via an update url.
+    }
+
+    // The state of the extension as determined by SB blocklist.
+    enum BlocklistState {
+      // The extension is not in the blocklist.
+      NOT_BLOCKLISTED = 0;
+      // The extension is malware.
+      BLOCKLISTED_MALWARE = 1;
+      // The extension has a serious security vulnerability.
+      BLOCKLISTED_SECURITY_VULNERABILITY = 2;
+      // The extension violated CWS policy.
+      BLOCKLISTED_CWS_POLICY_VIOLATION = 3;
+      // The extension is considered potentially unwanted.
+      BLOCKLISTED_POTENTIALLY_UNWANTED = 4;
+      // Used when we couldn't connect to server, e.g. when offline.
+      BLOCKLISTED_UNKNOWN = 5;
+    }
+
     optional string id = 1;
     optional string version = 2;
     optional string name = 3;
     // Version install time.
     optional int64 install_timestamp_msec = 4;
+    // If the extension was installed by default when the profile was created.
+    // These extensions are specified by Chrome.
+    optional bool is_default_installed = 5;
+    // If the extension was installed by an OEM. This differs from
+    // "is_default_installed", since these extensions are specified by the OEM
+    // rather than by Chrome. These are specified in a file that is created as
+    // part of the creation of the Chrome image, and can be specific to
+    // different OEMs.
+    optional bool is_oem_installed = 6;
+    // If the extension originated from the Chrome Web Store according to the
+    // prefs. This differs from install_location, which specifies the location
+    // on the user’s machine from where the install originated, but not
+    // whether the extension is hosted in the store. For instance, sideloaded
+    // extensions that are specified via ID in the registry are downloaded from
+    // the store.
+    optional bool is_from_store = 7;
+    // If the extension automatically updates from the Chrome Web Store.
+    optional bool updates_from_store = 8;
+    // If the extension was created from a user script. This is distinct from
+    // install_location, which specifies from where on the user’s machine
+    // the install originated.
+    optional bool is_converted_from_user_script = 9;
+    optional Type type = 10;
+    optional InstallLocation install_location = 11;
+    optional BlocklistState blocklist_state = 12;
+    // Bitmask of reason(s) the Chrome extension is disabled.
+    // Bit positions are defined in extensions::disable_reason::DisableReason
+    // (located in //extensions/browser/disable_reason.h)
+    optional uint32 disable_reasons = 13;
   }
 
   // Information about the various telemetry signals.
@@ -1619,14 +1684,30 @@ message ExtensionTelemetryReportRequest {
     message TabsExecuteScriptInfo {
       message ScriptInfo {
         optional bytes hash = 1;
-        // number of times script has been executed since
-        // last report/browser start
+        // Number of times this script has been executed since
+        // last report/browser start. This number is limited to
+        // a configurable maximum (default max is 100).
         optional uint32 execution_count = 2;
       }
       repeated ScriptInfo scripts = 1;
+      // The number of scripts that were not recorded because the max count was
+      // exceeded.
+      optional uint32 max_exceeded_script_count = 2;
     }
 
     optional TabsExecuteScriptInfo tabs_execute_script_info = 1;
+
+    message RemoteHostContactedInfo {
+      message RemoteHostInfo {
+        // Sanitized url (hostname only) of the contacted remote host.
+        optional string url = 1;
+        // Number of times this host has been contacted by the extension.
+        optional uint32 contact_count = 2;
+      }
+      repeated RemoteHostInfo remote_host = 1;
+    }
+
+    optional RemoteHostContactedInfo remote_host_contacted_info = 2;
   }
 
   // Single report structure consists of all the signals observed for a

@@ -46,7 +46,7 @@ FontFallbackList::FontFallbackList(FontFallbackMap& font_fallback_map)
     : cached_primary_simple_font_data_(nullptr),
       font_fallback_map_(font_fallback_map),
       family_index_(0),
-      generation_(FontCache::GetFontCache()->Generation()),
+      generation_(FontCache::Get().Generation()),
       has_loading_fallback_(false),
       has_custom_font_(false),
       can_shape_word_by_word_(false),
@@ -59,9 +59,11 @@ FontFallbackList::~FontFallbackList() {
 
 FontSelector* FontFallbackList::GetFontSelector() const {
   // FontFallbackList objects are managed in FontFallbackMap, and should not be
-  // used after FontFallbackMap is destroyed.
-  DCHECK(font_fallback_map_);
-  return font_fallback_map_->GetFontSelector();
+  // used after FontFallbackMap is destroyed. FontFallbackList may outlive its
+  // FontFallbackMap if an external reference is held, for example by a Font
+  // object owned by a CanvasRenderContext2DState whose execution context was
+  // destroyed.
+  return font_fallback_map_ ? font_fallback_map_->GetFontSelector() : nullptr;
 }
 
 void FontFallbackList::ReleaseFontData() {
@@ -69,8 +71,7 @@ void FontFallbackList::ReleaseFontData() {
   for (unsigned i = 0; i < num_fonts; ++i) {
     if (!font_list_[i]->IsCustomFont()) {
       DCHECK(!font_list_[i]->IsSegmented());
-      FontCache::GetFontCache()->ReleaseFontData(
-          To<SimpleFontData>(font_list_[i].get()));
+      FontCache::Get().ReleaseFontData(To<SimpleFontData>(font_list_[i].get()));
     }
   }
   shape_cache_.reset();  // Clear the weak pointer to the cache instance.
@@ -113,9 +114,9 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontDataCore(
       if (font_data)
         return font_data->FontDataForCharacter(kSpaceCharacter);
 
-      FontCache* cache = FontCache::GetFontCache();
+      FontCache& font_cache = FontCache::Get();
       SimpleFontData* last_resort_fallback =
-          cache->GetLastResortFallbackFont(font_description).get();
+          font_cache.GetLastResortFallbackFont(font_description).get();
       DCHECK(last_resort_fallback);
       return last_resort_fallback;
     }
@@ -162,32 +163,29 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
   for (; curr_family; curr_family = curr_family->Next()) {
     family_index_++;
     if (!curr_family->FamilyName().IsEmpty()) {
-      scoped_refptr<FontData> result;
-      if (GetFontSelector()) {
-        result = GetFontSelector()->GetFontData(font_description, *curr_family);
+      if (!GetFontSelector()) {
+        if (auto result = FontCache::Get().GetFontData(
+                font_description, curr_family->FamilyName()))
+          return result;
+        continue;
       }
 
+      scoped_refptr<FontData> result =
+          GetFontSelector()->GetFontData(font_description, *curr_family);
       if (!result) {
-        result = FontCache::GetFontCache()->GetFontData(
-            font_description, curr_family->FamilyName());
-        if (GetFontSelector()) {
-          GetFontSelector()->ReportFontLookupByUniqueOrFamilyName(
-              curr_family->FamilyName(), font_description,
-              DynamicTo<SimpleFontData>(result.get()));
-        }
+        result = FontCache::Get().GetFontData(font_description,
+                                              curr_family->FamilyName());
+        GetFontSelector()->ReportFontLookupByUniqueOrFamilyName(
+            curr_family->FamilyName(), font_description,
+            DynamicTo<SimpleFontData>(result.get()));
       }
       if (result) {
-        if (GetFontSelector()) {
-          GetFontSelector()->ReportSuccessfulFontFamilyMatch(
-              curr_family->FamilyName());
-        }
+        GetFontSelector()->ReportSuccessfulFontFamilyMatch(
+            curr_family->FamilyName());
         return result;
       }
 
-      if (GetFontSelector()) {
-        GetFontSelector()->ReportFailedFontFamilyMatch(
-            curr_family->FamilyName());
-      }
+      GetFontSelector()->ReportFailedFontFamilyMatch(curr_family->FamilyName());
     }
   }
   family_index_ = kCAllFamiliesScanned;
@@ -204,7 +202,7 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
 
   // Still no result. Hand back our last resort fallback font.
   auto last_resort =
-      FontCache::GetFontCache()->GetLastResortFallbackFont(font_description);
+      FontCache::Get().GetLastResortFallbackFont(font_description);
   if (GetFontSelector()) {
     GetFontSelector()->ReportLastResortFallbackFontLookup(font_description,
                                                           last_resort.get());
@@ -227,17 +225,15 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
       }
       if (!result) {
         if (FontPlatformData* platform_data =
-                FontCache::GetFontCache()->GetFontPlatformData(font_description,
-                                                               params))
-          result = FontCache::GetFontCache()->FontDataFromFontPlatformData(
-              platform_data);
+                FontCache::Get().GetFontPlatformData(font_description, params))
+          result = FontCache::Get().FontDataFromFontPlatformData(platform_data);
       }
       if (result) {
         bool is_unique_match = false;
         key.Add(font_description.CacheKey(params, is_unique_match));
         auto* font_data = DynamicTo<SimpleFontData>(result.get());
         if (!font_data && !result->IsCustomFont())
-          FontCache::GetFontCache()->ReleaseFontData(font_data);
+          FontCache::Get().ReleaseFontData(font_data);
       }
     }
     current_family = current_family->Next();
@@ -264,7 +260,7 @@ const FontData* FontFallbackList::FontDataAt(
   // families we've looked at before in |family_index_|, so that we never scan
   // the same spot in the list twice.  GetFontData will adjust our
   // |family_index_| as it scans for the right font to make.
-  DCHECK_EQ(FontCache::GetFontCache()->Generation(), generation_);
+  DCHECK_EQ(FontCache::Get().Generation(), generation_);
   scoped_refptr<FontData> result = GetFontData(font_description);
   if (result) {
     font_list_.push_back(result);

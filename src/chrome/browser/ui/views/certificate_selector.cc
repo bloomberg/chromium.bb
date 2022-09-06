@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/guest_view/browser/guest_view_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -33,8 +32,8 @@
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
 #endif
@@ -180,9 +179,8 @@ CertificateSelector::~CertificateSelector() {
 
 // static
 bool CertificateSelector::CanShow(content::WebContents* web_contents) {
-  // GetTopLevelWebContents returns |web_contents| if it is not a guest.
   content::WebContents* top_level_web_contents =
-      guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
+      constrained_window::GetTopLevelWebContents(web_contents);
   return web_modal::WebContentsModalDialogManager::FromWebContents(
              top_level_web_contents) != nullptr;
 }
@@ -229,6 +227,9 @@ void CertificateSelector::InitWithText(
   }
   columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_SERIAL_COLUMN,
                                     ui::TableColumn::LEFT, -1, 0.2f));
+  for (auto& column : columns) {
+    column.sortable = true;
+  }
   auto table = std::make_unique<views::TableView>(
       model_.get(), columns, views::TEXT_ONLY, true /* single_selection */);
   table_ = table.get();

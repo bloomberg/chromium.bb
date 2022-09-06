@@ -13,6 +13,7 @@
 #include "include/private/SkImageInfoPriv.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkImagePriv.h"
+#include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkMatrixUtils.h"
 #include "src/core/SkPicturePriv.h"
@@ -26,12 +27,12 @@
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrColorInfo.h"
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrColorInfo.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
 #include "src/image/SkImage_Base.h"
 #endif
 
@@ -184,7 +185,13 @@ struct CachedImageInfo {
             SkSize size;
             // Use a rotation-invariant scale
             if (!m.decomposeScale(&size, nullptr)) {
-                size = {1, 1};
+                SkPoint center = {bounds.centerX(), bounds.centerY()};
+                SkScalar area = SkMatrixPriv::DifferentialAreaScale(m, center);
+                if (!SkScalarIsFinite(area) || SkScalarNearlyZero(area)) {
+                    size = {1, 1}; // ill-conditioned matrix
+                } else {
+                    size.fWidth = size.fHeight = SkScalarSqrt(area);
+                }
             }
             size.fWidth  *= bounds.width();
             size.fHeight *= bounds.height();
@@ -361,7 +368,7 @@ void SkPictureShader::PictureShaderContext::shadeSpan(int x, int y, SkPMColor ds
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
 
 std::unique_ptr<GrFragmentProcessor> SkPictureShader::asFragmentProcessor(
         const GrFPArgs& args) const {
@@ -387,9 +394,9 @@ std::unique_ptr<GrFragmentProcessor> SkPictureShader::asFragmentProcessor(
         info.imageInfo = info.imageInfo.makeColorType(kRGBA_8888_SkColorType);
     }
 
-    static const GrUniqueKey::Domain kDomain = GrUniqueKey::GenerateDomain();
-    GrUniqueKey key;
-    GrUniqueKey::Builder builder(&key, kDomain, 10, "Picture Shader Image");
+    static const skgpu::UniqueKey::Domain kDomain = skgpu::UniqueKey::GenerateDomain();
+    skgpu::UniqueKey key;
+    skgpu::UniqueKey::Builder builder(&key, kDomain, 10, "Picture Shader Image");
     builder[0] = dstCS->toXYZD50Hash();
     builder[1] = dstCS->transferFnHash();
     builder[2] = static_cast<uint32_t>(dstColorType);
@@ -401,7 +408,7 @@ std::unique_ptr<GrFragmentProcessor> SkPictureShader::asFragmentProcessor(
     GrProxyProvider* provider = ctx->priv().proxyProvider();
     GrSurfaceProxyView view;
     if (auto proxy = provider->findOrCreateProxyByUniqueKey(key)) {
-        view = GrSurfaceProxyView(proxy, kTopLeft_GrSurfaceOrigin, GrSwizzle());
+        view = GrSurfaceProxyView(proxy, kTopLeft_GrSurfaceOrigin, skgpu::Swizzle());
     } else {
         const int msaaSampleCount = 0;
         const SkSurfaceProps* props = nullptr;

@@ -15,10 +15,12 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
@@ -37,13 +39,13 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_exchange_data_provider.h"
+#include "ui/ozone/platform/wayland/host/wayland_input_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_menu_utils.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/wayland_utils.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_menu_utils.h"
 #include "ui/ozone/public/system_input_injector.h"
@@ -60,7 +62,7 @@
 #include "ui/ozone/platform/wayland/host/linux_ui_delegate_wayland.h"  // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "ui/ozone/common/bitmap_cursor_factory.h"
 #else
 #include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
@@ -204,7 +206,11 @@ class OzonePlatformWayland : public OzonePlatform,
     return connection_->xdg_decoration_manager_v1() == nullptr;
   }
 
-  void InitializeUI(const InitParams& args) override {
+  bool InitializeUI(const InitParams& args) override {
+    if (ShouldFailInitializeUIForTest()) {
+      LOG(ERROR) << "Failing for test";
+      return false;
+    }
     // Initialize DeviceDataManager early as devices are set during
     // WaylandConnection::Initialize().
     DeviceDataManager::CreateInstance();
@@ -217,17 +223,19 @@ class OzonePlatformWayland : public OzonePlatform,
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         keyboard_layout_engine_.get());
     connection_ = std::make_unique<WaylandConnection>();
-    if (!connection_->Initialize())
-      LOG(FATAL) << "Failed to initialize Wayland platform";
+    if (!connection_->Initialize()) {
+      LOG(ERROR) << "Failed to initialize Wayland platform";
+      return false;
+    }
 
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     cursor_factory_ = std::make_unique<BitmapCursorFactory>();
 #else
     cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
 #endif
-    input_controller_ = CreateStubInputController();
+    input_controller_ = CreateWaylandInputController(connection_.get());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     supported_buffer_formats_ =
@@ -238,14 +246,17 @@ class OzonePlatformWayland : public OzonePlatform,
 #endif
 
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
-    wayland_utils_ = std::make_unique<WaylandUtils>();
+    wayland_utils_ = std::make_unique<WaylandUtils>(connection_.get());
+
+    return true;
   }
 
   void InitializeGPU(const InitParams& args) override {
     buffer_manager_ = std::make_unique<WaylandBufferManagerGpu>();
     surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
         connection_.get(), buffer_manager_.get());
-    overlay_manager_ = std::make_unique<WaylandOverlayManager>();
+    overlay_manager_ =
+        std::make_unique<WaylandOverlayManager>(buffer_manager_.get());
   }
 
   const PlatformProperties& GetPlatformProperties() override {
@@ -271,20 +282,14 @@ class OzonePlatformWayland : public OzonePlatform,
       properties->set_parent_for_non_top_level_windows = true;
       properties->app_modal_dialogs_use_event_blocker = true;
 
-      // Primary planes can be transluscent due to underlay strategy. As a
-      // result Wayland server draws contents occluded by an accelerated widget.
-      // To prevent this, an opaque background image is stacked below the
-      // accelerated widget to occlude contents below.
-      properties->needs_background_image =
-          ui::IsWaylandOverlayDelegationEnabled();
-
-      // By design, clients are disallowed to manipulate global screen
-      // coordinates, instead only surface-local ones are supported.
+      // Xdg/Wl shell protocol does not disallow clients to manipulate global
+      // screen coordinates, instead only surface-local ones are supported.
       // Non-toplevel surfaces, for example, must be positioned relative to
       // their parents. As for toplevel surfaces, clients simply don't know
       // their position on screens and always assume they are located at some
       // arbitrary position.
-      properties->supports_global_screen_coordinates = false;
+      properties->supports_global_screen_coordinates =
+          features::IsWaylandScreenCoordinatesEnabled();
 
       initialised = true;
     }
@@ -315,6 +320,18 @@ class OzonePlatformWayland : public OzonePlatform,
           ui::IsWaylandOverlayDelegationEnabled() &&
           connection_->buffer_manager_host()
               ->SupportsNonBackedSolidColorBuffers();
+      // Primary planes can be transluscent due to underlay strategy. As a
+      // result Wayland server draws contents occluded by an accelerated widget.
+      // To prevent this, an opaque background image is stacked below the
+      // accelerated widget to occlude contents below.
+      properties.needs_background_image =
+          ui::IsWaylandOverlayDelegationEnabled() && connection_->viewporter();
+
+      if (surface_factory_) {
+        DCHECK(has_initialized_gpu());
+        properties.supports_native_pixmaps =
+            surface_factory_->SupportsNativePixmaps();
+      }
     } else if (buffer_manager_) {
       DCHECK(has_initialized_gpu());
       // These properties are set when the GetPlatformRuntimeProperties is
@@ -322,6 +339,12 @@ class OzonePlatformWayland : public OzonePlatform,
       properties.supports_non_backed_solid_color_buffers =
           ui::IsWaylandOverlayDelegationEnabled() &&
           buffer_manager_->supports_non_backed_solid_color_buffers();
+      // See the comment above.
+      properties.needs_background_image =
+          ui::IsWaylandOverlayDelegationEnabled() &&
+          buffer_manager_->supports_viewporter();
+      properties.supports_native_pixmaps =
+          surface_factory_->SupportsNativePixmaps();
     }
     return properties;
   }

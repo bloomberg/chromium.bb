@@ -5,18 +5,25 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_
 
-#include "cc/paint/paint_canvas.h"
+#include "base/check.h"
+#include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
+#include "third_party/blink/renderer/core/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class PaintCanvas;
+}
+
+namespace gfx {
+class Vector2d;
 }
 
 namespace blink {
@@ -45,7 +52,7 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   void SetFrameRect(const gfx::Rect&) override;
   void PropagateFrameRects() override;
   void Paint(GraphicsContext&,
-             const GlobalPaintFlags,
+             PaintFlags,
              const CullRect&,
              const gfx::Vector2d& paint_offset) const override;
   void UpdateGeometry() override;
@@ -95,6 +102,12 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   // portals, this will return the local root associated with the portal's
   // owner.
   LocalFrameView* ParentLocalRootFrameView() const;
+
+  // This provides the rectangle that the embedded compositor should raster
+  // based on its screen space rect. This takes into account the frame's
+  // viewport intersection and a buffer area to prevent checkerboarding during
+  // animations.
+  gfx::Rect ComputeCompositingRect() const;
 
   // The properties and handling of the cycle between RemoteFrame
   // and its RemoteFrameView corresponds to that between LocalFrame

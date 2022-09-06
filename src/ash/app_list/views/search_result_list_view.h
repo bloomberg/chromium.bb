@@ -6,6 +6,8 @@
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_LIST_VIEW_H_
 
 #include <stddef.h>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/views/search_result_container_view.h"
@@ -57,7 +59,8 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
     kWeb,
     // kFiles list view contains relevant local and Google Drive files.
     kFiles,
-    // kSettings list view contains relevant system settings.
+    // kSettings list view contains relevant system settings and personalization
+    // settings.
     kSettings,
     // kHelp list view contains help articles from Showoff and Keyboard
     // Shortcuts.
@@ -65,9 +68,12 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
     // kPlayStore contains suggested apps from the playstore that are not
     // currently installed.
     kPlayStore,
-    // kSearchAndAssistant contain suggestions from Search and Google Assistant.
+    // kSearchAndAssistant contains suggestions from Search and Google
+    // Assistant.
     kSearchAndAssistant,
-    kMaxValue = kSearchAndAssistant,
+    // kGames contains cloud game search results.
+    kGames,
+    kMaxValue = kGames,
   };
 
   SearchResultListView(
@@ -75,6 +81,7 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
       AppListViewDelegate* view_delegate,
       SearchResultPageDialogController* dialog_controller,
       SearchResultView::SearchResultViewType search_result_view_type,
+      bool animates_result_updates,
       absl::optional<size_t> productivity_launcher_index);
 
   SearchResultListView(const SearchResultListView&) = delete;
@@ -94,12 +101,20 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
-
-  // Overridden from ui::ListModelObserver:
-  void ListItemsRemoved(size_t start, size_t count) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from SearchResultContainerView:
   SearchResultView* GetResultViewAt(size_t index) override;
+  absl::optional<ResultsAnimationInfo> ScheduleResultAnimations(
+      const ResultsAnimationInfo& aggregate_animation_info) override;
+  bool HasAnimatingChildView() override;
+
+  // Fades the view in and animates a vertical transform based on the view's
+  // position in the overall search container view. Returns whether fast
+  // animations were used.
+  void ShowViewWithAnimation(views::View* view,
+                             int position,
+                             bool use_short_animations);
 
   AppListMainView* app_list_main_view() const { return main_view_; }
 
@@ -114,14 +129,11 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
 
   views::Label* title_label_for_test() { return title_label_; }
 
- protected:
-  // Overridden from views::View:
-  void VisibilityChanged(View* starting_from, bool is_visible) override;
-
  private:
   friend class test::SearchResultListViewTest;
 
   // Overridden from SearchResultContainerView:
+  void OnSelectedResultChanged() override;
   int DoUpdate() override;
 
   // Overridden from views::View:
@@ -145,8 +157,32 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   // Returns search results for the class's current list_type_.
   std::vector<SearchResult*> GetCategorizedSearchResults();
 
+  // Updates the set of results shown in this result list.
+  std::vector<SearchResult*> UpdateResultViews();
+
+  // A filter that returns whether a search result should be shown in the
+  // unified search result list.
+  // `for_assistant_results` - When true only assistant results will be
+  // included. When false assistant results are not included.
+  bool FilterResultsForUnifiedList(bool for_assistant_results,
+                                   const SearchResult& result) const;
+
+  // A filter that returns whether a search result should be shown in the best
+  // matches container.
+  bool FilterBestMatches(const SearchResult& result) const;
+
+  // A filter that returns whether a search results should be shown in the
+  // categorized flavour of search result list.
+  bool FilterSearchResultsByCategory(const SearchResult::Category& category,
+                                     const SearchResult& result) const;
+
   AppListMainView* main_view_;          // Owned by views hierarchy.
   AppListViewDelegate* view_delegate_;  // Not owned.
+
+  // Whether the result updates will be animated. If set,
+  // `ScheduleResultAnimations()` is expected to be called whenever list of
+  // results shown in the list changes.
+  const bool animates_result_updates_;
 
   views::View* results_container_;
 
@@ -172,6 +208,19 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   bool enabled_ = true;
 
   const SearchResultView::SearchResultViewType search_result_view_type_;
+
+  // Set of results that have been removed from the result list using remove
+  // search result actions. Used to filter those results out from the list of
+  // shown results until results in the search model get refreshed.
+  std::set<std::string> removed_results_;
+
+  // The number of results shown by the list view.
+  size_t num_results_ = 0;
+
+  // The most recent container's index within the search UI - the index
+  // indicates the number of result and title views that appear before this
+  // container.
+  int last_container_start_index_ = -1;
 };
 
 }  // namespace ash

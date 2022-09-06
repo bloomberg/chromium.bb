@@ -17,11 +17,12 @@ LinkLoadParameters::LinkLoadParameters(
     const String& media,
     const String& nonce,
     const String& integrity,
-    const String& importance,
+    const String& fetch_priority_hint,
     network::mojom::ReferrerPolicy referrer_policy,
     const KURL& href,
     const String& image_srcset,
-    const String& image_sizes)
+    const String& image_sizes,
+    const String& blocking)
     : rel(rel),
       cross_origin(cross_origin),
       type(type),
@@ -29,15 +30,16 @@ LinkLoadParameters::LinkLoadParameters(
       media(media),
       nonce(nonce),
       integrity(integrity),
-      importance(importance),
+      fetch_priority_hint(fetch_priority_hint),
       referrer_policy(referrer_policy),
       href(href),
       image_srcset(image_srcset),
-      image_sizes(image_sizes) {}
+      image_sizes(image_sizes),
+      blocking(blocking) {}
 
 // TODO(domfarolino)
-// Eventually we'll want to support an |importance| value on
-// LinkHeaders. We can communicate a header's importance value
+// Eventually we'll want to support a |fetchpriority| value on
+// LinkHeaders. We can communicate a header's fetchpriority value
 // to LinkLoadParameters here, likely after modifying the LinkHeader
 // class. See https://crbug.com/821464 for info on Priority Hints.
 LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
@@ -52,6 +54,7 @@ LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
       referrer_policy(network::mojom::ReferrerPolicy::kDefault),
       href(KURL(base_url, header.Url())),
       image_srcset(header.ImageSrcset()),
-      image_sizes(header.ImageSizes()) {}
+      image_sizes(header.ImageSizes()),
+      blocking(header.Blocking()) {}
 
 }  // namespace blink

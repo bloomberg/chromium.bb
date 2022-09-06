@@ -12,6 +12,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/synthetic_trials.h"
 #include "content/public/browser/browser_context.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -43,7 +44,8 @@ HttpsFirstModeService::HttpsFirstModeService(PrefService* pref_service)
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       kHttpsFirstModeSyntheticFieldTrialName,
       enabled ? kHttpsFirstModeSyntheticFieldTrialEnabledGroup
-              : kHttpsFirstModeSyntheticFieldTrialDisabledGroup);
+              : kHttpsFirstModeSyntheticFieldTrialDisabledGroup,
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 }
 
 HttpsFirstModeService::~HttpsFirstModeService() = default;
@@ -96,7 +98,7 @@ content::BrowserContext* HttpsFirstModeServiceFactory::GetBrowserContextToUse(
     return nullptr;
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
+  if (ash::ProfileHelper::IsSigninProfile(profile)) {
     return nullptr;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

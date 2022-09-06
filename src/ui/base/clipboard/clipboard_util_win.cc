@@ -7,18 +7,17 @@
 #include <shellapi.h>
 #include <wininet.h>  // For INTERNET_MAX_URL_LENGTH.
 #include <wrl/client.h>
+
 #include <algorithm>
 #include <limits>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -65,11 +64,11 @@ bool GetUrlFromHDrop(IDataObject* data_object,
       return false;
 
     wchar_t filename[MAX_PATH];
-    if (DragQueryFileW(hdrop.get(), 0, filename, base::size(filename))) {
+    if (DragQueryFileW(hdrop.get(), 0, filename, std::size(filename))) {
       wchar_t url_buffer[INTERNET_MAX_URL_LENGTH];
       if (0 == _wcsicmp(PathFindExtensionW(filename), L".url") &&
           GetPrivateProfileStringW(L"InternetShortcut", L"url", 0, url_buffer,
-                                   base::size(url_buffer), filename)) {
+                                   std::size(url_buffer), filename)) {
         *url = GURL(base::AsStringPiece16(url_buffer));
         PathRemoveExtension(filename);
         title->assign(base::as_u16cstr(PathFindFileName(filename)));

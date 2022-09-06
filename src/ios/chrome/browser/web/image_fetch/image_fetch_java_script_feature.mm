@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/web/image_fetch/image_fetch_java_script_feature.h"
 
 #include "base/base64.h"
+#include "base/no_destructor.h"
 #include "base/values.h"
 #include "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
 #import "ios/web/public/js_messaging/java_script_feature_util.h"
@@ -17,7 +18,7 @@
 #endif
 
 namespace {
-const char kScriptName[] = "image_fetch_js";
+const char kScriptName[] = "image_fetch";
 const char kScriptHandlerName[] = "ImageFetchMessageHandler";
 
 ImageFetchJavaScriptFeature::Handler* GetHandlerFromWebState(

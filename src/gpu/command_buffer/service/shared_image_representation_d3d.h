@@ -16,7 +16,7 @@
 // Usage of BUILDFLAG(USE_DAWN) needs to be after the include for
 // ui/gl/buildflags.h
 #if BUILDFLAG(USE_DAWN)
-#include <dawn_native/D3D12Backend.h>
+#include <dawn/native/D3D12Backend.h>
 #endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
@@ -53,7 +53,7 @@ class SharedImageRepresentationDawnD3D : public SharedImageRepresentationDawn {
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
       WGPUDevice device,
-      dawn_native::d3d12::ExternalImageDXGI* external_image);
+      dawn::native::d3d12::ExternalImageDXGI* external_image);
 
   ~SharedImageRepresentationDawnD3D() override;
 
@@ -63,7 +63,7 @@ class SharedImageRepresentationDawnD3D : public SharedImageRepresentationDawn {
  private:
   WGPUDevice device_;
   WGPUTexture texture_ = nullptr;
-  raw_ptr<dawn_native::d3d12::ExternalImageDXGI> external_image_ = nullptr;
+  raw_ptr<dawn::native::d3d12::ExternalImageDXGI> external_image_ = nullptr;
 
   // TODO(cwallez@chromium.org): Load procs only once when the factory is
   // created and pass a pointer to them around?

@@ -84,6 +84,9 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
  private:
   // V8InspectorClient implementation.
   void beginUserGesture() override;
+  std::unique_ptr<v8_inspector::WebDriverValue> serializeToWebDriverValue(
+      v8::Local<v8::Value> v8_value,
+      int max_depth) override;
   std::unique_ptr<v8_inspector::StringBuffer> valueSubtype(
       v8::Local<v8::Value>) override;
   std::unique_ptr<v8_inspector::StringBuffer> descriptionForValueSubtype(
@@ -99,6 +102,9 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                            void* data) override;
   void cancelTimer(void* data) override;
   int64_t generateUniqueId() override;
+  void dispatchError(v8::Local<v8::Context>,
+                     v8::Local<v8::Message>,
+                     v8::Local<v8::Value> exception) final;
 
   void OnTimer(TimerBase*);
 

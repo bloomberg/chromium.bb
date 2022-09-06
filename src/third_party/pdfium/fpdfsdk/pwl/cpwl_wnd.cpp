@@ -33,8 +33,14 @@ const CFX_Color CPWL_Wnd::kDefaultBlackColor =
 const CFX_Color CPWL_Wnd::kDefaultWhiteColor =
     CFX_Color(CFX_Color::Type::kGray, 1);
 
-CPWL_Wnd::CreateParams::CreateParams()
-    : fFontSize(kDefaultFontSize), sDash(3, 0, 0) {}
+CPWL_Wnd::CreateParams::CreateParams(CFX_Timer::HandlerIface* timer_handler,
+                                     IPWL_FillerNotify* filler_notify,
+                                     ProviderIface* provider)
+    : pTimerHandler(timer_handler),
+      pFillerNotify(filler_notify),
+      pProvider(provider),
+      fFontSize(kDefaultFontSize),
+      sDash(3, 0, 0) {}
 
 CPWL_Wnd::CreateParams::CreateParams(const CreateParams& other) = default;
 
@@ -126,7 +132,7 @@ bool CPWL_Wnd::IsMETAKeyDown(Mask<FWL_EVENTFLAG> nFlag) {
 
 // static
 bool CPWL_Wnd::IsPlatformShortcutKey(Mask<FWL_EVENTFLAG> nFlag) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   return IsMETAKeyDown(nFlag);
 #else
   return IsCTRLKeyDown(nFlag);
@@ -135,7 +141,7 @@ bool CPWL_Wnd::IsPlatformShortcutKey(Mask<FWL_EVENTFLAG> nFlag) {
 
 CPWL_Wnd::CPWL_Wnd(
     const CreateParams& cp,
-    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
+    std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData)
     : m_CreationParams(cp), m_pAttachedData(std::move(pAttachedData)) {}
 
 CPWL_Wnd::~CPWL_Wnd() {
@@ -169,11 +175,6 @@ void CPWL_Wnd::Realize() {
 void CPWL_Wnd::OnCreated() {}
 
 void CPWL_Wnd::OnDestroy() {}
-
-void CPWL_Wnd::InvalidateFocusHandler(FocusHandlerIface* handler) {
-  if (m_CreationParams.pFocusHandler == handler)
-    m_CreationParams.pFocusHandler = nullptr;
-}
 
 void CPWL_Wnd::InvalidateProvider(ProviderIface* provider) {
   if (m_CreationParams.pProvider.Get() == provider)
@@ -278,7 +279,7 @@ bool CPWL_Wnd::InvalidateRect(const CFX_FloatRect* pRect) {
   CFX_FloatRect rcWin = PWLtoWnd(rcRefresh);
   rcWin.Inflate(1, 1);
   rcWin.Normalize();
-  GetSystemHandler()->InvalidateRect(m_pAttachedData.get(), rcWin);
+  GetFillerNotify()->InvalidateRect(m_pAttachedData.get(), rcWin);
   return !!thisObserved;
 }
 
@@ -500,7 +501,7 @@ void CPWL_Wnd::CreateVScrollBar(const CreateParams& cp) {
   CreateParams scp = cp;
   scp.dwFlags = PWS_BACKGROUND | PWS_AUTOTRANSPARENT | PWS_NOREFRESHCLIP;
   scp.sBackgroundColor = kDefaultWhiteColor;
-  scp.eCursorType = IPWL_SystemHandler::CursorStyle::kArrow;
+  scp.eCursorType = IPWL_FillerNotify::CursorStyle::kArrow;
   scp.nTransparency = CPWL_ScrollBar::kTransparency;
 
   auto pBar = std::make_unique<CPWL_ScrollBar>(scp, CloneAttachedData());
@@ -541,7 +542,7 @@ void CPWL_Wnd::OnSetFocus() {}
 
 void CPWL_Wnd::OnKillFocus() {}
 
-std::unique_ptr<IPWL_SystemHandler::PerWindowData> CPWL_Wnd::CloneAttachedData()
+std::unique_ptr<IPWL_FillerNotify::PerWindowData> CPWL_Wnd::CloneAttachedData()
     const {
   return m_pAttachedData ? m_pAttachedData->Clone() : nullptr;
 }
@@ -616,7 +617,7 @@ void CPWL_Wnd::CreateChildWnd(const CreateParams& cp) {}
 
 void CPWL_Wnd::SetCursor() {
   if (IsValid())
-    GetSystemHandler()->SetCursor(GetCreationParams()->eCursorType);
+    GetFillerNotify()->SetCursor(GetCreationParams()->eCursorType);
 }
 
 void CPWL_Wnd::CreateMsgControl() {

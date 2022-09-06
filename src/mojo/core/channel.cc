@@ -23,9 +23,9 @@
 #include "mojo/core/core.h"
 #include "mojo/core/embedder/features.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mach_logging.h"
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -35,6 +35,14 @@ namespace core {
 namespace {
 
 std::atomic_bool g_use_trivial_messages{false};
+
+// To ensure amortized O(1) appends, need to be >1. Most STL implementations
+// use 2, but it may be too much for us, and we do see OOM crashes in the
+// reallocation.
+//
+// TODO(1301294): Consider asking the memory allocator for a
+// suitable size.
+constexpr float kGrowthFactor = 1.5;
 
 static_assert(
     IsAlignedForChannelMessage(sizeof(Channel::Message::LegacyHeader)),
@@ -117,10 +125,10 @@ struct ComplexMessage : public Channel::Message {
 
   std::vector<PlatformHandleInTransit> handle_vector_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, handles are serialised into the extra header section.
   raw_ptr<HandleEntry> handles_ = nullptr;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   // On OSX, handles are serialised into the extra header section.
   MachPortsExtraHeader* mach_ports_header_ = nullptr;
 #endif
@@ -278,11 +286,11 @@ Channel::MessagePtr Channel::Message::Deserialize(
     return nullptr;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   uint32_t max_handles = extra_header_size / sizeof(HandleEntry);
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   uint32_t max_handles = extra_header_size / sizeof(HandleInfoEntry);
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   if (extra_header_size > 0 &&
       extra_header_size < sizeof(MachPortsExtraHeader)) {
     DLOG(ERROR) << "Decoding invalid message: " << extra_header_size << " < "
@@ -301,7 +309,7 @@ Channel::MessagePtr Channel::Message::Deserialize(
     DLOG(ERROR) << "Decoding invalid message: unexpected extra_header_size > 0";
     return nullptr;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   const uint16_t num_handles =
       header ? header->num_handles : legacy_header->num_handles;
@@ -339,7 +347,7 @@ Channel::MessagePtr Channel::Message::Deserialize(
     message->legacy_header()->num_handles = legacy_header->num_handles;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::vector<PlatformHandleInTransit> handles(num_handles);
   for (size_t i = 0; i < num_handles; i++) {
     HANDLE handle = base::win::Uint32ToHandle(
@@ -445,13 +453,13 @@ ComplexMessage::ComplexMessage(size_t capacity,
 
   const bool is_legacy_message = (message_type == MessageType::NORMAL_LEGACY);
   size_t extra_header_size = 0;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows we serialize HANDLEs into the extra header space.
   extra_header_size = max_handles_ * sizeof(HandleEntry);
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   // On Fuchsia we serialize handle types into the extra header space.
   extra_header_size = max_handles_ * sizeof(HandleInfoEntry);
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   // On OSX, some of the platform handles may be mach ports, which are
   // serialised into the message buffer. Since there could be a mix of fds and
   // mach ports, we store the mach ports as an <index, port> pair (of uint32_t),
@@ -496,12 +504,12 @@ ComplexMessage::ComplexMessage(size_t capacity,
   }
 
   if (max_handles_ > 0) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     handles_ = reinterpret_cast<HandleEntry*>(mutable_extra_header());
     // Initialize all handles to invalid values.
     for (size_t i = 0; i < max_handles_; ++i)
       handles_[i].handle = base::win::HandleToUint32(INVALID_HANDLE_VALUE);
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
     mach_ports_header_ =
         reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
     mach_ports_header_->num_ports = 0;
@@ -524,7 +532,9 @@ bool ComplexMessage::ExtendPayload(size_t new_payload_size) {
   size_t header_size = capacity_ - capacity_without_header;
   if (new_payload_size > capacity_without_header) {
     size_t new_capacity =
-        std::max(capacity_without_header * 2, new_payload_size) + header_size;
+        std::max(static_cast<size_t>(capacity_without_header * kGrowthFactor),
+                 new_payload_size) +
+        header_size;
     Channel::AlignedBuffer new_data = MakeAlignedBuffer(new_capacity);
     memcpy(new_data.get(), data_.get(), capacity_);
     data_ = std::move(new_data);
@@ -533,9 +543,9 @@ bool ComplexMessage::ExtendPayload(size_t new_payload_size) {
     if (max_handles_ > 0) {
 // We also need to update the cached extra header addresses in case the
 // payload buffer has been relocated.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       handles_ = reinterpret_cast<HandleEntry*>(mutable_extra_header());
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
       mach_ports_header_ =
           reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
 #endif
@@ -578,7 +588,7 @@ void ComplexMessage::SetHandles(
   CHECK_LE(new_handles.size(), max_handles_);
   header()->num_handles = static_cast<uint16_t>(new_handles.size());
   std::swap(handle_vector_, new_handles);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   memset(handles_, 0, extra_header_size());
   for (size_t i = 0; i < handle_vector_.size(); i++) {
     HANDLE handle = handle_vector_[i].remote_handle();
@@ -586,9 +596,9 @@ void ComplexMessage::SetHandles(
       handle = handle_vector_[i].handle().GetHandle().Get();
     handles_[i].handle = base::win::HandleToUint32(handle);
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (mach_ports_header_) {
     for (size_t i = 0; i < max_handles_; ++i) {
       mach_ports_header_->entries[i] = {0};
@@ -721,7 +731,8 @@ class Channel::ReadBuffer {
   // |num_bytes| more bytes; returns the address of the first available byte.
   char* Reserve(size_t num_bytes) {
     if (num_occupied_bytes_ + num_bytes > size_) {
-      size_ = std::max(size_ * 2, num_occupied_bytes_ + num_bytes);
+      size_ = std::max(static_cast<size_t>(size_ * kGrowthFactor),
+                       num_occupied_bytes_ + num_bytes);
       AlignedBuffer new_data = MakeAlignedBuffer(size_);
       memcpy(new_data.get(), data_.get(), num_occupied_bytes_);
       data_ = std::move(new_data);
@@ -950,8 +961,8 @@ bool Channel::OnControlMessage(Message::MessageType message_type,
 }
 
 // Currently only Non-nacl CrOs, Linux, and Android support upgrades.
-#if defined(OS_NACL) || \
-    (!(defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_ANDROID)))
+#if BUILDFLAG(IS_NACL) || (!(BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || \
+                             BUILDFLAG(IS_ANDROID)))
 // static
 MOJO_SYSTEM_IMPL_EXPORT bool Channel::SupportsChannelUpgrade() {
   return false;

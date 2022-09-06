@@ -69,6 +69,21 @@ class BASE_EXPORT PoissonAllocationSampler {
     static bool IsMuted();
   };
 
+  // An instance of this class makes the sampler behave deterministically to
+  // ensure test results are repeatable. Does not support nesting.
+  class BASE_EXPORT ScopedSuppressRandomnessForTesting {
+   public:
+    ScopedSuppressRandomnessForTesting();
+    ~ScopedSuppressRandomnessForTesting();
+
+    ScopedSuppressRandomnessForTesting(
+        const ScopedSuppressRandomnessForTesting&) = delete;
+    ScopedSuppressRandomnessForTesting& operator=(
+        const ScopedSuppressRandomnessForTesting&) = delete;
+
+    static bool IsSuppressed();
+  };
+
   // Must be called early during the process initialization. It creates and
   // reserves a TLS slot.
   static void Init();
@@ -93,8 +108,12 @@ class BASE_EXPORT PoissonAllocationSampler {
   // want to put observers notification loop under a reader-writer lock.
   void RemoveSamplesObserver(SamplesObserver*);
 
-  void SetSamplingInterval(size_t sampling_interval);
-  void SuppressRandomnessForTest(bool suppress);
+  // Sets the mean number of bytes that will be allocated before taking a
+  // sample.
+  void SetSamplingInterval(size_t sampling_interval_bytes);
+
+  // Returns the current mean sampling interval, in bytes.
+  size_t SamplingInterval() const;
 
   static void RecordAlloc(void* address,
                           size_t,
@@ -142,8 +161,15 @@ class BASE_EXPORT PoissonAllocationSampler {
   PoissonAllocationSampler();
   ~PoissonAllocationSampler() = delete;
 
-  static void InstallAllocatorHooksOnce();
+  // Installs allocator hooks if they weren't already installed. This is not
+  // static to ensure that allocator hooks can't be installed unless the
+  // PoissonAllocationSampler singleton exists.
+  void InstallAllocatorHooksOnce();
+
   static size_t GetNextSampleInterval(size_t base_interval);
+
+  // Return the set of sampled addresses. This is only valid to call after
+  // Init().
   static LockFreeAddressHashSet& sampled_addresses_set();
 
   void DoRecordAlloc(intptr_t accumulated_bytes,
@@ -168,6 +194,7 @@ class BASE_EXPORT PoissonAllocationSampler {
   friend class heap_profiling::HeapProfilerControllerTest;
   friend class NoDestructor<PoissonAllocationSampler>;
   friend class SamplingHeapProfilerTest;
+  FRIEND_TEST_ALL_PREFIXES(PoissonAllocationSamplerTest, MuteHooksWithoutInit);
   FRIEND_TEST_ALL_PREFIXES(SamplingHeapProfilerTest, HookedAllocatorMuted);
 };
 

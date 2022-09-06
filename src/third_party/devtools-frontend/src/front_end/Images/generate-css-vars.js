@@ -1,9 +1,9 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const fs = require('fs');
 const path = require('path');
-const [, , targetGenDir, targetName, ...imageSources] = process.argv;
+const {writeIfChanged} = require('../../scripts/build/ninja/write-if-changed.js');
+const [, , buildTimestamp, targetGenDir, targetName, ...imageSources] = process.argv;
 
 /**
  * @param {string} fileName
@@ -18,8 +18,8 @@ function generateCSSVariableDefinition(fileName) {
       fileName}', import.meta.url).toString() + '\\")');`;
 }
 
-const CURRENT_YEAR = new Date().getFullYear();
-const fileContent = `
+const CURRENT_YEAR = new Date(Number(buildTimestamp) * 1000).getUTCFullYear();
+const newContents = `
 // Copyright ${CURRENT_YEAR} The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -32,17 +32,16 @@ ${imageSources.map(generateCSSVariableDefinition).join('\n')}
 document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 `;
 
-fs.writeFileSync(path.join(targetGenDir, 'Images.prebundle.js'), fileContent, {encoding: 'utf-8'});
+writeIfChanged(path.join(targetGenDir, 'Images.prebundle.js'), newContents);
 
-const tsconfigContent = `
-{
-    "compilerOptions": {
-        "composite": true
-    },
-    "files": [
-        "Images.js"
-    ]
+const tsconfigContent = `{
+  "compilerOptions": {
+      "composite": true
+  },
+  "files": [
+      "Images.js"
+  ]
 }
 `;
 
-fs.writeFileSync(path.join(targetGenDir, `${targetName}-tsconfig.json`), tsconfigContent, {encoding: 'utf-8'});
+writeIfChanged(path.join(targetGenDir, `${targetName}-tsconfig.json`), tsconfigContent);

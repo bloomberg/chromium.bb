@@ -40,8 +40,7 @@ _LEGACY_BENCHMARKS = [
     'smoothness.tough_pinch_zoom_cases', 'smoothness.tough_scrolling_cases',
     'smoothness.tough_texture_upload_cases', 'smoothness.tough_webgl_ad_cases',
     'smoothness.tough_webgl_cases', 'speedometer', 'speedometer-future',
-    'speedometer2', 'speedometer2-future', 'start_with_url.cold.startup_pages',
-    'start_with_url.warm.startup_pages', 'thread_times.key_hit_test_cases',
+    'speedometer2', 'speedometer2-future', 'thread_times.key_hit_test_cases',
     'thread_times.key_idle_power_cases', 'thread_times.key_mobile_sites_smooth',
     'thread_times.key_noop_cases', 'thread_times.key_silk_cases',
     'thread_times.simple_mobile_sites', 'thread_times.tough_compositor_cases',
@@ -174,7 +173,7 @@ def ShouldFilterStatistic(test_name, benchmark_name, stat_name):
   if benchmark_name.startswith('memory.long_running'):
     value_name = '%s_%s' % (test_name, stat_name)
     return not _ShouldAddMemoryLongRunningValue(value_name)
-  if benchmark_name == 'media.desktop' or benchmark_name == 'media.mobile':
+  if benchmark_name in ('media.desktop', 'media.mobile'):
     value_name = '%s_%s' % (test_name, stat_name)
     return not _ShouldAddMediaValue(value_name)
   if benchmark_name.startswith('system_health'):

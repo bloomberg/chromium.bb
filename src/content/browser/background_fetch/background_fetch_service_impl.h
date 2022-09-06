@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -33,6 +32,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       blink::StorageKey storage_key,
       net::IsolationInfo isolation_info,
+      RenderProcessHost* rph,
       RenderFrameHostImpl* rfh);
 
   BackgroundFetchServiceImpl(const BackgroundFetchServiceImpl&) = delete;
@@ -69,10 +69,10 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|
   // and |title| respectively have valid values. The renderer will be flagged
   // for having sent a bad message if the values are invalid.
-  bool ValidateDeveloperId(const std::string& developer_id) WARN_UNUSED_RESULT;
-  bool ValidateUniqueId(const std::string& unique_id) WARN_UNUSED_RESULT;
-  bool ValidateRequests(const std::vector<blink::mojom::FetchAPIRequestPtr>&
-                            requests) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool ValidateDeveloperId(const std::string& developer_id);
+  [[nodiscard]] bool ValidateUniqueId(const std::string& unique_id);
+  [[nodiscard]] bool ValidateRequests(
+      const std::vector<blink::mojom::FetchAPIRequestPtr>& requests);
 
   // The Background Fetch context on which operations will be dispatched.
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
@@ -80,6 +80,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   const blink::StorageKey storage_key_;
 
   net::IsolationInfo isolation_info_;
+
+  int rph_id_;
 
   // Identifies the RenderFrameHost that is using this service, if any. May not
   // resolve to a host if the frame has already been destroyed or a worker is

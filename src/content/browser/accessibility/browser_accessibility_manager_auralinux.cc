@@ -73,6 +73,12 @@ void BrowserAccessibilityManagerAuraLinux::FireSelectedEvent(
   FireEvent(node, ax::mojom::Event::kSelection);
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireBusyChangedEvent(
+    BrowserAccessibility* node,
+    bool is_busy) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnBusyStateChanged(is_busy);
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireLoadingEvent(
     BrowserAccessibility* node,
     bool is_loading) {
@@ -122,8 +128,10 @@ void BrowserAccessibilityManagerAuraLinux::FireEvent(BrowserAccessibility* node,
 
 void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
     ax::mojom::Event event_type,
-    BrowserAccessibility* node) {
-  BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
+    BrowserAccessibility* node,
+    int action_request_id) {
+  BrowserAccessibilityManager::FireBlinkEvent(event_type, node,
+                                              action_request_id);
 
   switch (event_type) {
     case ax::mojom::Event::kScrolledToAnchor:
@@ -189,6 +197,21 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
       break;
+    case ui::AXEventGenerator::Event::BUSY_CHANGED: {
+      // We reliably get busy-changed notifications when the value of aria-busy
+      // changes. We may or may not get a generated busy-changed notification
+      // for the document at the start or end of a page load. For instance,
+      // AXTree::Unserialize will not call NotifyNodeAttributesHaveBeenChanged
+      // when the root is new, which is the case when a new document has started
+      // loading. Because Orca needs the busy-changed notification to be
+      // reliably fired on the document, we do so in response to load-start and
+      // load-complete and suppress possible duplication here.
+      if (node->IsPlatformDocument())
+        return;
+      FireBusyChangedEvent(node, node->GetData().GetBoolAttribute(
+                                     ax::mojom::BoolAttribute::kBusy));
+      break;
+    }
     case ui::AXEventGenerator::Event::COLLAPSED:
       FireExpandedEvent(node, false);
       break;
@@ -219,10 +242,18 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       FireAriaCurrentChangedEvent(node);
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
+      DCHECK(node->IsPlatformDocument());
+      // TODO(accessibility): While this check is theoretically what we want to
+      // be the case, timing and other issues can cause it to fail. This seems
+      // to impact bots rather than Orca and its users. If this proves to be a
+      // real-world problem, we can investigate further and reinstate it.
+      // DCHECK(
+      //    !node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
       FireLoadingEvent(node, false);
       FireEvent(node, ax::mojom::Event::kLoadComplete);
       break;
     case ui::AXEventGenerator::Event::LOAD_START:
+      DCHECK(node->IsPlatformDocument());
       FireLoadingEvent(node, true);
       break;
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
@@ -276,7 +307,6 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::ALERT:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
-    case ui::AXEventGenerator::Event::BUSY_CHANGED:
     case ui::AXEventGenerator::Event::CARET_BOUNDS_CHANGED:
     case ui::AXEventGenerator::Event::CHECKED_STATE_DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
@@ -343,7 +373,7 @@ void BrowserAccessibilityManagerAuraLinux::OnNodeDataWillChange(
       if (!CanEmitChildrenChanged(obj))
         return;
       g_signal_emit_by_name(obj->GetParent(), "children-changed::remove",
-                            obj->GetIndexInParent(),
+                            static_cast<gint>(obj->GetIndexInParent().value()),
                             obj->GetNativeViewAccessible());
     }
   }

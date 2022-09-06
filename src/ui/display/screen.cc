@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -30,8 +31,7 @@ Screen::~Screen() = default;
 
 // static
 Screen* Screen::GetScreen() {
-#if defined(OS_APPLE)
-  // TODO(scottmg): https://crbug.com/558054
+#if BUILDFLAG(IS_IOS)
   if (!g_screen)
     g_screen = CreateNativeScreen();
 #endif
@@ -39,8 +39,21 @@ Screen* Screen::GetScreen() {
 }
 
 // static
-Screen* Screen::SetScreenInstance(Screen* instance) {
+Screen* Screen::SetScreenInstance(Screen* instance,
+                                  const base::Location& location) {
+  // Do not allow screen instance override. The screen object has a lot of
+  // states, such as current display settings as well as observers, and safely
+  // transferring these to new screen implementation is very difficult and not
+  // safe.  If you hit the DCHECK in a test, please look for other examples that
+  // that set a test screen instance in the setup process.
+  DCHECK(!g_screen || !instance || (instance && instance->shutdown_))
+      << "fail=" << location.ToString();
   return std::exchange(g_screen, instance);
+}
+
+// static
+bool Screen::HasScreen() {
+  return !!g_screen;
 }
 
 void Screen::SetCursorScreenPointForTesting(const gfx::Point& point) {
@@ -71,10 +84,29 @@ void Screen::SetDisplayForNewWindows(int64_t display_id) {
   display_id_for_new_windows_ = display_id;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+std::unique_ptr<Screen::ScreenSaverSuspender> Screen::SuspendScreenSaver() {
+  SetScreenSaverSuspended(true);
+  screen_saver_suspension_count_++;
+  return base::WrapUnique(new Screen::ScreenSaverSuspender(this));
+}
+
+Screen::ScreenSaverSuspender::~ScreenSaverSuspender() {
+  // Check that this suspender still refers to the active screen. Particularly
+  // in tests, the screen might be destructed before the suspender.
+  if (screen_ == GetScreen()) {
+    screen_->screen_saver_suspension_count_--;
+    if (screen_->screen_saver_suspension_count_ == 0) {
+      screen_->SetScreenSaverSuspended(false);
+    }
+  }
+}
+
 bool Screen::SetScreenSaverSuspended(bool suspend) {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 
 bool Screen::IsScreenSaverActive() const {
   NOTIMPLEMENTED_LOG_ONCE();
@@ -192,5 +224,50 @@ ScreenInfos Screen::GetScreenInfosNearestDisplay(int64_t nearest_id) const {
   CHECK(primary_display_exists);
   return result;
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+
+ScopedNativeScreen::ScopedNativeScreen(const base::Location& location) {
+  MaybeInit(location);
+}
+
+ScopedNativeScreen::ScopedNativeScreen(bool call_maybe_init,
+                                       const base::Location& location) {
+  if (call_maybe_init)
+    MaybeInit(location);
+}
+
+ScopedNativeScreen::~ScopedNativeScreen() {
+  Shutdown();
+}
+
+void ScopedNativeScreen::MaybeInit(const base::Location& location) {
+  maybe_init_called_ = true;
+  if (!Screen::HasScreen()) {
+#if BUILDFLAG(IS_IOS)
+    Screen::GetScreen();
+#else
+    screen_ = base::WrapUnique(CreateScreen());
+    // ScreenOzone and DesktopScreenWin sets the instance by itself.
+    if (Screen::GetScreen() != screen_.get())
+      Screen::SetScreenInstance(screen_.get(), location);
+#endif
+  }
+}
+
+void ScopedNativeScreen::Shutdown() {
+  DCHECK(maybe_init_called_);
+  if (screen_) {
+    DCHECK_EQ(screen_.get(), Screen::GetScreen());
+    Screen::SetScreenInstance(nullptr);
+    screen_.reset();
+  }
+}
+
+Screen* ScopedNativeScreen::CreateScreen() {
+  return CreateNativeScreen();
+}
+
+#endif
 
 }  // namespace display

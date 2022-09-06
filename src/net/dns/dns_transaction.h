@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/request_priority.h"
 #include "net/dns/public/secure_dns_mode.h"
@@ -26,6 +27,9 @@ class DnsSession;
 class NetLogWithSource;
 class ResolveContext;
 
+// The hostname probed by CreateDohProbeRunner().
+inline constexpr base::StringPiece kDohProbeHostname = "www.gstatic.com";
+
 // DnsTransaction implements a stub DNS resolver as defined in RFC 1034.
 // The DnsTransaction takes care of retransmissions, name server fallback (or
 // round-robin), suffix search, and simple response validation ("does it match
@@ -34,7 +38,14 @@ class ResolveContext;
 // Destroying DnsTransaction cancels the underlying network effort.
 class NET_EXPORT_PRIVATE DnsTransaction {
  public:
-  virtual ~DnsTransaction() {}
+  // Called with the response or nullptr if no matching response was received.
+  // Note that the `GetDottedName()` of the response may be different than the
+  // original `hostname` (passed to `DnsTransactionFactory::CreateTransaction()`
+  // as a result of suffix search.
+  using ResponseCallback =
+      base::OnceCallback<void(int neterror, const DnsResponse* response)>;
+
+  virtual ~DnsTransaction() = default;
 
   // Returns the original |hostname|.
   virtual const std::string& GetHostname() const = 0;
@@ -43,7 +54,7 @@ class NET_EXPORT_PRIVATE DnsTransaction {
   virtual uint16_t GetType() const = 0;
 
   // Starts the transaction.  Always completes asynchronously.
-  virtual void Start() = 0;
+  virtual void Start(ResponseCallback callback) = 0;
 
   virtual void SetRequestPriority(RequestPriority priority) = 0;
 };
@@ -78,19 +89,6 @@ class DnsProbeRunner {
 // the factory is still alive.
 class NET_EXPORT_PRIVATE DnsTransactionFactory {
  public:
-  // Called with the response or NULL if no matching response was received.
-  // Note that the |GetDottedName()| of the response may be different than the
-  // original |hostname| as a result of suffix search.
-  //
-  // The |doh_provider_id| contains the provider ID for histograms of the last
-  // DoH server attempted. If the name is unavailable, or this is not a DoH
-  // transaction, |doh_provider_id| is nullopt.
-  typedef base::OnceCallback<void(DnsTransaction* transaction,
-                                  int neterror,
-                                  const DnsResponse* response,
-                                  absl::optional<std::string> doh_provider_id)>
-      CallbackType;
-
   DnsTransactionFactory();
   virtual ~DnsTransactionFactory();
 
@@ -99,7 +97,6 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   // implies the domain name is fully-qualified and will be exempt from suffix
   // search. |hostname| should not be an IP literal.
   //
-  // The transaction will run |callback| upon asynchronous completion.
   // The |net_log| is used as the parent log.
   //
   // |secure| specifies whether DNS lookups should be performed using DNS-over-
@@ -111,20 +108,19 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   // cases where the caller has reasonable fallback options to the transaction
   // and it would be beneficial to move on to those options sooner on signals
   // that the transaction is potentially slow or problematic.
-  virtual std::unique_ptr<DnsTransaction> CreateTransaction(
+  [[nodiscard]] virtual std::unique_ptr<DnsTransaction> CreateTransaction(
       std::string hostname,
       uint16_t qtype,
-      CallbackType callback,
       const NetLogWithSource& net_log,
       bool secure,
       SecureDnsMode secure_dns_mode,
       ResolveContext* resolve_context,
-      bool fast_timeout) WARN_UNUSED_RESULT = 0;
+      bool fast_timeout) = 0;
 
   // Creates a runner to run the DoH probe sequence for all configured DoH
   // resolvers.
-  virtual std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
-      ResolveContext* resolve_context) WARN_UNUSED_RESULT = 0;
+  [[nodiscard]] virtual std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
+      ResolveContext* resolve_context) = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by
   // transactions from this factory.
@@ -135,8 +131,8 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
 
   // Creates a DnsTransactionFactory which creates DnsTransactionImpl using the
   // |session|.
-  static std::unique_ptr<DnsTransactionFactory> CreateFactory(
-      DnsSession* session) WARN_UNUSED_RESULT;
+  [[nodiscard]] static std::unique_ptr<DnsTransactionFactory> CreateFactory(
+      DnsSession* session);
 
   base::WeakPtrFactory<DnsTransactionFactory> weak_factory_{this};
 };

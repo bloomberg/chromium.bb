@@ -39,14 +39,14 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   void EnrollUsingAuthCode(const std::string& auth_code) override;
   void EnrollUsingToken(const std::string& token) override;
   void EnrollUsingAttestation() override;
-  void EnrollForOfflineDemo() override;
   void ClearAuth(base::OnceClosure callback) override;
   void GetDeviceAttributeUpdatePermission() override;
   void UpdateDeviceAttributes(const std::string& asset_id,
                               const std::string& location) override;
   void Setup(policy::ActiveDirectoryJoinDelegate* ad_join_delegate,
              const policy::EnrollmentConfig& enrollment_config,
-             const std::string& enrolling_user_domain) override;
+             const std::string& enrolling_user_domain,
+             policy::LicenseType license_type) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
@@ -83,6 +83,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
 
   policy::EnrollmentConfig enrollment_config_;
   std::string enrolling_user_domain_;
+  policy::LicenseType license_type_;
 
   enum {
     OAUTH_NOT_STARTED,

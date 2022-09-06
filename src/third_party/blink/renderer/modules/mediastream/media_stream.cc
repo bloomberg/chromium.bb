@@ -27,10 +27,11 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/modules/mediastream/browser_capture_media_stream_track.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/mediastream/focusable_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track_event.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/transferred_media_stream_track.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -38,63 +39,10 @@
 
 namespace blink {
 
-namespace {
-
-// Returns the DisplayCaptureSurfaceType for display-capture tracks,
-// absl::nullopt for non-display-capture tracks.
-absl::optional<media::mojom::DisplayCaptureSurfaceType> GetDisplayCaptureType(
-    const MediaStreamComponent* component) {
-  const MediaStreamTrackPlatform* const platform_track =
-      component->GetPlatformTrack();
-  if (!platform_track) {
-    return absl::nullopt;
-  }
-
-  MediaStreamTrackPlatform::Settings settings;
-  component->GetPlatformTrack()->GetSettings(settings);
-  return settings.display_surface;
-}
-
-MediaStreamTrack* MakeMediaStreamTrack(ExecutionContext* context,
-                                       MediaStreamComponent* component,
-                                       base::OnceClosure callback,
-                                       const String& descriptor_id) {
-  DCHECK(context);
-  DCHECK(component);
-
-  const absl::optional<media::mojom::DisplayCaptureSurfaceType>
-      display_surface_type = GetDisplayCaptureType(component);
-  const bool is_tab_capture =
-      (display_surface_type ==
-       media::mojom::DisplayCaptureSurfaceType::BROWSER);
-  const bool is_window_capture =
-      (display_surface_type == media::mojom::DisplayCaptureSurfaceType::WINDOW);
-
-  if (is_tab_capture && RuntimeEnabledFeatures::RegionCaptureEnabled(context)) {
-    // Note:
-    // * ConditionalFocus is `implied_by` RegionCapture.
-    // * BrowserCaptureMediaStreamTrack a subclass of FocusableMediaStreamTrack.
-    // Therefore, tab-capture with ConditionalFocus/RegionCapture active
-    // instantiates a track on which focus() is exposed - as intended.
-    DCHECK(RuntimeEnabledFeatures::ConditionalFocusEnabled(context));
-    return MakeGarbageCollected<BrowserCaptureMediaStreamTrack>(
-        context, component, std::move(callback), descriptor_id);
-  } else if ((is_tab_capture || is_window_capture) &&
-             RuntimeEnabledFeatures::ConditionalFocusEnabled(context)) {
-    return MakeGarbageCollected<FocusableMediaStreamTrack>(
-        context, component, std::move(callback), descriptor_id);
-  } else {
-    return MakeGarbageCollected<MediaStreamTrack>(context, component,
-                                                  std::move(callback));
-  }
-}
-
-}  // namespace
-
-static bool ContainsSource(MediaStreamTrackVector& track_vector,
-                           MediaStreamSource* source) {
+static bool ContainsTrack(MediaStreamTrackVector& track_vector,
+                          MediaStreamTrack* media_stream_track) {
   for (MediaStreamTrack* track : track_vector) {
-    if (source->Id() == track->Component()->Source()->Id())
+    if (media_stream_track->id() == track->id())
       return true;
   }
   return false;
@@ -102,8 +50,7 @@ static bool ContainsSource(MediaStreamTrackVector& track_vector,
 
 static void ProcessTrack(MediaStreamTrack* track,
                          MediaStreamTrackVector& track_vector) {
-  MediaStreamSource* source = track->Component()->Source();
-  if (!ContainsSource(track_vector, source))
+  if (!ContainsTrack(track_vector, track))
     track_vector.push_back(track);
 }
 
@@ -147,14 +94,20 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
                                  MediaStreamDescriptor* stream_descriptor) {
-  return MakeGarbageCollected<MediaStream>(context, stream_descriptor,
+  return MakeGarbageCollected<MediaStream>(context, stream_descriptor, nullptr,
                                            /*callback=*/base::DoNothing());
 }
 
 void MediaStream::Create(ExecutionContext* context,
                          MediaStreamDescriptor* stream_descriptor,
+                         TransferredMediaStreamTrack* track,
                          base::OnceCallback<void(MediaStream*)> callback) {
-  MakeGarbageCollected<MediaStream>(context, stream_descriptor,
+  DCHECK(track == nullptr ||
+         stream_descriptor->NumberOfAudioComponents() +
+                 stream_descriptor->NumberOfVideoComponents() ==
+             1);
+
+  MakeGarbageCollected<MediaStream>(context, stream_descriptor, track,
                                     std::move(callback));
 }
 
@@ -168,6 +121,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
 
 MediaStream::MediaStream(ExecutionContext* context,
                          MediaStreamDescriptor* stream_descriptor,
+                         TransferredMediaStreamTrack* transferred_track,
                          base::OnceCallback<void(MediaStream*)> callback)
     : ExecutionContextClient(context),
       descriptor_(stream_descriptor),
@@ -181,22 +135,30 @@ MediaStream::MediaStream(ExecutionContext* context,
   uint32_t number_of_audio_tracks = descriptor_->NumberOfAudioComponents();
   audio_tracks_.ReserveCapacity(number_of_audio_tracks);
   for (uint32_t i = 0; i < number_of_audio_tracks; i++) {
-    auto* new_track = MakeGarbageCollected<MediaStreamTrack>(
+    auto* new_track = MakeGarbageCollected<MediaStreamTrackImpl>(
         context, descriptor_->AudioComponent(i));
     new_track->RegisterMediaStream(this);
     audio_tracks_.push_back(new_track);
+    if (transferred_track) {
+      DCHECK(!transferred_track->HasImplementation());
+      transferred_track->SetImplementation(new_track);
+    }
   }
 
   uint32_t number_of_video_tracks = descriptor_->NumberOfVideoComponents();
   video_tracks_.ReserveCapacity(number_of_video_tracks);
   for (uint32_t i = 0; i < number_of_video_tracks; i++) {
-    MediaStreamTrack* const new_track = MakeMediaStreamTrack(
+    MediaStreamTrack* const new_track = MediaStreamTrackImpl::Create(
         context, descriptor_->VideoComponent(i),
         WTF::Bind(&MediaStream::OnMediaStreamTrackInitialized,
                   WrapPersistent(this)),
         descriptor_->Id());
     new_track->RegisterMediaStream(this);
     video_tracks_.push_back(new_track);
+    if (transferred_track) {
+      DCHECK(!transferred_track->HasImplementation());
+      transferred_track->SetImplementation(new_track);
+    }
   }
 
   if (EmptyOrOnlyEndedTracks()) {
@@ -488,8 +450,8 @@ void MediaStream::AddTrackByComponentAndFireEvents(
   DCHECK(component);
   if (!GetExecutionContext())
     return;
-  auto* track =
-      MakeGarbageCollected<MediaStreamTrack>(GetExecutionContext(), component);
+  auto* track = MakeGarbageCollected<MediaStreamTrackImpl>(
+      GetExecutionContext(), component);
   AddTrackAndFireEvents(track, event_timing);
 }
 

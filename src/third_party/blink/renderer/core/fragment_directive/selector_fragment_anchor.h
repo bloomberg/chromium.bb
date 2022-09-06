@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAGMENT_DIRECTIVE_SELECTOR_FRAGMENT_ANCHOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAGMENT_DIRECTIVE_SELECTOR_FRAGMENT_ANCHOR_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 
@@ -25,10 +26,6 @@ class CORE_EXPORT SelectorFragmentAnchor : public FragmentAnchor {
 
   void Trace(Visitor*) const override;
 
-  bool Dismiss() override;
-
-  static bool ShouldDismissOnScrollOrClick();
-
  protected:
   // This will be invoked by Invoke() when the page is visible until the
   // fragment has been dismissed. See FragmentAnchor::Invoke for details about
@@ -41,9 +38,6 @@ class CORE_EXPORT SelectorFragmentAnchor : public FragmentAnchor {
   bool should_scroll_ = false;
   // Whether the user has scrolled the page
   bool user_scrolled_ = false;
-  // Whether the fragment anchor has been dismissed yet. This should be
-  // kept alive until dismissed so we can remove highlightings.
-  bool dismissed_ = false;
   // Whether the page has been made visible. Used to ensure we wait until the
   // page has been made visible to start matching, to help prevent brute force
   // search attacks.

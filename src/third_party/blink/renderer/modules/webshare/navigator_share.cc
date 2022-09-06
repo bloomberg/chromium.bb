@@ -7,11 +7,14 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/files/safe_base_name.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_share_data.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -35,7 +38,7 @@ constexpr size_t kMaxSharedFileCount = 10;
 constexpr uint32_t kMaxSharedFileBytes = 50U * 1024 * 1024;
 
 constexpr uint32_t kMaxTitleLength = 16U * 1024;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 constexpr uint32_t kMaxTextLength = 120U * 1024;
 #else
 constexpr uint32_t kMaxTextLength = 1U * 1024 * 1024;
@@ -231,7 +234,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 // when the share completes. This goes against the web share spec to work around
 // the platform-specific bug, it is explicitly skipping section §2.1.2 step 2 of
 // the Web Share spec. https://www.w3.org/TR/web-share/#share-method
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (!clients_.IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "A earlier share had not yet completed.");
@@ -287,9 +290,20 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   if (has_files) {
     files.ReserveInitialCapacity(data->files().size());
     for (const blink::Member<blink::File>& file : data->files()) {
+      absl::optional<base::SafeBaseName> name =
+          base::SafeBaseName::Create(StringToFilePath(file->name()));
+      if (!name) {
+        execution_context->AddConsoleMessage(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning, "Unsafe file name");
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                          "Permission denied");
+        return ScriptPromise();
+      }
+
       total_bytes += file->size();
-      files.push_back(mojom::blink::SharedFile::New(file->name(),
-                                                    file->GetBlobDataHandle()));
+      files.push_back(
+          mojom::blink::SharedFile::New(*name, file->GetBlobDataHandle()));
     }
 
     if (files.size() > kMaxSharedFileCount ||

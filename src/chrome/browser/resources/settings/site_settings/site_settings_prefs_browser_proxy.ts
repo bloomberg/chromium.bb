@@ -51,6 +51,7 @@ export type OriginInfo = {
   numCookies: number,
   hasPermissionSettings: boolean,
   isInstalled: boolean,
+  isPartitioned: boolean,
 };
 
 /**
@@ -95,7 +96,7 @@ export type SiteException = {
   setting: ContentSetting,
   enforcement: chrome.settingsPrivate.Enforcement|null,
   controlledBy: chrome.settingsPrivate.ControlledBy,
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   showAndroidSmsNote?: boolean,
   // </if>
 };
@@ -153,11 +154,6 @@ export enum CookiePrimarySetting {
 export type MediaPickerEntry = {
   name: string,
   id: string,
-};
-
-type ProtocolHandlerEntry = {
-  protocol: string,
-  spec: string,
 };
 
 export type ZoomLevelEntry = {
@@ -388,9 +384,9 @@ export interface SiteSettingsPrefsBrowserProxy {
    * Deletes a protocol handler by url from the app approved list.
    * @param protocol The protocol to delete the url from.
    * @param url The url to delete.
-   * @param app_id The web app's ID to delete.
+   * @param appId The web app's ID to delete.
    */
-  removeAppDisallowedHandler(protocol: string, url: string, app_id: string):
+  removeAppDisallowedHandler(protocol: string, url: string, appId: string):
       void;
 
   /**
@@ -424,10 +420,18 @@ export interface SiteSettingsPrefsBrowserProxy {
   clearEtldPlus1DataAndCookies(etldPlus1: string): void;
 
   /**
-   * Clears all the web storage data and cookies for a given origin.
+   * Clears all the unpartitioned web storage data and cookies for a given
+   * origin.
    * @param origin The origin to clear data from.
    */
-  clearOriginDataAndCookies(origin: string): void;
+  clearUnpartitionedOriginDataAndCookies(origin: string): void;
+
+  /**
+   * Clears all the storage for |origin| which is partitioned on |etldPlus1|.
+   * @param origin The origin to clear data from.
+   * @param etldPlus1 The etld+1 which the data is partitioned for.
+   */
+  clearPartitionedOriginDataAndCookies(origin: string, etldPlus1: string): void;
 
   /**
    * Record All Sites Page action for metrics.
@@ -553,8 +557,8 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
     chrome.send('removeAppAllowedHandler', [protocol, url, appId]);
   }
 
-  removeAppDisallowedHandler(protocol: string, url: string, app_id: string) {
-    chrome.send('removeAppDisallowedHandler', [protocol, url, app_id]);
+  removeAppDisallowedHandler(protocol: string, url: string, appId: string) {
+    chrome.send('removeAppDisallowedHandler', [protocol, url, appId]);
   }
 
   updateIncognitoStatus() {
@@ -577,8 +581,12 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
     chrome.send('clearEtldPlus1DataAndCookies', [etldPlus1]);
   }
 
-  clearOriginDataAndCookies(origin: string) {
-    chrome.send('clearUsage', [origin]);
+  clearUnpartitionedOriginDataAndCookies(origin: string) {
+    chrome.send('clearUnpartitionedUsage', [origin]);
+  }
+
+  clearPartitionedOriginDataAndCookies(origin: string, etldPlus1: string) {
+    chrome.send('clearPartitionedUsage', [origin, etldPlus1]);
   }
 
   recordAction(action: number) {

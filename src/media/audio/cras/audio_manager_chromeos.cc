@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/nix/xdg_util.h"
@@ -57,16 +56,6 @@ enum CrosBeamformingDeviceState {
   BEAMFORMING_USER_DISABLED,
   BEAMFORMING_STATE_MAX = BEAMFORMING_USER_DISABLED
 };
-
-bool HasKeyboardMic(const AudioDeviceList& devices) {
-  for (const auto& device : devices) {
-    if (device.is_input &&
-        device.type == chromeos::AudioDeviceType::kKeyboardMic) {
-      return true;
-    }
-  }
-  return false;
-}
 
 const AudioDevice* GetDeviceFromId(const AudioDeviceList& devices,
                                    uint64_t id) {
@@ -136,6 +125,68 @@ bool IsSystemAecDeactivated(int aec_group_id) {
       false);
 }
 
+// Checks if the board with `aec_group_id` is flagged by the field trial to not
+// allow using DSP-based AEC effect.
+bool IsDspBasedAecDeactivated(int aec_group_id) {
+  return base::GetFieldTrialParamByFeatureAsBool(
+             features::kCrOSDspBasedAecDeactivatedGroups,
+             std::to_string(aec_group_id), false) ||
+         !base::FeatureList::IsEnabled(features::kCrOSDspBasedAecAllowed);
+}
+
+// Checks if the board with `aec_group_id` is flagged by the field trial to not
+// allow using DSP-based NS effect.
+bool IsDspBasedNsDeactivated(int aec_group_id) {
+  return base::GetFieldTrialParamByFeatureAsBool(
+             features::kCrOSDspBasedNsDeactivatedGroups,
+             std::to_string(aec_group_id), false) ||
+         !base::FeatureList::IsEnabled(features::kCrOSDspBasedNsAllowed);
+}
+
+// Checks if the board with `aec_group_id` is flagged by the field trial to not
+// allow using DSP-based AGC effect.
+bool IsDspBasedAgcDeactivated(int aec_group_id) {
+  return base::GetFieldTrialParamByFeatureAsBool(
+             features::kCrOSDspBasedAgcDeactivatedGroups,
+             std::to_string(aec_group_id), false) ||
+         !base::FeatureList::IsEnabled(features::kCrOSDspBasedAgcAllowed);
+}
+
+// Specifies which DSP-based effects are allowed based on media constraints and
+// any finch field trials.
+void SetAllowedDspBasedEffects(int aec_group_id, AudioParameters& params) {
+  int effects = params.effects();
+
+  // Allow AEC to be applied by CRAS on DSP if the AEC is active in CRAS and if
+  // using the AEC on DSP has not been deactivated by any field trials.
+  if ((effects & AudioParameters::ECHO_CANCELLER) &&
+      !IsDspBasedAecDeactivated(aec_group_id)) {
+    effects = effects | AudioParameters::ALLOW_DSP_ECHO_CANCELLER;
+  } else {
+    effects = effects & ~AudioParameters::ALLOW_DSP_ECHO_CANCELLER;
+  }
+
+  // Allow NS to be applied by CRAS on DSP if the NS is active in CRAS and if
+  // using the NS on DSP has not been deactivated by any field trials.
+  if ((effects & AudioParameters::NOISE_SUPPRESSION) &&
+      !IsDspBasedNsDeactivated(aec_group_id)) {
+    effects = effects | AudioParameters::ALLOW_DSP_NOISE_SUPPRESSION;
+  } else {
+    effects = effects & ~AudioParameters::ALLOW_DSP_NOISE_SUPPRESSION;
+  }
+
+  // Allow AGC to be applied by CRAS on DSP if the AGC is active in CRAS and if
+  // using the AGC on DSP has not been deactivated by any field trials.
+  if ((effects & AudioParameters::AUTOMATIC_GAIN_CONTROL) &&
+      !IsDspBasedAgcDeactivated(aec_group_id)) {
+    effects = effects | AudioParameters::ALLOW_DSP_AUTOMATIC_GAIN_CONTROL;
+  } else {
+    effects = effects & ~AudioParameters::ALLOW_DSP_AUTOMATIC_GAIN_CONTROL;
+  }
+
+  params.set_effects(effects);
+}
+
 }  // namespace
 
 bool AudioManagerChromeOS::HasAudioOutputDevices() {
@@ -184,15 +235,15 @@ void AudioManagerChromeOS::GetAudioDeviceNamesImpl(
     dev_idx_map[dev_index_of(device.id)].push_back(device);
   }
 
-  for (const auto& item : dev_idx_map) {
-    if (1 == item.second.size()) {
-      const AudioDevice& device = item.second.front();
+  for (const auto& [dev_idx, device_list] : dev_idx_map) {
+    if (1 == device_list.size()) {
+      const AudioDevice& device = device_list.front();
       device_names->emplace_back(device.display_name,
                                  base::NumberToString(device.id));
     } else {
       // Create virtual device name for audio nodes that share the same device
       // index.
-      ProcessVirtualDeviceName(device_names, item.second);
+      ProcessVirtualDeviceName(device_names, device_list);
     }
   }
 }
@@ -211,11 +262,6 @@ AudioParameters AudioManagerChromeOS::GetInputStreamParameters(
     const std::string& device_id) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
-  // Check if the device has keyboard.
-  AudioDeviceList devices;
-  GetAudioDevices(&devices);
-  const bool has_keyboard = HasKeyboardMic(devices);
-
   // Retrieve buffer size.
   int user_buffer_size = GetUserBufferSize();
   user_buffer_size =
@@ -227,8 +273,7 @@ AudioParameters AudioManagerChromeOS::GetInputStreamParameters(
 
   // TODO(hshi): Fine-tune audio parameters based on |device_id|. The optimal
   // parameters for the loopback stream may differ from the default.
-  return GetStreamParametersForSystem(user_buffer_size, has_keyboard,
-                                      system_apm_info);
+  return GetStreamParametersForSystem(user_buffer_size, system_apm_info);
 }
 
 std::string AudioManagerChromeOS::GetAssociatedOutputDeviceID(
@@ -533,7 +578,7 @@ void AudioManagerChromeOS::GetSystemApmEffectsSupportedOnMainThread(
 
 void AudioManagerChromeOS::WaitEventOrShutdown(base::WaitableEvent* event) {
   base::WaitableEvent* waitables[] = {event, &on_shutdown_};
-  base::WaitableEvent::WaitMany(waitables, base::size(waitables));
+  base::WaitableEvent::WaitMany(waitables, std::size(waitables));
 }
 
 enum CRAS_CLIENT_TYPE AudioManagerChromeOS::GetClientType() {
@@ -542,15 +587,12 @@ enum CRAS_CLIENT_TYPE AudioManagerChromeOS::GetClientType() {
 
 AudioParameters AudioManagerChromeOS::GetStreamParametersForSystem(
     int user_buffer_size,
-    bool has_keyboard,
     const AudioManagerChromeOS::SystemAudioProcessingInfo& system_apm_info) {
   AudioParameters params(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
       kDefaultSampleRate, user_buffer_size,
       AudioParameters::HardwareCapabilities(limits::kMinAudioBufferSize,
                                             limits::kMaxAudioBufferSize));
-  if (has_keyboard)
-    params.set_effects(AudioParameters::KEYBOARD_MIC);
 
   bool enforce_system_aec;
   bool enforce_system_ns;
@@ -577,6 +619,7 @@ AudioParameters AudioManagerChromeOS::GetStreamParametersForSystem(
       enforce_system_aec;
 
   if (!use_system_aec || IsSystemAecDeactivated(system_apm_info.aec_group_id)) {
+    SetAllowedDspBasedEffects(system_apm_info.aec_group_id, params);
     return params;
   }
 
@@ -584,21 +627,20 @@ AudioParameters AudioManagerChromeOS::GetStreamParametersForSystem(
   params.set_effects(params.effects() | AudioParameters::ECHO_CANCELLER);
 
   // Don't use system NS or AGC if the AEC has board-specific tunings.
-  if (tuned_system_apm_available) {
-    return params;
+  if (!tuned_system_apm_available) {
+    // Activation of the system NS.
+    if (system_apm_info.ns_supported || enforce_system_ns) {
+      params.set_effects(params.effects() | AudioParameters::NOISE_SUPPRESSION);
+    }
+
+    // Activation of the system AGC.
+    if (system_apm_info.agc_supported || enforce_system_agc) {
+      params.set_effects(params.effects() |
+                         AudioParameters::AUTOMATIC_GAIN_CONTROL);
+    }
   }
 
-  // Activation of the system NS.
-  if (system_apm_info.ns_supported || enforce_system_ns) {
-    params.set_effects(params.effects() | AudioParameters::NOISE_SUPPRESSION);
-  }
-
-  // Activation of the system AGC.
-  if (system_apm_info.agc_supported || enforce_system_agc) {
-    params.set_effects(params.effects() |
-                       AudioParameters::AUTOMATIC_GAIN_CONTROL);
-  }
-
+  SetAllowedDspBasedEffects(system_apm_info.aec_group_id, params);
   return params;
 }
 

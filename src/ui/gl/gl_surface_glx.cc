@@ -30,6 +30,8 @@
 #include "ui/gfx/x/xproto_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_display.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/glx_util.h"
@@ -418,7 +420,10 @@ x11::Connection* SGIVideoSyncThread::g_connection = nullptr;
 
 bool GLSurfaceGLX::initialized_ = false;
 
-GLSurfaceGLX::GLSurfaceGLX() = default;
+GLSurfaceGLX::GLSurfaceGLX() {
+  display_ =
+      GLDisplayManagerX11::GetInstance()->GetDisplay(GpuPreference::kDefault);
+}
 
 bool GLSurfaceGLX::InitializeOneOff() {
   if (initialized_)
@@ -591,8 +596,8 @@ bool GLSurfaceGLX::IsOMLSyncControlSupported() {
   return g_glx_oml_sync_control_supported;
 }
 
-void* GLSurfaceGLX::GetDisplay() {
-  return x11::Connection::Get()->GetXlibDisplay();
+GLDisplay* GLSurfaceGLX::GetGLDisplay() {
+  return display_;
 }
 
 GLSurfaceGLX::~GLSurfaceGLX() = default;

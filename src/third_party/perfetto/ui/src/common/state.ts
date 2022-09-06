@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {PivotTree} from '../controller/pivot_table_redux_controller';
 import {RecordConfig} from '../controller/record_config_types';
-
 import {
-  AggregationAttrs,
-  PivotAttrs,
-  SubQueryAttrs,
-  TableAttrs
-} from './pivot_table_common';
+  Aggregation,
+  TableColumn,
+} from '../frontend/pivot_table_redux_query_generator';
 
 /**
  * A plain js object, holding objects of type |Class| keyed by string id.
@@ -73,7 +71,16 @@ export const MAX_TIME = 180;
 // 12: Add a field to cache mapping from UI track ID to trace track ID in order
 //     to speed up flow arrows rendering.
 // 13: FlamegraphState changed to support area selection.
-export const STATE_VERSION = 13;
+// 14: Changed the type of uiTrackIdByTraceTrackId from `Map` to an object with
+// typed key/value because a `Map` does not preserve type during
+// serialisation+deserialisation.
+// 15: Added state for Pivot Table V2
+// 16: Added boolean tracking if the flamegraph modal was dismissed
+// 17:
+// - add currentEngineId to track the id of the current engine
+// - remove nextNoteId, nextAreaId and use nextId as a unique counter for all
+//   indexing except the indexing of the engines
+export const STATE_VERSION = 17;
 
 export const SCROLLING_TRACK_GROUP = 'ScrollingTracks';
 
@@ -82,10 +89,12 @@ export type EngineMode = 'WASM'|'HTTP_RPC';
 export type NewEngineMode = 'USE_HTTP_RPC_IF_AVAILABLE'|'FORCE_BUILTIN_WASM';
 
 export enum TrackKindPriority {
-  'MAIN_THREAD' = 0,
-  'RENDER_THREAD' = 1,
-  'GPU_COMPLETION' = 2,
-  'ORDINARY' = 3
+  MAIN_THREAD = 0,
+  RENDER_THREAD = 1,
+  GPU_COMPLETION = 2,
+  CHROME_IO_THREAD = 3,
+  CHROME_COMPOSITOR = 4,
+  ORDINARY = 5
 }
 
 export type FlamegraphStateViewingOption =
@@ -116,7 +125,7 @@ export interface TraceArrayBufferSource {
   url?: string;
   fileName?: string;
 
-  // |uuid| is set only when loading from the cache via ?trace_id=123. When set,
+  // |uuid| is set only when loading via ?local_cache_key=1234. When set,
   // this matches global.state.traceUuid, with the exception of the following
   // time window: When a trace T1 is loaded and the user loads another trace T2,
   // this |uuid| will be == T2, but the globals.state.traceUuid will be
@@ -147,7 +156,10 @@ export interface TrackState {
   labels?: string[];
   trackKindPriority: TrackKindPriority;
   trackGroup?: string;
-  config: {};
+  config: {
+    trackId?: number;
+    trackIds?: number[];
+  };
 }
 
 export interface TrackGroupState {
@@ -168,7 +180,7 @@ export interface EngineConfig {
 
 export interface QueryConfig {
   id: string;
-  engineId: string;
+  engineId?: string;
   query: string;
 }
 
@@ -308,21 +320,67 @@ export interface MetricsState {
   requestedMetric?: string;  // Unset after metric request is handled.
 }
 
-export interface PivotTableConfig {
-  availableColumns?: TableAttrs[];   // Undefined until list is loaded.
-  availableAggregations?: string[];  // Undefined until list is loaded.
+// Auxiliary metadata needed to parse the query result, as well as to render it
+// correctly. Generated together with the text of query and passed without the
+// change to the query response.
+export interface PivotTableReduxQueryMetadata {
+  tableName: string;
+  pivotColumns: TableColumn[];
+  aggregationColumns: Aggregation[];
 }
 
-export interface PivotTableState {
-  id: string;
-  name: string;
-  selectedPivots: PivotAttrs[];
-  selectedAggregations: AggregationAttrs[];
-  requestedAction?:  // Unset after pivot table column request is handled.
-      {action: string, attrs?: SubQueryAttrs};
-  isLoadingQuery: boolean;
-  traceTime?: TraceTime;
-  selectedTrackIds?: number[];
+// Everything that's necessary to run the query for pivot table
+export interface PivotTableReduxQuery {
+  text: string;
+  metadata: PivotTableReduxQueryMetadata;
+}
+
+// Pivot table query result
+export interface PivotTableReduxResult {
+  // Hierarchical pivot structure on top of rows
+  tree: PivotTree;
+  // Copy of the query metadata from the request, bundled up with the query
+  // result to ensure the correct rendering.
+  metadata: PivotTableReduxQueryMetadata;
+}
+
+// Input parameters to check whether the pivot table needs to be re-queried.
+export interface PivotTableReduxAreaState {
+  areaId: string;
+  tracks: string[];
+}
+
+export type SortDirection = 'DESC'|'ASC';
+
+export interface PivotTableReduxState {
+  // Currently selected area, if null, pivot table is not going to be visible.
+  selectionArea: PivotTableReduxAreaState|null;
+
+  // Query response
+  queryResult: PivotTableReduxResult|null;
+
+  // Whether the panel is in edit mode
+  editMode: boolean;
+
+  // Selected pivots. Map instead of Set because ES6 Set can't have
+  // non-primitive keys; here keys are concatenated values.
+  selectedPivotsMap: Map<string, TableColumn>;
+
+  // Selected aggregation columns. Stored same way as pivots.
+  selectedAggregations: Map<string, Aggregation>;
+
+  // Present if the result should be sorted, and in which direction.
+  sortCriteria?: {column: TableColumn, order: SortDirection};
+
+  // Whether the pivot table results should be constrained to the selected area.
+  constrainToArea: boolean;
+
+  // Set to true by frontend to request controller to perform the query to
+  // acquire the necessary data from the engine.
+  queryRequested: boolean;
+
+  // Argument names in the current trace, used for autocompletion purposes.
+  argumentNames: string[];
 }
 
 export interface LoadedConfigNone {
@@ -341,13 +399,14 @@ export interface LoadedConfigNamed {
 export type LoadedConfig =
     LoadedConfigNone|LoadedConfigAutomatic|LoadedConfigNamed;
 
+export interface NonSerializableState {
+  pivotTableRedux: PivotTableReduxState;
+}
+
 export interface State {
-  // tslint:disable-next-line:no-any
-  [key: string]: any;
   version: number;
-  nextId: number;
-  nextNoteId: number;
-  nextAreaId: number;
+  currentEngineId?: string;
+  nextId: string;
 
   /**
    * State of the ConfigEditor.
@@ -365,7 +424,7 @@ export interface State {
   traceUuid?: string;
   trackGroups: ObjectById<TrackGroupState>;
   tracks: ObjectById<TrackState>;
-  uiTrackIdByTraceTrackId: Map<number, string>;
+  uiTrackIdByTraceTrackId: {[key: number]: string;};
   areas: ObjectById<AreaById>;
   aggregatePreferences: ObjectById<AggregationState>;
   visibleTracks: string[];
@@ -382,8 +441,6 @@ export interface State {
   currentFlamegraphState: FlamegraphState|null;
   logsPagination: LogsPagination;
   traceConversionInProgress: boolean;
-  pivotTableConfig: PivotTableConfig;
-  pivotTable: ObjectById<PivotTableState>;
 
   /**
    * This state is updated on the frontend at 60Hz and eventually syncronised to
@@ -407,6 +464,7 @@ export interface State {
   highlightedSliceId: number;
   focusedFlowIdLeft: number;
   focusedFlowIdRight: number;
+  pendingScrollId?: number;
 
   searchIndex: number;
   currentTab?: string;
@@ -417,6 +475,7 @@ export interface State {
   recordingInProgress: boolean;
   recordingCancelled: boolean;
   extensionInstalled: boolean;
+  flamegraphModalDismissed: boolean;
   recordingTarget: RecordingTarget;
   availableAdbDevices: AdbRecordingTarget[];
   lastRecordingError?: string;
@@ -425,6 +484,11 @@ export interface State {
   fetchChromeCategories: boolean;
   chromeCategories: string[]|undefined;
   analyzePageQuery?: string;
+
+  // Special key: this part of the state is not going to be serialized when
+  // using permalink. Can be used to store those parts of the state that can't
+  // be serialized at the moment, such as ES6 Set and Map.
+  nonSerializableState: NonSerializableState;
 }
 
 export const defaultTraceTime = {
@@ -436,7 +500,7 @@ export declare type RecordMode =
     'STOP_WHEN_FULL' | 'RING_BUFFER' | 'LONG_TRACE';
 
 // 'Q','P','O' for Android, 'L' for Linux, 'C' for Chrome.
-export declare type TargetOs = 'Q' | 'P' | 'O' | 'C' | 'L' | 'CrOS';
+export declare type TargetOs = 'S' | 'R' | 'Q' | 'P' | 'O' | 'C' | 'L' | 'CrOS';
 
 export function isAndroidP(target: RecordingTarget) {
   return target.os === 'P';
@@ -464,7 +528,8 @@ export function isAdbTarget(target: RecordingTarget):
 }
 
 export function hasActiveProbes(config: RecordConfig) {
-  const fieldsWithEmptyResult = new Set<string>(['hpBlockClient']);
+  const fieldsWithEmptyResult =
+      new Set<string>(['hpBlockClient', 'allAtraceApps']);
   let key: keyof RecordConfig;
   for (key in config) {
     if (typeof (config[key]) === 'boolean' && config[key] === true &&
@@ -485,7 +550,7 @@ export function getDefaultRecordingTargets(): RecordingTarget[] {
     {os: 'O', name: 'Android O-'},
     {os: 'C', name: 'Chrome'},
     {os: 'CrOS', name: 'Chrome OS (system trace)'},
-    {os: 'L', name: 'Linux desktop'}
+    {os: 'L', name: 'Linux desktop'},
   ];
 }
 

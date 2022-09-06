@@ -18,14 +18,14 @@
 #include "components/onc/onc_constants.h"
 #include "url/gurl.h"
 
-namespace base {
-class Value;
-}
-
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
 class MobileActivatorTest;
-}
+}  // namespace ash
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace chromeos {
 
@@ -283,6 +283,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
       const std::string& iccid,
       const std::string& eid,
       const std::string& guid,
+      bool is_managed,
       const DeviceState* cellular_device);
 
   // Ignore changes to signal strength less than this value.
@@ -368,7 +369,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
   // Portal state is derived from connection_state_ and Shill portal properties.
   PortalState portal_state_ = PortalState::kUnknown;
-  int portal_status_code_ = 0;
 
   // Whether the current device has already connected to the tether host device
   // providing the hotspot corresponding to this NetworkState.

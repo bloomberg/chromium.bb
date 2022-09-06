@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/screens/network_screen.h"
@@ -21,9 +23,8 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId NetworkScreenView::kScreenId;
 
-NetworkScreenHandler::NetworkScreenHandler(JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.NetworkScreen.userActed");
+NetworkScreenHandler::NetworkScreenHandler() : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.NetworkScreen.userActed");
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
@@ -32,7 +33,7 @@ NetworkScreenHandler::~NetworkScreenHandler() {
 }
 
 void NetworkScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
@@ -50,22 +51,22 @@ void NetworkScreenHandler::Show() {
                                   chromeos::network_handler::ErrorCallback());
   }
 
-  base::DictionaryValue data;
-  data.SetBoolean("isDemoModeSetup",
-                  DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  ShowScreenWithData(kScreenId, &data);
+  base::Value::Dict data;
+  data.Set("isDemoModeSetup",
+           DemoSetupController::IsOobeDemoSetupFlowInProgress());
+  ShowInWebUI(std::move(data));
 }
 
 void NetworkScreenHandler::Hide() {}
 
 void NetworkScreenHandler::Bind(NetworkScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void NetworkScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void NetworkScreenHandler::ShowError(const std::u16string& message) {
@@ -76,10 +77,6 @@ void NetworkScreenHandler::ClearErrors() {
   CallJS("login.NetworkScreen.setError", std::string());
 }
 
-void NetworkScreenHandler::SetOfflineDemoModeEnabled(bool enabled) {
-  CallJS("login.NetworkScreen.setOfflineDemoModeEnabled", enabled);
-}
-
 void NetworkScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("networkSectionTitle", IDS_NETWORK_SELECTION_TITLE);
@@ -87,18 +84,15 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("proxySettingsListItemName",
                IDS_NETWORK_PROXY_SETTINGS_LIST_ITEM_NAME);
   builder->Add("addWiFiListItemName", IDS_NETWORK_ADD_WI_FI_LIST_ITEM_NAME);
-  builder->Add("offlineDemoSetupListItemName",
-               IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME);
   ui::network_element::AddLocalizedValuesToBuilder(builder);
   cellular_setup::AddLocalizedValuesToBuilder(builder);
 }
 
-void NetworkScreenHandler::GetAdditionalParameters(
-    base::DictionaryValue* dict) {
+void NetworkScreenHandler::GetAdditionalParameters(base::Value::Dict* dict) {
   cellular_setup::AddNonStringLoadTimeDataToDict(dict);
 }
 
-void NetworkScreenHandler::Initialize() {
+void NetworkScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -20,6 +21,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/features.h"
 #include "net/base/ip_address.h"
@@ -277,9 +279,9 @@ class HttpServerPropertiesManagerTest : public testing::Test,
 
   // Returns a dictionary with only the version field populated.
   static base::Value DictWithVersion() {
-    base::Value http_server_properties_dict(base::Value::Type::DICTIONARY);
-    http_server_properties_dict.SetIntKey("version", 5);
-    return http_server_properties_dict;
+    base::Value::Dict http_server_properties_dict;
+    http_server_properties_dict.Set("version", 5);
+    return base::Value(std::move(http_server_properties_dict));
   }
 
   raw_ptr<MockPrefDelegate>
@@ -290,43 +292,42 @@ class HttpServerPropertiesManagerTest : public testing::Test,
 };
 
 TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
-  base::Value server_pref_dict(base::Value::Type::DICTIONARY);
+  base::Value::Dict server_pref_dict;
 
   // Set supports_spdy for www.google.com:65536.
-  server_pref_dict.SetBoolKey("supports_spdy", true);
+  server_pref_dict.Set("supports_spdy", true);
 
   // Set up alternative_service for www.google.com:65536.
-  base::Value alternative_service_dict(base::Value::Type::DICTIONARY);
-  alternative_service_dict.SetStringKey("protocol_str", "h2");
-  alternative_service_dict.SetIntKey("port", 80);
-  base::Value alternative_service_list(base::Value::Type::LIST);
+  base::Value::Dict alternative_service_dict;
+  alternative_service_dict.Set("protocol_str", "h2");
+  alternative_service_dict.Set("port", 80);
+  base::Value::List alternative_service_list;
   alternative_service_list.Append(std::move(alternative_service_dict));
-  server_pref_dict.SetKey("alternative_service",
-                          std::move(alternative_service_list));
+  server_pref_dict.Set("alternative_service",
+                       std::move(alternative_service_list));
 
   // Set up ServerNetworkStats for www.google.com:65536.
-  base::Value stats(base::Value::Type::DICTIONARY);
-  stats.SetIntKey("srtt", 10);
-  server_pref_dict.SetKey("network_stats", std::move(stats));
+  base::Value::Dict stats;
+  stats.Set("srtt", 10);
+  server_pref_dict.Set("network_stats", std::move(stats));
 
   // Set the server preference for www.google.com:65536.
-  base::Value servers_dict(base::Value::Type::DICTIONARY);
-  servers_dict.SetKey("www.google.com:65536", std::move(server_pref_dict));
-  base::Value servers_list(base::Value::Type::LIST);
+  base::Value::Dict servers_dict;
+  servers_dict.Set("www.google.com:65536", std::move(server_pref_dict));
+  base::Value::List servers_list;
   servers_list.Append(std::move(servers_dict));
   base::Value http_server_properties_dict = DictWithVersion();
-  http_server_properties_dict.SetKey("servers", std::move(servers_list));
+  http_server_properties_dict.GetDict().Set("servers", std::move(servers_list));
 
   // Set quic_server_info for www.google.com:65536.
-  base::Value quic_servers_dict(base::Value::Type::DICTIONARY);
-  base::Value quic_server_pref_dict1(base::Value::Type::DICTIONARY);
-  quic_server_pref_dict1.SetKey("server_info",
-                                base::Value("quic_server_info1"));
-  quic_servers_dict.SetKey("http://mail.google.com:65536",
-                           std::move(quic_server_pref_dict1));
+  base::Value::Dict quic_servers_dict;
+  base::Value::Dict quic_server_pref_dict1;
+  quic_server_pref_dict1.Set("server_info", "quic_server_info1");
+  quic_servers_dict.Set("http://mail.google.com:65536",
+                        std::move(quic_server_pref_dict1));
 
-  http_server_properties_dict.SetKey("quic_servers",
-                                     std::move(quic_servers_dict));
+  http_server_properties_dict.GetDict().Set("quic_servers",
+                                            std::move(quic_servers_dict));
 
   // Set up the pref.
   InitializePrefs(http_server_properties_dict);
@@ -347,27 +348,27 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
 }
 
 TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
-  base::Value server_pref_dict(base::Value::Type::DICTIONARY);
+  base::Value::Dict server_pref_dict;
 
   // Set supports_spdy for www.google.com:80.
-  server_pref_dict.SetBoolKey("supports_spdy", true);
+  server_pref_dict.Set("supports_spdy", true);
 
   // Set up alternative_service for www.google.com:80.
-  base::Value alternative_service_dict(base::Value::Type::DICTIONARY);
-  alternative_service_dict.SetStringKey("protocol_str", "h2");
-  alternative_service_dict.SetIntKey("port", 65536);
-  base::Value alternative_service_list(base::Value::Type::LIST);
+  base::Value::Dict alternative_service_dict;
+  alternative_service_dict.Set("protocol_str", "h2");
+  alternative_service_dict.Set("port", 65536);
+  base::Value::List alternative_service_list;
   alternative_service_list.Append(std::move(alternative_service_dict));
-  server_pref_dict.SetKey("alternative_service",
-                          std::move(alternative_service_list));
+  server_pref_dict.Set("alternative_service",
+                       std::move(alternative_service_list));
 
   // Set the server preference for www.google.com:80.
-  base::Value servers_dict(base::Value::Type::DICTIONARY);
-  servers_dict.SetKey("www.google.com:80", std::move(server_pref_dict));
-  base::Value servers_list(base::Value::Type::LIST);
+  base::Value::Dict servers_dict;
+  servers_dict.Set("www.google.com:80", std::move(server_pref_dict));
+  base::Value::List servers_list;
   servers_list.Append(std::move(servers_dict));
   base::Value http_server_properties_dict = DictWithVersion();
-  http_server_properties_dict.SetKey("servers", std::move(servers_list));
+  http_server_properties_dict.GetDict().Set("servers", std::move(servers_list));
 
   // Set up the pref.
   InitializePrefs(http_server_properties_dict);
@@ -1026,38 +1027,37 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
 TEST_F(HttpServerPropertiesManagerTest, BadLastLocalAddressWhenQuicWorked) {
-  base::Value servers_list(base::Value::Type::LIST);
+  base::Value::List servers_list;
 
   for (int i = 1; i <= 200; ++i) {
     // Set up alternative_service for www.google.com:i.
-    base::Value server_dict(base::Value::Type::DICTIONARY);
-    base::Value alternative_service_dict(base::Value::Type::DICTIONARY);
-    alternative_service_dict.SetStringKey("protocol_str", "quic");
-    alternative_service_dict.SetIntKey("port", i);
-    base::Value alternative_service_list(base::Value::Type::LIST);
+    base::Value::Dict server_dict;
+    base::Value::Dict alternative_service_dict;
+    alternative_service_dict.Set("protocol_str", "quic");
+    alternative_service_dict.Set("port", i);
+    base::Value::List alternative_service_list;
     alternative_service_list.Append(std::move(alternative_service_dict));
-    server_dict.SetKey("alternative_service",
-                       std::move(alternative_service_list));
-    server_dict.SetStringKey("server",
-                             StringPrintf("https://www.google.com:%d", i));
-    server_dict.SetKey("isolation", base::Value(base::Value::Type::LIST));
+    server_dict.Set("alternative_service", std::move(alternative_service_list));
+    server_dict.Set("server", StringPrintf("https://www.google.com:%d", i));
+    server_dict.Set("isolation", base::Value(base::Value::Type::LIST));
     servers_list.Append(std::move(server_dict));
   }
 
   // Set the server preference for http://mail.google.com server.
-  base::Value server_dict2(base::Value::Type::DICTIONARY);
-  server_dict2.SetStringKey("server", "https://mail.google.com");
-  server_dict2.SetKey("isolation", base::Value(base::Value::Type::LIST));
+  base::Value::Dict server_dict2;
+  server_dict2.Set("server", "https://mail.google.com");
+  server_dict2.Set("isolation", base::Value(base::Value::Type::LIST));
   servers_list.Append(std::move(server_dict2));
 
   base::Value http_server_properties_dict = DictWithVersion();
-  http_server_properties_dict.SetKey("servers", std::move(servers_list));
+  http_server_properties_dict.GetDict().Set("servers", std::move(servers_list));
 
   // Set up SupportsQuic for 127.0.0.1
-  base::Value supports_quic(base::Value::Type::DICTIONARY);
-  supports_quic.SetBoolKey("used_quic", true);
-  supports_quic.SetStringKey("address", "127.0.0.1");
-  http_server_properties_dict.SetKey("supports_quic", std::move(supports_quic));
+  base::Value::Dict supports_quic;
+  supports_quic.Set("used_quic", true);
+  supports_quic.Set("address", "127.0.0.1");
+  http_server_properties_dict.GetDict().Set("supports_quic",
+                                            std::move(supports_quic));
 
   // Set up the pref.
   InitializePrefs(http_server_properties_dict);
@@ -1172,16 +1172,16 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   ASSERT_TRUE(server_dict.is_dict());
 
   // Extract and remove the "broken_until" string for "www.google.com:1234".
-  base::Value* broken_alt_svc_list =
-      server_dict.FindListKey("broken_alternative_services");
+  base::Value::List* broken_alt_svc_list =
+      server_dict.GetDict().FindList("broken_alternative_services");
   ASSERT_TRUE(broken_alt_svc_list);
-  ASSERT_EQ(2u, broken_alt_svc_list->GetList().size());
-  base::Value& broken_alt_svcs_list_entry = broken_alt_svc_list->GetList()[0];
+  ASSERT_EQ(2u, broken_alt_svc_list->size());
+  base::Value& broken_alt_svcs_list_entry = (*broken_alt_svc_list)[0];
   const std::string* broken_until_str =
-      broken_alt_svcs_list_entry.FindStringKey("broken_until");
+      broken_alt_svcs_list_entry.GetDict().FindString("broken_until");
   ASSERT_TRUE(broken_until_str);
   const std::string expiration_string = *broken_until_str;
-  broken_alt_svcs_list_entry.RemoveKey("broken_until");
+  broken_alt_svcs_list_entry.GetDict().Remove("broken_until");
 
   // Expiration time of "www.google.com:1234" should be 5 minutes minus the
   // update-prefs-delay from when the prefs were written.
@@ -1245,7 +1245,7 @@ TEST_F(HttpServerPropertiesManagerTest, ParseAlternativeServiceInfo) {
   const url::SchemeHostPort server("https", "example.com", 443);
   HttpServerProperties::ServerInfo server_info;
   EXPECT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
-      server, *server_dict, &server_info));
+      server, server_dict->GetDict(), &server_info));
 
   ASSERT_TRUE(server_info.alternative_services.has_value());
   AlternativeServiceInfoVector alternative_service_info_vector =
@@ -1299,7 +1299,7 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
   const url::SchemeHostPort server("http", "example.com", 80);
   HttpServerProperties::ServerInfo server_info;
   EXPECT_FALSE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
-      server, *server_dict, &server_info));
+      server, server_dict->GetDict(), &server_info));
   EXPECT_TRUE(server_info.empty());
 }
 
@@ -1349,38 +1349,40 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
 
   const base::Value* pref_dict = pref_delegate_->GetServerProperties();
 
-  const base::Value* servers_list = pref_dict->FindListKey("servers");
+  const base::Value::List* servers_list =
+      pref_dict->GetDict().FindList("servers");
   ASSERT_TRUE(servers_list);
-  auto it = servers_list->GetList().begin();
+  auto it = servers_list->begin();
   const base::Value& server_pref_dict = *it;
   ASSERT_TRUE(server_pref_dict.is_dict());
 
-  const std::string* server_str = server_pref_dict.FindStringKey("server");
+  const std::string* server_str =
+      server_pref_dict.GetDict().FindString("server");
   ASSERT_TRUE(server_str);
   EXPECT_EQ("https://www.example.com", *server_str);
 
   const base::Value* network_isolation_key_value =
-      server_pref_dict.FindKey("isolation");
+      server_pref_dict.GetDict().Find("isolation");
   ASSERT_TRUE(network_isolation_key_value);
   ASSERT_EQ(base::Value::Type::LIST, network_isolation_key_value->type());
   EXPECT_TRUE(network_isolation_key_value->GetList().empty());
 
-  const base::Value* altsvc_list =
-      server_pref_dict.FindListKey("alternative_service");
+  const base::Value::List* altsvc_list =
+      server_pref_dict.GetDict().FindList("alternative_service");
   ASSERT_TRUE(altsvc_list);
 
-  ASSERT_EQ(2u, altsvc_list->GetList().size());
+  ASSERT_EQ(2u, altsvc_list->size());
 
-  const base::Value& altsvc_entry = altsvc_list->GetList()[0];
+  const base::Value& altsvc_entry = (*altsvc_list)[0];
   ASSERT_TRUE(altsvc_entry.is_dict());
-  const std::string* hostname = altsvc_entry.FindStringKey("host");
+  const std::string* hostname = altsvc_entry.GetDict().FindString("host");
 
   ASSERT_TRUE(hostname);
   EXPECT_EQ("broken.example.com", *hostname);
 
-  const base::Value& altsvc_entry2 = altsvc_list->GetList()[1];
+  const base::Value& altsvc_entry2 = (*altsvc_list)[1];
   ASSERT_TRUE(altsvc_entry.is_dict());
-  hostname = altsvc_entry2.FindStringKey("host");
+  hostname = altsvc_entry2.GetDict().FindString("host");
   ASSERT_TRUE(hostname);
   EXPECT_EQ("valid.example.com", *hostname);
 }
@@ -1389,27 +1391,27 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
 TEST_F(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   InitializePrefs();
 
-  base::Value alternative_service_list(base::Value::Type::LIST);
-  base::Value expired_dict(base::Value::Type::DICTIONARY);
-  expired_dict.SetStringKey("protocol_str", "h2");
-  expired_dict.SetStringKey("host", "expired.example.com");
-  expired_dict.SetIntKey("port", 443);
+  base::Value::List alternative_service_list;
+  base::Value::Dict expired_dict;
+  expired_dict.Set("protocol_str", "h2");
+  expired_dict.Set("host", "expired.example.com");
+  expired_dict.Set("port", 443);
   base::Time time_one_day_ago = base::Time::Now() - base::Days(1);
-  expired_dict.SetStringKey(
-      "expiration", base::NumberToString(time_one_day_ago.ToInternalValue()));
+  expired_dict.Set("expiration",
+                   base::NumberToString(time_one_day_ago.ToInternalValue()));
   alternative_service_list.Append(std::move(expired_dict));
 
-  base::Value valid_dict(base::Value::Type::DICTIONARY);
-  valid_dict.SetStringKey("protocol_str", "h2");
-  valid_dict.SetStringKey("host", "valid.example.com");
-  valid_dict.SetIntKey("port", 443);
-  valid_dict.SetStringKey(
-      "expiration", base::NumberToString(one_day_from_now_.ToInternalValue()));
+  base::Value::Dict valid_dict;
+  valid_dict.Set("protocol_str", "h2");
+  valid_dict.Set("host", "valid.example.com");
+  valid_dict.Set("port", 443);
+  valid_dict.Set("expiration",
+                 base::NumberToString(one_day_from_now_.ToInternalValue()));
   alternative_service_list.Append(std::move(valid_dict));
 
-  base::Value server_pref_dict(base::Value::Type::DICTIONARY);
-  server_pref_dict.SetKey("alternative_service",
-                          std::move(alternative_service_list));
+  base::Value::Dict server_pref_dict;
+  server_pref_dict.Set("alternative_service",
+                       std::move(alternative_service_list));
 
   const url::SchemeHostPort server("https", "example.com", 443);
   HttpServerProperties::ServerInfo server_info;
@@ -1517,7 +1519,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       "\"isolation\":[],"
       "\"server\":\"https://www.google.com:80\"},"
       "{\"alternative_service\":[{"
-      "\"advertised_alpns\":[\"h3\",\"h3-29\",\"h3-Q050\"],"
+      "\"advertised_alpns\":[\"h3\"],"
       "\"expiration\":\"9223372036854775807\","
       "\"host\":\"foo.google.com\",\"port\":444,\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -1551,7 +1553,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
   const url::SchemeHostPort server("https", "example.com", 443);
   HttpServerProperties::ServerInfo server_info;
   EXPECT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
-      server, *server_dict, &server_info));
+      server, server_dict->GetDict(), &server_info));
 
   ASSERT_TRUE(server_info.alternative_services.has_value());
   AlternativeServiceInfoVector alternative_service_info_vector =
@@ -1630,7 +1632,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
       "{\"alternative_service\":[{"
-      "\"advertised_alpns\":[\"h3\",\"h3-29\",\"h3-Q050\"],"
+      "\"advertised_alpns\":[\"h3\"],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -2024,13 +2026,13 @@ TEST_F(HttpServerPropertiesManagerTest, ForceHTTP11) {
   // Wait until the data's been written to prefs, and then tear down the
   // HttpServerProperties.
   FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
-  std::unique_ptr<base::Value> saved_value =
-      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  base::Value saved_value =
+      unowned_pref_delegate->GetServerProperties()->Clone();
   properties.reset();
 
   // Only information on kServer1 should have been saved to prefs.
   std::string preferences_json;
-  base::JSONWriter::Write(*saved_value, &preferences_json);
+  base::JSONWriter::Write(saved_value, &preferences_json);
   EXPECT_EQ(
       "{\"servers\":["
       "{\"isolation\":[],"
@@ -2059,7 +2061,7 @@ TEST_F(HttpServerPropertiesManagerTest, ForceHTTP11) {
   EXPECT_TRUE(properties->RequiresHTTP11(kServer3, NetworkIsolationKey()));
 
   // The data loads.
-  unowned_pref_delegate->InitializePrefs(*saved_value);
+  unowned_pref_delegate->InitializePrefs(saved_value);
 
   // The properties should contain a combination of the old and new data.
   EXPECT_TRUE(properties->GetSupportsSpdy(kServer1, NetworkIsolationKey()));
@@ -2211,8 +2213,8 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
   // Wait until the data's been written to prefs, and then tear down the
   // HttpServerProperties.
   FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
-  std::unique_ptr<base::Value> saved_value =
-      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  base::Value saved_value =
+      unowned_pref_delegate->GetServerProperties()->Clone();
   properties.reset();
 
   // Create a new HttpServerProperties using the value saved to prefs above.
@@ -2220,7 +2222,7 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
   unowned_pref_delegate = pref_delegate.get();
   properties = std::make_unique<HttpServerProperties>(
       std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
-  unowned_pref_delegate->InitializePrefs(*saved_value);
+  unowned_pref_delegate->InitializePrefs(saved_value);
 
   // The information set using kNetworkIsolationKey on the original
   // HttpServerProperties should also be set on the restored
@@ -2363,8 +2365,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Wait until the data's been written to prefs, and then tear down the
   // HttpServerProperties.
   FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
-  std::unique_ptr<base::Value> saved_value =
-      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  base::Value saved_value =
+      unowned_pref_delegate->GetServerProperties()->Clone();
   properties.reset();
 
   // Create a new HttpServerProperties using the value saved to prefs above.
@@ -2372,7 +2374,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   unowned_pref_delegate = pref_delegate.get();
   properties = std::make_unique<HttpServerProperties>(
       std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
-  unowned_pref_delegate->InitializePrefs(*saved_value);
+  unowned_pref_delegate->InitializePrefs(saved_value);
 
   // Only the first of the values learned for kNetworkIsolationKey1 should have
   // been saved, and the value for kNetworkIsolationKey2 as well. The canonical
@@ -2422,7 +2424,7 @@ TEST_F(HttpServerPropertiesManagerTest,
     SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
 
     // Save prefs using |save_network_isolation_key_mode|.
-    std::unique_ptr<base::Value> saved_value;
+    base::Value saved_value;
     {
       // Configure the the feature.
       std::unique_ptr<base::test::ScopedFeatureList> feature_list =
@@ -2496,8 +2498,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       // Wait until the data's been written to prefs, and then create a copy of
       // the prefs data.
       FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
-      saved_value =
-          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+      saved_value = unowned_pref_delegate->GetServerProperties()->Clone();
     }
 
     // Now try and load the data in each of the feature modes.
@@ -2520,7 +2521,7 @@ TEST_F(HttpServerPropertiesManagerTest,
           std::make_unique<HttpServerProperties>(std::move(pref_delegate),
                                                  /*net_log=*/nullptr,
                                                  GetMockTickClock());
-      unowned_pref_delegate->InitializePrefs(*saved_value);
+      unowned_pref_delegate->InitializePrefs(saved_value);
 
       if (save_network_isolation_key_mode ==
           NetworkIsolationKeyMode::kDisabled) {
@@ -2681,7 +2682,7 @@ TEST_F(HttpServerPropertiesManagerTest,
     SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
 
     // Save prefs using |save_network_isolation_key_mode|.
-    std::unique_ptr<base::Value> saved_value;
+    base::Value saved_value;
     {
       // Configure the the feature.
       std::unique_ptr<base::test::ScopedFeatureList> feature_list =
@@ -2741,8 +2742,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       // Wait until the data's been written to prefs, and then create a copy of
       // the prefs data.
       FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
-      saved_value =
-          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+      saved_value = unowned_pref_delegate->GetServerProperties()->Clone();
     }
 
     // Now try and load the data in each of the feature modes.
@@ -2765,7 +2765,7 @@ TEST_F(HttpServerPropertiesManagerTest,
           std::make_unique<HttpServerProperties>(std::move(pref_delegate),
                                                  /*net_log=*/nullptr,
                                                  GetMockTickClock());
-      unowned_pref_delegate->InitializePrefs(*saved_value);
+      unowned_pref_delegate->InitializePrefs(saved_value);
 
       if (save_network_isolation_key_mode ==
           NetworkIsolationKeyMode::kDisabled) {
@@ -2916,8 +2916,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Wait until the data's been written to prefs, and then tear down the
   // HttpServerProperties.
   FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
-  std::unique_ptr<base::Value> saved_value =
-      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  base::Value saved_value =
+      unowned_pref_delegate->GetServerProperties()->Clone();
   properties.reset();
 
   // Create a new HttpServerProperties using the value saved to prefs above.
@@ -2925,7 +2925,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   unowned_pref_delegate = pref_delegate.get();
   properties = std::make_unique<HttpServerProperties>(
       std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
-  unowned_pref_delegate->InitializePrefs(*saved_value);
+  unowned_pref_delegate->InitializePrefs(saved_value);
 
   // All values should have been saved and be retrievable by suffix-matching
   // servers.
@@ -2990,6 +2990,10 @@ TEST_F(HttpServerPropertiesManagerTest,
 
 TEST_F(HttpServerPropertiesManagerTest, AdvertisedVersionsRoundTrip) {
   for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
+    if (version.AlpnDeferToRFCv1()) {
+      // These versions currently do not support Alt-Svc.
+      continue;
+    }
     // Reset test infrastructure.
     TearDown();
     SetUp();
@@ -3025,14 +3029,14 @@ TEST_F(HttpServerPropertiesManagerTest, AdvertisedVersionsRoundTrip) {
         base::JSONReader::ReadDeprecated(preferences_json);
     ASSERT_TRUE(preferences_dict);
     ASSERT_TRUE(preferences_dict->is_dict());
-    const base::Value* servers_list = preferences_dict->FindListKey("servers");
+    const base::Value::List* servers_list =
+        preferences_dict->GetDict().FindList("servers");
     ASSERT_TRUE(servers_list);
-    ASSERT_TRUE(servers_list->is_list());
-    ASSERT_EQ(servers_list->GetList().size(), 1u);
-    const base::Value& server_dict = servers_list->GetList()[0];
+    ASSERT_EQ(servers_list->size(), 1u);
+    const base::Value& server_dict = (*servers_list)[0];
     HttpServerProperties::ServerInfo server_info;
     EXPECT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
-        server, server_dict, &server_info));
+        server, server_dict.GetDict(), &server_info));
     ASSERT_TRUE(server_info.alternative_services.has_value());
     AlternativeServiceInfoVector alternative_service_info_vector_out =
         server_info.alternative_services.value();

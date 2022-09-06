@@ -29,7 +29,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/no_destructor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -260,7 +259,7 @@ gfx::Rect GetGridBoundsInScreen(
               /*density=*/HotseatDensity::kNormal) +
           ShelfConfig::Get()->hotseat_bottom_padding();
 
-      bounds.Inset(0, 0, 0, hotseat_bottom_inset);
+      bounds.Inset(gfx::Insets::TLBR(0, 0, hotseat_bottom_inset, 0));
     }
   }
 

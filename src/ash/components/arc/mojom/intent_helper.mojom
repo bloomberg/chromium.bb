@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 49
+// Next MinVersion: 50
 
 module arc.mojom;
 
@@ -144,7 +144,6 @@ enum ChromePage {
   BLUETOOTHDEVICES = 13,
   CHANGEPICTURE = 14,
   CLEARBROWSERDATA = 15,
-  CLOUDPRINTERS = 16,
   CUPSPRINTERS = 17,
   DOWNLOADS = 18,
   KEYBOARDOVERLAY = 19,
@@ -168,8 +167,9 @@ enum ChromePage {
   OSLANGUAGESLANGUAGES = 72,
   // 73-76 are removed intentionally. Do not reuse them.
   SMARTPRIVACY = 77,
+  PRIVACYHUB = 78,
 
-  // Next value to be used is 78.
+  // Next value to be used is 79.
 };
 
 // Describes an unique chrome app.
@@ -212,8 +212,8 @@ struct LaunchFileInfo {
   // specific type can be determined.
   string type;
 
-  // TODO(crbug.com/1238215): Remove references and rename.
-  string deprecated_name;
+  // Unused, replaced by |name|.
+  string removed_name;
 
   // Size of the file in bytes.
   uint64 size;
@@ -276,7 +276,7 @@ interface CustomTabSession {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4, 9, 10, 16
-// Next method ID: 21
+// Next method ID: 23
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -345,11 +345,6 @@ interface IntentHelperHost {
   // Checks if given chrome app is enabled.
   [MinVersion=33] IsChromeAppEnabled@15(ChromeApp app) => (bool is_enabled);
 
-  // DEPRECATED. Use OnSupportedLinksChanged() instead.
-  // TODO(crbug.com/1265318): Remove this method.
-  [MinVersion=34] OnPreferredAppsChangedDeprecated@16(
-      array<IntentFilter> added, array<IntentFilter> deleted);
-
   // Called when the link capturing preference for one or more apps has changed.
   // Set the apps in |added_packages| as handling their supported link
   // IntentFilters, and removes the apps in |removed_packages| from handling
@@ -379,6 +374,12 @@ interface IntentHelperHost {
   // actual URL which is loaded is based on the contents of |intent|.
   [MinVersion=45] OnOpenAppWithIntent@19(
       url.mojom.Url start_url, LaunchIntent intent);
+
+  // Opens the global actions dialog.
+  [MinVersion=49] OnOpenGlobalActions@21();
+
+  // Close any dialogs opened from ARC.
+  [MinVersion=49] OnCloseSystemDialogs@22();
 };
 
 // Sends intents to ARC on behalf of Chrome.

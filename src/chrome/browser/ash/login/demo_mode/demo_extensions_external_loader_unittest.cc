@@ -109,7 +109,7 @@ class TestExternalProviderVisitor
 
   bool OnExternalExtensionUpdateUrlFound(
       const extensions::ExternalInstallInfoUpdateUrl& info,
-      bool is_initial_load) override {
+      bool force_update) override {
     return true;
   }
 
@@ -562,16 +562,6 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, PrimaryDemoProfile) {
   StartDemoSession(DemoSession::DemoModeConfig::kOnline);
-
-  std::unique_ptr<TestingProfile> profile = AddTestUser(
-      AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));
-
-  EXPECT_TRUE(DemoExtensionsExternalLoader::SupportedForProfile(profile.get()));
-}
-
-TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest,
-       PrimaryOfflineEnrolledDemoProfile) {
-  StartDemoSession(DemoSession::DemoModeConfig::kOffline);
 
   std::unique_ptr<TestingProfile> profile = AddTestUser(
       AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));

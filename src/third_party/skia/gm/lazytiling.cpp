@@ -6,23 +6,22 @@
  */
 
 #include "gm/gm.h"
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
 #include "include/gpu/GrDirectContext.h"
-
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkConvertPixels.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrPaint.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
-
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrPaint.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrResourceProvider.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 #include "tools/gpu/ProxyUtils.h"
 
 static GrSurfaceProxyView create_view(GrDirectContext* dContext,
@@ -56,7 +55,8 @@ static GrSurfaceProxyView create_view(GrDirectContext* dContext,
                                              desc.fBudgeted,
                                              desc.fFit,
                                              desc.fProtected,
-                                             mipLevel);
+                                             mipLevel,
+                                             desc.fLabel);
                 },
                 format, GrRenderable::kNo, 1, GrProtected::kNo, *dContext->priv().caps(),
                 GrSurfaceProxy::UseAllocator::kYes);

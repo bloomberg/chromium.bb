@@ -9,10 +9,11 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/process/process_handle.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/producer_host.h"
@@ -20,12 +21,20 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
 namespace tracing {
-
 namespace {
 
-bool StringToProcessId(const std::string& input, base::ProcessId* output) {
-  // Pid is encoded as uint in the string.
-  return base::StringToUint(input, reinterpret_cast<uint32_t*>(output));
+// Parses the PID from |pid_as_string| and stores the result in |pid|.
+// Returns true if the PID was parsed successfully.
+bool ParseProcessId(const std::string& pid_as_string, base::ProcessId* pid) {
+#if BUILDFLAG(IS_FUCHSIA)
+  // Fuchsia zx_koid_t is a 64-bit int.
+  static_assert(sizeof(base::ProcessId) == 8);
+  return base::StringToUint64(pid_as_string, pid);
+#else
+  // All other platforms use 32-bit ints for their PIDs.
+  static_assert(sizeof(base::ProcessId) == 4);
+  return base::StringToUint(pid_as_string, reinterpret_cast<uint32_t*>(pid));
+#endif
 }
 
 }  // namespace
@@ -41,7 +50,7 @@ bool PerfettoService::ParsePidFromProducerName(const std::string& producer_name,
 
   static const size_t kPrefixLength =
       strlen(mojom::kPerfettoProducerNamePrefix);
-  if (!StringToProcessId(producer_name.substr(kPrefixLength), pid)) {
+  if (!ParseProcessId(producer_name.substr(kPrefixLength), pid)) {
     LOG(DFATAL) << "Unexpected producer name: " << producer_name;
     return false;
   }
@@ -60,7 +69,8 @@ PerfettoService::PerfettoService(
                                 ? std::move(task_runner_for_testing)
                                 : base::SequencedTaskRunnerHandle::Get()) {
   service_ = perfetto::TracingService::CreateInstance(
-      std::make_unique<MojoSharedMemory::Factory>(), &perfetto_task_runner_);
+      std::make_unique<ChromeBaseSharedMemory::Factory>(),
+      &perfetto_task_runner_);
   // Chromium uses scraping of the shared memory chunks to ensure that data
   // from threads without a MessageLoop doesn't get lost.
   service_->SetSMBScrapingEnabled(true);
@@ -87,17 +97,14 @@ void PerfettoService::BindReceiver(
 void PerfettoService::ConnectToProducerHost(
     mojo::PendingRemote<mojom::ProducerClient> producer_client,
     mojo::PendingReceiver<mojom::ProducerHost> producer_host_receiver,
-    mojo::ScopedSharedBufferHandle shared_memory,
+    base::UnsafeSharedMemoryRegion shared_memory,
     uint64_t shared_memory_buffer_page_size_bytes) {
-  if (!shared_memory.is_valid()) {
-    // Connection requests should always include an SMB.
-    mojo::ReportBadMessage("Producer connection request without SMB");
-    return;
-  }
+  // `shared_memory` is not marked nullable in the Mojom IDL so the region
+  // should always be valid.
+  DCHECK(shared_memory.IsValid());
 
   auto new_producer = std::make_unique<ProducerHost>(&perfetto_task_runner_);
   uint32_t producer_pid = receivers_.current_context();
-  DCHECK(shared_memory.is_valid());
   ProducerHost::InitializationResult result = new_producer->Initialize(
       std::move(producer_client), service_.get(),
       base::StrCat({mojom::kPerfettoProducerNamePrefix,

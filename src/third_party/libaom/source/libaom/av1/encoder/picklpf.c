@@ -69,9 +69,12 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
     case 2: cm->lf.filter_level_v = filter_level[0]; break;
   }
 
+  // lpf_opt_level = 1 : Enables dual/quad loop-filtering.
+  int lpf_opt_level = is_inter_tx_size_search_level_one(&cpi->sf.tx_sf);
+
   av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd, plane,
                            plane + 1, partial_frame, mt_info->workers,
-                           num_workers, &mt_info->lf_row_sync, 0);
+                           num_workers, &mt_info->lf_row_sync, lpf_opt_level);
 
   filt_err = aom_get_sse_plane(sd, &cm->cur_frame->buf, plane,
                                cm->seq_params->use_highbitdepth);
@@ -195,12 +198,19 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   struct loopfilter *const lf = &cm->lf;
+  int disable_filter_rt_screen = 0;
   (void)sd;
 
   lf->sharpness_level = 0;
   cpi->td.mb.rdmult = cpi->rd.RDMULT;
 
-  if (cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_NONE ||
+  if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN &&
+      cpi->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ &&
+      cpi->sf.rt_sf.skip_lf_screen)
+    disable_filter_rt_screen = av1_cyclic_refresh_disable_lf_cdef(cpi);
+
+  if (disable_filter_rt_screen ||
+      cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_NONE ||
       (cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_REFERENCE &&
        cpi->svc.non_reference_frame)) {
     lf->filter_level[0] = 0;
@@ -262,30 +272,28 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level_v = clamp(filt_guess, min_filter_level, max_filter_level);
     if (cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_SELECTIVELY &&
         !frame_is_intra_only(cm)) {
-      const int num4x4 = (cm->width >> 2) * (cm->height >> 2);
-      const int newmv_thresh = 7;
-      const int distance_since_key_thresh = 5;
-      if ((cpi->td.rd_counts.newmv_or_intra_blocks * 100 / num4x4) <
-              newmv_thresh &&
-          cpi->rc.frames_since_key > distance_since_key_thresh) {
+      if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN) {
         lf->filter_level[0] = 0;
         lf->filter_level[1] = 0;
+      } else {
+        const int num4x4 = (cm->width >> 2) * (cm->height >> 2);
+        const int newmv_thresh = 7;
+        const int distance_since_key_thresh = 5;
+        if ((cpi->td.rd_counts.newmv_or_intra_blocks * 100 / num4x4) <
+                newmv_thresh &&
+            cpi->rc.frames_since_key > distance_since_key_thresh) {
+          lf->filter_level[0] = 0;
+          lf->filter_level[1] = 0;
+        }
       }
     }
   } else {
     int last_frame_filter_level[4] = { 0 };
     if (!frame_is_intra_only(cm)) {
-#if CONFIG_FRAME_PARALLEL_ENCODE
       last_frame_filter_level[0] = cpi->ppi->filter_level[0];
       last_frame_filter_level[1] = cpi->ppi->filter_level[1];
       last_frame_filter_level[2] = cpi->ppi->filter_level_u;
       last_frame_filter_level[3] = cpi->ppi->filter_level_v;
-#else
-      last_frame_filter_level[0] = lf->filter_level[0];
-      last_frame_filter_level[1] = lf->filter_level[1];
-      last_frame_filter_level[2] = lf->filter_level_u;
-      last_frame_filter_level[3] = lf->filter_level_v;
-#endif
     }
     // The frame buffer last_frame_uf is used to store the non-loop filtered
     // reconstructed frame in search_filter_level().
@@ -293,7 +301,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
             &cpi->last_frame_uf, cm->width, cm->height,
             seq_params->subsampling_x, seq_params->subsampling_y,
             seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-            cm->features.byte_alignment, NULL, NULL, NULL, 0))
+            cm->features.byte_alignment, NULL, NULL, NULL, 0, 0))
       aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate last frame buffer");
 

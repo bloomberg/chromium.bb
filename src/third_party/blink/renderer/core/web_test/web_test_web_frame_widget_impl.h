@@ -42,6 +42,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
       bool never_composited,
       bool is_for_child_local_root,
       bool is_for_nested_main_frame,
+      bool is_for_scalable_page,
       content::TestRunner* test_runner);
 
   ~WebTestWebFrameWidgetImpl() override;
@@ -52,6 +53,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
   void SynchronouslyCompositeAfterTest() override;
   void UpdateAllLifecyclePhasesAndComposite(
       base::OnceClosure completion_callback) override;
+  void DisableEndDocumentTransition() override;
 
   // WebFrameWidget overrides.
   FrameWidgetTestHelper* GetFrameWidgetTestHelperForTesting() override;
@@ -72,6 +74,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
   void ScheduleAnimation() override;
   void WillBeginMainFrame() override;
   void ScheduleAnimationForWebTests() override;
+  bool AllowsScrollResampling() override { return false; }
 
   content::TestRunner* GetTestRunner();
 
@@ -98,7 +101,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
   // Otherwise, any scheduled AnimateNow() calls will only perform the animation
   // step, which calls out to blink but doesn't composite for performance
   // reasons. See setAnimationRequiresRaster() in
-  // https://chromium.googlesource.com/chromium/src/+/master/docs/testing/writing_web_tests.md
+  // https://chromium.googlesource.com/chromium/src/+/main/docs/testing/writing_web_tests.md
   // for details on the optimization.
   bool composite_requested_ = false;
   // Synchronous composites should not be nested inside another

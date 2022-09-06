@@ -17,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -94,15 +95,6 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
 
 @implementation PasswordViewControllerTestCase
 
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  if ([self isRunningTest:@selector(testPasswordGenerationOnManualFallback)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kEnableManualPasswordGeneration);
-  }
-  return config;
-}
-
 - (void)setUp {
   [super setUp];
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -162,9 +154,16 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
   [[EarlGrey selectElementWithMatcher:ManualFallbackManagePasswordsMatcher()]
       performAction:grey_tap()];
 
-  // Verify the password settings opened.
-  [[EarlGrey selectElementWithMatcher:SettingsPasswordMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  if ([ChromeEarlGrey isAddCredentialsInSettingsEnabled]) {
+    // Verify the password settings opened.
+    // Changed minimum visible percentage to 70% for Passwords table view in
+    // settings because subviews cover > 25% in smaller screens(eg. iPhone 6s).
+    [[EarlGrey selectElementWithMatcher:SettingsPasswordMatcher()]
+        assertWithMatcher:grey_minimumVisiblePercent(0.7)];
+  } else {
+    [[EarlGrey selectElementWithMatcher:SettingsPasswordMatcher()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+  }
 }
 
 // Tests that returning from "Manage Passwords..." leaves the keyboard and the
@@ -523,6 +522,10 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
   // Look for the alert.
   [[EarlGrey selectElementWithMatcher:NotSecureWebsiteAlert()]
       assertWithMatcher:grey_not(grey_nil())];
+
+  // Dismiss the alert.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the password icon is not present when no passwords are available.
@@ -540,7 +543,12 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
 
 // Tests password generation on manual fallback.
 - (void)testPasswordGenerationOnManualFallback {
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
+  // Disable the test on iOS 15.3 due to build failure.
+  // TODO(crbug.com/1306530): enable the test with fix.
+  if (@available(iOS 15.3, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.3.");
+  }
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeChromeIdentity fakeIdentity1]];
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:10.0];
 
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);

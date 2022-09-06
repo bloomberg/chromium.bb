@@ -9,7 +9,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//chromecast/chromecast.gni")
 import("strings/accessibility_strings.gni")
 
-assert(is_chromeos_ash || is_chromecast)
+assert(is_chromeos_ash || is_castos)
 
 accessibility_out_dir = "$root_out_dir/resources/chromeos/accessibility/"
 
@@ -166,18 +166,9 @@ js2gtest("misc_unit_tests_js") {
     "braille_ime/braille_ime_unittest.js",
     "common/rect_util_unittest.js",
   ]
-  gen_include_files = [ "common/closure_shim.js" ]
+  gen_include_files = [ "common/testing/accessibility_test_base.js" ]
   extra_js_files = [
     "braille_ime/braille_ime.js",
-    "common/constants.js",
-    "common/automation_predicate.js",
-    "common/automation_util.js",
     "common/rect_util.js",
-    "common/tree_walker.js",
-    "select_to_speak/paragraph_utils.js",
-    "select_to_speak/select_to_speak.js",
-    "select_to_speak/word_utils.js",
-    "select_to_speak/node_utils.js",
-    "select_to_speak/sentence_utils.js",
   ]
 }

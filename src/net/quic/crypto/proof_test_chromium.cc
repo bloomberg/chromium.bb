@@ -14,9 +14,9 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/proof_source.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/proof_verifier.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/crypto_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -96,13 +96,14 @@ class TestCallback : public quic::ProofSource::Callback {
   explicit TestCallback(
       bool* called,
       bool* ok,
-      quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>* chain,
+      quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain>* chain,
       quic::QuicCryptoProof* proof)
       : called_(called), ok_(ok), chain_(chain), proof_(proof) {}
 
   void Run(
       bool ok,
-      const quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>& chain,
+      const quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain>&
+          chain,
       const quic::QuicCryptoProof& proof,
       std::unique_ptr<quic::ProofSource::Details> /* details */) override {
     *ok_ = ok;
@@ -114,7 +115,8 @@ class TestCallback : public quic::ProofSource::Callback {
  private:
   raw_ptr<bool> called_;
   raw_ptr<bool> ok_;
-  raw_ptr<quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>> chain_;
+  raw_ptr<quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain>>
+      chain_;
   raw_ptr<quic::QuicCryptoProof> proof_;
 };
 
@@ -143,8 +145,8 @@ TEST_P(ProofTest, Verify) {
   bool called = false;
   bool first_called = false;
   bool ok, first_ok;
-  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain;
-  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> first_chain;
+  quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain> chain;
+  quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain> first_chain;
   string error_details;
   quic::QuicCryptoProof proof, first_proof;
   quic::QuicSocketAddress server_addr;
@@ -225,7 +227,7 @@ TEST_P(ProofTest, TlsSignature) {
   quic::QuicSocketAddress client_address;
 
   bool cert_matched_sni;
-  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain =
+  quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain> chain =
       source->GetCertChain(server_address, client_address, hostname,
                            &cert_matched_sni);
   ASSERT_GT(chain->certs.size(), 0ul);
@@ -283,7 +285,7 @@ TEST_P(ProofTest, UseAfterFree) {
   const string chlo_hash = "proof nonce bytes";
   bool called = false;
   bool ok;
-  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain;
+  quiche::QuicheReferenceCountedPointer<quic::ProofSource::Chain> chain;
   string error_details;
   quic::QuicCryptoProof proof;
   quic::QuicSocketAddress server_addr;

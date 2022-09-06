@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -52,7 +53,7 @@ bool IsURLAllowlisted(const GURL& url, content::BrowserContext* context) {
 
 bool IsWebAppAllowlisted(const std::string& app_id_string,
                          content::BrowserContext* context) {
-  const app_time::AppId app_id(apps::mojom::AppType::kWeb, app_id_string);
+  const app_time::AppId app_id(apps::AppType::kWeb, app_id_string);
   auto* child_user_service =
       ChildUserServiceFactory::GetForBrowserContext(context);
   DCHECK(child_user_service);
@@ -163,15 +164,13 @@ WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest() {
                   (type == Browser::Type::TYPE_POPUP);
   }
 
-  web_app::WebAppTabHelper* web_app_helper =
-      web_app::WebAppTabHelper::FromWebContents(web_contents);
-
-  bool is_app = web_app_helper && !web_app_helper->GetAppId().empty();
+  const web_app::AppId* app_id =
+      web_app::WebAppTabHelper::GetAppId(web_contents);
 
   base::TimeDelta time_limit = GetWebTimeLimit(browser_context);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
 
-  if (!is_app) {
+  if (!app_id) {
     const GURL& url = navigation_handle()->GetURL();
 
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
@@ -198,17 +197,16 @@ WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest() {
     return PROCEED;
 
   //  Don't throttle allowlisted applications.
-  if (IsWebAppAllowlisted(web_app_helper->GetAppId(), browser_context))
+  if (IsWebAppAllowlisted(*app_id, browser_context))
     return PROCEED;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   std::string app_name;
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
-      .ForOneApp(web_app_helper->GetAppId(),
-                 [&app_name](const apps::AppUpdate& update) {
-                   app_name = update.ShortName();
-                 });
+      .ForOneApp(*app_id, [&app_name](const apps::AppUpdate& update) {
+        app_name = update.ShortName();
+      });
   return NavigationThrottle::ThrottleCheckResult(
       CANCEL, net::ERR_BLOCKED_BY_CLIENT,
       GetWebTimeLimitAppErrorPage(time_limit, app_locale, app_name));

@@ -6,15 +6,12 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/referrer_type_converters.h"
-#include "pdf/pdf_features.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -54,6 +51,9 @@ PDFWebContentsHelper::PDFWebContentsHelper(
       client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
+  if (pdf_rwh_)
+    pdf_rwh_->RemoveObserver(this);
+
   if (!touch_selection_controller_client_manager_)
     return;
 
@@ -73,19 +73,27 @@ void PDFWebContentsHelper::SetListener(
     mojo::PendingRemote<mojom::PdfListener> listener) {
   remote_pdf_client_.reset();
   remote_pdf_client_.Bind(std::move(listener));
+
+  if (pdf_rwh_)
+    pdf_rwh_->RemoveObserver(this);
+  pdf_rwh_ = client_->FindPdfFrame(&GetWebContents())->GetRenderWidgetHost();
+  pdf_rwh_->AddObserver(this);
 }
 
 gfx::PointF PDFWebContentsHelper::ConvertHelper(const gfx::PointF& point_f,
                                                 float scale) {
-  gfx::PointF origin_f;
-  content::RenderWidgetHostView* view =
-      GetWebContents().GetRenderWidgetHostView();
-  if (view) {
-    origin_f = view->TransformPointToRootCoordSpaceF(gfx::PointF());
-    origin_f.Scale(scale);
-  }
+  if (!pdf_rwh_)
+    return point_f;
 
-  return gfx::PointF(point_f.x() + origin_f.x(), point_f.y() + origin_f.y());
+  content::RenderWidgetHostView* view = pdf_rwh_->GetView();
+  if (!view)
+    return point_f;
+
+  gfx::Vector2dF offset =
+      view->TransformPointToRootCoordSpaceF(gfx::PointF()).OffsetFromOrigin();
+  offset.Scale(scale);
+
+  return point_f + offset;
 }
 
 gfx::PointF PDFWebContentsHelper::ConvertFromRoot(const gfx::PointF& point_f) {
@@ -110,21 +118,6 @@ void PDFWebContentsHelper::SelectionChanged(const gfx::PointF& left,
 
 void PDFWebContentsHelper::SetPluginCanSave(bool can_save) {
   client_->SetPluginCanSave(&GetWebContents(), can_save);
-}
-
-void PDFWebContentsHelper::GetPdfFindInPage(GetPdfFindInPageCallback callback) {
-  if (!base::FeatureList::IsEnabled(chrome_pdf::features::kPdfUnseasoned)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!find_factory_remote_) {
-    GetWebContents()
-        .GetMainFrame()
-        ->GetRemoteAssociatedInterfaces()
-        ->GetInterface(&find_factory_remote_);
-  }
-  find_factory_remote_->GetPdfFindInPage(std::move(callback));
 }
 
 void PDFWebContentsHelper::DidScroll() {
@@ -161,6 +154,12 @@ void PDFWebContentsHelper::DidScroll() {
     touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
         start, end, this, this);
   }
+}
+
+void PDFWebContentsHelper::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
+  if (pdf_rwh_ == widget_host)
+    pdf_rwh_ = nullptr;
 }
 
 bool PDFWebContentsHelper::SupportsAnimation() const {

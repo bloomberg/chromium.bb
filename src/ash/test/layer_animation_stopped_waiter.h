@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,9 @@
 
 #include <memory>
 
+#include "base/scoped_observation.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animator.h"
 
 namespace base {
 class RunLoop;
@@ -20,7 +22,8 @@ class LayerAnimator;
 
 namespace ash {
 
-// A class capable of waiting until a layer has stopped animating.
+// A class capable of waiting until a layer has stopped animating. Supports
+// animations that delete the layer on completion.
 class LayerAnimationStoppedWaiter : public ui::LayerAnimationObserver {
  public:
   LayerAnimationStoppedWaiter();
@@ -44,6 +47,8 @@ class LayerAnimationStoppedWaiter : public ui::LayerAnimationObserver {
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
 
   ui::LayerAnimator* layer_animator_ = nullptr;
+  base::ScopedObservation<ui::LayerAnimator, ui::LayerAnimationObserver>
+      layer_animator_observer_{this};
   std::unique_ptr<base::RunLoop> wait_loop_;
 };
 

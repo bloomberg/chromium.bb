@@ -32,7 +32,7 @@ namespace device {
 class BleAdapterManager;
 class FidoAuthenticator;
 class FidoDiscoveryFactory;
-class PublicKeyCredentialUserEntity;
+class DiscoverableCredentialMetadata;
 struct TransportAvailabilityCallbackReadiness;
 
 // Base class that handles authenticator discovery/removal. Its lifetime is
@@ -47,6 +47,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   using AuthenticatorMap =
       std::map<std::string, FidoAuthenticator*, std::less<>>;
+
+  enum class RecognizedCredential {
+    kUnknown,
+    kHasRecognizedCredential,
+    kNoRecognizedCredential
+  };
 
   // Encapsulates data required to initiate WebAuthN UX dialog. Once all
   // components of TransportAvailabilityInfo is set,
@@ -69,16 +75,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     base::flat_set<FidoTransportProtocol> available_transports;
 
     // Whether the platform authenticator has a matching credential for the
-    // request. This is only set for a GetAssertion request and if a platform
-    // authenticator has been added to the request handler. (The Windows
-    // WebAuthn API does NOT count as a platform authenticator in this case.)
-    absl::optional<bool> has_recognized_platform_authenticator_credential;
+    // request. This is only set for a GetAssertion request.
+    RecognizedCredential has_platform_authenticator_credential =
+        RecognizedCredential::kUnknown;
 
     // The set of recognized platform credential user entities that can fulfill
     // a GetAssertion request. Not all platform authenticators report this, so
     // the set might be empty even if
-    // |has_recognized_platform_authenticator_credential| is true.
-    std::vector<PublicKeyCredentialUserEntity>
+    // |has_platform_authenticator_credential| is |kHasRecognizedCredential|.
+    std::vector<DiscoverableCredentialMetadata>
         recognized_platform_authenticator_credentials;
 
     bool is_ble_powered = false;
@@ -187,6 +192,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // try again. Receives the number of |attempts| before the device locks
     // internal user verification.
     virtual void OnRetryUserVerification(int attempts) = 0;
+  };
+
+  // ScopedAlwaysAllowBLECalls allows BLE API calls to always be made, even if
+  // they would be disabled on macOS because Chromium was not launched with
+  // self-responsibility.
+  class COMPONENT_EXPORT(DEVICE_FIDO) ScopedAlwaysAllowBLECalls {
+   public:
+    ScopedAlwaysAllowBLECalls();
+    ~ScopedAlwaysAllowBLECalls();
   };
 
   FidoRequestHandlerBase();
@@ -298,7 +312,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // platform authenticator whether it has responsive discoverable credentials
   // and whether it has responsive credentials at all.
   void OnHavePlatformCredentialStatus(
-      std::vector<PublicKeyCredentialUserEntity> user_entities,
+      std::vector<DiscoverableCredentialMetadata> user_entities,
       bool have_credential);
 
  private:

@@ -9,12 +9,12 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
-#include "base/ignore_result.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/base/cursor/platform_cursor.h"
 #include "ui/events/event.h"
@@ -35,10 +35,11 @@ namespace {
 gfx::Insets ConvertInsets(
     float device_pixel_ratio,
     const fuchsia::ui::gfx::ViewProperties& view_properties) {
-  return gfx::Insets(device_pixel_ratio * view_properties.inset_from_min.y,
-                     device_pixel_ratio * view_properties.inset_from_min.x,
-                     device_pixel_ratio * view_properties.inset_from_max.y,
-                     device_pixel_ratio * view_properties.inset_from_max.x);
+  return gfx::Insets::TLBR(
+      device_pixel_ratio * view_properties.inset_from_min.y,
+      device_pixel_ratio * view_properties.inset_from_min.x,
+      device_pixel_ratio * view_properties.inset_from_max.y,
+      device_pixel_ratio * view_properties.inset_from_max.x);
 }
 
 }  // namespace
@@ -51,6 +52,7 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       scenic_window_delegate_(properties.scenic_window_delegate),
       window_id_(manager_->AddWindow(this)),
       view_ref_(std::move(properties.view_ref_pair.view_ref)),
+      view_controller_(std::move(properties.view_controller)),
       event_dispatcher_(this),
       scenic_session_(manager_->GetScenic()),
       safe_presenter_(&scenic_session_),
@@ -63,6 +65,11 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       input_node_(&scenic_session_),
       render_node_(&scenic_session_),
       bounds_(properties.bounds) {
+  if (view_controller_) {
+    view_controller_.set_error_handler(
+        fit::bind_member(this, &ScenicWindow::OnViewControllerDisconnected));
+  }
+
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
   scenic_session_.set_event_handler(
@@ -107,13 +114,22 @@ fuchsia::ui::views::ViewRef ScenicWindow::CloneViewRef() {
   return dup;
 }
 
-gfx::Rect ScenicWindow::GetBounds() const {
+gfx::Rect ScenicWindow::GetBoundsInPixels() const {
   return bounds_;
 }
 
-void ScenicWindow::SetBounds(const gfx::Rect& bounds) {
+void ScenicWindow::SetBoundsInPixels(const gfx::Rect& bounds) {
   // This path should only be reached in tests.
   bounds_ = bounds;
+}
+
+gfx::Rect ScenicWindow::GetBoundsInDIP() const {
+  return delegate_->ConvertRectToDIP(bounds_);
+}
+
+void ScenicWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  // This path should only be reached in tests.
+  bounds_ = delegate_->ConvertRectToPixels(bounds);
 }
 
 void ScenicWindow::SetTitle(const std::u16string& title) {
@@ -143,6 +159,10 @@ void ScenicWindow::Hide() {
 }
 
 void ScenicWindow::Close() {
+  if (view_controller_) {
+    view_controller_->Dismiss();
+    view_controller_ = nullptr;
+  }
   Hide();
   delegate_->OnClosed();
 }
@@ -196,7 +216,11 @@ PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
     return PlatformWindowState::kFullScreen;
   if (!is_view_attached_)
     return PlatformWindowState::kMinimized;
-  return PlatformWindowState::kNormal;
+
+  // TODO(crbug.com/1241868): We cannot tell what portion of the screen is
+  // occupied by the View, so report is as maximized to reduce the space used
+  // by any browser chrome.
+  return PlatformWindowState::kMaximized;
 }
 
 void ScenicWindow::Activate() {
@@ -226,11 +250,11 @@ void ScenicWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void ScenicWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+void ScenicWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
+gfx::Rect ScenicWindow::GetRestoredBoundsInDIP() const {
   NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Rect();
 }
@@ -276,7 +300,7 @@ void ScenicWindow::DispatchEvent(ui::Event* event) {
 
 void ScenicWindow::OnScenicError(zx_status_t status) {
   LOG(ERROR) << "scenic::Session failed with code " << status << ".";
-  delegate_->OnClosed();
+  delegate_->OnCloseRequest();
 }
 
 void ScenicWindow::OnScenicEvents(
@@ -303,6 +327,21 @@ void ScenicWindow::OnScenicEvents(
         case fuchsia::ui::gfx::Event::kViewDetachedFromScene: {
           DCHECK(event.gfx().view_detached_from_scene().view_id == view_.id());
           OnViewAttachedChanged(false);
+
+          // Detach the surface view. This is necessary to ensure that the
+          // current content doesn't become visible when the view is attached
+          // again.
+          render_node_.DetachChildren();
+          surface_view_holder_.reset();
+          safe_presenter_.QueuePresent();
+
+          // Destroy and recreate AcceleratedWidget. This will force the
+          // compositor drop the current LayerTreeFrameSink together with the
+          // corresponding ScenicSurface. They will be created again only after
+          // the window becomes visible again.
+          delegate_->OnAcceleratedWidgetDestroyed();
+          delegate_->OnAcceleratedWidgetAvailable(window_id_);
+
           break;
         }
         default:
@@ -345,7 +384,7 @@ void ScenicWindow::OnInputEvent(const fuchsia::ui::input::InputEvent& event) {
   } else {
     // Scenic doesn't care if the input event was handled, so ignore the
     // "handled" status.
-    ignore_result(event_dispatcher_.ProcessEvent(event));
+    std::ignore = event_dispatcher_.ProcessEvent(event);
   }
 }
 
@@ -398,6 +437,11 @@ bool ScenicWindow::UpdateRootNodeVisibility() {
       node_.Detach();
   }
   return is_root_node_shown_;
+}
+
+void ScenicWindow::OnViewControllerDisconnected(zx_status_t status) {
+  view_controller_ = nullptr;
+  delegate_->OnCloseRequest();
 }
 
 }  // namespace ui

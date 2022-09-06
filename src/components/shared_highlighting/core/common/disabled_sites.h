@@ -15,6 +15,9 @@ namespace shared_highlighting {
 // shared.
 bool ShouldOfferLinkToText(const GURL& url);
 
+// Returns true if given url supports link generation in a child iframe.
+bool SupportsLinkGenerationInIframe(GURL main_frame_url);
+
 }  // namespace shared_highlighting
 
 #endif  // COMPONENTS_SHARED_HIGHLIGHTING_CORE_COMMON_DISABLED_SITES_H_

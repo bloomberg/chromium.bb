@@ -8,21 +8,33 @@
 #ifndef SKSL_METALCODEGENERATOR
 #define SKSL_METALCODEGENERATOR
 
-#include <unordered_map>
-#include <unordered_set>
-
-#include "src/sksl/SkSLOperators.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkTArray.h"
+#include "include/private/SkTHash.h"
+#include "include/sksl/SkSLOperator.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/codegen/SkSLCodeGenerator.h"
+#include "src/sksl/ir/SkSLType.h"
+
+#include <stdint.h>
+#include <initializer_list>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace SkSL {
 
+class AnyConstructor;
 class BinaryExpression;
 class Block;
 class ConstructorArrayCast;
 class ConstructorCompound;
 class ConstructorMatrixResize;
+class Context;
 class DoStatement;
+class Expression;
+class ExpressionStatement;
 class Extension;
 class FieldAccess;
 class ForStatement;
@@ -31,20 +43,28 @@ class FunctionDeclaration;
 class FunctionDefinition;
 class FunctionPrototype;
 class IfStatement;
-struct IndexExpression;
 class InterfaceBlock;
-enum IntrinsicKind : int8_t;
 class Literal;
+class OutputStream;
+class Position;
 class PostfixExpression;
 class PrefixExpression;
+class ProgramElement;
 class ReturnStatement;
 class Setting;
+class Statement;
 class StructDefinition;
 class SwitchStatement;
-struct Swizzle;
 class TernaryExpression;
 class VarDeclaration;
+class Variable;
 class VariableReference;
+enum IntrinsicKind : int8_t;
+struct IndexExpression;
+struct Layout;
+struct Modifiers;
+struct Program;
+struct Swizzle;
 
 /**
  * Converts a Program into Metal code.
@@ -72,14 +92,12 @@ protected:
     inline static constexpr Requirements kGlobals_Requirement   = 1 << 3;
     inline static constexpr Requirements kFragCoord_Requirement = 1 << 4;
 
-    static const char* OperatorName(Operator op);
-
     class GlobalStructVisitor;
     void visitGlobalStruct(GlobalStructVisitor* visitor);
 
-    void write(skstd::string_view s);
+    void write(std::string_view s);
 
-    void writeLine(skstd::string_view s = skstd::string_view());
+    void writeLine(std::string_view s = std::string_view());
 
     void finishLine();
 
@@ -95,7 +113,7 @@ protected:
 
     void writeStructDefinitions();
 
-    void writeFields(const std::vector<Type::Field>& fields, int parentLine,
+    void writeFields(const std::vector<Type::Field>& fields, Position pos,
                      const InterfaceBlock* parentIntf = nullptr);
 
     int size(const Type* type, bool isPacked) const;
@@ -108,7 +126,7 @@ protected:
 
     void writePrecisionModifier();
 
-    String typeName(const Type& type);
+    std::string typeName(const Type& type);
 
     void writeStructDefinition(const StructDefinition& s);
 
@@ -117,8 +135,6 @@ protected:
     void writeExtension(const Extension& ext);
 
     void writeInterfaceBlock(const InterfaceBlock& intf);
-
-    void writeFunctionStart(const FunctionDeclaration& f);
 
     void writeFunctionRequirementParams(const FunctionDeclaration& f,
                                         const char*& separator);
@@ -137,7 +153,7 @@ protected:
 
     void writeVarInitializer(const Variable& var, const Expression& value);
 
-    void writeName(skstd::string_view name);
+    void writeName(std::string_view name);
 
     void writeVarDeclaration(const VarDeclaration& decl);
 
@@ -149,20 +165,20 @@ protected:
 
     void writeMinAbsHack(Expression& absExpr, Expression& otherExpr);
 
-    String getOutParamHelper(const FunctionCall& c,
+    std::string getOutParamHelper(const FunctionCall& c,
                              const ExpressionArray& arguments,
                              const SkTArray<VariableReference*>& outVars);
 
-    String getInversePolyfill(const ExpressionArray& arguments);
+    std::string getInversePolyfill(const ExpressionArray& arguments);
 
-    String getBitcastIntrinsic(const Type& outType);
+    std::string getBitcastIntrinsic(const Type& outType);
 
-    String getTempVariable(const Type& varType);
+    std::string getTempVariable(const Type& varType);
 
     void writeFunctionCall(const FunctionCall& c);
 
     bool matrixConstructHelperIsNeeded(const ConstructorCompound& c);
-    String getMatrixConstructHelper(const AnyConstructor& c);
+    std::string getMatrixConstructHelper(const AnyConstructor& c);
     void assembleMatrixFromMatrix(const Type& sourceMatrix, int rows, int columns);
     void assembleMatrixFromExpressions(const AnyConstructor& ctor, int rows, int columns);
 
@@ -176,7 +192,7 @@ protected:
 
     void writeMatrixEqualityHelpers(const Type& left, const Type& right);
 
-    String getVectorFromMat2x2ConstructorHelper(const Type& matrixType);
+    std::string getVectorFromMat2x2ConstructorHelper(const Type& matrixType);
 
     void writeArrayEqualityHelpers(const Type& type);
 
@@ -244,6 +260,8 @@ protected:
 
     void writeDoStatement(const DoStatement& d);
 
+    void writeExpressionStatement(const ExpressionStatement& s);
+
     void writeSwitchStatement(const SwitchStatement& s);
 
     void writeReturnStatementFromMain();
@@ -262,27 +280,25 @@ protected:
 
     int getUniformSet(const Modifiers& m);
 
-    std::unordered_set<skstd::string_view> fReservedWords;
-    std::unordered_map<const Type::Field*, const InterfaceBlock*> fInterfaceBlockMap;
-    std::unordered_map<const InterfaceBlock*, skstd::string_view> fInterfaceBlockNameMap;
+    SkTHashSet<std::string_view> fReservedWords;
+    SkTHashMap<const Type::Field*, const InterfaceBlock*> fInterfaceBlockMap;
+    SkTHashMap<const InterfaceBlock*, std::string_view> fInterfaceBlockNameMap;
     int fAnonInterfaceCount = 0;
     int fPaddingCount = 0;
     const char* fLineEnding;
-    String fFunctionHeader;
+    std::string fFunctionHeader;
     StringStream fExtraFunctions;
     StringStream fExtraFunctionPrototypes;
     int fVarCount = 0;
     int fIndentation = 0;
     bool fAtLineStart = false;
-    std::set<String> fWrittenIntrinsics;
+    std::set<std::string> fWrittenIntrinsics;
     // true if we have run into usages of dFdx / dFdy
     bool fFoundDerivatives = false;
-    std::unordered_map<const FunctionDeclaration*, Requirements> fRequirements;
-    bool fSetupFragPositionGlobal = false;
-    bool fSetupFragPositionLocal = false;
-    std::unordered_set<String> fHelpers;
+    SkTHashMap<const FunctionDeclaration*, Requirements> fRequirements;
+    SkTHashSet<std::string> fHelpers;
     int fUniformBuffer = -1;
-    String fRTFlipName;
+    std::string fRTFlipName;
     const FunctionDeclaration* fCurrentFunction = nullptr;
     int fSwizzleHelperCount = 0;
     bool fIgnoreVariableReferenceModifiers = false;

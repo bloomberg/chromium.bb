@@ -10,7 +10,6 @@
 
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,10 +21,12 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace policy {
@@ -36,16 +37,16 @@ namespace {
 constexpr int kDialogCornerRadius = 12;
 
 // The dialog insets.
-constexpr gfx::Insets kMarginInsets(20, 0, 20, 0);
+constexpr auto kMarginInsets = gfx::Insets::TLBR(20, 0, 20, 0);
 
 // The insets in the upper part of the dialog.
-constexpr gfx::Insets kTopPanelInsets(0, 24, 16, 24);
+constexpr auto kTopPanelInsets = gfx::Insets::TLBR(0, 24, 16, 24);
 
 // The insests in the container holding the list of confidential contents.
-constexpr gfx::Insets kConfidentialListInsets(8, 24, 8, 24);
+constexpr auto kConfidentialListInsets = gfx::Insets::TLBR(8, 24, 8, 24);
 
 // The insets of a single confidential content row.
-constexpr gfx::Insets kConfidentialRowInsets(6, 0, 6, 0);
+constexpr auto kConfidentialRowInsets = gfx::Insets::TLBR(6, 0, 6, 0);
 
 // The spacing between the elements in a box layout.
 constexpr int kBetweenChildSpacing = 16;
@@ -70,9 +71,6 @@ constexpr int kTitleFontSize = 16;
 
 // The line height of the title.
 constexpr int kTitleLineHeight = 24;
-
-// The width of the dialog.
-constexpr int kDialogWidth = 360;
 
 // The line height of the confidential content title label.
 constexpr int kConfidentialContentLineHeight = 20;
@@ -159,6 +157,10 @@ void AddGeneralInformation(views::View* upper_panel,
                            DlpWarnDialog::DlpWarnDialogOptions options) {
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // When #dark-light-mode flag is disabled (default setting), the color mode is
+  // by default set to dark mode. The warn dialog has white background for the
+  // default setting, so it should use light mode color palette.
+  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
   ash::ColorProvider* color_provider = ash::ColorProvider::Get();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -208,7 +210,17 @@ void AddGeneralInformation(views::View* upper_panel,
   message->SetFontList(gfx::FontList({kFontName}, gfx::Font::NORMAL,
                                      kBodyFontSize, gfx::Font::Weight::NORMAL));
   message->SetLineHeight(kBodyLineHeight);
-  message->SizeToFit(kDialogWidth);
+}
+
+// TODO(crbug.com/682266) Remove this function.
+int GetMaxConfidentialTitleWidth() {
+  int total_width = views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+  int margin_width = kMarginInsets.width() + kConfidentialListInsets.width() +
+                     kConfidentialRowInsets.width();
+  int image_width = kFaviconSize;
+  int spacing = kBetweenChildSpacing;
+  return total_width - margin_width - image_width - spacing;
 }
 
 // Adds icon and title pair of the |confidential_content| to the container.
@@ -217,6 +229,10 @@ void AddConfidentialContentRow(
     const DlpConfidentialContent& confidential_content) {
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // When #dark-light-mode flag is disabled (default setting), the color mode is
+  // by default set to dark mode. The warn dialog has white background for the
+  // default setting, so it should use light mode color palette.
+  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
   ash::ColorProvider* color_provider = ash::ColorProvider::Get();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -233,6 +249,8 @@ void AddConfidentialContentRow(
   views::Label* title = row->AddChildView(
       std::make_unique<views::Label>(confidential_content.title));
   title->SetMultiLine(true);
+  // TODO(crbug.com/682266) Remove the next line that sets the line size.
+  title->SetMaximumWidth(GetMaxConfidentialTitleWidth());
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetAllowCharacterBreak(true);
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
@@ -243,7 +261,6 @@ void AddConfidentialContentRow(
   title->SetFontList(gfx::FontList({kFontName}, gfx::Font::NORMAL,
                                    kBodyFontSize, gfx::Font::Weight::NORMAL));
   title->SetLineHeight(kConfidentialContentLineHeight);
-  title->SizeToFit(kDialogWidth);
 }
 
 // Adds a scrollable child view to |parent| that lists the information from
@@ -262,7 +279,7 @@ void MaybeAddConfidentialContent(
   views::BoxLayout* layout =
       container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical, kConfidentialListInsets,
-          kBetweenChildSpacing));
+          /*between_child_spacing=*/0));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
@@ -314,7 +331,8 @@ DlpWarnDialog::DlpWarnDialog(OnDlpRestrictionCheckedCallback callback,
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  GetDialogButtonCancelLabel(options.restriction));
 
-  set_fixed_width(kDialogWidth);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
   set_corner_radius(kDialogCornerRadius);
   set_margins(kMarginInsets);
 

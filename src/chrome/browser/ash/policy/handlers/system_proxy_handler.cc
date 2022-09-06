@@ -61,7 +61,7 @@ void SystemProxyHandler::OnSystemProxySettingsPolicyChanged() {
 
   std::vector<std::string> system_services_auth_schemes;
   if (auth_schemes) {
-    for (const auto& auth_scheme : auth_schemes->GetList())
+    for (const auto& auth_scheme : auth_schemes->GetListDeprecated())
       system_services_auth_schemes.push_back(auth_scheme.GetString());
   }
 
@@ -86,15 +86,15 @@ void SystemProxyHandler::OnSystemProxySettingsPolicyChanged() {
 }
 
 void SystemProxyHandler::SetSystemProxyManagerForTesting(
-    chromeos::SystemProxyManager* system_proxy_manager) {
+    ash::SystemProxyManager* system_proxy_manager) {
   system_proxy_manager_for_testing_ = system_proxy_manager;
 }
 
-chromeos::SystemProxyManager* SystemProxyHandler::GetSystemProxyManager() {
+ash::SystemProxyManager* SystemProxyHandler::GetSystemProxyManager() {
   if (system_proxy_manager_for_testing_) {
     return system_proxy_manager_for_testing_;
   }
-  return chromeos::SystemProxyManager::Get();
+  return ash::SystemProxyManager::Get();
 }
 
 }  // namespace policy

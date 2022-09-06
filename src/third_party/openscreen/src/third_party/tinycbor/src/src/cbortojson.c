@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "cborjson.h"
 #include "cborinternal_p.h"
 #include "compilersupport_p.h"
+#include "cborinternal_p.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -179,6 +180,10 @@ static CborError dump_bytestring_base16(char **result, CborValue *it)
 
     /* a Base16 (hex) output is twice as big as our buffer */
     buffer = (uint8_t *)malloc(n * 2 + 1);
+    if (buffer == NULL)
+        /* out of memory */
+        return CborErrorOutOfMemory;
+
     *result = (char *)buffer;
 
     /* let cbor_value_copy_byte_string know we have an extra byte for the terminating NUL */
@@ -204,7 +209,12 @@ static CborError generic_dump_base64(char **result, CborValue *it, const char al
 
     /* a Base64 output (untruncated) has 4 bytes for every 3 in the input */
     size_t len = (n + 5) / 3 * 4;
-    out = buffer = (uint8_t *)malloc(len + 1);
+    buffer = (uint8_t *)malloc(len + 1);
+    if (buffer == NULL)
+        /* out of memory */
+        return CborErrorOutOfMemory;
+
+    out = buffer;
     *result = (char *)buffer;
 
     /* we read our byte string at the tail end of the buffer
@@ -498,7 +508,7 @@ static CborError value_to_json(FILE *out, CborValue *it, int flags, CborType typ
         CborValue recursed;
         err = cbor_value_enter_container(it, &recursed);
         if (err) {
-            it->ptr = recursed.ptr;
+            copy_current_position(it, &recursed);
             return err;       /* parse error */
         }
         if (fputc(type == CborArrayType ? '[' : '{', out) < 0)
@@ -508,7 +518,7 @@ static CborError value_to_json(FILE *out, CborValue *it, int flags, CborType typ
                   array_to_json(out, &recursed, flags, status) :
                   map_to_json(out, &recursed, flags, status);
         if (err) {
-            it->ptr = recursed.ptr;
+            copy_current_position(it, &recursed);
             return err;       /* parse error */
         }
 

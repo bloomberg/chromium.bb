@@ -20,7 +20,7 @@
 #include "config/aom_config.h"
 #include "config/av1_rtcd.h"
 
-#define custom_packs_s32(w0, w1) vcombine_s16(vqmovn_s32(w0), vqmovn_s32(w1));
+#define custom_packs_s32(w0, w1) vcombine_s16(vqmovn_s32(w0), vqmovn_s32(w1))
 
 static INLINE void transpose_16bit_4x4(const int16x8_t *const in,
                                        int16x8_t *const out) {
@@ -404,7 +404,7 @@ void av1_fadst4x4_neon(const int16x8_t *input, int16x8_t *output,
 
 #define btf_16_w4_neon(w0_l, w0_h, w1_l, w1_h, in0, in1, out0, out1, \
                        v_cos_bit)                                    \
-  {                                                                  \
+  do {                                                               \
     int32x4_t in0_l = vmovl_s16(vget_low_s16(in0));                  \
     int32x4_t in1_l = vmovl_s16(vget_low_s16(in1));                  \
     int32x4_t u0 = vmulq_n_s32(in0_l, w0_l);                         \
@@ -417,10 +417,10 @@ void av1_fadst4x4_neon(const int16x8_t *input, int16x8_t *output,
     const int16x4_t d1 = vqmovn_s32(d0);                             \
     out0 = vcombine_s16(c1, c1);                                     \
     out1 = vcombine_s16(d1, c1);                                     \
-  }
+  } while (0)
 
 #define btf_16_w4_neon_mode0(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                       \
+  do {                                                                    \
     int32x4_t in0_l = vmovl_s16(vget_low_s16(in0));                       \
     int32x4_t in1_l = vmovl_s16(vget_low_s16(in1));                       \
     int32x4_t u0 = vmulq_n_s32(in1_l, w0_h);                              \
@@ -433,10 +433,10 @@ void av1_fadst4x4_neon(const int16x8_t *input, int16x8_t *output,
     const int16x4_t d1 = vqmovn_s32(d0);                                  \
     out0 = vcombine_s16(c1, c1);                                          \
     out1 = vcombine_s16(d1, c1);                                          \
-  }
+  } while (0)
 
 #define btf_16_w4_neon_mode2(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                       \
+  do {                                                                    \
     int32x4_t in0_l = vmovl_s16(vget_low_s16(in0));                       \
     int32x4_t in1_l = vmovl_s16(vget_low_s16(in1));                       \
     int32x4_t u0 = vmulq_n_s32(in0_l, w0_l);                              \
@@ -449,10 +449,10 @@ void av1_fadst4x4_neon(const int16x8_t *input, int16x8_t *output,
     const int16x4_t d1 = vqmovn_s32(d0);                                  \
     out0 = vcombine_s16(c1, c1);                                          \
     out1 = vcombine_s16(d1, c1);                                          \
-  }
+  } while (0)
 
 #define btf_16_w4_neon_mode3(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                       \
+  do {                                                                    \
     int32x4_t in0_l = vmovl_s16(vget_low_s16(in0));                       \
     int32x4_t in1_l = vmovl_s16(vget_low_s16(in1));                       \
     int32x4_t u0 = vmulq_n_s32(in0_l, w0_l);                              \
@@ -465,7 +465,7 @@ void av1_fadst4x4_neon(const int16x8_t *input, int16x8_t *output,
     const int16x4_t d1 = vqmovn_s32(d0);                                  \
     out0 = vcombine_s16(c1, c1);                                          \
     out1 = vcombine_s16(d1, c1);                                          \
-  }
+  } while (0)
 
 static void fadst4x8_neon(const int16x8_t *input, int16x8_t *output,
                           int8_t cos_bit, const int8_t *stage_range) {
@@ -629,7 +629,7 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
 }
 
 #define btf_16_neon(w0_l, w0_h, w1_l, w1_h, in0, in1, out0, out1) \
-  {                                                               \
+  do {                                                            \
     int32x4_t in_low0 = vmovl_s16(vget_low_s16(in0));             \
     int32x4_t in_high0 = vmovl_s16(vget_high_s16(in0));           \
     int32x4_t in_low1 = vmovl_s16(vget_low_s16(in1));             \
@@ -648,10 +648,10 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
     int32x4_t d1 = vrshlq_s32(v1, v_cos_bit);                     \
     out0 = custom_packs_s32(c0, c1);                              \
     out1 = custom_packs_s32(d0, d1);                              \
-  }
+  } while (0)
 
 #define btf_16_neon_mode0(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                    \
+  do {                                                                 \
     int32x4_t in_low0 = vmovl_s16(vget_low_s16(in0));                  \
     int32x4_t in_high0 = vmovl_s16(vget_high_s16(in0));                \
     int32x4_t in_low1 = vmovl_s16(vget_low_s16(in1));                  \
@@ -670,10 +670,10 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
     int32x4_t d1 = vrshlq_s32(v1, v_cos_bit);                          \
     out0 = custom_packs_s32(c0, c1);                                   \
     out1 = custom_packs_s32(d0, d1);                                   \
-  }
+  } while (0)
 
 #define btf_16_neon_mode1(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                    \
+  do {                                                                 \
     int32x4_t in_low0 = vmovl_s16(vget_low_s16(in0));                  \
     int32x4_t in_high0 = vmovl_s16(vget_high_s16(in0));                \
     int32x4_t in_low1 = vmovl_s16(vget_low_s16(in1));                  \
@@ -692,10 +692,10 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
     int32x4_t d1 = vrshlq_s32(v1, v_cos_bit);                          \
     out0 = custom_packs_s32(c0, c1);                                   \
     out1 = custom_packs_s32(d0, d1);                                   \
-  }
+  } while (0)
 
 #define btf_16_neon_mode02(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                     \
+  do {                                                                  \
     int32x4_t in_low0 = vmovl_s16(vget_low_s16(in0));                   \
     int32x4_t in_high0 = vmovl_s16(vget_high_s16(in0));                 \
     int32x4_t in_low1 = vmovl_s16(vget_low_s16(in1));                   \
@@ -714,10 +714,10 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
     int32x4_t d1 = vrshlq_s32(v1, v_cos_bit);                           \
     out0 = custom_packs_s32(c0, c1);                                    \
     out1 = custom_packs_s32(d0, d1);                                    \
-  }
+  } while (0)
 
 #define btf_16_neon_mode2(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                    \
+  do {                                                                 \
     int32x4_t in_low0 = vmovl_s16(vget_low_s16(in0));                  \
     int32x4_t in_high0 = vmovl_s16(vget_high_s16(in0));                \
     int32x4_t in_low1 = vmovl_s16(vget_low_s16(in1));                  \
@@ -736,10 +736,10 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
     int32x4_t d1 = vrshlq_s32(v1, v_cos_bit);                          \
     out0 = custom_packs_s32(c0, c1);                                   \
     out1 = custom_packs_s32(d0, d1);                                   \
-  }
+  } while (0)
 
 #define btf_16_neon_mode3(w0_l, w0_h, in0, in1, out0, out1, v_cos_bit) \
-  {                                                                    \
+  do {                                                                 \
     int32x4_t in_low0 = vmovl_s16(vget_low_s16(in0));                  \
     int32x4_t in_high0 = vmovl_s16(vget_high_s16(in0));                \
     int32x4_t in_low1 = vmovl_s16(vget_low_s16(in1));                  \
@@ -758,7 +758,7 @@ void av1_fdct4x4_neon(const int16x8_t *input, int16x8_t *output, int8_t cos_bit,
     int32x4_t d1 = vrshlq_s32(v1, v_cos_bit);                          \
     out0 = custom_packs_s32(c0, c1);                                   \
     out1 = custom_packs_s32(d0, d1);                                   \
-  }
+  } while (0)
 
 static void fdct8x4_neon(const int16x8_t *input, int16x8_t *output,
                          int8_t cos_bit, const int8_t *stage_range) {
@@ -4393,8 +4393,7 @@ static FwdTxfm2dFunc lowbd_fwd_txfm_func_ls[TX_SIZES_ALL] = {
 void av1_lowbd_fwd_txfm_neon(const int16_t *src_diff, tran_low_t *coeff,
                              int diff_stride, TxfmParam *txfm_param) {
   FwdTxfm2dFunc fwd_txfm2d_func = lowbd_fwd_txfm_func_ls[txfm_param->tx_size];
-  if ((fwd_txfm2d_func == NULL) ||
-      (txfm_param->lossless && txfm_param->tx_size == TX_4X4)) {
+  if (txfm_param->lossless && txfm_param->tx_size == TX_4X4) {
     av1_lowbd_fwd_txfm_c(src_diff, coeff, diff_stride, txfm_param);
   } else {
     fwd_txfm2d_func(src_diff, coeff, diff_stride, txfm_param->tx_type,

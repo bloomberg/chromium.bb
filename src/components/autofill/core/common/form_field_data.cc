@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/logging/log_buffer.h"
@@ -222,7 +223,7 @@ auto SimilarityTuple(const FormFieldData& f) {
 }
 
 auto DynamicIdentityTuple(const FormFieldData& f) {
-  return std::tuple_cat(CommonTuple(f), std::make_tuple(f.IsVisible()));
+  return std::tuple_cat(CommonTuple(f), std::make_tuple(f.IsFocusable()));
 }
 
 auto IdentityTuple(const FormFieldData& f) {
@@ -234,7 +235,7 @@ auto IdentityTuple(const FormFieldData& f) {
       std::tie(
 // TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
 // this field in the DOM.
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
           f.unique_id,
 #endif
           f.autocomplete_attribute, f.placeholder, f.max_length, f.css_classes,
@@ -265,12 +266,6 @@ bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
 
 bool FormFieldData::DynamicallySameFieldAs(const FormFieldData& field) const {
   return DynamicIdentityTuple(*this) == DynamicIdentityTuple(field);
-}
-
-bool FormFieldData::IdentityComparator::operator()(
-    const FormFieldData& a,
-    const FormFieldData& b) const {
-  return IdentityTuple(a) < IdentityTuple(b);
 }
 
 bool FormFieldData::IsTextInputElement() const {

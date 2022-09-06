@@ -4,23 +4,50 @@
 
 #include "chrome/browser/web_applications/web_app_utils.h"
 
+#include <algorithm>
+#include <bitset>
+#include <iterator>
+#include <set>
+#include <type_traits>
+#include <utility>
+
+#include "base/base64.h"
+#include "base/bind.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
+#include "base/containers/flat_set.h"
+#include "base/containers/flat_tree.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/custom_handlers/protocol_handler.h"
+#include "components/grit/components_resources.h"
 #include "components/site_engagement/content/site_engagement_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "skia/ext/skia_utils_base.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -31,6 +58,12 @@
 #include "components/user_manager/user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/app_service.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 namespace {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool g_enable_system_web_apps_in_lacros_for_testing = false;
@@ -39,6 +72,18 @@ bool g_enable_system_web_apps_in_lacros_for_testing = false;
 // main profile. This may be modified by SkipMainProfileCheckForTesting().
 bool g_skip_main_profile_check_for_testing = false;
 #endif
+
+GURL EncodeIconAsUrl(const SkBitmap& bitmap) {
+  std::vector<unsigned char> output;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
+  std::string encoded;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(output.data()),
+                        output.size()),
+      &encoded);
+  return GURL("data:image/png;base64," + encoded);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -58,7 +103,7 @@ bool AreWebAppsEnabled(const Profile* profile) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Web Apps should not be installed to the ChromeOS system profiles.
-  if (!chromeos::ProfileHelper::IsRegularProfile(original_profile)) {
+  if (!ash::ProfileHelper::IsRegularProfile(original_profile)) {
     return false;
   }
   // Disable Web Apps if running any kiosk app.
@@ -100,7 +145,17 @@ content::BrowserContext* GetBrowserContextForWebApps(
     return nullptr;
   }
   Profile* original_profile = profile->GetOriginalProfile();
-  return AreWebAppsEnabled(original_profile) ? original_profile : nullptr;
+  if (!AreWebAppsEnabled(original_profile))
+    return nullptr;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Use OTR profile for Guest Session.
+  if (profile->IsGuestSession()) {
+    return profile->IsOffTheRecord() ? profile : nullptr;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  return original_profile;
 }
 
 content::BrowserContext* GetBrowserContextForWebAppMetrics(
@@ -113,6 +168,65 @@ content::BrowserContext* GetBrowserContextForWebAppMetrics(
       AreWebAppsEnabled(original_profile) &&
       !original_profile->IsGuestSession();
   return is_web_app_metrics_enabled ? original_profile : nullptr;
+}
+
+content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
+    const GURL& url,
+    content::RenderFrameHost* render_frame_host,
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
+  if (web_app_provider == nullptr) {
+    return nullptr;
+  }
+
+  web_app::WebAppRegistrar& web_app_registrar = web_app_provider->registrar();
+  const absl::optional<web_app::AppId> app_id =
+      web_app_registrar.FindAppWithUrlInScope(url);
+  if (!app_id.has_value()) {
+    return nullptr;
+  }
+
+  auto alternative_error_page_info =
+      content::mojom::AlternativeErrorPageOverrideInfo::New();
+  // TODO(crbug.com/1285128): Ensure sufficient contrast.
+  base::Value dict(base::Value::Type::DICTIONARY);
+  std::string theme_color = skia::SkColorToHexString(
+      web_app_registrar.GetAppThemeColor(*app_id).value_or(SK_ColorBLACK));
+  std::string background_color = skia::SkColorToHexString(
+      web_app_registrar.GetAppBackgroundColor(*app_id).value_or(SK_ColorWHITE));
+  dict.SetStringKey(default_offline::kThemeColor, theme_color);
+  dict.SetStringKey(default_offline::kBackgroundColor, background_color);
+  dict.SetStringKey(default_offline::kAppShortName,
+                    web_app_registrar.GetAppShortName(*app_id));
+  dict.SetStringKey(
+      default_offline::kMessage,
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED));
+  SkBitmap bitmap = web_app_provider->icon_manager().GetFavicon(*app_id);
+  std::string icon_url = EncodeIconAsUrl(bitmap).spec();
+  dict.SetStringKey(default_offline::kIconUrl, icon_url);
+  absl::optional<SkColor> dark_mode_theme_color =
+      web_app_registrar.GetAppDarkModeThemeColor(*app_id);
+  if (dark_mode_theme_color) {
+    dict.SetStringKey(default_offline::kDarkModeThemeColor,
+                      skia::SkColorToHexString(dark_mode_theme_color.value()));
+  } else {
+    dict.SetStringKey(default_offline::kDarkModeThemeColor, theme_color);
+  }
+  absl::optional<SkColor> dark_mode_background_color =
+      web_app_registrar.GetAppDarkModeThemeColor(*app_id);
+  if (dark_mode_background_color) {
+    dict.SetStringKey(
+        default_offline::kDarkModeBackgroundColor,
+        skia::SkColorToHexString(dark_mode_background_color.value()));
+  } else {
+    dict.SetStringKey(default_offline::kDarkModeBackgroundColor,
+                      background_color);
+  }
+  alternative_error_page_info->alternative_error_page_params = std::move(dict);
+  alternative_error_page_info->resource_id = IDR_WEBAPP_DEFAULT_OFFLINE_HTML;
+  return alternative_error_page_info;
 }
 
 base::FilePath GetWebAppsRootDirectory(Profile* profile) {
@@ -142,13 +256,13 @@ base::FilePath GetWebAppsTempDirectory(
 
 std::string GetProfileCategoryForLogging(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile)) {
+  if (!ash::ProfileHelper::IsRegularProfile(profile)) {
     return "SigninOrLockScreen";
   } else if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return "Kiosk";
-  } else if (chromeos::ProfileHelper::IsEphemeralUserProfile(profile)) {
+  } else if (ash::ProfileHelper::IsEphemeralUserProfile(profile)) {
     return "Ephemeral";
-  } else if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+  } else if (ash::ProfileHelper::IsPrimaryProfile(profile)) {
     return "Primary";
   } else {
     return "Other";
@@ -161,7 +275,7 @@ std::string GetProfileCategoryForLogging(Profile* profile) {
 }
 
 bool IsChromeOsDataMandatory() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
   return false;
@@ -207,10 +321,20 @@ bool AreNewFileHandlersASubsetOfOld(const apps::FileHandlers& old_handlers,
   return true;
 }
 
-std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
+std::tuple<std::u16string, size_t>
+GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
+                                                 const AppId& app_id) {
+  auto extensions =
+      GetFileTypeAssociationsHandledByWebAppForDisplayAsList(profile, app_id);
+  return {base::UTF8ToUTF16(base::JoinString(
+              extensions, l10n_util::GetStringUTF8(
+                              IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR))),
+          extensions.size()};
+}
+
+std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
     Profile* profile,
-    const AppId& app_id,
-    bool* found_multiple) {
+    const AppId& app_id) {
   auto* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
   if (!provider)
     return {};
@@ -229,19 +353,21 @@ std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
                  [](const std::string& extension) {
                    return base::ToUpperASCII(extension.substr(1));
                  });
-
-  if (found_multiple)
-    *found_multiple = extensions_for_display.size() > 1;
-
-  return base::UTF8ToUTF16(base::JoinString(
-      extensions_for_display,
-      l10n_util::GetStringUTF8(IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR)));
+  return extensions_for_display;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 bool IsWebAppsCrosapiEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return base::FeatureList::IsEnabled(features::kWebAppsCrosapi) ||
          crosapi::browser_util::IsLacrosPrimaryBrowser();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* lacros_service = chromeos::LacrosService::Get();
+  return chromeos::BrowserInitParams::Get()->web_apps_enabled &&
+         lacros_service &&
+         lacros_service->IsAvailable<crosapi::mojom::AppPublisher>();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 #endif
 
@@ -266,8 +392,9 @@ void PersistProtocolHandlersUserChoice(
 
   OsIntegrationManager& os_integration_manager =
       provider->os_integration_manager();
-  const std::vector<ProtocolHandler> original_protocol_handlers =
-      os_integration_manager.GetAppProtocolHandlers(app_id);
+  const std::vector<custom_handlers::ProtocolHandler>
+      original_protocol_handlers =
+          os_integration_manager.GetAppProtocolHandlers(app_id);
 
   if (allowed) {
     provider->sync_bridge().AddAllowedLaunchProtocol(app_id,
@@ -297,21 +424,55 @@ void PersistFileHandlersUserChoice(Profile* profile,
                                    base::OnceClosure update_finished_callback) {
   WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile);
   DCHECK(provider);
+  provider->sync_bridge().SetAppFileHandlerApprovalState(
+      app_id,
+      allowed ? ApiApprovalState::kAllowed : ApiApprovalState::kDisallowed);
 
-  {
-    ScopedRegistryUpdate update(&provider->sync_bridge());
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    app_to_update->SetFileHandlerApprovalState(
-        allowed ? ApiApprovalState::kAllowed : ApiApprovalState::kDisallowed);
-  }
+  UpdateFileHandlerOsIntegration(provider, app_id,
+                                 std::move(update_finished_callback));
+}
 
-  if (allowed) {
+void UpdateFileHandlerOsIntegration(
+    WebAppProvider* provider,
+    const AppId& app_id,
+    base::OnceClosure update_finished_callback) {
+  bool enabled =
+      provider->os_integration_manager().IsFileHandlingAPIAvailable(app_id) &&
+      !provider->registrar().IsAppFileHandlerPermissionBlocked(app_id);
+
+  if (enabled ==
+      provider->registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id)) {
     std::move(update_finished_callback).Run();
-  } else {
-    provider->os_integration_manager().UpdateFileHandlers(
-        app_id, FileHandlerUpdateAction::kRemove,
-        std::move(update_finished_callback));
+    return;
   }
+
+  FileHandlerUpdateAction action = enabled ? FileHandlerUpdateAction::kUpdate
+                                           : FileHandlerUpdateAction::kRemove;
+
+#if BUILDFLAG(IS_MAC)
+  // On Mac, the file handlers are encoded in the app shortcut. First
+  // unregister the file handlers (verifying that it finishes synchronously),
+  // then update the shortcut.
+  Result unregister_file_handlers_result = Result::kError;
+  provider->os_integration_manager().UpdateFileHandlers(
+      app_id, action,
+      base::BindOnce([](Result* result_out,
+                        Result actual_result) { *result_out = actual_result; },
+                     &unregister_file_handlers_result));
+  DCHECK_EQ(Result::kOk, unregister_file_handlers_result);
+  provider->os_integration_manager().UpdateShortcuts(
+      app_id, /*old_name=*/{}, std::move(update_finished_callback));
+#else
+  provider->os_integration_manager().UpdateFileHandlers(
+      app_id, action,
+      base::BindOnce([](base::OnceClosure closure,
+                        Result ignored) { std::move(closure).Run(); },
+                     std::move(update_finished_callback)));
+#endif
+
+  DCHECK_EQ(
+      enabled,
+      provider->registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id));
 }
 
 bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
@@ -323,11 +484,39 @@ bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
 
 bool CanUserUninstallWebApp(WebAppSources sources) {
   WebAppSources specified_sources;
-  specified_sources[Source::kDefault] = true;
-  specified_sources[Source::kSync] = true;
-  specified_sources[Source::kWebAppStore] = true;
-  specified_sources[Source::kSubApp] = true;
+  specified_sources[WebAppManagement::kDefault] = true;
+  specified_sources[WebAppManagement::kSync] = true;
+  specified_sources[WebAppManagement::kWebAppStore] = true;
+  specified_sources[WebAppManagement::kSubApp] = true;
   return HasAnySpecifiedSourcesAndNoOtherSources(sources, specified_sources);
+}
+
+AppId GetAppIdFromAppSettingsUrl(const GURL& url) {
+  // App Settings page is served under chrome://app-settings/<app-id>.
+  // url.path() returns "/<app-id>" with a leading slash.
+  std::string path = url.path();
+  if (path.size() <= 1)
+    return AppId();
+  return path.substr(1);
+}
+
+bool HasAppSettingsPage(Profile* profile, const GURL& url) {
+  const AppId app_id = GetAppIdFromAppSettingsUrl(url);
+  if (app_id.empty())
+    return false;
+
+  WebAppProvider* provider = WebAppProvider::GetForWebApps(profile);
+  if (!provider)
+    return false;
+  return provider->registrar().IsLocallyInstalled(app_id);
+}
+
+bool IsInScope(const GURL& url, const GURL& scope) {
+  if (!scope.is_valid())
+    return false;
+
+  return base::StartsWith(url.spec(), scope.spec(),
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace web_app

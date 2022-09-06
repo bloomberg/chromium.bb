@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/accuracy_tips/accuracy_tip_interaction.h"
@@ -22,7 +23,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/unified_consent/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -115,7 +115,7 @@ void AccuracyService::CheckAccuracyStatus(const GURL& url,
       pref_service_->Get(GetPreviousInteractionsPrefName(disable_ui_));
   const base::Value opt_out_value(
       static_cast<int>(AccuracyTipInteraction::kOptOut));
-  if (base::Contains(last_interactions->GetList(), opt_out_value)) {
+  if (base::Contains(last_interactions->GetListDeprecated(), opt_out_value)) {
     return std::move(callback).Run(AccuracyTipStatus::kOptOut);
   }
 
@@ -156,13 +156,14 @@ void AccuracyService::MaybeShowAccuracyTip(content::WebContents* web_contents) {
 
   if (disable_ui_) {
     return OnAccuracyTipClosed(
-        base::TimeTicks(), ukm::GetSourceIdForWebContentsDocument(web_contents),
+        base::TimeTicks(),
+        web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId(),
         AccuracyTipInteraction::kDisabledByExperiment);
   }
 
   bool show_opt_out =
       pref_service_->GetList(GetPreviousInteractionsPrefName(disable_ui_))
-          ->GetList()
+          ->GetListDeprecated()
           .size() >= static_cast<size_t>(features::kNumIgnorePrompts.Get());
 
   url_for_last_shown_tip_ = web_contents->GetLastCommittedURL();
@@ -171,9 +172,10 @@ void AccuracyService::MaybeShowAccuracyTip(content::WebContents* web_contents) {
   delegate_->ShowAccuracyTip(
       web_contents, AccuracyTipStatus::kShowAccuracyTip,
       /*show_opt_out=*/show_opt_out,
-      base::BindOnce(&AccuracyService::OnAccuracyTipClosed,
-                     weak_factory_.GetWeakPtr(), base::TimeTicks::Now(),
-                     ukm::GetSourceIdForWebContentsDocument(web_contents)));
+      base::BindOnce(
+          &AccuracyService::OnAccuracyTipClosed, weak_factory_.GetWeakPtr(),
+          base::TimeTicks::Now(),
+          web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId()));
   for (Observer& observer : observers_)
     observer.OnAccuracyTipShown();
 }
@@ -182,7 +184,8 @@ void AccuracyService::MaybeShowSurvey() {
   if (CanShowSurvey()) {
     auto* interactions_list =
         pref_service_->GetList(GetPreviousInteractionsPrefName(disable_ui_));
-    const int last_interaction = interactions_list->GetList().back().GetInt();
+    const int last_interaction =
+        interactions_list->GetListDeprecated().back().GetInt();
     const bool ukm_enabled = pref_service_->GetBoolean(
         unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
     std::string url_parameter_for_hats =
@@ -242,7 +245,7 @@ void AccuracyService::OnAccuracyTipClosed(base::TimeTicks time_opened,
   base::UmaHistogramEnumeration("Privacy.AccuracyTip.AccuracyTipInteraction",
                                 interaction);
   base::UmaHistogramCounts100("Privacy.AccuracyTip.NumDialogsShown",
-                              interaction_list->GetList().size());
+                              interaction_list->GetListDeprecated().size());
   ukm::builders::AccuracyTipDialog ukm_builder(ukm_source_id);
   ukm_builder.SetInteraction(static_cast<int>(interaction));
 
@@ -255,7 +258,7 @@ void AccuracyService::OnAccuracyTipClosed(base::TimeTicks time_opened,
 
     const std::string suffix = GetHistogramSuffix(interaction);
     base::UmaHistogramCounts100("Privacy.AccuracyTip.NumDialogsShown." + suffix,
-                                interaction_list->GetList().size());
+                                interaction_list->GetListDeprecated().size());
     base::UmaHistogramMediumTimes(
         "Privacy.AccuracyTip.AccuracyTipTimeOpen." + suffix, time_open);
   }
@@ -287,7 +290,7 @@ bool AccuracyService::CanShowSurvey() {
 
   int interactions_count =
       pref_service_->GetList(GetPreviousInteractionsPrefName(disable_ui_))
-          ->GetList()
+          ->GetListDeprecated()
           .size();
   return interactions_count >= features::kMinPromptCountRequiredForSurvey.Get();
 }

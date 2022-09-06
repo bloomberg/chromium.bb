@@ -187,6 +187,8 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     # The only time we trigger this is when it is better to be explicit in a
     # list of unicode characters, e.g. FindAddress.java
     'UnicodeEscape',
+    # Nice to have.
+    'AlreadyChecked',
 ]
 
 # Full list of checks: https://errorprone.info/bugpatterns
@@ -482,7 +484,7 @@ def _RunCompiler(changes,
 
       if enable_partial_javac:
         all_changed_paths_are_java = all(
-            [p.endswith(".java") for p in changes.IterChangedPaths()])
+            p.endswith(".java") for p in changes.IterChangedPaths())
         if (all_changed_paths_are_java and not changes.HasStringChanges()
             and os.path.exists(jar_path)
             and (jar_info_path is None or os.path.exists(jar_info_path))):
@@ -586,6 +588,9 @@ def _ParseOptions(argv):
   parser.add_option('--skip-build-server',
                     action='store_true',
                     help='Avoid using the build server.')
+  parser.add_option('--use-build-server',
+                    action='store_true',
+                    help='Always use the build server.')
   parser.add_option(
       '--java-srcjars',
       action='append',
@@ -694,7 +699,8 @@ def main(argv):
   if (options.enable_errorprone and not options.skip_build_server
       and server_utils.MaybeRunCommand(name=options.target_name,
                                        argv=sys.argv,
-                                       stamp_file=options.jar_path)):
+                                       stamp_file=options.jar_path,
+                                       force=options.use_build_server)):
     return
 
   javac_cmd = []

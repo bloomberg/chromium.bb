@@ -4,12 +4,14 @@
 
 #include "ash/system/screen_security/screen_security_notification_controller.h"
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -65,14 +67,14 @@ void ScreenSecurityNotificationController::CreateNotification(
                 if (*button_index == 0) {
                   controller->StopAllSessions(is_capture);
                   if (is_capture) {
-                    Shell::Get()->metrics()->RecordUserMetricsAction(
-                        UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
+                    base::RecordAction(base::UserMetricsAction(
+                        "StatusArea_ScreenCapture_Notification_Stop"));
                   }
                 } else if (*button_index == 1) {
                   controller->ChangeSource();
                   if (is_capture) {
-                    Shell::Get()->metrics()->RecordUserMetricsAction(
-                        UMA_STATUS_AREA_SCREEN_CAPTURE_CHANGE_SOURCE);
+                    base::RecordAction(base::UserMetricsAction(
+                        "StatusArea_ScreenCapture_Change_Source"));
                   }
                 } else {
                   NOTREACHED();
@@ -87,7 +89,8 @@ void ScreenSecurityNotificationController::CreateNotification(
       message, std::u16string() /* display_source */, GURL(),
       message_center::NotifierId(
           message_center::NotifierType::SYSTEM_COMPONENT,
-          is_capture ? kNotifierScreenCapture : kNotifierScreenShare),
+          is_capture ? kNotifierScreenCapture : kNotifierScreenShare,
+          NotificationCatalogName::kScreenSecurity),
       data, std::move(delegate), kNotificationScreenshareIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_pinned(true);

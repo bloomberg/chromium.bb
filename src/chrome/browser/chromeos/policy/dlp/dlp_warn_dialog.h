@@ -51,30 +51,31 @@ class DlpWarnDialog : public views::DialogDelegateView {
     DlpWarnDialogOptions& operator=(const DlpWarnDialogOptions& other);
     ~DlpWarnDialogOptions();
 
+    // Returns whether all members are equal.
+    // Uses EqualWithTitles to compare confidential_contents, which ensures that
+    // not only URLs but also the titles are equal as well.
+    friend bool operator==(const DlpWarnDialogOptions& a,
+                           const DlpWarnDialogOptions& b) {
+      return a.restriction == b.restriction &&
+             a.application_title == b.application_title &&
+             EqualWithTitles(a.confidential_contents, b.confidential_contents);
+    }
+    friend bool operator!=(const DlpWarnDialogOptions& a,
+                           const DlpWarnDialogOptions& b) {
+      return !(a == b);
+    }
+
     Restriction restriction;
     DlpConfidentialContents confidential_contents;
     absl::optional<std::u16string> application_title;
   };
 
   DlpWarnDialog() = delete;
+  DlpWarnDialog(OnDlpRestrictionCheckedCallback callback,
+                DlpWarnDialogOptions options);
   DlpWarnDialog(const DlpWarnDialog& other) = delete;
   DlpWarnDialog& operator=(const DlpWarnDialog& other) = delete;
   ~DlpWarnDialog() override = default;
-
- private:
-  // DlpWarnNotifier is used to create and show DlpWarnDialogs and should be the
-  // only way to do that. Therefore it needs access to some private members of
-  // the DlpWarnDialog class, such as the options and restriction types, as well
-  // as the constructor.
-  friend class DlpWarnNotifier;
-
-  // Helper method to create and show a warning dialog for a given
-  // |restriction|.
-  static void ShowDlpWarningDialog(OnDlpRestrictionCheckedCallback callback,
-                                   DlpWarnDialogOptions options);
-
-  DlpWarnDialog(OnDlpRestrictionCheckedCallback callback,
-                DlpWarnDialogOptions options);
 };
 
 }  // namespace policy

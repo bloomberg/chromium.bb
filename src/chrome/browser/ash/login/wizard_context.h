@@ -9,10 +9,10 @@
 
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/login/auth/user_context.h"
 
 namespace ash {
+
+class UserContext;
 
 // Structure that defines data that need to be passed between screens during
 // WizardController flows.
@@ -23,6 +23,15 @@ class WizardContext {
 
   WizardContext(const WizardContext&) = delete;
   WizardContext& operator=(const WizardContext&) = delete;
+
+  // Should be tweaked by the tests only in case we need this early in the init
+  // process. Otherwise tweak context from `GetWizardContextForTesting`.
+  static bool g_is_branded_build;
+
+  enum class EnrollmentPreference {
+    kKiosk,
+    kEnterprise,
+  };
 
   // Configuration for automating OOBE screen actions, e.g. during device
   // version rollback.
@@ -55,6 +64,10 @@ class WizardContext {
   // flag will ignore hid detection results.
   bool skip_to_update_for_tests = false;
 
+  // Whether the post login screens should be skipped. Used in MaybeSkip by
+  // screens in tests. Is set by WizardController::SkipPostLoginScreensForTests.
+  bool skip_post_login_screens_for_tests = false;
+
   // Whether user creation screen is enabled (could be disabled due to disabled
   // feature or on managed device). It determines the behavior of back button
   // for GaiaScreen and OfflineLoginScreen. Value is set to true in
@@ -73,7 +86,16 @@ class WizardContext {
   bool tpm_dbus_error = false;
 
   // True if this is a branded build (i.e. Google Chrome).
-  bool is_branded_build;
+  bool is_branded_build = g_is_branded_build;
+
+  // Force that OOBE Login display isn't destroyed right after login due to all
+  // screens being skipped.
+  bool defer_oobe_flow_finished_for_tests = false;
+
+  // Indicates which type of licenses should be used for primary button on
+  // enrollment screen.
+  EnrollmentPreference enrollment_preference_ =
+      WizardContext::EnrollmentPreference::kEnterprise;
 
   // Authorization data that is required by PinSetup screen to add PIN as
   // another possible auth factor. Can be empty (if PIN is not supported).
@@ -84,8 +106,18 @@ class WizardContext {
   // TermsOfServiceScreen to them first and then continue the flow with this
   // screen. If the user has already completed onboarding, but
   // TermsOfServiceScreen should be shown on login this will be set to
-  // OobeScreen::SCREEN_UNKNOWN.
+  // ash::OOBE_SCREEN_UNKNOWN.
   OobeScreenId screen_after_managed_tos;
+
+  // If this is a first login after update from CloudReady to a new version.
+  // During such an update show users license agreement and data collection
+  // consent.
+  bool is_cloud_ready_update_flow = false;
+
+  // Determining ownership can take some time. Instead of finding out if the
+  // current user is an owner of the device we reuse this value. It is set
+  // during ConsolidatedConsentScreen.
+  absl::optional<bool> is_owner_flow;
 };
 
 }  // namespace ash

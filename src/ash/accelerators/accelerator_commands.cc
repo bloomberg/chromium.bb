@@ -12,9 +12,18 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/keyboard_brightness_control_delegate.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/time/calendar_metrics.h"
+#include "ash/system/time/calendar_model.h"
+#include "ash/system/unified/date_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -30,6 +39,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget.h"
 
@@ -47,6 +57,10 @@ views::Widget* FindPipWidget() {
 }
 
 }  // namespace
+
+void DumpCalendarModel() {
+  Shell::Get()->system_tray_model()->calendar_model()->DebugDump();
+}
 
 void CycleBackwardMru() {
   Shell::Get()->window_cycle_controller()->HandleCycleWindow(
@@ -202,12 +216,30 @@ void ShiftPrimaryDisplay() {
       primary_display_iter->id(), true /* throttle */);
 }
 
-void ToggleFloating() {
-  DCHECK(features::IsWindowControlMenuEnabled());
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+void ToggleCalendar() {
+  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
+  StatusAreaWidget* status_area_widget =
+      RootWindowController::ForWindow(target_root)->GetStatusAreaWidget();
+  UnifiedSystemTray* tray = status_area_widget->unified_system_tray();
+
+  // If currently showing the calendar view, close it.
+  if (tray->IsShowingCalendarView()) {
+    tray->CloseBubble();
     return;
-  Shell::Get()->float_controller()->ToggleFloatCurrentWindow(active_window);
+  }
+
+  // If currently not showing the calendar view, show the bubble if needed then
+  // show the calendar view.
+  if (!tray->IsBubbleShown()) {
+    // Set `DateTray` to be active prior to showing the bubble, this prevents
+    // flashing of the status area. See crbug.com/1332603.
+    status_area_widget->date_tray()->SetIsActive(true);
+    tray->ShowBubble();
+  }
+
+  tray->bubble()->ShowCalendarView(
+      calendar_metrics::CalendarViewShowSource::kAccelerator,
+      calendar_metrics::CalendarEventSource::kKeyboard);
 }
 
 void ToggleFullscreen() {
@@ -219,7 +251,9 @@ void ToggleFullscreen() {
 }
 
 void ToggleKeyboardBacklight() {
-  // TODO: b/194146863 Add KBL toggle implementation 
+  KeyboardBrightnessControlDelegate* delegate =
+      Shell::Get()->keyboard_brightness_control_delegate();
+  delegate->HandleToggleKeyboardBacklight();
 }
 
 void ToggleMaximized() {

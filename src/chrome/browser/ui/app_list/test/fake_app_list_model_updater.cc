@@ -54,8 +54,10 @@ void FakeAppListModelUpdater::RemoveItem(const std::string& id,
   }
 }
 
-void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
-                                          const gfx::ImageSkia& icon) {
+void FakeAppListModelUpdater::SetItemIconAndColor(
+    const std::string& id,
+    const gfx::ImageSkia& icon,
+    const ash::IconColor& icon_color) {
   ++update_image_count_;
   if (update_image_count_ == expected_update_image_count_ &&
       !icon_updated_callback_.is_null()) {
@@ -174,7 +176,7 @@ syncer::StringOrdinal FakeAppListModelUpdater::GetPositionBeforeFirstItem()
 
 void FakeAppListModelUpdater::GetContextMenuModel(
     const std::string& id,
-    bool add_sort_options,
+    ash::AppListItemContext item_context,
     GetMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
 }
@@ -201,6 +203,10 @@ void FakeAppListModelUpdater::PublishSearchResults(
     const std::vector<ChromeSearchResult*>& results,
     const std::vector<ash::AppListSearchResultCategory>& categories) {
   search_results_ = results;
+}
+
+void FakeAppListModelUpdater::ClearSearchResults() {
+  search_results_.clear();
 }
 
 void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(

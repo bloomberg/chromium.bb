@@ -23,15 +23,16 @@ from absl.testing import parameterized
 import numpy as np
 
 from tensorflow.core.framework import attr_value_pb2
+from tensorflow.core.framework import full_type_pb2
 from tensorflow.core.framework import tensor_shape_pb2
 from tensorflow.core.protobuf import config_pb2
 from tensorflow.python.autograph.core import ag_ctx
 from tensorflow.python.client import session
+from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.eager import backprop
 from tensorflow.python.eager import context
 from tensorflow.python.eager import def_function
 from tensorflow.python.eager import function as eager_function
-from tensorflow.python.eager import function_trace_type
 from tensorflow.python.eager import wrap_function
 from tensorflow.python.framework import composite_tensor
 from tensorflow.python.framework import config
@@ -116,12 +117,12 @@ class TensorAndShapeTest(test_util.TensorFlowTestCase):
     op = ops.Operation(
         ops._NodeDef("FloatOutput", "myop"), ops.Graph(), [], [dtypes.float32])
     t = op.outputs[0]
-    with self.assertRaisesRegex(TypeError, "iterating.*not allowed in Graph"):
+    with self.assertRaisesRegex(TypeError, "Iterating.*not allowed in Graph"):
       next(iter(t))
-    with self.assertRaisesRegex(TypeError, "iterating.*AutoGraph did convert"):
+    with self.assertRaisesRegex(TypeError, "Iterating.*AutoGraph did convert"):
       with ag_ctx.ControlStatusCtx(ag_ctx.Status.ENABLED):
         next(iter(t))
-    with self.assertRaisesRegex(TypeError, "iterating.*AutoGraph is disabled"):
+    with self.assertRaisesRegex(TypeError, "Iterating.*AutoGraph is disabled"):
       with ag_ctx.ControlStatusCtx(ag_ctx.Status.DISABLED):
         next(iter(t))
 
@@ -130,14 +131,14 @@ class TensorAndShapeTest(test_util.TensorFlowTestCase):
         ops._NodeDef("FloatOutput", "myop"), ops.Graph(), [], [dtypes.bool])
     t = op.outputs[0]
     with self.assertRaisesRegex(TypeError,
-                                "using.*as a.*bool.*not allowed in Graph"):
+                                "Using.*as a.*bool.*not allowed in Graph"):
       bool(t)
     with self.assertRaisesRegex(TypeError,
-                                "using.*as a.*bool.*AutoGraph did convert"):
+                                "Using.*as a.*bool.*AutoGraph did convert"):
       with ag_ctx.ControlStatusCtx(ag_ctx.Status.ENABLED):
         bool(t)
     with self.assertRaisesRegex(TypeError,
-                                "using.*as a.*bool.*AutoGraph is disabled"):
+                                "Using.*as a.*bool.*AutoGraph is disabled"):
       with ag_ctx.ControlStatusCtx(ag_ctx.Status.DISABLED):
         bool(t)
 
@@ -472,62 +473,6 @@ class TensorAndShapeTest(test_util.TensorFlowTestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class TensorTypeTest(test_util.TensorFlowTestCase, parameterized.TestCase):
-
-  @parameterized.parameters([True, False])
-  def testEqualTypes(self, shape_relaxation):
-    signature_context = function_trace_type.SignatureContext(shape_relaxation)
-    type_1 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([1, 2, 3]), dtypes.float32,
-                            None)
-    type_2 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([1, 2, 3]), dtypes.float32,
-                            None)
-    self.assertEqual(type_1, type_1)
-    self.assertEqual(type_1, type_2)
-    self.assertTrue(type_1.is_subtype_of(type_1))
-    self.assertTrue(type_2.is_subtype_of(type_1))
-    self.assertTrue(type_1.is_subtype_of(type_2))
-
-  @parameterized.parameters([True, False])
-  def testDtypeMismatch(self, shape_relaxation):
-    signature_context = function_trace_type.SignatureContext(shape_relaxation)
-    type_1 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([1, 2, 3]), dtypes.float32,
-                            None)
-    type_2 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([1, 2, 3]), dtypes.int32,
-                            None)
-    self.assertNotEqual(type_1, type_2)
-    self.assertFalse(type_2.is_subtype_of(type_1))
-    self.assertFalse(type_1.is_subtype_of(type_2))
-
-  @parameterized.parameters([True, False])
-  def testSubtypeOfShapeless(self, shape_relaxation):
-    signature_context = function_trace_type.SignatureContext(shape_relaxation)
-    type_1 = ops.TensorType(signature_context, tensor_shape.TensorShape(None),
-                            dtypes.float32, None)
-    type_2 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([1, 2, 3]), dtypes.float32,
-                            None)
-    self.assertNotEqual(type_1, type_2)
-    self.assertFalse(type_1.is_subtype_of(type_2))
-    self.assertTrue(type_2.is_subtype_of(type_1))
-
-  def testSubtypeOfDimlessShape(self):
-    signature_context = function_trace_type.SignatureContext(False)
-    type_1 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([None, None, None]),
-                            dtypes.float32, None)
-    type_2 = ops.TensorType(signature_context,
-                            tensor_shape.TensorShape([1, 2, 3]), dtypes.float32,
-                            None)
-    self.assertNotEqual(type_1, type_2)
-    self.assertFalse(type_1.is_subtype_of(type_2))
-    self.assertTrue(type_2.is_subtype_of(type_1))
-
-
-@test_util.run_all_in_graph_and_eager_modes
 class IndexedSlicesTest(test_util.TensorFlowTestCase):
 
   def testToTensor(self):
@@ -717,6 +662,13 @@ def _apply_op(g, *args, **kwargs):
 
 
 class OperationTest(test_util.TensorFlowTestCase):
+
+  def testTraceback(self):
+    g = ops.Graph()
+    op1 = ops.Operation(
+        ops._NodeDef("None", "op1"), g, [],
+        [dtypes.float32_ref, dtypes.float32])
+    self.assertIn("testTraceback", op1.traceback[-1])
 
   @test_util.run_deprecated_v1
   def testNoInputs(self):
@@ -1007,6 +959,20 @@ class OperationTest(test_util.TensorFlowTestCase):
     # TODO(skyewm): add node_def check
     self.assertEqual(op.get_attr("foo"), 2)
 
+  @test_util.run_v2_only
+  def testSetFullType(self):
+    @def_function.function
+    def test_fn():
+      ds = dataset_ops.Dataset.range(3)._variant_tensor
+
+      ds.op.experimental_set_type(
+          full_type_pb2.FullTypeDef(type_id=full_type_pb2.TFT_PRODUCT))
+
+      self.assertEqual(ds.op.node_def.experimental_type.type_id,
+                       full_type_pb2.TFT_PRODUCT)
+
+    test_fn()
+
   # TODO(nolivia): test all error cases
   def testAddControlInput(self):
     with ops.Graph().as_default():
@@ -1287,6 +1253,7 @@ class CreateOpFromTFOperationTest(test_util.TensorFlowTestCase):
     self.assertEqual(op.graph, g)
     self.assertEqual(x.consumers(), [op])
     self.assertIsNotNone(op.traceback)
+    self.assertIn("testBasic", op.traceback[-1])
     self.assertEqual(g.get_operation_by_name("myop"), op)
     self.assertEqual(g.get_tensor_by_name("myop:0"), op.outputs[0])
 
@@ -3759,7 +3726,7 @@ class GraphDefInputShapesTest(test_util.TensorFlowTestCase):
       concrete_function = eager_function.ConcreteFunction(
           concrete_function.graph,
           attrs={"_input_shapes": attr_value},
-          function_spec=concrete_function._pre_initialized_function_spec)
+          spec=concrete_function._pre_initialized_function_spec)
 
     test_graph = ops.Graph()
     with test_graph.as_default():
@@ -3800,11 +3767,11 @@ class TensorTest(test_util.TensorFlowTestCase):
       return np.array(constant_op.constant(32))
 
     with self.assertRaisesRegex(NotImplementedError,
-                                "Cannot convert a symbolic Tensor"):
+                                "Cannot convert a symbolic tf.Tensor"):
       f()
 
     with self.assertRaisesRegex(NotImplementedError,
-                                "Cannot convert a symbolic Tensor"):
+                                "Cannot convert a symbolic tf.Tensor"):
       g()
 
 

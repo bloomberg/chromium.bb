@@ -23,6 +23,19 @@ MediaPageLoadMetricsObserver::MediaPageLoadMetricsObserver()
 
 MediaPageLoadMetricsObserver::~MediaPageLoadMetricsObserver() = default;
 
+const char* MediaPageLoadMetricsObserver::GetObserverName() const {
+  static const char kName[] = "MediaPageLoadMetricsObserver";
+  return kName;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+MediaPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class needs forwarding for the events MediaStartedPlaying.
+  return FORWARD_OBSERVING;
+}
+
 void MediaPageLoadMetricsObserver::OnResourceDataUseObserved(
     content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&

@@ -26,26 +26,22 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_RUNNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_RUNNER_H_
 
-#include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
 class Document;
-class PendingScript;
-class ScriptLoader;
 
-class CORE_EXPORT ScriptRunner final
-    : public GarbageCollected<ScriptRunner>,
-      public NameClient {
+class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
+                                       public PendingScriptClient,
+                                       public NameClient {
  public:
   explicit ScriptRunner(Document*);
   ~ScriptRunner() override = default;
@@ -53,29 +49,26 @@ class CORE_EXPORT ScriptRunner final
   ScriptRunner& operator=(const ScriptRunner&) = delete;
 
   void QueueScriptForExecution(PendingScript*);
-  void NotifyScriptReady(PendingScript*);
-
-  static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
   void SetTaskRunnerForTesting(base::SingleThreadTaskRunner* task_runner) {
     task_runner_ = task_runner;
   }
 
-  void Trace(Visitor*) const;
+  void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
- private:
-  void MovePendingScript(ScriptRunner*, PendingScript*);
-  bool RemovePendingInOrderScript(PendingScript*);
+  // PendingScriptClient
+  void PendingScriptFinished(PendingScript*) override;
 
+ private:
   // Execute the given pending script.
   void ExecutePendingScript(PendingScript*);
 
   Member<Document> document_;
 
-  // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-in-order-as-soon-as-possible
+  // https://html.spec.whatwg.org/C/#list-of-scripts-that-will-execute-in-order-as-soon-as-possible
   HeapDeque<Member<PendingScript>> pending_in_order_scripts_;
-  // https://html.spec.whatwg.org/#set-of-scripts-that-will-execute-as-soon-as-possible
+  // https://html.spec.whatwg.org/C/#set-of-scripts-that-will-execute-as-soon-as-possible
   HeapHashSet<Member<PendingScript>> pending_async_scripts_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

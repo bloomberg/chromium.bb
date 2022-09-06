@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,10 +178,11 @@ struct DebugReporter {
                                                         size_t, int32_t, const char *, const char *msg, void *user_data);
 
     const char *debug_extension_name = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
-    VkDebugReportCallbackCreateInfoEXT debug_create_info_ = {
-        VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT, nullptr,
-        VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
-        &DebugCallback, &error_monitor_};
+    VkDebugReportCallbackCreateInfoEXT debug_create_info_ = {VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT, nullptr,
+                                                             VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                                                                 VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+                                                                 VK_DEBUG_REPORT_INFORMATION_BIT_EXT,
+                                                             &DebugCallback, &error_monitor_};
     using DebugCreateFnType = PFN_vkCreateDebugReportCallbackEXT;
     const char *debug_create_fn_name_ = "vkCreateDebugReportCallbackEXT";
     using DebugDestroyFnType = PFN_vkDestroyDebugReportCallbackEXT;
@@ -276,6 +277,7 @@ class VkRenderFramework : public VkTestFramework {
     void DestroyRenderTarget();
     bool InitFrameworkAndRetrieveFeatures(VkPhysicalDeviceFeatures2KHR &features2);
 
+    static bool IgnoreDisableChecks();
     bool IsDriver(VkDriverId driver_id);
     bool IsPlatform(PlatformType platform);
     void GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *features);
@@ -296,30 +298,27 @@ class VkRenderFramework : public VkTestFramework {
     bool DeviceSimulation();
 
     // Tracks ext_name to be enabled at device creation time and attempts to enable any required instance extensions.
-    // Returns true if all required instance extensions are supported or there are no required instance extensions, false
-    // otherwise.
+    // Does not return anything as the caller should use AreRequiredExtensionsEnabled or AddOptionalExtensions then
     // `ext_name` can refer to a device or instance extension.
-    bool AddRequiredExtensions(const char *ext_name);
+    void AddRequiredExtensions(const char *ext_name);
+    // Same as AddRequiredExtensions but won't fail a check to AreRequiredExtensionsEnabled
+    void AddOptionalExtensions(const char *ext_name);
     // After instance and physical device creation (e.g., after InitFramework), returns true if all required extensions are
     // available, false otherwise
-    bool AreRequestedExtensionsEnabled() const;
+    bool AreRequiredExtensionsEnabled() const;
+    // After instance and physical device creation (e.g., after InitFramework), returns if extension was enabled
+    bool IsExtensionsEnabled(const char *ext_name) const;
+    // if requested extensions are not supported, helper function to get string to print out
+    std::string RequiredExtensionsNotSupported() const;
 
-    // Add ext_name, the names of all instance extensions required by ext_name, and return true if ext_name is supported. If the
-    // extension is not supported, no extension names are added for instance creation. `ext_name` can refer to a device or instance
-    // extension.
-    bool AddRequiredInstanceExtensions(const char *ext_name);
-    // Returns true if the instance extension inst_ext_name is enabled. This call is only valid _after_ previous
-    // `AddRequired*Extensions` calls and InitFramework has been called. `inst_ext_name` must be an instance extension name; false
-    // is returned for all device extension names.
-    bool CanEnableInstanceExtension(const std::string &inst_ext_name) const;
-    // Add dev_ext_name, then names of _device_ extensions required by dev_ext_name, and return true if dev_ext_name is supported.
-    // If the extension is not supported, no extension names are added for device creation. This function has no effect if
-    // dev_ext_name refers to an instance extension.
-    bool AddRequiredDeviceExtensions(const char *dev_ext_name);
-    // Returns true if the device extension is enabled. This call is only valid _after_ previous `AddRequired*Extensions` calls and
-    // InitFramework has been called.
-    // `dev_ext_name` msut be an instance extension name; false is returned for all instance extension names.
-    bool CanEnableDeviceExtension(const std::string &dev_ext_name) const;
+    template <typename GLSLContainer>
+    std::vector<uint32_t> GLSLToSPV(VkShaderStageFlagBits stage, const GLSLContainer &code, const char *entry_point = "main",
+                                    const VkSpecializationInfo *spec_info = nullptr, const spv_target_env env = SPV_ENV_VULKAN_1_0,
+                                    bool debug = false) {
+        std::vector<uint32_t> spv;
+        GLSLtoSPV(&m_device->props.limits, stage, code, spv, debug, env);
+        return spv;
+    }
 
   protected:
     VkRenderFramework();
@@ -393,9 +392,29 @@ class VkRenderFramework : public VkTestFramework {
     VkDepthStencilObj *m_depthStencil;
 
     // Requested extensions to enable at device creation time
-    std::vector<const char *> m_requested_extensions;
+    std::vector<const char *> m_required_extensions;
+    // Optional extensions to try and enable at device creation time
+    std::vector<const char *> m_optional_extensions;
     // Device extensions to enable
     std::vector<const char *> m_device_extension_names;
+
+  private:
+    // Add ext_name, the names of all instance extensions required by ext_name, and return true if ext_name is supported. If the
+    // extension is not supported, no extension names are added for instance creation. `ext_name` can refer to a device or instance
+    // extension.
+    bool AddRequestedInstanceExtensions(const char *ext_name);
+    // Returns true if the instance extension inst_ext_name is enabled. This call is only valid _after_ previous
+    // `AddRequired*Extensions` calls and InitFramework has been called. `inst_ext_name` must be an instance extension name; false
+    // is returned for all device extension names.
+    bool CanEnableInstanceExtension(const std::string &inst_ext_name) const;
+    // Add dev_ext_name, then names of _device_ extensions required by dev_ext_name, and return true if dev_ext_name is supported.
+    // If the extension is not supported, no extension names are added for device creation. This function has no effect if
+    // dev_ext_name refers to an instance extension.
+    bool AddRequestedDeviceExtensions(const char *dev_ext_name);
+    // Returns true if the device extension is enabled. This call is only valid _after_ previous `AddRequired*Extensions` calls and
+    // InitFramework has been called.
+    // `dev_ext_name` msut be an instance extension name; false is returned for all instance extension names.
+    bool CanEnableDeviceExtension(const std::string &dev_ext_name) const;
 };
 
 class VkDescriptorSetObj;
@@ -486,8 +505,7 @@ class VkRenderpassObj : public vk_testing::RenderPass {
 class VkImageObj : public vk_testing::Image {
   public:
     VkImageObj(VkDeviceObj *dev);
-    bool IsCompatible(VkImageUsageFlags usages, VkFormatFeatureFlags features);
-    bool IsCompatibleCheck(const VkImageCreateInfo &create_info);
+    bool IsCompatible(VkImageUsageFlags usages, VkFormatFeatureFlags2 features);
 
   public:
     static VkImageCreateInfo ImageCreateInfo2D(uint32_t const width, uint32_t const height, uint32_t const mipLevels,
@@ -535,8 +553,7 @@ class VkImageObj : public vk_testing::Image {
                            uint32_t levelCount = VK_REMAINING_MIP_LEVELS, uint32_t baseArrayLayer = 0,
                            uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS, VkImageViewType type = VK_IMAGE_VIEW_TYPE_2D) {
         if (!m_targetView.initialized()) {
-            VkImageViewCreateInfo createView = {};
-            createView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            VkImageViewCreateInfo createView = LvlInitStruct<VkImageViewCreateInfo>();
             createView.image = handle();
             createView.viewType = type;
             createView.format = format;
@@ -648,32 +665,36 @@ class VkDescriptorSetObj : public vk_testing::DescriptorPool {
     vk_testing::DescriptorSet *m_set = NULL;
 };
 
+// What is the incoming source to be turned into VkShaderModuleCreateInfo::pCode
+typedef enum {
+    SPV_SOURCE_GLSL,
+    SPV_SOURCE_ASM,
+    // TRY == Won't try in contructor as need to be called as function that can return the VkResult
+    SPV_SOURCE_GLSL_TRY,
+    SPV_SOURCE_ASM_TRY,
+} SpvSourceType;
+
 class VkShaderObj : public vk_testing::ShaderModule {
   public:
-    VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char const *name = "main",
-                const VkSpecializationInfo *specInfo = nullptr);
-    VkShaderObj(VkDeviceObj *device, const char *shaderText, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                char const *name = "main", bool debug = false, const VkSpecializationInfo *specInfo = nullptr,
-                const spv_target_env env = SPV_ENV_VULKAN_1_0);
-    VkShaderObj(VkDeviceObj *device, const std::string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                char const *name = "main", const VkSpecializationInfo *specInfo = nullptr,
-                const spv_target_env env = SPV_ENV_VULKAN_1_0);
+    // optional arguments listed order of most likely to be changed manually by a test
+    VkShaderObj(VkRenderFramework *framework, const std::string source, VkShaderStageFlagBits stage,
+                const spv_target_env env = SPV_ENV_VULKAN_1_0, SpvSourceType source_type = SPV_SOURCE_GLSL,
+                const VkSpecializationInfo *spec_info = nullptr, char const *name = "main", bool debug = false);
     VkPipelineShaderStageCreateInfo const &GetStageCreateInfo() const;
 
-    bool InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug = false,
-                      const spv_target_env env = SPV_ENV_VULKAN_1_0);
-    VkResult InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug = false,
-                             const spv_target_env env = SPV_ENV_VULKAN_1_0);
-    bool InitFromASM(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env env = SPV_ENV_VULKAN_1_0);
-    VkResult InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env = SPV_ENV_VULKAN_1_0);
+    bool InitFromGLSL(const char *shader_code, bool debug = false, const spv_target_env env = SPV_ENV_VULKAN_1_0);
+    VkResult InitFromGLSLTry(const char *shader_code, bool debug = false, const spv_target_env env = SPV_ENV_VULKAN_1_0,
+                             const VkDeviceObj *custom_device = nullptr);
+    bool InitFromASM(const std::string &spv_source, const spv_target_env env = SPV_ENV_VULKAN_1_0);
+    VkResult InitFromASMTry(const std::string &spv_source, const spv_target_env = SPV_ENV_VULKAN_1_0);
 
     // These functions return a pointer to a newly created _and initialized_ VkShaderObj if initialization was successful.
     // Otherwise, {} is returned.
-    static std::unique_ptr<VkShaderObj> CreateFromGLSL(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+    static std::unique_ptr<VkShaderObj> CreateFromGLSL(VkRenderFramework &framework, VkShaderStageFlagBits stage,
                                                        const std::string &code, const char *entry_point = "main",
                                                        const VkSpecializationInfo *spec_info = nullptr,
                                                        const spv_target_env = SPV_ENV_VULKAN_1_0, bool debug = false);
-    static std::unique_ptr<VkShaderObj> CreateFromASM(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+    static std::unique_ptr<VkShaderObj> CreateFromASM(VkRenderFramework &framework, VkShaderStageFlagBits stage,
                                                       const std::string &code, const char *entry_point = "main",
                                                       const VkSpecializationInfo *spec_info = nullptr,
                                                       const spv_target_env spv_env = SPV_ENV_VULKAN_1_0);
@@ -733,6 +754,7 @@ class VkShaderObj : public vk_testing::ShaderModule {
 
   protected:
     VkPipelineShaderStageCreateInfo m_stage_info;
+    VkRenderFramework &m_framework;
     VkDeviceObj &m_device;
 };
 
@@ -740,7 +762,8 @@ class VkPipelineLayoutObj : public vk_testing::PipelineLayout {
   public:
     VkPipelineLayoutObj() = default;
     VkPipelineLayoutObj(VkDeviceObj *device, const std::vector<const VkDescriptorSetLayoutObj *> &descriptor_layouts = {},
-                        const std::vector<VkPushConstantRange> &push_constant_ranges = {});
+                        const std::vector<VkPushConstantRange> &push_constant_ranges = {},
+                        VkPipelineLayoutCreateFlags flags = static_cast<VkPipelineLayoutCreateFlags>(0));
 
     // Move constructor and move assignment operator for Visual Studio 2013
     VkPipelineLayoutObj(VkPipelineLayoutObj &&src) NOEXCEPT : PipelineLayout(std::move(src)) {}

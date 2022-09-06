@@ -21,6 +21,7 @@
 #include "core/fpdfapi/render/cpdf_imagerenderer.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "fpdfsdk/cpdfsdk_customaccess.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
@@ -312,7 +313,8 @@ FPDFImageObj_GetImageFilterCount(FPDF_PAGEOBJECT image_object) {
     return 0;
 
   if (pFilter->IsArray())
-    return pFilter->AsArray()->size();
+    return fxcrt::CollectionSize<int>(*pFilter->AsArray());
+
   if (pFilter->IsName())
     return 1;
 
@@ -374,11 +376,11 @@ FPDFImageObj_GetImageMetadata(FPDF_PAGEOBJECT image_object,
   if (!pPage || !pPage->GetDocument() || !pImg->GetStream())
     return true;
 
-  auto pSource = pdfium::MakeRetain<CPDF_DIB>();
-  CPDF_DIB::LoadState ret =
-      pSource->StartLoadDIBBase(pPage->GetDocument(), pImg->GetStream(), false,
-                                nullptr, pPage->GetPageResources(), false,
-                                CPDF_ColorSpace::Family::kUnknown, false);
+  auto pSource =
+      pdfium::MakeRetain<CPDF_DIB>(pPage->GetDocument(), pImg->GetStream());
+  CPDF_DIB::LoadState ret = pSource->StartLoadDIBBase(
+      false, nullptr, pPage->GetPageResources(), false,
+      CPDF_ColorSpace::Family::kUnknown, false);
   if (ret == CPDF_DIB::LoadState::kFail)
     return true;
 

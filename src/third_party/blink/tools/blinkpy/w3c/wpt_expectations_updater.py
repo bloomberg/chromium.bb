@@ -316,7 +316,7 @@ class WPTExpectationsUpdater(object):
 
                 statuses = union_actual_sameos or union_actual_all
                 union_result = SimpleTestResult(expected="",
-                                                actual=" ".join(statuses),
+                                                actual=" ".join(sorted(statuses)),
                                                 bug=self.UMBRELLA_BUG)
                 _log.debug("Inheriting result for test %s on config %s. "
                            "Same-os? %s Result: %s." %
@@ -387,7 +387,7 @@ class WPTExpectationsUpdater(object):
 
         webdriver_test_results = []
         if has_webdriver_tests:
-            mst = self.host.builders.master_for_builder(build.builder_name)
+            mst = self.host.builders.main_for_builder(build.builder_name)
             webdriver_test_results.append(
                 self.host.results_fetcher.fetch_webdriver_test_results(
                     build, mst))
@@ -626,7 +626,7 @@ class WPTExpectationsUpdater(object):
                 if next_item == keys[-1]:
                     if found_match:
                         merged_dict[
-                            tuple(matching_value_keys)] = dictionary[current_key]
+                            tuple(sorted(matching_value_keys))] = dictionary[current_key]
                         keys = [
                             k for k in keys if k not in matching_value_keys
                         ]
@@ -1079,7 +1079,7 @@ class WPTExpectationsUpdater(object):
             if not line.test or line.is_glob:
                 continue
             if (ResultType.Timeout in line.results and
-                    (ResultType.Skip not in line.results) and
+                    len(line.results) == 1 and
                     (test_expectations.get_expectations(line.test).is_slow_test or
                         port.is_slow_wpt_test(line.test))):
                 test_expectations.remove_expectations(path, [line])

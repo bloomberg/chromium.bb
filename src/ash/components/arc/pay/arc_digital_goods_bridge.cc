@@ -9,7 +9,7 @@
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/no_destructor.h"
-#include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
+#include "components/digital_goods/mojom/digital_goods.mojom.h"
 
 namespace arc {
 namespace {
@@ -91,10 +91,40 @@ void ArcDigitalGoodsBridge::ListPurchases(const std::string& package_name,
   if (!digital_goods) {
     std::move(callback).Run(
         payments::mojom::BillingResponseCode::kClientAppUnavailable,
-        /* purchase_details_list = */ {});
+        /* purchase_reference_list = */ {});
     return;
   }
   digital_goods->ListPurchases(package_name, scope, std::move(callback));
+}
+
+void ArcDigitalGoodsBridge::ListPurchaseHistory(
+    const std::string& package_name,
+    const std::string& scope,
+    ListPurchaseHistoryCallback callback) {
+  mojom::DigitalGoodsInstance* digital_goods = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->digital_goods(), ListPurchaseHistory);
+  if (!digital_goods) {
+    std::move(callback).Run(
+        payments::mojom::BillingResponseCode::kClientAppUnavailable,
+        /* purchase_reference_list = */ {});
+    return;
+  }
+  digital_goods->ListPurchaseHistory(package_name, scope, std::move(callback));
+}
+
+void ArcDigitalGoodsBridge::Consume(const std::string& package_name,
+                                    const std::string& scope,
+                                    const std::string& purchase_token,
+                                    ConsumeCallback callback) {
+  mojom::DigitalGoodsInstance* digital_goods = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->digital_goods(), Consume);
+  if (!digital_goods) {
+    std::move(callback).Run(
+        payments::mojom::BillingResponseCode::kClientAppUnavailable);
+    return;
+  }
+  digital_goods->Consume(package_name, scope, purchase_token,
+                         std::move(callback));
 }
 
 }  // namespace arc

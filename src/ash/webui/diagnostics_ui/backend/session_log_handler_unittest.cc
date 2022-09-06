@@ -8,20 +8,26 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/mock_holding_space_client.h"
-#include "ash/webui/diagnostics_ui/backend/log_test_helpers.h"
-#include "ash/webui/diagnostics_ui/backend/networking_log.h"
-#include "ash/webui/diagnostics_ui/backend/routine_log.h"
-#include "ash/webui/diagnostics_ui/backend/telemetry_log.h"
+#include "ash/system/diagnostics/diagnostics_browser_delegate.h"
+#include "ash/system/diagnostics/diagnostics_log_controller.h"
+#include "ash/system/diagnostics/log_test_helpers.h"
+#include "ash/system/diagnostics/networking_log.h"
+#include "ash/system/diagnostics/routine_log.h"
+#include "ash/system/diagnostics/telemetry_log.h"
 #include "ash/webui/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_web_ui.h"
@@ -31,6 +37,10 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+
+#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_suite.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace ash {
 namespace diagnostics {
@@ -80,6 +90,19 @@ std::unique_ptr<ui::SelectFilePolicy> CreateTestSelectFilePolicy(
     content::WebContents* web_contents) {
   return std::make_unique<TestSelectFilePolicy>();
 }
+
+// A fake DiagnosticsBrowserDelegate.
+class FakeDiagnosticsBrowserDelegate : public DiagnosticsBrowserDelegate {
+ public:
+  FakeDiagnosticsBrowserDelegate() = default;
+  ~FakeDiagnosticsBrowserDelegate() override = default;
+
+  base::FilePath GetActiveUserProfileDir() override {
+    base::ScopedTempDir tmp_dir;
+    EXPECT_TRUE(tmp_dir.CreateUniqueTempDir());
+    return tmp_dir.GetPath();
+  }
+};
 
 // A fake ui::SelectFileDialog.
 class TestSelectFileDialog : public ui::SelectFileDialog {
@@ -149,7 +172,10 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
 class SessionLogHandlerTest : public testing::Test {
  public:
   SessionLogHandlerTest()
-      : task_environment_(), web_ui_(), session_log_handler_() {
+      : task_environment_(),
+        task_runner_(new base::TestSimpleTaskRunner()),
+        web_ui_(),
+        session_log_handler_() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath routine_log_path =
         temp_dir_.GetPath().AppendASCII(kRoutineLogFileName);
@@ -165,14 +191,19 @@ class SessionLogHandlerTest : public testing::Test {
         std::move(networking_log), &holding_space_client_);
     session_log_handler_->SetWebUIForTest(&web_ui_);
     session_log_handler_->RegisterMessages();
+    session_log_handler_->SetTaskRunnerForTesting(task_runner_);
 
     base::ListValue args;
     web_ui_.HandleReceivedMessage("initialize", &args);
   }
 
   ~SessionLogHandlerTest() override {
+    task_runner_.reset();
+    task_environment_.RunUntilIdle();
     ui::SelectFileDialog::SetFactory(nullptr);
   }
+
+  void RunTasks() { task_runner_->RunPendingTasks(); }
 
   const content::TestWebUI::CallData& CallDataAtIndex(size_t index) {
     return *web_ui_.call_data()[index];
@@ -185,6 +216,8 @@ class SessionLogHandlerTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  // Task runner for tasks posted by save session log handler.
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   content::TestWebUI web_ui_;
   std::unique_ptr<diagnostics::SessionLogHandler> session_log_handler_;
@@ -226,10 +259,11 @@ TEST_F(SessionLogHandlerTest, SaveSessionLog) {
   args.Append(kHandlerFunctionName);
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
   web_ui_.HandleReceivedMessage("saveSessionLog", &args);
-  run_loop.Run();
+  run_loop.RunUntilIdle();
   const std::string expected_system_log_header = "=== System ===";
   const std::string expected_system_info_section_name = "--- System Info ---";
   const std::string expected_snapshot_time_prefix = "Snapshot Time: ";
+  RunTasks();
   const std::vector<std::string> log_lines = GetCombinedLogContents(log_path);
   ASSERT_EQ(18u, log_lines.size());
   EXPECT_EQ(expected_system_log_header, log_lines[0]);
@@ -269,6 +303,86 @@ TEST_F(SessionLogHandlerTest, SaveSessionLog) {
   EXPECT_EQ("--- Network Events ---", log_lines[17]);
 }
 
+// Test class using NoSessionAshTestBase to ensure shell is available for
+// tests requiring DiagnosticsLogController singleton.
+class SessionLogHandlerAshTest : public NoSessionAshTestBase {
+ public:
+  SessionLogHandlerAshTest() : task_runner_(new base::TestSimpleTaskRunner()) {}
+  ~SessionLogHandlerAshTest() override = default;
+
+  void SetUp() override {
+    // Setup to ensure ash::Shell can configure for tests.
+    ui::ResourceBundle::CleanupSharedInstance();
+    AshTestSuite::LoadTestResources();
+    // Setup feature list before setting up ash::Shell.
+    feature_list_.InitAndEnableFeature(
+        ash::features::kEnableLogControllerForDiagnosticsApp);
+    NoSessionAshTestBase::SetUp();
+    DiagnosticsLogController::Initialize(
+        std::make_unique<FakeDiagnosticsBrowserDelegate>());
+    session_log_handler_ = std::make_unique<SessionLogHandler>(
+        base::BindRepeating(&CreateTestSelectFilePolicy),
+        /*telemetry_log*/ nullptr,
+        /*routine_log*/ nullptr,
+        /*networking_log*/ nullptr,
+        /*holding_space_client*/ &holding_space_client_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    session_log_handler_->SetWebUIForTest(&web_ui_);
+    session_log_handler_->RegisterMessages();
+    session_log_handler_->SetTaskRunnerForTesting(task_runner_);
+    // Call handler to enable Javascript.
+    base::ListValue args;
+    web_ui_.HandleReceivedMessage("initialize", &args);
+  }
+
+  void RunTasks() { task_runner_->RunPendingTasks(); }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<SessionLogHandler> session_log_handler_;
+  content::TestWebUI web_ui_;
+  base::ScopedTempDir temp_dir_;
+  testing::NiceMock<ash::MockHoldingSpaceClient> holding_space_client_;
+  // Task runner for tasks posted by save session log handler.
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+};
+
+// Validates behavior when log controller is used to generate session log.
+TEST_F(SessionLogHandlerAshTest, SaveSessionLogFlagEnabled) {
+  base::RunLoop run_loop;
+
+  // Simulate select file
+  base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
+  ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
+  base::ListValue args;
+  args.Append(kHandlerFunctionName);
+  session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
+  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  RunTasks();
+
+  const std::vector<std::string> log_lines = GetCombinedLogContents(log_path);
+  ASSERT_EQ(8u, log_lines.size());
+
+  // Empty system data log.
+  const std::string expected_system_header = "=== System ===";
+  EXPECT_EQ(expected_system_header, log_lines[0]);
+  const std::string expected_routine_header = "--- Test Routines ---";
+  EXPECT_EQ(expected_routine_header, log_lines[1]);
+  const std::string expected_no_routine_msg =
+      "No routines of this type were run in the session.";
+  EXPECT_EQ(expected_no_routine_msg, log_lines[2]);
+
+  // Empty network data log.
+  const std::string expected_network_header = "=== Networking ===";
+  EXPECT_EQ(expected_network_header, log_lines[3]);
+  const std::string expected_network_info_header = "--- Network Info ---";
+  EXPECT_EQ(expected_network_info_header, log_lines[4]);
+  EXPECT_EQ(expected_routine_header, log_lines[5]);
+  EXPECT_EQ(expected_no_routine_msg, log_lines[6]);
+  const std::string expected_network_events_header = "--- Network Events ---";
+  EXPECT_EQ(expected_network_events_header, log_lines[7]);
+}
+
 // Validates that invoking the saveSessionLog Web UI event opens the
 // select dialog. Choosing a directory should return that the operation
 // was successful.
@@ -282,7 +396,8 @@ TEST_F(SessionLogHandlerTest, SelectDirectory) {
   base::RunLoop run_loop;
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
   web_ui_.HandleReceivedMessage("saveSessionLog", &args);
-  run_loop.Run();
+  RunTasks();
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());
   const content::TestWebUI::CallData& call_data =
@@ -302,6 +417,7 @@ TEST_F(SessionLogHandlerTest, CancelDialog) {
   base::ListValue args;
   args.Append(kHandlerFunctionName);
   web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  RunTasks();
 
   EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());
   const content::TestWebUI::CallData& call_data =
@@ -323,7 +439,24 @@ TEST_F(SessionLogHandlerTest, AddToHoldingSpace) {
   base::RunLoop run_loop;
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
   web_ui_.HandleReceivedMessage("saveSessionLog", &args);
-  run_loop.Run();
+  RunTasks();
+  run_loop.RunUntilIdle();
+}
+
+// Validates that the lifecycle clean up tasks are completed if the select file
+// dialog is open when session_log_handler is destroyed.
+TEST_F(SessionLogHandlerTest, CleanUpDialogOnDeconstruct) {
+  base::FilePath log_path = temp_dir_.GetPath().AppendASCII("test_path");
+  ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory(log_path));
+  base::ListValue args;
+  args.Append(kHandlerFunctionName);
+  base::RunLoop run_loop;
+
+  session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
+  web_ui_.HandleReceivedMessage("saveSessionLog", &args);
+  EXPECT_NO_FATAL_FAILURE(session_log_handler_.reset());
+  EXPECT_NO_FATAL_FAILURE(task_runner_.reset());
+  EXPECT_NO_FATAL_FAILURE(run_loop.RunUntilIdle());
 }
 
 }  // namespace diagnostics

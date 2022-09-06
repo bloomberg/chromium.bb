@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharesheet/sharesheet_ui_delegate.h"
+#include "chromeos/components/sharesheet/constants.h"
 
 namespace sharesheet {
 class SharesheetServiceDelegator;
@@ -25,7 +26,7 @@ class SharesheetBubbleViewDelegate : public ::sharesheet::SharesheetUiDelegate {
   SharesheetBubbleViewDelegate(
       gfx::NativeWindow native_window,
       ::sharesheet::SharesheetServiceDelegator* sharesheet_service_delegator);
-  ~SharesheetBubbleViewDelegate() override = default;
+  ~SharesheetBubbleViewDelegate() override;
   SharesheetBubbleViewDelegate(const SharesheetBubbleViewDelegate&) = delete;
   SharesheetBubbleViewDelegate& operator=(const SharesheetBubbleViewDelegate&) =
       delete;
@@ -55,8 +56,8 @@ class SharesheetBubbleViewDelegate : public ::sharesheet::SharesheetUiDelegate {
 
   SharesheetBubbleView* GetBubbleViewForTesting();
 
-  // Owned by views.
-  raw_ptr<SharesheetBubbleView> sharesheet_bubble_view_;
+  std::unique_ptr<SharesheetBubbleView> sharesheet_bubble_view_owned_;
+  raw_ptr<SharesheetBubbleView> sharesheet_bubble_view_ = nullptr;
 };
 
 }  // namespace sharesheet

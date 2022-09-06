@@ -5,6 +5,7 @@
 #include "components/site_isolation/site_isolation_policy.h"
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -106,9 +107,8 @@ TEST_F(ChromeSiteIsolationPolicyTest, IsolatedOriginsContainChromeOrigins) {
   // built-in origins.
   std::vector<url::Origin> expected_embedder_origins =
       site_isolation::GetBrowserSpecificBuiltInIsolatedOrigins();
-#if !defined(OS_ANDROID)
-  expected_embedder_origins.push_back(
-      url::Origin::Create(GaiaUrls::GetInstance()->gaia_url()));
+#if !BUILDFLAG(IS_ANDROID)
+  expected_embedder_origins.push_back(GaiaUrls::GetInstance()->gaia_origin());
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   expected_embedder_origins.push_back(

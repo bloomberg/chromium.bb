@@ -13,8 +13,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -232,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBrowserTest, DISABLED_ZoomPreservedOnReload) {
   // Set the new zoom, wait for the page to be resized, and sanity-check that
   // the zoom was applied.
   {
-    DOMMessageQueue msg_queue;
+    DOMMessageQueue msg_queue(web_contents());
     ResizeObserver observer(root->current_frame_host());
 
     const double new_zoom_level =
@@ -251,9 +249,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBrowserTest, DISABLED_ZoomPreservedOnReload) {
 
   // Now the actual test: Reload the page and check that the main frame is
   // still properly zoomed.
-  WindowedNotificationObserver load_stop_observer(
-      NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+  LoadStopObserver load_stop_observer(shell()->web_contents());
   shell()->Reload();
   load_stop_observer.Wait();
 
@@ -296,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, DISABLED_SubframesZoomProperly) {
 
   const double new_zoom_factor = 2.5;
   {
-    DOMMessageQueue msg_queue;
+    DOMMessageQueue msg_queue(web_contents());
 
     std::vector<FrameResizeObserver> frame_observers;
     frame_observers.emplace_back(child, "child",
@@ -404,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
 
   const double new_default_zoom_factor = 2.0;
   {
-    DOMMessageQueue msg_queue;
+    DOMMessageQueue msg_queue(web_contents());
 
     std::vector<FrameResizeObserver> frame_observers;
     frame_observers.emplace_back(child, "child",
@@ -431,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
 }
 
 // Flaky on mac, https://crbug.com/1055282
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_SiblingFramesZoom DISABLED_SiblingFramesZoom
 #else
 #define MAYBE_SiblingFramesZoom SiblingFramesZoom
@@ -467,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, MAYBE_SiblingFramesZoom) {
 
   const double new_zoom_factor = 2.5;
   {
-    DOMMessageQueue msg_queue;
+    DOMMessageQueue msg_queue(web_contents());
 
     std::vector<FrameResizeObserver> frame_observers;
     frame_observers.emplace_back(child1, "child1",
@@ -519,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframeRetainsZoomOnNavigation) {
 
   const double new_zoom_factor = 0.5;
   {
-    DOMMessageQueue msg_queue;
+    DOMMessageQueue msg_queue(web_contents());
 
     std::vector<FrameResizeObserver> frame_observers;
     frame_observers.emplace_back(child, "child",

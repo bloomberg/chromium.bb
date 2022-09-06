@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
@@ -24,11 +23,13 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -39,6 +40,7 @@
 #include "net/cert/ct_sct_to_string.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -56,7 +58,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -84,6 +85,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/sync_load_response.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/origin.h"
 
@@ -144,6 +146,7 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
   }
 }
 
+// TODO(crbug.com/862940): Use KURL here.
 void SetSecurityStyleAndDetails(const GURL& url,
                                 const network::mojom::URLResponseHead& head,
                                 WebURLResponse* response,
@@ -261,7 +264,9 @@ class WebURLLoader::Context : public WebRequestPeer {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           network::mojom::URLResponseHeadPtr head,
                           std::vector<std::string>* removed_headers) override;
-  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(
+      network::mojom::URLResponseHeadPtr head,
+      base::TimeTicks response_arrival_at_renderer) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
@@ -481,7 +486,7 @@ void WebURLLoader::Context::Start(
   }
 
   if (sync_load_response) {
-    DCHECK(freeze_mode_ == WebLoaderFreezeMode::kNone);
+    DCHECK_EQ(freeze_mode_, WebLoaderFreezeMode::kNone);
 
     loader_options |= network::mojom::kURLLoadOptionSynchronous;
     request->load_flags |= net::LOAD_IGNORE_LIMITS;
@@ -498,8 +503,7 @@ void WebURLLoader::Context::Start(
         url_loader_factory_, std::move(throttles), timeout_interval,
         cors_exempt_header_list_, terminate_sync_load_event_,
         std::move(download_to_blob_registry), base::WrapRefCounted(this),
-        std::move(resource_load_info_notifier_wrapper),
-        back_forward_cache_loader_helper_);
+        std::move(resource_load_info_notifier_wrapper));
     return;
   }
 
@@ -548,7 +552,8 @@ bool WebURLLoader::Context::OnReceivedRedirect(
 }
 
 void WebURLLoader::Context::OnReceivedResponse(
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    base::TimeTicks response_arrival_at_renderer) {
   if (!client_)
     return;
 
@@ -565,6 +570,7 @@ void WebURLLoader::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(url_, *head, &response, has_devtools_request_id_,
                       request_id_);
+  response.SetArrivalTimeAtRenderer(response_arrival_at_renderer);
 
   client_->DidReceiveResponse(response);
 
@@ -616,7 +622,8 @@ void WebURLLoader::Context::OnCompletedRequest(
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
-                                status.should_report_corb_blocking);
+                                status.should_report_corb_blocking,
+                                status.pervasive_payload_requested);
     }
   }
 }
@@ -680,7 +687,6 @@ void WebURLLoader::PopulateURLResponse(
   response->SetExpectedContentLength(head.content_length);
   response->SetHasMajorCertificateErrors(
       net::IsCertStatusError(head.cert_status));
-  response->SetCTPolicyCompliance(head.ct_policy_compliance);
   response->SetIsLegacyTLSVersion(head.is_legacy_tls_version);
   response->SetHasRangeRequested(head.has_range_requested);
   response->SetTimingAllowPassed(head.timing_allow_passed);
@@ -713,13 +719,8 @@ void WebURLLoader::PopulateURLResponse(
                  [](const std::string& h) { return WebString::FromASCII(h); });
   response->SetDnsAliases(dns_aliases);
   response->SetRemoteIPEndpoint(head.remote_endpoint);
-  // This computation can only be done once SetUrlListViaServiceWorker() has
-  // been called on |response|, so that ResponseUrl() returns the correct
-  // answer.
-  //
-  // Implements: https://wicg.github.io/cors-rfc1918/#integration-html
-  response->SetAddressSpace(network::CalculateResourceAddressSpace(
-      KURL(response->ResponseUrl()), head.remote_endpoint));
+  response->SetAddressSpace(head.response_address_space);
+  response->SetClientAddressSpace(head.client_address_space);
 
   WebVector<WebString> cors_exposed_header_names(
       head.cors_exposed_header_names.size());
@@ -751,7 +752,8 @@ void WebURLLoader::PopulateURLResponse(
   response->SetRecursivePrefetchToken(head.recursive_prefetch_token);
   response->SetWebBundleURL(KURL(head.web_bundle_url));
 
-  SetSecurityStyleAndDetails(KURL(url), head, response, report_security_info);
+  SetSecurityStyleAndDetails(GURL(KURL(url)), head, response,
+                             report_security_info);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
@@ -790,6 +792,8 @@ void WebURLLoader::PopulateURLResponse(
     response->AddHttpHeaderField(WebString::FromLatin1(name),
                                  WebString::FromLatin1(value));
   }
+
+  response->SetHasPartitionedCookie(head.has_partitioned_cookie);
 }
 
 // static
@@ -983,7 +987,7 @@ net::NetworkTrafficAnnotationTag WebURLLoader::Context::GetTrafficAnnotationTag(
     case network::mojom::RequestDestination::kFrame:
     case network::mojom::RequestDestination::kFencedframe:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
 
     case network::mojom::RequestDestination::kEmpty:
     case network::mojom::RequestDestination::kAudio:

@@ -132,6 +132,10 @@
 // "brkitr_dictionaries": { everything }
     "brkitr_rules": {
       "excludelist": [
+// Exclude *phrase_cj
+        "line_phrase_cj",
+        "line_normal_phrase_cj",
+        "line_loose_phrase_cj",
 // Exclude line_cj till we upgrade to 68.1 due to size impact.
         "line_cj",
         "title",
@@ -141,7 +145,7 @@
     },
     "brkitr_tree": {
       "excludelist": [
-	"en_US_POSIX"
+        "en_US_POSIX"
       ]
     },
 // Based on the ICU63 version of
@@ -191,13 +195,15 @@
       "filterType": "language",
       "includelist": [
 // Need to explicitly add "root"
-	"root",
+        "root",
 
+        "af",
         "am",
         "ar",
         "bg",
         "bn",
         "ca",
+        "cy",
         "cs",
         "da",
         "de",
@@ -205,10 +211,12 @@
         "en",
         "es",
         "et",
+        "eu",
         "fa",
         "fi",
         "fil",
         "fr",
+        "gl",
         "gu",
         "he",
         "hi",
@@ -216,6 +224,7 @@
         "hu",
         "id",
         "in",
+        "is",
         "it",
         "iw",
         "ja",
@@ -247,7 +256,8 @@
         "tr",
         "uk",
         "vi",
-        "zh"
+        "zh",
+        "zu"
       ]
     },
 // Based on the ICU63 version of
@@ -256,33 +266,37 @@
     "coll_tree": {
       "filterType": "union",
       "unionOf": [
-	{
+        {
           "includelist": [
             "en",
             "en_US"
-	  ]
-	},
-	{
+          ]
+        },
+        {
           "filterType": "language",
           "includelist": [
 // Need to explicitly add "root"
             "root",
 
+            "af",
             "am",
             "ar",
             "bg",
             "bn",
             "ca",
             "cs",
+            "cy",
             "da",
             "de",
             "el",
             "es",
             "et",
+            "eu",
             "fa",
             "fi",
             "fil",
             "fr",
+            "gl",
             "gu",
             "he",
             "hi",
@@ -290,6 +304,7 @@
             "hu",
             "id",
             "in",
+            "is",
             "it",
             "iw",
             "ja",
@@ -321,8 +336,9 @@
             "tr",
             "uk",
             "vi",
-            "zh"
-	  ]
+            "zh",
+            "zu"
+          ]
         }
       ]
     },
@@ -341,13 +357,15 @@
       "filterType": "language",
       "includelist": [
 // Need to explicitly add "root"
-	"root",
+        "root",
 
+        "af",
         "am",
         "ar",
         "bg",
         "bn",
         "ca",
+        "cy",
         "cs",
         "da",
         "de",
@@ -355,10 +373,12 @@
         "en",
         "es",
         "et",
+        "eu",
         "fa",
         "fi",
         "fil",
         "fr",
+        "gl",
         "gu",
         "he",
         "hi",
@@ -366,6 +386,7 @@
         "hu",
         "id",
         "in",
+        "is",
         "it",
         "iw",
         "ja",
@@ -397,13 +418,19 @@
         "tr",
         "uk",
         "vi",
-        "zh"
+        "zh",
+        "zu"
       ]
     },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/sprep/spreplocal.mk?rcl=797b7c
     "stringprep": { "filterType": "exclude" },
-    "translit": {  "filterType": "exclude" },
+    "translit": {
+      "filterType": "language",
+      "includelist": [
+         "root"
+      ]
+    },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/unit/reslocal.mk?rcl=797b7c
 // Includes the items from UNIT_ALIAS_SOURCE and UNIT_SOURCE
@@ -411,24 +438,28 @@
       "filterType": "language",
       "includelist": [
 // Need to explicitly add "root"
-	"root",
+        "root",
 
+        "af",
         "am",
         "ar",
         "bg",
         "bn",
         "ca",
         "cs",
+        "cy",
         "da",
         "de",
         "el",
         "en",
         "es",
         "et",
+        "eu",
         "fa",
         "fi",
         "fil",
         "fr",
+        "gl",
         "gu",
         "he",
         "hi",
@@ -436,6 +467,7 @@
         "hu",
         "id",
         "in",
+        "is",
         "it",
         "iw",
         "ja",
@@ -467,7 +499,8 @@
         "tr",
         "uk",
         "vi",
-        "zh"
+        "zh",
+        "zu"
       ]
     },
 // Based on the ICU63 version of
@@ -477,27 +510,31 @@
       "filterType": "language",
       "includelist": [
 // Need to explicitly add "root"
-	"root",
+        "root",
 
 // Need to explicitly add "tzdbNames"
-	"tzdbNames",
+        "tzdbNames",
 
+        "af",
         "am",
         "ar",
         "bg",
         "bn",
         "ca",
         "cs",
+        "cy",
         "da",
         "de",
         "el",
         "en",
         "es",
         "et",
+        "eu",
         "fa",
         "fi",
         "fil",
         "fr",
+        "gl",
         "gu",
         "he",
         "hi",
@@ -505,6 +542,7 @@
         "hu",
         "id",
         "in",
+        "is",
         "it",
         "iw",
         "ja",
@@ -536,7 +574,8 @@
         "tr",
         "uk",
         "vi",
-        "zh"
+        "zh",
+        "zu"
       ]
     },
 // Based on
@@ -828,7 +867,6 @@
         "includelist": [
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
           "ach",
-          "af",
           "ak",
           "an",
           "ast",
@@ -845,16 +883,13 @@
           "ckb",
           "co",
           "crs",
-          "cy",
           "ee",
           "eo",
-          "eu",
           "fo",
           "fy",
           "ga",
           "gaa",
           "gd",
-          "gl",
           "gn",
           "ha",
           "haw",
@@ -863,7 +898,6 @@
           "hy",
           "ia",
           "ig",
-          "is",
           "jv",
           "jw",
           "ka",
@@ -930,9 +964,8 @@
           "xh",
           "xx",
           "yi",
-          "yo",
-          "zu"
-	]
+          "yo"
+        ]
       },
       "rules": [
         "-/*",
@@ -945,7 +978,6 @@
     },
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
     {"categories":["lang_tree"],"files":{"includelist":["ach"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ach"] },
-    {"categories":["lang_tree"],"files":{"includelist":["af"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/af"] },
     {"categories":["lang_tree"],"files":{"includelist":["ak"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ak"] },
     {"categories":["lang_tree"],"files":{"includelist":["an"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/an"] },
     {"categories":["lang_tree"],"files":{"includelist":["ast"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ast"] },
@@ -962,15 +994,12 @@
     {"categories":["lang_tree"],"files":{"includelist":["ckb"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ckb"] },
     {"categories":["lang_tree"],"files":{"includelist":["co"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/co"] },
     {"categories":["lang_tree"],"files":{"includelist":["crs"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/crs"] },
-    {"categories":["lang_tree"],"files":{"includelist":["cy"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/cy"] },
     {"categories":["lang_tree"],"files":{"includelist":["ee"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ee"] },
-    {"categories":["lang_tree"],"files":{"includelist":["eu"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/eu"] },
     {"categories":["lang_tree"],"files":{"includelist":["fo"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/fo"] },
     {"categories":["lang_tree"],"files":{"includelist":["fy"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/fy"] },
     {"categories":["lang_tree"],"files":{"includelist":["ga"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ga"] },
     {"categories":["lang_tree"],"files":{"includelist":["gaa"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/gaa"] },
     {"categories":["lang_tree"],"files":{"includelist":["gd"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/gd"] },
-    {"categories":["lang_tree"],"files":{"includelist":["gl"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/gl"] },
     {"categories":["lang_tree"],"files":{"includelist":["gn"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/gn"] },
     {"categories":["lang_tree"],"files":{"includelist":["ha"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ha"] },
     {"categories":["lang_tree"],"files":{"includelist":["haw"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/haw"] },
@@ -979,7 +1008,6 @@
     {"categories":["lang_tree"],"files":{"includelist":["hy"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/hy"] },
     {"categories":["lang_tree"],"files":{"includelist":["ia"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ia"] },
     {"categories":["lang_tree"],"files":{"includelist":["ig"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ig"] },
-    {"categories":["lang_tree"],"files":{"includelist":["is"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/is"] },
     {"categories":["lang_tree"],"files":{"includelist":["jv"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/jv"] },
     {"categories":["lang_tree"],"files":{"includelist":["jw"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/jw"] },
     {"categories":["lang_tree"],"files":{"includelist":["ka"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ka"] },
@@ -1044,7 +1072,6 @@
     {"categories":["lang_tree"],"files":{"includelist":["xx"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/xx"] },
     {"categories":["lang_tree"],"files":{"includelist":["yi"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/yi"] },
     {"categories":["lang_tree"],"files":{"includelist":["yo"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/yo"] },
-    {"categories":["lang_tree"],"files":{"includelist":["zu"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/zu"] },
 // Based on filter_currency_data
 // # Keep only the currencies used by the larget 150 economies in terms of GDP.
 // # TODO(jshin): Use ucurr_isAvailable in ICU to drop more currencies.
@@ -1294,7 +1321,7 @@
       ],
       "rules": [
         "-/UCARules",
-	"-/collations/*/Sequence"
+        "-/collations/*/Sequence"
       ]
     },
 // The following rules must be placed below "-/collations/*/Sequence" to avoid keeping empty unihan, big5han and gb2312han
@@ -1306,8 +1333,8 @@
       ],
       "files": {
         "includelist": [
-	  "zh"
-	]
+          "zh"
+        ]
       },
       "rules": [
         "-/*/unihan",
@@ -1336,7 +1363,7 @@
       "files": {
         "includelist": [
           "supplementalData"
-	]
+        ]
       },
       "rules": [
         "-/*",
@@ -1350,6 +1377,15 @@
         "+/timeData",
         "+/weekData",
         "+/weekData%variant"
+      ]
+    },
+    {
+      "categories": [
+        "translit"
+      ],
+      "rules": [
+        "-/*",
+        "+/RuleBasedTransliteratorIDs/Latin-ASCII"
       ]
     },
 // Based on filter_unit_data

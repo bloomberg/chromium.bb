@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 
 // static
 ProtocolHandlerRegistryFactory* ProtocolHandlerRegistryFactory::GetInstance() {
@@ -58,18 +60,9 @@ bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() const {
 
 KeyedService* ProtocolHandlerRegistryFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  custom_handlers::ProtocolHandlerRegistry* registry =
-      new custom_handlers::ProtocolHandlerRegistry(
-          context, std::make_unique<ChromeProtocolHandlerRegistryDelegate>());
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // If installing defaults, they must be installed prior calling
-  // InitProtocolSettings
-  registry->InstallDefaultsForChromeOS();
-#endif
-
-  // Must be called as a part of the creation process.
-  registry->InitProtocolSettings();
-
-  return registry;
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
+  DCHECK(prefs);
+  return custom_handlers::ProtocolHandlerRegistry::Create(
+             prefs, std::make_unique<ChromeProtocolHandlerRegistryDelegate>())
+      .release();
 }

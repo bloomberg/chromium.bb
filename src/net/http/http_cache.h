@@ -47,6 +47,7 @@ class ApplicationStatusListener;
 
 namespace disk_cache {
 class Backend;
+class BackendFileOperationsFactory;
 class Entry;
 class EntryResult;
 }  // namespace disk_cache
@@ -85,7 +86,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
                               std::unique_ptr<disk_cache::Backend>* backend,
                               CompletionOnceCallback callback) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     virtual void SetAppStatusListener(
         base::android::ApplicationStatusListener* app_status_listener) {}
 #endif
@@ -94,10 +95,14 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // A default backend factory for the common use cases.
   class NET_EXPORT DefaultBackend : public BackendFactory {
    public:
-    // |path| is the destination for any files used by the backend. If
-    // |max_bytes| is  zero, a default value will be calculated automatically.
+    // `file_operations_factory` can be null, in that case
+    // TrivialFileOperationsFactory is used. `path` is the destination for any
+    // files used by the backend. If `max_bytes` is  zero, a default value
+    // will be calculated automatically.
     DefaultBackend(CacheType type,
                    BackendType backend_type,
+                   scoped_refptr<disk_cache::BackendFileOperationsFactory>
+                       file_operations_factory,
                    const base::FilePath& path,
                    int max_bytes,
                    bool hard_reset);
@@ -111,7 +116,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
                       std::unique_ptr<disk_cache::Backend>* backend,
                       CompletionOnceCallback callback) override;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     void SetAppStatusListener(
         base::android::ApplicationStatusListener* app_status_listener) override;
 #endif
@@ -119,10 +124,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
    private:
     CacheType type_;
     BackendType backend_type_;
+    const scoped_refptr<disk_cache::BackendFileOperationsFactory>
+        file_operations_factory_;
     const base::FilePath path_;
     int max_bytes_;
     bool hard_reset_;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     raw_ptr<base::android::ApplicationStatusListener> app_status_listener_ =
         nullptr;
 #endif
@@ -164,26 +171,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // again without validation.
   static const int kPrefetchReuseMins = 5;
 
-  // The disk cache is initialized lazily (by CreateTransaction) in this case.
-  // Provide an existing HttpNetworkSession, the cache can construct a
-  // network layer with a shared HttpNetworkSession in order for multiple
-  // network layers to share information (e.g. authentication data). The
-  // HttpCache takes ownership of the |backend_factory|.
-  //
-  // The HttpCache must be destroyed before the HttpNetworkSession.
-  //
-  // If |is_main_cache| is true, configures the cache to track
-  // information about servers supporting QUIC.
-  // TODO(zhongyi): remove |is_main_cache| when we get rid of cache split.
-  HttpCache(HttpNetworkSession* session,
-            std::unique_ptr<BackendFactory> backend_factory,
-            bool is_main_cache);
-
   // Initialize the cache from its component parts. |network_layer| and
   // |backend_factory| will be destroyed when the HttpCache is.
   HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
-            std::unique_ptr<BackendFactory> backend_factory,
-            bool is_main_cache);
+            std::unique_ptr<BackendFactory> backend_factory);
 
   HttpCache(const HttpCache&) = delete;
   HttpCache& operator=(const HttpCache&) = delete;
@@ -369,7 +360,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
     bool TransactionInReaders(Transaction* transaction) const;
 
-    raw_ptr<disk_cache::Entry> disk_entry = nullptr;
+    const raw_ptr<disk_cache::Entry> disk_entry;
 
     // Indicates if the disk_entry was opened or not (i.e.: created).
     // It is set to true when a transaction is added to an entry so that other,
@@ -429,7 +420,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   int GetBackendForTransaction(Transaction* transaction);
 
   // Generates the cache key for this request.
-  static std::string GenerateCacheKey(const HttpRequestInfo*);
+  static std::string GenerateCacheKey(const HttpRequestInfo*,
+                                      bool use_single_keyed_cache);
 
   // Dooms the entry selected by |key|, if it is currently in the list of active
   // entries.
@@ -654,18 +646,22 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   static const char kDoubleKeySeparator[];
   static const char kSubframeDocumentResourcePrefix[];
 
+  // Used for single-keyed entries if the cache is split.
+  static const char kSingleKeyPrefix[];
+  static const char kSingleKeySeparator[];
+
   // Variables ----------------------------------------------------------------
 
   raw_ptr<NetLog> net_log_;
 
   // Used when lazily constructing the disk_cache_.
   std::unique_ptr<BackendFactory> backend_factory_;
-  bool building_backend_;
-  bool bypass_lock_for_test_;
-  bool bypass_lock_after_headers_for_test_;
-  bool fail_conditionalization_for_test_;
+  bool building_backend_ = false;
+  bool bypass_lock_for_test_ = false;
+  bool bypass_lock_after_headers_for_test_ = false;
+  bool fail_conditionalization_for_test_ = false;
 
-  Mode mode_;
+  Mode mode_ = NORMAL;
 
   std::unique_ptr<HttpTransactionFactory> network_layer_;
 

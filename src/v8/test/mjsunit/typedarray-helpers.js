@@ -11,6 +11,7 @@ const ctors = [
   Int8Array,
   Uint16Array,
   Int16Array,
+  Uint32Array,
   Int32Array,
   Float32Array,
   Float64Array,
@@ -19,6 +20,25 @@ const ctors = [
   BigInt64Array,
   MyUint8Array,
   MyFloat32Array,
+  MyBigInt64Array,
+];
+
+const floatCtors = [
+  Float32Array,
+  Float64Array,
+  MyFloat32Array
+];
+
+const intCtors = [
+  Uint8Array,
+  Int8Array,
+  Uint16Array,
+  Int16Array,
+  Uint32Array,
+  Int32Array,
+  BigUint64Array,
+  BigInt64Array,
+  MyUint8Array,
   MyBigInt64Array,
 ];
 
@@ -48,6 +68,23 @@ function CreateResizableArrayBuffer(byteLength, maxByteLength) {
 
 function CreateGrowableSharedArrayBuffer(byteLength, maxByteLength) {
   return new SharedArrayBuffer(byteLength, {maxByteLength: maxByteLength});
+}
+
+function IsBigIntTypedArray(ta) {
+  return (ta instanceof BigInt64Array) || (ta instanceof BigUint64Array);
+}
+
+function AllBigIntMatchedCtorCombinations(test) {
+  for (let targetCtor of ctors) {
+    for (let sourceCtor of ctors) {
+      if (IsBigIntTypedArray(new targetCtor()) !=
+          IsBigIntTypedArray(new sourceCtor())) {
+        // Can't mix BigInt and non-BigInt types.
+        continue;
+      }
+      test(targetCtor, sourceCtor);
+    }
+  }
 }
 
 function ReadDataFromBuffer(ab, ctor) {
@@ -131,6 +168,55 @@ function IncludesHelper(array, n, fromIndex) {
   return array.includes(n, fromIndex);
 }
 
+function IndexOfHelper(array, n, fromIndex) {
+  if (typeof n == 'number' &&
+      (array instanceof BigInt64Array || array instanceof BigUint64Array)) {
+    if (fromIndex == undefined) {
+      // Technically, passing fromIndex here would still result in the correct
+      // behavior, since "undefined" gets converted to 0 which is a good
+      // "default" index.
+      return array.indexOf(BigInt(n));
+    }
+    return array.indexOf(BigInt(n), fromIndex);
+  }
+  if (fromIndex == undefined) {
+    return array.indexOf(n);
+  }
+  return array.indexOf(n, fromIndex);
+}
+
+function LastIndexOfHelper(array, n, fromIndex) {
+  if (typeof n == 'number' &&
+      (array instanceof BigInt64Array || array instanceof BigUint64Array)) {
+    if (fromIndex == undefined) {
+      // Shouldn't pass fromIndex here, since passing "undefined" is not the
+      // same as not passing the parameter at all. "Undefined" will get
+      // converted to 0 which is not a good "default" index, since lastIndexOf
+      // iterates from the index downwards.
+      return array.lastIndexOf(BigInt(n));
+    }
+    return array.lastIndexOf(BigInt(n), fromIndex);
+  }
+  if (fromIndex == undefined) {
+    return array.lastIndexOf(n);
+  }
+  return array.lastIndexOf(n, fromIndex);
+}
+
+function SetHelper(target, source, offset) {
+  if (target instanceof BigInt64Array || target instanceof BigUint64Array) {
+    const bigIntSource = [];
+    for (s of source) {
+      bigIntSource.push(BigInt(s));
+    }
+    source = bigIntSource;
+  }
+  if (offset == undefined) {
+    return target.set(source);
+  }
+  return target.set(source, offset);
+}
+
 function testDataViewMethodsUpToSize(view, bufferSize) {
   for (const [getter, setter, size, isBigInt] of dataViewAccessorsAndSizes) {
     for (let i = 0; i <= bufferSize - size; ++i) {
@@ -161,4 +247,64 @@ function assertAllDataViewMethodsThrow(view, index, errorType) {
     }
     assertThrows(() => { getter.call(view, index); }, errorType);
   }
+}
+
+function ObjectDefinePropertyHelper(ta, index, value) {
+  if (ta instanceof BigInt64Array || ta instanceof BigUint64Array) {
+    Object.defineProperty(ta, index, {value: BigInt(value)});
+  } else {
+    Object.defineProperty(ta, index, {value: value});
+  }
+}
+
+function ObjectDefinePropertiesHelper(ta, index, value) {
+  const values = {};
+  if (ta instanceof BigInt64Array || ta instanceof BigUint64Array) {
+    values[index] = {value: BigInt(value)};
+  } else {
+    values[index] = {value: value};
+  }
+  Object.defineProperties(ta, values);
+}
+
+function TestAtomicsOperations(ta, index) {
+  const one = IsBigIntTypedArray(ta) ? 1n : 1;
+  const two = IsBigIntTypedArray(ta) ? 2n : 2;
+  const three = IsBigIntTypedArray(ta) ? 3n : 3;
+
+  Atomics.store(ta, index, one);
+  assertEquals(one, Atomics.load(ta, index));
+  assertEquals(one, Atomics.exchange(ta, index, two));
+  assertEquals(two, Atomics.load(ta, index));
+  assertEquals(two, Atomics.compareExchange(ta, index, two, three));
+  assertEquals(three, Atomics.load(ta, index));
+
+  assertEquals(three, Atomics.sub(ta, index, two));  // 3 - 2 = 1
+  assertEquals(one, Atomics.load(ta, index));
+
+  assertEquals(one, Atomics.add(ta, index, one));  // 1 + 1 = 2
+  assertEquals(two, Atomics.load(ta, index));
+
+  assertEquals(two, Atomics.or(ta, index, one));  // 2 | 1 = 3
+  assertEquals(three, Atomics.load(ta, index));
+
+  assertEquals(three, Atomics.xor(ta, index, one));  // 3 ^ 1 = 2
+  assertEquals(two, Atomics.load(ta, index));
+
+  assertEquals(two, Atomics.and(ta, index, three));  // 2 & 3 = 2
+  assertEquals(two, Atomics.load(ta, index));
+}
+
+function AssertAtomicsOperationsThrow(ta, index, error) {
+  const one = IsBigIntTypedArray(ta) ? 1n : 1;
+  assertThrows(() => { Atomics.store(ta, index, one); }, error);
+  assertThrows(() => { Atomics.load(ta, index); }, error);
+  assertThrows(() => { Atomics.exchange(ta, index, one); }, error);
+  assertThrows(() => { Atomics.compareExchange(ta, index, one, one); },
+               error);
+  assertThrows(() => { Atomics.add(ta, index, one); }, error);
+  assertThrows(() => { Atomics.sub(ta, index, one); }, error);
+  assertThrows(() => { Atomics.and(ta, index, one); }, error);
+  assertThrows(() => { Atomics.or(ta, index, one); }, error);
+  assertThrows(() => { Atomics.xor(ta, index, one); }, error);
 }

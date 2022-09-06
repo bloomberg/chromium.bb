@@ -34,7 +34,7 @@ class PrefService;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace ash {
-class KioskTest;
+class KioskBaseTest;
 class LocaleChangeGuard;
 class Preferences;
 }  // namespace ash
@@ -92,10 +92,10 @@ class ProfileImpl : public Profile {
   content::FileSystemAccessPermissionContext*
   GetFileSystemAccessPermissionContext() override;
   content::ContentIndexProvider* GetContentIndexProvider() override;
+  content::FederatedIdentityApiPermissionContextDelegate*
+  GetFederatedIdentityApiPermissionContext() override;
   content::FederatedIdentityActiveSessionPermissionContextDelegate*
   GetFederatedIdentityActiveSessionPermissionContext() override;
-  content::FederatedIdentityRequestPermissionContextDelegate*
-  GetFederatedIdentityRequestPermissionContext() override;
   content::FederatedIdentitySharingPermissionContextDelegate*
   GetFederatedIdentitySharingPermissionContext() override;
 
@@ -167,7 +167,7 @@ class ProfileImpl : public Profile {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  friend class ash::KioskTest;
+  friend class ash::KioskBaseTest;
 #endif
   friend class Profile;
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
@@ -183,7 +183,7 @@ class ProfileImpl : public Profile {
               base::Time path_creation_time,
               scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Takes the ownership of the pre-created PrefService and other objects if
   // they have been created.
   void TakePrefsFromStartupData();

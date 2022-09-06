@@ -3,25 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=protected-access
+
 import json
-import sys
 import unittest
-
-import six
-
-# This script is not Python 2-compatible, but some presubmit scripts end up
-# trying to parse this to find tests.
-# TODO(crbug.com/1198237): Remove this once all the GPU tests, and by
-# extension the presubmit scripts, are Python 3-compatible.
-if six.PY3:
-  import unittest.mock as mock
+import unittest.mock as mock
 
 from flake_suppressor import queries
 from flake_suppressor import unittest_utils as uu
 
 
 class GetResultCountsUnittest(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self._querier_instance = queries.BigQueryQuerier(1, 'project')
     self._querier_instance._submitted_builds = set(['build-1234', 'build-2345'])
     self._subprocess_patcher = mock.patch(
@@ -29,10 +22,10 @@ class GetResultCountsUnittest(unittest.TestCase):
     self._subprocess_mock = self._subprocess_patcher.start()
     self.addCleanup(self._subprocess_patcher.stop)
 
-  def testBasic(self):
+  def testBasic(self) -> None:
     """Tests that queried data is properly returned."""
 
-    def SideEffect(*_, **kwargs):
+    def SideEffect(*_, **kwargs) -> uu.FakeProcess:
       query = kwargs['input']
       if 'submitted_builds' in query:
         # Try results.
@@ -77,10 +70,10 @@ class GetResultCountsUnittest(unittest.TestCase):
     self.assertEqual(result_counts, expected_result_counts)
     self.assertEqual(self._subprocess_mock.call_count, 2)
 
-  def testIgnoredTags(self):
+  def testIgnoredTags(self) -> None:
     """Tests that ignored tags are removed and their counts merged."""
 
-    def SideEffect(*_, **kwargs):
+    def SideEffect(*_, **kwargs) -> uu.FakeProcess:
       query = kwargs['input']
       if 'submitted_builds' in query:
         # Try results.

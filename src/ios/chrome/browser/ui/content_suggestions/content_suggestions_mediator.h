@@ -10,7 +10,10 @@
 #include <memory>
 
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_consumer.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_removal_observer_bridge.h"
 
 namespace favicon {
@@ -25,27 +28,25 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-@protocol ContentSuggestionsCommands;
-@protocol ContentSuggestionsConsumer;
-@protocol ContentSuggestionsGestureCommands;
-@protocol ContentSuggestionsHeaderProvider;
+@protocol ApplicationCommands;
+class Browser;
+@protocol BrowserCommands;
+@protocol ContentSuggestionsCollectionConsumer;
 @protocol DiscoverFeedDelegate;
 class GURL;
 class LargeIconCache;
 class NotificationPromoWhatsNew;
 class ReadingListModel;
+@protocol SnackbarCommands;
 class WebStateList;
 
 // Mediator for ContentSuggestions.
-// TODO(crbug.com/1200303): Update comment once this file has been cleaned up.
-// This means removing legacy Feed and non refactored NTP code.
 @interface ContentSuggestionsMediator
-    : NSObject <ContentSuggestionsDataSource,
+    : NSObject <ContentSuggestionsCommands,
+                ContentSuggestionsGestureCommands,
                 StartSurfaceRecentTabObserving>
 
 // Default initializer.
-// TODO(crbug.com/1200303): Update comment once this file has been cleaned up.
-// This means removing legacy Feed and non refactored NTP code.
 - (instancetype)
          initWithLargeIconService:(favicon::LargeIconService*)largeIconService
                    largeIconCache:(LargeIconCache*)largeIconCache
@@ -54,31 +55,48 @@ class WebStateList;
                  readingListModel:(ReadingListModel*)readingListModel
                       prefService:(PrefService*)prefService
     isGoogleDefaultSearchProvider:(BOOL)isGoogleDefaultSearchProvider
-    NS_DESIGNATED_INITIALIZER;
+                          browser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 // Registers the feature preferences.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
+// Dispatcher.
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, SnackbarCommands>
+        dispatcher;
+
 // Command handler for the mediator.
 @property(nonatomic, weak)
     id<ContentSuggestionsCommands, ContentSuggestionsGestureCommands>
         commandHandler;
 
-@property(nonatomic, weak) id<ContentSuggestionsHeaderProvider> headerProvider;
-
 // Delegate used to communicate to communicate events to the DiscoverFeed.
 @property(nonatomic, weak) id<DiscoverFeedDelegate> discoverFeedDelegate;
+
+// The consumer that will be notified when the data change.
+@property(nonatomic, weak) id<ContentSuggestionsCollectionConsumer>
+    collectionConsumer;
+@property(nonatomic, weak) id<ContentSuggestionsConsumer> consumer;
+
+// YES if the Start Surface is being shown.
+@property(nonatomic, assign) BOOL showingStartSurface;
 
 // WebStateList associated with this mediator.
 @property(nonatomic, assign) WebStateList* webStateList;
 
+// The web state associated with this NTP.
+@property(nonatomic, assign) web::WebState* webState;
+
 // Disconnects the mediator.
 - (void)disconnect;
 
-// Reloads content suggestions.
+// Reloads content suggestions with most updated model state.
 - (void)reloadAllData;
+
+// Trigger a refresh of the Content Suggestions Most Visited tiles.
+- (void)refreshMostVisitedTiles;
 
 // The notification promo owned by this mediator.
 - (NotificationPromoWhatsNew*)notificationPromo;
@@ -102,6 +120,9 @@ class WebStateList;
 
 // Indicates that the "Return to Recent Tab" tile should be hidden.
 - (void)hideRecentTabTile;
+
+// Indicates that the NTP promo should be hidden.
+- (void)hidePromo;
 
 @end
 

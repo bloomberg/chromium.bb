@@ -80,7 +80,7 @@ sync_pb::SyncEntity SingleTypeMockServer::TombstoneFromServer(
   entity.set_parent_id_string(type_root_id_);
   entity.set_version(version);
   entity.set_client_defined_unique_tag(tag_hash.value());
-  entity.set_deleted(false);
+  entity.set_deleted(true);
   AddDefaultFieldValue(type_, entity.mutable_specifics());
 
   // Unimportant fields, set for completeness only.
@@ -102,7 +102,7 @@ sync_pb::ClientToServerResponse SingleTypeMockServer::DoSuccessfulCommit(
 
   const RepeatedPtrField<sync_pb::SyncEntity>& entries =
       message.commit().entries();
-  for (const auto& entry : entries) {
+  for (const sync_pb::SyncEntity& entry : entries) {
     const ClientTagHash tag_hash =
         ClientTagHash::FromHashed(entry.client_defined_unique_tag());
 
@@ -170,9 +170,8 @@ int64_t SingleTypeMockServer::GetServerVersion(
   // Server versions do not necessarily start at 1 or 0.
   if (it == server_versions_.end()) {
     return 2048;
-  } else {
-    return it->second;
   }
+  return it->second;
 }
 
 void SingleTypeMockServer::SetServerVersion(const ClientTagHash& tag_hash,

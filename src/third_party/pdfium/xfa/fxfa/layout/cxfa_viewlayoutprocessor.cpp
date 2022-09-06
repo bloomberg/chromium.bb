@@ -161,15 +161,6 @@ void SyncContainer(CXFA_FFNotify* pNotify,
   }
 }
 
-void ReorderLayoutItemToTail(CXFA_LayoutItem* pLayoutItem) {
-  CXFA_LayoutItem* pParentLayoutItem = pLayoutItem->GetParent();
-  if (!pParentLayoutItem)
-    return;
-
-  pParentLayoutItem->RemoveChild(pLayoutItem);
-  pParentLayoutItem->AppendLastChild(pLayoutItem);
-}
-
 CXFA_Node* ResolveBreakTarget(CXFA_Node* pPageSetRoot,
                               bool bNewExprStyle,
                               WideString* pTargetAll) {
@@ -181,9 +172,9 @@ CXFA_Node* ResolveBreakTarget(CXFA_Node* pPageSetRoot,
     return nullptr;
 
   pTargetAll->Trim();
-  int32_t iSplitIndex = 0;
+  size_t iSplitIndex = 0;
   bool bTargetAllFind = true;
-  while (iSplitIndex != -1) {
+  while (true) {
     WideString wsExpr;
     absl::optional<size_t> iSplitNextIndex = 0;
     if (!bTargetAllFind) {
@@ -224,7 +215,6 @@ CXFA_Node* ResolveBreakTarget(CXFA_Node* pPageSetRoot,
     }
     iSplitIndex = iSplitNextIndex.value();
   }
-  return nullptr;
 }
 
 void SetLayoutGeneratedNodeFlag(CXFA_Node* pNode) {
@@ -537,25 +527,6 @@ void CXFA_ViewLayoutProcessor::RemoveLayoutRecord(
   }
 }
 
-void CXFA_ViewLayoutProcessor::ReorderPendingLayoutRecordToTail(
-    CXFA_ViewRecord* pNewRecord,
-    CXFA_ViewRecord* pPrevRecord) {
-  if (!pNewRecord || !pPrevRecord)
-    return;
-  if (pNewRecord->pCurPageSet != pPrevRecord->pCurPageSet) {
-    ReorderLayoutItemToTail(pNewRecord->pCurPageSet);
-    return;
-  }
-  if (pNewRecord->pCurPageArea != pPrevRecord->pCurPageArea) {
-    ReorderLayoutItemToTail(pNewRecord->pCurPageArea);
-    return;
-  }
-  if (pNewRecord->pCurContentArea != pPrevRecord->pCurContentArea) {
-    ReorderLayoutItemToTail(pNewRecord->pCurContentArea);
-    return;
-  }
-}
-
 void CXFA_ViewLayoutProcessor::SubmitContentItem(
     CXFA_ContentLayoutItem* pContentLayoutItem,
     CXFA_ContentLayoutProcessor::Result eStatus) {
@@ -759,7 +730,9 @@ CXFA_ViewLayoutItem* CXFA_ViewLayoutProcessor::GetPage(int32_t index) const {
 int32_t CXFA_ViewLayoutProcessor::GetPageIndex(
     const CXFA_ViewLayoutItem* pPage) const {
   auto it = std::find(m_PageArray.begin(), m_PageArray.end(), pPage);
-  return it != m_PageArray.end() ? it - m_PageArray.begin() : -1;
+  return it != m_PageArray.end()
+             ? pdfium::base::checked_cast<int32_t>(it - m_PageArray.begin())
+             : -1;
 }
 
 bool CXFA_ViewLayoutProcessor::RunBreak(XFA_Element eBreakType,

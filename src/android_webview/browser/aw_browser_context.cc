@@ -30,7 +30,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -52,6 +51,8 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/variations_client.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/visitedlink/browser/visitedlink_writer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,6 +62,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/zoom_level_delegate.h"
 #include "media/mojo/buildflags.h"
+#include "net/http/http_util.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
@@ -143,6 +145,48 @@ void MigrateProfileData(base::FilePath cache_path,
   migrate_context_storage_data("shared_proto_db");
   migrate_context_storage_data("webrtc_event_logs");
 }
+
+bool ShouldSendVariationsHeaders() {
+  // Note: Normally, checking the feature second is preferred to avoid tagging
+  // clients with the trial that are not participating in the behavior. However,
+  // doing so reveals the shouldSendVariationsHeaders() result for the clients
+  // where it's true, which would require carefully considering the implications
+  // of. This can be revisited later.
+  return base::FeatureList::IsEnabled(
+             features::kWebViewSendVariationsHeaders) &&
+         Java_AwBrowserContext_shouldSendVariationsHeaders(
+             base::android::AttachCurrentThread());
+}
+
+class AwVariationsClient : public variations::VariationsClient {
+ public:
+  explicit AwVariationsClient(content::BrowserContext* browser_context)
+      : browser_context_(browser_context),
+        should_send_headers_(ShouldSendVariationsHeaders()) {}
+
+  ~AwVariationsClient() override = default;
+
+  bool IsOffTheRecord() const override {
+    return browser_context_->IsOffTheRecord();
+  }
+
+  variations::mojom::VariationsHeadersPtr GetVariationsHeaders()
+      const override {
+    if (!should_send_headers_)
+      return nullptr;
+
+    const bool is_signed_in = false;
+    DCHECK_EQ(
+        variations::VariationsIdsProvider::Mode::kDontSendSignedInVariations,
+        variations::VariationsIdsProvider::GetInstance()->mode());
+    return variations::VariationsIdsProvider::GetInstance()
+        ->GetClientDataHeaders(is_signed_in);
+  }
+
+ private:
+  raw_ptr<content::BrowserContext> browser_context_;
+  bool should_send_headers_;
+};
 
 }  // namespace
 
@@ -430,6 +474,12 @@ AwBrowserContext::GetClientHintsControllerDelegate() {
   return nullptr;
 }
 
+variations::VariationsClient* AwBrowserContext::GetVariationsClient() {
+  if (!variations_client_)
+    variations_client_ = std::make_unique<AwVariationsClient>(this);
+  return variations_client_.get();
+}
+
 content::BackgroundFetchDelegate*
 AwBrowserContext::GetBackgroundFetchDelegate() {
   return nullptr;
@@ -493,13 +543,13 @@ void AwBrowserContext::ConfigureNetworkContextParams(
   // HTTP cache
   context_params->http_cache_enabled = true;
   context_params->http_cache_max_size = GetHttpCacheSize();
-  context_params->http_cache_path = GetCacheDir();
+  context_params->http_cache_directory = GetCacheDir();
 
   // WebView should persist and restore cookies between app sessions (including
   // session cookies).
   context_params->file_paths = network::mojom::NetworkContextFilePaths::New();
   base::FilePath cookie_path = AwBrowserContext::GetCookieStorePath();
-  context_params->file_paths->data_path = cookie_path.DirName();
+  context_params->file_paths->data_directory = cookie_path.DirName();
   context_params->file_paths->cookie_database_name = cookie_path.BaseName();
   context_params->restore_old_session_cookies = true;
   context_params->persist_session_cookies = true;

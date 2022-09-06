@@ -12,17 +12,25 @@ import posixpath
 import re
 import shutil
 import sys
+import tempfile
 import time
 
 from collections import OrderedDict
 
 SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+PAR_DIR = os.path.join(SRC_DIR, 'testing')
+OUT_DIR = os.path.join(SRC_DIR, 'out', 'Release')
 BLINK_TOOLS = os.path.join(
     SRC_DIR, 'third_party', 'blink', 'tools')
 BUILD_ANDROID = os.path.join(SRC_DIR, 'build', 'android')
 CATAPULT_DIR = os.path.join(SRC_DIR, 'third_party', 'catapult')
 PYUTILS = os.path.join(CATAPULT_DIR, 'common', 'py_utils')
+
+# Protocall buffer directories to import
+PYPROTO_LIB = os.path.join(OUT_DIR, 'pyproto', 'google')
+WEBVIEW_VARIATIONS_PROTO = os.path.join(OUT_DIR, 'pyproto',
+                                        'android_webview', 'proto')
 
 if PYUTILS not in sys.path:
   sys.path.append(PYUTILS)
@@ -33,7 +41,17 @@ if BUILD_ANDROID not in sys.path:
 if BLINK_TOOLS not in sys.path:
   sys.path.append(BLINK_TOOLS)
 
-import common
+if PYPROTO_LIB not in sys.path:
+  sys.path.append(PYPROTO_LIB)
+
+if WEBVIEW_VARIATIONS_PROTO not in sys.path:
+  sys.path.append(WEBVIEW_VARIATIONS_PROTO)
+
+sys.path.append(PAR_DIR)
+
+if 'compile_targets' not in sys.argv:
+  import aw_variations_seed_pb2
+
 import devil_chromium
 import wpt_common
 
@@ -48,13 +66,15 @@ from devil.android.tools import script_common
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
 from devil.utils import logging_common
-
 from pylib.local.emulator import avd
 from py_utils.tempfile_ext import NamedTemporaryDirectory
+from scripts import common
+from skia_gold_infra.finch_skia_gold_properties import FinchSkiaGoldProperties
+from skia_gold_infra import finch_skia_gold_session_manager
+from skia_gold_infra import finch_skia_gold_utils
+from run_wpt_tests import add_emulator_args, get_device
 
-from wpt_android_lib import add_emulator_args, get_device
-
-_LOGCAT_FILTERS = [
+LOGCAT_FILTERS = [
   'chromium:v',
   'cr_*:v',
   'DEBUG:I',
@@ -65,6 +85,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 TEST_CASES = {}
 
+# pylint: disable=super-with-arguments
+
 
 class FinchTestCase(wpt_common.BaseWptScriptAdapter):
 
@@ -73,19 +95,20 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     super(FinchTestCase, self).__init__()
     self._device = device
     self.parse_args()
-    self.output_directory = os.path.join(SRC_DIR, 'out', self.options.target)
-    self.mojo_js_directory = os.path.join(self.output_directory, 'gen')
-    self.flags = flag_changer.FlagChanger(
-        self._device, '%s-command-line' % self.product_name())
     self.browser_package_name = apk_helper.GetPackageName(
         self.options.browser_apk)
     self.browser_activity_name = (self.options.browser_activity_name or
                                   self.default_browser_activity_name)
-    self.log_mon = None
-
+    self.layout_test_results_subdir = None
+    self.test_specific_browser_args = []
     if self.options.webview_provider_apk:
       self.webview_provider_package_name = (
           apk_helper.GetPackageName(self.options.webview_provider_apk))
+
+    # Initialize the Skia Gold session manager
+    self._skia_gold_corpus = 'finch-smoke-tests'
+    self._skia_gold_tmp_dir = None
+    self._skia_gold_session_manager = None
 
   @classmethod
   def app_user_sub_dir(cls):
@@ -94,10 +117,6 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
 
   @classmethod
   def product_name(cls):
-    raise NotImplementedError
-
-  @classmethod
-  def wpt_product_name(cls):
     raise NotImplementedError
 
   @property
@@ -116,6 +135,15 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
   def default_finch_seed_path(self):
     raise NotImplementedError
 
+  @classmethod
+  def finch_seed_download_args(cls):
+    return []
+
+  def new_seed_downloaded(self):
+    # TODO(crbug.com/1285152): Implement seed download test
+    # for Chrome and WebLayer.
+    return True
+
   def parse_args(self, args=None):
     super(FinchTestCase, self).parse_args(args)
     if (not self.options.finch_seed_path or
@@ -124,40 +152,26 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
 
   def __enter__(self):
     self._device.EnableRoot()
-    self.log_mon = logcat_monitor.LogcatMonitor(
-          self._device.adb,
-          output_file=os.path.join(
-              os.path.dirname(self.options.isolated_script_test_output),
-              '%s_finch_smoke_tests_logcat.txt' % self.product_name()),
-          filter_specs=_LOGCAT_FILTERS)
-    self.log_mon.Start()
+    # Run below commands to ensure that the device can download a seed
+    self._device.adb.Emu(['power', 'ac', 'on'])
+    self._device.RunShellCommand(['svc', 'wifi', 'enable'])
+    self._skia_gold_tmp_dir = tempfile.mkdtemp()
+    self._skia_gold_session_manager = (
+        finch_skia_gold_session_manager.FinchSkiaGoldSessionManager(
+            self._skia_gold_tmp_dir, FinchSkiaGoldProperties(self.options)))
     return self
 
   def __exit__(self, exc_type, exc_val, exc_tb):
-    self.flags.ReplaceFlags([])
-    self.log_mon.Stop()
+    self._skia_gold_session_manager = None
+    if self._skia_gold_tmp_dir:
+      shutil.rmtree(self._skia_gold_tmp_dir)
+      self._skia_gold_tmp_dir = None
 
   @property
   def rest_args(self):
     rest_args = super(FinchTestCase, self).rest_args
-    # Update the output directory to the default if it's not set.
-    self.maybe_set_default_isolated_script_test_output()
 
-    # Here we add all of the arguments required to run WPT tests on Android.
     rest_args.extend([
-        os.path.join(SRC_DIR, 'third_party', 'wpt_tools', 'wpt', 'wpt')])
-
-    # By default, WPT will treat unexpected passes as errors, so we disable
-    # that to be consistent with Chromium CI.
-    rest_args.extend(['--no-fail-on-unexpected-pass'])
-
-    # vpython has packages needed by wpt, so force it to skip the setup
-    rest_args.extend(['--venv=' + SRC_DIR, '--skip-venv-setup'])
-
-    rest_args.extend(['run',
-      self.wpt_product_name(),
-      '--tests=' + wpt_common.EXTERNAL_WPT_TESTS_DIR,
-      '--test-type=' + 'testharness',
       '--device-serial',
       self._device.serial,
       '--webdriver-binary',
@@ -167,11 +181,7 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
       '--package-name',
       self.browser_package_name,
       '--keep-app-data-directory',
-      '--no-pause-after-test',
-      '--no-capture-stdio',
-      '--no-manifest-download',
-      '--enable-mojojs',
-      '--mojojs-path=' + self.mojo_js_directory,
+      '--reftest-screenshot=always',
     ])
 
     for binary_arg in self.browser_command_line_args():
@@ -180,18 +190,10 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     for test in self.tests:
       rest_args.extend(['--include', test])
 
-    if self.options.verbose >= 3:
-      rest_args.extend(['--log-mach=-', '--log-mach-level=debug',
-                        '--log-mach-verbose'])
-
-    if self.options.verbose >= 4:
-      rest_args.extend(['--webdriver-arg=--verbose',
-                        '--webdriver-arg="--log-path=-"'])
-
     return rest_args
 
   @classmethod
-  def add_extra_arguments(cls, parser):
+  def add_common_arguments(cls, parser):
     parser.add_argument('--test-case',
                         choices=TEST_CASES.keys(),
                         # TODO(rmhasan): Remove default values after
@@ -219,20 +221,73 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     parser.add_argument('--browser-activity-name',
                         action='store',
                         help='Browser activity name')
-    parser.add_argument('--target',
-                        action='store',
-                        default='Release',
-                        help='Build configuration')
     parser.add_argument('--fake-variations-channel',
                         action='store',
                         default='stable',
                         choices=['dev', 'canary', 'beta', 'stable'],
                         help='Finch seed release channel')
-
+    parser.add_argument('-j',
+                        '--processes',
+                        type=lambda processes: max(0, int(processes)),
+                        default=1,
+                        help='Number of emulator to run.')
+    # Add arguments used by Skia Gold.
+    FinchSkiaGoldProperties.AddCommandLineArguments(parser)
     add_emulator_args(parser)
-    script_common.AddDeviceArguments(parser)
-    script_common.AddEnvironmentArguments(parser)
-    logging_common.AddLoggingArguments(parser)
+
+  def add_extra_arguments(self, parser):
+    super(FinchTestCase, self).add_extra_arguments(parser)
+    self.add_common_arguments(parser)
+
+  def _compare_screenshots_with_baselines(self, results_dict):
+    """Compare screenshots with baselines stored in skia gold
+
+    Args:
+      results_dict: WPT results dictionary
+
+    Returns:
+      1 if there was an error comparing images otherwise 0
+    """
+    skia_gold_session = (
+        self._skia_gold_session_manager.GetSkiaGoldSession(
+            {'platform': 'android'}, self._skia_gold_corpus))
+
+    def _process_test_leaf(test_result_dict):
+      if ('artifacts' not in test_result_dict or
+          'actual_image' not in test_result_dict['artifacts']):
+        return 0
+
+      return_code = 0
+      artifacts_dict = test_result_dict['artifacts']
+      curr_artifacts = list(artifacts_dict.keys())
+      for artifact_name in curr_artifacts:
+        artifact_path = artifacts_dict[artifact_name][0]
+        # Compare screenshots to baselines stored in Skia Gold
+        status, error = skia_gold_session.RunComparison(
+            artifact_path,
+            os.path.join(os.path.dirname(self.wpt_output), artifact_path))
+
+        if status:
+          results_dict['num_failures_by_type'][test_result_dict['actual']] -= 1
+          test_result_dict['actual'] = 'FAIL'
+          results_dict['num_failures_by_type'].setdefault('FAIL', 0)
+          results_dict['num_failures_by_type']['FAIL'] += 1
+          triage_link = finch_skia_gold_utils.log_skia_gold_status_code(
+              skia_gold_session, artifact_path, status, error)
+          if triage_link:
+            artifacts_dict['%s_triage_link' % artifact_name] = [triage_link]
+          return_code = 1
+      return return_code
+
+    def _process_test_leaves(node):
+      return_code = 0
+      if 'actual' in node:
+        return _process_test_leaf(node)
+      for next_node in node.values():
+        return_code |= _process_test_leaves(next_node)
+      return return_code
+
+    return _process_test_leaves(results_dict['tests'])
 
   @contextlib.contextmanager
   def _install_apks(self):
@@ -248,20 +303,26 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     yield
 
   def browser_command_line_args(self):
-    return ['--fake-variations-channel=%s' %
-            self.options.fake_variations_channel]
+    return (['--fake-variations-channel=%s' %
+             self.options.fake_variations_channel] +
+            self.test_specific_browser_args)
 
-  def run_tests(self, test_run_variation, results_dict):
+  def run_tests(self, test_run_variation, results_dict,
+                extra_browser_args=None):
     """Run browser test on test device
 
     Args:
-      test_suffix: Suffix for log output
+      test_run_variation: Test run variation.
+      results_dict: Main results dictionary containing results
+        for all test variations.
+      extra_browser_args: Extra browser arguments.
 
     Returns:
-      True if browser did not crash or False if the browser crashed
+      True if browser did not crash or False if the browser crashed.
     """
     self.layout_test_results_subdir = ('%s_smoke_test_artifacts' %
                                        test_run_variation)
+    self.test_specific_browser_args = extra_browser_args or []
 
     # Make sure the browser is not running before the tests run
     self.stop_browser()
@@ -271,6 +332,8 @@ class FinchTestCase(wpt_common.BaseWptScriptAdapter):
     with open(self.wpt_output, 'r') as curr_test_results:
       curr_results_dict = json.loads(curr_test_results.read())
       results_dict['tests'][test_run_variation] = curr_results_dict['tests']
+      # Compare screenshots with baselines stored in Skia Gold
+      ret |= self._compare_screenshots_with_baselines(curr_results_dict)
 
       for result, count in curr_results_dict['num_failures_by_type'].items():
         results_dict['num_failures_by_type'].setdefault(result, 0)
@@ -387,7 +450,6 @@ class ChromeFinchTestCase(FinchTestCase):
 
 class WebViewFinchTestCase(FinchTestCase):
 
-
   @classmethod
   def product_name(cls):
     """Returns name of product being tested"""
@@ -398,6 +460,21 @@ class WebViewFinchTestCase(FinchTestCase):
     return ANDROID_WEBVIEW
 
   @property
+  def tests(self):
+    return super(WebViewFinchTestCase, self).tests + [
+        'svg/pservers/reftests/radialgradient-basic-002.svg',
+    ]
+
+  @classmethod
+  def finch_seed_download_args(cls):
+    return [
+        '--finch-seed-expiration-age=0',
+        '--finch-seed-min-update-period=0',
+        '--finch-seed-min-download-period=0',
+        '--finch-seed-ignore-pending-download',
+        '--finch-seed-no-charging-requirement']
+
+  @property
   def default_browser_activity_name(self):
     return 'org.chromium.webview_shell.WebPlatformTestsActivity'
 
@@ -406,6 +483,34 @@ class WebViewFinchTestCase(FinchTestCase):
     return os.path.join(SRC_DIR, 'testing', 'scripts',
                         'variations_smoke_test_data',
                         'webview_test_seed')
+
+  def new_seed_downloaded(self):
+    """Checks if a new seed was downloaded
+
+    Returns:
+      True if a new seed was downloaded, otherwise False
+    """
+    app_data_dir = posixpath.join(
+        self._device.GetApplicationDataDirectory(self.browser_package_name),
+        self.app_user_sub_dir())
+    remote_seed_path = posixpath.join(app_data_dir, 'variations_seed')
+
+    with NamedTemporaryDirectory() as tmp_dir:
+      current_seed_path = os.path.join(tmp_dir, 'current_seed')
+      self._device.adb.Pull(remote_seed_path, current_seed_path)
+      with open(current_seed_path, 'rb') as current_seed_obj, \
+          open(self.options.finch_seed_path, 'rb') as baseline_seed_obj:
+        current_seed_content = current_seed_obj.read()
+        baseline_seed_content = baseline_seed_obj.read()
+        current_seed = aw_variations_seed_pb2.AwVariationsSeed.FromString(
+            current_seed_content)
+        baseline_seed = aw_variations_seed_pb2.AwVariationsSeed.FromString(
+            baseline_seed_content)
+        shutil.copy(current_seed_path, os.path.join(OUT_DIR, 'final_seed'))
+
+        logger.info("Downloaded seed's signature: %s", current_seed.signature)
+        logger.info("Baseline seed's signature: %s", baseline_seed.signature)
+        return current_seed_content != baseline_seed_content
 
   def browser_command_line_args(self):
     return (super(WebViewFinchTestCase, self).browser_command_line_args() +
@@ -486,19 +591,26 @@ def main(args):
        for p in [ChromeFinchTestCase, WebViewFinchTestCase,
                  WebLayerFinchTestCase]})
 
+  # Unfortunately, there's a circular dependency between the parser made
+  # available from `FinchTestCase.add_extra_arguments` and the selection of the
+  # correct test case. The workaround is a second parser used in `main` only
+  # that shares some arguments with the script adapter parser. The second parser
+  # handles --help, so not all arguments are documented. Important arguments
+  # added by the script adapter are re-added here for visibility.
   parser = argparse.ArgumentParser()
-
-  FinchTestCase.add_extra_arguments(parser)
+  FinchTestCase.add_common_arguments(parser)
   parser.add_argument(
         '--isolated-script-test-output', type=str,
         required=False,
         help='path to write test results JSON object to')
+  script_common.AddDeviceArguments(parser)
+  script_common.AddEnvironmentArguments(parser)
+  logging_common.AddLoggingArguments(parser)
   options, _ = parser.parse_known_args(args)
 
   with get_device(options) as device, \
       TEST_CASES[options.test_case](device) as test_case, \
       test_case.install_apks():
-
     devil_chromium.Initialize(adb_path=options.adb_path)
     logging_common.InitializeLogging(options)
 
@@ -517,15 +629,37 @@ def main(args):
     test_results_dict = OrderedDict({'version': 3, 'interrupted': False,
                                      'num_failures_by_type': {}, 'tests': {}})
 
-    ret = test_case.run_tests('without_finch_seed', test_results_dict)
-    test_case.install_seed()
-    ret |= test_case.run_tests('with_finch_seed', test_results_dict)
+    if test_case.product_name() == 'webview':
+      ret = test_case.run_tests('without_finch_seed', test_results_dict)
+      test_case.install_seed()
+      ret |= test_case.run_tests('with_finch_seed', test_results_dict)
+      # WebView needs several restarts to fetch and load a new finch seed
+      # TODO(b/187185389): Figure out why the first restart is needed
+      ret |= test_case.run_tests('extra_restart', test_results_dict,
+                                 test_case.finch_seed_download_args())
+      # Restart webview+shell to fetch new seed to variations_seed_new
+      ret |= test_case.run_tests('fetch_new_seed_restart', test_results_dict,
+                                 test_case.finch_seed_download_args())
+      # Restart webview+shell to copy from
+      # variations_seed_new to variations_seed
+      ret |= test_case.run_tests('load_new_seed_restart', test_results_dict,
+                                 test_case.finch_seed_download_args())
+    else:
+      test_case.install_seed()
+      ret = test_case.run_tests('with_finch_seed', test_results_dict)
+      # Clears out the finch seed. Need to run finch_seed tests first.
+      # See crbug/1305430
+      device.ClearApplicationState(test_case.browser_package_name)
+      ret |= test_case.run_tests('without_finch_seed', test_results_dict)
 
     test_results_dict['seconds_since_epoch'] = int(time.time())
     test_results_dict['path_delimiter'] = '/'
 
-    with open(options.isolated_script_test_output, 'w') as json_out:
+    with open(test_case.options.isolated_script_test_output, 'w') as json_out:
       json_out.write(json.dumps(test_results_dict, indent=4))
+
+    if not test_case.new_seed_downloaded():
+      raise Exception('A new seed was not downloaded')
 
   # Return zero exit code if tests pass
   return ret

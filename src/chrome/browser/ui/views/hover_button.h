@@ -82,6 +82,10 @@ class HoverButton : public views::LabelButton {
   void SetTitleTextStyle(views::style::TextStyle text_style,
                          SkColor background_color);
 
+  // Set the text context and style of the subtitle.
+  void SetSubtitleTextStyle(int text_context,
+                            views::style::TextStyle text_style);
+
   // Updates the accessible name and tooltip of the button if necessary based on
   // |title_| and |subtitle_| labels.
   void SetTooltipAndAccessibleName();
@@ -106,6 +110,7 @@ class HoverButton : public views::LabelButton {
                            NotifyClickExecutesAction);
   FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuItemViewTest,
                            UpdatesToDisplayCorrectActionTitle);
+  FRIEND_TEST_ALL_PREFIXES(AccountSelectionBubbleViewTest, MultipleAccounts);
   friend class PageInfoBubbleViewBrowserTest;
 
   raw_ptr<views::StyledLabel> title_ = nullptr;

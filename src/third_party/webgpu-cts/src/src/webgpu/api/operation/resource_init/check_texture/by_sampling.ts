@@ -15,7 +15,6 @@ export const checkContentsBySampling: CheckContents = (
   state,
   subresourceRange
 ) => {
-  assert(params.dimension !== '1d');
   assert(params.format in kTextureFormatInfo);
   const format = params.format as EncodableTextureFormat;
   const rep = kTexelRepresentationInfo[format];
@@ -44,38 +43,41 @@ export const checkContentsBySampling: CheckContents = (
 
     const _xd = '_' + params.dimension;
     const _multisampled = params.sampleCount > 1 ? '_multisampled' : '';
-    const texelIndexExpresion =
+    const texelIndexExpression =
       params.dimension === '2d'
         ? 'vec2<i32>(GlobalInvocationID.xy)'
         : params.dimension === '3d'
         ? 'vec3<i32>(GlobalInvocationID.xyz)'
+        : params.dimension === '1d'
+        ? 'i32(GlobalInvocationID.x)'
         : unreachable();
     const computePipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         entryPoint: 'main',
         module: t.device.createShaderModule({
           code: `
-            [[block]] struct Constants {
-              level : i32;
+            struct Constants {
+              level : i32
             };
 
-            [[group(0), binding(0)]] var<uniform> constants : Constants;
-            [[group(0), binding(1)]] var myTexture : texture${_multisampled}${_xd}<${shaderType}>;
+            @group(0) @binding(0) var<uniform> constants : Constants;
+            @group(0) @binding(1) var myTexture : texture${_multisampled}${_xd}<${shaderType}>;
 
-            [[block]] struct Result {
-              values : [[stride(4)]] array<${shaderType}>;
+            struct Result {
+              values : array<${shaderType}>
             };
-            [[group(0), binding(3)]] var<storage, read_write> result : Result;
+            @group(0) @binding(3) var<storage, read_write> result : Result;
 
-            [[stage(compute), workgroup_size(1)]]
-            fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+            @compute @workgroup_size(1)
+            fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
               let flatIndex : u32 = ${componentCount}u * (
                 ${width}u * ${height}u * GlobalInvocationID.z +
                 ${width}u * GlobalInvocationID.y +
                 GlobalInvocationID.x
               );
               let texel : vec4<${shaderType}> = textureLoad(
-                myTexture, ${texelIndexExpresion}, constants.level);
+                myTexture, ${texelIndexExpression}, constants.level);
 
               for (var i : u32 = 0u; i < ${componentCount}u; i = i + 1u) {
                 result.values[flatIndex + i] = texel.${indexExpression};
@@ -114,6 +116,7 @@ export const checkContentsBySampling: CheckContents = (
             resource: texture.createView({
               baseArrayLayer: layer,
               arrayLayerCount: 1,
+              dimension: params.dimension,
             }),
           },
           {
@@ -129,8 +132,8 @@ export const checkContentsBySampling: CheckContents = (
       const pass = commandEncoder.beginComputePass();
       pass.setPipeline(computePipeline);
       pass.setBindGroup(0, bindGroup);
-      pass.dispatch(width, height, depth);
-      pass.endPass();
+      pass.dispatchWorkgroups(width, height, depth);
+      pass.end();
       t.queue.submit([commandEncoder.finish()]);
       ubo.destroy();
 

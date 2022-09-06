@@ -20,7 +20,6 @@
 namespace enterprise_connectors {
 
 class DeviceTrustKeyManager;
-class DeviceTrustSignals;
 
 // This class is in charge of handling the key pair used for attestation. Also
 // provides the methods needed in the handshake between Chrome, an IdP and
@@ -32,19 +31,23 @@ class DesktopAttestationService : public AttestationService {
 
   // AttestationService:
   void BuildChallengeResponseForVAChallenge(
-      const std::string& challenge,
-      std::unique_ptr<DeviceTrustSignals> signals,
+      const std::string& serialized_signed_challenge,
+      base::Value::Dict signals,
       AttestationCallback callback) override;
 
  private:
-  void OnPublicKeyExported(const std::string& challenge,
-                           std::unique_ptr<DeviceTrustSignals> signals,
+  void OnChallengeParsed(AttestationCallback callback,
+                         base::Value::Dict signals,
+                         const std::string& serialized_signed_challenge);
+
+  void OnPublicKeyExported(const std::string& serialized_signed_challenge,
+                           base::Value::Dict signals,
                            AttestationCallback callback,
                            absl::optional<std::string> exported_key);
 
   void OnChallengeValidated(const SignedData& signed_data,
                             const std::string& exported_public_key,
-                            std::unique_ptr<DeviceTrustSignals> signals,
+                            base::Value::Dict signals,
                             AttestationCallback callback,
                             bool is_va_challenge);
 

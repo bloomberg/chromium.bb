@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -36,6 +37,7 @@ PrefServiceSyncable::PrefServiceSyncable(
     std::unique_ptr<PrefNotifierImpl> pref_notifier,
     std::unique_ptr<PrefValueStore> pref_value_store,
     scoped_refptr<PersistentPrefStore> user_prefs,
+    scoped_refptr<PersistentPrefStore> standalone_browser_prefs,
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
     const PrefModelAssociatorClient* pref_model_associator_client,
     base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
@@ -44,6 +46,7 @@ PrefServiceSyncable::PrefServiceSyncable(
     : PrefService(std::move(pref_notifier),
                   std::move(pref_value_store),
                   user_prefs,
+                  standalone_browser_prefs,
                   pref_registry,
                   std::move(read_error_callback),
                   async),
@@ -75,8 +78,7 @@ PrefServiceSyncable::PrefServiceSyncable(
       &PrefServiceSyncable::ProcessPrefChange, base::Unretained(this)));
 
   // Add already-registered syncable preferences to PrefModelAssociator.
-  for (const auto& entry : *pref_registry_) {
-    const std::string& path = entry.first;
+  for (const auto& [path, value] : *pref_registry_) {
     AddRegisteredSyncablePreference(path,
                                     pref_registry_->GetRegistrationFlags(path));
   }
@@ -107,13 +109,15 @@ PrefServiceSyncable::CreateIncognitoPrefService(
   auto incognito_pref_store = base::MakeRefCounted<OverlayUserPrefStore>(
       overlay.get(), user_pref_store_.get());
 
-  for (const char* persistent_pref_name : persistent_pref_names)
+  for (const char* persistent_pref_name : persistent_pref_names) {
     incognito_pref_store->RegisterPersistentPref(persistent_pref_name);
+  }
 
   auto pref_value_store = pref_value_store_->CloneAndSpecialize(
       nullptr,  // managed
       nullptr,  // supervised_user
       incognito_extension_pref_store,
+      nullptr,  // standalone_browser_prefs
       nullptr,  // command_line_prefs
       incognito_pref_store.get(),
       nullptr,  // recommended
@@ -121,8 +125,10 @@ PrefServiceSyncable::CreateIncognitoPrefService(
       /*delegate=*/nullptr);
   return std::make_unique<PrefServiceSyncable>(
       std::move(pref_notifier), std::move(pref_value_store),
-      std::move(incognito_pref_store), std::move(forked_registry),
-      pref_sync_associator_.client(), read_error_callback_, false);
+      std::move(incognito_pref_store),
+      nullptr,  // standalone_browser_prefs
+      std::move(forked_registry), pref_sync_associator_.client(),
+      read_error_callback_, false);
 }
 
 bool PrefServiceSyncable::IsSyncing() {
@@ -242,8 +248,9 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(
 }
 
 void PrefServiceSyncable::OnIsSyncingChanged() {
-  for (auto& observer : observer_list_)
+  for (auto& observer : observer_list_) {
     observer.OnIsSyncingChanged();
+  }
 }
 
 void PrefServiceSyncable::ProcessPrefChange(const std::string& name) {

@@ -76,6 +76,7 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
     "//ios/chrome/browser/autofill:eg2_tests",
     "//ios/chrome/browser/device_sharing:eg2_tests",
     "//ios/chrome/browser/feature_engagement:eg2_tests",
+    "//ios/chrome/browser/https_upgrades:eg2_tests",
     "//ios/chrome/browser/metrics:eg2_tests",
     "//ios/chrome/browser/net:eg2_tests",
     "//ios/chrome/browser/ntp_tiles:eg2_tests",
@@ -139,6 +140,7 @@ chrome_ios_eg2_test("ios_chrome_signin_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [
+    "//ios/chrome/browser/signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin:eg2_tests",
@@ -164,11 +166,13 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/keyboard:eg2_tests",
     "//ios/chrome/browser/ui/link_to_text:eg2_tests",
     "//ios/chrome/browser/ui/ntp:eg2_tests",
+    "//ios/chrome/browser/ui/ntp/feed_management:eg2_tests",
     "//ios/chrome/browser/ui/omnibox:eg2_tests",
     "//ios/chrome/browser/ui/omnibox/popup:eg2_tests",
     "//ios/chrome/browser/ui/open_in:eg2_tests",
     "//ios/chrome/browser/ui/page_info:eg2_tests",
     "//ios/chrome/browser/ui/passwords:eg2_tests",
+    "//ios/chrome/browser/ui/permissions:eg2_tests",
     "//ios/chrome/browser/ui/popup_menu:eg2_tests",
     "//ios/chrome/browser/ui/qr_scanner:eg2_tests",
     "//ios/chrome/browser/ui/reading_list:eg2_tests",
@@ -180,6 +184,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/start_surface:eg2_tests",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:eg2_tests",
     "//ios/chrome/browser/ui/tabs:eg2_tests",
+    "//ios/chrome/browser/ui/text_fragments:eg2_tests",
     "//ios/chrome/browser/ui/thumb_strip:eg2_tests",
     "//ios/chrome/browser/ui/toolbar:eg2_tests",
     "//ios/chrome/browser/ui/webui:eg2_tests",

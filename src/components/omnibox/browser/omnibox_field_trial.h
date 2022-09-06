@@ -353,30 +353,8 @@ int KeywordScoreForSufficientlyCompleteMatch();
 // ---------------------------------------------------------
 // For UI experiments.
 
-// Returns true if the tab switch suggestions flag is enabled.
-bool IsTabSwitchSuggestionsEnabled();
-
-// Returns true if the first batch of Pedals on Android is enabled.
-bool IsPedalsAndroidBatch1Enabled();
-
-// Returns true if the second batch of Pedals is enabled for non-English
-// locales. This is only meaningful if batch 2 is enabled.
-bool IsPedalsBatch2NonEnglishEnabled();
-
-// Returns true if the third batch of Pedals is enabled.
-bool IsPedalsBatch3Enabled();
-
-// Returns true if the third batch of Pedals is enabled for non-English
-// locales. This is only meaningful if batch 3 is enabled.
-bool IsPedalsBatch3NonEnglishEnabled();
-
-// Returns true if the Pedals synonyms should be loaded from the translation
-// console.
-bool IsPedalsTranslationConsoleEnabled();
-
-// Returns true if the keyword button and suggestion button row features are
-// enabled.
-bool IsKeywordSearchButtonEnabled();
+// Returns true if the fuzzy URL suggestions feature is enabled.
+bool IsFuzzyUrlSuggestionsEnabled();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
@@ -388,11 +366,6 @@ bool IsOnDeviceHeadSuggestEnabledForNonIncognito();
 bool IsOnDeviceHeadSuggestEnabledForAnyMode();
 // Functions can be used in both non-incognito and incognito.
 std::string OnDeviceHeadModelLocaleConstraint(bool is_incognito);
-int OnDeviceHeadSuggestMaxScoreForNonUrlInput(bool is_incognito);
-int OnDeviceSearchProviderDefaultLoaderTimeoutMs(bool is_incognito);
-int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
-// Function only works in non-incognito when server suggestions are available.
-std::string OnDeviceHeadSuggestDemoteMode();
 
 // Returns true if CGI parameter names should not be considered when scoring
 // suggestions.
@@ -401,6 +374,10 @@ bool ShouldDisableCGIParamMatching();
 // If true, enables a third category on the manage search engines page for
 // active search engines.
 bool IsActiveSearchEnginesEnabled();
+
+// If true, enables a "starter pack" of @history, @bookmarks, and @settings
+// scopes for Site Search.
+bool IsSiteSearchStarterPackEnabled();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -484,12 +461,6 @@ extern const char kDynamicMaxAutocompleteIncreasedLimitParam[];
 // Parameter names used by on device head provider.
 // These four parameters are shared by both non-incognito and incognito.
 extern const char kOnDeviceHeadModelLocaleConstraint[];
-extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInput[];
-extern const char kOnDeviceHeadSuggestDelaySuggestRequestMs[];
-extern const char kOnDeviceSearchProviderDefaultLoaderTimeoutMs[];
-// This parameter is for non-incognito which are only useful when server
-// suggestions are available.
-extern const char kOnDeviceHeadSuggestDemoteMode[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.
@@ -524,6 +495,12 @@ extern const base::FeatureParam<bool> kRichAutocompletionShowAdditionalText;
 extern const base::FeatureParam<bool> kRichAutocompletionSplitTitleCompletion;
 extern const base::FeatureParam<bool> kRichAutocompletionSplitUrlCompletion;
 extern const base::FeatureParam<int> kRichAutocompletionSplitCompletionMinChar;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteShortcutText;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteShortcutTextNoInputsWithSpaces;
+extern const base::FeatureParam<int>
+    kRichAutocompletionAutocompleteShortcutTextMinChar;
 extern const base::FeatureParam<bool> kRichAutocompletionCounterfactual;
 extern const base::FeatureParam<bool>
     kRichAutocompletionAutocompletePreferUrlsOverPrefixes;
@@ -551,11 +528,39 @@ extern const base::FeatureParam<bool>
 extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
 
-// Zero Suggest
+// Local history zero-prefix (aka zero-suggest) and prefix suggestions.
+// Indicates whether the user is in the counterfactual group in the experiment
+// for prefetching zero prefix suggestions on the NTP. Users in the
+// counterfactual group issue a follow-up non-cacheable request if the response
+// is loaded from the HTTP cache in order to determine HTTP cache validity.
+// This param is tied to omnibox::kZeroSuggestPrefetching and is to be used when
+// a valid HTTP cache duration is provided via kZeroSuggestCacheDurationSec.
+extern const base::FeatureParam<bool> kZeroSuggestCacheCounterfactual;
 // Specifies the HTTP cache duration for the zero prefix suggest responses. If
 // the provided value is a positive number, the cache duration will be sent as a
-// query string parameter in the zero suggest requests.
+// query string parameter in the zero suggest requests and relayed back in the
+// response cache control headers.
+// This param is tied to omnibox::kZeroSuggestPrefetching which controls
+// prefetching and theoretically works with any caching mechanism. If no valid
+// HTTP cache duration is provided the existing caching mechanism is used.
 extern const base::FeatureParam<int> kZeroSuggestCacheDurationSec;
+// Indicates whether the zero suggest prefetch requests should bypass the HTTP
+// cache, i.e., not get loaded from the HTTP cache. This helps ensure the HTTP
+// cache duration clock is reset and the subsequent non-prefetch zero suggest
+// requests, depending on the cache duration, are loaded from the HTTP cache.
+extern const base::FeatureParam<bool> kZeroSuggestPrefetchBypassCache;
+// Whether duplicative visits should be ignored for local history zero-suggest.
+// A duplicative visit is a visit to the same search term in an interval smaller
+// than kAutocompleteDuplicateVisitIntervalThreshold.
+extern const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits;
+// Whether duplicative visits should be ignored for local history
+// prefix-suggest. A duplicative visit is a visit to the same search term in an
+// interval smaller than kAutocompleteDuplicateVisitIntervalThreshold.
+extern const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits;
+
+// Specifies the relevance scores for the Site Search Starter Pack ACMatches
+// (e.g. @bookmarks, @history) provided by the Builtin Provider.
+extern const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore;
 
 // New params should be inserted above this comment and formatted as:
 // - Short comment categorizing the relevant features & params.

@@ -132,10 +132,11 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                                    const base::RepeatingClosure& fling_callback,
                                    base::OnceClosure exit_callback) override;
   void ClearLoginShelfGestureHandler() override;
+  views::Widget* GetLoginWindowWidget() override;
 
   // KioskAppMenu:
-  void SetKioskApps(
-      const std::vector<KioskAppMenuEntry>& kiosk_apps,
+  void SetKioskApps(const std::vector<KioskAppMenuEntry>& kiosk_apps) override;
+  void ConfigureKioskCallbacks(
       const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
       const base::RepeatingClosure& on_show_menu) override;
 

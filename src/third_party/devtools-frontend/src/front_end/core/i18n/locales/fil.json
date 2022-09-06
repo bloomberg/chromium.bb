@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With Block"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Worklet ng Ad Auction"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Simula ng Phase ng Pag-bid ng Bidder"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Simula ng Phase ng Pag-uulat ng Bidder"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Simula ng Phase ng Pag-uulat ng Nagbebenta"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Simula ng Phase ng Pagbibigay ng Score ng Nagbebenta"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Na-block ng Cross-Origin Read Blocking (CORB) ang cross-origin na sagot na {PH1} na may uri ng MIME na {PH2}. Tingnan ang https://www.chromestatus.com/feature/5629709824032768 para sa higit pang detalye."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "I-disable ang format na WebP"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "I-disable"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Huwag i-capture ang mga async na stack trace"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Huwag ipakita ang mga laki ng track sa grid"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Huwag ipakita ang mga ruler kapag nag-hover"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Mag-emulate ng naka-focus na page"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "I-enable ang format na WebP"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "I-enable"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "I-extend ang mga grid line"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Itago ang meter ng mga frame bawat segundo (frames per second o FPS)"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Itago ang mga border ng hit-test"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Itago ang mga border ng layer"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Ipakita ang mga laki ng grid track"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Ipakita ang mga border ng hit-test"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Ipakita ang mga border ng layer"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Ipakita ang mga parihaba ng paint flashing"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Ipakita ang mga ruler"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Ipakita ang mga ruler kapag nag-hover"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Ipakita ang mga bottleneck ng performance sa pag-scroll"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Mag-emulate ng naka-focus na page"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "I-enable ang automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Nag-e-emulate ng naka-focus na page."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Ine-enable ang awtomatikong dark mode para sa sinisiyasat na page."
+    "message": "Ine-enable ang automatic dark mode at itinatakda ang prefers-color-scheme sa dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Puwersahang ine-enable ang feature ng media ng CSS na color-gamut"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "Feature ng media na Ipipilit ang mga kulay na ipinipilit ng CSS"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Puwersahang ine-enable ang feature ng media ng CSS na prefers-color-scheme"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Hina-highlight ang mga frame (pula) na na-detect na mga ad."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Mga border ng hit-test"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Mga border ng layer"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Nagpapakita ng overlay na may Core Web Vitals."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Ipinapakita ang mga border sa mga rehiyon ng hit-test."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Ipinapakita ang mga border ng layer (orange/olive) at mga tile (cyan)."
@@ -998,10 +1004,13 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | showRendering": {
     "message": "Ipakita ang Pag-render"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | toggleCssPrefersColorSchemeMedia": {
+    "message": "Toggle forces CSS prefers-color-scheme color"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "problema sa paningin"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Pangunahin"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1045,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Ipakita ang drawer ng console"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "Nagbago ang scheme ng kulay na gusto ng system. Para ilapat ang pagbabagong ito sa DevTools, mag-reload."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "I-undock sa hiwalay na window"
@@ -1190,41 +1196,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Mag-zoom out"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Node"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Node"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Magdagdag ng koneksyon"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Address ng network (hal. localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "Walang tinukoy na koneksyon"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Gabay sa pag-debug ng Node.js"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Tumukoy ng endpoint ng network at awtomatikong kokonekta rito ang DevTools. Basahin ang {PH1} para matuto pa."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Pangunahin"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Koneksyon"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Node"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "node"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Ipakita ang Koneksyon"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Node"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Pangunahin"
@@ -1304,6 +1310,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "Isinusulat ang file…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Infrastructure ng Client Hints"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Patakaran sa Seguridad ng Content (Content Security Policy o CSP) - Eval"
   },
@@ -1319,17 +1328,182 @@
   "models/issues_manager/ContentSecurityPolicyIssue.ts | trustedTypesPolicyViolation": {
     "message": "Mga Pinagkakatiwalaang Uri - Paglabag sa patakaran"
   },
+  "models/issues_manager/CookieIssue.ts | aSecure": {
+    "message": "isang secure"
+  },
+  "models/issues_manager/CookieIssue.ts | anInsecure": {
+    "message": "isang hindi secure"
+  },
+  "models/issues_manager/CookieIssue.ts | firstPartySetsExplained": {
+    "message": "First-Party Sets at attribute na SameParty"
+  },
+  "models/issues_manager/CookieIssue.ts | howSchemefulSamesiteWorks": {
+    "message": "Paano Gumagana ang Schemeful na Same-Site"
+  },
+  "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
+    "message": "Ipinapaliwanag ang SameSite cookies"
+  },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Pagbabahagi ng Cross-Origin Resource (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS para sa mga pribadong network (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Access sa Pribadong Network"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP at COEP"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | samesiteAndSameorigin": {
     "message": "Same-Site at Same-Origin"
+  },
+  "models/issues_manager/DeprecationIssue.ts | authorizationCoveredByWildcard": {
+    "message": "Authorization will not be covered by the wildcard symbol (*) in CORS Access-Control-Allow-Headers handling."
+  },
+  "models/issues_manager/DeprecationIssue.ts | canRequestURLHTTPContainingNewline": {
+    "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesConnectionInfo": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesFirstPaintAfterLoadTime": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Paint Timing."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesWasAlternateProtocolAvailable": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: nextHopProtocol in Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cookieWithTruncatingChar": {
+    "message": "Cookies containing a \\(0|r|n) character will be rejected instead of truncated."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginAccessBasedOnDocumentDomain": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. This deprecation warning is for a cross-origin access that was enabled by setting document.domain."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginWindowApi": {
+    "message": "Triggering {PH1} from cross origin iframes has been deprecated and will be removed in the future."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cssSelectorInternalMediaControlsOverlayCastButton": {
+    "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
+  },
+  "models/issues_manager/DeprecationIssue.ts | customCursorIntersectsViewport": {
+    "message": "Custom cursors with size greater than 32x32 DIP intersecting native UI is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecatedWithReplacement": {
+    "message": "{PH1} is deprecated. Please use {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecationExample": {
+    "message": "Isa itong halimbawa ng isinalin na mensahe sa isyu sa paghinto sa paggamit."
+  },
+  "models/issues_manager/DeprecationIssue.ts | documentDomainSettingWithoutOriginAgentClusterHeader": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. To continue using this feature, please opt-out of origin-keyed agent clusters by sending an Origin-Agent-Cluster: ?0 header along with the HTTP response for the document and frames. See https://developer.chrome.com/blog/immutable-document-domain/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | eventPath": {
+    "message": "Event.path is deprecated and will be removed. Please use Event.composedPath() instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | feature": {
+    "message": "Tingnan ang page ng status ng feature para sa higit pang detalye."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOrigin": {
+    "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOriginDeprecatedNotRemoved": {
+    "message": "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | getUserMediaInsecureOrigin": {
+    "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | hostCandidateAttributeGetter": {
+    "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | insecurePrivateNetworkSubresourceRequest": {
+    "message": "The website requested a subresource from a network that it could only access because of its users' privileged network position. These requests expose non-public devices and servers to the internet, increasing the risk of a cross-site request forgery (CSRF) attack, and/or information leakage. To mitigate these risks, Chrome deprecates requests to non-public subresources when initiated from non-secure contexts, and will start blocking them."
+  },
+  "models/issues_manager/DeprecationIssue.ts | legacyConstraintGoogIPv6": {
+    "message": "IPv6 is enabled-by-default and the ability to disable it using googIPv6 will soon be removed. Please stop using this legacy constraint."
+  },
+  "models/issues_manager/DeprecationIssue.ts | localCSSFileExtensionRejected": {
+    "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaElementAudioSourceNode": {
+    "message": "Creating a MediaElementAudioSourceNode on an OfflineAudioContext is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceAbortRemove": {
+    "message": "Using SourceBuffer.abort() to abort remove()'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should instead await updateend. abort() is intended to only abort an asynchronous media append or reset parser state."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceDurationTruncatingBuffered": {
+    "message": "Setting MediaSource.duration below the highest presentation timestamp of any buffered coded frames is deprecated due to specification change. Support for implicit removal of truncated buffered media will be removed in the future. You should instead perform explicit remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration."
+  },
+  "models/issues_manager/DeprecationIssue.ts | milestone": {
+    "message": "Magkakaroon ng bisa ang pagbabagong ito sa milestone na {milestone}."
+  },
+  "models/issues_manager/DeprecationIssue.ts | noSysexWebMIDIWithoutPermission": {
+    "message": "Web MIDI will ask a permission to use even if the sysex is not specified in the MIDIOptions."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationInsecureOrigin": {
+    "message": "The Notification API may no longer be used from insecure origins. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationPermissionRequestedIframe": {
+    "message": "Permission for the Notification API may no longer be requested from a cross-origin iframe. You should consider requesting permission from a top-level frame or opening a new window instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | obsoleteWebRtcCipherSuite": {
+    "message": "Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestBasicCard": {
+    "message": "The basic-card payment method is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestShowWithoutGesture": {
+    "message": "Calling PaymentRequest.show() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | pictureSourceSrc": {
+    "message": "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | prefixedStorageInfo": {
+    "message": "window.webkitStorageInfo is deprecated. Please use navigator.webkitTemporaryStorage or navigator.webkitPersistentStorage instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | requestedSubresourceWithEmbeddedCredentials": {
+    "message": "Subresource requests whose URLs contain embedded credentials (e.g. https://user:pass@host/) are blocked."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpFalse": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a false value for this constraint, which is interpreted as an attempt to use the removed SDES key negotiation method. This functionality is removed; use a service that supports DTLS key negotiation instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpTrue": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a true value for this constraint, which had no effect, but you can remove this constraint for tidiness."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics": {
+    "message": "Complex Plan B SDP detected. This dialect of the Session Description Protocol is no longer supported. Please use Unified Plan SDP instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionSdpSemanticsPlanB": {
+    "message": "Plan B SDP semantics, which is used when constructing an RTCPeerConnection with {sdpSemantics:'plan-b'}, is a legacy non-standard version of the Session Description Protocol that has been permanently deleted from the Web Platform. It is still available when building with IS_FUCHSIA, but we intend to delete it as soon as possible. Stop depending on it. See https://crbug.com/1302249 for status."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcpMuxPolicyNegotiate": {
+    "message": "The rtcpMuxPolicy option is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtpDataChannel": {
+    "message": "RTP data channels are no longer supported. The RtpDataChannels constraint is currently ignored, and may cause an error at a later date."
+  },
+  "models/issues_manager/DeprecationIssue.ts | sharedArrayBufferConstructedWithoutIsolation": {
+    "message": "SharedArrayBuffer will require cross-origin isolation. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | textToSpeech_DisallowedByAutoplay": {
+    "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | title": {
+    "message": "Gumagamit ng Hindi na Ginagamit na Feature"
+  },
+  "models/issues_manager/DeprecationIssue.ts | v8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
+    "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | vendorSpecificApi": {
+    "message": "{PH1} is vendor-specific. Please use the standard {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xhrJSONEncodingDetection": {
+    "message": "UTF-16 is not supported by response json in XMLHttpRequest"
+  },
+  "models/issues_manager/DeprecationIssue.ts | xmlHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
+    "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help, check https://xhr.spec.whatwg.org/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xrSupportsSession": {
+    "message": "supportsSession() is deprecated. Please use isSessionSupported() and check the resolved boolean value instead."
+  },
+  "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
+    "message": "Federated Credential Management API"
   },
   "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
     "message": "Mga Portal - Mga channel ng komunikasyon na iisa ang origin"
@@ -1367,29 +1541,11 @@
   "models/issues_manager/QuirksModeIssue.ts | documentCompatibilityMode": {
     "message": "Compatibility mode ng dokumento"
   },
-  "models/issues_manager/SameSiteCookieIssue.ts | aSecure": {
-    "message": "isang secure"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | anInsecure": {
-    "message": "isang hindi secure"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | firstPartySetsExplained": {
-    "message": "First-Party Sets at attribute na SameParty"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | howSchemefulSamesiteWorks": {
-    "message": "Paano Gumagana ang Schemeful na Same-Site"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | samesiteCookiesExplained": {
-    "message": "Ipinapaliwanag ang SameSite cookies"
-  },
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "Pag-enable sa SharedArrayBuffer"
   },
   "models/issues_manager/TrustedWebActivityIssue.ts | changesToQualityCriteriaForPwas": {
     "message": "Mga pagbabago sa mga pamantayan sa kalidad para sa mga PWA na gumagamit ng Pinagkakatiwalaang Aktibidad sa Web"
-  },
-  "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
-    "message": "Pinaghihigpitan ang pagbabahagi ng Wasm module sa parehong pinagmulan"
   },
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<anonymous>"
@@ -1414,9 +1570,6 @@
   },
   "models/logs/logs-meta.ts | reset": {
     "message": "pag-reset"
-  },
-  "models/persistence/Automapping.ts | theAttemptToBindSInTheWorkspace": {
-    "message": "Pumalya ang pagsubok na i-bind ang \"{PH1}\" sa workspace dahil mali ang URI na ito."
   },
   "models/persistence/EditFileSystemView.ts | add": {
     "message": "Idagdag"
@@ -1559,8 +1712,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Accessibility Tree"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "Lumipat ang accessibility tree sa kanang sulok sa itaas ng DOM tree."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "I-enable ang buong page na accessibility tree"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Binalewala"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Kailangang i-reload bago magkabisa ang pagbabago."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Mag-scroll hanggang sa may makita"
@@ -2051,6 +2213,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Hindi ma-download ang kinakailangang icon mula sa manifest"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Madilim na kulay ng background"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Kulay ng madilim na tema"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Paglalarawan"
   },
@@ -2232,7 +2400,7 @@
     "message": "Kulay ng tema"
   },
   "panels/application/ApplicationPanelCacheSection.ts | backForwardCache": {
-    "message": "Back-forward Cache"
+    "message": "Back/forward cache"
   },
   "panels/application/ApplicationPanelCacheSection.ts | cacheStorage": {
     "message": "Storage ng Cache"
@@ -2314,384 +2482,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "manggagawa"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "Ang mga page lang na nag-load sa pamamagitan ng kahilingan gamit ang GET ang kwalipikado para sa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "Ang mga page lang na may status code na 2XX ang puwedeng i-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Naka-detect ang Chrome ng pagsubok na i-execute ang JavaScript habang nasa cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng AppBanner."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Dini-disable ng mga pag-flag ang back/forward cache. Bumisita sa chrome://flags/#back-forward-cache para lokal itong i-enable sa device na ito."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Dini-disable ng command line ang back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Naka-disable ang back/forward cache dahil sa hindi sapat na memory."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Hindi sinusuportahan ng pag-delegate ang back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Naka-disable ang back/forward cache para sa prerenderer."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "Hindi puwedeng i-cache ang page dahil mayroon itong instance na BroadcastChannel na may mga nakarehistrong listener."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may header na cache-control:no-store."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "Sadyang na-clear ang cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "Inalis sa cache ang page para mapayagang ma-cache ang isa pang page."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na naglalaman ng mga plugin."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng FileChooser API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng File System Access API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng Dispatcher ng Media Device."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "May nagpe-play na media player noong nag-navigate paalis."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng MediaSession API at nagtakda ng status ng pag-playback."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng MediaSession API at nagtakda ng mga tagapangasiwa ng pagkilos."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SecurityHandler."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng Serial API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebAuthentication API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebBluetooth API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebUSB API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng nakalaang worker o worklet."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "Hindi natapos mag-load ang dokumento bago nag-navigate paalis dito."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "May service worker na na-activate habang nasa back/forward cache ang page."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "Inalis sa cache ang page para mapayagang ma-cache ang isa pang page."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na nagbigay ng access sa pag-stream ng media."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng mga portal."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng IdleManager."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na may bukas na IndexedDBConnection."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "May ginamit na mga hindi kwalipikadong API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page kung saan na-inject ng mga extension ang JavaScript."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page kung saan na-inject ng mga extension ang StyleSheet."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Internal na error."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Kasalukuyang hindi available para sa back/forward cache ang mag page na gumagamit ng KeyboardLock."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "Hindi natapos mag-load ang page bago nag-navigate paalis dito."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may pangunahing resource na may cache-control:no-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may pangunahing resource na may cache-control:no-store."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Kinansela ang pag-navigate bago ma-restore ang page mula sa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "Inalis sa cache ang page dahil may aktibong koneksyon ng network na nakatanggap ng masyadong maraming data. Nililimitahan ng Chrome ang dami ng data na puwedeng matanggap ng page habang naka-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na may inflight na fetch() o XHR)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "Inalis sa back/forward cache ang page dahil may kaugnay na pag-redirect ang isang kahilingan sa aktibong network."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "Inalis sa cache ang page dahil masyadong matagal na nakabukas ang isang koneksyon ng network. Nililimitahan ng Chrome ang haba ng oras na puwedeng makatanggap ng data ang isa page habang naka-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na walang valid na header ng sagot."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Nangyari ang pag-navigate sa frame bukod pa sa pangunahing frame."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "Ang page ay may tagapangasiwa ng pag-unload na walang header ng pag-opt in sa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang page na may mga kasalukuyang naka-index na transaksyon sa DB."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Kasalukuyang hindi available para sa back/forward cache ang mga page na may in-flight na kahilingan sa network."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na may in-flight na kahilingan sa fetch network."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Kasalukuyang hindi available para sa back/forward cache ang mga page na may in-flight na kahilingan sa network."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Kasalukuyang hindi available para sa back/forward cache ang mga page na may in-flight na kahilingan sa network na XHR."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng PaymentManager."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng Picture-in-Picture."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng mga portal."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na nagpapakita ng UI sa Pag-print."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "Binuksan ang page gamit ang window.open() at may ibang tab na tumutukoy rito, o may window na binuksan ang page."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "Nag-crash ang proseso ng pag-render para sa page sa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "Inihinto ang proseso ng pag-render para sa page na nasa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa pag-capture ng audio."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa sensor."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa pag-sync o pag-fetch ng background."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa MIDI."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa mga notification."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng access sa storage."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa pag-capture ng video."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "Ang mga page lang na may scheme ng URL na HTTP / HTTPS ang puwedeng i-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "Na-claim ng service worker ang page habang nasa back/forward cache ito."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "May service worker na sumubok na magpadala ng MessageEvent sa page na nasa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "Na-unregister ang ServiceWorker habang nasa back/forward cache ang isang page."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Inalis sa back/forward cache ang page dahil sa pag-activate ng service worker."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Ni-restart at na-clear ng Chrome ang mga entry sa back/forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SharedWorker."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SpeechRecognizer."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SpeechSynthesis."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "May iframe sa page na nagsimula ng pag-navigate na hindi natapos."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may subresource na may cache-control:no-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may subresource na may cache-control:no-store."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "Lumampas ang page sa maximum na oras sa back/forward cache at nag-expire na ito."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "Nag-time out ang page habang pumapasok sa back/forward cache (malamang na dahil sa mga matagal na tumatakbong tagapangasiwa ng pagehide)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "Ang page ay may tagapangasiwa ng pag-unload sa pangunahing frame."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "Ang page ay may tagapangasiwa ng pag-unload sa sub frame."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Binago ng browser ang header ng override ng user agent."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na nagbigay ng access sa pag-record ng video o audio."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebDatabase."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebHID."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebLocks."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebNfc."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Kasalukuyang hindi kwalipikado para sa bfcache ang mga page na gumagamit ng WebOTPService."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may WebRTC."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebShare."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may WebSocket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may WebTransport."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebXR."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Back-forward Cache"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Status ng Back-forward Cache"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Hindi Maaaksyunan"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "Hindi naaaksyunan ang mga dahilang ito, ibig sabihin, ang pag-cache ay pinigilan ng isang bagay sa labas ng direktang kontrol ng page."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Pangunahing Frame"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Normal ang navigation (Hindi na-restore mula sa back-forward cache)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Maaaksyunan"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "Naaaksyunan ang mga dahilang ito, ibig sabihin, puwedeng linisin ang mga ito para magawang kwalipikado ang page para sa back-forward cache ang page."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Na-restore mula sa back-forward cache"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Magpatakbo ng Pagsubok"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Nakabinbin ang Suporta"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Nakabinbin ang suporta ng Chrome para sa mga dahilang ito, ibig sabihin, hindi pipigilan ng mga ito ang page sa pagiging kwalipikado para sa back-forward cache sa bersyon sa hinaharap ng Chrome."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "hindi available"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "hindi alam"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Pag-fetch ng Background"
@@ -2911,6 +2701,15 @@
   },
   "panels/application/IndexedDBViews.ts | version": {
     "message": "Bersyon"
+  },
+  "panels/application/InterestGroupStorageView.ts | clickToDisplayBody": {
+    "message": "Mag-click sa anumang event ng grupo ng interes para ipakita ang kasalukuyang status ng grupo"
+  },
+  "panels/application/InterestGroupStorageView.ts | noDataAvailable": {
+    "message": "Walang available na detalye para sa napiling grupo ng interes. Posibleng umalis sa grupo ang browser."
+  },
+  "panels/application/InterestGroupTreeElement.ts | interestGroups": {
+    "message": "Mga Grupo ng Interes"
   },
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "Access sa opener"
@@ -3251,6 +3050,411 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Ihinto ang pag-record ng mga event"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "Ang mga page lang na nag-load sa pamamagitan ng kahilingan gamit ang GET ang kwalipikado para sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "Ang mga page lang na may status code na 2XX ang puwedeng i-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Naka-detect ang Chrome ng pagsubok na i-execute ang JavaScript habang nasa cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng AppBanner."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Dini-disable ng mga pag-flag ang back/forward cache. Bumisita sa chrome://flags/#back-forward-cache para lokal itong i-enable sa device na ito."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Dini-disable ng command line ang back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Naka-disable ang back/forward cache dahil sa hindi sapat na memory."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Hindi sinusuportahan ng pag-delegate ang back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Naka-disable ang back/forward cache para sa prerenderer."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "Hindi puwedeng i-cache ang page dahil mayroon itong instance na BroadcastChannel na may mga nakarehistrong listener."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may header na cache-control:no-store."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "Sadyang na-clear ang cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "Inalis sa cache ang page para mapayagang ma-cache ang isa pang page."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na naglalaman ng mga plugin."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng FileChooser API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng File System Access API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng Dispatcher ng Media Device."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "May nagpe-play na media player noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng MediaSession API at nagtakda ng status ng pag-playback."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng MediaSession API at nagtakda ng mga tagapangasiwa ng pagkilos."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Naka-disable ang back/forward cache dahil sa screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SecurityHandler."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng Serial API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebAuthentication API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebBluetooth API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebUSB API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng nakalaang worker o worklet."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "Hindi natapos mag-load ang dokumento bago nag-navigate paalis dito."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "May App Banner noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "May Password Manager ng Chrome noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "Isinasagawa ang DOM distillation noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "May DOM Distiller Viewer noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Naka-disable ang back/forward cache dahil gumagamit ang mga extension ng messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Dapat isara ng mga extension na may long-lived na koneksyon ang koneksyon bago pumasok sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Sinubukang magpadala ng mga extension na may long-lived na koneksyon ng mga mensahe sa mga frame sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Naka-disable ang back/forward cache dahil sa mga extension."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Ipinakita ang modal dialog, gaya ng dialog para sa pagsusumite ulit ng form o http password, para sa page noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "Ipinakita ang offline na page noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "May Out-Of-Memory Intervention bar noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "May mga kahilingan sa pahintulot noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "May popup blocker noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Ipinakita ang mga detalye ng Ligtas na Pag-browse noong nag-navigate paalis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Tinukoy ng Ligtas na Pag-browse ang page na ito bilang mapang-abuso at nag-block ito ng popup."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "May service worker na na-activate habang nasa back/forward cache ang page."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | errorDocument": {
+    "message": "Naka-disable ang back/forward cache dahil sa isang error sa dokumento."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | fencedFramesEmbedder": {
+    "message": "Hindi puwedeng i-store sa bfcache ang mga page na gumagamit ng FencedFrames."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "Inalis sa cache ang page para mapayagang ma-cache ang isa pang page."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na nagbigay ng access sa pag-stream ng media."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng mga portal."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng IdleManager."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na may bukas na IndexedDBConnection."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "May ginamit na mga hindi kwalipikadong API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page kung saan na-inject ng mga extension ang JavaScript."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page kung saan na-inject ng mga extension ang StyleSheet."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Internal na error."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Kasalukuyang hindi available para sa back/forward cache ang mag page na gumagamit ng KeyboardLock."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "Hindi natapos mag-load ang page bago nag-navigate paalis dito."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may pangunahing resource na may cache-control:no-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may pangunahing resource na may cache-control:no-store."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Kinansela ang pag-navigate bago ma-restore ang page mula sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "Inalis sa cache ang page dahil may aktibong koneksyon ng network na nakatanggap ng masyadong maraming data. Nililimitahan ng Chrome ang dami ng data na puwedeng matanggap ng page habang naka-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na may inflight na fetch() o XHR)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "Inalis sa back/forward cache ang page dahil may kaugnay na pag-redirect ang isang kahilingan sa aktibong network."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "Inalis sa cache ang page dahil masyadong matagal na nakabukas ang isang koneksyon ng network. Nililimitahan ng Chrome ang haba ng oras na puwedeng makatanggap ng data ang isa page habang naka-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na walang valid na header ng sagot."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Nangyari ang pag-navigate sa frame bukod pa sa pangunahing frame."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang page na may mga kasalukuyang naka-index na transaksyon sa DB."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Kasalukuyang hindi available para sa back/forward cache ang mga page na may in-flight na kahilingan sa network."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na may in-flight na kahilingan sa fetch network."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Kasalukuyang hindi available para sa back/forward cache ang mga page na may in-flight na kahilingan sa network."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Kasalukuyang hindi available para sa back/forward cache ang mga page na may in-flight na kahilingan sa network na XHR."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng PaymentManager."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng Picture-in-Picture."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng mga portal."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na nagpapakita ng UI sa Pag-print."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "Binuksan ang page gamit ang 'window.open()' at may ibang tab na tumutukoy rito, o may window na binuksan ang page."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "Nag-crash ang proseso ng pag-render para sa page sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "Inihinto ang proseso ng pag-render para sa page na nasa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa pag-capture ng audio."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa sensor."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa pag-sync o pag-fetch ng background."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa MIDI."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa mga notification."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng access sa storage."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na humiling ng mga pahintulot sa pag-capture ng video."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "Ang mga page lang na may scheme ng URL na HTTP / HTTPS ang puwedeng i-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "Na-claim ng service worker ang page habang nasa back/forward cache ito."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "May service worker na sumubok na magpadala ng MessageEvent sa page na nasa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "Na-unregister ang ServiceWorker habang nasa back/forward cache ang isang page."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Inalis sa back/forward cache ang page dahil sa pag-activate ng service worker."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Ni-restart at na-clear ng Chrome ang mga entry sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SharedWorker."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SpeechRecognizer."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng SpeechSynthesis."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "May iframe sa page na nagsimula ng pag-navigate na hindi natapos."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may subresource na may cache-control:no-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may subresource na may cache-control:no-store."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "Lumampas ang page sa maximum na oras sa back/forward cache at nag-expire na ito."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "Nag-time out ang page habang pumapasok sa back/forward cache (malamang na dahil sa mga matagal na tumatakbong tagapangasiwa ng pagehide)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "Ang page ay may tagapangasiwa ng pag-unload sa pangunahing frame."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "Ang page ay may tagapangasiwa ng pag-unload sa sub frame."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Binago ng browser ang header ng override ng user agent."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na nagbigay ng access sa pag-record ng video o audio."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebDatabase."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebHID."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebLocks."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebNfc."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Kasalukuyang hindi kwalipikado para sa bfcache ang mga page na gumagamit ng WebOTPService."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may WebRTC."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebShare."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may WebSocket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Hindi puwedeng pumasok sa back/forward cache ang mga page na may WebTransport."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Kasalukuyang hindi kwalipikado para sa back/forward cache ang mga page na gumagamit ng WebXR."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Back/forward cache"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blankURLTitle": {
+    "message": "Blangkong URL [{PH1}]"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blockingExtensionId": {
+    "message": "Extension id: "
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Hindi Maaaksyunan"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "Hindi naaaksyunan ang mga dahilang ito, ibig sabihin, ang pag-cache ay pinigilan ng isang bagay sa labas ng direktang kontrol ng page."
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesPerIssue": {
+    "message": "{n,plural, =1{# frame}one{# frame}other{# na frame}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesTitle": {
+    "message": "Mga Frame"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInMultipleFrames": {
+    "message": "{n,plural, =1{# isyu ang nakita sa {m} (na) frame.}one{# isyu ang nakita sa {m} (na) frame.}other{# na isyu ang nakita sa {m} (na) frame.}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInSingleFrame": {
+    "message": "{n,plural, =1{# isyu ang nakita sa 1 frame.}one{# isyu ang nakita sa 1 frame.}other{# na isyu ang nakita sa 1 frame.}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Matuto pa: pagiging kwalipikado sa back/forward cache"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Pangunahing Frame"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Hindi naihatid mula sa back/forward cache: para i-trigger ang back/forward cache, gamitin ang mga pabalik/pasulong na button ng Chrome, o gamitin ang button na subukan sa ibaba para awtomatikong mag-navigate palayo at pabalik."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Maaaksyunan"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "Naaaksyunan ang mga dahilang ito, ibig sabihin, puwedeng linisin ang mga ito para magawang kwalipikado ang page para sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Matagumpay na naihatid mula sa back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Subukan ang back/forward cache"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Nagpapatakbo ng test"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Nakabinbin ang Suporta"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Nakabinbin ang suporta ng Chrome para sa mga dahilang ito, ibig sabihin, hindi pipigilan ng mga ito ang page sa pagiging kwalipikado para sa back/forward cache sa bersyon sa hinaharap ng Chrome."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "hindi available"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Hindi Alam ang Status"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "Walang maipapakitang endpoint"
   },
@@ -3297,22 +3501,16 @@
     "message": "I-click para ipakita sa panel ng Mga Source"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "Mayroong ad script sa (async) stack noong ginawa ang frame na ito. Posibleng magbigay ng higit pang insight ang pagsusuri sa stack trace ng paggawa ng frame na ito."
+    "message": "May ad script sa (async) stack noong ginawa ang frame na ito. Posibleng magbigay ng higit pang insigt ang pagsusuri sa stack trace ng paggawa ng frame na ito."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Stack Trace sa Paggawa ng Frame"
+    "message": "Paggawa ng Frame na Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "Ginawa ang frame na ito sa pamamagitan ng program. Ipinapakita ng stack trace kung saan ito nangyari."
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Patakaran sa Cross-Origin na Embedder"
+    "message": "Ginawa ang frame na ito sa pamamagitan ng program. Ipinapakita ng stack trace kung saan ito naganap."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Naka-isolate sa Cross-Origin"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Patakaran sa Cross-Origin Opener"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Dokumento"
@@ -3324,7 +3522,7 @@
     "message": "Matuto pa"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "Secure na konteksto ang localhost sa lahat ng pagkakataon"
+    "message": "Palaging secure na konteksto ang Localhost"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "Itinuturing na ad frame ang frame na ito dahil ad resource ang kasalukuyang (o dating) pangunahing dokumento."
@@ -3338,14 +3536,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Origin"
   },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Mga Trial ng Origin"
-  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Element ng May-ari"
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "Itinuturing na ad frame ang frame na ito dahil ad frame ang pangunahing frame nito."
+  },
+  "panels/application/components/FrameDetailsView.ts | refresh": {
+    "message": "I-refresh"
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "nag-uulat sa"
@@ -3366,10 +3564,10 @@
     "message": "Seguridad at Pag-isolate"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "Available ang constructor ng SharedArrayBuffer at maililipat ang mga SAB sa pamamagitan ng postMessage"
+    "message": "Available ang constructor ng SharedArrayBuffer at maililipat ang SABs sa pamamagitan ng postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "Available ang constructor ng SharedArrayBuffer pero hindi maililipat ang mga SAB sa pamamagitan ng postMessage"
+    "message": "Available ang constructor ng SharedArrayBuffer pero hindi maililipat ang SABs sa pamamagitan ng postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "Hindi secure ang scheme ng frame"
@@ -3400,6 +3598,24 @@
   },
   "panels/application/components/FrameDetailsView.ts | yes": {
     "message": "Oo"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | allInterestGroupStorageEvents": {
+    "message": "Lahat ng event sa storage ng grupo ng interes."
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventTime": {
+    "message": "Oras ng Event"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventType": {
+    "message": "Uri ng Access"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupName": {
+    "message": "Pangalan"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupOwner": {
+    "message": "May-ari"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | noEvents": {
+    "message": "Walang na-record na event ng grupo ng interes."
   },
   "panels/application/components/OriginTrialTreeView.ts | expiryTime": {
     "message": "Oras ng Pag-expire"
@@ -3440,6 +3656,9 @@
   "panels/application/components/PermissionsPolicySection.ts | clickToShowIframe": {
     "message": "I-click para ipakita ang pinakamataas na iframe na hindi nagpapahintulot sa feature na ito sa panel ng mga element."
   },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByFencedFrame": {
+    "message": "naka-disable sa loob ng isang fencedframe"
+  },
   "panels/application/components/PermissionsPolicySection.ts | disabledByHeader": {
     "message": "na-disable ng header na \"Permissions-Policy\""
   },
@@ -3455,8 +3674,17 @@
   "panels/application/components/PermissionsPolicySection.ts | showDetails": {
     "message": "Ipakita ang mga detalye"
   },
+  "panels/application/components/ReportsGrid.ts | destination": {
+    "message": "Destinasyon"
+  },
+  "panels/application/components/ReportsGrid.ts | generatedAt": {
+    "message": "Nabuo noong"
+  },
   "panels/application/components/ReportsGrid.ts | noReportsToDisplay": {
     "message": "Walang maipapakitang ulat"
+  },
+  "panels/application/components/ReportsGrid.ts | status": {
+    "message": "Status"
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "Hindi ma-render ang stack trace"
@@ -3620,6 +3848,12 @@
   "panels/changes/ChangesView.ts | binaryData": {
     "message": "Binary na data"
   },
+  "panels/changes/ChangesView.ts | copy": {
+    "message": "Kopyahin"
+  },
+  "panels/changes/ChangesView.ts | copyAllChangesFromCurrentFile": {
+    "message": "Kopyahin ang lahat ng pagbabago mula sa kasalukuyang file"
+  },
   "panels/changes/ChangesView.ts | noChanges": {
     "message": "Walang pagbabago"
   },
@@ -3698,11 +3932,20 @@
   "panels/console/ConsoleView.ts | allLevels": {
     "message": "Lahat ng antas"
   },
+  "panels/console/ConsoleView.ts | autocompleteFromHistory": {
+    "message": "I-autocomplete mula sa history"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "na-clear ang Console"
   },
   "panels/console/ConsoleView.ts | consoleSettings": {
     "message": "Mga setting ng Console"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarHidden": {
+    "message": "Nakatago ang sidebar ng console"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarShown": {
+    "message": "Ipinapakita ang sidebar ng console"
   },
   "panels/console/ConsoleView.ts | copyVisibleStyledSelection": {
     "message": "Kopyahin ang nakikitang may istilong pagpipilian"
@@ -3773,6 +4016,9 @@
   "panels/console/ConsoleView.ts | logLevels": {
     "message": "Mga antas ng log"
   },
+  "panels/console/ConsoleView.ts | logXMLHttpRequests": {
+    "message": "I-log ang XMLHttpRequests"
+  },
   "panels/console/ConsoleView.ts | onlyShowMessagesFromTheCurrentContext": {
     "message": "Ipakita lang ang mga mensahe mula sa kasalukuyang konteksto (top, iframe, worker, extension)"
   },
@@ -3805,6 +4051,9 @@
   },
   "panels/console/ConsoleView.ts | showCorsErrorsInConsole": {
     "message": "Ipakita ang mga error sa CORS sa console"
+  },
+  "panels/console/ConsoleView.ts | treatEvaluationAsUserActivation": {
+    "message": "Ituring na pag-activate ng user ang pagsusuri"
   },
   "panels/console/ConsoleView.ts | verbose": {
     "message": "Verbose"
@@ -4229,20 +4478,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Inilalapat ang Width sa inline na element"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Aktibong nagsisikap ang aming team sa feature na ito at hinahanap namin ang iyong {PH1}!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "I-capture ang pangkalahatang-ideya"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Mag-capture ng pangkalahatang-ideya ng CSS ng iyong page"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "feedback"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Feedback"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Tumukoy ng mga posibleng pagpapahusay sa CSS"
@@ -4253,14 +4493,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Hanapin ang mga apektadong element sa panel na Mga Element"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Preview na feature"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Quick start: magsimula sa bagong panel ng Pangkalahatang-ideya ng CSS"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Video at dokumentasyon"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "Pangkalahatang-ideya ng CSS"
@@ -4375,6 +4609,12 @@
   },
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "Na-compute"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesHidden": {
+    "message": "Nakatago ang sidebar ng Mga Na-compute na Istilo"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesShown": {
+    "message": "Ipinapakita ang sidebar ng Mga Na-compute na Istilo"
   },
   "panels/elements/ElementsPanel.ts | domTreeExplorer": {
     "message": "DOM tree explorer"
@@ -4571,6 +4811,12 @@
   "panels/elements/EventListenersWidget.ts | showListenersOnTheAncestors": {
     "message": "Ipakita ang mga listener sa mga pinanggalingan"
   },
+  "panels/elements/LayersWidget.ts | cssLayersTitle": {
+    "message": "Mga CSS layer"
+  },
+  "panels/elements/LayersWidget.ts | toggleCSSLayers": {
+    "message": "I-toggle ang view ng Mga CSS Layer"
+  },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
     "message": "Breakpoint ng DOM"
   },
@@ -4591,6 +4837,63 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Mga Na-render na Font"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "I-filter"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "I-filter ang Mga Property"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "Walang tumutugmang property"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Ipakita lahat"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "Kapag naka-uncheck, ang mga property lang na may mga value na hindi null o hindi tinukoy ang ipapakita"
+  },
+  "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
+    "message": "binuong stylesheet"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllCSSChanges": {
+    "message": "Kopyahin ang lahat ng pagbabago sa CSS"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllDeclarations": {
+    "message": "Kopyahin ang lahat ng declaration"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyRule": {
+    "message": "Kopyahin ang panuntunan"
+  },
+  "panels/elements/StylePropertiesSection.ts | copySelector": {
+    "message": "Kopyahin ang selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | cssSelector": {
+    "message": "CSS selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
+    "message": "na-inject na stylesheet"
+  },
+  "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
+    "message": "Ilagay ang Panuntunan sa Istilo sa Ibaba"
+  },
+  "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
+    "message": "{PH1}[Istilo ng Mga Attribute]"
+  },
+  "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
+    "message": "Ipakita ang Lahat ng Property ({PH1} pa)"
+  },
+  "panels/elements/StylePropertiesSection.ts | styleAttribute": {
+    "message": "Attribute na style"
+  },
+  "panels/elements/StylePropertiesSection.ts | userAgentStylesheet": {
+    "message": "stylesheet ng user agent"
+  },
+  "panels/elements/StylePropertiesSection.ts | viaInspector": {
+    "message": "sa pamamagitan ng inspector"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | copyAllCSSChanges": {
+    "message": "Kopyahin ang lahat ng pagbabago sa CSS"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Kopyahin ang lahat ng declaration bilang JS"
@@ -4637,26 +4940,23 @@
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "Tingnan ang na-compute na value"
   },
-  "panels/elements/StylesSidebarPane.ts | constructedStylesheet": {
-    "message": "binuong stylesheet"
+  "panels/elements/StylesSidebarPane.ts | automaticDarkMode": {
+    "message": "Awtomatikong dark mode"
   },
-  "panels/elements/StylesSidebarPane.ts | copyAllDeclarations": {
-    "message": "Kopyahin ang lahat ng declaration"
+  "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
+    "message": "I-click para ilabas ang layer sa layer tree"
   },
-  "panels/elements/StylesSidebarPane.ts | copyRule": {
-    "message": "Kopyahin ang panuntunan"
+  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
+    "message": "Nakopya sa clipboard"
   },
-  "panels/elements/StylesSidebarPane.ts | copySelector": {
-    "message": "Kopyahin ang selector"
+  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
+    "message": "Kopyahin ang lahat ng pagbabago sa CSS"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
-    "message": "Pangalan ng property na CSS"
+    "message": "Pangalan ng property na CSS: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
-    "message": "Value ng property na CSS"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssSelector": {
-    "message": "CSS selector"
+    "message": "Value ng property na CSS: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "I-filter"
@@ -4670,20 +4970,20 @@
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
     "message": "Dagdagan/bawasan gamit ang mousewheel o pataas/pababang key {PH1}: R ±1, Shift: G ±1, Alt: B ±1"
   },
+  "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
+    "message": "Na-inherit mula sa ::{PH1} pseudo ng "
+  },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "Na-inherit mula sa "
-  },
-  "panels/elements/StylesSidebarPane.ts | injectedStylesheet": {
-    "message": "na-inject na stylesheet"
-  },
-  "panels/elements/StylesSidebarPane.ts | insertStyleRuleBelow": {
-    "message": "Ilagay ang Panuntunan sa Istilo sa Ibaba"
   },
   "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
     "message": "Invalid na value ng property"
   },
   "panels/elements/StylesSidebarPane.ts | invalidString": {
     "message": "{PH1}, pangalan ng property: {PH2}, value ng property: {PH3}"
+  },
+  "panels/elements/StylesSidebarPane.ts | layer": {
+    "message": "Layer"
   },
   "panels/elements/StylesSidebarPane.ts | newStyleRule": {
     "message": "Bagong Panuntunan sa Istilo"
@@ -4694,23 +4994,11 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "Pseudo element na ::{PH1}"
   },
-  "panels/elements/StylesSidebarPane.ts | sattributesStyle": {
-    "message": "{PH1}[Istilo ng Mga Attribute]"
-  },
-  "panels/elements/StylesSidebarPane.ts | showAllPropertiesSMore": {
-    "message": "Ipakita ang Lahat ng Property ({PH1} pa)"
-  },
-  "panels/elements/StylesSidebarPane.ts | styleAttribute": {
-    "message": "Attribute na style"
+  "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
+    "message": "I-toggle ang mga karaniwang pag-emulate sa pag-render"
   },
   "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
     "message": "Hindi kilalang pangalan ng property"
-  },
-  "panels/elements/StylesSidebarPane.ts | userAgentStylesheet": {
-    "message": "stylesheet ng user agent"
-  },
-  "panels/elements/StylesSidebarPane.ts | viaInspector": {
-    "message": "sa pamamagitan ng inspector"
   },
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "Binalewala"
@@ -4980,7 +5268,7 @@
     "message": "Itago ang mga media query"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Itago ang mga ruler"
+    "message": "Itago ang mga ruler sa toolbar ng Device Mode"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Ipakita ang frame ng device"
@@ -4989,7 +5277,7 @@
     "message": "Ipakita ang mga media query"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Ipakita ang mga ruler"
+    "message": "Ipakita ang mga ruler sa toolbar ng Device Mode"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "I-toggle ang toolbar ng device"
@@ -5014,36 +5302,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "I-toggle kung passive o nagba-block ang event listener"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Isara"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Matuto pa"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "bug"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Huwag ipakita ang Ano'ng Bago pagkatapos ng bawat update"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Mga tala sa pag-release"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Mag-ulat ng isyu sa DevTools"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Mag-ulat ng isyu sa pagsasalin"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Ipakita kung Ano'ng Bago"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Ipakita ang Ano'ng Bago pagkatapos ng bawat update"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "Ano'ng Bago"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "I-clear lahat"
@@ -5255,14 +5513,8 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | frame": {
     "message": "Frame"
   },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidEventSourceTriggerData": {
-    "message": "Invalid na event-source-trigger-data"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
-    "message": "Invalid ang attributionsourceeventid"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
-    "message": "Invalid ang trigger-data"
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidHeaderValue": {
+    "message": "Invalid Header Value"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# paglabag}one{# paglabag}other{# na paglabag}}"
@@ -5275,6 +5527,9 @@
   },
   "panels/issues/CSPViolationsView.ts | filter": {
     "message": "I-filter"
+  },
+  "panels/issues/ComboBoxOfCheckBoxes.ts | genericMenuLabel": {
+    "message": "Menu"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
     "message": "Value ng Header na Access-Control-Allow-Credentials"
@@ -5290,6 +5545,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Hindi Pinapayagang Paraan ng Kahilingan"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Hindi Naisagawa ang Kahilingan"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Header"
@@ -5366,8 +5624,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "I-unhide lahat"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Itago ang lahat ng kasalukuyang {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Itago ang lahat ng kasalukuyang Breaking Change"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Itago ang lahat ng kasalukuyang Pagpapahusay"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Itago ang lahat ng kasalukuyang Error sa Page"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Mga Apektadong Resource"
@@ -5461,27 +5725,6 @@
   },
   "panels/issues/IssuesPane.ts | trustedWebActivity": {
     "message": "Pinagkakatiwalaang Aktibidad sa Web"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | blocked": {
-    "message": "naka-block"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | nModuleTransfers": {
-    "message": "{n,plural, =1{# module}one{# module}other{# na module}}"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | sourceOrigin": {
-    "message": "Origin ng Source"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | status": {
-    "message": "Status"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | targetOrigin": {
-    "message": "Origin ng Target"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | warned": {
-    "message": "babala"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | wasmModuleUrl": {
-    "message": "URL ng Wasm Module"
   },
   "panels/issues/components/HideIssuesMenu.ts | tooltipTitle": {
     "message": "Itago ang mga isyu"
@@ -5723,6 +5966,15 @@
   "panels/lighthouse/LighthouseController.ts | isThisPageUsableByPeopleWith": {
     "message": "Magagamit ba ng mga taong may mga kapansanan o problema ang page na ito?"
   },
+  "panels/lighthouse/LighthouseController.ts | javaScriptDisabled": {
+    "message": "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
+  },
+  "panels/lighthouse/LighthouseController.ts | legacyNavigation": {
+    "message": "Legacy na pag-navigate"
+  },
+  "panels/lighthouse/LighthouseController.ts | lighthouseMode": {
+    "message": "Lighthouse mode"
+  },
   "panels/lighthouse/LighthouseController.ts | localStorage": {
     "message": "Lokal na Storage"
   },
@@ -5731,6 +5983,12 @@
   },
   "panels/lighthouse/LighthouseController.ts | multipleTabsAreBeingControlledBy": {
     "message": "Marami ang tab na kinokontrol ng parehong service worker. Isara ang iba mo pang tag sa parehong pinagmulan para ma-audit ang page na ito."
+  },
+  "panels/lighthouse/LighthouseController.ts | navigation": {
+    "message": "Navigation (Default)"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigationTooltip": {
+    "message": "Navigation mode analyzes a page load, exactly like the original Lighthouse reports."
   },
   "panels/lighthouse/LighthouseController.ts | performance": {
     "message": "Performance"
@@ -5744,6 +6002,9 @@
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "I-reset ang storage (cache, service workers, atbp.) bago mag-audit. (Mainam para sa performance at pagsubok sa PWA)"
   },
+  "panels/lighthouse/LighthouseController.ts | runLighthouseInMode": {
+    "message": "Patakbuhin ang Lighthouse sa navigation, timespan, o snapshot mode"
+  },
   "panels/lighthouse/LighthouseController.ts | seo": {
     "message": "SEO"
   },
@@ -5753,11 +6014,26 @@
   "panels/lighthouse/LighthouseController.ts | simulatedThrottling": {
     "message": "Simulated na pag-throttle"
   },
+  "panels/lighthouse/LighthouseController.ts | snapshot": {
+    "message": "Snapshot"
+  },
+  "panels/lighthouse/LighthouseController.ts | snapshotTooltip": {
+    "message": "Snapshot mode analyzes the page in a particular state, typically after user interactions."
+  },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingLoadingPlural": {
     "message": "Posibleng may naka-store na data na nakakaapekto sa bilis ng pag-load sa mga lokasyong ito: {PH1}. I-audit ang page na ito sa incognito window para hindi maapektuhan ng mga resource na iyon ang iyong mga score."
   },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingSingular": {
     "message": "Posibleng may naka-store na data na nakakaapekto sa bilis ng pag-load sa lokasyong ito: {PH1}. I-audit ang page na ito sa incognito window para hindi maapektuhan ng mga resource na iyon ang iyong mga score."
+  },
+  "panels/lighthouse/LighthouseController.ts | timespan": {
+    "message": "Tagal ng panahon"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespanTooltip": {
+    "message": "Timespan mode analyzes an arbitrary period of time, typically containing user interactions."
+  },
+  "panels/lighthouse/LighthouseController.ts | useLegacyNavigation": {
+    "message": "Suriin ang page gamit ang classic na Lighthouse kapag nasa navigation mode."
   },
   "panels/lighthouse/LighthouseController.ts | webSql": {
     "message": "SQL ng Web"
@@ -5799,7 +6075,7 @@
     "message": "Mga Ulat"
   },
   "panels/lighthouse/LighthouseStartView.ts | categories": {
-    "message": "Mga Kategorya"
+    "message": "Categories"
   },
   "panels/lighthouse/LighthouseStartView.ts | communityPluginsBeta": {
     "message": "Mga Plugin sa Komunidad (beta)"
@@ -5815,6 +6091,27 @@
   },
   "panels/lighthouse/LighthouseStartView.ts | learnMore": {
     "message": "Matuto pa"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeNavigation": {
+    "message": "Analyze page load"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeSnapshot": {
+    "message": "Analyze page state"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | categories": {
+    "message": "Categories"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | generateLighthouseReport": {
+    "message": "Generate a Lighthouse report"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | mode": {
+    "message": "Mode"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | plugins": {
+    "message": "Plugins"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | startTimespan": {
+    "message": "Simulan ang tagal ng panahon"
   },
   "panels/lighthouse/LighthouseStatusView.ts | OfGlobalMobileUsersInWereOnGOrG": {
     "message": "Naka-2G o 3G ang 75% ng mga user ng mobile sa buong mundo noong 2016 [Source: GSMA Mobile]"
@@ -5902,6 +6199,18 @@
   },
   "panels/lighthouse/LighthouseStatusView.ts | walmartSawAIncreaseInRevenueFor": {
     "message": "Nagkaroon ang Walmart ng 1% pagtaas ng kita sa bawat 100ms na pagbilis sa pag-load ng page [Source: WPO Stats]"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | cancel": {
+    "message": "Kanselahin"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | endTimespan": {
+    "message": "Tapusin ang tagal ng panahon"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarted": {
+    "message": "Nagsimula na ang tagal ng panahon, makipag-ugnayan sa page"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
+    "message": "Nagsisimula ang tagal ng panahon…"
   },
   "panels/lighthouse/lighthouse-meta.ts | showLighthouse": {
     "message": "Ipakita ang Lighthouse"
@@ -6308,6 +6617,9 @@
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Kina-cache"
   },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "Na-update ang user agent."
+  },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Custom..."
   },
@@ -6319,6 +6631,9 @@
   },
   "panels/network/NetworkConfigView.ts | enterACustomUserAgent": {
     "message": "Maglagay ng custom na user agent"
+  },
+  "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
+    "message": "Ipinapakita ang mga kundisyon ng network"
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "Pag-throttle ng network"
@@ -6935,6 +7250,9 @@
   "panels/network/RequestHeadersView.ts | general": {
     "message": "Pangkalahatan"
   },
+  "panels/network/RequestHeadersView.ts | headerOverrides": {
+    "message": "Mga pag-override sa header"
+  },
   "panels/network/RequestHeadersView.ts | learnMore": {
     "message": "Matuto pa"
   },
@@ -7188,7 +7506,7 @@
     "message": "Hindi alam"
   },
   "panels/network/RequestTimingView.ts | waitingTtfb": {
-    "message": "Naghihintay (TTFB)"
+    "message": "Waiting for server response"
   },
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "Waterfall"
@@ -8304,10 +8622,10 @@
     "message": "Itago ang mga buong detalye"
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownIn": {
-    "message": "Kung naniniwala kang mali ang pagpapakita nito, pakibisita ang https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals."
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownInErrorSafety": {
-    "message": "Kung naniniwala kang mali ang pagpapakita nito, pakibisita ang https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals."
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | info": {
     "message": "Impormasyon"
@@ -9153,7 +9471,7 @@
     "message": "Sakop: n/a"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Sakop: {PH1} %"
+    "message": "Sakop: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Ipakita ang Mga Detalye"
@@ -9413,6 +9731,15 @@
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Magbukas ng JavaScript o CSS file para makita ang mga simbolo"
   },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
+  },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Pagsasara"
   },
@@ -9515,6 +9842,12 @@
   "panels/sources/SourcesPanel.ts | copyStringContents": {
     "message": "Kopyahin ang mga content ng string"
   },
+  "panels/sources/SourcesPanel.ts | debuggerHidden": {
+    "message": "Nakatago ang sidebar ng debugger"
+  },
+  "panels/sources/SourcesPanel.ts | debuggerShown": {
+    "message": "Ipinapakita ang sidebar ng debugger"
+  },
   "panels/sources/SourcesPanel.ts | dontPauseOnExceptions": {
     "message": "Huwag mag-pause sa mga exception"
   },
@@ -9532,6 +9865,12 @@
   },
   "panels/sources/SourcesPanel.ts | moreOptions": {
     "message": "Higit pang opsyon"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorHidden": {
+    "message": "Nakatago ang sidebar ng navigator"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorShown": {
+    "message": "Ipinapakita ang sidebar ng navigator"
   },
   "panels/sources/SourcesPanel.ts | openInSourcesPanel": {
     "message": "Buksan sa panel na Mga Source"
@@ -9610,6 +9949,24 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "I-refresh ang mga expression na babantayan"
+  },
+  "panels/sources/components/HeadersView.ts | addHeader": {
+    "message": "Magdagdag ng header"
+  },
+  "panels/sources/components/HeadersView.ts | addHeaderOverride": {
+    "message": "Magdagdag ng override ng header"
+  },
+  "panels/sources/components/HeadersView.ts | errorWhenParsing": {
+    "message": "Nagka-error noong pina-parse ang ''{PH1}''."
+  },
+  "panels/sources/components/HeadersView.ts | parsingErrorExplainer": {
+    "message": "Malamang dahil ito sa error sa syntax sa ''{PH1}''. Subukang buksan ang file na ito sa isang panlabas na editor para ayusin ang error o i-delete ang file at gawin ulit ang override."
+  },
+  "panels/sources/components/HeadersView.ts | removeBlock": {
+    "message": "Alisin ang 'ApplyTo'-na seksyong ito"
+  },
+  "panels/sources/components/HeadersView.ts | removeHeader": {
+    "message": "Alisin ang header na ito"
   },
   "panels/sources/sources-meta.ts | activateBreakpoints": {
     "message": "I-activate ang mga breakpoint"
@@ -9866,6 +10223,12 @@
   "panels/sources/sources-meta.ts | toggleBreakpointInputWindow": {
     "message": "I-toggle ang window sa pag-input ng breakpoint"
   },
+  "panels/sources/sources-meta.ts | toggleDebuggerSidebar": {
+    "message": "Toggle debugger sidebar"
+  },
+  "panels/sources/sources-meta.ts | toggleNavigatorSidebar": {
+    "message": "Toggle navigator sidebar"
+  },
   "panels/sources/sources-meta.ts | trailing": {
     "message": "Trailing"
   },
@@ -9947,9 +10310,6 @@
   "panels/timeline/TimelineEventOverview.ts | cpu": {
     "message": "CPU"
   },
-  "panels/timeline/TimelineEventOverview.ts | fps": {
-    "message": "FPS"
-  },
   "panels/timeline/TimelineEventOverview.ts | heap": {
     "message": "HEAP"
   },
@@ -9986,9 +10346,6 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Idle na Frame"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | input": {
-    "message": "Input"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | interactions": {
     "message": "Mga Pakikipag-ugnayan"
   },
@@ -10007,14 +10364,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
     "message": "Nasa listahan ng babalewalain"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
+    "message": "Frame na Pine-present nang Hindi Buo"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | raster": {
     "message": "Raster"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | rasterizerThreadS": {
     "message": "Rasterizer Thread {PH1}"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sFfps": {
-    "message": "{PH1} ~ {PH2} fps"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
     "message": "{PH1} (oras ng isang aktibidad {PH2})"
@@ -10249,6 +10606,12 @@
   },
   "panels/timeline/TimelineTreeView.ts | heaviestStack": {
     "message": "Pinakamabigat na stack"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackHidden": {
+    "message": "Nakatago ang sidebar ng pinakamabigat na stack"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackShown": {
+    "message": "Ipinapakita ang sidebar ng pinakamabigat na stack"
   },
   "panels/timeline/TimelineTreeView.ts | hideHeaviestStack": {
     "message": "Itago ang Pinakamabigat na stack"
@@ -10541,9 +10904,6 @@
   "panels/timeline/TimelineUIUtils.ts | forcedReflow": {
     "message": "Sapilitang reflow"
   },
-  "panels/timeline/TimelineUIUtils.ts | fps": {
-    "message": "FPS"
-  },
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "Frame"
   },
@@ -10777,6 +11137,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | pinchUpdate": {
     "message": "Update sa Pag-pinch"
+  },
+  "panels/timeline/TimelineUIUtils.ts | prePaint": {
+    "message": "Pre-Paint"
   },
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "I-preview"
@@ -11306,6 +11669,9 @@
   "panels/webauthn/WebauthnPane.ts | signCount": {
     "message": "Bilang ng Signature"
   },
+  "panels/webauthn/WebauthnPane.ts | supportsLargeBlob": {
+    "message": "Supports large blob"
+  },
   "panels/webauthn/WebauthnPane.ts | supportsResidentKeys": {
     "message": "Sinusuportahan ang mga resident key"
   },
@@ -11429,6 +11795,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Ipakita ang Inspector ng Memory"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Feedback"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Preview na feature"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Aktibong nagsisikap ang aming team sa feature na ito at gusto naming malaman kung ano ang palagay mo."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Ipadala sa amin ang iyong feedback."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Video at dokumentasyon"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Ipadala sa amin ang iyong feedback."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "I-click para buksan ang network panel at ipakita ang kahilingan para sa URL na: {url}"
   },
@@ -11472,7 +11856,7 @@
     "message": "Lahat"
   },
   "ui/legacy/FilterBar.ts | clearFilter": {
-    "message": "I-clear ang input"
+    "message": "Clear input"
   },
   "ui/legacy/FilterBar.ts | egSmalldUrlacomb": {
     "message": "hal. /small[d]+/ url:a.com/b"
@@ -11500,6 +11884,12 @@
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Tool drawer"
+  },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Nakatago ang drawer"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Ipinapakita ang drawer"
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Pangunahing toolbar"
@@ -11539,6 +11929,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "I-save"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Nagsara ang koneksyon sa pag-debug. Dahilan: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Ikonekta ulit ang DevTools"
@@ -11632,6 +12025,9 @@
   },
   "ui/legacy/TargetCrashedScreen.ts | oncePageIsReloadedDevtoolsWill": {
     "message": "Kapag na-reload na ang page, awtomatikong kokonekta ulit ang DevTools."
+  },
+  "ui/legacy/Toolbar.ts | clearInput": {
+    "message": "Clear input"
   },
   "ui/legacy/Toolbar.ts | notPressed": {
     "message": "hindi pinindot"
@@ -11773,6 +12169,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Pangalan"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(opaque)"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Session"
@@ -11942,15 +12341,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Ipakita bilang object ng JavaScript"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Mga Key"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "mga keyword"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Mga lexical scope variable"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "I-collapse ang children"
   },
@@ -12038,15 +12428,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} ang napili"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "Mataas"
   },
@@ -12119,8 +12500,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Pindutin ang 'Enter' para kumpirmahin o ang 'Escape' para kanselahin.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Gamitin ang Tab para magpalit ng mga command. I-type ang '?' para makita ang mga available na command"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "I-type ang '?' para makita ang mga available na command"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Buksan ang file"
@@ -12223,9 +12604,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tab character"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Editor ng code"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Kasalukuyang source:"

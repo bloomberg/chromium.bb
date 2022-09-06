@@ -73,9 +73,10 @@ class KeepAliveComponentState : public AccumulatorComponentState {
 class AgentImplTest : public ::testing::Test {
  public:
   AgentImplTest() {
-    fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
+    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
     services_.GetOrCreateDirectory("svc")->Serve(
-        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+        fuchsia::io::OpenFlags::RIGHT_READABLE |
+            fuchsia::io::OpenFlags::RIGHT_WRITABLE,
         directory.NewRequest().TakeChannel());
 
     services_client_ =
@@ -86,7 +87,7 @@ class AgentImplTest : public ::testing::Test {
   AgentImplTest& operator=(const AgentImplTest&) = delete;
 
   fuchsia::modular::AgentPtr CreateAgentAndConnect() {
-    DCHECK(!agent_impl_);
+    EXPECT_FALSE(agent_impl_);
     agent_impl_ = std::make_unique<AgentImpl>(
         &services_, base::BindRepeating(&AgentImplTest::OnComponentConnect,
                                         base::Unretained(this)));

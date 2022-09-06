@@ -27,8 +27,8 @@ export class TestTabSearchApiProxy extends TestBrowserProxy implements
         this.callbackRouter.$.bindNewPipeAndPassRemote();
   }
 
-  closeTab(tabId: number, withSearch: boolean, closedTabIndex: number) {
-    this.methodCalled('closeTab', [tabId, withSearch, closedTabIndex]);
+  closeTab(tabId: number) {
+    this.methodCalled('closeTab', [tabId]);
   }
 
   getProfileData() {
@@ -42,9 +42,8 @@ export class TestTabSearchApiProxy extends TestBrowserProxy implements
         'openRecentlyClosedEntry', [id, withSearch, isTab, index]);
   }
 
-  switchToTab(
-      info: SwitchToTabInfo, withSearch: boolean, switchedTabIndex: number) {
-    this.methodCalled('switchToTab', [info, withSearch, switchedTabIndex]);
+  switchToTab(info: SwitchToTabInfo) {
+    this.methodCalled('switchToTab', [info]);
   }
 
   saveRecentlyClosedExpandedPref(expanded: boolean) {

@@ -13,7 +13,7 @@
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 
@@ -258,7 +258,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // successful. The callback is passed true if the DBus call is successful and
   // false otherwise.
   virtual bool RequestBrowserDataMigration(
-      const cryptohome::AccountIdentifier& cryptohome_id) = 0;
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      const bool is_move) = 0;
 
   // Map that is used to describe the set of active user sessions where |key|
   // is cryptohome id and |value| is user_id_hash.

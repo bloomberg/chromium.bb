@@ -10,6 +10,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
@@ -178,11 +179,11 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() const {
       nullptr;
 }
 
-int TestAXNodeWrapper::GetChildCount() const {
+size_t TestAXNodeWrapper::GetChildCount() const {
   return InternalChildCount();
 }
 
-gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
+gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(size_t index) {
   TestAXNodeWrapper* child_wrapper = InternalGetChild(index);
   return child_wrapper ?
       child_wrapper->ax_platform_node()->GetNativeViewAccessible() :
@@ -300,7 +301,7 @@ TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
   if (!GetClippedScreenBoundsRect().Contains(gfx::Rect(x, y, 0, 0)))
     return nullptr;
 
-  for (int i = 0; i < GetChildCount(); i++) {
+  for (size_t i = 0; i < GetChildCount(); i++) {
     TestAXNodeWrapper* child = GetOrCreate(tree_, node_->children()[i]);
     if (!child)
       return nullptr;
@@ -343,6 +344,14 @@ bool TestAXNodeWrapper::IsWebContent() const {
   return g_is_web_content;
 }
 
+bool TestAXNodeWrapper::IsReadOnlySupported() const {
+  return node_->IsReadOnlySupported();
+}
+
+bool TestAXNodeWrapper::IsReadOnlyOrDisabled() const {
+  return node_->IsReadOnlyOrDisabled();
+}
+
 // Walk the AXTree and ensure that all wrappers are created
 void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
   for (auto* child : node->children()) {
@@ -375,8 +384,9 @@ AXPlatformNode* TestAXNodeWrapper::GetFromTreeIDAndNodeID(
   return GetFromNodeID(id);
 }
 
-int TestAXNodeWrapper::GetIndexInParent() {
-  return node_ ? static_cast<int>(node_->GetUnignoredIndexInParent()) : -1;
+absl::optional<size_t> TestAXNodeWrapper::GetIndexInParent() {
+  return node_ ? absl::make_optional(node_->GetUnignoredIndexInParent())
+               : absl::nullopt;
 }
 
 void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
@@ -703,7 +713,7 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
     case ax::mojom::Role::kSection:
       if (HasStringAttribute(ax::mojom::StringAttribute::kName))
         return u"region";
-      FALLTHROUGH;
+      [[fallthrough]];
 
     default:
       return {};
@@ -897,7 +907,7 @@ TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),
       platform_node_(AXPlatformNode::Create(this)) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   native_event_target_ = gfx::kMockAcceleratedWidget;
 #else
   native_event_target_ = gfx::kNullAcceleratedWidget;
@@ -932,15 +942,13 @@ gfx::RectF TestAXNodeWrapper::GetLocation() const {
   return GetData().relative_bounds.bounds;
 }
 
-int TestAXNodeWrapper::InternalChildCount() const {
-  return static_cast<int>(node_->GetUnignoredChildCount());
+size_t TestAXNodeWrapper::InternalChildCount() const {
+  return node_->GetUnignoredChildCount();
 }
 
-TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(int index) const {
-  CHECK_GE(index, 0);
+TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(size_t index) const {
   CHECK_LT(index, InternalChildCount());
-  return GetOrCreate(
-      tree_, node_->GetUnignoredChildAtIndex(static_cast<size_t>(index)));
+  return GetOrCreate(tree_, node_->GetUnignoredChildAtIndex(index));
 }
 
 const std::vector<gfx::NativeViewAccessible>

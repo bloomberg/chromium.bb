@@ -38,7 +38,6 @@ const char* kDefaultTransceiverString =
     "    track:'receiverTrackId',\n"
     "    streams:['receiverStreamId'],\n"
     "  },\n"
-    "  stopped:false,\n"
     "  direction:'sendonly',\n"
     "  currentDirection:null,\n"
     "}";
@@ -70,8 +69,8 @@ class MockPeerConnectionTrackerHost
                void(int, const String&, const String&, const String&));
   MOCK_METHOD3(GetUserMediaFailure, void(int, const String&, const String&));
   MOCK_METHOD2(WebRtcEventLogWrite, void(int, const Vector<uint8_t>&));
-  MOCK_METHOD2(AddStandardStats, void(int, base::Value));
-  MOCK_METHOD2(AddLegacyStats, void(int, base::Value));
+  MOCK_METHOD2(AddStandardStats, void(int, base::Value::List));
+  MOCK_METHOD2(AddLegacyStats, void(int, base::Value::List));
 
   mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost>
   CreatePendingRemoteAndBind() {
@@ -105,7 +104,6 @@ std::unique_ptr<RTCRtpTransceiverPlatform> CreateDefaultTransceiver(
       RTCRtpTransceiverPlatformImplementationType::kFullTransceiver) {
     transceiver = std::make_unique<blink::FakeRTCRtpTransceiverImpl>(
         absl::nullopt, std::move(sender), std::move(receiver),
-        false /* stopped */,
         webrtc::RtpTransceiverDirection::kSendOnly /* direction */,
         absl::nullopt /* current_direction */);
   } else if (implementation_type ==
@@ -148,6 +146,12 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
   MockRTCPeerConnectionHandlerClient client_;
 };
 
+webrtc::PeerConnectionInterface::RTCConfiguration DefaultConfig() {
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+  return config;
+}
+
 }  // namespace
 
 class PeerConnectionTrackerTest : public ::testing::Test {
@@ -163,10 +167,8 @@ class PeerConnectionTrackerTest : public ::testing::Test {
   void CreateAndRegisterPeerConnectionHandler() {
     mock_handler_ = std::make_unique<MockPeerConnectionHandler>();
     EXPECT_CALL(*mock_host_, AddPeerConnection(_));
-    tracker_->RegisterPeerConnection(
-        mock_handler_.get(),
-        webrtc::PeerConnectionInterface::RTCConfiguration(), MediaConstraints(),
-        nullptr);
+    tracker_->RegisterPeerConnection(mock_handler_.get(), DefaultConfig(),
+                                     MediaConstraints(), nullptr);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -249,9 +251,8 @@ TEST_F(PeerConnectionTrackerTest, ReportInitialThermalState) {
   // Nothing is reported by default.
   EXPECT_CALL(handler0, OnThermalStateChange(_)).Times(0);
   EXPECT_CALL(*mock_host_, AddPeerConnection(_)).Times(1);
-  tracker_->RegisterPeerConnection(
-      &handler0, webrtc::PeerConnectionInterface::RTCConfiguration(),
-      MediaConstraints(), nullptr);
+  tracker_->RegisterPeerConnection(&handler0, DefaultConfig(),
+                                   MediaConstraints(), nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Report a known thermal state.
@@ -265,9 +266,8 @@ TEST_F(PeerConnectionTrackerTest, ReportInitialThermalState) {
               OnThermalStateChange(mojom::blink::DeviceThermalState::kNominal))
       .Times(1);
   EXPECT_CALL(*mock_host_, AddPeerConnection(_)).Times(1);
-  tracker_->RegisterPeerConnection(
-      &handler1, webrtc::PeerConnectionInterface::RTCConfiguration(),
-      MediaConstraints(), nullptr);
+  tracker_->RegisterPeerConnection(&handler1, DefaultConfig(),
+                                   MediaConstraints(), nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Report the unknown thermal state.
@@ -282,9 +282,8 @@ TEST_F(PeerConnectionTrackerTest, ReportInitialThermalState) {
   // Handlers registered late get no event.
   EXPECT_CALL(handler2, OnThermalStateChange(_)).Times(0);
   EXPECT_CALL(*mock_host_, AddPeerConnection(_)).Times(1);
-  tracker_->RegisterPeerConnection(
-      &handler2, webrtc::PeerConnectionInterface::RTCConfiguration(),
-      MediaConstraints(), nullptr);
+  tracker_->RegisterPeerConnection(&handler2, DefaultConfig(),
+                                   MediaConstraints(), nullptr);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -299,7 +298,6 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
       blink::FakeRTCRtpReceiverImpl(
           "receiverTrackId", {"streamIdC"},
           blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      true /* stopped */,
       webrtc::RtpTransceiverDirection::kSendRecv /* direction */,
       webrtc::RtpTransceiverDirection::kInactive /* current_direction */);
   String update_value;
@@ -324,7 +322,6 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
       "    track:'receiverTrackId',\n"
       "    streams:['streamIdC'],\n"
       "  },\n"
-      "  stopped:true,\n"
       "  direction:'sendrecv',\n"
       "  currentDirection:'inactive',\n"
       "}");
@@ -342,7 +339,6 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
       blink::FakeRTCRtpReceiverImpl(
           "receiverTrackId", {},
           blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      false /* stopped */,
       webrtc::RtpTransceiverDirection::kInactive /* direction */,
       absl::nullopt /* current_direction */);
   String update_value;
@@ -367,7 +363,6 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
       "    track:'receiverTrackId',\n"
       "    streams:[],\n"
       "  },\n"
-      "  stopped:false,\n"
       "  direction:'inactive',\n"
       "  currentDirection:null,\n"
       "}");

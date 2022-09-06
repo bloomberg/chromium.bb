@@ -15,8 +15,7 @@
 #include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/notification_permission_context.h"
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/performance_manager/test_support/site_data_utils.h"
 #endif
 #include "chrome/browser/resource_coordinator/tab_helper.h"
@@ -27,6 +26,7 @@
 #include "components/performance_manager/public/decorators/site_data_recorder.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_permission_controller.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -153,7 +153,7 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     // Some tests requires the SiteData database to be initialized.
     site_data_harness_.SetUp();
 #endif
@@ -170,7 +170,7 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
         contents1_.get());
     performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
@@ -189,7 +189,7 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
 
     tab_for_scoring_.clear();
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     site_data_harness_.TearDown(profile());
 #endif
     ChromeRenderViewHostTestHarness::TearDown();
@@ -213,7 +213,7 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
     auto* tester = content::WebContentsTester::For(contents.get());
     tester->SetLastActiveTime(last_active);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     tester->NavigateAndCommit(url);
     performance_manager::MarkWebContentsAsLoadedInBackgroundInSiteDataDb(
         contents.get());
@@ -264,7 +264,7 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
   base::SimpleTestTickClock clock_;
   TestDelegate delegate_;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   performance_manager::SiteDataTestHarness site_data_harness_;
 #endif
 
@@ -457,10 +457,8 @@ TEST_F(SessionRestorePolicyTest, NotificationPermissionSetUsedInBgBit) {
 
   // Allow |contents1_| to display notifications, this should cause the
   // |used_in_bg| bit to change to true.
-  NotificationPermissionContext::UpdatePermission(
-      profile(),
-      contents1_.get()->GetMainFrame()->GetLastCommittedOrigin().GetURL(),
-      CONTENT_SETTING_ALLOW);
+  GetBrowserContext()->SetPermissionControllerForTesting(
+      std::make_unique<content::MockPermissionController>());
 
   // Adding/Removing the tab for scoring will cause the callback to be called a
   // few times, ignore this.
@@ -613,7 +611,7 @@ TEST_F(SessionRestorePolicyTest, RescoringSendsNotification) {
   WaitForFinalTabScores();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(SessionRestorePolicyTest, FeatureUsageSetUsedInBgBit) {
   CreatePolicy(true);
   WaitForFinalTabScores();

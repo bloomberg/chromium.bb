@@ -8,7 +8,7 @@ page_name: kernel-configuration
 title: Kernel Configuration
 ---
 
-## [TOC]
+[TOC]
 
 ## Overview
 
@@ -80,13 +80,18 @@ default config for the flavour. This is useful when starting development on a
 board and you want to build in-tree:
 
 ```none
-./chromeos/scripts/prepareconfig chromeos-tegra2
+CHROMEOS_KERNEL_FAMILY=chromeos ./chromeos/scripts/prepareconfig chromeos-tegra2
 export ARCH=arm
 export CROSS_COMPILE=armv7a-cros-linux-gnueabi-
 make olddefconfig    #(to pick up new options, if any)
 make
 ...
 ```
+
+prepareconfig requires an environment variable `CHROMEOS_KERNEL_FAMILY` to
+correctly determine the split config. Above example uses `chromeos` as the
+kernel family. Each supported kernel family's split config is maintained in
+`chromeos/config/<family>/` directory.
 
 This script is used in the emerge. An example resulting string is 'Ubuntu
 2.6.32-0.1-chromeos-tegra2'.
@@ -131,15 +136,16 @@ chromeos/scripts/kernelconfig editconfig # regenerate splitconfig
 
 This is a little faster if you know what you're doing:
 
-*   Look for the kernel config option you want to edit
+*   Look for the kernel config option you want to edit.
 
 ```none
-$ grep -rs CONFIG_NETWORK_FILESYSTEMS chromeos/config/
-chromeos/config/base.config:# CONFIG_NETWORK_FILESYSTEMS is not set
+$ grep -rs CONFIG_IO_URING  chromeos/config/
+chromeos/config/manatee/base.config:# CONFIG_IO_URING is not set
+chromeos/config/chromeos/base.config:# CONFIG_IO_URING is not set
 ```
 
-*   Now edit that file `chromeos/config/base.config` to change the
-            config like this:
+*   Now assuming that we are working with chromeos kernel family, edit the file
+       `chromeos/config/chromeos/base.config` to change the config like this:
 
 <pre><code>
 # CONFIG_NETPOLL_TRAP is not set
@@ -171,9 +177,9 @@ This might not be useful, but:
 
 ```none
 # get full flavour config sorted, without leading #
-FLAVOUR=chromeos-tegra2 cat chromeos/config/base.config \
-   chromeos/config/armel/common.config \
-   chromeos/config/armel/$FLAVOUR.flavour.config | \
+FLAVOUR=chromeos-tegra2 cat chromeos/config/*/base.config \
+   chromeos/config/*/armel/common.config \
+   chromeos/config/*/armel/$FLAVOUR.flavour.config | \
    grep CONFIG_ | sed "s/.*CONFIG/CONFIG/" | sort -u >1.emerge
 # purify .config in the same way
 ```
@@ -213,7 +219,7 @@ local source install of the official source. Then set up the config:
 
 ```none
 # set up the .config file
-./chromeos/scripts/prepareconfig chromeos-tegra2
+CHROMEOS_KERNEL_FAMILY=<kernel-family>  ./chromeos/scripts/prepareconfig chromeos-tegra2
 make olddefconfig
 # edit config
 make menuconfig
@@ -250,7 +256,7 @@ oldconfig
 cd ~/trunk/src/third_party/kernel/v$VER
 cp config.flavour.chromeos-new .config
 make ARCH=${ARCH} olddefconfig
-cp .config chromeos/config/<arch>/<flavour>.flavour.config
+cp .config chromeos/config/<kernel-family>/<arch>/<flavour>.flavour.config
 chromeos/scripts/kernelconfig olddefconfig # regenerate splitconfig
 ```
 
@@ -265,9 +271,9 @@ find chromeos/config -name \*.flavour.config
 
 ```none
 cd ~/trunk/src/third_party/kernel/v$VER
-cp <single config> chromeos/config/<arch>/<flavour>.flavour.config
+cp <single config> chromeos/config/<kernel-family>/<arch>/<flavour>.flavour.config
 chromeos/scripts/kernelconfig olddefconfig
-chromeos/scripts/prepareconfig <flavour>
+CHROMEOS_KERNEL_FAMILY=<kernel-family>  chromeos/scripts/prepareconfig <flavour>
 make ARCH=${ARCH} oldconfig
 diff .config <single config>
 ```

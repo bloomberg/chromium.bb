@@ -14,6 +14,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/system_nudge_controller.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 
@@ -106,7 +107,6 @@ class ASH_EXPORT ClipboardNudgeController
   void ClearClockOverrideForTesting();
 
   const ClipboardState& GetClipboardStateForTesting();
-  SystemNudge* GetClipboardNudgeForTesting() { return nudge_.get(); }
 
  protected:
   // SystemNudgeController:
@@ -140,7 +140,7 @@ class ASH_EXPORT ClipboardNudgeController
   const ClipboardHistory* clipboard_history_;
 
   // Owned by ash/Shell.
-  const ClipboardHistoryControllerImpl* const clipboard_history_controller_;
+  ClipboardHistoryControllerImpl* const clipboard_history_controller_;
 
   // Current clipboard state.
   ClipboardState clipboard_state_ = ClipboardState::kInit;

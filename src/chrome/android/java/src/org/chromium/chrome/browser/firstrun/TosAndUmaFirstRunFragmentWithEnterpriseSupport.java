@@ -38,6 +38,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
             implements SkipTosDialogPolicyListener.HistogramNameProvider {
         @Override
         public String getOnDeviceOwnedDetectedTimeHistogramName() {
+            // Seems to currently be impossible to ever hit the faster case here.
             return mViewCreated ? "MobileFre.CctTos.IsDeviceOwnedCheckSpeed2.SlowerThanInflation"
                                 : "MobileFre.CctTos.IsDeviceOwnedCheckSpeed2.FasterThanInflation";
         }
@@ -138,6 +139,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
 
     @Override
     public void onHideLoadingUIComplete() {
+        super.onHideLoadingUIComplete();
         assert mSkipTosDialogPolicyListener.get() != null;
 
         RecordHistogram.recordTimesHistogram("MobileFre.CctTos.LoadingDuration",

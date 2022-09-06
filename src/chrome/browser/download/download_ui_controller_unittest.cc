@@ -225,7 +225,11 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetUrlChain())
       .WillRepeatedly(ReturnRefOfCopy(std::vector<GURL>()));
   EXPECT_CALL(*item, GetReferrerUrl()).WillRepeatedly(ReturnRefOfCopy(GURL()));
-  EXPECT_CALL(*item, GetSiteUrl()).WillRepeatedly(ReturnRefOfCopy(GURL()));
+  EXPECT_CALL(*item, GetSerializedEmbedderDownloadData())
+      .WillRepeatedly(ReturnRefOfCopy(
+          manager_->StoragePartitionConfigToSerializedEmbedderDownloadData(
+              content::StoragePartitionConfig::CreateDefault(
+                  browser_context()))));
   EXPECT_CALL(*item, GetTabUrl()).WillRepeatedly(ReturnRefOfCopy(GURL()));
   EXPECT_CALL(*item, GetTabReferrerUrl())
       .WillRepeatedly(ReturnRefOfCopy(GURL()));
@@ -257,8 +261,8 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, IsSavePackageDownload()).WillRepeatedly(Return(false));
   EXPECT_CALL(*item, GetOriginalMimeType())
       .WillRepeatedly(Return(std::string()));
-  content::DownloadItemUtils::AttachInfo(item.get(), browser_context(),
-                                         nullptr);
+  content::DownloadItemUtils::AttachInfoForTesting(item.get(),
+                                                   browser_context(), nullptr);
 
   return item;
 }
@@ -374,6 +378,9 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
       *manager(),
       PostInitialization(content::DownloadManager::
                              DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB));
+  EXPECT_CALL(*manager(), GetStoragePartitionConfigForSiteUrl(_))
+      .WillRepeatedly(Return(
+          content::StoragePartitionConfig::CreateDefault(browser_context())));
 
   {
     testing::InSequence s;

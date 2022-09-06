@@ -132,6 +132,12 @@ const UIStrings = {
   */
   paintImage: 'Paint Image',
   /**
+  *@description Noun for an event in the Performance panel. Pre-paint is a
+  *step before the 'Paint' event. A paint event is when the browser records the
+  *instructions for drawing the page. This step is the setup beforehand.
+  */
+  prePaint: 'Pre-Paint',
+  /**
   *@description Text in Timeline UIUtils of the Performance panel
   */
   updateLayer: 'Update Layer',
@@ -1063,10 +1069,6 @@ const UIStrings = {
   */
   frame: 'Frame',
   /**
-  *@description Text in Timeline Event Overview of the Performance panel
-  */
-  fps: 'FPS',
-  /**
   *@description Text in Timeline UIUtils of the Performance panel
   */
   cpuTime: 'CPU time',
@@ -1283,6 +1285,7 @@ export class TimelineUIUtils {
     eventStyles[type.UpdateLayer] = new TimelineRecordStyle(i18nString(UIStrings.updateLayer), painting, true);
     eventStyles[type.UpdateLayerTree] = new TimelineRecordStyle(i18nString(UIStrings.updateLayerTree), rendering);
     eventStyles[type.Paint] = new TimelineRecordStyle(i18nString(UIStrings.paint), painting);
+    eventStyles[type.PrePaint] = new TimelineRecordStyle(i18nString(UIStrings.prePaint), rendering);
     eventStyles[type.RasterTask] = new TimelineRecordStyle(i18nString(UIStrings.rasterizePaint), painting);
     eventStyles[type.ScrollLayer] = new TimelineRecordStyle(i18nString(UIStrings.scroll), rendering);
     eventStyles[type.CompositeLayers] = new TimelineRecordStyle(i18nString(UIStrings.compositeLayers), painting);
@@ -1470,7 +1473,7 @@ export class TimelineUIUtils {
     }
   }
 
-  static eventURL(event: SDK.TracingModel.Event): string|null {
+  static eventURL(event: SDK.TracingModel.Event): Platform.DevToolsPath.UrlString|null {
     const data = event.args['data'] || event.args['beginData'];
     const url = data && data.url;
     if (url) {
@@ -1479,7 +1482,7 @@ export class TimelineUIUtils {
     const stackTrace = data && data['stackTrace'];
     const frame = stackTrace && stackTrace.length && stackTrace[0] ||
         TimelineModel.TimelineModel.TimelineData.forEvent(event).topFrame();
-    return frame && frame.url || null;
+    return frame && frame.url as Platform.DevToolsPath.UrlString || null;
   }
 
   static eventStyle(event: SDK.TracingModel.Event): TimelineRecordStyle {
@@ -1521,7 +1524,7 @@ export class TimelineUIUtils {
       if (!color) {
         throw new Error('Unable to parse color from TimelineUIUtils.categories().scripting.color');
       }
-      return /** @type {string} */ color.setAlpha(0.3).asString(null) as string;
+      return color.setAlpha(0.3).asString(null) as string;
     }
 
     return color;
@@ -1530,7 +1533,7 @@ export class TimelineUIUtils {
   static eventColorByProduct(
       model: TimelineModel.TimelineModel.TimelineModelImpl, urlToColorCache: Map<string, string>,
       event: SDK.TracingModel.Event): string {
-    const url = TimelineUIUtils.eventURL(event) || '';
+    const url = TimelineUIUtils.eventURL(event) || Platform.DevToolsPath.EmptyUrlString;
     let color = urlToColorCache.get(url);
     if (color) {
       return color;
@@ -1675,8 +1678,7 @@ export class TimelineUIUtils {
     }
   }
 
-  static async buildDetailsTextForTraceEvent(event: SDK.TracingModel.Event, target: SDK.Target.Target|null):
-      Promise<string|null> {
+  static async buildDetailsTextForTraceEvent(event: SDK.TracingModel.Event): Promise<string|null> {
     const recordType = TimelineModel.TimelineModel.RecordType;
     let detailsText;
     const eventData = event.args['data'];
@@ -1689,9 +1691,9 @@ export class TimelineUIUtils {
         break;
       }
       case recordType.FunctionCall:
-        if (eventData) {
-          detailsText =
-              await linkifyLocationAsText(eventData['scriptId'], eventData['lineNumber'], eventData['columnNumber']);
+        if (eventData && eventData['url'] && eventData['lineNumber'] !== undefined &&
+            eventData['columnNumber'] !== undefined) {
+          detailsText = eventData.url + ':' + (eventData.lineNumber + 1) + ':' + (eventData.columnNumber + 1);
         }
         break;
       case recordType.JSFrame:
@@ -1797,33 +1799,13 @@ export class TimelineUIUtils {
 
     return detailsText;
 
-    async function linkifyLocationAsText(
-        scriptId: Protocol.Runtime.ScriptId, lineNumber: number, columnNumber: number): Promise<string|null> {
-      const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
-      if (!target || target.isDisposed() || !scriptId || !debuggerModel) {
-        return null;
-      }
-      const rawLocation = debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber);
-      if (!rawLocation) {
-        return null;
-      }
-      const uiLocation =
-          await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
-              rawLocation);
-      return uiLocation ? uiLocation.linkText(false /* skipTrim*/, true /* showColumnNumber*/) : null;
-    }
-
     async function linkifyTopCallFrameAsText(): Promise<string|null> {
       const frame = TimelineModel.TimelineModel.TimelineData.forEvent(event).topFrame();
       if (!frame) {
         return null;
       }
-      let text: string|(string | null) =
-          await linkifyLocationAsText(frame.scriptId, frame.lineNumber, frame.columnNumber);
-      if (!text) {
-        text = frame.url + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1);
-      }
-      return text;
+
+      return frame.url + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1);
     }
   }
 
@@ -1852,7 +1834,7 @@ export class TimelineUIUtils {
       case recordType.WebSocketSendHandshakeRequest:
       case recordType.WebSocketReceiveHandshakeResponse:
       case recordType.WebSocketDestroy: {
-        detailsText = await TimelineUIUtils.buildDetailsTextForTraceEvent(event, target);
+        detailsText = await TimelineUIUtils.buildDetailsTextForTraceEvent(event);
         break;
       }
 
@@ -1871,15 +1853,8 @@ export class TimelineUIUtils {
         if (url) {
           const options = {
             tabStop: true,
-            className: undefined,
-            columnNumber: undefined,
             showColumnNumber: false,
             inlineFrameIndex: 0,
-            text: undefined,
-            lineNumber: undefined,
-            preventClick: undefined,
-            maxLength: undefined,
-            bypassURLTrimming: undefined,
           };
           details = Components.Linkifier.Linkifier.linkifyURL(url, options);
         }
@@ -1943,7 +1918,8 @@ export class TimelineUIUtils {
         null {
       const options =
           {columnNumber, showColumnNumber: true, inlineFrameIndex: 0, className: 'timeline-details', tabStop: true};
-      return linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, options);
+      return linkifier.linkifyScriptLocation(
+          target, scriptId, url as Platform.DevToolsPath.UrlString, lineNumber, options);
     }
 
     function linkifyTopCallFrame(): Element|null {
@@ -1956,7 +1932,7 @@ export class TimelineUIUtils {
   }
 
   static buildDetailsNodeForPerformanceEvent(event: SDK.TracingModel.Event): Element {
-    let link: string = 'https://web.dev/user-centric-performance-metrics/';
+    let link = 'https://web.dev/user-centric-performance-metrics/';
     let name = 'page performance metrics';
     const recordType = TimelineModel.TimelineModel.RecordType;
     switch (event.name) {
@@ -2054,7 +2030,7 @@ export class TimelineUIUtils {
     const eventData = event.args['data'];
     const timelineData = TimelineModel.TimelineModel.TimelineData.forEvent(event);
     const initiator = timelineData.initiator();
-    let url: (string|null)|null = null;
+    let url: Platform.DevToolsPath.UrlString|null = null;
 
     if (timelineData.warning) {
       contentHelper.appendWarningRow(event);
@@ -2126,15 +2102,8 @@ export class TimelineUIUtils {
         if (url) {
           const options = {
             tabStop: true,
-            className: undefined,
-            columnNumber: undefined,
             showColumnNumber: false,
             inlineFrameIndex: 0,
-            lineNumber: undefined,
-            text: undefined,
-            preventClick: undefined,
-            maxLength: undefined,
-            bypassURLTrimming: undefined,
           };
           contentHelper.appendElementRow(
               i18nString(UIStrings.resource), Components.Linkifier.Linkifier.linkifyURL(url, options));
@@ -2169,7 +2138,7 @@ export class TimelineUIUtils {
       }
 
       case recordTypes.CompileScript: {
-        url = eventData && eventData['url'];
+        url = eventData && eventData['url'] as Platform.DevToolsPath.UrlString;
         if (url) {
           contentHelper.appendLocationRow(
               i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
@@ -2186,7 +2155,7 @@ export class TimelineUIUtils {
       }
 
       case recordTypes.CacheModule: {
-        url = eventData && eventData['url'];
+        url = eventData && eventData['url'] as Platform.DevToolsPath.UrlString;
         contentHelper.appendTextRow(
             i18nString(UIStrings.compilationCacheSize),
             Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
@@ -2194,7 +2163,7 @@ export class TimelineUIUtils {
       }
 
       case recordTypes.CacheScript: {
-        url = eventData && eventData['url'];
+        url = eventData && eventData['url'] as Platform.DevToolsPath.UrlString;
         if (url) {
           contentHelper.appendLocationRow(
               i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
@@ -2206,7 +2175,7 @@ export class TimelineUIUtils {
       }
 
       case recordTypes.EvaluateScript: {
-        url = eventData && eventData['url'];
+        url = eventData && eventData['url'] as Platform.DevToolsPath.UrlString;
         if (url) {
           contentHelper.appendLocationRow(
               i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
@@ -2220,7 +2189,7 @@ export class TimelineUIUtils {
       case recordTypes.WasmModuleCacheHit:
       case recordTypes.WasmModuleCacheInvalid: {
         if (eventData) {
-          url = event.args['url'];
+          url = event.args['url'] as Platform.DevToolsPath.UrlString;
           if (url) {
             contentHelper.appendTextRow(i18nString(UIStrings.url), url);
           }
@@ -2264,15 +2233,8 @@ export class TimelineUIUtils {
         if (url) {
           const options = {
             tabStop: true,
-            className: undefined,
-            columnNumber: undefined,
             showColumnNumber: false,
-            lineNumber: undefined,
             inlineFrameIndex: 0,
-            text: undefined,
-            preventClick: undefined,
-            maxLength: undefined,
-            bypassURLTrimming: undefined,
           };
           contentHelper.appendElementRow(
               i18nString(UIStrings.imageUrl), Components.Linkifier.Linkifier.linkifyURL(url, options));
@@ -2281,19 +2243,12 @@ export class TimelineUIUtils {
       }
 
       case recordTypes.ParseAuthorStyleSheet: {
-        url = eventData['styleSheetUrl'];
+        url = eventData['styleSheetUrl'] as Platform.DevToolsPath.UrlString;
         if (url) {
           const options = {
             tabStop: true,
-            className: undefined,
-            columnNumber: undefined,
             showColumnNumber: false,
             inlineFrameIndex: 0,
-            lineNumber: undefined,
-            text: undefined,
-            preventClick: undefined,
-            maxLength: undefined,
-            bypassURLTrimming: undefined,
           };
           contentHelper.appendElementRow(
               i18nString(UIStrings.stylesheetUrl), Components.Linkifier.Linkifier.linkifyURL(url, options));
@@ -2641,15 +2596,8 @@ export class TimelineUIUtils {
     if (request.url) {
       const options = {
         tabStop: true,
-        className: undefined,
-        columnNumber: undefined,
         showColumnNumber: false,
-        text: undefined,
         inlineFrameIndex: 0,
-        lineNumber: undefined,
-        preventClick: undefined,
-        maxLength: undefined,
-        bypassURLTrimming: undefined,
       };
       contentHelper.appendElementRow(
           i18n.i18n.lockedString('URL'), Components.Linkifier.Linkifier.linkifyURL(request.url, options));
@@ -2711,7 +2659,7 @@ export class TimelineUIUtils {
     const topFrame = TimelineModel.TimelineModel.TimelineData.forEvent(sendRequest).topFrame();
     if (topFrame) {
       const link = linkifier.maybeLinkifyConsoleCallFrame(
-          target, topFrame, {tabStop: true, className: undefined, inlineFrameIndex: 0, showColumnNumber: true});
+          target, topFrame, {tabStop: true, inlineFrameIndex: 0, showColumnNumber: true});
       if (link) {
         contentHelper.appendElementRow(title, link);
       }
@@ -2720,9 +2668,8 @@ export class TimelineUIUtils {
       if (initiator) {
         const initiatorURL = TimelineModel.TimelineModel.TimelineData.forEvent(initiator).url;
         if (initiatorURL) {
-          const link = linkifier.maybeLinkifyScriptLocation(
-              target, null, initiatorURL, 0,
-              {tabStop: true, className: undefined, inlineFrameIndex: 0, columnNumber: undefined});
+          const link =
+              linkifier.maybeLinkifyScriptLocation(target, null, initiatorURL, 0, {tabStop: true, inlineFrameIndex: 0});
           if (link) {
             contentHelper.appendElementRow(title, link);
           }
@@ -2965,7 +2912,7 @@ export class TimelineUIUtils {
     }
     const imageURLPromise = snapshotWithRect.snapshot.replay();
     snapshotWithRect.snapshot.release();
-    const imageURL = await imageURLPromise;
+    const imageURL = await imageURLPromise as Platform.DevToolsPath.UrlString;
     if (!imageURL) {
       return null;
     }
@@ -3139,13 +3086,11 @@ export class TimelineUIUtils {
 
     const duration = TimelineUIUtils.frameDuration(frame);
     contentHelper.appendElementRow(i18nString(UIStrings.duration), duration, frame.hasWarnings());
-    const durationInMillis = frame.endTime - frame.startTime;
-    contentHelper.appendTextRow(i18nString(UIStrings.fps), Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(i18nString(UIStrings.cpuTime), i18n.TimeUtilities.millisToString(frame.cpuTime, true));
     if (filmStripFrame) {
       const filmStripPreview = document.createElement('div');
       filmStripPreview.classList.add('timeline-filmstrip-preview');
-      filmStripFrame.imageDataPromise()
+      void filmStripFrame.imageDataPromise()
           .then(data => UI.UIUtils.loadImageFromData(data))
           .then(image => image && filmStripPreview.appendChild(image));
       contentHelper.appendElementRow('', filmStripPreview);
@@ -3582,7 +3527,7 @@ export class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
     const node = (invalidation.nodeId && this.relatedNodesMap) ? this.relatedNodesMap.get(invalidation.nodeId) : null;
     if (node) {
       const nodeSpan = document.createElement('span');
-      Common.Linkifier.Linkifier.linkify(node).then(link => nodeSpan.appendChild(link));
+      void Common.Linkifier.Linkifier.linkify(node).then(link => nodeSpan.appendChild(link));
       return nodeSpan;
     }
     if (invalidation.nodeName) {
@@ -3714,31 +3659,25 @@ export class TimelineDetailsContentHelper {
 
     const options = {
       tabStop: true,
-      className: undefined,
       columnNumber: startColumn,
       showColumnNumber: true,
       inlineFrameIndex: 0,
-      text: undefined,
-      lineNumber: undefined,
-      preventClick: undefined,
-      maxLength: undefined,
-      bypassURLTrimming: undefined,
     };
-    const link = this.linkifierInternal.maybeLinkifyScriptLocation(this.target, null, url, startLine, options);
+    const link = this.linkifierInternal.maybeLinkifyScriptLocation(
+        this.target, null, url as Platform.DevToolsPath.UrlString, startLine, options);
     if (!link) {
       return;
     }
     this.appendElementRow(title, link);
   }
 
-  appendLocationRange(title: string, url: string, startLine: number, endLine?: number): void {
+  appendLocationRange(title: string, url: Platform.DevToolsPath.UrlString, startLine: number, endLine?: number): void {
     if (!this.linkifierInternal || !this.target) {
       return;
     }
     const locationContent = document.createElement('span');
     const link = this.linkifierInternal.maybeLinkifyScriptLocation(
-        this.target, null, url, startLine,
-        {tabStop: true, className: undefined, inlineFrameIndex: 0, columnNumber: undefined});
+        this.target, null, url, startLine, {tabStop: true, inlineFrameIndex: 0});
     if (!link) {
       return;
     }

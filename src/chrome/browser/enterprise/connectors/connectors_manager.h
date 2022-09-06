@@ -32,7 +32,7 @@ class ConnectorsManager {
       std::map<FileSystemConnector, std::vector<FileSystemServiceSettings>>;
 
   ConnectorsManager(PrefService* pref_service,
-                    ServiceProviderConfig* config,
+                    const ServiceProviderConfig* config,
                     bool observe_prefs = true);
   ~ConnectorsManager();
 
@@ -68,6 +68,9 @@ class ConnectorsManager {
                                                   const std::string& tag);
   absl::optional<GURL> GetLearnMoreUrl(AnalysisConnector connector,
                                        const std::string& tag);
+  absl::optional<bool> GetBypassJustificationRequired(
+      AnalysisConnector connector,
+      const std::string& tag);
 
   std::vector<std::string> GetAnalysisServiceProviderNames(
       AnalysisConnector connector);
@@ -116,7 +119,7 @@ class ConnectorsManager {
 
   // Cached values of available service providers. This information validates
   // the Connector policies have a valid provider.
-  raw_ptr<ServiceProviderConfig> service_provider_config_;
+  raw_ptr<const ServiceProviderConfig> service_provider_config_;
 
   // Cached values of the connector policies. Updated when a connector is first
   // used or when a policy is updated.

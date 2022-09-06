@@ -21,11 +21,11 @@ using SystemNetworkApiUnitTest = extensions::ApiUnitTest;
 }  // namespace
 
 // TODO(crbug.com/1255187): Fails on Fuchsia running with run-test-component.
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_GetNetworkInterfaces DISABLED_GetNetworkInterfaces
 #else
 #define MAYBE_GetNetworkInterfaces GetNetworkInterfaces
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 TEST_F(SystemNetworkApiUnitTest, MAYBE_GetNetworkInterfaces) {
   scoped_refptr<SystemNetworkGetNetworkInterfacesFunction> socket_function(
       new SystemNetworkGetNetworkInterfacesFunction());
@@ -37,14 +37,13 @@ TEST_F(SystemNetworkApiUnitTest, MAYBE_GetNetworkInterfaces) {
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_function.get(), "[]", browser_context()));
-  ASSERT_EQ(base::Value::Type::LIST, result->type());
+  ASSERT_TRUE(result->is_list());
 
   // All we can confirm is that we have at least one address, but not what it
   // is.
-  base::ListValue* value = static_cast<base::ListValue*>(result.get());
-  ASSERT_TRUE(value->GetList().size() > 0);
+  ASSERT_FALSE(result->GetList().empty());
 
-  for (const auto& network_interface_value : value->GetList()) {
+  for (const auto& network_interface_value : result->GetList()) {
     NetworkInterface network_interface;
     ASSERT_TRUE(NetworkInterface::Populate(network_interface_value,
                                            &network_interface));

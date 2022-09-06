@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/init/gl_initializer.h"
 
 #include <dwmapi.h>
@@ -17,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -44,6 +46,10 @@ bool LoadD3DXLibrary(const base::FilePath& module_path,
 }
 
 bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
+#if BUILDFLAG(USE_STATIC_ANGLE)
+  NOTREACHED();
+#endif
+
   base::FilePath module_path;
   if (!base::PathService::Get(base::DIR_MODULE, &module_path))
     return false;
@@ -53,21 +59,7 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
   // load the OS version.
   LoadD3DXLibrary(module_path, kD3DCompiler);
 
-  base::FilePath gles_path;
-  if (implementation == kGLImplementationSwiftShaderGL) {
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
-    gles_path = module_path.Append(L"swiftshader/");
-    // Preload library
-    LoadLibrary(L"ddraw.dll");
-#else
-    return false;
-#endif
-  } else {
-    gles_path = module_path;
-#if BUILDFLAG(USE_STATIC_ANGLE)
-    NOTREACHED();
-#endif
-  }
+  base::FilePath gles_path = module_path;
 
   // Load libglesv2.dll before libegl.dll because the latter is dependent on
   // the former and if there is another version of libglesv2.dll in the dll
@@ -134,24 +126,27 @@ bool InitializeStaticEGLInternal(GLImplementationParts implementation) {
 
 }  // namespace
 
-bool InitializeGLOneOffPlatform() {
+GLDisplay* InitializeGLOneOffPlatform(uint64_t system_device_id) {
   VSyncProviderWin::InitializeOneOff();
 
   switch (GetGLImplementation()) {
-    case kGLImplementationSwiftShaderGL:
-    case kGLImplementationEGLANGLE:
-      if (!GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform(GetDC(nullptr)))) {
+    case kGLImplementationEGLANGLE: {
+      GLDisplayEGL* display = GLSurfaceEGL::InitializeOneOff(
+          EGLDisplayPlatform(GetDC(nullptr)), system_device_id);
+      if (!display) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
+        return nullptr;
       }
-      break;
+      DirectCompositionSurfaceWin::InitializeOneOff(display);
+      return display;
+    }
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       break;
     default:
       NOTREACHED();
   }
-  return true;
+  return GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
 }
 
 bool InitializeStaticGLBindings(GLImplementationParts implementation) {
@@ -167,7 +162,6 @@ bool InitializeStaticGLBindings(GLImplementationParts implementation) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   switch (implementation.gl) {
-    case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLANGLE:
       return InitializeStaticEGLInternal(implementation);
     case kGLImplementationMockGL:
@@ -182,8 +176,9 @@ bool InitializeStaticGLBindings(GLImplementationParts implementation) {
   return false;
 }
 
-void ShutdownGLPlatform() {
-  GLSurfaceEGL::ShutdownOneOff();
+void ShutdownGLPlatform(GLDisplay* display) {
+  DirectCompositionSurfaceWin::ShutdownOneOff();
+  GLSurfaceEGL::ShutdownOneOff(static_cast<GLDisplayEGL*>(display));
   ClearBindingsEGL();
   ClearBindingsGL();
 }

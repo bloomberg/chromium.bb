@@ -25,6 +25,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer_client.h"
@@ -398,21 +399,22 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
   }
 
   void CreateMainRef() {
-    main_ref_ = TestMailboxHolder::Create(test_data_.resource1_,
-                                          test_data_.release_callback1_);
+    resource_holder_ = TestMailboxHolder::Create(test_data_.resource1_,
+                                                 test_data_.release_callback1_);
   }
 
-  void ReleaseMainRef() { main_ref_ = nullptr; }
+  void ReleaseMainRef() { resource_holder_ = nullptr; }
 
   void CreateImplRef(
       viz::ReleaseCallback* impl_ref,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
-    *impl_ref = main_ref_->holder()->GetCallbackForImplThread(
-        std::move(main_thread_task_runner));
+    *impl_ref =
+        base::BindOnce(&TextureLayer::TransferableResourceHolder::Return,
+                       resource_holder_, main_thread_task_runner);
   }
 
  protected:
-  std::unique_ptr<TestMailboxHolder::MainThreadReference> main_ref_;
+  scoped_refptr<TextureLayer::TransferableResourceHolder> resource_holder_;
   base::Thread main_thread_;
 };
 
@@ -592,7 +594,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     return std::make_unique<TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
-        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
+        task_runner_provider(), synchronous_composite, disable_display_vsync,
         refresh_rate);
   }
 
@@ -651,8 +653,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         // Resetting the resource will call the callback now, before another
         // commit is needed, as the ReleaseCallback is already in flight from
         // RemoveFromParent().
-        layer_->ClearTexture();
         pending_callback_ = true;
+        layer_->ClearTexture();
         frame_number_ = layer_tree_host()->SourceFrameNumber();
         break;
       case 8:
@@ -676,8 +678,16 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     ++callback_count_;
 
     // If we are waiting on a callback, advance now.
-    if (pending_callback_)
-      AdvanceTestCase();
+    if (pending_callback_) {
+      layer_tree_host()
+          ->GetTaskRunnerProvider()
+          ->MainThreadTaskRunner()
+          ->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  &TextureLayerImplWithMailboxThreadedCallback::AdvanceTestCase,
+                  base::Unretained(this)));
+    }
   }
 
   void SetMailbox(char mailbox_char) {
@@ -1021,7 +1031,7 @@ class TextureLayerChangeInvisibleMailboxTest
     solid_layer_ = SolidColorLayer::Create();
     solid_layer_->SetBounds(gfx::Size(10, 10));
     solid_layer_->SetIsDrawable(true);
-    solid_layer_->SetBackgroundColor(SK_ColorWHITE);
+    solid_layer_->SetBackgroundColor(SkColors::kWhite);
     root->AddChild(solid_layer_);
 
     parent_layer_ = Layer::Create();
@@ -1057,7 +1067,7 @@ class TextureLayerChangeInvisibleMailboxTest
         resource_changed_ = true;
         texture_layer_->SetNeedsDisplay();
         // Force a change to make sure we draw a frame.
-        solid_layer_->SetBackgroundColor(SK_ColorGRAY);
+        solid_layer_->SetBackgroundColor(SkColors::kGray);
         break;
       case 3:
         // Layer shouldn't have been updated.
@@ -1101,7 +1111,7 @@ class TextureLayerChangeInvisibleMailboxTest
 };
 
 // TODO(crbug.com/1197350): Test fails on chromeos-amd64-generic-rel.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_SINGLE_AND_MULTI_THREAD_TEST_F MULTI_THREAD_TEST_F
 #else
 #define MAYBE_SINGLE_AND_MULTI_THREAD_TEST_F SINGLE_AND_MULTI_THREAD_TEST_F
@@ -1364,6 +1374,8 @@ class SoftwareLayerTreeHostClient : public StubLayerTreeHostClient {
 
 class SoftwareTextureLayerTest : public LayerTreeTest {
  protected:
+  SoftwareTextureLayerTest() : LayerTreeTest(viz::RendererType::kSoftware) {}
+
   void SetupTree() override {
     root_ = Layer::Create();
     root_->SetBounds(gfx::Size(10, 10));
@@ -1371,7 +1383,7 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
     // A drawable layer so that frames always get drawn.
     solid_color_layer_ = SolidColorLayer::Create();
     solid_color_layer_->SetIsDrawable(true);
-    solid_color_layer_->SetBackgroundColor(SK_ColorRED);
+    solid_color_layer_->SetBackgroundColor(SkColors::kRed);
     solid_color_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(solid_color_layer_);
 
@@ -1394,18 +1406,11 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
     auto sink = std::make_unique<TestLayerTreeFrameSink>(
         nullptr, nullptr, gpu_memory_buffer_manager(), renderer_settings,
-        &debug_settings_, ImplThreadTaskRunner(), synchronous_composite,
+        &debug_settings_, task_runner_provider(), synchronous_composite,
         disable_display_vsync, refresh_rate);
     frame_sink_ = sink.get();
     num_frame_sinks_created_++;
     return sink;
-  }
-
-  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider)
-      override {
-    return viz::FakeOutputSurface::CreateSoftware(
-        std::make_unique<viz::SoftwareOutputDevice>());
   }
 
   StubTextureLayerClient client_;
@@ -1869,11 +1874,15 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
     }
   }
 
+  void WillCommit(const CommitState& commit_state) override {
+    source_frame_number_ = commit_state.source_frame_number;
+  }
+
   void ReleaseCallback(const gpu::SyncToken& token, bool lost) {
     // The software resource is not released when the LayerTreeFrameSink is lost
     // since software resources are not destroyed by the GPU process dying. It
     // is released only after we call TextureLayer::ClearClient().
-    EXPECT_EQ(layer_tree_host()->SourceFrameNumber(), 4);
+    EXPECT_EQ(source_frame_number_, 3);
     released_ = true;
     EndTest();
   }
@@ -1882,6 +1891,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
 
   int step_ = 0;
   int verified_frames_ = 0;
+  int source_frame_number_ = 0;
   bool released_ = false;
   viz::SharedBitmapId id_;
   SharedBitmapIdRegistration registration_;

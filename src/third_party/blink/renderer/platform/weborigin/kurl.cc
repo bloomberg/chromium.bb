@@ -162,18 +162,18 @@ bool KURL::IsLocalFile() const {
   // and including feed would allow feeds to potentially let someone's blog
   // read the contents of the clipboard on a drag, even without a drop.
   // Likewise with using the FrameLoader::shouldTreatURLAsLocal() function.
-  return ProtocolIs("file");
+  return ProtocolIs(url::kFileScheme);
 }
 
 bool ProtocolIsJavaScript(const String& url) {
-  return ProtocolIs(url, "javascript");
+  return ProtocolIs(url, url::kJavaScriptScheme);
 }
 
 const KURL& BlankURL() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<KURL>, static_blank_url, ());
   KURL& blank_url = *static_blank_url;
   if (blank_url.IsNull())
-    blank_url = KURL(AtomicString("about:blank"));
+    blank_url = KURL(AtomicString(url::kAboutBlankURL));
   return blank_url;
 }
 
@@ -181,7 +181,7 @@ const KURL& SrcdocURL() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<KURL>, static_srcdoc_url, ());
   KURL& srcdoc_url = *static_srcdoc_url;
   if (srcdoc_url.IsNull())
-    srcdoc_url = KURL(AtomicString("about:srcdoc"));
+    srcdoc_url = KURL(AtomicString(url::kAboutSrcdocURL));
   return srcdoc_url;
 }
 
@@ -247,12 +247,6 @@ KURL::KURL(const GURL& gurl) {
        nullptr /* query_encoding */);
 }
 
-KURL KURL::CreateIsolated(const String& url) {
-  // FIXME: We should be able to skip this extra copy and created an
-  // isolated KURL more efficiently.
-  return KURL(url).Copy();
-}
-
 // Constructs a new URL given a base URL and a possibly relative input URL.
 // This assumes UTF-8 encoding.
 KURL::KURL(const KURL& base, const String& relative) {
@@ -285,7 +279,7 @@ KURL::KURL(const KURL& other)
       parsed_(other.parsed_),
       string_(other.string_) {
   if (other.inner_url_.get())
-    inner_url_ = std::make_unique<KURL>(other.inner_url_->Copy());
+    inner_url_ = std::make_unique<KURL>(*other.inner_url_);
 }
 
 KURL::~KURL() = default;
@@ -297,22 +291,10 @@ KURL& KURL::operator=(const KURL& other) {
   parsed_ = other.parsed_;
   string_ = other.string_;
   if (other.inner_url_)
-    inner_url_ = std::make_unique<KURL>(other.inner_url_->Copy());
+    inner_url_ = std::make_unique<KURL>(*other.inner_url_);
   else
     inner_url_.reset();
   return *this;
-}
-
-KURL KURL::Copy() const {
-  KURL result;
-  result.is_valid_ = is_valid_;
-  result.protocol_is_in_http_family_ = protocol_is_in_http_family_;
-  result.protocol_ = protocol_.IsolatedCopy();
-  result.parsed_ = parsed_;
-  result.string_ = string_.IsolatedCopy();
-  if (inner_url_)
-    result.inner_url_ = std::make_unique<KURL>(inner_url_->Copy());
-  return result;
 }
 
 bool KURL::IsNull() const {
@@ -332,7 +314,7 @@ bool KURL::HasPort() const {
 }
 
 bool KURL::ProtocolIsJavaScript() const {
-  return ComponentStringView(parsed_.scheme) == "javascript";
+  return ComponentStringView(parsed_.scheme) == url::kJavaScriptScheme;
 }
 
 bool KURL::ProtocolIsInHTTPFamily() const {
@@ -497,8 +479,8 @@ bool KURL::SetProtocol(const String& protocol) {
   if (SchemeRegistry::IsSpecialScheme(Protocol()) &&
       SchemeRegistry::IsSpecialScheme(new_protocol_canon)) {
     // The protocol is lower-cased during canonicalization.
-    const bool new_protocol_is_file = new_protocol_canon == "file";
-    const bool old_protocol_is_file = ProtocolIs("file");
+    const bool new_protocol_is_file = new_protocol_canon == url::kFileScheme;
+    const bool old_protocol_is_file = ProtocolIs(url::kFileScheme);
 
     // https://url.spec.whatwg.org/#scheme-state
     // 3. If url includes credentials or has a non-null port, and buffer is
@@ -1016,11 +998,6 @@ void KURL::ReplaceComponents(const url::Replacements<CHAR>& replacements,
     string_ = AtomicString::FromUTF8(output.data(), output.length());
     InitProtocolMetadata();
   }
-}
-
-bool KURL::IsSafeToSendToAnotherThread() const {
-  return string_.IsSafeToSendToAnotherThread() &&
-         (!inner_url_ || inner_url_->IsSafeToSendToAnotherThread());
 }
 
 void KURL::WriteIntoTrace(perfetto::TracedValue context) const {

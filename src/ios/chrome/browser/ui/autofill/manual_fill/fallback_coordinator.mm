@@ -49,6 +49,9 @@
   } else {
     if (completion) {
       completion();
+      if ((ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)) {
+        [self.delegate fallbackCoordinatorDidDismissPopover:self];
+      }
     }
     return NO;
   }
@@ -57,7 +60,7 @@
 - (void)presentFromButton:(UIButton*)button {
   self.viewController.modalPresentationStyle = UIModalPresentationPopover;
 
-  // |topFrontWindow| is used in order to present above the keyboard. This way
+  // `topFrontWindow` is used in order to present above the keyboard. This way
   // the popover will be dismissed on keyboard interaction and it won't be
   // covered when the keyboard is near the top of the screen.
   UIWindow* topFrontWindow =

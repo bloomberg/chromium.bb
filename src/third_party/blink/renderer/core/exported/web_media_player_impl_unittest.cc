@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/media/web_media_player_impl.h"
+#include "third_party/blink/renderer/platform/media/web_media_player_impl.h"
 
 #include <stdint.h>
 
@@ -27,6 +27,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
@@ -54,7 +55,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/platform/media/web_media_player_params.h"
+#include "third_party/blink/public/platform/media/web_media_player_builder.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/platform/media/buffered_data_source_host_impl.h"
 #include "third_party/blink/renderer/platform/media/power_status_helper.h"
 #include "third_party/blink/renderer/platform/media/resource_multi_buffer_data_provider.h"
 #include "third_party/blink/renderer/platform/media/testing/mock_resource_fetch_context.h"
@@ -166,7 +168,7 @@ class MockWebMediaPlayerClient : public WebMediaPlayerClient {
   MOCK_METHOD0(OnPictureInPictureStateChange, void());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
   MOCK_METHOD0(ResumePlayback, void());
-  MOCK_METHOD0(PausePlayback, void());
+  MOCK_METHOD1(PausePlayback, void(WebMediaPlayerClient::PauseReason));
   MOCK_METHOD0(DidPlayerStartPlaying, void());
   MOCK_METHOD1(DidPlayerPaused, void(bool));
   MOCK_METHOD1(DidPlayerMutedStatusChange, void(bool));
@@ -182,7 +184,6 @@ class MockWebMediaPlayerClient : public WebMediaPlayerClient {
   MOCK_METHOD1(DidPlayerSizeChange, void(const gfx::Size&));
   MOCK_METHOD0(DidBufferUnderflow, void());
   MOCK_METHOD0(DidSeek, void());
-  MOCK_METHOD0(GetFeatures, Features(void));
   MOCK_METHOD0(OnRequestVideoFrameCallback, void());
   MOCK_METHOD0(GetTextTrackMetadata, Vector<TextTrackMetadata>());
 
@@ -382,7 +383,7 @@ class WebMediaPlayerImplTest
     auto factory_selector = std::make_unique<media::RendererFactorySelector>();
     renderer_factory_selector_ = factory_selector.get();
     decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(nullptr);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     factory_selector->AddBaseFactory(
         media::RendererType::kDefault,
         std::make_unique<media::DefaultRendererFactory>(
@@ -407,6 +408,8 @@ class WebMediaPlayerImplTest
         base::BindRepeating(
             &WebMediaPlayerImplTest::GetRecordAggregateWatchTimeCallback,
             base::Unretained(this)),
+        base::BindRepeating(&WebMediaPlayerImplTest::IsShuttingDown,
+                            base::Unretained(this)),
         provider.BindNewPipeAndPassReceiver());
 
     // Initialize provider since none of the tests below actually go through the
@@ -421,8 +424,14 @@ class WebMediaPlayerImplTest
     url_index_ = std::make_unique<UrlIndex>(&mock_resource_fetch_context_,
                                             media_thread_.task_runner());
 
-    auto params = std::make_unique<WebMediaPlayerParams>(
-        std::move(media_log), WebMediaPlayerParams::DeferLoadCB(), audio_sink_,
+    auto compositor = std::make_unique<NiceMock<MockVideoFrameCompositor>>(
+        media_thread_.task_runner());
+    compositor_ = compositor.get();
+
+    wmpi_ = std::make_unique<WebMediaPlayerImpl>(
+        GetWebLocalFrame(), &client_, &encrypted_client_, &delegate_,
+        std::move(factory_selector), url_index_.get(), std::move(compositor),
+        std::move(media_log), WebMediaPlayerBuilder::DeferLoadCB(), audio_sink_,
         media_thread_.task_runner(), media_thread_.task_runner(),
         media_thread_.task_runner(), media_thread_.task_runner(),
         base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
@@ -432,18 +441,9 @@ class WebMediaPlayerImplTest
         base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                        base::Unretained(this)),
         viz::TestContextProvider::Create(),
-        WebMediaPlayer::SurfaceLayerMode::kAlways,
-        is_background_suspend_enabled_, is_background_video_playback_enabled_,
-        true, std::move(demuxer_override));
-
-    auto compositor = std::make_unique<NiceMock<MockVideoFrameCompositor>>(
-        params->video_frame_compositor_task_runner());
-    compositor_ = compositor.get();
-
-    wmpi_ = std::make_unique<WebMediaPlayerImpl>(
-        GetWebLocalFrame(), &client_, &encrypted_client_, &delegate_,
-        std::move(factory_selector), url_index_.get(), std::move(compositor),
-        nullptr, std::move(params));
+        /*use_surface_layer=*/true, is_background_suspend_enabled_,
+        is_background_video_playback_enabled_, true,
+        std::move(demuxer_override), nullptr);
   }
 
   std::unique_ptr<WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
@@ -480,6 +480,8 @@ class WebMediaPlayerImplTest
   GetRecordAggregateWatchTimeCallback() {
     return base::NullCallback();
   }
+
+  MOCK_METHOD(bool, IsShuttingDown, ());
 
   base::TimeDelta GetCurrentTimeInternal() {
     return wmpi_->GetCurrentTimeInternal();
@@ -1754,7 +1756,7 @@ ACTION(ReportHaveEnough) {
                                media::BUFFERING_CHANGE_REASON_UNKNOWN);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(WebMediaPlayerImplTest, FallbackToMediaFoundationRenderer) {
   InitializeWebMediaPlayerImpl();
   // To avoid PreloadMetadataLazyLoad.
@@ -1799,7 +1801,7 @@ TEST_F(WebMediaPlayerImplTest, FallbackToMediaFoundationRenderer) {
   Load(kEncryptedVideoOnlyTestFile);
   run_loop.Run();
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
   InitializeWebMediaPlayerImpl();
@@ -1965,7 +1967,10 @@ TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
   ScheduleIdlePauseTimer();
   EXPECT_TRUE(IsIdlePauseTimerRunning());
 
-  EXPECT_CALL(client_, PausePlayback());
+  EXPECT_CALL(
+      client_,
+      PausePlayback(
+          WebMediaPlayerClient::PauseReason::kSuspendedPlayerIdleTimeout));
   FireIdlePauseTimer();
   base::RunLoop().RunUntilIdle();
 }
@@ -2282,7 +2287,7 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     }
 
     if (IsVideoBeingCaptured())
-      wmpi_->GetCurrentFrame();
+      wmpi_->GetCurrentFrameThenUpdate();
 
     BackgroundPlayer();
   }
@@ -2329,7 +2334,7 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   }
 
   bool IsAndroid() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     return true;
 #else
     return false;

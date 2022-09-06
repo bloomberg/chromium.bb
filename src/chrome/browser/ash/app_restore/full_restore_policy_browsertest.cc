@@ -31,12 +31,8 @@ class FullRestorePolicyBrowserTest
  public:
   // policy::PolicyTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitWithFeatures(
-        {::full_restore::features::kFullRestore,
-         ::full_restore::features::kArcGhostWindow},
-        {});
     arc::SetArcAvailableCommandLineForTesting(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableArcVm);
+    command_line->AppendSwitch(switches::kEnableArcVm);
   }
 
   void SetUpInProcessBrowserTestFixture() override {

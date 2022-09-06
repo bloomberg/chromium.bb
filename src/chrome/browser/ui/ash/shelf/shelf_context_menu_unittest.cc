@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -50,13 +51,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -92,6 +93,8 @@ std::string GetAppNameInShelfGroup(uint32_t task_id) {
   return base::StringPrintf("AppInShelfGroup%d", task_id);
 }
 
+}  // namespace
+
 class ShelfContextMenuTest : public ChromeAshTestBase {
  public:
   ShelfContextMenuTest(const ShelfContextMenuTest&) = delete;
@@ -103,14 +106,14 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
 
     ChromeAshTestBase::SetUp();
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisablePreinstalledApps);
+        switches::kDisableDefaultApps);
 
     profile_ = std::make_unique<TestingProfile>();
 
@@ -129,7 +132,6 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
     app_service_test_.SetUp(profile());
     arc_test_.SetUp(profile());
 
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
     model_ = std::make_unique<ash::ShelfModel>();
     shelf_item_factory_ = std::make_unique<ChromeShelfItemFactory>();
     model_->SetShelfItemFactory(shelf_item_factory_.get());
@@ -206,9 +208,9 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
 
     ChromeAshTestBase::TearDown();
 
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -224,7 +226,7 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
 
   ash::ShelfModel* model() { return model_.get(); }
 
-  void SendRefreshAppList(const std::vector<arc::mojom::AppInfo>& apps) {
+  void SendRefreshAppList(const std::vector<arc::mojom::AppInfoPtr>& apps) {
     arc_test_.app_instance()->SendRefreshAppList(apps);
     app_service_test_.FlushMojoCalls();
   }
@@ -241,12 +243,14 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   }
 
  private:
+  // CrostiniTestHelper overrides feature list after GPU thread has started.
+  viz::TestGpuServiceHolder::ScopedAllowRacyFeatureListOverrides
+      gpu_thread_allow_racy_overrides_;
   base::test::ScopedCommandLine scoped_command_line_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniTestHelper> crostini_helper_;
   ArcAppTest arc_test_;
   apps::AppServiceTest app_service_test_;
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeShelfItemFactory> shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> shelf_controller_;
@@ -312,12 +316,12 @@ TEST_F(ShelfContextMenuTest, DesktopShellShelfContextMenuVerifyCloseItem) {
 // Verifies context menu and app menu items for ARC app.
 // The 0th item is sticky but not the following.
 TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
-  arc_test().app_instance()->SendRefreshAppList(
-      std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
-                                       arc_test().fake_apps().begin() + 1));
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(arc_test().fake_apps()[0]->Clone());
+  arc_test().app_instance()->SendRefreshAppList(apps);
   app_service_test().WaitForAppService();
-  const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
-  const std::string app_name = arc_test().fake_apps()[0].name;
+  const std::string app_id = ArcAppTest::GetAppId(*arc_test().fake_apps()[0]);
+  const std::string app_name = arc_test().fake_apps()[0]->name;
 
   PinAppWithIDToShelf(app_id);
 
@@ -345,7 +349,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   // ARC app is running.
   std::string window_app_id1("org.chromium.arc.1");
   CreateArcWindow(window_app_id1);
-  arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
+  arc_test().app_instance()->SendTaskCreated(1, *arc_test().fake_apps()[0],
                                              std::string());
   app_service_test().WaitForAppService();
 
@@ -365,11 +369,11 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
   // ARC non-launchable app is running.
-  const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
-  const std::string app_name2 = arc_test().fake_apps()[1].name;
+  const std::string app_id2 = ArcAppTest::GetAppId(*arc_test().fake_apps()[1]);
+  const std::string app_name2 = arc_test().fake_apps()[1]->name;
   std::string window_app_id2("org.chromium.arc.2");
   CreateArcWindow(window_app_id2);
-  arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
+  arc_test().app_instance()->SendTaskCreated(2, *arc_test().fake_apps()[1],
                                              std::string());
   app_service_test().WaitForAppService();
   const ash::ShelfID shelf_id2(app_id2);
@@ -401,18 +405,18 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   app_service_test().WaitForAppService();
   const std::string app_id3 =
       arc::ArcAppShelfId("arc_test_shelf_group",
-                         ArcAppTest::GetAppId(arc_test().fake_apps()[2]))
+                         ArcAppTest::GetAppId(*arc_test().fake_apps()[2]))
           .ToString();
 
   constexpr int apps_to_test_in_shelf_group = 2;
-  const std::string app_name3 = arc_test().fake_apps()[2].name;
+  const std::string app_name3 = arc_test().fake_apps()[2]->name;
   for (uint32_t i = 0; i < apps_to_test_in_shelf_group; ++i) {
     const uint32_t task_id = 3 + i;
     std::string window_app_id3 =
         base::StringPrintf("org.chromium.arc.%d", task_id);
     CreateArcWindow(window_app_id3);
     arc_test().app_instance()->SendTaskCreated(
-        task_id, arc_test().fake_apps()[2], shortcuts[0].intent_uri);
+        task_id, *arc_test().fake_apps()[2], shortcuts[0].intent_uri);
     // Set custom name.
     arc_test().app_instance()->SendTaskDescription(
         task_id, GetAppNameInShelfGroup(task_id),
@@ -451,10 +455,10 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
 }
 
 TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
-  arc::mojom::AppInfo app = arc_test().fake_apps()[0];
-  app.suspended = true;
-  SendRefreshAppList({app});
-  const std::string app_id = ArcAppTest::GetAppId(app);
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(arc_test().fake_apps()[0]->Clone())->suspended = true;
+  SendRefreshAppList(apps);
+  const std::string app_id = ArcAppTest::GetAppId(*apps[0]);
 
   PinAppWithIDToShelf(app_id);
 
@@ -479,10 +483,13 @@ TEST_F(ShelfContextMenuTest, ArcLauncherSuspendAppMenu) {
 }
 
 TEST_F(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
-  SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
-      arc_test().fake_apps().begin(), arc_test().fake_apps().begin() + 2));
-  const std::string app_id1 = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
-  const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.reserve(2);
+  for (int i = 0; i < 2; i++)
+    apps.emplace_back(arc_test().fake_apps()[i]->Clone());
+  SendRefreshAppList(apps);
+  const std::string app_id1 = ArcAppTest::GetAppId(*apps[0]);
+  const std::string app_id2 = ArcAppTest::GetAppId(*apps[1]);
 
   PinAppWithIDToShelf(app_id1);
 
@@ -494,8 +501,8 @@ TEST_F(ShelfContextMenuTest, ArcDeferredShelfContextMenuItemCheck) {
   EXPECT_TRUE(controller()->GetItem(shelf_id1));
   EXPECT_FALSE(controller()->GetItem(shelf_id2));
 
-  LaunchApp(app_id1, arc_test().fake_apps()[0], 1);
-  LaunchApp(app_id2, arc_test().fake_apps()[1], 2);
+  LaunchApp(app_id1, *apps[0], 1);
+  LaunchApp(app_id2, *apps[1], 2);
 
   EXPECT_TRUE(controller()->GetItem(shelf_id1));
   EXPECT_TRUE(controller()->GetItem(shelf_id2));
@@ -545,9 +552,10 @@ TEST_F(ShelfContextMenuTest, ArcContextMenuOptions) {
   // you're adding a context menu option ensure that you have added the enum to
   // tools/metrics/histograms/enums.xml and that you haven't modified the order
   // of the existing enums.
-  SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
-      arc_test().fake_apps().begin(), arc_test().fake_apps().begin() + 1));
-  const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(arc_test().fake_apps()[0]->Clone());
+  SendRefreshAppList(apps);
+  const std::string app_id = ArcAppTest::GetAppId(*apps[0]);
   const ash::ShelfID shelf_id(app_id);
 
   PinAppWithIDToShelf(app_id);
@@ -618,33 +626,6 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
     const int expected_options_num = internal_app.show_in_launcher ? 2 : 1;
     EXPECT_EQ(expected_options_num, menu->GetItemCount());
   }
-}
-
-// Checks some properties for crostini's terminal app's context menu,
-// specifically that every menu item has an icon.
-TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
-  const std::string app_id = crostini::kCrostiniTerminalSystemAppId;
-  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      crostini::kCrostiniDefaultVmName);
-
-  PinAppWithIDToShelf(app_id);
-  const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
-  ASSERT_TRUE(item);
-
-  ash::ShelfItemDelegate* item_delegate =
-      model()->GetShelfItemDelegate(ash::ShelfID(app_id));
-  ASSERT_TRUE(item_delegate);
-  int64_t primary_id = GetPrimaryDisplay().id();
-  std::unique_ptr<ui::MenuModel> menu =
-      GetContextMenu(item_delegate, primary_id);
-
-  // Check that every menu item has an icon
-  for (int i = 0; i < menu->GetItemCount(); ++i)
-    EXPECT_FALSE(menu->GetIconAt(i).IsEmpty());
-
-  // When crostini is running, the terminal should have an option to kill the
-  // vm.
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHUTDOWN_GUEST_OS));
 }
 
 // Checks the context menu for a "normal" crostini app (i.e. a registered one).
@@ -736,5 +717,3 @@ TEST_F(ShelfContextMenuTest, WebApp) {
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
 }
-
-}  // namespace

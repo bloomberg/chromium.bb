@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -226,7 +227,7 @@ export class StyleFile implements TextUtils.ContentProvider.ContentProvider {
       return;
     }
     const mirrorContentBound = this.mirrorContent.bind(this, header, true /* majorChange */);
-    this.#throttler.schedule(mirrorContentBound, false /* asSoonAsPossible */);
+    void this.#throttler.schedule(mirrorContentBound, false /* asSoonAsPossible */);
   }
 
   private workingCopyCommitted(): void {
@@ -234,7 +235,7 @@ export class StyleFile implements TextUtils.ContentProvider.ContentProvider {
       return;
     }
     const mirrorContentBound = this.mirrorContent.bind(this, this.uiSourceCode, true /* majorChange */);
-    this.#throttler.schedule(mirrorContentBound, true /* asSoonAsPossible */);
+    void this.#throttler.schedule(mirrorContentBound, true /* asSoonAsPossible */);
   }
 
   private workingCopyChanged(): void {
@@ -242,7 +243,7 @@ export class StyleFile implements TextUtils.ContentProvider.ContentProvider {
       return;
     }
     const mirrorContentBound = this.mirrorContent.bind(this, this.uiSourceCode, false /* majorChange */);
-    this.#throttler.schedule(mirrorContentBound, false /* asSoonAsPossible */);
+    void this.#throttler.schedule(mirrorContentBound, false /* asSoonAsPossible */);
   }
 
   private async mirrorContent(fromProvider: TextUtils.ContentProvider.ContentProvider, majorChange: boolean):
@@ -297,7 +298,7 @@ export class StyleFile implements TextUtils.ContentProvider.ContentProvider {
     Common.EventTarget.removeEventListeners(this.#eventListeners);
   }
 
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     console.assert(this.headers.size > 0);
     return this.headers.values().next().value.originalContentProvider().contentURL();
   }

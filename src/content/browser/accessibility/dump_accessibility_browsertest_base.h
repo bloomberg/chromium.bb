@@ -17,16 +17,15 @@
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/dump_accessibility_test_helper.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/platform/inspect/ax_api_type.h"
 #include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_test_helper.h"
 
 namespace content {
 
 class BrowserAccessibility;
 class BrowserAccessibilityManager;
-class DumpAccessibilityTestHelper;
 
 // Base class for an accessibility browsertest that takes an HTML file as
 // input, loads it into a tab, dumps some accessibility data in text format,
@@ -42,6 +41,8 @@ class DumpAccessibilityTestBase
  public:
   DumpAccessibilityTestBase();
   ~DumpAccessibilityTestBase() override;
+
+  void SignalRunTestOnMainThread(int) override;
 
   // Given a path to an HTML file relative to the test directory,
   // loads the HTML, loads the accessibility tree, calls Dump(), then
@@ -95,6 +96,9 @@ class DumpAccessibilityTestBase
   // Helpers
   //
 
+  // Dump the accessibility tree with all provided filters into a string.
+  std::string DumpTreeAsString() const;
+
   // Dump the whole accessibility tree, without applying any filters,
   // and return it as a string.
   std::string DumpUnfilteredAccessibilityTreeAsString();
@@ -139,7 +143,7 @@ class DumpAccessibilityTestBase
                                                 const std::string& value) const;
 
  protected:
-  DumpAccessibilityTestHelper test_helper_;
+  ui::AXInspectTestHelper test_helper_;
 
   WebContentsImpl* GetWebContents() const;
 
@@ -155,6 +159,20 @@ class DumpAccessibilityTestBase
 
   // Wait for default action, expected text and then end of test signal.
   void WaitForFinalTreeContents();
+
+  // Creates a new secure test server that can be used in place of the default
+  // HTTP embedded_test_server defined in BrowserTestBase. The new test server
+  // can then be retrieved using the same embedded_test_server() method used
+  // to get the BrowserTestBase HTTP server.
+  void UseHttpsTestServer();
+
+  // This will return either the https test server or the
+  // default one specified in BrowserTestBase, depending on if an https test
+  // server was created by calling UseHttpsTestServer().
+  net::EmbeddedTestServer* embedded_test_server() {
+    return (https_test_server_) ? https_test_server_.get()
+                                : BrowserTestBase::embedded_test_server();
+  }
 
  private:
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
@@ -177,6 +195,11 @@ class DumpAccessibilityTestBase
   }
 
   bool has_performed_default_actions_ = false;
+
+  // Secure test server, isn't created by default. Needs to be
+  // created using UseHttpsTestServer() and then called with
+  // embedded_test_server().
+  std::unique_ptr<net::EmbeddedTestServer> https_test_server_;
 };
 
 }  // namespace content

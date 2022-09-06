@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
@@ -82,16 +83,37 @@ MATCHER_P2(MatchesCookieNameDomain, name, domain, "") {
       arg, result_listener);
 }
 
+MATCHER_P4(MatchesCookieNameValueCreationExpiry,
+           name,
+           value,
+           creation,
+           expiry,
+           "") {
+  return testing::ExplainMatchResult(
+      testing::AllOf(
+          testing::Property(&net::CanonicalCookie::Name, name),
+          testing::Property(&net::CanonicalCookie::Value, value),
+          testing::Property(&net::CanonicalCookie::CreationDate, creation),
+          // We need a margin of error when testing the ExpiryDate as, if
+          // clamped, it is set relative to the current time.
+          testing::Property(&net::CanonicalCookie::ExpiryDate,
+                            testing::Gt(expiry - base::Minutes(1))),
+          testing::Property(&net::CanonicalCookie::ExpiryDate,
+                            testing::Lt(expiry + base::Minutes(1)))),
+      arg, result_listener);
+}
+
 const char kTopLevelDomainPlus1[] = "http://www.harvard.edu";
 const char kTopLevelDomainPlus2[] = "http://www.math.harvard.edu";
 const char kTopLevelDomainPlus2Secure[] = "https://www.math.harvard.edu";
 const char kTopLevelDomainPlus3[] = "http://www.bourbaki.math.harvard.edu";
 const char kOtherDomain[] = "http://www.mit.edu";
+const bool kFirstPartySetsDefault = false;
 
 struct CookieMonsterTestTraits {
   static std::unique_ptr<CookieStore> Create() {
-    return std::make_unique<CookieMonster>(nullptr /* store */,
-                                           nullptr /* netlog */);
+    return std::make_unique<CookieMonster>(
+        nullptr /* store */, nullptr /* netlog */, kFirstPartySetsDefault);
   }
 
   static void DeliverChangeNotifications() { base::RunLoop().RunUntilIdle(); }
@@ -248,89 +270,89 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Domain cookies
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "dom_1", "A", ".harvard.edu", "/", now, base::Time(), base::Time(),
-        false, false, CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT,
-        false));
+        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "dom_2", "B", ".math.harvard.edu", "/", now, base::Time(), base::Time(),
-        false, false, CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT,
-        false));
+        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "dom_3", "C", ".bourbaki.math.harvard.edu", "/", now, base::Time(),
-        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
 
     // Host cookies
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "host_1", "A", url_top_level_domain_plus_1, "/", now, base::Time(),
-        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "host_2", "B", url_top_level_domain_plus_2, "/", now, base::Time(),
-        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "host_3", "C", url_top_level_domain_plus_3, "/", now, base::Time(),
-        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
 
     // http_only cookie
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "httpo_check", "A", url_top_level_domain_plus_2, "/", now, base::Time(),
-        base::Time(), false, true, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, true, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
 
     // same-site cookie
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "same_site_check", "A", url_top_level_domain_plus_2, "/", now,
-        base::Time(), base::Time(), false, false, CookieSameSite::STRICT_MODE,
-        COOKIE_PRIORITY_DEFAULT, false));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT, false));
 
     // same-party cookie
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "same_party_check", "A", url_top_level_domain_plus_2, "/", now,
-        base::Time(), base::Time(), true /* secure */, false,
+        base::Time(), base::Time(), base::Time(), true /* secure */, false,
         CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT,
         true /* same_party */));
 
     // Secure cookies
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "sec_dom", "A", ".math.harvard.edu", "/", now, base::Time(),
-        base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
+        base::Time(), base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
         COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "sec_host", "B", url_top_level_domain_plus_2, "/", now, base::Time(),
-        base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
+        base::Time(), base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
         COOKIE_PRIORITY_DEFAULT, false));
 
     // Domain path cookies
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "dom_path_1", "A", ".math.harvard.edu", "/dir1", now, base::Time(),
-        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "dom_path_2", "B", ".math.harvard.edu", "/dir1/dir2", now, base::Time(),
-        base::Time(), false, false, CookieSameSite::LAX_MODE,
+        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT, false));
 
     // Host path cookies
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "host_path_1", "A", url_top_level_domain_plus_2, "/dir1", now,
-        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
-        COOKIE_PRIORITY_DEFAULT, false));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT, false));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "host_path_2", "B", url_top_level_domain_plus_2, "/dir1/dir2", now,
-        base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
-        COOKIE_PRIORITY_DEFAULT, false));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT, false));
 
     // Partitioned cookies
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "__Host-pc_1", "A", url_top_level_domain_secure, "/", now, base::Time(),
-        base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
+        base::Time(), base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
         CookiePriority::COOKIE_PRIORITY_DEFAULT, false,
         CookiePartitionKey::FromURLForTesting(GURL(kTopLevelDomainPlus1))));
     cookies.push_back(CanonicalCookie::CreateUnsafeCookieForTesting(
         "__Host-pc_2", "B", url_top_level_domain_secure, "/", now, base::Time(),
-        base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
+        base::Time(), base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
         CookiePriority::COOKIE_PRIORITY_DEFAULT, false,
         CookiePartitionKey::FromURLForTesting(GURL(kTopLevelDomainPlus1))));
 
@@ -371,7 +393,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     const int more_than_enough_cookies = domain_max_cookies + 10;
     // Add a bunch of cookies on a single host, should purge them.
     {
-      auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+      auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                                kFirstPartySetsDefault);
       for (int i = 0; i < more_than_enough_cookies; ++i) {
         std::string cookie = base::StringPrintf("a%03d=b", i);
         EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), cookie));
@@ -392,7 +415,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // between them.  We shouldn't go above kDomainMaxCookies for both together.
     GURL url_google_specific(http_www_foo_.Format("http://www.gmail.%D"));
     {
-      auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+      auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                                kFirstPartySetsDefault);
       for (int i = 0; i < more_than_enough_cookies; ++i) {
         std::string cookie_general = base::StringPrintf("a%03d=b", i);
         EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), cookie_general));
@@ -428,7 +452,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Test histogram for the number of registrable domains affected by domain
     // purge.
     {
-      auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+      auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                                kFirstPartySetsDefault);
       GURL url;
       for (int domain_num = 0; domain_num < 3; ++domain_num) {
         url = GURL(base::StringPrintf("http://domain%d.test", domain_num));
@@ -566,8 +591,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     EXPECT_EQ(expected_secure, num_secure);
 
     // Validate each priority.
-    size_t expected_count[3] = {
-        expected_low_count, expected_medium_count, expected_high_count};
+    size_t expected_count[3] = {expected_low_count, expected_medium_count,
+                                expected_high_count};
     for (int i = 0; i < 3; ++i) {
       size_t num_for_priority =
           surviving_id_list[0][i].size() + surviving_id_list[1][i].size();
@@ -614,7 +639,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     std::unique_ptr<CookieMonster> cm;
 
     if (alt_host_entries == nullptr) {
-      cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+      cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                           kFirstPartySetsDefault);
     } else {
       // When generating all of these cookies on alternate hosts, they need to
       // be all older than the max "safe" date for GC, which is currently 30
@@ -659,7 +685,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
                         CookieMonster::kDomainPurgeCookies);
 
-    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                              kFirstPartySetsDefault);
     // Key:
     // Round 1 => LN; round 2 => LS; round 3 => MN.
     // Round 4 => HN; round 5 => MS; round 6 => HS
@@ -725,7 +752,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
                         CookieMonster::kDomainPurgeCookies);
 
-    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                              kFirstPartySetsDefault);
     // Key:
     // Round 1 => LN; round 2 => LS; round 3 => MN.
     // Round 4 => HN; round 5 => MS; round 6 => HS
@@ -785,7 +813,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
                         CookieMonster::kDomainPurgeCookies);
 
-    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                              kFirstPartySetsDefault);
     // Key:
     // Round 1 => LN; round 2 => LS; round 3 => MN.
     // Round 4 => HN; round 5 => MS; round 6 => HS
@@ -818,8 +847,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     //
     // Round 1 => 10LN; round 2 => none; round 3 => none.
     // Round 4 => 21HN; round 5 => none; round 6 => none.
-    TestPriorityCookieCase(cm.get(), "39LN 1LS 141HN", 30U, 0U, 120U, 149U,
-                           1U);
+    TestPriorityCookieCase(cm.get(), "39LN 1LS 141HN", 30U, 0U, 120U, 149U, 1U);
     // Round 1 => none; round 2 => none; round 3 => 10MN.
     // Round 4 => none; round 5 => none; round 6 => 21HS.
     TestPriorityCookieCase(cm.get(), "29LN 1LS 59MN 1MS 91HS", 30U, 50U, 70U,
@@ -907,7 +935,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   void TestPartitionedCookiesGarbageCollectionHelper() {
     DCHECK_EQ(10u, CookieMonster::kPerPartitionDomainMaxCookies);
     int max_cookies = CookieMonster::kPerPartitionDomainMaxCookies;
-    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                              kFirstPartySetsDefault);
 
     auto cookie_partition_key =
         CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
@@ -929,15 +958,17 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   // Function for creating a CM with a number of cookies in it,
   // no store (and hence no ability to affect access time).
   CookieMonster* CreateMonsterForGC(int num_cookies) {
-    CookieMonster* cm(new CookieMonster(nullptr, net::NetLog::Get()));
+    CookieMonster* cm(
+        new CookieMonster(nullptr, net::NetLog::Get(), kFirstPartySetsDefault));
     base::Time creation_time = base::Time::Now();
     for (int i = 0; i < num_cookies; i++) {
       std::unique_ptr<CanonicalCookie> cc(
           CanonicalCookie::CreateUnsafeCookieForTesting(
-              "a", "1", base::StringPrintf("h%05d.izzle", i), "/" /* path */,
-              creation_time, base::Time() /* expiration_time */,
-              creation_time /* last_access */, true /* secure */,
-              false /* http_only */, CookieSameSite::NO_RESTRICTION,
+              "a", "1", base::StringPrintf("h%05d.izzle", i), /*path=*/"/",
+              creation_time, /*=expiration_time=*/base::Time(),
+              /*last_access=*/creation_time, /*last_update=*/creation_time,
+              /*secure=*/true,
+              /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
               COOKIE_PRIORITY_DEFAULT, false /* same_party */));
       GURL source_url = cookie_util::SimulatedCookieSource(*cc, "https");
       cm->SetCanonicalCookieAsync(std::move(cc), source_url,
@@ -954,6 +985,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
           it->CreationDate() == cookie.CreationDate() &&
           it->ExpiryDate() == cookie.ExpiryDate() &&
           it->LastAccessDate() == cookie.LastAccessDate() &&
+          it->LastUpdateDate() == cookie.LastUpdateDate() &&
           it->IsSecure() == cookie.IsSecure() &&
           it->IsHttpOnly() == cookie.IsHttpOnly() &&
           it->Priority() == cookie.Priority()) {
@@ -996,8 +1028,8 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   DeferredCookieTaskTest() {
     persistent_store_ = base::MakeRefCounted<MockPersistentCookieStore>();
     persistent_store_->set_store_load_commands(true);
-    cookie_monster_ = std::make_unique<CookieMonster>(persistent_store_.get(),
-                                                      net::NetLog::Get());
+    cookie_monster_ = std::make_unique<CookieMonster>(
+        persistent_store_.get(), net::NetLog::Get(), kFirstPartySetsDefault);
   }
 
   // Defines a cookie to be returned from PersistentCookieStore::Load
@@ -1053,7 +1085,7 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
 
 TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
   DeclareLoadedCookie(http_www_foo_.url(),
-                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      "X=1; path=/" + FutureCookieExpirationString(),
                       Time::Now() + base::Days(3));
 
   GetCookieListCallback call1;
@@ -1116,12 +1148,12 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
   CookieList list;
   list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "." + http_www_foo_.domain(), "/", base::Time::Now(),
-      base::Time(), base::Time(), false, true, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      base::Time(), base::Time(), base::Time(), false, true,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
   list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "D", "." + http_www_foo_.domain(), "/", base::Time::Now(),
-      base::Time(), base::Time(), false, true, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      base::Time(), base::Time(), base::Time(), false, true,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
 
   ResultSavingCookieCallback<CookieAccessResult> call1;
   cookie_monster_->SetAllCookiesAsync(list, call1.MakeCallback());
@@ -1143,7 +1175,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
-                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      "X=1; path=/" + FutureCookieExpirationString(),
                       Time::Now() + base::Days(3));
 
   GetAllCookiesCallback call1;
@@ -1165,7 +1197,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
-                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      "X=1; path=/" + FutureCookieExpirationString(),
                       Time::Now() + base::Days(3));
 
   GetCookieListCallback call1;
@@ -1191,7 +1223,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
-                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      "X=1; path=/" + FutureCookieExpirationString(),
                       Time::Now() + base::Days(3));
 
   GetCookieListCallback call1;
@@ -1217,7 +1249,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCookies) {
   DeclareLoadedCookie(http_www_foo_.url(),
-                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      "X=1; path=/" + FutureCookieExpirationString(),
                       Time::Now() + base::Days(3));
 
   ResultSavingCookieCallback<uint32_t> call1;
@@ -1354,7 +1386,7 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteSessionCookies) {
 TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   cookie_monster_->SetPersistSessionCookies(true);
   DeclareLoadedCookie(http_www_foo_.url(),
-                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      "X=1; path=/" + FutureCookieExpirationString(),
                       Time::Now() + base::Days(3));
 
   bool get_cookie_list_callback_was_run = false;
@@ -1412,8 +1444,8 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
 
 TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
   CookieOptions options = CookieOptions::MakeAllInclusive();
 
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), kValidCookieLine));
@@ -1429,9 +1461,8 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
   EXPECT_EQ(0u, store->commands().size());
 
   // Create a persistent cookie.
-  EXPECT_TRUE(SetCookie(
-      cm.get(), http_www_foo_.url(),
-      std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT"));
+  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(),
+                        kValidCookieLine + FutureCookieExpirationString()));
   ASSERT_EQ(1u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[0].type);
 
@@ -1456,7 +1487,8 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
 }
 
 TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedInTimeRangeTimestamps) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   Time now = Time::Now();
 
@@ -1544,7 +1576,8 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedInTimeRangeTimestamps) {
 
 TEST_F(CookieMonsterTest,
        TestCookieDeleteAllCreatedInTimeRangeTimestampsWithInfo) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   Time now = Time::Now();
 
@@ -1632,7 +1665,8 @@ TEST_F(CookieMonsterTest,
 }
 
 TEST_F(CookieMonsterTest, TestCookieDeleteMatchingCookies) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
   Time now = Time::Now();
 
   // Nothing has been added so nothing should be deleted.
@@ -1707,7 +1741,8 @@ static const base::TimeDelta kAccessDelay =
 
 TEST_F(CookieMonsterTest, TestLastAccess) {
   std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, kLastAccessThreshold, net::NetLog::Get()));
+      new CookieMonster(nullptr, kLastAccessThreshold, net::NetLog::Get(),
+                        kFirstPartySetsDefault));
 
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=B"));
   const Time last_access_date(GetFirstCookieAccessDate(cm.get()));
@@ -1765,10 +1800,11 @@ TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection) {
 }
 
 TEST_F(CookieMonsterTest, SetCookieableSchemes) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   std::unique_ptr<CookieMonster> cm_foo(
-      new CookieMonster(nullptr, net::NetLog::Get()));
+      new CookieMonster(nullptr, net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Only cm_foo should allow foo:// cookies.
   std::vector<std::string> schemes;
@@ -1830,7 +1866,8 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, kLastAccessThreshold, net::NetLog::Get()));
+      new CookieMonster(nullptr, kLastAccessThreshold, net::NetLog::Get(),
+                        kFirstPartySetsDefault));
 
   // Create an httponly cookie.
   CookieOptions options = CookieOptions::MakeAllInclusive();
@@ -1947,7 +1984,8 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
 
 TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
   std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, kLastAccessThreshold, net::NetLog::Get()));
+      new CookieMonster(nullptr, kLastAccessThreshold, net::NetLog::Get(),
+                        kFirstPartySetsDefault));
 
   // Create an httponly cookie.
   CookieOptions options = CookieOptions::MakeAllInclusive();
@@ -2022,7 +2060,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
 }
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   CookieOptions options = CookieOptions::MakeAllInclusive();
 
@@ -2061,7 +2100,8 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
 }
 
 TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   CookieOptions options = CookieOptions::MakeAllInclusive();
 
@@ -2098,7 +2138,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
 }
 
 TEST_F(CookieMonsterTest, CookieSorting) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   base::Time system_time = base::Time::Now();
   for (const char* cookie_line :
@@ -2125,7 +2166,8 @@ TEST_F(CookieMonsterTest, CookieSorting) {
 }
 
 TEST_F(CookieMonsterTest, InheritCreationDate) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   base::Time the_not_so_distant_past(base::Time::Now() - base::Seconds(1000));
   EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
@@ -2135,14 +2177,18 @@ TEST_F(CookieMonsterTest, InheritCreationDate) {
   CookieList cookies = GetAllCookies(cm.get());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ(the_not_so_distant_past, cookies[0].CreationDate());
+  base::Time last_update = cookies[0].LastUpdateDate();
 
   // Overwrite the cookie with the same value, and verify that the creation date
-  // is inherited.
+  // is inherited. The update date isn't inherited though.
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "Name=Value; path=/"));
 
   cookies = GetAllCookies(cm.get());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ(the_not_so_distant_past, cookies[0].CreationDate());
+  // If this is flakey you many need to manually set the last update time.
+  EXPECT_LT(last_update, cookies[0].LastUpdateDate());
+  last_update = cookies[0].LastUpdateDate();
 
   // New value => new creation date.
   EXPECT_TRUE(
@@ -2151,12 +2197,15 @@ TEST_F(CookieMonsterTest, InheritCreationDate) {
   cookies = GetAllCookies(cm.get());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_NE(the_not_so_distant_past, cookies[0].CreationDate());
+  // If this is flakey you many need to manually set the last update time.
+  EXPECT_LT(last_update, cookies[0].LastUpdateDate());
 }
 
 // Check that GetAllCookiesForURL() does not return expired cookies and deletes
 // them.
 TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=B;"));
 
@@ -2219,44 +2268,44 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies) {
   // the import.
 
   AddCookieToList(GURL("http://www.foo.com"),
-                  "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  "X=1; path=/" + FutureCookieExpirationString(),
                   Time::Now() + base::Days(3), &initial_cookies);
 
   AddCookieToList(GURL("http://www.foo.com"),
-                  "X=2; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  "X=2; path=/" + FutureCookieExpirationString(),
                   Time::Now() + base::Days(1), &initial_cookies);
 
   // ===> This one is the WINNER (biggest creation time).  <====
   AddCookieToList(GURL("http://www.foo.com"),
-                  "X=3; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  "X=3; path=/" + FutureCookieExpirationString(),
                   Time::Now() + base::Days(4), &initial_cookies);
 
   AddCookieToList(GURL("http://www.foo.com"),
-                  "X=4; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                  Time::Now(), &initial_cookies);
+                  "X=4; path=/" + FutureCookieExpirationString(), Time::Now(),
+                  &initial_cookies);
 
   // Insert 2 cookies with name "X" on path "/2", with varying creation
   // dates. We expect only the most recent one to be preserved the import.
 
   // ===> This one is the WINNER (biggest creation time).  <====
   AddCookieToList(GURL("http://www.foo.com"),
-                  "X=a1; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  "X=a1; path=/2" + FutureCookieExpirationString(),
                   Time::Now() + base::Days(9), &initial_cookies);
 
   AddCookieToList(GURL("http://www.foo.com"),
-                  "X=a2; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  "X=a2; path=/2" + FutureCookieExpirationString(),
                   Time::Now() + base::Days(2), &initial_cookies);
 
   // Insert 1 cookie with name "Y" on path "/".
   AddCookieToList(GURL("http://www.foo.com"),
-                  "Y=a; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  "Y=a; path=/" + FutureCookieExpirationString(),
                   Time::Now() + base::Days(10), &initial_cookies);
 
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Verify that duplicates were not imported for path "/".
   // (If this had failed, GetCookies() would have also returned X=1, X=2, X=4).
@@ -2301,8 +2350,8 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies_PartitionedCookies) {
   initial_cookies.push_back(std::move(cc));
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
@@ -2354,8 +2403,8 @@ TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes) {
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   CookieList list(GetAllCookies(cm.get()));
   EXPECT_EQ(2U, list.size());
@@ -2412,8 +2461,8 @@ TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes_PartitionedCookies) {
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   CookieList list(GetAllCookies(cm.get()));
   EXPECT_EQ(2U, list.size());
@@ -2426,7 +2475,8 @@ TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes_PartitionedCookies) {
 }
 
 TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   const base::Time now = PopulateCmForPredicateCheck(cm.get());
   // We test that we can see all cookies with |delete_info|. This includes
@@ -2454,7 +2504,8 @@ TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
 // Mainly a test of GetEffectiveDomain, or more specifically, of the
 // expected behavior of GetEffectiveDomain within the CookieMonster.
 TEST_F(CookieMonsterTest, GetKey) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   // This test is really only interesting if GetKey() actually does something.
   EXPECT_EQ("foo.com", cm->GetKey("www.foo.com"));
@@ -2500,16 +2551,16 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
 
   // Create new cookies and flush them to the store.
   {
-    std::unique_ptr<CookieMonster> cmout(
-        new CookieMonster(store.get(), net::NetLog::Get()));
+    std::unique_ptr<CookieMonster> cmout(new CookieMonster(
+        store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
     for (const auto& cookie : input_info) {
       EXPECT_TRUE(SetCanonicalCookie(
           cmout.get(),
           CanonicalCookie::CreateUnsafeCookieForTesting(
               cookie.name, cookie.value, cookie.domain, cookie.path,
-              base::Time(), cookie.expiration_time, base::Time(), cookie.secure,
-              cookie.http_only, cookie.same_site, cookie.priority,
-              cookie.same_party),
+              base::Time(), cookie.expiration_time, base::Time(), base::Time(),
+              cookie.secure, cookie.http_only, cookie.same_site,
+              cookie.priority, cookie.same_party),
           cookie.url, true /*modify_httponly*/));
     }
 
@@ -2520,8 +2571,8 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
 
   // Create a new cookie monster and make sure that everything is correct
   {
-    std::unique_ptr<CookieMonster> cmin(
-        new CookieMonster(store.get(), net::NetLog::Get()));
+    std::unique_ptr<CookieMonster> cmin(new CookieMonster(
+        store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
     CookieList cookies(GetAllCookies(cmin.get()));
     ASSERT_EQ(2u, cookies.size());
     // Ordering is path length, then creation time.  So second cookie
@@ -2555,7 +2606,8 @@ TEST_F(CookieMonsterTest, RestoreDifferentCookieSameCreationTime) {
       base::MakeRefCounted<MockPersistentCookieStore>();
 
   {
-    CookieMonster cmout(store.get(), net::NetLog::Get());
+    CookieMonster cmout(store.get(), net::NetLog::Get(),
+                        kFirstPartySetsDefault);
     GURL url("http://www.example.com/");
     EXPECT_TRUE(
         SetCookieWithCreationTime(&cmout, url, "A=1; max-age=600", current));
@@ -2577,7 +2629,8 @@ TEST_F(CookieMonsterTest, RestoreDifferentCookieSameCreationTime) {
 
   // Now read them in. Should get two cookies, not one.
   {
-    CookieMonster cmin(store2.get(), net::NetLog::Get());
+    CookieMonster cmin(store2.get(), net::NetLog::Get(),
+                       kFirstPartySetsDefault);
     CookieList cookies(GetAllCookies(&cmin));
     ASSERT_EQ(2u, cookies.size());
   }
@@ -2586,7 +2639,8 @@ TEST_F(CookieMonsterTest, RestoreDifferentCookieSameCreationTime) {
 TEST_F(CookieMonsterTest, CookieListOrdering) {
   // Put a random set of cookies into a monster and make sure
   // they're returned in the right order.
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   EXPECT_TRUE(
       SetCookie(cm.get(), GURL("http://d.c.b.a.foo.com/aa/x.html"), "c=1"));
@@ -2725,8 +2779,8 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   store->set_store_load_commands(true);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   auto cookie = CanonicalCookie::Create(
       kUrl, "a=b", base::Time::Now(), absl::nullopt /* server_time */,
@@ -2775,8 +2829,8 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   store->set_store_load_commands(true);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   ResultSavingCookieCallback<uint32_t> delete_callback;
   cm->DeleteAllAsync(delete_callback.MakeCallback());
@@ -2815,8 +2869,8 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   store->set_store_load_commands(true);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   GetAllCookiesCallback get_cookies_callback1;
   cm->GetAllCookiesAsync(get_cookies_callback1.MakeCallback());
@@ -2866,8 +2920,8 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   store->set_store_load_commands(true);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Get all cookies task that queues a task to set a cookie when executed.
   auto cookie = CanonicalCookie::Create(
@@ -2879,7 +2933,7 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
       base::BindOnce(&CookieStore::SetCanonicalCookieAsync,
                      base::Unretained(cm.get()), std::move(cookie), kUrl,
                      CookieOptions::MakeAllInclusive(),
-                     set_cookie_callback.MakeCallback())));
+                     set_cookie_callback.MakeCallback(), absl::nullopt)));
 
   // Get cookie task. Queued before the delete task is executed, so should not
   // see the set cookie.
@@ -2911,7 +2965,8 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
 TEST_F(CookieMonsterTest, FlushStore) {
   auto counter = base::MakeRefCounted<CallbackCounter>();
   auto store = base::MakeRefCounted<FlushablePersistentStore>();
-  auto cm = std::make_unique<CookieMonster>(store, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(store, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(0, counter->callback_count());
@@ -2946,7 +3001,8 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(2, counter->callback_count());
 
   // If there's no backing store, FlushStore() is always a safe no-op.
-  cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                       kFirstPartySetsDefault);
   GetAllCookies(cm.get());  // Force init.
   cm->FlushStore(base::DoNothing());
   base::RunLoop().RunUntilIdle();
@@ -2961,7 +3017,8 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
 TEST_F(CookieMonsterTest, SetAllCookies) {
   scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
-  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
   cm->SetPersistSessionCookies(true);
 
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "U=V; path=/"));
@@ -2971,20 +3028,21 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
   CookieList list;
   list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "." + http_www_foo_.url().host(), "/", base::Time::Now(),
-      base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
   list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "D", "." + http_www_foo_.url().host(), "/bar", base::Time::Now(),
-      base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
   list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "W", "X", "." + http_www_foo_.url().host(), "/", base::Time::Now(),
-      base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
   list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "__Host-Y", "Z", https_www_foo_.url().host(), "/", base::Time::Now(),
-      base::Time(), base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT, false,
+      base::Time(), base::Time(), base::Time(), true, false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+      false,
       CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"))));
 
   // SetAllCookies must not flush.
@@ -3031,7 +3089,8 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
 // Check that DeleteAll does flush (as a quick check that flush_count() works).
 TEST_F(CookieMonsterTest, DeleteAll) {
   scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
-  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
   cm->SetPersistSessionCookies(true);
 
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "X=Y; path=/"));
@@ -3058,7 +3117,8 @@ TEST_F(CookieMonsterTest, DeleteAll) {
 }
 
 TEST_F(CookieMonsterTest, HistogramCheck) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   // Should match call in InitializeHistograms, but doesn't really matter
   // since the histogram should have been initialized by the CM construction
@@ -3071,8 +3131,8 @@ TEST_F(CookieMonsterTest, HistogramCheck) {
       expired_histogram->SnapshotSamples());
   auto cookie = CanonicalCookie::CreateUnsafeCookieForTesting(
       "a", "b", "a.url", "/", base::Time(),
-      base::Time::Now() + base::Minutes(59), base::Time(), true, false,
-      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false);
+      base::Time::Now() + base::Minutes(59), base::Time(), base::Time(), true,
+      false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false);
   GURL source_url = cookie_util::SimulatedCookieSource(*cookie, "https");
   ASSERT_TRUE(SetCanonicalCookie(cm.get(), std::move(cookie), source_url,
                                  true /*modify_httponly*/));
@@ -3103,8 +3163,8 @@ TEST_F(CookieMonsterTest, InvalidExpiryTime) {
 // CookieStore if the "persist session cookies" option is on.
 TEST_F(CookieMonsterTest, PersistSessionCookies) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
   cm->SetPersistSessionCookies(true);
 
   // All cookies set with SetCookie are session cookies.
@@ -3141,12 +3201,12 @@ TEST_F(CookieMonsterTest, PersistSessionCookies) {
 // Test the commands sent to the persistent cookie store.
 TEST_F(CookieMonsterTest, PersisentCookieStorageTest) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Add a cookie.
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(),
-                        "A=B; expires=Mon, 18-Apr-22 22:50:13 GMT"));
+                        "A=B" + FutureCookieExpirationString()));
   this->MatchCookieLines("A=B", GetCookies(cm.get(), http_www_foo_.url()));
   ASSERT_EQ(1u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[0].type);
@@ -3159,13 +3219,13 @@ TEST_F(CookieMonsterTest, PersisentCookieStorageTest) {
 
   // Add a cookie.
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(),
-                        "A=B; expires=Mon, 18-Apr-22 22:50:13 GMT"));
+                        "A=B" + FutureCookieExpirationString()));
   this->MatchCookieLines("A=B", GetCookies(cm.get(), http_www_foo_.url()));
   ASSERT_EQ(3u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[2].type);
   // Overwrite it.
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(),
-                        "A=Foo; expires=Mon, 18-Apr-22 22:50:14 GMT"));
+                        "A=Foo" + FutureCookieExpirationString()));
   this->MatchCookieLines("A=Foo", GetCookies(cm.get(), http_www_foo_.url()));
   ASSERT_EQ(5u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::REMOVE, store->commands()[3].type);
@@ -3204,9 +3264,10 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
           "baz",
           "\x05"
           "boo",
-          "." + domain, path, now2, later, base::Time(), true /* secure */,
-          false /* httponly */, CookieSameSite::NO_RESTRICTION,
-          COOKIE_PRIORITY_DEFAULT, false /* sameparty */);
+          "." + domain, path, now2, later, base::Time(), base::Time(),
+          true /* secure */, false /* httponly */,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+          false /* sameparty */);
   initial_cookies.push_back(std::move(cc));
 
   std::unique_ptr<CanonicalCookie> cc2 =
@@ -3214,9 +3275,10 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
           "baz",
           "\x7F"
           "boo",
-          "." + domain, path, now3, later, base::Time(), true /* secure */,
-          false /* httponly */, CookieSameSite::NO_RESTRICTION,
-          COOKIE_PRIORITY_DEFAULT, false /* sameparty */);
+          "." + domain, path, now3, later, base::Time(), base::Time(),
+          true /* secure */, false /* httponly */,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+          false /* sameparty */);
   initial_cookies.push_back(std::move(cc2));
 
   // Partitioned cookies with control characters should not be loaded.
@@ -3227,9 +3289,10 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
           "__Host-baz",
           "\x7F"
           "boo",
-          domain, "/", now3, later, base::Time(), true /* secure */,
-          false /* httponly */, CookieSameSite::NO_RESTRICTION,
-          COOKIE_PRIORITY_DEFAULT, false /* sameparty */, cookie_partition_key);
+          domain, "/", now3, later, base::Time(), base::Time(),
+          true /* secure */, false /* httponly */,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+          false /* sameparty */, cookie_partition_key);
   initial_cookies.push_back(std::move(cc3));
 
   AddCookieToList(url, "hello=world; path=" + path, now4, &initial_cookies);
@@ -3237,8 +3300,8 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, std::move(initial_cookies));
 
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   EXPECT_EQ("foo=bar; hello=world",
             GetCookies(cm.get(), url,
@@ -3251,8 +3314,8 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   const std::string cookie_source_histogram = "Cookie.CookieSourceScheme";
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   histograms.ExpectTotalCount(cookie_source_histogram, 0);
 
@@ -3338,7 +3401,8 @@ TEST_F(CookieMonsterTest, NumKeysHistogram) {
       absl::nullopt /* cookie_partition_key */));
   store->SetLoadExpectation(true /* return_value */,
                             std::move(initial_cookies));
-  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
   {
     base::HistogramTester histogram_tester;
     // Access the cookies to trigger loading from the persistent store.
@@ -3409,7 +3473,8 @@ TEST_F(CookieMonsterTest, NumKeysHistogram) {
 // Test that localhost URLs can set and get secure cookies, even if
 // non-cryptographic.
 TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
+  auto cm =
+      std::make_unique<CookieMonster>(nullptr, nullptr, kFirstPartySetsDefault);
 
   GURL insecure_localhost("http://localhost");
   GURL secure_localhost("https://localhost");
@@ -3483,8 +3548,8 @@ TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
 
 TEST_F(CookieMonsterTest, MaybeDeleteEquivalentCookieAndUpdateStatus) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Set a secure, httponly cookie from a secure origin
   auto preexisting_cookie = CanonicalCookie::Create(
@@ -3590,8 +3655,8 @@ TEST_F(CookieMonsterTest, MaybeDeleteEquivalentCookieAndUpdateStatus) {
 TEST_F(CookieMonsterTest,
        MaybeDeleteEquivalentCookieAndUpdateStatus_PartitionedCookies) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Test adding two cookies with the same name, domain, and path but different
   // partition keys.
@@ -3634,8 +3699,8 @@ TEST_F(CookieMonsterTest,
 // multiple reasons (Secure and HttpOnly).
 TEST_F(CookieMonsterTest, SkipDontOverwriteForMultipleReasons) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   // Set a secure, httponly cookie from a secure origin
   auto preexisting_cookie = CanonicalCookie::Create(
@@ -3673,8 +3738,8 @@ TEST_F(CookieMonsterTest, SkipDontOverwriteForMultipleReasons) {
 // cookie should not be set.
 TEST_F(CookieMonsterTest, DontDeleteEquivalentCookieIfSetIsRejected) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   auto preexisting_cookie = CanonicalCookie::Create(
       http_www_foo_.url(), "cookie=foo", base::Time::Now(),
@@ -3700,7 +3765,8 @@ TEST_F(CookieMonsterTest, DontDeleteEquivalentCookieIfSetIsRejected) {
 }
 
 TEST_F(CookieMonsterTest, SetSecureCookies) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   GURL http_url("http://www.foo.com");
   GURL http_superdomain_url("http://foo.com");
@@ -3867,7 +3933,7 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
 }
 
 TEST_F(CookieMonsterTest, SetSamePartyCookies) {
-  CookieMonster cm(nullptr, net::NetLog::Get());
+  CookieMonster cm(nullptr, net::NetLog::Get(), kFirstPartySetsDefault);
   GURL http_url("http://www.foo.com");
   GURL http_superdomain_url("http://foo.com");
   GURL https_url("https://www.foo.com");
@@ -3924,7 +3990,8 @@ TEST_F(CookieMonsterTest, SetSamePartyCookies) {
 // Check domain-match criterion: If either cookie domain matches the other,
 // don't set the insecure cookie.
 TEST_F(CookieMonsterTest, LeaveSecureCookiesAlone_DomainMatch) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   // These domains will domain-match each other.
   const char* kRegistrableDomain = "foo.com";
@@ -4095,7 +4162,8 @@ TEST_F(CookieMonsterTest, LeaveSecureCookiesAlone_DomainMatch) {
 // Check path-match criterion: If the new cookie is for the same path or a
 // subdirectory of the preexisting cookie's path, don't set the new cookie.
 TEST_F(CookieMonsterTest, LeaveSecureCookiesAlone_PathMatch) {
-  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
 
   // A path that is later in this list will path-match all the paths before it.
   const char* kPaths[] = {"/", "/1", "/1/2", "/1/2/3"};
@@ -4319,7 +4387,8 @@ TEST_F(CookieMonsterTest, EvictSecureCookies) {
 // Tests that strict secure cookies doesn't trip equivalent cookie checks
 // accidentally. Regression test for https://crbug.com/569943.
 TEST_F(CookieMonsterTest, EquivalentCookies) {
-  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  std::unique_ptr<CookieMonster> cm(
+      new CookieMonster(nullptr, nullptr, kFirstPartySetsDefault));
   GURL http_url("http://www.foo.com");
   GURL http_superdomain_url("http://foo.com");
   GURL https_url("https://www.foo.com");
@@ -4348,7 +4417,7 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
       base::MakeRefCounted<MockPersistentCookieStore>();
   // Collect load commands so we have control over their execution.
   persistent_store->set_store_load_commands(true);
-  CookieMonster cm(persistent_store.get(), nullptr);
+  CookieMonster cm(persistent_store.get(), nullptr, kFirstPartySetsDefault);
 
   // Start of a canonical cookie set.
   ResultSavingCookieCallback<CookieAccessResult> callback_set;
@@ -4394,12 +4463,12 @@ TEST_F(CookieMonsterTest, DeleteDuplicateCTime) {
   // This gets tested a few times with different deletion target, to make sure
   // that the implementation doesn't just happen to pick the right one because
   // of implementation details.
-  for (size_t run = 0; run < base::size(kNames); ++run) {
-    CookieMonster cm(nullptr, nullptr);
+  for (size_t run = 0; run < std::size(kNames); ++run) {
+    CookieMonster cm(nullptr, nullptr, kFirstPartySetsDefault);
     Time now = Time::Now();
     GURL url("http://www.example.com");
 
-    for (size_t i = 0; i < base::size(kNames); ++i) {
+    for (size_t i = 0; i < std::size(kNames); ++i) {
       std::string cookie_string =
           base::StrCat({kNames[i], "=", base::NumberToString(i)});
       EXPECT_TRUE(SetCookieWithCreationTime(&cm, url, cookie_string, now));
@@ -4408,8 +4477,8 @@ TEST_F(CookieMonsterTest, DeleteDuplicateCTime) {
     // Delete the run'th cookie.
     CookieList all_cookies = GetAllCookiesForURLWithOptions(
         &cm, url, CookieOptions::MakeAllInclusive());
-    ASSERT_EQ(all_cookies.size(), base::size(kNames));
-    for (size_t i = 0; i < base::size(kNames); ++i) {
+    ASSERT_EQ(all_cookies.size(), std::size(kNames));
+    for (size_t i = 0; i < std::size(kNames); ++i) {
       const CanonicalCookie& cookie = all_cookies[i];
       if (cookie.Name() == kNames[run]) {
         EXPECT_TRUE(DeleteCanonicalCookie(&cm, cookie));
@@ -4419,8 +4488,8 @@ TEST_F(CookieMonsterTest, DeleteDuplicateCTime) {
     // Check that the right cookie got removed.
     all_cookies = GetAllCookiesForURLWithOptions(
         &cm, url, CookieOptions::MakeAllInclusive());
-    ASSERT_EQ(all_cookies.size(), base::size(kNames) - 1);
-    for (size_t i = 0; i < base::size(kNames) - 1; ++i) {
+    ASSERT_EQ(all_cookies.size(), std::size(kNames) - 1);
+    for (size_t i = 0; i < std::size(kNames) - 1; ++i) {
       const CanonicalCookie& cookie = all_cookies[i];
       EXPECT_NE(cookie.Name(), kNames[run]);
     }
@@ -4435,7 +4504,7 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   CookieOptions options = CookieOptions::MakeAllInclusive();
   absl::optional<base::Time> server_time = absl::nullopt;
   absl::optional<CookiePartitionKey> partition_key = absl::nullopt;
-  CookieMonster cm(nullptr, nullptr);
+  CookieMonster cm(nullptr, nullptr, kFirstPartySetsDefault);
 
   // Write a cookie created at |t1|.
   auto cookie =
@@ -4467,7 +4536,7 @@ TEST_F(CookieMonsterTest, RejectCreatedSameSiteCookieOnSet) {
   GURL url("http://www.example.com");
   std::string cookie_line = "foo=bar; SameSite=Lax";
 
-  CookieMonster cm(nullptr, nullptr);
+  CookieMonster cm(nullptr, nullptr, kFirstPartySetsDefault);
   CookieOptions env_cross_site;
   env_cross_site.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext(
@@ -4494,7 +4563,7 @@ TEST_F(CookieMonsterTest, RejectCreatedSecureCookieOnSet) {
   GURL http_url("http://www.example.com");
   std::string cookie_line = "foo=bar; Secure";
 
-  CookieMonster cm(nullptr, nullptr);
+  CookieMonster cm(nullptr, nullptr, kFirstPartySetsDefault);
   CookieInclusionStatus status;
   // Cookie can be created successfully from an any url. Secure is not checked
   // on Create.
@@ -4519,7 +4588,7 @@ TEST_F(CookieMonsterTest, RejectCreatedHttpOnlyCookieOnSet) {
   GURL url("http://www.example.com");
   std::string cookie_line = "foo=bar; HttpOnly";
 
-  CookieMonster cm(nullptr, nullptr);
+  CookieMonster cm(nullptr, nullptr, kFirstPartySetsDefault);
   CookieInclusionStatus status;
   // Cookie can be created successfully; HttpOnly is not checked on Create.
   auto cookie = CanonicalCookie::Create(
@@ -4595,14 +4664,14 @@ TEST_F(CookieMonsterTest, CookiesWithoutSameSiteMustBeSecure) {
        CookieInclusionStatus(), CookieEffectiveSameSite::LAX_MODE, kLongAge},
   };
 
-  auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
+  auto cm =
+      std::make_unique<CookieMonster>(nullptr, nullptr, kFirstPartySetsDefault);
   GURL secure_url("https://www.example1.test");
   GURL insecure_url("http://www.example2.test");
 
   int length = sizeof(test_cases) / sizeof(test_cases[0]);
   for (int i = 0; i < length; ++i) {
     TestCase test = test_cases[i];
-    base::test::ScopedFeatureList feature_list;
 
     GURL url = test.is_url_secure ? secure_url : insecure_url;
     base::Time creation_time = base::Time::Now() - test.creation_time_delta;
@@ -4631,7 +4700,8 @@ class CookieMonsterNotificationTest : public CookieMonsterTest {
   CookieMonsterNotificationTest()
       : test_url_("http://www.foo.com/foo"),
         store_(new MockPersistentCookieStore),
-        monster_(new CookieMonster(store_.get(), nullptr)) {}
+        monster_(
+            new CookieMonster(store_.get(), nullptr, kFirstPartySetsDefault)) {}
 
   ~CookieMonsterNotificationTest() override = default;
 
@@ -4663,7 +4733,8 @@ TEST_F(CookieMonsterNotificationTest, NoNotificationOnLoad) {
   store->set_store_load_commands(true);
 
   // Bind it to a CookieMonster
-  auto monster = std::make_unique<CookieMonster>(store.get(), nullptr);
+  auto monster = std::make_unique<CookieMonster>(store.get(), nullptr,
+                                                 kFirstPartySetsDefault);
 
   // Trigger load dispatch and confirm it.
   monster->GetAllCookiesAsync(CookieStore::GetAllCookiesCallback());
@@ -4727,7 +4798,8 @@ class CookieMonsterLegacyCookieAccessTest : public CookieMonsterTest {
  public:
   CookieMonsterLegacyCookieAccessTest()
       : cm_(std::make_unique<CookieMonster>(nullptr /* store */,
-                                            nullptr /* netlog */)) {
+                                            nullptr /* netlog */,
+                                            kFirstPartySetsDefault)) {
     // Need to reset first because there cannot be two TaskEnvironments at the
     // same time.
     task_environment_.reset();
@@ -4912,8 +4984,8 @@ TEST_F(CookieMonsterTest, CookieDomainSetHistogram) {
   const char kHistogramName[] = "Cookie.DomainSet";
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   histograms.ExpectTotalCount(kHistogramName, 0);
 
@@ -4941,8 +5013,8 @@ TEST_F(CookieMonsterTest, CookiePortReadHistogram) {
   const char kHistogramNameLocal[] = "Cookie.Port.Read.Localhost";
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   histograms.ExpectTotalCount(kHistogramName, 0);
 
@@ -4995,8 +5067,8 @@ TEST_F(CookieMonsterTest, CookiePortSetHistogram) {
   const char kHistogramNameLocal[] = "Cookie.Port.Set.Localhost";
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   histograms.ExpectTotalCount(kHistogramName, 0);
 
@@ -5050,8 +5122,8 @@ TEST_F(CookieMonsterTest, CookiePortReadDiffersFromSetHistogram) {
       "Cookie.Port.ReadDiffersFromSet.DomainSet";
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   histograms.ExpectTotalCount(kHistogramName, 0);
 
@@ -5150,8 +5222,8 @@ TEST_F(CookieMonsterTest, CookieSourceSchemeNameHistogram) {
   const char kHistogramName[] = "Cookie.CookieSourceSchemeName";
 
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(store.get(), net::NetLog::Get()));
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault));
 
   histograms.ExpectTotalCount(kHistogramName, 0);
 
@@ -5211,13 +5283,13 @@ TEST_F(CookieMonsterTest, CookieSourceSchemeNameHistogram) {
 class FirstPartySetEnabledCookieMonsterTest : public CookieMonsterTest {
  public:
   FirstPartySetEnabledCookieMonsterTest()
-      : cm_(nullptr /* store */, nullptr /* netlog */) {
+      : cm_(nullptr /* store */,
+            nullptr /* netlog */,
+            true /* first_party_sets_enabled */) {
     std::unique_ptr<TestCookieAccessDelegate> access_delegate =
         std::make_unique<TestCookieAccessDelegate>();
     access_delegate_ = access_delegate.get();
     cm_.SetCookieAccessDelegate(std::move(access_delegate));
-
-    feature_list_.InitAndEnableFeature(features::kFirstPartySets);
   }
 
   ~FirstPartySetEnabledCookieMonsterTest() override = default;
@@ -5225,10 +5297,6 @@ class FirstPartySetEnabledCookieMonsterTest : public CookieMonsterTest {
   CookieMonster* cm() { return &cm_; }
 
  protected:
-  // The FeatureList must be before the CookieMonster because the CookieMonster
-  // destructor expects the state of the features to be the same as when it's in
-  // use.
-  base::test::ScopedFeatureList feature_list_;
   CookieMonster cm_;
   raw_ptr<TestCookieAccessDelegate> access_delegate_;
 };
@@ -5275,7 +5343,8 @@ TEST_F(FirstPartySetEnabledCookieMonsterTest, RecordsPeriodicFPSSizes) {
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURLNonce) {
   auto store = base::MakeRefCounted<MockPersistentCookieStore>();
-  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get());
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
   CookieOptions options = CookieOptions::MakeAllInclusive();
 
   auto anonymous_iframe_key = CookiePartitionKey::FromURLForTesting(
@@ -5309,6 +5378,456 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURLNonce) {
                           CookiePartitionKeyCollection(anonymous_iframe_key)),
       ElementsAre(MatchesCookieNameValue("__Host-B", "1"),
                   MatchesCookieNameValue("__Host-C", "0")));
+}
+
+// TODO(crbug.com/1296161): Delete this when the partitioned cookies Origin
+// Trial ends.
+TEST_F(CookieMonsterTest, ConvertPartitionedCookiesToUnpartitioned) {
+  auto store = base::MakeRefCounted<MockPersistentCookieStore>();
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get(),
+                                            kFirstPartySetsDefault);
+  CookieOptions options = CookieOptions::MakeAllInclusive();
+
+  // Set unpartitioned cookie
+  EXPECT_TRUE(CreateAndSetCookie(cm.get(), https_www_foo_.url(),
+                                 "__Host-A=0; Secure; Path=/; SameSite=None",
+                                 options, absl::nullopt, absl::nullopt,
+                                 absl::nullopt));
+
+  // Set a partitioned cookie
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-B=0; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+
+  auto cookies =
+      GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                          CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 2u);
+  EXPECT_EQ(cookies[0].Name(), "__Host-A");
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+  EXPECT_EQ(cookies[1].Name(), "__Host-B");
+  EXPECT_FALSE(cookies[1].IsPartitioned());
+
+  // Set a partitioned cookie with the same name/domain/path as an existing
+  // cookie. This cookie should be deleted in favor of the existing
+  // unpartitioned cookie.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-A=1; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+
+  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 2u);
+  EXPECT_EQ(cookies[0].Name(), "__Host-A");
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+  EXPECT_EQ(cookies[0].Value(), "0");
+
+  // Set two partitioned cookies, the second one should be left over as an
+  // unpartitioned cookie after the conversion since it should have a more
+  // recent last_access_time.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-C=0; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://1.com"))));
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-C=1; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://2.com"))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+
+  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 3u);
+  EXPECT_EQ(cookies[2].Name(), "__Host-C");
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+  EXPECT_EQ(cookies[2].Value(), "1");
+
+  // Should not convert cookies whose partition keys contain a nonce.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-D=0; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"),
+                                            base::UnguessableToken::Create())));
+  // Unpartitioned cookie with the same name and value should be left alone.
+  EXPECT_TRUE(CreateAndSetCookie(cm.get(), https_www_foo_.url(),
+                                 "__Host-D=1; Secure; Path=/; SameSite=None",
+                                 options, absl::nullopt, absl::nullopt,
+                                 absl::nullopt));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+
+  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 5u);
+  EXPECT_EQ(cookies[3].Name(), "__Host-D");
+  EXPECT_EQ(cookies[3].Value(), "0");
+  EXPECT_TRUE(cookies[3].IsPartitioned());
+  EXPECT_EQ(cookies[4].Name(), "__Host-D");
+  EXPECT_EQ(cookies[4].Value(), "1");
+  EXPECT_FALSE(cookies[4].IsPartitioned());
+
+  // Should not convert or delete partitioned cookies from a different site.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_bar_.url(),
+      "__Host-E=0; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 1u);
+  EXPECT_EQ(cookies[0].Name(), "__Host-E");
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+
+  // Same with subdomains.
+  // Following URL is a subdomain of `https_www_bar_`.
+  GURL subdomain("https://subdomain.bar.com");
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), subdomain,
+      "__Host-F=0; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_bar_.url());
+  cookies = GetAllCookiesForURL(cm.get(), subdomain,
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 1u);
+  EXPECT_EQ(cookies[0].Name(), "__Host-F");
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+
+  // Set three partitioned cookies:
+  // - The first has a partition key that is same-site with the cookie URL.
+  //
+  // - The second cookie has a partition key that is cross-site with the cookie
+  // URL because it has a different host.
+  //
+  // - The third cookie has a partition key that is cross-site with the cookie
+  // URL because it has a different scheme.
+  //
+  // The first cookie should be kept, even though it is not the most recently
+  // used. This is because we should cookies whose partition key is same-site
+  // with their URL.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-G=0; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(https_www_foo_.url())));
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-G=1; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://2.com"))));
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-G=2; Secure; Path=/; SameSite=None; Partitioned", options,
+      absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting((http_www_foo_.url()))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+
+  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 6u);
+  EXPECT_EQ(cookies[5].Name(), "__Host-G");
+  EXPECT_EQ(cookies[5].Value(), "0");
+  EXPECT_FALSE(cookies[5].IsPartitioned());
+
+  // Test that a Domain cookie is converted if one of its subdomains converts
+  // their cookies.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "H=0; Secure; Path=/; SameSite=None; Partitioned; Domain=foo.com",
+      options, absl::nullopt, absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+  // Include a hostname bound cookie as well to test interaction.
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "H=1; Secure; Path=/; SameSite=None; Partitioned", options, absl::nullopt,
+      absl::nullopt,
+      CookiePartitionKey::FromURLForTesting(GURL("https://example.com"))));
+
+  cm->ConvertPartitionedCookiesToUnpartitioned(https_www_foo_.url());
+
+  cookies = GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                                CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(cookies.size(), 8u);
+  EXPECT_EQ(cookies[6].Name(), "H");
+  EXPECT_EQ(cookies[6].Value(), "0");
+  EXPECT_FALSE(cookies[6].IsPartitioned());
+  EXPECT_EQ(cookies[7].Name(), "H");
+  EXPECT_EQ(cookies[7].Value(), "1");
+  EXPECT_FALSE(cookies[7].IsPartitioned());
+}
+
+// Tests which use this class verify the expiry date clamping behavior when
+// kClampCookieExpiryTo400Days is enabled. This caps expiry dates on new/updated
+// cookies to max of 400 days, but does not affect previously stored cookies.
+class CookieMonsterWithClampingTest : public CookieMonsterTest,
+                                      public testing::WithParamInterface<bool> {
+ public:
+  CookieMonsterWithClampingTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kClampCookieExpiryTo400Days,
+        IsClampCookieExpiryTo400DaysEnabled());
+  }
+  bool IsClampCookieExpiryTo400DaysEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no label */,
+                         CookieMonsterWithClampingTest,
+                         testing::Bool());
+
+// This test sets a cookie (only checked using IsCanonicalForFromStorage)
+// that's 300 days old and expires in 800 days. It checks that this cookie was
+// stored, and then update it. It checks that the updated cookie has the
+// creation and expiry dates expected given whether or not clamping is on.
+TEST_P(CookieMonsterWithClampingTest,
+       FromStorageCookieCreated300DaysAgoThenUpdatedNow) {
+  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
+  auto cookie_monster = std::make_unique<CookieMonster>(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault);
+  cookie_monster->SetPersistSessionCookies(true);
+  EXPECT_TRUE(GetAllCookies(cookie_monster.get()).empty());
+
+  // Bypass IsCanonical and store a 300 day old cookie to bypass clamping.
+  base::Time original_creation = base::Time::Now() - base::Days(300);
+  base::Time original_expiry = original_creation + base::Days(800);
+  CookieList list;
+  list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "A", "B", "." + https_www_foo_.url().host(), "/", original_creation,
+      original_expiry, base::Time(), base::Time(), true, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true));
+  EXPECT_TRUE(SetAllCookies(cookie_monster.get(), list));
+
+  // Verify the cookie exists and was not clamped, even if clamping is on.
+  EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+              ElementsAre(MatchesCookieNameValueCreationExpiry(
+                  "A", "B", original_creation, original_expiry)));
+
+  // Update the cookie without bypassing clamping.
+  base::Time new_creation = base::Time::Now();
+  base::Time new_expiry = new_creation + base::Days(800);
+  EXPECT_TRUE(SetCanonicalCookie(
+      cookie_monster.get(),
+      CanonicalCookie::CreateSanitizedCookie(
+          https_www_foo_.url(), "A", "B", https_www_foo_.url().host(), "/",
+          new_creation, new_expiry, base::Time(), true, false,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true,
+          absl::nullopt),
+      https_www_foo_.url(), false));
+
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    // The clamped update should retain the original creation date, but have
+    // a clamped expiry date.
+    EXPECT_THAT(
+        GetAllCookies(cookie_monster.get()),
+        ElementsAre(MatchesCookieNameValueCreationExpiry(
+            "A", "B", original_creation, new_creation + base::Days(400))));
+  } else {
+    // The unclamped update should retain the original creation date and have
+    // an unclamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", original_creation, new_expiry)));
+  }
+}
+
+// This test sets a cookie (only checked using IsCanonicalForFromStorage)
+// that's 500 days old and expires in 800 days. It checks that this cookie was
+// stored, and then update it. It checks that the updated cookie has the
+// creation and expiry dates expected given whether or not clamping is on.
+TEST_P(CookieMonsterWithClampingTest,
+       FromStorageCookieCreated500DaysAgoThenUpdatedNow) {
+  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
+  auto cookie_monster = std::make_unique<CookieMonster>(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault);
+  cookie_monster->SetPersistSessionCookies(true);
+  EXPECT_TRUE(GetAllCookies(cookie_monster.get()).empty());
+
+  // Bypass IsCanonical and store a 500 day old cookie to bypass clamping.
+  base::Time original_creation = base::Time::Now() - base::Days(500);
+  base::Time original_expiry = original_creation + base::Days(800);
+  CookieList list;
+  list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "A", "B", "." + https_www_foo_.url().host(), "/", original_creation,
+      original_expiry, base::Time(), base::Time(), true, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true));
+  EXPECT_TRUE(SetAllCookies(cookie_monster.get(), list));
+
+  // Verify the cookie exists and was not clamped, even if clamping is on.
+  EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+              ElementsAre(MatchesCookieNameValueCreationExpiry(
+                  "A", "B", original_creation, original_expiry)));
+
+  // Update the cookie without bypassing clamping.
+  base::Time new_creation = base::Time::Now();
+  base::Time new_expiry = new_creation + base::Days(800);
+  EXPECT_TRUE(SetCanonicalCookie(
+      cookie_monster.get(),
+      CanonicalCookie::CreateSanitizedCookie(
+          https_www_foo_.url(), "A", "B", https_www_foo_.url().host(), "/",
+          new_creation, new_expiry, base::Time(), true, false,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true,
+          absl::nullopt),
+      https_www_foo_.url(), false));
+
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    // The clamped update should retain the original creation date, but have
+    // a clamped expiry date.
+    EXPECT_THAT(
+        GetAllCookies(cookie_monster.get()),
+        ElementsAre(MatchesCookieNameValueCreationExpiry(
+            "A", "B", original_creation, new_creation + base::Days(400))));
+  } else {
+    // The unclamped update should retain the original creation date and have
+    // an unclamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", original_creation, new_expiry)));
+  }
+}
+
+// This test sets a cookie (checked using IsCanonical) that's 300 days old and
+// expires in 800 days. It checks that this cookie was stored, and then update
+// it. It checks that the updated cookie has the creation and expiry dates
+// expected given whether or not clamping is on.
+TEST_P(CookieMonsterWithClampingTest,
+       SanitizedCookieCreated300DaysAgoThenUpdatedNow) {
+  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
+  auto cookie_monster = std::make_unique<CookieMonster>(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault);
+  cookie_monster->SetPersistSessionCookies(true);
+  EXPECT_TRUE(GetAllCookies(cookie_monster.get()).empty());
+
+  // Store a 300 day old cookie without bypassing clamping.
+  base::Time original_creation = base::Time::Now() - base::Days(300);
+  base::Time original_expiry = original_creation + base::Days(800);
+  EXPECT_TRUE(SetCanonicalCookie(
+      cookie_monster.get(),
+      CanonicalCookie::CreateSanitizedCookie(
+          https_www_foo_.url(), "A", "B", https_www_foo_.url().host(), "/",
+          original_creation, original_expiry, base::Time(), true, false,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true,
+          absl::nullopt),
+      https_www_foo_.url(), false));
+
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    // The clamped set should have a clamped expiry date.
+    EXPECT_THAT(
+        GetAllCookies(cookie_monster.get()),
+        ElementsAre(MatchesCookieNameValueCreationExpiry(
+            "A", "B", original_creation, original_creation + base::Days(400))));
+  } else {
+    // The unclamped set should have an unclamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", original_creation, original_expiry)));
+  }
+
+  // Update the cookie without bypassing clamping.
+  base::Time new_creation = base::Time::Now();
+  base::Time new_expiry = new_creation + base::Days(800);
+  EXPECT_TRUE(SetCanonicalCookie(
+      cookie_monster.get(),
+      CanonicalCookie::CreateSanitizedCookie(
+          https_www_foo_.url(), "A", "B", https_www_foo_.url().host(), "/",
+          new_creation, new_expiry, base::Time(), true, false,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true,
+          absl::nullopt),
+      https_www_foo_.url(), false));
+
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    // The clamped update should retain the original creation date, but have
+    // a clamped expiry date.
+    EXPECT_THAT(
+        GetAllCookies(cookie_monster.get()),
+        ElementsAre(MatchesCookieNameValueCreationExpiry(
+            "A", "B", original_creation, new_creation + base::Days(400))));
+  } else {
+    // The unclamped update should retain the original creation date and have
+    // an unclamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", original_creation, new_expiry)));
+  }
+}
+
+// This test sets a cookie (checked using IsCanonical) that's 500 days old and
+// expires in 800 days. It checks that this cookie was stored, and then update
+// it. It checks that the updated cookie has the creation and expiry dates
+// expected given whether or not clamping is on.
+TEST_P(CookieMonsterWithClampingTest,
+       SanitizedCookieCreated500DaysAgoThenUpdatedNow) {
+  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
+  auto cookie_monster = std::make_unique<CookieMonster>(
+      store.get(), net::NetLog::Get(), kFirstPartySetsDefault);
+  cookie_monster->SetPersistSessionCookies(true);
+  EXPECT_TRUE(GetAllCookies(cookie_monster.get()).empty());
+
+  // Store a 500 day old cookie without bypassing clamping.
+  base::Time original_creation = base::Time::Now() - base::Days(500);
+  base::Time original_expiry = original_creation + base::Days(800);
+  EXPECT_TRUE(SetCanonicalCookie(
+      cookie_monster.get(),
+      CanonicalCookie::CreateSanitizedCookie(
+          https_www_foo_.url(), "A", "B", https_www_foo_.url().host(), "/",
+          original_creation, original_expiry, base::Time(), true, false,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true,
+          absl::nullopt),
+      https_www_foo_.url(), false));
+
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    // The clamped set should result in no stored cookie.
+    EXPECT_TRUE(GetAllCookies(cookie_monster.get()).empty());
+  } else {
+    // The unclamped set should have an unclamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", original_creation, original_expiry)));
+  }
+
+  // Update the cookie without bypassing clamping.
+  base::Time new_creation = base::Time::Now();
+  base::Time new_expiry = new_creation + base::Days(800);
+  EXPECT_TRUE(SetCanonicalCookie(
+      cookie_monster.get(),
+      CanonicalCookie::CreateSanitizedCookie(
+          https_www_foo_.url(), "A", "B", https_www_foo_.url().host(), "/",
+          new_creation, new_expiry, base::Time(), true, false,
+          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, true,
+          absl::nullopt),
+      https_www_foo_.url(), false));
+
+  // The clamped one has the new creation date as the old cookie was expired.
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    // The clamped update was really a set as the old cookie expired, so it has
+    // the new creation date and a clamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", new_creation, new_creation + base::Days(400))));
+  } else {
+    // The unclamped update should retain the original creation date and have
+    // an unclamped expiry date.
+    EXPECT_THAT(GetAllCookies(cookie_monster.get()),
+                ElementsAre(MatchesCookieNameValueCreationExpiry(
+                    "A", "B", original_creation, new_expiry)));
+  }
 }
 
 }  // namespace net

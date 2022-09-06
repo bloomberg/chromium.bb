@@ -28,14 +28,9 @@ void SetListInPref(const PolicyMap& policies,
                    const char* key,
                    base::DictionaryValue* dict) {
   DCHECK(dict);
-  const base::Value* policy_value = policies.GetValue(policy_name);
-  bool is_list = false;
-  if (policy_value) {
-    is_list = policy_value->is_list();
-    DCHECK(is_list);
-  }
-
-  dict->Set(key, is_list
+  const base::Value* policy_value =
+      policies.GetValue(policy_name, base::Value::Type::LIST);
+  dict->Set(key, policy_value
                      ? std::make_unique<base::Value>(policy_value->Clone())
                      : std::make_unique<base::Value>(base::Value::Type::LIST));
 }
@@ -46,12 +41,10 @@ void SetStringInPref(const PolicyMap& policies,
                      const char* key,
                      base::DictionaryValue* dict) {
   DCHECK(dict);
-  std::string str;
-  if (const base::Value* policy_value = policies.GetValue(policy_name)) {
-    DCHECK(policy_value->is_string());
-    str = policy_value->GetString();
-  }
-  dict->SetStringKey(key, str);
+  const base::Value* policy_value =
+      policies.GetValue(policy_name, base::Value::Type::STRING);
+  dict->SetStringKey(key,
+                     policy_value ? policy_value->GetString() : std::string());
 }
 
 void SetBooleanInPref(const PolicyMap& policies,
@@ -59,12 +52,9 @@ void SetBooleanInPref(const PolicyMap& policies,
                       const char* key,
                       base::DictionaryValue* dict) {
   DCHECK(dict);
-  bool bool_value = false;
-  if (const base::Value* policy_value = policies.GetValue(policy_name)) {
-    DCHECK(policy_value->is_bool());
-    bool_value = policy_value->GetBool();
-  }
-  dict->SetBoolPath(key, bool_value);
+  const base::Value* policy_value =
+      policies.GetValue(policy_name, base::Value::Type::BOOLEAN);
+  dict->SetBoolPath(key, policy_value && policy_value->GetBool());
 }
 
 }  // namespace
@@ -201,12 +191,13 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       prefs::kDefaultSearchProviderContextMenuAccessAllowed, dict.get());
 
   size_t policyCount = 14;
-  CHECK_EQ(policyCount, base::size(kDefaultSearchPolicyDataMap));
+  CHECK_EQ(policyCount, std::size(kDefaultSearchPolicyDataMap));
 
   // Set the fields which are not specified by the policy to default values.
   dict->SetString(DefaultSearchManager::kID,
                   base::NumberToString(kInvalidTemplateURLID));
   dict->SetInteger(DefaultSearchManager::kPrepopulateID, 0);
+  dict->SetInteger(DefaultSearchManager::kStarterPackId, 0);
   dict->SetString(DefaultSearchManager::kSyncGUID, std::string());
   dict->SetString(DefaultSearchManager::kOriginatingURL, std::string());
   dict->SetBoolean(DefaultSearchManager::kSafeForAutoReplace, true);
@@ -241,9 +232,11 @@ bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
     PolicyErrorMap* errors) {
   bool all_ok = true;
   for (const auto& policy_map_entry : kDefaultSearchPolicyDataMap) {
+    // It's safe to use `GetValueUnsafe()` as multiple policy types are handled.
     // It's important to check policy type for all policies and not just exit on
     // the first error, so we report all policy errors.
-    const base::Value* value = policies.GetValue(policy_map_entry.policy_name);
+    const base::Value* value =
+        policies.GetValueUnsafe(policy_map_entry.policy_name);
     if (value && value->type() != policy_map_entry.value_type) {
       errors->AddError(policy_map_entry.policy_name, IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(policy_map_entry.value_type));
@@ -270,10 +263,9 @@ bool DefaultSearchPolicyHandler::AnyDefaultSearchPoliciesSpecified(
 
 bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
     const PolicyMap& policies) {
-  const base::Value* provider_enabled =
-      policies.GetValue(key::kDefaultSearchProviderEnabled);
-  return provider_enabled && provider_enabled->is_bool() &&
-         !provider_enabled->GetBool();
+  const base::Value* provider_enabled = policies.GetValue(
+      key::kDefaultSearchProviderEnabled, base::Value::Type::BOOLEAN);
+  return provider_enabled && !provider_enabled->GetBool();
 }
 
 bool DefaultSearchPolicyHandler::DefaultSearchProviderPolicyIsSet(
@@ -285,8 +277,9 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
     const PolicyMap& policies,
     const base::Value** url_value,
     std::string* url_string) {
-  *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
-  if (!*url_value || !(*url_value)->is_string())
+  *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL,
+                                 base::Value::Type::STRING);
+  if (!*url_value)
     return false;
 
   *url_string = (*url_value)->GetString();

@@ -50,8 +50,12 @@ design docs should follow the process at
 
 ## Legal stuff
 
-All contributors must complete the contributor license agreement. For
-individual contributors, please complete the [Individual Contributor License
+All contributors must have valid Gerrit/Google accounts (which means you must
+be [old enough to manage your own
+account](https://support.google.com/accounts/answer/1350409)) and complete the
+contributor license agreement.
+
+For individual contributors, please complete the [Individual Contributor License
 Agreement][individual-cla] online. Corporate contributors must fill out the
 [Corporate Contributor License Agreement][corporate-cla] and send it to us as
 described on that page.
@@ -327,9 +331,14 @@ general rules of thumb can be helpful in navigating how to structure changes:
   find a product in the Chromium repositories that depends on that line of code
   or else the line of code should be removed.
 
-  Completely new additions to the project (for example, support for a new OS
-  or architecture, or a new top-level directory for a new sub-project) must
-  be approved by [//ENG_REVIEW_OWNERS](../ENG_REVIEW_OWNERS).
+  Completely new additions to the project (e.g., support for a new OS or
+  architecture, or a new top-level directory for a new sub-project) must be
+  approved by chrome-eng-review@google.com. For long-term maintenance reasons,
+  we will accept only things that are used by the Chromium project and things
+  that do not increase the cost of maintaining Chromium's supported
+  architectures / platforms (e.g., adding one ifdef branch for an unsupported
+  architecture / platform is fine but introducing new abstractions in the
+  codebase is problematic).
 
 - **Code should only be moved to a central location (e.g., //base) when
   multiple consumers would benefit.** We should resist the temptation to
@@ -360,6 +369,16 @@ general rules of thumb can be helpful in navigating how to structure changes:
   requirements, and minimizes the learning hurdles for developers to be
   successful contributing across the codebase. Additions of new languages must
   be approved by [//ENG_REVIEW_OWNERS](../ENG_REVIEW_OWNERS).
+
+- **When your team is making API changes or migrating between services, the
+  team mandating the change needs to do at least 80% of the work.** The
+  rationale is to reduce externalities by having the team that requires a
+  change spend the vast majority of the time required to make it happen.
+  This naturally encourages designing to minimize the cost of change, be it
+  through automation, tooling, or pooled centralized expertise. You can find
+  more detailed rationale in [this doc](https://docs.google.com/document/d/1elJisUpOb3h4-7WA4Wn754nzfgeCJ4v2kAFvMOzNfek/edit#)
+  (Google internal). If you need an exception or help, please contact
+  chromium-code-health-rotation@google.com.
 
 ## Tips
 
@@ -420,8 +439,11 @@ formats.
 * **Cq-Include-Trybots:**
   * A comma-separated list of trybots which should be triggered and
     checked by the CQ in addition to the normal set.
-  * Trybots are indicated in `master:builder` format (e.g.
-    `tryserver.chromium.linux:linux_asan_experimental`).
+  * Trybots are indicated in `bucket:builder` format (e.g.
+    `luci.chromium.try:android-asan`).
+  * The "Choose Tryjobs" UI in the "Checks" tab in Gerrit shows (and has
+    a button to copy) the Cq-Include-Trybots syntax for the currently
+    selected tryjobs.
 * **No-Presubmit:**
   * If present, the value should always be the string `true`.
   * Indicates to the CQ that it should not run presubmit checks on the CL.

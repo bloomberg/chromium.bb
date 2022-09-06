@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
-#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -20,19 +19,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace ui {
-
-namespace {
-
-bool InitializeVulkanFunctionPointers(
-    const base::FilePath& path,
-    gpu::VulkanFunctionPointers* vulkan_function_pointers) {
-  base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library =
-      base::LoadNativeLibrary(path, &native_library_load_error);
-  return !!vulkan_function_pointers->vulkan_loader_library;
-}
-
-}  // namespace
 
 VulkanImplementationWayland::VulkanImplementationWayland(bool use_swiftshader)
     : gpu::VulkanImplementation(use_swiftshader) {}
@@ -45,8 +31,6 @@ bool VulkanImplementationWayland::InitializeVulkanInstance(bool using_surface) {
       VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME,
   };
 
-  auto* vulkan_function_pointers = gpu::GetVulkanFunctionPointers();
-
   base::FilePath path;
   if (use_swiftshader()) {
     if (!base::PathService::Get(base::DIR_MODULE, &path))
@@ -57,10 +41,7 @@ bool VulkanImplementationWayland::InitializeVulkanInstance(bool using_surface) {
     path = base::FilePath("libvulkan.so.1");
   }
 
-  if (!InitializeVulkanFunctionPointers(path, vulkan_function_pointers))
-    return false;
-
-  return vulkan_instance_.Initialize(required_extensions, {});
+  return vulkan_instance_.Initialize(path, required_extensions, {});
 }
 
 gpu::VulkanInstance* VulkanImplementationWayland::GetVulkanInstance() {
@@ -142,9 +123,14 @@ VulkanImplementationWayland::GetExternalImageHandleType() {
 }
 
 bool VulkanImplementationWayland::CanImportGpuMemoryBuffer(
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::GpuMemoryBufferType memory_buffer_type) {
-  NOTIMPLEMENTED();
-  return false;
+  const auto& enabled_extensions = device_queue->enabled_extensions();
+  return gfx::HasExtension(enabled_extensions,
+                           VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME) &&
+         gfx::HasExtension(enabled_extensions,
+                           VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME) &&
+         memory_buffer_type == gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
 }
 
 std::unique_ptr<gpu::VulkanImage>

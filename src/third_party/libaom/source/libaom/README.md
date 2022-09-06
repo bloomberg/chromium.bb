@@ -46,7 +46,8 @@ README.md                {#LREADME}
 
 ### Prerequisites {#prerequisites}
 
- 1. [CMake](https://cmake.org) version 3.6 or higher.
+ 1. [CMake](https://cmake.org). See CMakeLists.txt for the minimum version
+    required.
  2. [Git](https://git-scm.com/).
  3. [Perl](https://www.perl.org/).
  4. For x86 targets, [yasm](http://yasm.tortall.net/), which is preferred, or a
@@ -55,8 +56,7 @@ README.md                {#LREADME}
     win64.exe and rename it into yasm.exe. DO NOT download or use vsyasm.exe.
  5. Building the documentation requires
    [doxygen version 1.8.10 or newer](http://doxygen.org).
- 6. Building the unit tests requires [Python](https://www.python.org/).
- 7. Emscripten builds require the portable
+ 6. Emscripten builds require the portable
    [EMSDK](https://kripken.github.io/emscripten-site/index.html).
 
 ### Get the code {#get-the-code}
@@ -264,7 +264,7 @@ It is assumed here that you have already downloaded and installed the EMSDK,
 installed and activated at least one toolchain, and setup your environment
 appropriately using the emsdk\_env script.
 
-1. Download [AOMAnalyzer](https://people.xiph.org/~mbebenita/analyzer/).
+1. Build [AOM Analyzer](https://github.com/xiph/aomanalyzer).
 
 2. Configure the build:
 
@@ -527,7 +527,7 @@ We are using the Google C Coding Style defined by the
 
 The coding style used by this project is enforced with clang-format using the
 configuration contained in the
-[.clang-format](https://chromium.googlesource.com/webm/aom/+/master/.clang-format)
+[.clang-format](https://chromium.googlesource.com/webm/aom/+/main/.clang-format)
 file in the root of the repository.
 
 You can download clang-format using your system's package manager, or directly
@@ -614,7 +614,7 @@ for more information.
 The command line to upload your patch looks like this:
 
 ~~~
-    $ git push https://aomedia-review.googlesource.com/aom HEAD:refs/for/master
+    $ git push https://aomedia-review.googlesource.com/aom HEAD:refs/for/main
 ~~~
 
 ### Incorporating reviewer comments {#incorporating-reviewer-comments}

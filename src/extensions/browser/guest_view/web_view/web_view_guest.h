@@ -250,8 +250,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
       content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
   void LoadProgressChanged(double progress) final;
-  void DocumentOnLoadCompletedInMainFrame(
-      content::RenderFrameHost* render_frame_host) final;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() final;
   void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) final;
   void UserAgentOverrideSet(const blink::UserAgentOverride& ua_override) final;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,
@@ -264,11 +263,15 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
       int32_t line_no,
       const std::u16string& source_id,
       const absl::optional<std::u16string>& untrusted_stack_trace) final;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) final;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) final;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) final;
 
   // Informs the embedder of a frame name change.
   void ReportFrameNameChange(const std::string& name);
 
-  void PushWebViewStateToIOThread();
+  void PushWebViewStateToIOThread(content::RenderFrameHost* guest_host);
 
   // Loads the |url| provided. |force_navigation| indicates whether to reload
   // the content if the provided |url| matches the current page of the guest.

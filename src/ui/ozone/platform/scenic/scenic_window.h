@@ -53,8 +53,10 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow final : public PlatformWindow,
   fuchsia::ui::views::ViewRef CloneViewRef();
 
   // ui::PlatformWindow implementation.
-  gfx::Rect GetBounds() const override;
-  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInPixels() const override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInDIP() const override;
+  void SetBoundsInDIP(const gfx::Rect& bounds) override;
   void SetTitle(const std::u16string& title) override;
   void Show(bool inactive) override;
   void Hide() override;
@@ -76,8 +78,8 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow final : public PlatformWindow,
   void SetCursor(scoped_refptr<PlatformCursor> cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
-  gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetRestoredBoundsInDIP(const gfx::Rect& bounds) override;
+  gfx::Rect GetRestoredBoundsInDIP() const override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
@@ -125,6 +127,8 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow final : public PlatformWindow,
                                  view_properties_->bounding_box.min.y));
   }
 
+  void OnViewControllerDisconnected(zx_status_t status);
+
   ScenicWindowManager* const manager_;
   PlatformWindowDelegate* const delegate_;
   ScenicWindowDelegate* const scenic_window_delegate_;
@@ -134,6 +138,9 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow final : public PlatformWindow,
   // across the system. ViewRef consumers can access the handle by
   // calling CloneViewRef().
   const fuchsia::ui::views::ViewRef view_ref_;
+
+  // Used to coordinate window closure requests with the shell.
+  fuchsia::element::ViewControllerPtr view_controller_;
 
   // Dispatches Scenic input events as Chrome ui::Events.
   InputEventDispatcher event_dispatcher_;

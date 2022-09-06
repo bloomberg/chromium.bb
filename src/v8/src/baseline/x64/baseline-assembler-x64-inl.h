@@ -8,6 +8,7 @@
 #include "src/base/macros.h"
 #include "src/baseline/baseline-assembler.h"
 #include "src/codegen/x64/register-x64.h"
+#include "src/objects/feedback-vector.h"
 
 namespace v8 {
 namespace internal {
@@ -85,6 +86,11 @@ inline bool Clobbers(Register target, MemOperand op) {
 MemOperand BaselineAssembler::RegisterFrameOperand(
     interpreter::Register interpreter_register) {
   return MemOperand(rbp, interpreter_register.ToOperand() * kSystemPointerSize);
+}
+void BaselineAssembler::RegisterFrameAddress(
+    interpreter::Register interpreter_register, Register rscratch) {
+  return __ leaq(rscratch, MemOperand(rbp, interpreter_register.ToOperand() *
+                                               kSystemPointerSize));
 }
 MemOperand BaselineAssembler::FeedbackVectorOperand() {
   return MemOperand(rbp, BaselineFrameConstants::kFeedbackVectorFromFp);
@@ -190,6 +196,14 @@ void BaselineAssembler::JumpIfSmi(Condition cc, Register lhs, Register rhs,
   __ SmiCompare(lhs, rhs);
   __ j(AsMasmCondition(cc), target, distance);
 }
+
+void BaselineAssembler::JumpIfImmediate(Condition cc, Register left, int right,
+                                        Label* target,
+                                        Label::Distance distance) {
+  __ cmpq(left, Immediate(right));
+  __ j(AsMasmCondition(cc), target, distance);
+}
+
 // cmp_tagged
 void BaselineAssembler::JumpIfTagged(Condition cc, Register value,
                                      MemOperand operand, Label* target,
@@ -318,7 +332,7 @@ void BaselineAssembler::PushReverse(T... vals) {
 
 template <typename... T>
 void BaselineAssembler::Pop(T... registers) {
-  ITERATE_PACK(__ Pop(registers));
+  (__ Pop(registers), ...);
 }
 
 void BaselineAssembler::LoadTaggedPointerField(Register output, Register source,
@@ -333,8 +347,12 @@ void BaselineAssembler::LoadTaggedAnyField(Register output, Register source,
                                            int offset) {
   __ LoadAnyTaggedField(output, FieldOperand(source, offset));
 }
-void BaselineAssembler::LoadByteField(Register output, Register source,
-                                      int offset) {
+void BaselineAssembler::LoadWord16FieldZeroExtend(Register output,
+                                                  Register source, int offset) {
+  __ movzxwq(output, FieldOperand(source, offset));
+}
+void BaselineAssembler::LoadWord8Field(Register output, Register source,
+                                       int offset) {
   __ movb(output, FieldOperand(source, offset));
 }
 void BaselineAssembler::StoreTaggedSignedField(Register target, int offset,
@@ -354,6 +372,31 @@ void BaselineAssembler::StoreTaggedFieldNoWriteBarrier(Register target,
                                                        int offset,
                                                        Register value) {
   __ StoreTaggedField(FieldOperand(target, offset), value);
+}
+
+void BaselineAssembler::TryLoadOptimizedOsrCode(Register scratch_and_result,
+                                                Register feedback_vector,
+                                                FeedbackSlot slot,
+                                                Label* on_result,
+                                                Label::Distance distance) {
+  Label fallthrough;
+  LoadTaggedPointerField(scratch_and_result, feedback_vector,
+                         FeedbackVector::OffsetOfElementAt(slot.ToInt()));
+  __ LoadWeakValue(scratch_and_result, &fallthrough);
+
+  // Is it marked_for_deoptimization? If yes, clear the slot.
+  {
+    DCHECK(!AreAliased(scratch_and_result, kScratchRegister));
+    __ TestCodeTIsMarkedForDeoptimization(scratch_and_result, kScratchRegister);
+    __ j(equal, on_result, distance);
+    __ StoreTaggedField(
+        FieldOperand(feedback_vector,
+                     FeedbackVector::OffsetOfElementAt(slot.ToInt())),
+        __ ClearedValue());
+  }
+
+  __ bind(&fallthrough);
+  __ Move(scratch_and_result, 0);
 }
 
 void BaselineAssembler::AddToInterruptBudgetAndJumpIfNotExceeded(
@@ -395,6 +438,11 @@ void BaselineAssembler::AddSmi(Register lhs, Smi rhs) {
     __ Move(rhs_reg, rhs);
     __ addq(lhs, rhs_reg);
   }
+}
+
+void BaselineAssembler::Word32And(Register output, Register lhs, int rhs) {
+  Move(output, lhs);
+  __ andq(output, Immediate(rhs));
 }
 
 void BaselineAssembler::Switch(Register reg, int case_value_base,
@@ -440,7 +488,7 @@ void BaselineAssembler::EmitReturn(MacroAssembler* masm) {
 
       __ LoadContext(kContextRegister);
       __ Push(MemOperand(rbp, InterpreterFrameConstants::kFunctionOffset));
-      __ CallRuntime(Runtime::kBytecodeBudgetInterruptFromBytecode, 1);
+      __ CallRuntime(Runtime::kBytecodeBudgetInterrupt, 1);
 
       __ Pop(kInterpreterAccumulatorRegister, params_size);
       __ masm()->SmiUntag(params_size);
@@ -468,10 +516,9 @@ void BaselineAssembler::EmitReturn(MacroAssembler* masm) {
   __ masm()->LeaveFrame(StackFrame::BASELINE);
 
   // Drop receiver + arguments.
-  __ masm()->DropArguments(
-      params_size, scratch, TurboAssembler::kCountIsInteger,
-      kJSArgcIncludesReceiver ? TurboAssembler::kCountIncludesReceiver
-                              : TurboAssembler::kCountExcludesReceiver);
+  __ masm()->DropArguments(params_size, scratch,
+                           TurboAssembler::kCountIsInteger,
+                           TurboAssembler::kCountIncludesReceiver);
   __ masm()->Ret();
 }
 

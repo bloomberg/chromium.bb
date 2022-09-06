@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/task/single_thread_task_runner.h"
+#include "gpu/command_buffer/service/ref_counted_lock.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -52,11 +53,6 @@ class GPU_GLES2_EXPORT TextureOwner
   // whether SurfaceControl is being used or not.
   enum class Mode {
     kAImageReaderInsecure,
-
-    // This mode indicates that the frame is going to be used in multi-threaded
-    // compositor where compositor is running on a different gpu thread and
-    // context than chrome's gpu main thread/context.
-    kAImageReaderInsecureMultithreaded,
     kAImageReaderInsecureSurfaceControl,
     kAImageReaderSecureSurfaceControl,
     kSurfaceTextureInsecure
@@ -64,7 +60,8 @@ class GPU_GLES2_EXPORT TextureOwner
   static scoped_refptr<TextureOwner> Create(
       std::unique_ptr<gles2::AbstractTexture> texture,
       Mode mode,
-      scoped_refptr<SharedContextState> context_state);
+      scoped_refptr<SharedContextState> context_state,
+      scoped_refptr<RefCountedLock> drdc_lock = nullptr);
 
   TextureOwner(const TextureOwner&) = delete;
   TextureOwner& operator=(const TextureOwner&) = delete;

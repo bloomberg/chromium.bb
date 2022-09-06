@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
@@ -25,6 +26,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_gfx.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
@@ -543,10 +546,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::
 
 VideoTrackAdapter::VideoTrackAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<MetronomeProvider> metronome_provider,
     base::WeakPtr<MediaStreamVideoSource> media_stream_video_source)
     : io_task_runner_(io_task_runner),
-      metronome_provider_(std::move(metronome_provider)),
       media_stream_video_source_(media_stream_video_source),
       renderer_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       muted_state_(false),
@@ -727,7 +728,7 @@ void VideoTrackAdapter::StartFrameMonitoringOnIO(
 
   on_muted_callback_ = std::move(on_muted_callback);
   monitoring_frame_rate_timer_ = std::make_unique<WebRtcTimer>(
-      metronome_provider_, io_task_runner_,
+      io_task_runner_,
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &VideoTrackAdapter::CheckFramesReceivedOnIO, WrapRefCounted(this))));
 

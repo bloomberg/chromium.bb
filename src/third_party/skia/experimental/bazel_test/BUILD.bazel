@@ -1,27 +1,19 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
+licenses(["notice"])
+
+exports_files_legacy()
+
 cc_binary(
     name = "bazel_test_exe",
-    visibility = ["//:__subpackages__"],
+    srcs = [
+        "bazel_test.cpp",
+    ],
     deps = [
-        ":bazel_test_src",
-        "//third_party:musl_compat",
-    ] + select({
-        "@platforms//os:windows": ["//src/ports:SkDebug_win_src"],
-        "@platforms//os:android": ["//src/ports:SkDebug_android_src"],
-        "//conditions:default": ["//src/ports:SkDebug_stdio_src"],
-    }),
-)
-
-generated_cc_atom(
-    name = "bazel_test_src",
-    srcs = ["bazel_test.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkTypes_hdr",
-        "//third_party:libpng",
+        "//:skia_public",
+        "@libpng",
     ],
 )
 

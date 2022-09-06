@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/isolation_info.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -59,6 +60,9 @@ struct CONTENT_EXPORT NavigationEarlyHintsManagerParams {
   mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
 };
 
+constexpr char kEarlyHintsPreloadRequestDestinationHistogramName[] =
+    "Network.EarlyHints.Preload.RequestDestination";
+
 // Handles 103 Early Hints responses for navigation. Responsible for resource
 // hints in Early Hints responses. Created when the first 103 response is
 // received and owned by NavigationURLLoaderImpl until the final response to the
@@ -103,7 +107,7 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
   // navigation. When `early_hints` contains a preload Link header, starts
   // preloading it if preloading hasn't started for the same URL.
   void HandleEarlyHints(network::mojom::EarlyHintsPtr early_hints,
-                        const network::ResourceRequest& navigation_request);
+                        const network::ResourceRequest& request_for_navigation);
 
   // True when at least one preload or preconnect Link header was received via
   // Early Hints responses for main frame navigation.
@@ -135,7 +139,10 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
 
   void MaybePreloadHintedResource(
       const network::mojom::LinkHeaderPtr& link,
-      const network::ResourceRequest& navigation_request,
+      const network::ResourceRequest& request_for_navigation,
+      const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+          content_security_policies,
+      net::ReferrerPolicy referrer_policy,
       bool enabled_by_origin_trial);
 
   // Determines whether resource hints like preload and preconnect should be
@@ -178,6 +185,9 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
 
   std::vector<GURL> preloaded_urls_;
 
+  // Set to true when HandleEarlyHints() is called for the first time. Used to
+  // ignore following responses.
+  bool was_first_early_hints_received_ = false;
   // Set to true when preload or preconnect Link headers are received. Used for
   // metrics recording.
   bool was_resource_hints_received_ = false;

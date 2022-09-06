@@ -14,11 +14,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_mixer_pool.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -536,19 +536,19 @@ INSTANTIATE_TEST_SUITE_P(
 
         // Downsampling, multuple input sample rates.
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        base::size(kTestInput3Rates),
+                        std::size(kTestInput3Rates),
                         kTestInput3Rates[0],
                         0.01),
 
         // Upsampling, multiple sinput sample rates.
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        base::size(kTestInput3Rates),
+                        std::size(kTestInput3Rates),
                         kTestInput3Rates[2],
                         0.01),
 
         // Both downsampling and upsampling, multiple input sample rates
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        base::size(kTestInput3Rates),
+                        std::size(kTestInput3Rates),
                         kTestInput3Rates[1],
                         0.01)));
 

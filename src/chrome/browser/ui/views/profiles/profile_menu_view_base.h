@@ -65,8 +65,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kAddNewProfileButton = 15,
     kSyncSettingsButton = 16,
     kEditProfileButton = 17,
-    kCreateIncognitoShortcutButton = 18,
-    kMaxValue = kCreateIncognitoShortcutButton,
+    // DEPRECATED: kCreateIncognitoShortcutButton = 18,
+    kMaxValue = kEditProfileButton,
   };
 
   struct EditButtonParams {
@@ -89,8 +89,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // call this function when the button is clicked and if the bubble isn't
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
-  static void ShowBubble(profiles::BubbleViewMode view_mode,
-                         views::Button* anchor_button,
+  static void ShowBubble(views::Button* anchor_button,
                          Browser* browser,
                          bool is_source_accelerator);
 
@@ -152,7 +151,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                                          base::RepeatingClosure action);
 
   gfx::ImageSkia ColoredImageForMenu(const gfx::VectorIcon& icon,
-                                     SkColor color) const;
+                                     ui::ColorId color) const;
   // Should be called inside each button/link action.
   void RecordClick(ActionableItem item);
 
@@ -200,7 +199,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   const raw_ptr<views::Button> anchor_button_;
 
   // Component containers.
-  raw_ptr<views::View> heading_container_ = nullptr;
   raw_ptr<views::View> identity_info_container_ = nullptr;
   raw_ptr<views::View> sync_info_container_ = nullptr;
   raw_ptr<views::View> shortcut_features_container_ = nullptr;

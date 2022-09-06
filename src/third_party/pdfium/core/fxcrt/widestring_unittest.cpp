@@ -12,7 +12,6 @@
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/containers/contains.h"
-#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -809,6 +808,17 @@ TEST(WideString, UpperLower) {
   EXPECT_EQ(L"", empty);
   empty.MakeUpper();
   EXPECT_EQ(L"", empty);
+
+  WideString empty_with_buffer(L"x");
+  empty_with_buffer.Delete(0);
+
+  WideString additional_empty_with_buffer_ref = empty_with_buffer;
+  additional_empty_with_buffer_ref.MakeLower();
+  EXPECT_EQ(L"", additional_empty_with_buffer_ref);
+
+  additional_empty_with_buffer_ref = empty_with_buffer;
+  additional_empty_with_buffer_ref.MakeUpper();
+  EXPECT_EQ(L"", additional_empty_with_buffer_ref);
 }
 
 TEST(WideString, Trim) {
@@ -1139,7 +1149,7 @@ TEST(WideString, ToUTF16LE) {
       {L"\x3132\x6162", ByteString("\x32\x31\x62\x61\0\0", 6)},
   };
 
-  for (size_t i = 0; i < pdfium::size(utf16le_encode_cases); ++i) {
+  for (size_t i = 0; i < std::size(utf16le_encode_cases); ++i) {
     EXPECT_EQ(utf16le_encode_cases[i].bs,
               utf16le_encode_cases[i].ws.ToUTF16LE())
         << " for case number " << i;
@@ -1213,7 +1223,7 @@ TEST(WideString, ToLatin1) {
 
 TEST(WideString, ToDefANSI) {
   EXPECT_EQ("", WideString().ToDefANSI());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const char* kResult =
       "x"
       "?"
@@ -1265,7 +1275,7 @@ TEST(WideString, FromLatin1) {
 
 TEST(WideString, FromDefANSI) {
   EXPECT_EQ(L"", WideString::FromDefANSI(ByteStringView()));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const wchar_t* kResult =
       L"x"
       L"\u20ac"
@@ -1300,7 +1310,7 @@ TEST(WideStringView, FromVector) {
   cleared_vec.pop_back();
   WideStringView cleared_string(cleared_vec);
   EXPECT_EQ(0u, cleared_string.GetLength());
-  EXPECT_EQ(nullptr, cleared_string.raw_str());
+  EXPECT_FALSE(cleared_string.raw_str());
 }
 
 TEST(WideStringView, ElementAccess) {
@@ -1680,7 +1690,7 @@ TEST(WideString, FormatString) {
   EXPECT_EQ(L"cla", WideString::Format(L"%.3ls", L"clams"));
   EXPECT_EQ(L"\u043e\u043f", WideString(L"\u043e\u043f"));
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
   // See https://bugs.chromium.org/p/pdfium/issues/detail?id=1132
   EXPECT_EQ(L"\u043e\u043f", WideString::Format(L"\u043e\u043f"));
   EXPECT_EQ(L"\u043e\u043f", WideString::Format(L"%ls", L"\u043e\u043f"));
@@ -1694,12 +1704,12 @@ TEST(WideString, Empty) {
   EXPECT_EQ(0u, empty_str.GetLength());
 
   const wchar_t* cstr = empty_str.c_str();
-  EXPECT_NE(nullptr, cstr);
+  EXPECT_TRUE(cstr);
   EXPECT_EQ(0u, wcslen(cstr));
 
   pdfium::span<const wchar_t> cspan = empty_str.span();
   EXPECT_TRUE(cspan.empty());
-  EXPECT_EQ(nullptr, cspan.data());
+  EXPECT_FALSE(cspan.data());
 }
 
 TEST(CFX_WidString, InitializerList) {
@@ -2044,6 +2054,21 @@ TEST(WideStringView, WideOStreamOverload) {
     stream << str1 << str2;
     EXPECT_EQ(L"abcdef", stream.str());
   }
+}
+
+TEST(WideString, FormatInteger) {
+  // Base case of 0.
+  EXPECT_EQ(L"0", WideString::FormatInteger(0));
+
+  // Positive ordinary number.
+  EXPECT_EQ(L"123456", WideString::FormatInteger(123456));
+
+  // Negative ordinary number.
+  EXPECT_EQ(L"-123456", WideString::FormatInteger(-123456));
+
+  // int limits.
+  EXPECT_EQ(L"2147483647", WideString::FormatInteger(INT_MAX));
+  EXPECT_EQ(L"-2147483648", WideString::FormatInteger(INT_MIN));
 }
 
 TEST(WideString, FX_HashCode_Wide) {

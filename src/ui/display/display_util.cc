@@ -41,7 +41,7 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
     screen_info->orientation_angle = 90;
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   screen_info->orientation_type = GetOrientationTypeForMobile(display);
 #else
   screen_info->orientation_type = GetOrientationTypeForDesktop(display);
@@ -56,6 +56,7 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
       screen && (screen->GetPrimaryDisplay().id() == display.id());
   screen_info->is_internal = display.IsInternal();
   screen_info->display_id = display.id();
+  screen_info->label = display.label();
 }
 
 // static

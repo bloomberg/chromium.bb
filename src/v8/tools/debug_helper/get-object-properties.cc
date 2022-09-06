@@ -11,7 +11,7 @@
 #include "src/execution/frames.h"
 #include "src/execution/isolate-utils.h"
 #include "src/objects/string-inl.h"
-#include "src/security/external-pointer.h"
+#include "src/sandbox/external-pointer.h"
 #include "src/strings/unicode-inl.h"
 #include "torque-generated/class-debug-readers.h"
 #include "torque-generated/debug-macros.h"
@@ -257,7 +257,7 @@ class ReadStringVisitor : public TqObjectVisitor {
   void ReadStringCharacters(const TqString* object, uintptr_t data_address) {
     int32_t length = GetOrFinish(object->GetLengthValue(accessor_));
     for (; index_ < length && index_ < limit_ && !done_; ++index_) {
-      STATIC_ASSERT(sizeof(TChar) <= sizeof(char16_t));
+      static_assert(sizeof(TChar) <= sizeof(char16_t));
       char16_t c = static_cast<char16_t>(
           GetOrFinish(ReadCharacter<TChar>(data_address, index_)));
       if (!done_) AddCharacter(c);
@@ -350,7 +350,7 @@ class ReadStringVisitor : public TqObjectVisitor {
       ExternalPointer_t resource_data =
           GetOrFinish(object->GetResourceDataValue(accessor_));
 #ifdef V8_COMPRESS_POINTERS
-      Isolate* isolate = GetIsolateForHeapSandbox(
+      Isolate* isolate = GetIsolateForSandbox(
           HeapObject::unchecked_cast(Object(heap_addresses_.any_heap_pointer)));
       uintptr_t data_address = static_cast<uintptr_t>(DecodeExternalPointer(
           isolate, resource_data, kExternalStringResourceDataTag));

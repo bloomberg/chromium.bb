@@ -10,7 +10,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "base/time/time.h"
+#include "components/page_load_metrics/browser/metrics_lifecycle_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "content/public/browser/render_frame_host.h"
 #include "third_party/blink/public/common/use_counter/use_counter_feature_tracker.h"
@@ -18,14 +19,16 @@
 
 namespace page_load_metrics {
 
-class PageLoadMetricsTestWaiter
-    : public page_load_metrics::MetricsWebContentsObserver::TestingObserver {
+class WaiterMetricsObserver;
+
+class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
  public:
   // A bitvector to express which timing fields to match on.
   enum class TimingField : int {
     kFirstPaint = 1 << 0,
     kFirstContentfulPaint = 1 << 1,
     kFirstMeaningfulPaint = 1 << 2,
+    // kDocumentWriteBlockReload is deprecated.
     kDocumentWriteBlockReload = 1 << 3,
     kLoadEvent = 1 << 4,
     // kLoadTimingInfo waits for main frame timing info only.
@@ -37,11 +40,14 @@ class PageLoadMetricsTestWaiter
     kFirstInputDelayAfterBackForwardCacheRestore = 1 << 10,
     kLayoutShift = 1 << 11,
     kRequestAnimationFrameAfterBackForwardCacheRestore = 1 << 12,
+    kFirstScrollDelay = 1 << 13,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
 
   explicit PageLoadMetricsTestWaiter(content::WebContents* web_contents);
+  explicit PageLoadMetricsTestWaiter(content::WebContents* web_contents,
+                                     const char* observer_name_);
 
   ~PageLoadMetricsTestWaiter() override;
 
@@ -64,6 +70,11 @@ class PageLoadMetricsTestWaiter
   // any rect allowed.
   // TODO(skobes): Unify this API with AddMainFrameIntersectionExpectation.
   void SetMainFrameIntersectionExpectation();
+
+  // Add a main frame viewport intersection expectation. Expects that the
+  // mainframe receives its viewport rectangle in the main frame document's
+  // coornidate. Subsequent calls overwrite unmet expectations.
+  void AddMainFrameViewportRectExpectation(const gfx::Rect& rect);
 
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
@@ -124,56 +135,7 @@ class PageLoadMetricsTestWaiter
   virtual void ResetExpectations();
 
  private:
-  // PageLoadMetricsObserver used by the PageLoadMetricsTestWaiter to observe
-  // metrics updates.
-  class WaiterMetricsObserver
-      : public page_load_metrics::PageLoadMetricsObserver {
-   public:
-    using FrameTreeNodeId =
-        page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
-    // We use a WeakPtr to the PageLoadMetricsTestWaiter because |waiter| can be
-    // destroyed before this WaiterMetricsObserver.
-    explicit WaiterMetricsObserver(
-        base::WeakPtr<PageLoadMetricsTestWaiter> waiter);
-    ~WaiterMetricsObserver() override;
-
-    void OnTimingUpdate(
-        content::RenderFrameHost* subframe_rfh,
-        const page_load_metrics::mojom::PageLoadTiming& timing) override;
-
-    void OnCpuTimingUpdate(
-        content::RenderFrameHost* subframe_rfh,
-        const page_load_metrics::mojom::CpuTiming& timing) override;
-
-    void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
-                                   int behavior_flags) override;
-    void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                              extra_request_complete_info) override;
-
-    void OnResourceDataUseObserved(
-        content::RenderFrameHost* rfh,
-        const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
-            resources) override;
-
-    void OnFeaturesUsageObserved(
-        content::RenderFrameHost* rfh,
-        const std::vector<blink::UseCounterFeature>&) override;
-
-    void OnDidFinishSubFrameNavigation(
-        content::NavigationHandle* navigation_handle) override;
-    void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
-                          const gfx::Size& frame_size) override;
-    void OnFrameIntersectionUpdate(
-        content::RenderFrameHost* rfh,
-        const page_load_metrics::mojom::FrameIntersectionUpdate&
-            frame_intersection_update) override;
-
-    void OnV8MemoryChanged(
-        const std::vector<MemoryUpdate>& memory_updates) override;
-
-   private:
-    const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
-  };
+  const char* observer_name_;
 
   // Manages a bitset of TimingFields.
   class TimingFieldBitSet {
@@ -259,10 +221,12 @@ class PageLoadMetricsTestWaiter
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size);
 
-  void OnFrameIntersectionUpdate(
+  void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
-      const page_load_metrics::mojom::FrameIntersectionUpdate&
-          frame_intersection_update);
+      const gfx::Rect& main_frame_intersection_rect);
+
+  void OnMainFrameViewportRectChanged(
+      const gfx::Rect& main_frame_viewport_rect);
 
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
@@ -285,6 +249,7 @@ class PageLoadMetricsTestWaiter
   bool SubframeNavigationExpectationsSatisfied() const;
   bool SubframeDataExpectationsSatisfied() const;
   bool MainFrameIntersectionExpectationsSatisfied() const;
+  bool MainFrameViewportRectExpectationsSatisfied() const;
   bool MemoryUpdateExpectationsSatisfied() const;
 
   void AddObserver(page_load_metrics::PageLoadTracker* tracker);
@@ -306,6 +271,7 @@ class PageLoadMetricsTestWaiter
     std::set<gfx::Size, FrameSizeComparator> frame_sizes_;
     bool did_set_main_frame_intersection_ = false;
     std::vector<gfx::Rect> main_frame_intersections_;
+    absl::optional<gfx::Rect> main_frame_viewport_rect_;
     std::unordered_set<content::GlobalRenderFrameHostId,
                        content::GlobalRenderFrameHostIdHasher>
         memory_update_frame_ids_;
@@ -333,6 +299,8 @@ class PageLoadMetricsTestWaiter
   double last_main_frame_layout_shift_score_ = 0;
 
   base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_{this};
+
+  friend class WaiterMetricsObserver;
 };
 
 }  // namespace page_load_metrics

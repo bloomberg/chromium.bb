@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/browser/extension_host.h"
@@ -148,6 +149,16 @@ void ExtensionHostRegistry::ExtensionHostDestroyed(
     observer.OnExtensionHostDestroyed(extension_host->browser_context(),
                                       extension_host);
   }
+}
+
+std::vector<ExtensionHost*> ExtensionHostRegistry::GetHostsForExtension(
+    const ExtensionId& extension_id) {
+  std::vector<ExtensionHost*> hosts;
+  for (ExtensionHost* host : extension_hosts_) {
+    if (host->extension_id() == extension_id)
+      hosts.push_back(host);
+  }
+  return hosts;
 }
 
 void ExtensionHostRegistry::AddObserver(Observer* observer) {

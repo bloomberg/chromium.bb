@@ -44,14 +44,15 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override;
   void StartPrint(const std::u16string& job_title,
-                  base::Value settings,
+                  base::Value::Dict settings,
                   scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
 
  private:
   static PrinterList EnumeratePrintersAsync(const std::string& locale);
-  static base::Value FetchCapabilitiesAsync(const std::string& device_name,
-                                            const std::string& locale);
+  static base::Value::Dict FetchCapabilitiesAsync(
+      const std::string& device_name,
+      const std::string& locale);
   static std::string GetDefaultPrinterAsync(const std::string& locale);
 
   const raw_ptr<content::WebContents> preview_web_contents_;

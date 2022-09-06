@@ -4,9 +4,10 @@
 
 import './results_table.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import {getTemplate} from './launcher_internals.html.js';
 import {PageCallbackRouter, Result} from './launcher_internals.mojom-webui.js';
 import {LauncherResultsTableElement} from './results_table.js';
 
@@ -23,7 +24,7 @@ class LauncherInternalsElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -43,13 +44,13 @@ class LauncherInternalsElement extends PolymerElement {
     this.router = BrowserProxy.getInstance().callbackRouter;
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.listenerIds.push(
         this.router.updateResults.addListener(this.updateResults.bind(this)));
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.listenerIds.forEach(id => this.router.removeListener(id));
   }

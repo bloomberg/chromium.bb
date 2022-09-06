@@ -62,8 +62,8 @@ def pathlify(hash_prefix):
   """
   if sys.version_info.major == 3:
     return '/'.join('%02x' % b for b in hash_prefix)
-  else:
-    return '/'.join('%02x' % ord(b) for b in hash_prefix)
+
+  return '/'.join('%02x' % ord(b) for b in hash_prefix)
 
 
 @git.memoize_one(threadsafe=False)

@@ -346,6 +346,7 @@ State::State(const State *shareContextState,
       mClientType(clientType),
       mContextPriority(contextPriority),
       mHasProtectedContent(hasProtectedContent),
+      mIsDebugContext(debug),
       mClientVersion(clientVersion),
       mShareGroup(shareGroup),
       mBufferManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mBufferManager)),
@@ -409,6 +410,7 @@ State::State(const State *shareContextState,
       mSetBlendIndexedInvoked(false),
       mSetBlendFactorsIndexedInvoked(false),
       mSetBlendEquationsIndexedInvoked(false),
+      mDisplayTextureShareGroup(shareTextures != nullptr),
       mBoundingBoxMinX(-1.0f),
       mBoundingBoxMinY(-1.0f),
       mBoundingBoxMinZ(-1.0f),
@@ -416,7 +418,9 @@ State::State(const State *shareContextState,
       mBoundingBoxMaxX(1.0f),
       mBoundingBoxMaxY(1.0f),
       mBoundingBoxMaxZ(1.0f),
-      mBoundingBoxMaxW(1.0f)
+      mBoundingBoxMaxW(1.0f),
+      mShadingRatePreserveAspectRatio(false),
+      mShadingRate(ShadingRate::Undefined)
 {}
 
 State::~State() {}
@@ -797,7 +801,7 @@ bool State::anyActiveDrawBufferChannelMasked() const
 {
     // Compare current color mask with all-enabled color mask, while ignoring disabled draw
     // buffers.
-    return (mBlendStateExt.compareColorMask(mBlendStateExt.mMaxColorMask) &
+    return (mBlendStateExt.compareColorMask(mBlendStateExt.getAllColorMaskBits()) &
             mDrawFramebuffer->getDrawBufferMask())
         .any();
 }
@@ -1334,6 +1338,10 @@ void State::setEnableFeature(GLenum feature, bool enabled)
                 setClipDistanceEnable(feature - GL_CLIP_DISTANCE0_EXT, enabled);
                 return;
             }
+            break;
+        case GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM:
+            mShadingRatePreserveAspectRatio = enabled;
+            return;
     }
 
     ASSERT(mClientVersion.major == 1);
@@ -1479,6 +1487,8 @@ bool State::getEnableFeature(GLenum feature) const
                 return mClipDistancesEnabled.test(feature - GL_CLIP_DISTANCE0_EXT);
             }
             break;
+        case GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM:
+            return mShadingRatePreserveAspectRatio;
     }
 
     ASSERT(mClientVersion.major == 1);
@@ -1871,16 +1881,13 @@ void State::setVertexArrayBinding(const Context *context, VertexArray *vertexArr
         return;
     }
 
-    if (context->isWebGL())
+    if (mVertexArray)
     {
-        if (mVertexArray)
-        {
-            mVertexArray->onBindingChanged(context, -1);
-        }
-        if (vertexArray)
-        {
-            vertexArray->onBindingChanged(context, 1);
-        }
+        mVertexArray->onBindingChanged(context, -1);
+    }
+    if (vertexArray)
+    {
+        vertexArray->onBindingChanged(context, 1);
     }
 
     mVertexArray = vertexArray;
@@ -2174,6 +2181,7 @@ angle::Result State::detachBuffer(Context *context, const Buffer *buffer)
     if (curTransformFeedback)
     {
         ANGLE_TRY(curTransformFeedback->detachBuffer(context, bufferID));
+        context->getStateCache().onActiveTransformFeedbackChange(context);
     }
 
     if (getVertexArray()->detachBuffer(context, bufferID))
@@ -2363,6 +2371,13 @@ void State::setPatchVertices(GLuint value)
     }
 }
 
+void State::setShadingRate(GLenum rate)
+{
+    mShadingRate = FromGLenum<ShadingRate>(rate);
+    mDirtyBits.set(DIRTY_BIT_EXTENDED);
+    mExtendedDirtyBits.set(EXTENDED_DIRTY_BIT_SHADING_RATE);
+}
+
 void State::getBooleanv(GLenum pname, GLboolean *params) const
 {
     switch (pname)
@@ -2410,7 +2425,7 @@ void State::getBooleanv(GLenum pname, GLboolean *params) const
             break;
         case GL_BLEND:
             // non-indexed get returns the state of draw buffer zero
-            *params = mBlendStateExt.mEnabledMask.test(0);
+            *params = mBlendStateExt.getEnabledMask().test(0);
             break;
         case GL_DITHER:
             *params = mRasterizer.dither;
@@ -3077,6 +3092,12 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         case GL_CLIP_DEPTH_MODE_EXT:
             *params = mClipControlDepth;
             break;
+
+        // GL_QCOM_shading_rate
+        case GL_SHADING_RATE_QCOM:
+            *params = ToGLenum(mShadingRate);
+            break;
+
         default:
             UNREACHABLE();
             break;
@@ -3115,27 +3136,27 @@ void State::getIntegeri_v(GLenum target, GLuint index, GLint *data) const
     switch (target)
     {
         case GL_BLEND_SRC_RGB:
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             *data = mBlendStateExt.getSrcColorIndexed(index);
             break;
         case GL_BLEND_SRC_ALPHA:
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             *data = mBlendStateExt.getSrcAlphaIndexed(index);
             break;
         case GL_BLEND_DST_RGB:
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             *data = mBlendStateExt.getDstColorIndexed(index);
             break;
         case GL_BLEND_DST_ALPHA:
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             *data = mBlendStateExt.getDstAlphaIndexed(index);
             break;
         case GL_BLEND_EQUATION_RGB:
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             *data = mBlendStateExt.getEquationColorIndexed(index);
             break;
         case GL_BLEND_EQUATION_ALPHA:
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             *data = mBlendStateExt.getEquationAlphaIndexed(index);
             break;
         case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
@@ -3248,7 +3269,7 @@ void State::getBooleani_v(GLenum target, GLuint index, GLboolean *data) const
     {
         case GL_COLOR_WRITEMASK:
         {
-            ASSERT(static_cast<size_t>(index) < mBlendStateExt.mMaxDrawBuffers);
+            ASSERT(static_cast<size_t>(index) < mBlendStateExt.getDrawBufferCount());
             bool r, g, b, a;
             mBlendStateExt.getColorMaskIndexed(index, &r, &g, &b, &a);
             data[0] = r;
@@ -3630,6 +3651,13 @@ void State::setImageUnit(const Context *context,
     if (texture)
     {
         texture->onBindAsImageTexture();
+
+        // Using individual layers of a 3d image as 2d may require that the image be respecified in
+        // a compatible layout
+        if (!layered && texture->getType() == TextureType::_3D)
+        {
+            texture->onBind3DTextureAs2DImage();
+        }
     }
     imageUnit.texture.set(context, texture);
     imageUnit.level   = level;

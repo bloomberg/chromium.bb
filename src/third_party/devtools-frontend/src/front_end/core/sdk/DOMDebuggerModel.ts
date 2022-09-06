@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 
@@ -233,8 +234,12 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
   readonly #runtimeModelInternal: RuntimeModel;
   #domModel: DOMModel;
   #domBreakpointsInternal: DOMBreakpoint[];
-  readonly #domBreakpointsSetting: Common.Settings
-      .Setting<{url: string, path: string, type: Protocol.DOMDebugger.DOMBreakpointType, enabled: boolean}[]>;
+  readonly #domBreakpointsSetting: Common.Settings.Setting<{
+    url: Platform.DevToolsPath.UrlString,
+    path: string,
+    type: Protocol.DOMDebugger.DOMBreakpointType,
+    enabled: boolean,
+  }[]>;
   suspended = false;
 
   constructor(target: Target) {
@@ -248,7 +253,7 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
     this.#domBreakpointsInternal = [];
     this.#domBreakpointsSetting = Common.Settings.Settings.instance().createLocalSetting('domBreakpoints', []);
     if (this.#domModel.existingDocument()) {
-      this.documentUpdated();
+      void this.documentUpdated();
     }
   }
 
@@ -288,7 +293,7 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
   }
 
   retrieveDOMBreakpoints(): void {
-    this.#domModel.requestDocument();
+    void this.#domModel.requestDocument();
   }
 
   domBreakpoints(): DOMBreakpoint[] {
@@ -337,14 +342,14 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
 
   private enableDOMBreakpoint(breakpoint: DOMBreakpoint): void {
     if (breakpoint.node.id) {
-      this.agent.invoke_setDOMBreakpoint({nodeId: breakpoint.node.id, type: breakpoint.type});
+      void this.agent.invoke_setDOMBreakpoint({nodeId: breakpoint.node.id, type: breakpoint.type});
       breakpoint.node.setMarker(Marker, true);
     }
   }
 
   private disableDOMBreakpoint(breakpoint: DOMBreakpoint): void {
     if (breakpoint.node.id) {
-      this.agent.invoke_removeDOMBreakpoint({nodeId: breakpoint.node.id, type: breakpoint.type});
+      void this.agent.invoke_removeDOMBreakpoint({nodeId: breakpoint.node.id, type: breakpoint.type});
       breakpoint.node.setMarker(Marker, this.nodeHasBreakpoints(breakpoint.node) ? true : null);
     }
   }
@@ -383,9 +388,9 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
     return {type: type, node: node, targetNode: targetNode, insertion: insertion};
   }
 
-  private currentURL(): string {
+  private currentURL(): Platform.DevToolsPath.UrlString {
     const domDocument = this.#domModel.existingDocument();
-    return domDocument ? domDocument.documentURL : '';
+    return domDocument ? domDocument.documentURL : Platform.DevToolsPath.EmptyUrlString;
   }
 
   private async documentUpdated(): Promise<void> {
@@ -402,10 +407,10 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
     // Note that requestDocument() caches the document so that it is requested
     // only once.
     const document = await this.#domModel.requestDocument();
-    const currentURL = document ? document.documentURL : '';
+    const currentURL = document ? document.documentURL : Platform.DevToolsPath.EmptyUrlString;
     for (const breakpoint of this.#domBreakpointsSetting.get()) {
       if (breakpoint.url === currentURL) {
-        this.#domModel.pushNodeByPathToFrontend(breakpoint.path).then(appendBreakpoint.bind(this, breakpoint));
+        void this.#domModel.pushNodeByPathToFrontend(breakpoint.path).then(appendBreakpoint.bind(this, breakpoint));
       }
     }
 
@@ -463,7 +468,7 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
   private saveDOMBreakpoints(): void {
     const currentURL = this.currentURL();
     const breakpoints = this.#domBreakpointsSetting.get().filter((breakpoint: {
-                                                                   url: string,
+                                                                   url: Platform.DevToolsPath.UrlString,
                                                                  }) => breakpoint.url !== currentURL);
     for (const breakpoint of this.#domBreakpointsInternal) {
       breakpoints.push(
@@ -515,7 +520,7 @@ export class EventListener {
   readonly #handlerInternal: RemoteObject|null;
   readonly #originalHandlerInternal: RemoteObject|null;
   readonly #locationInternal: Location;
-  readonly #sourceURLInternal: string;
+  readonly #sourceURLInternal: Platform.DevToolsPath.UrlString;
   readonly #customRemoveFunction: RemoteObject|null;
   #originInternal: string;
 
@@ -533,7 +538,7 @@ export class EventListener {
     this.#originalHandlerInternal = originalHandler || handler;
     this.#locationInternal = location;
     const script = location.script();
-    this.#sourceURLInternal = script ? script.contentURL() : '';
+    this.#sourceURLInternal = script ? script.contentURL() : Platform.DevToolsPath.EmptyUrlString;
     this.#customRemoveFunction = customRemoveFunction;
     this.#originInternal = origin || EventListener.Origin.Raw;
   }
@@ -566,7 +571,7 @@ export class EventListener {
     return this.#locationInternal;
   }
 
-  sourceURL(): string {
+  sourceURL(): Platform.DevToolsPath.UrlString {
     return this.#sourceURLInternal;
   }
 
@@ -728,16 +733,17 @@ export class DOMEventListenerBreakpoint extends CategorizedBreakpoint {
   updateOnModel(model: DOMDebuggerModel): void {
     if (this.instrumentationName) {
       if (this.enabled()) {
-        model.agent.invoke_setInstrumentationBreakpoint({eventName: this.instrumentationName});
+        void model.agent.invoke_setInstrumentationBreakpoint({eventName: this.instrumentationName});
       } else {
-        model.agent.invoke_removeInstrumentationBreakpoint({eventName: this.instrumentationName});
+        void model.agent.invoke_removeInstrumentationBreakpoint({eventName: this.instrumentationName});
       }
     } else {
       for (const eventTargetName of this.eventTargetNames) {
         if (this.enabled()) {
-          model.agent.invoke_setEventListenerBreakpoint({eventName: this.eventName, targetName: eventTargetName});
+          void model.agent.invoke_setEventListenerBreakpoint({eventName: this.eventName, targetName: eventTargetName});
         } else {
-          model.agent.invoke_removeEventListenerBreakpoint({eventName: this.eventName, targetName: eventTargetName});
+          void model.agent.invoke_removeEventListenerBreakpoint(
+              {eventName: this.eventName, targetName: eventTargetName});
         }
       }
     }
@@ -1007,7 +1013,7 @@ export class DOMDebuggerManager implements SDKModelObserver<DOMDebuggerModel> {
 
   private updateCSPViolationBreakpointsForModel(
       model: DOMDebuggerModel, violationTypes: Protocol.DOMDebugger.CSPViolationType[]): void {
-    model.agent.invoke_setBreakOnCSPViolation({violationTypes: violationTypes});
+    void model.agent.invoke_setBreakOnCSPViolation({violationTypes: violationTypes});
   }
 
   xhrBreakpoints(): Map<string, boolean> {
@@ -1026,7 +1032,7 @@ export class DOMDebuggerManager implements SDKModelObserver<DOMDebuggerModel> {
     this.#xhrBreakpointsInternal.set(url, enabled);
     if (enabled) {
       for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
-        model.agent.invoke_setXHRBreakpoint({url});
+        void model.agent.invoke_setXHRBreakpoint({url});
       }
     }
     this.saveXHRBreakpoints();
@@ -1037,7 +1043,7 @@ export class DOMDebuggerManager implements SDKModelObserver<DOMDebuggerModel> {
     this.#xhrBreakpointsInternal.delete(url);
     if (enabled) {
       for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
-        model.agent.invoke_removeXHRBreakpoint({url});
+        void model.agent.invoke_removeXHRBreakpoint({url});
       }
     }
     this.saveXHRBreakpoints();
@@ -1047,9 +1053,9 @@ export class DOMDebuggerManager implements SDKModelObserver<DOMDebuggerModel> {
     this.#xhrBreakpointsInternal.set(url, enabled);
     for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
       if (enabled) {
-        model.agent.invoke_setXHRBreakpoint({url});
+        void model.agent.invoke_setXHRBreakpoint({url});
       } else {
-        model.agent.invoke_removeXHRBreakpoint({url});
+        void model.agent.invoke_removeXHRBreakpoint({url});
       }
     }
     this.saveXHRBreakpoints();
@@ -1058,7 +1064,7 @@ export class DOMDebuggerManager implements SDKModelObserver<DOMDebuggerModel> {
   modelAdded(domDebuggerModel: DOMDebuggerModel): void {
     for (const url of this.#xhrBreakpointsInternal.keys()) {
       if (this.#xhrBreakpointsInternal.get(url)) {
-        domDebuggerModel.agent.invoke_setXHRBreakpoint({url: url});
+        void domDebuggerModel.agent.invoke_setXHRBreakpoint({url: url});
       }
     }
     for (const breakpoint of this.#eventListenerBreakpointsInternal) {

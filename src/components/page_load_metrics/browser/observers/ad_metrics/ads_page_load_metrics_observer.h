@@ -6,7 +6,6 @@
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_AD_METRICS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include <bitset>
-#include <list>
 #include <map>
 #include <memory>
 
@@ -83,9 +82,9 @@ class AdsPageLoadMetricsObserver
       heavy_ad_intervention::HeavyAdService* heavy_ad_service,
       const ApplicationLocaleGetter& application_local_getter);
 
-  // For a given subframe, returns whether or not the subframe's url would be
-  // considering same origin to the main frame's url.
-  static bool IsSubframeSameOriginToMainFrame(
+  // For a given frame, returns whether or not the frame's url would be
+  // considered same origin to the outermost main frame's url.
+  static bool IsFrameSameOriginToOutermostMainFrame(
       content::RenderFrameHost* sub_host);
 
   // |clock| and |blocklist| should be set only by tests. In particular,
@@ -103,11 +102,14 @@ class AdsPageLoadMetricsObserver
   ~AdsPageLoadMetricsObserver() override;
 
   // PageLoadMetricsObserver
+  const char* GetObserverName() const override;
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override;
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
                       const mojom::PageLoadTiming& timing) override;
   void OnCpuTimingUpdate(content::RenderFrameHost* subframe_rfh,
@@ -130,9 +132,11 @@ class AdsPageLoadMetricsObserver
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) override;
-  void OnFrameIntersectionUpdate(
+  void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* render_frame_host,
-      const mojom::FrameIntersectionUpdate& intersection_update) override;
+      const gfx::Rect& main_frame_intersection_rect) override;
+  void OnMainFrameViewportRectChanged(
+      const gfx::Rect& main_frame_viewport_rect) override;
   void OnSubFrameDeleted(int frame_tree_node_id) override;
 
   void SetHeavyAdThresholdNoiseProviderForTesting(
@@ -203,7 +207,7 @@ class AdsPageLoadMetricsObserver
                             const mojom::ResourceDataUpdatePtr& resource) const;
 
   // Updates page level counters for resource loads.
-  void ProcessResourceForPage(int process_id,
+  void ProcessResourceForPage(content::RenderFrameHost* render_frame_host,
                               const mojom::ResourceDataUpdatePtr& resource);
   void ProcessResourceForFrame(content::RenderFrameHost* render_frame_host,
                                const mojom::ResourceDataUpdatePtr& resource);

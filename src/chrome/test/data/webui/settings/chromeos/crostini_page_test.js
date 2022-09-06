@@ -2,22 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/lazy_load.js';
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import {CrostiniBrowserProxyImpl, GuestOsBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
+import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {eventToPromise, flushTasks, isVisible, waitAfterNextRender} from 'chrome://test/test_util.js';
 
-// #import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.m.js';
-// #import {TestCrostiniBrowserProxy} from './test_crostini_browser_proxy.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {flush} from'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {Router, Route, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
-// #import {GuestOsBrowserProxyImpl, CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
-// #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-// clang-format on
+import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+
+import {TestCrostiniBrowserProxy} from './test_crostini_browser_proxy.js';
+import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.js';
 
 /** @type {?SettingsCrostiniPageElement} */
 let crostiniPage = null;
@@ -50,33 +46,40 @@ function setCrostiniPrefs(enabled, optional = {}) {
       paths_shared_to_vms: {value: sharedPaths},
     },
   };
-  Polymer.dom.flush();
+  flush();
 }
 
 /**
- * Checks whether a given element is visible to the user.
- * @param {!Element} element
- * @returns {boolean}
+ * @param {!Element} select
+ * @param {number} index
  */
-function isVisible(element) {
-  return !!(element && element.getBoundingClientRect().width > 0);
+function selectContainerByIndex(select, index) {
+  assertTrue(!!select);
+  const mdSelect =
+      select.root.querySelector('select#selectContainer.md-select');
+  assertTrue(!!mdSelect);
+  mdSelect.selectedIndex = index;
+  mdSelect.dispatchEvent(new CustomEvent('change'));
+  flush();
 }
 
 suite('CrostiniPageTests', function() {
   setup(function() {
     crostiniBrowserProxy = new TestCrostiniBrowserProxy();
-    settings.CrostiniBrowserProxyImpl.instance_ = crostiniBrowserProxy;
+    CrostiniBrowserProxyImpl.instance_ = crostiniBrowserProxy;
     guestOsBrowserProxy = new TestGuestOsBrowserProxy();
-    settings.GuestOsBrowserProxyImpl.instance_ = guestOsBrowserProxy;
+    GuestOsBrowserProxyImpl.setInstance(guestOsBrowserProxy);
     PolymerTest.clearBody();
     crostiniPage = document.createElement('settings-crostini-page');
+    crostiniPage.showCrostini = true;
+    crostiniPage.allowCrostini = true;
     document.body.appendChild(crostiniPage);
     testing.Test.disableAnimationsAndTransitions();
   });
 
   teardown(function() {
     crostiniPage.remove();
-    settings.Router.getInstance().resetRouteForTesting();
+    Router.getInstance().resetRouteForTesting();
   });
 
   suite('<settings-crostini-confirmation-dialog>', function() {
@@ -133,6 +136,22 @@ suite('CrostiniPageTests', function() {
       setCrostiniPrefs(false);
     });
 
+    test('NotSupported', function() {
+      crostiniPage.showCrostini = false;
+      crostiniPage.allowCrostini = false;
+      flush();
+      assertTrue(!!crostiniPage.$$('#enable'));
+      assertFalse(!!crostiniPage.$$('cr-policy-indicator'));
+    });
+
+    test('NotAllowed', function() {
+      crostiniPage.showCrostini = true;
+      crostiniPage.allowCrostini = false;
+      flush();
+      assertTrue(!!crostiniPage.$$('#enable'));
+      assertTrue(!!crostiniPage.$$('cr-policy-indicator'));
+    });
+
     test('Enable', function() {
       const button = crostiniPage.$$('#enable');
       assertTrue(!!button);
@@ -140,7 +159,7 @@ suite('CrostiniPageTests', function() {
       assertFalse(button.disabled);
 
       button.click();
-      Polymer.dom.flush();
+      flush();
       assertEquals(
           1, crostiniBrowserProxy.getCallCount('requestCrostiniInstallerView'));
       setCrostiniPrefs(true);
@@ -152,26 +171,26 @@ suite('CrostiniPageTests', function() {
       const button = crostiniPage.$$('#enable');
       assertTrue(!!button);
 
-      await test_util.flushTasks();
+      await flushTasks();
       assertFalse(button.disabled);
-      cr.webUIListenerCallback('crostini-installer-status-changed', true);
+      webUIListenerCallback('crostini-installer-status-changed', true);
 
-      await test_util.flushTasks();
+      await flushTasks();
       assertTrue(button.disabled);
-      cr.webUIListenerCallback('crostini-installer-status-changed', false);
+      webUIListenerCallback('crostini-installer-status-changed', false);
 
-      await test_util.flushTasks();
+      await flushTasks();
       assertFalse(button.disabled);
     });
 
     test('Deep link to setup Crostini', async () => {
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('settingId', '800');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CROSTINI, params);
+      Router.getInstance().navigateTo(
+          routes.CROSTINI, params);
 
       const deepLinkElement = crostiniPage.$$('#enable');
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Enable Crostini button should be focused for settingId=800.');
@@ -193,10 +212,10 @@ suite('CrostiniPageTests', function() {
         showCrostiniExtraContainers: true,
       });
 
-      settings.Router.getInstance().navigateTo(settings.routes.CROSTINI);
+      Router.getInstance().navigateTo(routes.CROSTINI);
       crostiniPage.$$('#crostini').click();
 
-      await test_util.flushTasks();
+      await flushTasks();
       subpage = crostiniPage.$$('settings-crostini-subpage');
       assertTrue(!!subpage);
     });
@@ -219,7 +238,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!subpage.$$('#crostini-shared-paths'));
         subpage.$$('#crostini-shared-paths').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-guest-os-shared-paths');
         assertTrue(!!subpage);
       });
@@ -237,15 +256,15 @@ suite('CrostiniPageTests', function() {
         const button = subpage.$$('#container-upgrade cr-button');
         assertTrue(!!button);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(button.disabled);
-        cr.webUIListenerCallback('crostini-upgrader-status-changed', true);
+        webUIListenerCallback('crostini-upgrader-status-changed', true);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(button.disabled);
-        cr.webUIListenerCallback('crostini-upgrader-status-changed', false);
+        webUIListenerCallback('crostini-upgrader-status-changed', false);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(button.disabled);
       });
 
@@ -253,15 +272,15 @@ suite('CrostiniPageTests', function() {
         const button = subpage.$$('#container-upgrade cr-button');
         assertTrue(!!button);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(button.disabled);
-        cr.webUIListenerCallback('crostini-installer-status-changed', true);
+        webUIListenerCallback('crostini-installer-status-changed', true);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(button.disabled);
-        cr.webUIListenerCallback('crostini-installer-status-changed', false);
+        webUIListenerCallback('crostini-installer-status-changed', false);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(button.disabled);
       });
 
@@ -277,7 +296,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!subpage.$$('#crostini-export-import'));
         subpage.$$('#crostini-export-import').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-export-import');
         assertTrue(!!subpage.$$('#export cr-button'));
         subpage.$$('#export cr-button').click();
@@ -286,16 +305,16 @@ suite('CrostiniPageTests', function() {
       });
 
       test('Deep link to backup linux', async () => {
-        const params = new URLSearchParams;
+        const params = new URLSearchParams();
         params.append('settingId', '802');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.CROSTINI_EXPORT_IMPORT, params);
+        Router.getInstance().navigateTo(
+            routes.CROSTINI_EXPORT_IMPORT, params);
 
-        Polymer.dom.flush();
+        flush();
         subpage = crostiniPage.$$('settings-crostini-export-import');
 
         const deepLinkElement = subpage.$$('#export cr-button');
-        await test_util.waitAfterNextRender(deepLinkElement);
+        await waitAfterNextRender(deepLinkElement);
         assertEquals(
             deepLinkElement, getDeepActiveElement(),
             'Export button should be focused for settingId=802.');
@@ -305,11 +324,11 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!subpage.$$('#crostini-export-import'));
         subpage.$$('#crostini-export-import').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-export-import');
         subpage.$$('#import cr-button').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = subpage.$$('settings-crostini-import-confirmation-dialog');
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
         assertEquals(
@@ -320,21 +339,21 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!subpage.$$('#crostini-export-import'));
         subpage.$$('#crostini-export-import').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-export-import');
         assertFalse(subpage.$$('#export cr-button').disabled);
         assertFalse(subpage.$$('#import cr-button').disabled);
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'crostini-export-import-operation-status-changed', true);
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-export-import');
         assertTrue(subpage.$$('#export cr-button').disabled);
         assertTrue(subpage.$$('#import cr-button').disabled);
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'crostini-export-import-operation-status-changed', false);
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-export-import');
         assertFalse(subpage.$$('#export cr-button').disabled);
         assertFalse(subpage.$$('#import cr-button').disabled);
@@ -346,20 +365,20 @@ suite('CrostiniPageTests', function() {
             assertTrue(!!subpage.$$('#crostini-export-import'));
             subpage.$$('#crostini-export-import').click();
 
-            await test_util.flushTasks();
+            await flushTasks();
             subpage = crostiniPage.$$('settings-crostini-export-import');
             assertFalse(subpage.$$('#export cr-button').disabled);
             assertFalse(subpage.$$('#import cr-button').disabled);
-            cr.webUIListenerCallback('crostini-installer-status-changed', true);
+            webUIListenerCallback('crostini-installer-status-changed', true);
 
-            await test_util.flushTasks();
+            await flushTasks();
             subpage = crostiniPage.$$('settings-crostini-export-import');
             assertTrue(subpage.$$('#export cr-button').disabled);
             assertTrue(subpage.$$('#import cr-button').disabled);
-            cr.webUIListenerCallback(
+            webUIListenerCallback(
                 'crostini-installer-status-changed', false);
 
-            await test_util.flushTasks();
+            await flushTasks();
             subpage = crostiniPage.$$('settings-crostini-export-import');
             assertFalse(subpage.$$('#export cr-button').disabled);
             assertFalse(subpage.$$('#import cr-button').disabled);
@@ -374,12 +393,12 @@ suite('CrostiniPageTests', function() {
         assertTrue(subpage.$$('#crostini-mic-permission-toggle').checked);
 
         subpage.$$('#crostini-mic-permission-toggle').click();
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(!!subpage.$$('#crostini-mic-permission-dialog'));
         const dialog = subpage.$$('#crostini-mic-permission-dialog');
-        const dialogClosedPromise = test_util.eventToPromise('close', dialog);
+        const dialogClosedPromise = eventToPromise('close', dialog);
         dialog.$$('.cancel-button').click();
-        await Promise.all([dialogClosedPromise, test_util.flushTasks()]);
+        await Promise.all([dialogClosedPromise, flushTasks()]);
 
         // Because the dialog was cancelled, the toggle should not have changed.
         assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
@@ -396,12 +415,12 @@ suite('CrostiniPageTests', function() {
         assertFalse(subpage.$$('#crostini-mic-permission-toggle').checked);
 
         subpage.$$('#crostini-mic-permission-toggle').click();
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(!!subpage.$$('#crostini-mic-permission-dialog'));
         const dialog = subpage.$$('#crostini-mic-permission-dialog');
-        const dialogClosedPromise = test_util.eventToPromise('close', dialog);
+        const dialogClosedPromise = eventToPromise('close', dialog);
         dialog.$$('.action-button').click();
-        await Promise.all([dialogClosedPromise, test_util.flushTasks()]);
+        await Promise.all([dialogClosedPromise, flushTasks()]);
         assertEquals(1, crostiniBrowserProxy.getCallCount('shutdownCrostini'));
         assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
         assertTrue(subpage.$$('#crostini-mic-permission-toggle').checked);
@@ -411,7 +430,7 @@ suite('CrostiniPageTests', function() {
         // restarted in order for changes to take effect, therefore no dialog is
         // needed and the mic sharing settings can be changed immediately.
         subpage.$$('#crostini-mic-permission-toggle').click();
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(!!subpage.$$('#crostini-mic-permission-dialog'));
         assertFalse(subpage.$$('#crostini-mic-permission-toggle').checked);
         assertFalse(crostiniPage.get(MIC_ALLOWED_PATH));
@@ -424,10 +443,10 @@ suite('CrostiniPageTests', function() {
             1, crostiniBrowserProxy.getCallCount('requestRemoveCrostini'));
         setCrostiniPrefs(false);
 
-        await test_util.eventToPromise('popstate', window);
+        await eventToPromise('popstate', window);
         assertEquals(
-            settings.Router.getInstance().getCurrentRoute(),
-            settings.routes.CROSTINI);
+            Router.getInstance().getCurrentRoute(),
+            routes.CROSTINI);
         assertTrue(!!crostiniPage.$$('#enable'));
       });
 
@@ -438,26 +457,26 @@ suite('CrostiniPageTests', function() {
         // them having any exact size, or on Polymer using any particular means
         // of hiding elements.
         assertTrue(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
-        cr.webUIListenerCallback('crostini-installer-status-changed', true);
+        webUIListenerCallback('crostini-installer-status-changed', true);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
-        cr.webUIListenerCallback('crostini-installer-status-changed', false);
+        webUIListenerCallback('crostini-installer-status-changed', false);
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
       });
 
       test('HideOnDisable', async function() {
         assertEquals(
-            settings.Router.getInstance().getCurrentRoute(),
-            settings.routes.CROSTINI_DETAILS);
+            Router.getInstance().getCurrentRoute(),
+            routes.CROSTINI_DETAILS);
         setCrostiniPrefs(false);
 
-        await test_util.eventToPromise('popstate', window);
+        await eventToPromise('popstate', window);
         assertEquals(
-            settings.Router.getInstance().getCurrentRoute(),
-            settings.routes.CROSTINI);
+            Router.getInstance().getCurrentRoute(),
+            routes.CROSTINI);
       });
 
       test('DiskResizeOpensWhenClicked', async function() {
@@ -467,7 +486,7 @@ suite('CrostiniPageTests', function() {
             {succeeded: true, canResize: true, isUserChosenSize: true});
         subpage.$$('#showDiskResizeButton').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         const dialog = subpage.$$('settings-crostini-disk-resize-dialog');
         assertTrue(!!dialog);
       });
@@ -478,13 +497,13 @@ suite('CrostiniPageTests', function() {
             'getCrostiniDiskInfo',
             {succeeded: true, canResize: true, isUserChosenSize: true});
 
-        const params = new URLSearchParams;
+        const params = new URLSearchParams();
         params.append('settingId', '805');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.CROSTINI_DETAILS, params);
+        Router.getInstance().navigateTo(
+            routes.CROSTINI_DETAILS, params);
 
         const deepLinkElement = subpage.$$('#showDiskResizeButton');
-        await test_util.waitAfterNextRender(deepLinkElement);
+        await waitAfterNextRender(deepLinkElement);
         assertEquals(
             deepLinkElement, getDeepActiveElement(),
             'Resize disk button should be focused for settingId=805.');
@@ -494,67 +513,103 @@ suite('CrostiniPageTests', function() {
     suite('SubPagePortForwarding', function() {
       /** @type {?SettingsCrostiniPortForwarding} */
       let subpage;
+
+      const allContainers = /** @type {!Array<!ContainerInfo>}*/
+          ([
+            {
+              id: {
+                vm_name: 'termina',
+                container_name: 'penguin',
+              },
+              ipv4: '1.2.3.4',
+            },
+            {
+              id: {
+                vm_name: 'not-termina',
+                container_name: 'not-penguin',
+
+              },
+              ipv4: '1.2.3.5',
+            }
+          ]);
       setup(async function() {
         crostiniBrowserProxy.portOperationSuccess = true;
+        crostiniBrowserProxy.containerInfo = allContainers;
         setCrostiniPrefs(true, {
           forwardedPorts: [
             {
               port_number: 5000,
               protocol_type: 0,
               label: 'Label1',
+              vm_name: 'termina',
+              container_name: 'penguin',
             },
             {
               port_number: 5001,
               protocol_type: 1,
               label: 'Label2',
+              vm_name: 'not-termina',
+              container_name: 'not-penguin',
             },
           ]
         });
 
-        await test_util.flushTasks();
-        settings.Router.getInstance().navigateTo(
-            settings.routes.CROSTINI_PORT_FORWARDING);
+        await flushTasks();
+        Router.getInstance().navigateTo(
+            routes.CROSTINI_PORT_FORWARDING);
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         assertTrue(!!subpage);
+        assertEquals(
+            1, crostiniBrowserProxy.getCallCount('requestContainerInfo'));
       });
 
       test('DisplayPorts', async function() {
         // Extra list item for the titles.
         assertEquals(
-            3, subpage.shadowRoot.querySelectorAll('.list-item').length);
+            4, subpage.shadowRoot.querySelectorAll('.list-item').length);
       });
 
       test('AddPortSuccess', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#addPort cr-button').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
-        const portNumberInput = subpage.$$('#portNumberInput');
+        const portNumberInput = subpage.root.querySelector('#portNumberInput');
         portNumberInput, focus();
         portNumberInput.value = '5002';
         portNumberInput, blur();
         assertEquals(portNumberInput.invalid, false);
-        const portLabelInput = subpage.$$('#portLabelInput');
+        const portLabelInput = subpage.root.querySelector('#portLabelInput');
         portLabelInput.value = 'Some Label';
-        subpage.$$('cr-dialog cr-button[id="continue"]').click();
+        const select =
+            subpage.root.querySelector('settings-crostini-container-select');
+        selectContainerByIndex(select, 1);
+
+        subpage.root.querySelector('cr-dialog cr-button[id="continue"]')
+            .click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+        const args = crostiniBrowserProxy.getArgs('addCrostiniPortForward')[0];
+        assertEquals(4, args.length);
+        assertEquals(args[0].vm_name, 'not-termina');
+        assertEquals(args[0].container_name, 'not-penguin');
       });
 
       test('AddPortFail', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#addPort cr-button').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
-        const portNumberInput = subpage.$$('#portNumberInput');
-        const portLabelInput = subpage.$$('#portLabelInput');
-        const continueButton = subpage.$$('cr-dialog cr-button[id="continue"]');
+        const portNumberInput = subpage.root.querySelector('#portNumberInput');
+        const portLabelInput = subpage.root.querySelector('#portLabelInput');
+        const continueButton =
+            subpage.root.querySelector('cr-dialog cr-button[id="continue"]');
 
         assertEquals(portNumberInput.invalid, false);
         portNumberInput.focus();
@@ -578,7 +633,8 @@ suite('CrostiniPageTests', function() {
         portNumberInput.focus();
         portNumberInput.value = '5000';
         portNumberInput.blur();
-        subpage.$$('cr-dialog cr-button[id="continue"]').click();
+        subpage.root.querySelector('cr-dialog cr-button[id="continue"]')
+            .click();
         assertEquals(continueButton.disabled, true);
         assertEquals(portNumberInput.invalid, true);
         assertEquals(
@@ -594,50 +650,57 @@ suite('CrostiniPageTests', function() {
       });
 
       test('AddPortCancel', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#addPort cr-button').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
-        subpage.$$('cr-dialog cr-button[id="cancel"]').click();
+        subpage.root.querySelector('cr-dialog cr-button[id="cancel"]').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         assertTrue(!!subpage);
       });
 
       test('RemoveAllPorts', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         subpage.$$('#showRemoveAllPortsMenu').click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         subpage.$$('#removeAllPortsButton').click();
         assertEquals(
-            1,
+            2,
             crostiniBrowserProxy.getCallCount('removeAllCrostiniPortForwards'));
       });
 
       test('RemoveSinglePort', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        subpage.$$('#showRemoveSinglePortMenu0').click();
-        await test_util.flushTasks();
+        subpage.$$('#showRemoveSinglePortMenu0-0').click();
+        await flushTasks();
 
         subpage.$$('#removeSinglePortButton').click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('removeCrostiniPortForward'));
+        const args =
+            crostiniBrowserProxy.getArgs('removeCrostiniPortForward')[0];
+        assertEquals(3, args.length);
+        assertEquals(args[0].vm_name, 'termina');
+        assertEquals(args[0].container_name, 'penguin');
       });
 
 
-      test('ActivateSinglePortSucess', async function() {
+      test('ActivateSinglePortSuccess', async function() {
         assertFalse(subpage.$$('#errorToast').open);
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        subpage.$$('#toggleActivationButton0').click();
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
+        assertFalse(crToggle.disabled);
+        crToggle.click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertEquals(
             1,
             crostiniBrowserProxy.getCallCount('activateCrostiniPortForward'));
@@ -645,15 +708,17 @@ suite('CrostiniPageTests', function() {
       });
 
       test('ActivateSinglePortFail', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         crostiniBrowserProxy.portOperationSuccess = false;
         assertFalse(subpage.$$('#errorToast').open);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        const crToggle = subpage.$$('#toggleActivationButton1');
+        const crToggle = subpage.$$('#toggleActivationButton1-0');
+        assertTrue(!!crToggle);
+        assertFalse(crToggle.disabled);
         assertEquals(crToggle.checked, false);
         crToggle.click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertEquals(
             1,
             crostiniBrowserProxy.getCallCount('activateCrostiniPortForward'));
@@ -662,13 +727,14 @@ suite('CrostiniPageTests', function() {
       });
 
       test('DeactivateSinglePort', async function() {
-        await test_util.flushTasks();
+        await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        const crToggle = subpage.$$('#toggleActivationButton0');
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
+        assertFalse(crToggle.disabled);
         crToggle.checked = true;
         crToggle.click();
 
-        await test_util.flushTasks();
+        await flushTasks();
         assertEquals(
             1,
             crostiniBrowserProxy.getCallCount('deactivateCrostiniPortForward'));
@@ -684,21 +750,28 @@ suite('CrostiniPageTests', function() {
             },
           ]
         });
-        const crToggle = subpage.$$('#toggleActivationButton0');
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
 
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'crostini-port-forwarder-active-ports-changed',
             [{'port_number': 5000, 'protocol_type': 0}]);
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(crToggle.checked);
 
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'crostini-port-forwarder-active-ports-changed', []);
-        await test_util.flushTasks();
+        await flushTasks();
         assertFalse(crToggle.checked);
       });
 
       test('PortPrefsChange', async function() {
+        // Default prefs should have list items per port, plus one per
+        // container.
+        assertEquals(
+            4, subpage.shadowRoot.querySelectorAll('.list-item').length);
+
+        // When only one the default container has ports, we lose an item for
+        // the extra container heading.
         setCrostiniPrefs(true, {
           forwardedPorts: [
             {
@@ -709,7 +782,7 @@ suite('CrostiniPageTests', function() {
             {
               port_number: 5001,
               protocol_type: 0,
-              label: 'Label1',
+              label: 'Label2',
             },
           ]
         });
@@ -725,12 +798,12 @@ suite('CrostiniPageTests', function() {
             {
               port_number: 5001,
               protocol_type: 0,
-              label: 'Label1',
+              label: 'Label2',
             },
             {
               port_number: 5002,
               protocol_type: 0,
-              label: 'Label1',
+              label: 'Label3',
             },
           ]
         });
@@ -741,14 +814,20 @@ suite('CrostiniPageTests', function() {
             0, subpage.shadowRoot.querySelectorAll('.list-item').length);
       });
 
-      test('CrostiniStopAndStart', async function() {
-        const crToggle = subpage.$$('#toggleActivationButton0');
+      test('ContainerStopAndStart', async function() {
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
         assertFalse(crToggle.disabled);
 
-        cr.webUIListenerCallback('crostini-status-changed', false);
+        delete allContainers[0].ipv4;
+        webUIListenerCallback(
+            'crostini-container-info', structuredClone(allContainers));
+        await flushTasks();
         assertTrue(crToggle.disabled);
 
-        cr.webUIListenerCallback('crostini-status-changed', true);
+        allContainers[0].ipv4 = '1.2.3.4';
+        webUIListenerCallback(
+            'crostini-container-info', structuredClone(allContainers));
+        await flushTasks();
         assertFalse(crToggle.disabled);
       });
     });
@@ -803,7 +882,7 @@ suite('CrostiniPageTests', function() {
           defaultIndex: 2
         });
         subpage.$$('#showDiskResizeButton').click();
-        await test_util.flushTasks();
+        await flushTasks();
         dialog = subpage.$$('settings-crostini-disk-resize-dialog');
 
         if (userChosen) {
@@ -890,7 +969,7 @@ suite('CrostiniPageTests', function() {
 
         // Back to the loading screen.
         button.click();
-        await test_util.flushTasks();
+        await flushTasks();
         assertVisibleBlockIs('#loading');
         assertTrue(dialog.$$('#resize').disabled);
         assertFalse(dialog.$$('#cancel').disabled);
@@ -935,7 +1014,7 @@ suite('CrostiniPageTests', function() {
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
         button.click();
-        await test_util.flushTasks();
+        await flushTasks();
         assertTrue(button.disabled);
         assertFalse(isVisible(dialog.$$('#done')));
         assertTrue(isVisible(dialog.$$('#resizing')));
@@ -965,7 +1044,7 @@ suite('CrostiniPageTests', function() {
         button.click();
         await crostiniBrowserProxy.resolvePromises('resizeCrostiniDisk', true);
         // Dialog should close itself.
-        await test_util.eventToPromise('close', dialog);
+        await eventToPromise('close', dialog);
       });
 
       test('DiskResizeConfirmationDialogShownAndAccepted', async function() {
@@ -978,7 +1057,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(isVisible(confirmationDialog.$$('#continue')));
         assertTrue(isVisible(confirmationDialog.$$('#cancel')));
         confirmationDialog.$$('#continue').click();
-        await test_util.eventToPromise('close', confirmationDialog);
+        await eventToPromise('close', confirmationDialog);
         assertFalse(isVisible(confirmationDialog));
 
         dialog = subpage.$$('settings-crostini-disk-resize-dialog');
@@ -988,7 +1067,7 @@ suite('CrostiniPageTests', function() {
 
         // Cancel main resize dialog.
         dialog.$$('#cancel').click();
-        await test_util.eventToPromise('close', dialog);
+        await eventToPromise('close', dialog);
         assertFalse(isVisible(dialog));
 
         // On another click, confirmation dialog should be shown again.
@@ -997,7 +1076,7 @@ suite('CrostiniPageTests', function() {
             subpage.$$('settings-crostini-disk-resize-confirmation-dialog');
         assertTrue(isVisible(confirmationDialog.$$('#continue')));
         confirmationDialog.$$('#continue').click();
-        await test_util.eventToPromise('close', confirmationDialog);
+        await eventToPromise('close', confirmationDialog);
 
         // Main dialog should show again.
         dialog = subpage.$$('settings-crostini-disk-resize-dialog');
@@ -1016,7 +1095,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(isVisible(confirmationDialog.$$('#continue')));
         assertTrue(isVisible(confirmationDialog.$$('#cancel')));
         confirmationDialog.$$('#cancel').click();
-        await test_util.eventToPromise('close', confirmationDialog);
+        await eventToPromise('close', confirmationDialog);
 
         assertFalse(!!subpage.$$('settings-crostini-disk-resize-dialog'));
       });
@@ -1032,12 +1111,12 @@ suite('CrostiniPageTests', function() {
       setCrostiniPrefs(
           true, {sharedPaths: {path1: ['termina'], path2: ['some-other-vm']}});
 
-      await test_util.flushTasks();
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CROSTINI_SHARED_PATHS);
+      await flushTasks();
+      Router.getInstance().navigateTo(
+          routes.CROSTINI_SHARED_PATHS);
 
-      await test_util.flushTasks();
-      Polymer.dom.flush();
+      await flushTasks();
+      flush();
       subpage = crostiniPage.$$('settings-guest-os-shared-paths');
       assertTrue(!!subpage);
     });
@@ -1069,11 +1148,11 @@ suite('CrostiniPageTests', function() {
         },
       ];
 
-      await test_util.flushTasks();
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CROSTINI_SHARED_USB_DEVICES);
+      await flushTasks();
+      Router.getInstance().navigateTo(
+          routes.CROSTINI_SHARED_USB_DEVICES);
 
-      await test_util.flushTasks();
+      await flushTasks();
       subpage = crostiniPage.$$('settings-guest-os-shared-usb-devices');
       assertTrue(!!subpage);
     });
@@ -1095,25 +1174,25 @@ suite('CrostiniPageTests', function() {
         arcAdbSideloadingSupported: true,
       });
 
-      await test_util.flushTasks();
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CROSTINI_ANDROID_ADB);
+      await flushTasks();
+      Router.getInstance().navigateTo(
+          routes.CROSTINI_ANDROID_ADB);
 
-      await test_util.flushTasks();
+      await flushTasks();
       subpage = crostiniPage.$$('settings-crostini-arc-adb');
       assertTrue(!!subpage);
     });
 
     test('Deep link to enable adb debugging', async () => {
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('settingId', '804');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CROSTINI_ANDROID_ADB, params);
+      Router.getInstance().navigateTo(
+          routes.CROSTINI_ANDROID_ADB, params);
 
-      Polymer.dom.flush();
+      flush();
 
       const deepLinkElement = subpage.$$('#arcAdbEnabledButton');
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Enable adb debugging button should be focused for settingId=804.');

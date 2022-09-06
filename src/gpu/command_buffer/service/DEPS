@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/paint",
+  "+net",
   "+skia",
   "+third_party/libyuv/include/libyuv/planar_functions.h",
   "+third_party/skia",
@@ -10,6 +11,7 @@ include_rules = [
   "+components/viz/common/resources/resource_format.h",
   "+components/viz/common/resources/resource_format_utils.h",
   "+components/viz/common/resources/resource_sizes.h",
+  "+ui/ozone/buildflags.h",
 ]
 
 specific_include_rules = {

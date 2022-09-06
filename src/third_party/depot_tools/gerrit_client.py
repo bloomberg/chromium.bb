@@ -236,16 +236,26 @@ def CMDcreatechange(parser, args):
       action='append',
       help='repeatable field value parameter, format: -p key=value')
 
+  parser.add_option('--cc',
+                    dest='cc_list',
+                    action='append',
+                    help='CC address to notify, format: --cc foo@example.com')
+
   (opt, args) = parser.parse_args(args)
   for p in opt.params:
     assert '=' in p, '--param is key=value, not "%s"' % p
+
+  params = list(tuple(p.split('=', 1)) for p in opt.params)
+
+  if opt.cc_list:
+    params.append(('notify_details', {'CC': {'accounts': opt.cc_list}}))
 
   result = gerrit_util.CreateChange(
       urlparse.urlparse(opt.host).netloc,
       opt.project,
       branch=opt.branch,
       subject=opt.subject,
-      params=list(tuple(p.split('=', 1)) for p in opt.params),
+      params=params,
   )
   logging.info(result)
   write_result(result, opt)

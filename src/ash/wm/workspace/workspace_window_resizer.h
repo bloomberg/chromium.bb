@@ -13,7 +13,9 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -231,7 +233,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   gfx::Rect restore_bounds_for_gesture_;
 
   // Presentation time recorder for tab dragging in clamshell mode.
-  std::unique_ptr<PresentationTimeRecorder> tab_dragging_recorder_;
+  std::unique_ptr<ui::PresentationTimeRecorder> tab_dragging_recorder_;
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.

@@ -29,7 +29,7 @@ namespace performance_manager {
 namespace policies {
 namespace {
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 // Time during which non visible pages are protected from urgent discarding
 // (not on ChromeOS).
 constexpr base::TimeDelta kNonVisiblePagesUrgentProtectionTime =
@@ -150,6 +150,9 @@ void PageDiscardingHelper::UrgentlyDiscardMultiplePages(
     base::OnceCallback<void(bool)> post_discard_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  LOG(WARNING) << "Urgently discarding multiple pages with target (kb): "
+               << (reclaim_target_kb ? *reclaim_target_kb : 0);
+
   // Ensures running post_discard_cb on early return.
   auto split_callback = base::SplitOnceCallback(std::move(post_discard_cb));
   base::ScopedClosureRunner run_post_discard_cb_on_return(
@@ -254,12 +257,23 @@ void PageDiscardingHelper::UrgentlyDiscardMultiplePages(
   // Got to the end successfully, don't call the early return callback.
   run_post_discard_cb_on_return.ReplaceClosure(base::DoNothing());
 
+  LOG(WARNING) << "Discarding " << discard_attempts.size() << " pages";
+
   page_discarder_->DiscardPageNodes(
       discard_attempts,
       base::BindOnce(&PageDiscardingHelper::PostDiscardAttemptCallback,
                      weak_factory_.GetWeakPtr(), reclaim_target_kb,
                      discard_strategy, discard_protected_tabs,
                      std::move(split_callback.second)));
+}
+
+void PageDiscardingHelper::ImmediatelyDiscardSpecificPage(
+    const PageNode* page_node) {
+  if (CanUrgentlyDiscard(page_node,
+                         /* consider_minimum_protection_time */ false) ==
+      CanUrgentlyDiscardResult::kEligible) {
+    page_discarder_->DiscardPageNodes({page_node}, base::DoNothing());
+  }
 }
 
 void PageDiscardingHelper::OnBeforePageNodeRemoved(const PageNode* page_node) {
@@ -314,7 +328,9 @@ PageDiscardingHelper::GetPageNodeLiveStateData(
 }
 
 PageDiscardingHelper::CanUrgentlyDiscardResult
-PageDiscardingHelper::CanUrgentlyDiscard(const PageNode* page_node) const {
+PageDiscardingHelper::CanUrgentlyDiscard(
+    const PageNode* page_node,
+    bool consider_minimum_protection_time) const {
   if (DiscardAttemptMarker::Get(PageNodeImpl::FromNode(page_node)))
     return CanUrgentlyDiscardResult::kMarked;
 
@@ -330,9 +346,10 @@ PageDiscardingHelper::CanUrgentlyDiscard(const PageNode* page_node) const {
       return CanUrgentlyDiscardResult::kProtected;
   }
 
-#if !defined(OS_CHROMEOS)
-  if (page_node->GetTimeSinceLastVisibilityChange() <
-      kNonVisiblePagesUrgentProtectionTime) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  if (consider_minimum_protection_time &&
+      page_node->GetTimeSinceLastVisibilityChange() <
+          kNonVisiblePagesUrgentProtectionTime) {
     return CanUrgentlyDiscardResult::kProtected;
   }
 #endif
@@ -380,7 +397,7 @@ PageDiscardingHelper::CanUrgentlyDiscard(const PageNode* page_node) const {
       return CanUrgentlyDiscardResult::kProtected;
     if (live_state_data->IsConnectedToUSBDevice())
       return CanUrgentlyDiscardResult::kProtected;
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
     // TODO(sebmarchand): Skip this check if the Entreprise memory limit is set.
     if (live_state_data->WasDiscarded())
       return CanUrgentlyDiscardResult::kProtected;

@@ -70,26 +70,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-#define EXPECT_FLOAT_POINT_EQ(expected, actual)    \
-  do {                                             \
-    EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
-    EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
-  } while (false)
-
-#define EXPECT_FLOAT_SIZE_EQ(expected, actual)               \
-  do {                                                       \
-    EXPECT_FLOAT_EQ((expected).width(), (actual).width());   \
-    EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
-  } while (false)
-
-#define EXPECT_FLOAT_RECT_EQ(expected, actual)               \
-  do {                                                       \
-    EXPECT_FLOAT_EQ((expected).x(), (actual).x());           \
-    EXPECT_FLOAT_EQ((expected).y(), (actual).y());           \
-    EXPECT_FLOAT_EQ((expected).width(), (actual).width());   \
-    EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
-  } while (false)
-
 namespace base {
 class TickClock;
 }
@@ -319,7 +299,7 @@ class TestWebViewClient : public WebViewClient {
                       network::mojom::blink::WebSandboxFlags,
                       const SessionStorageNamespaceId&,
                       bool& consumed_user_gesture,
-                      const absl::optional<WebImpression>&) override;
+                      const absl::optional<Impression>&) override;
 
  private:
   WTF::Vector<std::unique_ptr<WebViewHelper>> child_web_views_;
@@ -340,7 +320,8 @@ using CreateTestWebFrameWidgetCallback =
         bool hidden,
         bool never_composited,
         bool is_for_child_local_root,
-        bool is_for_nested_main_frame)>;
+        bool is_for_nested_main_frame,
+        bool is_for_scalable_page)>;
 
 // Convenience class for handling the lifetime of a WebView and its associated
 // mainframe in tests.
@@ -457,12 +438,14 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
       bool hidden,
       bool never_composited,
       bool is_for_child_local_root,
-      bool is_for_nested_main_frame) {
+      bool is_for_nested_main_frame,
+      bool is_for_scalable_page) {
     return MakeGarbageCollected<C>(
         std::move(pass_key), std::move(frame_widget_host),
         std::move(frame_widget), std::move(widget_host), std::move(widget),
         std::move(task_runner), frame_sink_id, hidden, never_composited,
-        is_for_child_local_root, is_for_nested_main_frame);
+        is_for_child_local_root, is_for_nested_main_frame,
+        is_for_scalable_page);
   }
 
   blink::scheduler::WebAgentGroupScheduler& GetAgentGroupScheduler() {

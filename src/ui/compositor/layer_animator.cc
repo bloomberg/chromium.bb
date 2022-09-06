@@ -10,6 +10,7 @@
 
 #include "base/check_op.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
@@ -121,6 +122,11 @@ ANIMATED_PROPERTY(const gfx::RoundedCornersF&,
                   RoundedCorners,
                   gfx::RoundedCornersF,
                   rounded_corners)
+ANIMATED_PROPERTY(const gfx::LinearGradient&,
+                  GRADIENT_MASK,
+                  GradientMask,
+                  gfx::LinearGradient,
+                  gradient_mask)
 
 #undef ANIMATED_PROPERTY
 
@@ -444,6 +450,7 @@ void LayerAnimator::OnThreadedAnimationStarted(
 }
 
 void LayerAnimator::AddToCollection(LayerAnimatorCollection* collection) {
+  DCHECK_EQ(collection, GetLayerAnimatorCollection());
   if (is_animating() && !is_started_) {
     collection->StartAnimator(this);
     is_started_ = true;
@@ -451,10 +458,13 @@ void LayerAnimator::AddToCollection(LayerAnimatorCollection* collection) {
 }
 
 void LayerAnimator::RemoveFromCollection(LayerAnimatorCollection* collection) {
+  DCHECK_EQ(collection, GetLayerAnimatorCollection());
   if (is_started_) {
     collection->StopAnimator(this);
     is_started_ = false;
   }
+  DCHECK(!animation_->element_animations() ||
+         !animation_->element_animations()->HasTickingKeyframeEffect());
 }
 
 // LayerAnimator protected -----------------------------------------------------

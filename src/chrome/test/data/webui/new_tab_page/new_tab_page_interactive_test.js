@@ -13,7 +13,7 @@ GEN('#include "content/public/test/browser_test.h"');
 class NewTabPageInteractiveTest extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overriden by subclasses';
+    throw new Error('this is abstract and should be overriden by subclasses');
   }
 }
 
@@ -21,7 +21,7 @@ var NewTabPageCustomizeDialogFocusTest =
     class extends NewTabPageInteractiveTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_dialog_focus_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_dialog_focus_test.js&host=webui-test';
   }
 };
 
@@ -33,7 +33,7 @@ var NewTabPageDoodleShareDialogFocusTest =
     class extends NewTabPageInteractiveTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/doodle_share_dialog_focus_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/doodle_share_dialog_focus_test.js&host=webui-test';
   }
 };
 

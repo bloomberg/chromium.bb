@@ -4,8 +4,11 @@
 # found in the LICENSE file.
 """Runs dwarfdump on passed-in .so."""
 
+import argparse
 import bisect
 import dataclasses
+import logging
+import os
 import subprocess
 import typing
 
@@ -22,8 +25,6 @@ class _SourceMapper:
   def __init__(self, range_info_list):
     self._range_info_list = range_info_list
     self._largest_address = 0
-    self._unmatched_queries_count = 0
-    self._total_queries_count = 0
 
     if self._range_info_list:
       self._largest_address = self._range_info_list[-1][0].stop
@@ -33,7 +34,6 @@ class _SourceMapper:
 
     Only symbols in the .text section of the elf file are supported.
     """
-    self._total_queries_count += 1
     # Bisect against stop = self._largest_address + 1 to avoid bisecting against
     # the "source path" tuple component.
     bisect_index = bisect.bisect_right(
@@ -44,8 +44,7 @@ class _SourceMapper:
       if info[0].start <= address < info[0].stop:
         return info[1]
 
-    self._unmatched_queries_count += 1
-    return None
+    return ''
 
   def NumberOfPaths(self):
     return len(set(info[1] for info in self._range_info_list))
@@ -54,14 +53,10 @@ class _SourceMapper:
   def num_ranges(self):
     return len(self._range_info_list)
 
-  @property
-  def unmatched_queries_ratio(self):
-    return self._unmatched_queries_count / self._total_queries_count
 
-
-def CreateAddressSourceMapper(elf_path, tool_prefix):
+def CreateAddressSourceMapper(elf_path):
   """Runs dwarfdump. Returns object for querying source path given address."""
-  return _SourceMapper(_Parse(elf_path, tool_prefix))
+  return _SourceMapper(_Parse(elf_path))
 
 
 def CreateAddressSourceMapperForTest(lines):
@@ -72,14 +67,14 @@ def ParseDumpOutputForTest(lines):
   return _ParseDumpOutput(lines)
 
 
-def _Parse(elf_path, tool_prefix):
+def _Parse(elf_path):
   cmd = [
-      path_util.GetDwarfdumpPath(tool_prefix),
+      path_util.GetDwarfdumpPath(),
       elf_path,
       '--debug-info',
-      '--summarize-types',
       '--recurse-depth=0',
   ]
+  logging.debug('Running: %s', ' '.join(cmd))
   stdout = subprocess.check_output(cmd,
                                    stderr=subprocess.DEVNULL,
                                    encoding='utf-8')
@@ -200,3 +195,26 @@ def _ExtractDwValue(line):
     lparen_index += 1
     rparen_index -= 1
   return line[lparen_index + 1:rparen_index]
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument('--dwarf-dump-output', type=os.path.realpath)
+  group.add_argument('--elf-file', type=os.path.realpath)
+
+  args = parser.parse_args()
+  logging.basicConfig(level=logging.DEBUG,
+                      format='%(levelname).1s %(relativeCreated)6d %(message)s')
+
+  if args.dwarf_dump_output:
+    with open(args.dwarf_dump_output, 'r') as f:
+      source_mapper = CreateAddressSourceMapperForTest(f.read().splitlines())
+  else:
+    source_mapper = CreateAddressSourceMapper(args.elf_file)
+  logging.warning('Found %d source paths across %d ranges',
+                  source_mapper.NumberOfPaths(), source_mapper.num_ranges)
+
+
+if __name__ == '__main__':
+  main()

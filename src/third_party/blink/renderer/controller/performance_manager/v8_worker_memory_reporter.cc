@@ -17,7 +17,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -104,8 +105,7 @@ void WorkerMeasurementDelegate::MeasurementComplete(
   memory_usage->bytes = bytes;
   if (worker_global_scope->IsUrlValid() &&
       worker_global_scope->Url().GetString().length() < kMaxReportedUrlLength) {
-    // Copy the URL to send it over to the main thread.
-    memory_usage->url = worker_global_scope->Url().Copy();
+    memory_usage->url = worker_global_scope->Url();
   }
   NotifyMeasurementSuccess(std::move(memory_usage));
 }

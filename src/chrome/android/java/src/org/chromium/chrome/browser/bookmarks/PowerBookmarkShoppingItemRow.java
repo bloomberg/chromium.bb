@@ -9,7 +9,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
@@ -26,9 +28,9 @@ import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
+import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.payments.CurrencyFormatter;
-import org.chromium.ui.widget.ChipView;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -41,7 +43,6 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
     private BookmarkModel mBookmarkModel;
     private SubscriptionsManager mSubscriptionsManager;
 
-    private final int mDesiredImageSize;
     private boolean mIsPriceTrackingEnabled;
     private CurrencyFormatter mCurrencyFormatter;
     private CommerceSubscription mSubscription;
@@ -53,8 +54,6 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
      */
     public PowerBookmarkShoppingItemRow(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mDesiredImageSize =
-                getResources().getDimensionPixelSize(R.dimen.list_item_v2_start_icon_width);
     }
 
     /**
@@ -73,8 +72,9 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
 
     // BookmarkItemRow overrides:
     @Override
-    BookmarkItem setBookmarkId(BookmarkId bookmarkId, @Location int location) {
-        BookmarkItem bookmarkItem = super.setBookmarkId(bookmarkId, location);
+    BookmarkItem setBookmarkId(
+            BookmarkId bookmarkId, @Location int location, boolean fromFilterView) {
+        BookmarkItem bookmarkItem = super.setBookmarkId(bookmarkId, location, fromFilterView);
         PowerBookmarkMeta meta = mBookmarkModel.getPowerBookmarkMeta(bookmarkId);
         assert meta != null;
 
@@ -125,7 +125,7 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
         mStartIconView.setClipToOutline(true);
         mImageFetcher.fetchImage(
                 ImageFetcher.Params.create(leadImageUrl, ImageFetcher.POWER_BOOKMARKS_CLIENT_NAME,
-                        mDesiredImageSize, mDesiredImageSize),
+                        mStartIconViewSize, mStartIconViewSize),
                 (image) -> {
                     if (image == null) return;
                     // We've successfully fetched an image. Cancel any pending requests for the
@@ -136,6 +136,7 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
 
         setPriceInfoChip(originalPrice, currentPrice);
         setPriceTrackingButton(priceTrackingEnabled);
+        mTitleView.setLabelFor(mEndStartButtonView.getId());
         PowerBookmarkMetrics.reportBookmarkShoppingItemRowPriceTrackingState(
                 PriceTrackingState.PRICE_TRACKING_SHOWN);
     }
@@ -151,33 +152,45 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
             textView.setText(formattedCurrentPrice);
             setCustomContent(textView);
         } else {
-            ChipView cv = new ChipView(getContext(), null);
-            cv.setBorder(0, Color.TRANSPARENT);
-            cv.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                    getResources(), R.color.price_drop_annotation_bg_color));
-
-            // Primary text displays the current price.
-            TextView primaryText = cv.getPrimaryTextView();
-            ApiCompatibilityUtils.setTextAppearance(
-                    primaryText, R.styleable.ChipView_primaryTextAppearance);
-            primaryText.setText(formattedCurrentPrice);
-            primaryText.setTextColor(ApiCompatibilityUtils.getColor(
-                    getResources(), R.color.price_drop_annotation_text_green));
-
-            // Secondary text displays the original price with a strikethrough.
-            TextView secondaryText = cv.getSecondaryTextView();
-            secondaryText.setText(getFormattedCurrencyStringForPrice(originalPrice));
-            secondaryText.setPaintFlags(
-                    secondaryText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            ApiCompatibilityUtils.setTextAppearance(
-                    secondaryText, R.styleable.ChipView_primaryTextAppearance);
-            setCustomContent(cv);
+            TextView primaryText;
+            TextView secondaryText;
+            if (BookmarkFeatures.isCompactBookmarksVisualRefreshEnabled()) {
+                ViewGroup row = (ViewGroup) LayoutInflater.from(getContext())
+                                        .inflate(R.layout.compact_price_drop_view, null, false);
+                primaryText = row.findViewById(R.id.primary_text);
+                secondaryText = row.findViewById(R.id.secondary_text);
+                setCustomContent(row);
+            } else {
+                ChipView chipView = new ChipView(getContext(), null);
+                chipView.setBorder(0, Color.TRANSPARENT);
+                chipView.setBackgroundColor(
+                        getContext().getColor(R.color.price_drop_annotation_bg_color));
+                primaryText = chipView.getPrimaryTextView();
+                secondaryText = chipView.getSecondaryTextView();
+                setCustomContent(chipView);
+            }
+            assignPriceDropProperties(primaryText, secondaryText,
+                    getFormattedCurrencyStringForPrice(originalPrice), formattedCurrentPrice);
         }
+    }
+
+    private void assignPriceDropProperties(TextView primaryText, TextView secondaryText,
+            String formattedOriginalPrice, String formattedCurrentPrice) {
+        // Primary text displays the current price.
+        primaryText.setText(formattedCurrentPrice);
+        primaryText.setTextColor(getContext().getColor(R.color.price_drop_annotation_text_green));
+
+        // Secondary text displays the original price with a strikethrough.
+        secondaryText.setText(formattedOriginalPrice);
+        secondaryText.setPaintFlags(secondaryText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     /** Sets up the button that allows you to un/subscribe to price-tracking updates. */
     private void setPriceTrackingButton(boolean priceTrackingEnabled) {
         mIsPriceTrackingEnabled = priceTrackingEnabled;
+        mEndStartButtonView.setContentDescription(getContext().getResources().getString(
+                priceTrackingEnabled ? R.string.disable_price_tracking_menu_item
+                                     : R.string.enable_price_tracking_menu_item));
         mEndStartButtonView.setVisibility(View.VISIBLE);
         updatePriceTrackingImageForCurrentState();
         Callback<Integer> subscriptionCallback = (status) -> {

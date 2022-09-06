@@ -93,7 +93,7 @@ a text file). This contains many values you will need.
 Here is an example master_preferences, which pre-installs the Google Reader
 extension:
 
-{ "homepage" : "http://dev.chromium.org", "homepage_is_newtabpage" : true,
+{ "homepage" : "http://www.chromium.org", "homepage_is_newtabpage" : true,
 "extensions": { "settings": { "apflmjolhbonpkbkooiamcnenbmbjcbf": { "location":
 1, "manifest": { "key":
 "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC5cK3ybDkh173plsjDXoqUzvsjFRMtbc5+a8HR6dxYBETeXQ7GOR5/xYnsY2R4smo5ly4yUK69iF7rnPNH+X97K7e7JFbuH5W/ZRc8YaIG66oJ9JwKZagSOZasSJPWNz4f1GdaHD1Z4KRucvOYxsaPVdwS2W3nbG6i3oQFaio+JQIDAQAB",

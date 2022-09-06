@@ -219,8 +219,7 @@ static INLINE void get_eobx_eoby_scan_v_identity(int *eobx, int *eoby,
   *eoby = (eob >= eoby_max) ? eoby_max : eob_fill[eob];
 }
 
-typedef void (*transform_1d_ssse3)(const __m128i *input, __m128i *output,
-                                   int8_t cos_bit);
+typedef void (*transform_1d_ssse3)(const __m128i *input, __m128i *output);
 
 void av1_lowbd_inv_txfm2d_add_ssse3(const int32_t *input, uint8_t *output,
                                     int stride, TX_TYPE tx_type,

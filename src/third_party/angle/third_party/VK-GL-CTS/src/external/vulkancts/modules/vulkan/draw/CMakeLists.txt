@@ -1,4 +1,7 @@
-include_directories(..)
+include_directories(
+	..
+	${DEQP_INL_DIR}
+)
 
 set(DEQP_VK_DRAW_SRCS
 	vktDrawTests.hpp
@@ -15,6 +18,8 @@ set(DEQP_VK_DRAW_SRCS
 	vktDrawMultiExtTests.cpp
 	vktDrawShaderDrawParametersTests.hpp
 	vktDrawShaderDrawParametersTests.cpp
+	vktDrawShaderInvocationTests.hpp
+	vktDrawShaderInvocationTests.cpp
 	vktDrawShaderLayerTests.hpp
 	vktDrawShaderLayerTests.cpp
 	vktDrawShaderViewportIndexTests.hpp
@@ -42,12 +47,16 @@ set(DEQP_VK_DRAW_SRCS
 	vktDrawScissorTests.cpp
 	vktDrawMultipleInterpolationTests.hpp
 	vktDrawMultipleInterpolationTests.cpp
+	vktDrawMultisampleLinearInterpolationTests.hpp
+	vktDrawMultisampleLinearInterpolationTests.cpp
 	vktDrawDiscardRectanglesTests.hpp
 	vktDrawDiscardRectanglesTests.cpp
 	vktDrawExplicitVertexParameterTests.cpp
 	vktDrawExplicitVertexParameterTests.hpp
 	vktDrawOutputLocationTests.cpp
 	vktDrawOutputLocationTests.hpp
+	vktDrawDepthBiasTests.cpp
+	vktDrawDepthBiasTests.hpp
 	vktDrawDepthClampTests.cpp
 	vktDrawDepthClampTests.hpp
 	vktDrawAhbTests.cpp

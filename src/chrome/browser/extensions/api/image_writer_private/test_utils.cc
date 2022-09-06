@@ -10,18 +10,17 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/error_constants.h"
 #include "chrome/common/chrome_paths.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/disks/disk.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"  // nogncheck
 #include "chromeos/dbus/image_burner/fake_image_burner_client.h"
 #endif
@@ -247,7 +246,7 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
       // For browser tests, chromeos::InitializeDBus() automatically does the
       // same.
       chromeos::DBusThreadManager::Initialize();
-      chromeos::ConciergeClient::InitializeFake(
+      ash::ConciergeClient::InitializeFake(
           /*fake_cicerone_client=*/nullptr);
     }
     chromeos::DBusThreadManager::GetSetterForTesting()->SetImageBurnerClient(
@@ -276,7 +275,7 @@ void ImageWriterTestUtils::TearDown() {
   if (chromeos::DBusThreadManager::IsInitialized()) {
     // When in browser_tests, this path is not taken. These clients have already
     // been shut down by chromeos::ShutdownDBus().
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
   ash::disks::DiskMountManager::Shutdown();

@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/webui/settings/chromeos/main_section.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/personalization_entry_point.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
-#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
@@ -50,6 +51,11 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       {"clearSearch", IDS_CLEAR_SEARCH},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  // Used to link to personalization app search results.
+  html_source->AddString(
+      "personalizationAppUrl",
+      ash::personalization_app::kChromeUIPersonalizationAppURL);
 }
 
 void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
@@ -125,6 +131,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},
       {"learnMore", IDS_LEARN_MORE},
       {"shortcutBannerDismissed", IDS_SETTINGS_SHORTCUT_BANNER_DISMISSED},
+      {"manage", IDS_SETTINGS_MANAGE},
       {"menu", IDS_MENU},
       {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
       {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
@@ -162,14 +169,24 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "isKioskModeActive",
       user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
-  html_source->AddBoolean("isSupervised", profile()->IsChild());
+  html_source->AddBoolean("isChildAccount", profile()->IsChild());
 
-  html_source->AddBoolean(
-      "appManagementIntentSettingsEnabled",
-      base::FeatureList::IsEnabled(::features::kAppManagementIntentSettings));
+  // Personalization hub is only enabled for regular (non-guest) users.
+  html_source->AddBoolean("isPersonalizationHubEnabled",
+                          ash::features::IsPersonalizationHubEnabled() &&
+                              profile()->IsRegularProfile());
 
   // Add the System Web App resources for Settings.
   html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
+
+  // Add Entry Point resources used for recording entry point metric
+  // to Personalization Hub though Settings search.
+  html_source->AddInteger(
+      "settingsSearchEntryPoint",
+      static_cast<int>(ash::PersonalizationEntryPoint::kSettingsSearch));
+  html_source->AddInteger(
+      "entryPointEnumSize",
+      static_cast<int>(ash::PersonalizationEntryPoint::kMaxValue) + 1);
 
   AddSearchInSettingsStrings(html_source);
   AddChromeOSUserStrings(html_source);

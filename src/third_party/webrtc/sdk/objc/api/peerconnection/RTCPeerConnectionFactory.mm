@@ -27,6 +27,7 @@
 #import "helpers/NSString+StdString.h"
 #include "rtc_base/checks.h"
 #include "sdk/objc/native/api/network_monitor_factory.h"
+#include "sdk/objc/native/api/ssl_certificate_verifier.h"
 #include "system_wrappers/include/field_trial.h"
 
 #ifndef HAVE_NO_MEDIA
@@ -87,7 +88,7 @@
                                             RTCVideoEncoderFactoryH264) alloc] init])
               nativeVideoDecoderFactory:webrtc::ObjCToNativeVideoDecoderFactory([[RTC_OBJC_TYPE(
                                             RTCVideoDecoderFactoryH264) alloc] init])
-                      audioDeviceModule:[self audioDeviceModule]
+                      audioDeviceModule:[self audioDeviceModule].get()
                   audioProcessingModule:nullptr];
 #endif
 }
@@ -110,7 +111,7 @@
                        nativeAudioDecoderFactory:webrtc::CreateBuiltinAudioDecoderFactory()
                        nativeVideoEncoderFactory:std::move(native_encoder_factory)
                        nativeVideoDecoderFactory:std::move(native_decoder_factory)
-                               audioDeviceModule:[self audioDeviceModule]
+                               audioDeviceModule:[self audioDeviceModule].get()
                            audioProcessingModule:nullptr];
 #endif
 }
@@ -272,6 +273,21 @@
   return [[RTC_OBJC_TYPE(RTCPeerConnection) alloc] initWithFactory:self
                                                      configuration:configuration
                                                        constraints:constraints
+                                               certificateVerifier:nil
+                                                          delegate:delegate];
+}
+
+- (nullable RTC_OBJC_TYPE(RTCPeerConnection) *)
+    peerConnectionWithConfiguration:(RTC_OBJC_TYPE(RTCConfiguration) *)configuration
+                        constraints:(RTC_OBJC_TYPE(RTCMediaConstraints) *)constraints
+                certificateVerifier:
+                    (id<RTC_OBJC_TYPE(RTCSSLCertificateVerifier)>)certificateVerifier
+                           delegate:
+                               (nullable id<RTC_OBJC_TYPE(RTCPeerConnectionDelegate)>)delegate {
+  return [[RTC_OBJC_TYPE(RTCPeerConnection) alloc] initWithFactory:self
+                                                     configuration:configuration
+                                                       constraints:constraints
+                                               certificateVerifier:certificateVerifier
                                                           delegate:delegate];
 }
 

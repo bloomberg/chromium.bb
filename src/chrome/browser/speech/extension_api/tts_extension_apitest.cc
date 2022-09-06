@@ -132,7 +132,14 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
 
   void Shutdown() override {}
 
-  bool PreferEngineDelegateVoices() override { return true; }
+  void FinalizeVoiceOrdering(std::vector<content::VoiceData>& voices) override {
+    // Prefer non-native voices.
+    std::stable_partition(
+        voices.begin(), voices.end(),
+        [](const content::VoiceData& voice) { return !voice.native; });
+  }
+
+  void RefreshVoices() override {}
 
   void GetVoicesForBrowserContext(
       content::BrowserContext* browser_context,
@@ -506,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // https://crbug.com/709115 tracks test flakiness.
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 #define MAYBE_EngineError DISABLED_EngineError
 #else
 #define MAYBE_EngineError EngineError

@@ -9,7 +9,6 @@
 #include "base/check_op.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -117,8 +116,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       FilterGestureEventResult res;
       if (!drop_scroll_events_) {
         SetCursorControlIfNecessary(gesture_event, touch_action);
-        UMA_HISTOGRAM_BOOLEAN("Blink.Input.GestureScrollBeginAsCursorControl",
-                              gesture_event->data.scroll_begin.cursor_control);
         res = FilterGestureEventResult::kFilterGestureEventAllowed;
       } else if (active_touch_action_.has_value()) {
         res = FilterGestureEventResult::kFilterGestureEventFiltered;
@@ -193,7 +190,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     case WebInputEvent::Type::kGesturePinchBegin:
       drop_pinch_events_ = (touch_action & cc::TouchAction::kPinchZoom) ==
                            cc::TouchAction::kNone;
-      FALLTHROUGH;
+      [[fallthrough]];
     case WebInputEvent::Type::kGesturePinchUpdate:
       gesture_sequence_.append("P");
       if (!drop_pinch_events_)

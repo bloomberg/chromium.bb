@@ -4,7 +4,8 @@
 
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
@@ -44,7 +45,7 @@ constexpr char kDeviceName1[] = "Device1";
 mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient>
 CreateServerClient() {
   mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> client;
-  ignore_result(client.BindNewEndpointAndPassDedicatedReceiver());
+  std::ignore = client.BindNewEndpointAndPassDedicatedReceiver();
   return client;
 }
 
@@ -109,14 +110,12 @@ class FrameConnectedBluetoothDevicesTest
   }
 
   void ResetService0() {
-    delete service0_;
-    service0_ = nullptr;
+    std::exchange(service0_, nullptr)->ResetAndDeleteThis();
     map0_ = nullptr;
   }
 
   void ResetService1() {
-    delete service1_;
-    service1_ = nullptr;
+    std::exchange(service1_, nullptr)->ResetAndDeleteThis();
     map1_ = nullptr;
   }
 

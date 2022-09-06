@@ -11,6 +11,7 @@
 #ifndef AOM_COMMON_TOOLS_COMMON_H_
 #define AOM_COMMON_TOOLS_COMMON_H_
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "config/aom_config.h"
@@ -77,13 +78,6 @@ enum VideoFileType {
   FILE_TYPE_Y4M,
   FILE_TYPE_WEBM
 };
-
-// Used in lightfield example.
-enum {
-  YUV1D,  // 1D tile output for conformance test.
-  YUV,    // Tile output in YUV format.
-  NV12,   // Tile output in NV12 format.
-} UENUM1BYTE(OUTPUT_FORMAT);
 
 // The fourcc for large_scale_tile encoding is "LSTC".
 #define LST_FOURCC 0x4354534c
@@ -179,13 +173,15 @@ uint32_t get_fourcc_by_aom_decoder(aom_codec_iface_t *iface);
 int read_yuv_frame(struct AvxInputContext *input_ctx, aom_image_t *yuv_frame);
 
 void aom_img_write(const aom_image_t *img, FILE *file);
-int aom_img_read(aom_image_t *img, FILE *file);
+// Returns true on success, false on failure.
+bool aom_img_read(aom_image_t *img, FILE *file);
 
 double sse_to_psnr(double samples, double peak, double mse);
 void aom_img_upshift(aom_image_t *dst, const aom_image_t *src, int input_shift);
 void aom_img_downshift(aom_image_t *dst, const aom_image_t *src,
                        int down_shift);
-void aom_shift_img(unsigned int output_bit_depth, aom_image_t **img_ptr,
+// Returns true on success, false on failure.
+bool aom_shift_img(unsigned int output_bit_depth, aom_image_t **img_ptr,
                    aom_image_t **img_shifted_ptr);
 void aom_img_truncate_16_to_8(aom_image_t *dst, const aom_image_t *src);
 

@@ -14,13 +14,12 @@
 
 namespace syncer {
 class ProxyModelTypeControllerDelegate;
+class SyncService;
 }  // namespace syncer
 
 class PrefService;
 
 namespace password_manager {
-
-class LoginDatabase;
 
 struct PasswordForm;
 
@@ -39,8 +38,12 @@ enum class PasswordStoreBackendError {
 
 using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
 using LoginsReply = base::OnceCallback<void(LoginsResult)>;
-using PasswordStoreChangeListReply =
-    base::OnceCallback<void(PasswordStoreChangeList)>;
+
+using PasswordChanges = absl::optional<PasswordStoreChangeList>;
+using PasswordChangesOrError =
+    absl::variant<PasswordChanges, PasswordStoreBackendError>;
+using PasswordChangesOrErrorReply =
+    base::OnceCallback<void(PasswordChangesOrError)>;
 
 using LoginsResultOrError =
     absl::variant<LoginsResult, PasswordStoreBackendError>;
@@ -53,8 +56,28 @@ using LoginsOrErrorReply = base::OnceCallback<void(LoginsResultOrError)>;
 // IO operation from possibly blocking the main thread.
 class PasswordStoreBackend {
  public:
+  // Delegate which provides information about current sync status and an
+  // account used for syncing. It can be called only after Sync service was
+  // instantiated.
+  class SyncDelegate {
+   public:
+    SyncDelegate() = default;
+    SyncDelegate(const SyncDelegate&) = delete;
+    SyncDelegate(SyncDelegate&&) = delete;
+    SyncDelegate& operator=(const SyncDelegate&) = delete;
+    SyncDelegate& operator=(SyncDelegate&&) = delete;
+    virtual ~SyncDelegate() = default;
+
+    // Tells whether sync enabled or not.
+    virtual bool IsSyncingPasswordsEnabled() = 0;
+
+    // Active syncing account if one exist. If sync disabled absl::nullopt will
+    // be returned.
+    virtual absl::optional<std::string> GetSyncingAccount() = 0;
+  };
+
   using RemoteChangesReceived =
-      base::RepeatingCallback<void(PasswordStoreChangeList)>;
+      base::RepeatingCallback<void(absl::optional<PasswordStoreChangeList>)>;
 
   PasswordStoreBackend() = default;
   PasswordStoreBackend(const PasswordStoreBackend&) = delete;
@@ -62,8 +85,6 @@ class PasswordStoreBackend {
   PasswordStoreBackend& operator=(const PasswordStoreBackend&) = delete;
   PasswordStoreBackend& operator=(PasswordStoreBackend&&) = delete;
   virtual ~PasswordStoreBackend() = default;
-
-  virtual base::WeakPtr<PasswordStoreBackend> GetWeakPtr() = 0;
 
   // TODO(crbug.bom/1226042): Rename this to Init after PasswordStoreImpl no
   // longer inherits PasswordStore.
@@ -83,13 +104,21 @@ class PasswordStoreBackend {
   // called on the main sequence.
   virtual void GetAutofillableLoginsAsync(LoginsOrErrorReply callback) = 0;
 
+  // Returns the complete list of PasswordForms (regardless of their blocklist
+  // status) saved in the given sync |account|. The passed account should be a
+  // current or former syncing account, otherwise |callback| will be
+  // called with an error result. Callback is called on the main sequence.
+  // TODO(crbug.com/1315594): Clean up/refactor to avoid having methods
+  // introduced for a specific backend in this interface.
+  virtual void GetAllLoginsForAccountAsync(absl::optional<std::string> account,
+                                           LoginsOrErrorReply callback) = 0;
+
   // Returns all PasswordForms with the same signon_realm as a form in |forms|.
   // If |include_psl|==true, the PSL-matched forms are also included.
   // If multiple forms are given, those will be concatenated.
   // Callback is called on the main sequence.
-  // TODO(crbug.com/1217071): Check whether this needs OptionalLoginsReply, too.
   virtual void FillMatchingLoginsAsync(
-      LoginsReply callback,
+      LoginsOrErrorReply callback,
       bool include_psl,
       const std::vector<PasswordFormDigest>& forms) = 0;
 
@@ -100,22 +129,28 @@ class PasswordStoreBackend {
   // TODO(crbug.com/1217071): Delete corresponding Impl method from
   //  PasswordStore and the async method on backend_ instead.
 
+  // The completion callback in each of the write operations below receive a
+  // variant of optional PasswordStoreChangeList or PasswordStoreBackendError.
+  // In case of success that the changelist will be populated with the executed
+  // changes. The absence of the changelist indicates that the used backend
+  // (e.g. on Android) cannot confirm of the execution and a re-fetch is
+  // required to know the current state of the backend.
   virtual void AddLoginAsync(const PasswordForm& form,
-                             PasswordStoreChangeListReply callback) = 0;
+                             PasswordChangesOrErrorReply callback) = 0;
   virtual void UpdateLoginAsync(const PasswordForm& form,
-                                PasswordStoreChangeListReply callback) = 0;
+                                PasswordChangesOrErrorReply callback) = 0;
   virtual void RemoveLoginAsync(const PasswordForm& form,
-                                PasswordStoreChangeListReply callback) = 0;
+                                PasswordChangesOrErrorReply callback) = 0;
   virtual void RemoveLoginsByURLAndTimeAsync(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceCallback<void(bool)> sync_completion,
-      PasswordStoreChangeListReply callback) = 0;
+      PasswordChangesOrErrorReply callback) = 0;
   virtual void RemoveLoginsCreatedBetweenAsync(
       base::Time delete_begin,
       base::Time delete_end,
-      PasswordStoreChangeListReply callback) = 0;
+      PasswordChangesOrErrorReply callback) = 0;
   virtual void DisableAutoSignInForOriginsAsync(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) = 0;
@@ -128,12 +163,19 @@ class PasswordStoreBackend {
   virtual std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() = 0;
 
+  // Clears all the passwords from the local storage.
+  virtual void ClearAllLocalPasswords() = 0;
+
+  // Propagates sync initialization event.
+  virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service) = 0;
+
   // Factory function for creating the backend. The Local backend requires the
-  // provided `login_db` for storage and Android backend for migration purposes.
+  // provided `login_db_path` for storage and Android backend for migration
+  // purposes. |sync_delegate| is also required for migration purposes.
   static std::unique_ptr<PasswordStoreBackend> Create(
-      std::unique_ptr<LoginDatabase> login_db,
+      const base::FilePath& login_db_path,
       PrefService* prefs,
-      base::RepeatingCallback<bool()> is_syncing_passwords_callback);
+      std::unique_ptr<SyncDelegate> sync_delegate);
 };
 
 }  // namespace password_manager

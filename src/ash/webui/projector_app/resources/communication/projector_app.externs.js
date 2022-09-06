@@ -70,6 +70,15 @@ projectorApp.AnnotatorApi.prototype.clear = function() {};
 projectorApp.AnnotatorApi.prototype.addUndoRedoListener = function(listener) {};
 
 /**
+ * Attaches the callback that should be executed when the canvas has succeeded
+ * or failed initialization.
+ * @param {function(boolean):undefined} callback Expects a boolean indicating if
+ *     canvas initialization has succeeded or failed.
+ */
+projectorApp.AnnotatorApi.prototype.addCanvasInitializationCallback = function(
+    callback) {};
+
+/**
  * Structure for Account information.
  * @record
  * @struct
@@ -129,6 +138,7 @@ projectorApp.OAuthToken = function() {};
 /**
  * The email of user associated with the oauth token request.
  * @type {string}
+ *
  */
 projectorApp.OAuthToken.prototype.email;
 
@@ -163,7 +173,23 @@ projectorApp.PendingScreencast.prototype.name;
  */
 projectorApp.PendingScreencast.prototype.uploadProgress;
 
-// TODO(b/197015567): Add other screencast fields(duration, createdDate etc.).
+/**
+ * The created time of the screencast video, as the number of milliseconds since
+ * the epoch.
+ * TODO(b/215258794): After adding |createdTime| on Chromium side, remove the
+ * 'undefined' from type definition.
+ * @type {number|undefined}
+ */
+projectorApp.PendingScreencast.prototype.createdTime;
+
+/**
+ * Whether this screencast is failed to upload.
+ * @type {boolean}
+ */
+projectorApp.PendingScreencast.prototype.uploadFailed;
+
+// TODO(b/205334821): We may want to provide duration field to
+// PendingScreencast.
 
 /**
  * Structure for XHR response.
@@ -311,6 +337,13 @@ projectorApp.ClientDelegate.prototype.setUserPref = function(
     userPref, value) {};
 
 /**
+ * Opens the Chrome feedback dialog. If not successful, the promise will be
+ * rejected with an error string.
+ * @return {!Promise}
+ */
+projectorApp.ClientDelegate.prototype.openFeedbackDialog = function() {};
+
+/**
  * The client Api for interacting with the Projector app instance.
  * @record
  * @struct
@@ -346,6 +379,11 @@ projectorApp.AppApi.prototype.setClientDelegate = function(clientDelegate) {};
  */
 projectorApp.AppApi.prototype.onSodaInstallProgressUpdated = function(
     progress) {};
+
+/**
+ * Notifies the Projector App when SODA download and installation is complete.
+ */
+projectorApp.AppApi.prototype.onSodaInstalled = function() {};
 
 /**
  * Notifies the Projector App when there is a SODA installation error.

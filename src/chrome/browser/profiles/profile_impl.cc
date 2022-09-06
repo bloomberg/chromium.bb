@@ -30,7 +30,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/supports_user_data.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -39,7 +39,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -55,15 +54,11 @@
 #include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_manager_utils.h"
-#include "chrome/browser/federated_learning/floc_id_provider.h"
-#include "chrome/browser/federated_learning/floc_id_provider_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
@@ -82,6 +77,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/privacy/privacy_metrics_service_factory.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/pref_service_builder_utils.h"
@@ -109,8 +105,8 @@
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
 #include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
 #include "chrome/browser/webid/federated_identity_active_session_permission_context_factory.h"
-#include "chrome/browser/webid/federated_identity_request_permission_context.h"
-#include "chrome/browser/webid/federated_identity_request_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_api_permission_context.h"
+#include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
 #include "chrome/browser/webid/federated_identity_sharing_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
@@ -126,13 +122,11 @@
 #include "components/background_sync/background_sync_controller_impl.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
-#include "components/breadcrumbs/core/features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/heavy_ad_intervention/heavy_ad_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -164,10 +158,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/federated_identity_active_session_permission_context_delegate.h"
-#include "content/public/browser/federated_identity_request_permission_context_delegate.h"
+#include "content/public/browser/federated_identity_api_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
@@ -186,6 +180,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -203,14 +198,15 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/profile_key_startup_accessor.h"
+#include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #else
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/profiles/guest_profile_creation_logger.h"
 #include "content/public/common/page_zoom.h"
 #endif
 
@@ -259,7 +255,7 @@
 #include "components/signin/public/base/signin_switches.h"
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
@@ -387,7 +383,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kProfileName, std::string());
 
   registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   uint32_t home_page_flags = PrefRegistry::NO_REGISTRATION_FLAGS;
 #else
   uint32_t home_page_flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
@@ -403,10 +399,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   registry->RegisterBooleanPref(prefs::kPrintPdfAsImageAvailability, false);
 #endif
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterIntegerPref(prefs::kPrintPostScriptMode, 0);
   registry->RegisterIntegerPref(prefs::kPrintRasterizationMode, 0);
 #endif
@@ -417,9 +413,9 @@ void ProfileImpl::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
   registry->RegisterBooleanPref(prefs::kEnableMediaRouter, true);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
   registry->RegisterTimePref(prefs::kProfileCreationTime, base::Time());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -443,12 +439,11 @@ ProfileImpl::ProfileImpl(
                         << "profile files to the root directory!";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const bool is_regular_profile =
-      chromeos::ProfileHelper::IsRegularProfile(this);
+  const bool is_regular_profile = ash::ProfileHelper::IsRegularProfile(this);
 
   if (is_regular_profile) {
     const user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(this);
+        ash::ProfileHelper::Get()->GetUserByProfile(this);
     // A |User| instance should always exist for a profile which is not the
     // initial, the sign-in or the lock screen app profile.
     CHECK(user);
@@ -460,18 +455,14 @@ ProfileImpl::ProfileImpl(
   }
 #endif
 
-#if BUILDFLAG(ENABLE_SESSION_SERVICE)
-  create_session_service_timer_.Start(
-      FROM_HERE, kCreateSessionServiceDelay, this,
-      &ProfileImpl::EnsureSessionServiceCreated);
-#endif
-
   if (path == ProfileManager::GetGuestProfilePath()) {
       profile_metrics::SetBrowserProfileType(
           this, profile_metrics::BrowserProfileType::kGuest);
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (path == ProfileManager::GetSystemProfilePath()) {
     profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kSystem);
+#endif
   } else {
     profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kRegular);
@@ -480,7 +471,7 @@ ProfileImpl::ProfileImpl(
   // The ProfileImpl can be created both synchronously and asynchronously.
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   auto* startup_data = g_browser_process->startup_data();
   DCHECK(startup_data && startup_data->GetProfileKey());
   TakePrefsFromStartupData();
@@ -492,7 +483,7 @@ ProfileImpl::ProfileImpl(
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android StartupData creates proto database provider for the profile
   // before profile is created, so move ownership to storage partition.
   GetDefaultStoragePartition()->SetProtoDatabaseProvider(
@@ -534,7 +525,7 @@ ProfileImpl::ProfileImpl(
     // Prefs were loaded synchronously so we can continue directly.
     OnPrefsLoaded(create_mode, true);
   }
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (IsGuestSession()) {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
@@ -542,10 +533,10 @@ ProfileImpl::ProfileImpl(
         "Profile.Guest.ForcedByPolicy",
         local_state->GetBoolean(prefs::kBrowserGuestModeEnforced));
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ProfileImpl::TakePrefsFromStartupData() {
   auto* startup_data = g_browser_process->startup_data();
 
@@ -605,9 +596,10 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 #else
   {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-    user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
+    user_cloud_policy_manager_ = policy::UserCloudPolicyManager::Create(
         GetPath(), GetPolicySchemaRegistryService()->registry(),
-        force_immediate_policy_load, io_task_runner_);
+        force_immediate_policy_load, io_task_runner_,
+        base::BindRepeating(&content::GetNetworkConnectionTracker));
     user_cloud_policy_manager = user_cloud_policy_manager_.get();
     policy_provider = user_cloud_policy_manager;
   }
@@ -620,7 +612,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 
   bool is_signin_profile = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(this);
+  is_signin_profile = ash::ProfileHelper::IsSigninProfile(this);
 #endif
   ::RegisterProfilePrefs(is_signin_profile,
                          g_browser_process->GetApplicationLocale(),
@@ -652,10 +644,10 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   // immediately. We need to cache the LacrosLaunchSwitch now, as the value is
   // needed later, while the profile is not fully initialized.
   if (force_immediate_policy_load &&
-      chromeos::ProfileHelper::IsPrimaryProfile(this)) {
+      ash::ProfileHelper::IsPrimaryProfile(this)) {
     auto& map = profile_policy_connector_->policy_service()->GetPolicies(
         policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
-    crosapi::browser_util::CacheLacrosLaunchSwitch(map);
+    crosapi::browser_util::CacheLacrosAvailability(map);
   }
 #endif
 }
@@ -760,6 +752,15 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   }
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+  if (IsGuestSession()) {
+    // Note: We need to record the creation of the guest parent before the
+    // `delegate_`'s `OnProfileCreationFinished()` callback executes, as it
+    // might trigger the creation of a child OTR profile.
+    profile::RecordGuestParentCreation(this);
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
@@ -771,18 +772,16 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   PushMessagingServiceImpl::InitializeForProfile(this);
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
 
   site_isolation::SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
 
-  InitializeDataReductionProxy();
-
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (IsNewProfile()) {
     // The installed Windows language packs aren't determined until
     // the spellcheck service is initialized. Make sure the primary
@@ -814,19 +813,28 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   HttpsFirstModeServiceFactory::GetForProfile(this);
 
-  // The creation of FlocIdProvider should align with the start of a browser
-  // profile session, so initialize it here.
-  federated_learning::FlocIdProviderFactory::GetForProfile(this);
-
   // The Privacy Metrics service should start alongside each profile session.
   PrivacyMetricsServiceFactory::GetForProfile(this);
+
+  // The Privacy Sandbox service must be created with the profile to ensure that
+  // preference reconciliation occurs.
+  PrivacySandboxServiceFactory::GetForProfile(this);
+
+#if BUILDFLAG(IS_ANDROID)
+  if (password_manager::features::UsesUnifiedPasswordManagerUi()) {
+    // The password settings service needs to start listening to settings
+    // changes from Google Mobile Services, as early as possible.
+    PasswordManagerSettingsServiceFactory::GetForProfile(this);
+  }
+#endif
 
   AnnouncementNotificationServiceFactory::GetForProfile(this)
       ->MaybeShowNotification();
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  if (breadcrumbs::IsEnabled()) {
     breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
+            this, /*create=*/true);
     breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
         .ObserveBreadcrumbManagerService(breadcrumb_service);
 
@@ -835,13 +843,6 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
             g_browser_process->GetBreadcrumbPersistentStorageManager();
     DCHECK(persistent_storage_manager);
     breadcrumb_service->StartPersisting(persistent_storage_manager);
-
-    // Get stored persistent breadcrumbs from last run to set on crash reports.
-    persistent_storage_manager->GetStoredEvents(
-        base::BindOnce([](std::vector<std::string> events) {
-          breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
-              .SetPreviousSessionEvents(events);
-        }));
   }
 }
 
@@ -860,9 +861,10 @@ ProfileImpl::~ProfileImpl() {
   StopCreateSessionServiceTimer();
 #endif
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
+      BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
+          this, /*create=*/false);
+  if (breadcrumb_service) {
     breadcrumb_service->StopPersisting();
     breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
         .StopObservingBreadcrumbManagerService(breadcrumb_service);
@@ -1047,8 +1049,8 @@ bool ProfileImpl::IsChild() const {
 
 bool ProfileImpl::AllowsBrowserWindows() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(this) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
+  if (ash::ProfileHelper::IsSigninProfile(this) ||
+      ash::ProfileHelper::IsLockScreenAppProfile(this)) {
     return false;
   }
 #endif
@@ -1127,10 +1129,10 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
     // or we are in tests. In both cases the first loaded locale is correct.
     OnLocaleReady(create_mode);
   } else {
-    if (chromeos::ProfileHelper::IsPrimaryProfile(this)) {
+    if (ash::ProfileHelper::IsPrimaryProfile(this)) {
       auto& map = profile_policy_connector_->policy_service()->GetPolicies(
           policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
-      crosapi::browser_util::CacheLacrosLaunchSwitch(map);
+      crosapi::browser_util::CacheLacrosAvailability(map);
     }
 
     ash::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
@@ -1139,6 +1141,15 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
   }
 #else
   OnLocaleReady(create_mode);
+#endif
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  // SessionService depends on Profile::GetPrefs() and therefore shouldn't be
+  // forced initialized before prefs are loaded. Starting this Timer before
+  // that point resulted in a racy use-before-initialized in the past.
+  create_session_service_timer_.Start(
+      FROM_HERE, kCreateSessionServiceDelay, this,
+      &ProfileImpl::EnsureSessionServiceCreated);
 #endif
 }
 
@@ -1149,7 +1160,7 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 bool ProfileImpl::ShouldRestoreOldSessionCookies() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SessionStartupPref startup_pref(SessionStartupPref::GetDefaultStartupType());
   return startup_pref.ShouldRestoreLastSession();
 #else
@@ -1272,7 +1283,7 @@ content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
 
 content::StorageNotificationService*
 ProfileImpl::GetStorageNotificationService() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return nullptr;
 #else
   return StorageNotificationServiceFactory::GetForBrowserContext(this);
@@ -1312,15 +1323,15 @@ content::ContentIndexProvider* ProfileImpl::GetContentIndexProvider() {
   return ContentIndexProviderFactory::GetForProfile(this);
 }
 
+content::FederatedIdentityApiPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentityApiPermissionContext() {
+  return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
+}
+
 content::FederatedIdentityActiveSessionPermissionContextDelegate*
 ProfileImpl::GetFederatedIdentityActiveSessionPermissionContext() {
   return FederatedIdentityActiveSessionPermissionContextFactory::GetForProfile(
       this);
-}
-
-content::FederatedIdentityRequestPermissionContextDelegate*
-ProfileImpl::GetFederatedIdentityRequestPermissionContext() {
-  return FederatedIdentityRequestPermissionContextFactory::GetForProfile(this);
 }
 
 content::FederatedIdentitySharingPermissionContextDelegate*
@@ -1455,7 +1466,7 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
     local_state->SetString(language::prefs::kApplicationLocale, new_locale);
 
   if (user_manager::UserManager::Get()->GetOwnerAccountId() ==
-      chromeos::ProfileHelper::Get()->GetUserByProfile(this)->GetAccountId())
+      ash::ProfileHelper::Get()->GetUserByProfile(this)->GetAccountId())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
 }
 
@@ -1468,13 +1479,13 @@ void ProfileImpl::OnLogin() {
 void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_ = std::make_unique<ash::Preferences>();
   chromeos_preferences_->Init(
-      this, chromeos::ProfileHelper::Get()->GetUserByProfile(this));
+      this, ash::ProfileHelper::Get()->GetUserByProfile(this));
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool ProfileImpl::IsNewProfile() const {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // The profile is new if the preference files has just been created, except on
   // first run, because the installer may create a preference file. See
   // https://crbug.com/728402
@@ -1569,15 +1580,4 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
   }
-}
-
-void ProfileImpl::InitializeDataReductionProxy() {
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  std::unique_ptr<data_reduction_proxy::DataStore> store(
-      new data_reduction_proxy::DataStoreImpl(GetPath()));
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this)
-      ->InitDataReductionProxySettings(this, std::move(store), db_task_runner);
 }

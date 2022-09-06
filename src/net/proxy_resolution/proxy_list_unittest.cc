@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
 #include "net/base/proxy_string_util.h"
@@ -66,7 +65,7 @@ TEST(ProxyListTest, SetFromPacString) {
     },
   };
 
-  for (size_t i = 0; i < base::size(tests); ++i) {
+  for (size_t i = 0; i < std::size(tests); ++i) {
     ProxyList list;
     list.SetFromPacString(tests[i].pac_input);
     EXPECT_EQ(tests[i].pac_output, list.ToPacString());
@@ -92,7 +91,7 @@ TEST(ProxyListTest, RemoveProxiesWithoutScheme) {
     },
   };
 
-  for (size_t i = 0; i < base::size(tests); ++i) {
+  for (size_t i = 0; i < std::size(tests); ++i) {
     ProxyList list;
     list.SetFromPacString(tests[i].pac_input);
     list.RemoveProxiesWithoutScheme(tests[i].filter);
@@ -174,7 +173,6 @@ TEST(ProxyListTest, DeprioritizeBadProxies) {
 }
 
 TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
-  ProxyRetryInfo proxy_retry_info;
   // Retrying should put the first proxy on the retry list.
   {
     ProxyList list;

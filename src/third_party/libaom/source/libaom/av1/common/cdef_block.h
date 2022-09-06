@@ -27,25 +27,26 @@
 #define CDEF_BSTRIDE \
   ALIGN_POWER_OF_TWO((1 << MAX_SB_SIZE_LOG2) + 2 * CDEF_HBORDER, 3)
 
-#define CDEF_VERY_LARGE (30000)
+#define CDEF_VERY_LARGE (0x4000)
 #define CDEF_INBUF_SIZE \
   (CDEF_BSTRIDE * ((1 << MAX_SB_SIZE_LOG2) + 2 * CDEF_VBORDER))
 
 extern const int cdef_pri_taps[2][2];
 extern const int cdef_sec_taps[2];
-DECLARE_ALIGNED(16, extern const int, cdef_directions[8][2]);
+extern const int (*const cdef_directions)[2];
 
 typedef struct {
   uint8_t by;
   uint8_t bx;
 } cdef_list;
 
-typedef void (*cdef_filter_block_func)(uint8_t *dst8, uint16_t *dst16,
-                                       int dstride, const uint16_t *in,
-                                       int pri_strength, int sec_strength,
-                                       int dir, int pri_damping,
-                                       int sec_damping, int bsize,
-                                       int coeff_shift);
+typedef void (*cdef_filter_block_func)(void *dest, int dstride,
+                                       const uint16_t *in, int pri_strength,
+                                       int sec_strength, int dir,
+                                       int pri_damping, int sec_damping,
+                                       int coeff_shift, int block_width,
+                                       int block_height);
+
 void copy_cdef_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
                               cdef_list *dlist, int cdef_count, int bsize);
 

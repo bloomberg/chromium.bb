@@ -16,9 +16,6 @@ namespace features {
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kHistoryClobberWorkaround{
-    "WKWebViewHistoryClobberWorkaround", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kBlockUniversalLinksInOffTheRecordMode{
     "BlockUniversalLinksInOffTheRecord", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -40,9 +37,6 @@ const base::Feature kRecordSnapshotSize{"RecordSnapshotSize",
 const base::Feature kSetRequestAttribution{"SetRequestAttribution",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kWebViewNativeContextMenuPhase2{
-    "WebViewNativeContextMenuPhase2", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDefaultWebViewContextMenu{
     "DefaultWebViewContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -50,20 +44,26 @@ const base::Feature kDisableNonHTMLScreenshotOnIOS15{
     "DisableNonHTMLScreenshotOnIOS15", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kIOSSharedHighlightingColorChange{
-    "IOSSharedHighlightingColorChange", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCreatePendingItemForPostFormSubmission{
-    "CreatePendingItemForPostFormSubmission",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "IOSSharedHighlightingColorChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableNewDownloadAPI{"EnableNewDownloadAPI",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSynthesizedRestoreSession{
-    "SynthesizedRestoreSession", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SynthesizedRestoreSession", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableUnrealizedWebStates{
-    "EnableUnrealizedWebStates", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableUnrealizedWebStates", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kMediaPermissionsControl{"MediaPermissionsControl",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kEnableFullscreenAPI{
+    "EnableFullscreenAPI", base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kUseLoadSimulatedRequestForOfflinePage{
+    "UseLoadSimulatedRequestForErrorPageNavigation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool UseWebViewNativeContextMenuWeb() {
   return base::FeatureList::IsEnabled(kDefaultWebViewContextMenu);
@@ -79,6 +79,20 @@ bool ShouldTakeScreenshotOnNonHTMLContent() {
 bool IsNewDownloadAPIEnabled() {
   if (@available(iOS 15, *)) {
     return base::FeatureList::IsEnabled(kEnableNewDownloadAPI);
+  }
+  return false;
+}
+
+bool IsMediaPermissionsControlEnabled() {
+  if (@available(iOS 15, *)) {
+    return base::FeatureList::IsEnabled(kMediaPermissionsControl);
+  }
+  return false;
+}
+
+bool IsLoadSimulatedRequestAPIEnabled() {
+  if (@available(iOS 15, *)) {
+    return base::FeatureList::IsEnabled(kUseLoadSimulatedRequestForOfflinePage);
   }
   return false;
 }

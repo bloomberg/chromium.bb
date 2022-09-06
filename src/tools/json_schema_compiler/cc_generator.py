@@ -972,8 +972,7 @@ class _Generator(object):
           c.Append('%(dst_var)s = temp.value();')
     elif underlying_type.property_type == PropertyType.OBJECT:
       if is_ptr:
-        (c.Append('const base::DictionaryValue* dictionary = nullptr;')
-          .Sblock('if (!%(src_var)s.GetAsDictionary(&dictionary)) {')
+        (c.Sblock('if (!%(src_var)s.is_dict()) {')
           .Concat(self._AppendError16(
             'u"\'%%(key)s\': expected dictionary, got " + ' +
             self._util_cc_helper.GetValueTypeString('%%(src_var)s')))
@@ -983,7 +982,7 @@ class _Generator(object):
           .Sblock('else {')
           .Append('auto temp = std::make_unique<%(cpp_type)s>();')
           .Append('if (!%%(cpp_type)s::Populate(%s)) {' % self._GenerateArgs(
-            ('*dictionary', 'temp.get()')))
+            ('%(src_var)s', 'temp.get()')))
           .Append('  return %(failure_value)s;')
         )
         (c.Append('}')
@@ -992,15 +991,14 @@ class _Generator(object):
           .Eblock('}')
         )
       else:
-        (c.Append('const base::DictionaryValue* dictionary = nullptr;')
-          .Sblock('if (!%(src_var)s.GetAsDictionary(&dictionary)) {')
+        (c.Sblock('if (!%(src_var)s.is_dict()) {')
           .Concat(self._AppendError16(
             'u"\'%%(key)s\': expected dictionary, got " + ' +
             self._util_cc_helper.GetValueTypeString('%%(src_var)s')))
           .Append('return %(failure_value)s;')
           .Eblock('}')
           .Append('if (!%%(cpp_type)s::Populate(%s)) {' % self._GenerateArgs(
-            ('*dictionary', '&%(dst_var)s')))
+            ('%(src_var)s', '&%(dst_var)s')))
           .Append('  return %(failure_value)s;')
           .Append('}')
         )
@@ -1030,7 +1028,7 @@ class _Generator(object):
                      failure_value,
                      is_ptr=is_ptr))
       else:
-        args = ['%(src_var)s.GetList()', '&%(dst_var)s']
+        args = ['%(src_var)s.GetListDeprecated()', '&%(dst_var)s']
         if self._generate_error_messages:
           c.Append('std::u16string array_parse_error;')
           args.append('&array_parse_error')
@@ -1111,7 +1109,7 @@ class _Generator(object):
       cpp_type = self._type_helper.GetCppType(item_type, is_in_container=True)
       c.Append('%s = std::make_unique<std::vector<%s>>();' %
                    (dst_var, cpp_type))
-    (c.Sblock('for (const auto& it : (%s).GetList()) {' % src_var)
+    (c.Sblock('for (const auto& it : (%s).GetListDeprecated()) {' % src_var)
       .Append('%s tmp;' % self._type_helper.GetCppType(item_type))
       .Concat(self._GenerateStringToEnumConversion(item_type,
                                                    '(it)',

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_ACCOUNT_TRACKER_SERVICE_H_
 #define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_ACCOUNT_TRACKER_SERVICE_H_
 
-#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -22,7 +21,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
 
@@ -61,6 +60,7 @@ class AccountTrackerService {
   typedef base::RepeatingCallback<void(const AccountInfo& info)>
       AccountInfoCallback;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Possible values for the kAccountIdMigrationState preference.
   // Keep in sync with OAuth2LoginAccountRevokedMigrationState histogram enum.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -71,6 +71,7 @@ class AccountTrackerService {
     MIGRATION_DONE = 2,
     NUM_MIGRATION_STATES
   };
+#endif
 
   AccountTrackerService();
 
@@ -98,9 +99,6 @@ class AccountTrackerService {
   // migration state.
   CoreAccountId PickAccountIdForAccount(const std::string& gaia,
                                         const std::string& email) const;
-  static CoreAccountId PickAccountIdForAccount(const PrefService* pref_service,
-                                               const std::string& gaia,
-                                               const std::string& email);
 
   // Seeds the account whose account_id is given by PickAccountIdForAccount()
   // with its corresponding gaia id and email address.  Returns the same
@@ -123,10 +121,12 @@ class AccountTrackerService {
 
   void RemoveAccount(const CoreAccountId& account_id);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   AccountIdMigrationState GetMigrationState() const;
   void SetMigrationDone();
+#endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns a reference to the corresponding Java AccountTrackerService object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -209,13 +209,14 @@ class AccountTrackerService {
                              bool success);
   void RemoveAccountImageFromDisk(const CoreAccountId& account_id);
 
-  // Migrate accounts to be keyed by gaia id instead of normalized email.
-  // Requires that the migration state is set to MIGRATION_IN_PROGRESS.
-  void MigrateToGaiaId();
-
   // Returns whether the accounts are all keyed by gaia id. This should
   // be the case when the migration state is set to MIGRATION_DONE.
   bool AreAllAccountsMigrated() const;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Migrate accounts to be keyed by gaia id instead of normalized email.
+  // Requires that the migration state is set to MIGRATION_IN_PROGRESS.
+  void MigrateToGaiaId();
 
   // Computes the new migration state. The state is saved to preference
   // before performing the migration in order to support resuming the
@@ -228,6 +229,7 @@ class AccountTrackerService {
   // Returns the saved migration state in the preferences.
   static AccountIdMigrationState GetMigrationState(
       const PrefService* pref_service);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   raw_ptr<PrefService> pref_service_ = nullptr;  // Not owned.
   std::map<CoreAccountId, AccountInfo> accounts_;
@@ -239,7 +241,7 @@ class AccountTrackerService {
   // Task runner used for file operations on avatar images.
   scoped_refptr<base::SequencedTaskRunner> image_storage_task_runner_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // A reference to the Java counterpart of this object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 #endif

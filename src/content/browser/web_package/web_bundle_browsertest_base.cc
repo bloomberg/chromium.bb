@@ -18,9 +18,9 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace content {
 namespace web_bundle_browsertest_utils {
@@ -33,7 +33,7 @@ base::FilePath GetTestDataPath(base::StringPiece file) {
       .AppendASCII(file);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void CopyFileAndGetContentUri(const base::FilePath& file,
                               GURL* content_uri,
                               base::FilePath* new_file_path) {
@@ -54,7 +54,7 @@ void CopyFileAndGetContentUri(const base::FilePath& file,
     *new_file_path = temp_file;
   *content_uri = GURL(base::GetContentUriFromFilePath(temp_file).value());
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 std::string ExecuteAndGetString(const ToRenderFrameHost& adapter,
                                 const std::string& script) {
@@ -117,12 +117,8 @@ MockParserFactory::MockParserFactory(std::vector<GURL> urls,
   int64_t response_body_file_size;
   EXPECT_TRUE(base::GetFileSize(response_body_file, &response_body_file_size));
   for (const auto& url : urls) {
-    web_package::mojom::BundleIndexValuePtr item =
-        web_package::mojom::BundleIndexValue::New();
-    item->response_locations.push_back(
-        web_package::mojom::BundleResponseLocation::New(
-            0u, response_body_file_size));
-    index_.insert({url, std::move(item)});
+    index_.insert({url, web_package::mojom::BundleResponseLocation::New(
+                            0u, response_body_file_size)});
   }
   in_process_data_decoder_.service().SetWebBundleParserFactoryBinderForTesting(
       base::BindRepeating(&MockParserFactory::BindWebBundleParserFactory,
@@ -133,13 +129,9 @@ MockParserFactory::MockParserFactory(
     : primary_url_(items[0].first) {
   uint64_t offset = 0;
   for (const auto& item : items) {
-    web_package::mojom::BundleIndexValuePtr index_value =
-        web_package::mojom::BundleIndexValue::New();
-    index_value->response_locations.push_back(
-        web_package::mojom::BundleResponseLocation::New(offset,
-                                                        item.second.length()));
+    index_.insert({item.first, web_package::mojom::BundleResponseLocation::New(
+                                   offset, item.second.length())});
     offset += item.second.length();
-    index_.insert({item.first, std::move(index_value)});
   }
   in_process_data_decoder_.service().SetWebBundleParserFactoryBinderForTesting(
       base::BindRepeating(&MockParserFactory::BindWebBundleParserFactory,
@@ -154,7 +146,7 @@ void MockParser::ParseMetadata(ParseMetadataCallback callback) {
     return;
   }
 
-  base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> items;
+  base::flat_map<GURL, web_package::mojom::BundleResponseLocationPtr> items;
   for (const auto& item : index_) {
     items.insert({item.first, item.second.Clone()});
   }
@@ -230,12 +222,6 @@ void MockParserFactory::GetParserForDataSource(
 bool TestBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return true;
 }
-std::string TestBrowserClient::GetAcceptLangs(BrowserContext* context) {
-  return accept_langs_;
-}
-void TestBrowserClient::SetAcceptLangs(const std::string langs) {
-  accept_langs_ = langs;
-}
 
 void WebBundleBrowserTestBase::SetUpOnMainThread() {
   ContentBrowserTest::SetUpOnMainThread();
@@ -245,10 +231,6 @@ void WebBundleBrowserTestBase::SetUpOnMainThread() {
 void WebBundleBrowserTestBase::TearDownOnMainThread() {
   ContentBrowserTest::TearDownOnMainThread();
   SetBrowserClientForTesting(original_client_);
-}
-
-void WebBundleBrowserTestBase::SetAcceptLangs(const std::string langs) {
-  browser_client_.SetAcceptLangs(langs);
 }
 
 void WebBundleBrowserTestBase::NavigateToBundleAndWaitForReady(
@@ -363,7 +345,8 @@ FrameTreeNode* GetFirstChild(WebContents* web_contents) {
 }
 
 std::string CreateSimpleWebBundle(const GURL& primary_url) {
-  web_package::WebBundleBuilder builder(primary_url.spec(), "");
+  web_package::WebBundleBuilder builder;
+  builder.AddPrimaryURL(primary_url.spec());
   builder.AddExchange(primary_url.spec(),
                       {{":status", "200"}, {"content-type", "text/html"}},
                       "<title>Ready</title>");
@@ -392,8 +375,8 @@ void AddScriptFile(web_package::WebBundleBuilder* builder,
 
 std::string CreatePathTestWebBundle(const GURL& base_url) {
   const std::string primary_url_path = "/web_bundle/path_test/in_scope/";
-  web_package::WebBundleBuilder builder(
-      base_url.Resolve(primary_url_path).spec(), "");
+  web_package::WebBundleBuilder builder;
+  builder.AddPrimaryURL(base_url.Resolve(primary_url_path).spec());
   AddHtmlFile(&builder, base_url, primary_url_path, "<title>Ready</title>");
   AddHtmlFile(
       &builder, base_url, "/web_bundle/path_test/in_scope/page.html",
@@ -471,8 +454,8 @@ void SetUpSubPageTest(net::EmbeddedTestServer* primary_server,
   *primary_url_origin = primary_server->GetURL("/");
   *third_party_origin = third_party_server->GetURL("/");
 
-  web_package::WebBundleBuilder builder(
-      primary_url_origin->Resolve("/top").spec(), "");
+  web_package::WebBundleBuilder builder;
+  builder.AddPrimaryURL(primary_url_origin->Resolve("/top").spec());
   AddHtmlFile(&builder, *primary_url_origin, "/top", R"(
     <script>
     window.addEventListener('message',
@@ -684,8 +667,8 @@ void SetUpSharedNavigationsTest(net::EmbeddedTestServer* server,
                                 GURL* url_origin,
                                 std::string* web_bundle_content) {
   SetUpNavigationTestServer(server, url_origin);
-  web_package::WebBundleBuilder builder(
-      url_origin->Resolve("/top-page/").spec(), "");
+  web_package::WebBundleBuilder builder;
+  builder.AddPrimaryURL(url_origin->Resolve("/top-page/").spec());
   for (const auto& path : pathes)
     AddHtmlAndScriptForNavigationTest(&builder, *url_origin, path, "");
 
@@ -1052,8 +1035,8 @@ void SetUpIframeNavigationTest(net::EmbeddedTestServer* server,
                                GURL* url_origin,
                                std::string* web_bundle_content) {
   SetUpNavigationTestServer(server, url_origin);
-  web_package::WebBundleBuilder builder(
-      url_origin->Resolve("/top-page/").spec(), "");
+  web_package::WebBundleBuilder builder;
+  builder.AddPrimaryURL(url_origin->Resolve("/top-page/").spec());
   const std::vector<std::string> pathes = {"/top-page/", "/1-page/",
                                            "/2-page/"};
   for (const auto& path : pathes)
@@ -1074,7 +1057,7 @@ void RunIframeNavigationTest(
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(web_contents,
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigateAndWaitForTitle(
       web_contents, web_bundle_url,
       get_url_for_bundle.Run(url_origin.Resolve("/top-page/")), "Ready");
@@ -1264,7 +1247,7 @@ void RunIframeSameDocumentNavigationTest(
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(web_contents,
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigateAndWaitForTitle(
       web_contents, web_bundle_url,
       get_url_for_bundle.Run(url_origin.Resolve("/top-page/")), "Ready");

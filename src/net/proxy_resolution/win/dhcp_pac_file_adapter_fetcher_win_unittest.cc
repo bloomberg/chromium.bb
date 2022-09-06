@@ -10,11 +10,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
@@ -24,6 +24,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,11 +52,7 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
       URLRequestContext* context,
       scoped_refptr<base::TaskRunner> task_runner)
       : DhcpPacFileAdapterFetcher(context, task_runner),
-        dhcp_delay_(base::Milliseconds(1)),
         timeout_(TestTimeouts::action_timeout()),
-        configured_url_(kPacUrl),
-        fetcher_delay_ms_(1),
-        fetcher_result_(OK),
         pac_script_("bingo") {}
 
   void Cancel() override {
@@ -137,11 +135,11 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
     dhcp_query_->test_finished_event_.Signal();
   }
 
-  base::TimeDelta dhcp_delay_;
+  base::TimeDelta dhcp_delay_ = base::Milliseconds(1);
   base::TimeDelta timeout_;
-  std::string configured_url_;
-  int fetcher_delay_ms_;
-  int fetcher_result_;
+  std::string configured_url_{kPacUrl};
+  int fetcher_delay_ms_ = 1;
+  int fetcher_result_ = OK;
   std::string pac_script_;
   raw_ptr<MockPacFileFetcher> fetcher_;
   base::OneShotTimer fetcher_timer_;
@@ -151,7 +149,7 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
 class FetcherClient {
  public:
   FetcherClient()
-      : url_request_context_(new TestURLRequestContext()),
+      : url_request_context_(CreateTestURLRequestContextBuilder()->Build()),
         fetcher_(new MockDhcpPacFileAdapterFetcher(
             url_request_context_.get(),
             base::ThreadPool::CreateSequencedTaskRunner(
@@ -312,9 +310,9 @@ TEST(DhcpPacFileAdapterFetcher, MockDhcpRealFetch) {
   GURL configured_url = test_server.GetURL("/downloadable.pac");
 
   FetcherClient client;
-  TestURLRequestContext url_request_context;
+  auto url_request_context = CreateTestURLRequestContextBuilder()->Build();
   client.fetcher_ = std::make_unique<MockDhcpRealFetchPacFileAdapterFetcher>(
-      &url_request_context,
+      url_request_context.get(),
       base::ThreadPool::CreateTaskRunner(
           {base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));

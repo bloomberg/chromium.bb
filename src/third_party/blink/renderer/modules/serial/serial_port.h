@@ -13,8 +13,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
@@ -59,12 +60,14 @@ class SerialPort final : public EventTargetWithInlineData,
                            const SerialOutputSignals*,
                            ExceptionState&);
   ScriptPromise close(ScriptState*, ExceptionState&);
+  ScriptPromise forget(ScriptState*, ExceptionState&);
 
   const base::UnguessableToken& token() const { return info_->token; }
 
   ScriptPromise ContinueClose(ScriptState*);
   void AbortClose();
   void StreamsClosed();
+  bool IsClosing() const { return close_resolver_; }
 
   void Flush(device::mojom::blink::SerialPortFlushMode mode,
              device::mojom::blink::SerialPort::FlushCallback callback);
@@ -97,6 +100,7 @@ class SerialPort final : public EventTargetWithInlineData,
                     device::mojom::blink::SerialPortControlSignalsPtr);
   void OnSetSignals(ScriptPromiseResolver*, bool success);
   void OnClose();
+  void OnForget(ScriptPromiseResolver*);
 
   const mojom::blink::SerialPortInfoPtr info_;
   const Member<Serial> parent_;
@@ -116,16 +120,15 @@ class SerialPort final : public EventTargetWithInlineData,
   bool read_fatal_ = false;
   bool write_fatal_ = false;
 
-  // Indicates that the port is being closed and so the streams should not be
-  // reopened on demand.
-  bool closing_ = false;
+  // The port was opened with { flowControl: "hardware" }.
+  bool hardware_flow_control_ = false;
 
   // Resolver for the Promise returned by open().
   Member<ScriptPromiseResolver> open_resolver_;
   // Resolvers for the Promises returned by getSignals() and setSignals() to
   // reject them on Mojo connection failure.
   HeapHashSet<Member<ScriptPromiseResolver>> signal_resolvers_;
-  // Resolver for the Promise returned by ClosePort().
+  // Resolver for the Promise returned by close().
   Member<ScriptPromiseResolver> close_resolver_;
 };
 

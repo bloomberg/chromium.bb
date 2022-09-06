@@ -93,7 +93,7 @@
 <translation id="151784044608172266">Nästa mening</translation>
 <translation id="1524531499102321782">Punktskrift på nästa rad</translation>
 <translation id="1542513807034338907">Scrolla till föregående sida</translation>
-<translation id="1546370775711804143">Rullningslist</translation>
+<translation id="1546370775711804143">Scrollningslist</translation>
 <translation id="1551572888042734032">Sommar</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1559739829547075274">Navigera bakåt</translation>
@@ -311,7 +311,7 @@
 <translation id="307516670110542567">Snabbguide</translation>
 <translation id="3078345202707391975">Nästa rubrik på nivå 2</translation>
 <translation id="3078740164268491126">tabell</translation>
-<translation id="3082249673510793544">Rulla bakåt</translation>
+<translation id="3082249673510793544">Scrolla bakåt</translation>
 <translation id="3084806535845658316">inget eko vid inmatning</translation>
 <translation id="3086746722712840547">anm</translation>
 <translation id="308736057934395497">Detta förbättrar integriteten genom att inaktivera skärmen så att andra inte kan se den. Du kan aktivera skärmen igen när du vill genom att trycka på Sök + Öka ljusstyrkan.</translation>
@@ -459,7 +459,7 @@
 <translation id="4002709828007663583">Mörkt orkidélila</translation>
 <translation id="4004802134384979325">markerad</translation>
 <translation id="4006140876663370126">bild</translation>
-<translation id="4021716437419160885">Rulla ned</translation>
+<translation id="4021716437419160885">Scrolla ned</translation>
 <translation id="4035381225449278841">Vår</translation>
 <translation id="4038098586530338813">gör om</translation>
 <translation id="4047216625641135770">Markering</translation>
@@ -511,7 +511,7 @@
 <translation id="4372705107434148843">Stoppa tal</translation>
 <translation id="4376316291247992553">Visa bild som punktskrift</translation>
 <translation id="437809255587011096">Läs upp textformat</translation>
-<translation id="4378308539633073595">Rulla framåt</translation>
+<translation id="4378308539633073595">Scrolla framåt</translation>
 <translation id="4384583879834880242">Frågor och svar</translation>
 <translation id="4391478986194775161">innehållsinformation</translation>
 <translation id="4402014469255336455">Djupt himmelsblå</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tabell <ph name="TABLENAME" /> <ph name="TABLEROWS" />×<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorera nästa tangenttryckning</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">TalkBack har inte längre stöd för anpassning på Chromebook. Du kan fortfarande använda TalkBack med standardkortkommandon. Tryck på Sök + A och sedan K för att se tillgängliga kortkommandon. Om du fortfarande vill använda TalkBack trycker du kommandot igen.</translation>
 <translation id="463135993322337640">Tryck på ChromeVox O + N om du vill veta mer om nyheterna.</translation>
 <translation id="4649220074413114917">Du kan avbryta det som läses upp genom att trycka på skärmen med två fingrar. Det kan vara bra om du inte vill att ChromeVox ska läsa upp något. Fortsätt genom att trycka på skärmen med två fingrar.</translation>
 <translation id="4660783501463101648">Klassisk Chromevox har tagits bort. Det går inte längre att aktivera och inaktivera klassisk Chromevox med tangentbordet.</translation>
@@ -579,7 +580,7 @@
 <translation id="4909019435900810068">Flytta bakåt ett ord</translation>
 <translation id="4911349081560453449">Det finns ingen föregående kryssruta</translation>
 <translation id="492295894462528572">Förord</translation>
-<translation id="495046168593986294">Rulla upp</translation>
+<translation id="495046168593986294">Scrolla upp</translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4953585991029886728">Textinmatning</translation>
 <translation id="4973717656530883744">Minst <ph name="X" /></translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Textning med punktskrift har aktiverats</translation>
 <translation id="5183440668879371625">Punktskrift på föregående rad</translation>
 <translation id="5189244881767082992">Rad</translation>
-<translation id="5234747236692380506">skriv <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Majssilkebrun</translation>
 <translation id="5263344797180442561">rubr2</translation>
 <translation id="528468243742722775">Avsluta</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Snabbguiden har slutförts!</translation>
 <translation id="5534303576632885660">rubr</translation>
 <translation id="5539820223028224601">Gainsborogrå</translation>
+<translation id="554893713779400387">Aktivera och inaktivera diktamen</translation>
 <translation id="5549179427201066174">Aktivera eller inaktivera ljudsignaler (ljudikoner)</translation>
 <translation id="556042886152191864">Knapp</translation>
 <translation id="5561345396546889625">Nästa lista</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Logg</translation>
 <translation id="5628125749885014029">rubr4</translation>
 <translation id="5632083598315326067">Grafisk symbol</translation>
+<translation id="5648939288050772726">Grattis! Nu kan du grunderna i att använda ChromeVox. Kom ihåg att du kan öppna kommandomenyn för ChromeVox när som helst genom att trycka på söktangenten + punkt. Om du vill veta ännu mer om ChromeVox och Chrome OS kan du läsa följande artiklar.
+    Om du är klar med självstudierna kan du använda ChromeVox till att navigera till stängningsknappen och klicka på den.</translation>
 <translation id="5653397561111110475">Använda tillgänglighetsfunktioner för pekskärmen på Chromebook</translation>
 <translation id="5655682562155942719">Hoppkommandon</translation>
 <translation id="56637627897541303">Textområde</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}other{# kolon}}</translation>
 <translation id="6444046323172968959">Varningsdialogruta</translation>
 <translation id="6452403590345320472">Innehållsförteckning</translation>
+<translation id="6457542714329819968">skriv</translation>
 <translation id="6468049171101508116">Nästa knapp</translation>
 <translation id="646954774886932461">Index</translation>
 <translation id="6475604559827479857">Markera ord med färgen:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autoslutför i lista</translation>
 <translation id="7713139339518499741">Naturlig röst</translation>
 <translation id="7714340021005120797">Det finns inga fler kombinationsrutor</translation>
-<translation id="772146615414628379">Grattis! Nu kan du grunderna i att använda ChromeVox. Kom ihåg att du kan öppna kommandomenyn för ChromeVox när som helst genom att trycka på söktangenten + punkt. Om du vill veta ännu mer om ChromeVox och Chrome OS kan du läsa följande artiklar.
-    Om du är klar med självstudierna kan du använda ChromeVox till att navigera till stängningsknappen och klicka på den.</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7731785449856576010">Det finns inga fler mediewidgetar</translation>
 <translation id="7735498529470878067">Med Explore by touch kan du snabbt få en uppfattning om vad som finns på skärmen.</translation>
@@ -1023,7 +1025,7 @@
 <translation id="8096975275316362544">Ljust mintgrön</translation>
 <translation id="8098587210054821856">Skiffergrå</translation>
 <translation id="8121539003537428024">Aktivera alla händelsefilter</translation>
-<translation id="8123975449645947908">Rulla bakåt</translation>
+<translation id="8123975449645947908">Scrolla bakåt</translation>
 <translation id="8126386426083591964">Det finns ingen föregående rubrik på nivå 5</translation>
 <translation id="812886159861361726">Nedladdningen stoppades <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">Det finns inga celler ovanför den här</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Mörkröd</translation>
 <translation id="923331726185079994">ChromeVox har uppdaterats</translation>
 <translation id="93384979447910801">Mörkt havsgrön</translation>
+<translation id="937605981140327129">TalkBack är inte installerat. Installera Android Tillgänglighet via Play Butik och försök igen.</translation>
 <translation id="948171205378458592">Sänk talhastigheten</translation>
 <translation id="957570623732056069">Bläddra i den här lektionen genom att svepa åt vänster eller höger med ett finger</translation>
 <translation id="958854023026327378">Svep nedåt med ett finger</translation>

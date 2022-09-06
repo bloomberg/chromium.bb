@@ -12,6 +12,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_file_system_instance.h"
 #include "ash/components/disks/disk.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "base/bind.h"
@@ -21,19 +25,23 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_running_on_chromeos.h"
+#include "chrome/browser/ash/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/ash/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
@@ -44,6 +52,11 @@ namespace {
 
 using ::ash::disks::Disk;
 using ::ash::disks::DiskMountManager;
+
+std::vector<std::string> arc_volume_ids = {
+    arc::kImagesRootDocumentId, arc::kVideosRootDocumentId,
+    arc::kAudioRootDocumentId, arc::kDocumentsRootDocumentId,
+    "android_files:0"};
 
 class LoggingObserver : public VolumeManagerObserver {
  public:
@@ -71,6 +84,9 @@ class LoggingObserver : public VolumeManagerObserver {
     // Available on FORMAT_STARTED, FORMAT_COMPLETED, RENAME_STARTED and
     // RENAME_COMPLETED, PARTITION_STARTED, PARTITION_COMPLETED.
     std::string device_label;
+
+    // Available on VOLUME_MOUNTED and VOLUME_UNMOUNTED.
+    std::string volume_id;
 
     // Available on DISK_ADDED.
     bool mounting;
@@ -127,6 +143,7 @@ class LoggingObserver : public VolumeManagerObserver {
     Event event;
     event.type = Event::VOLUME_MOUNTED;
     event.device_path = volume.source_path().AsUTF8Unsafe();
+    event.volume_id = volume.volume_id();
     event.mount_error = error_code;
     events_.push_back(event);
   }
@@ -136,6 +153,7 @@ class LoggingObserver : public VolumeManagerObserver {
     Event event;
     event.type = Event::VOLUME_UNMOUNTED;
     event.device_path = volume.source_path().AsUTF8Unsafe();
+    event.volume_id = volume.volume_id();
     event.mount_error = error_code;
     events_.push_back(event);
   }
@@ -221,14 +239,22 @@ class FakeUser : public user_manager::User {
 
 }  // namespace
 
+std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
+    content::BrowserContext* context) {
+  return arc::ArcFileSystemOperationRunner::CreateForTesting(
+      context, arc::ArcServiceManager::Get()->arc_bridge_service());
+}
+
 class VolumeManagerTest : public testing::Test {
  protected:
   // Helper class that contains per-profile objects.
   class ProfileEnvironment {
    public:
     ProfileEnvironment(chromeos::PowerManagerClient* power_manager_client,
-                       DiskMountManager* disk_manager)
-        : profile_(std::make_unique<TestingProfile>()),
+                       DiskMountManager* disk_manager,
+                       std::unique_ptr<TestingProfile> profile =
+                           std::make_unique<TestingProfile>())
+        : profile_(std::move(profile)),
           extension_registry_(
               std::make_unique<extensions::ExtensionRegistry>(profile_.get())),
           file_system_provider_service_(
@@ -252,9 +278,18 @@ class VolumeManagerTest : public testing::Test {
               AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(),
                                              "id")),
           user_(account_id_) {
-      chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(&user_);
-      chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+      ash::ProfileHelper::Get()->SetProfileToUserMappingForTesting(&user_);
+      ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
           &user_, profile_.get());
+    }
+
+    void LoginUser() {
+      ash::ProfileHelper::Get()->SetAlwaysReturnPrimaryUserForTesting(true);
+      ash::FakeChromeUserManager* fake_user_manager =
+          static_cast<ash::FakeChromeUserManager*>(
+              user_manager::UserManager::Get());
+      fake_user_manager->AddUser(account_id_);
+      fake_user_manager->LoginUser(account_id_);
     }
 
     ~ProfileEnvironment() {
@@ -284,17 +319,42 @@ class VolumeManagerTest : public testing::Test {
   };
 
   void SetUp() override {
+    // Set up an Arc service manager with a fake file system. This must be done
+    // before initializing VolumeManager() to make its dependency
+    // DocumentsProviderRootManager work.
+    std::unique_ptr<TestingProfile> profile =
+        std::make_unique<TestingProfile>();
+    arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
+    arc_service_manager_->set_browser_context(profile.get());
+    arc::ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
+        profile.get(),
+        base::BindRepeating(&CreateFileSystemOperationRunnerForTesting));
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        &file_system_instance_);
+    arc::WaitForInstanceReady(
+        arc_service_manager_->arc_bridge_service()->file_system());
+    ASSERT_TRUE(file_system_instance_.InitCalled());
+
     chromeos::PowerManagerClient::InitializeFake();
     disk_mount_manager_ = std::make_unique<FakeDiskMountManager>();
     main_profile_ = std::make_unique<ProfileEnvironment>(
-        chromeos::PowerManagerClient::Get(), disk_mount_manager_.get());
+        chromeos::PowerManagerClient::Get(), disk_mount_manager_.get(),
+        std::move(profile));
   }
 
   void TearDown() override {
     main_profile_.reset();
     disk_mount_manager_.reset();
+    arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
+        &file_system_instance_);
     chromeos::PowerManagerClient::Shutdown();
     task_environment_.RunUntilIdle();
+  }
+
+  void EnableArcForProfile() {
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(
+        {"", "--arc-availability=officially-supported"});
+    main_profile_->LoginUser();
   }
 
   Profile* profile() const { return main_profile_->profile(); }
@@ -305,6 +365,8 @@ class VolumeManagerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<FakeDiskMountManager> disk_mount_manager_;
   std::unique_ptr<ProfileEnvironment> main_profile_;
+  arc::FakeFileSystemInstance file_system_instance_;
+  std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
 };
 
 TEST_F(VolumeManagerTest, OnDriveFileSystemMountAndUnmount) {
@@ -390,7 +452,8 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Hidden) {
 
 TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Added) {
   // Enable external storage.
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, false);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageDisabled,
+                                    false);
 
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
@@ -423,7 +486,8 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Added) {
 
 TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_AddedNonMounting) {
   // Enable external storage.
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, false);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageDisabled,
+                                    false);
 
   // Device which is already mounted.
   {
@@ -471,7 +535,8 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_AddedNonMounting) {
 
   // External storage is disabled.
   {
-    profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, true);
+    profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageDisabled,
+                                      true);
 
     LoggingObserver observer;
     volume_manager()->AddObserver(&observer);
@@ -554,7 +619,8 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Changed) {
 }
 
 TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_ChangedInReadonly) {
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageReadOnly, true);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageReadOnly,
+                                    true);
 
   // Changed event should cause mounting (if possible).
   LoggingObserver observer;
@@ -899,7 +965,8 @@ TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
   ASSERT_EQ(0U, disk_mount_manager_->unmount_requests().size());
 
   // Emulate to set kExternalStorageDisabled to false.
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, false);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageDisabled,
+                                    false);
   volume_manager()->OnExternalStorageDisabledChanged();
 
   // Expect no effects.
@@ -907,7 +974,8 @@ TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
   EXPECT_EQ(0U, disk_mount_manager_->unmount_requests().size());
 
   // Emulate to set kExternalStorageDisabled to true.
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, true);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageDisabled,
+                                    true);
   volume_manager()->OnExternalStorageDisabledChanged();
 
   // Wait until all unmount request finishes, so that callback chain to unmount
@@ -938,9 +1006,10 @@ TEST_F(VolumeManagerTest, ExternalStorageDisabledPolicyMultiProfile) {
 
   // Simulates the case that the main profile has kExternalStorageDisabled set
   // as false, and the secondary profile has the config set to true.
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, false);
-  secondary.profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled,
-                                              true);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageDisabled,
+                                    false);
+  secondary.profile()->GetPrefs()->SetBoolean(
+      disks::prefs::kExternalStorageDisabled, true);
 
   LoggingObserver main_observer, secondary_observer;
   volume_manager()->AddObserver(&main_observer);
@@ -978,9 +1047,11 @@ TEST_F(VolumeManagerTest, ExternalStorageDisabledPolicyMultiProfile) {
 
 TEST_F(VolumeManagerTest, OnExternalStorageReadOnlyChanged) {
   // Emulate updates of kExternalStorageReadOnly (change to true, then false).
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageReadOnly, true);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageReadOnly,
+                                    true);
   volume_manager()->OnExternalStorageReadOnlyChanged();
-  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageReadOnly, false);
+  profile()->GetPrefs()->SetBoolean(disks::prefs::kExternalStorageReadOnly,
+                                    false);
   volume_manager()->OnExternalStorageReadOnlyChanged();
 
   // Verify that remount of removable disks is triggered for each update.
@@ -1008,7 +1079,7 @@ TEST_F(VolumeManagerTest, VolumeManagerInitializeMyFilesVolume) {
   volume_manager()->Initialize();  // Adds "Downloads"
   std::vector<base::WeakPtr<Volume>> volume_list =
       volume_manager()->GetVolumeList();
-  ASSERT_GT(volume_list.size(), 0);
+  ASSERT_GT(volume_list.size(), 0u);
   auto volume = base::ranges::find_if(volume_list, [](auto& v) {
     return v->volume_id() == "downloads:MyFiles";
   });
@@ -1228,6 +1299,64 @@ TEST_F(VolumeManagerTest, OnRenameEvent_CompletedFailed) {
   EXPECT_FALSE(event.success);
 
   EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnArcPlayStoreEnabledChanged_Enabled) {
+  // Setup to pass IsArcAllowedForProfile() DCHECK.
+  EnableArcForProfile();
+
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnArcPlayStoreEnabledChanged(true);
+
+  ASSERT_EQ(5U, observer.events().size());
+
+  unsigned index = 0;
+  for (const auto& event : observer.events()) {
+    EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
+    EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
+    if (index < 4) {
+      EXPECT_EQ(arc::GetMediaViewVolumeId(arc_volume_ids[index]),
+                event.volume_id);
+    } else {
+      EXPECT_EQ(arc_volume_ids[index], event.volume_id);
+    }
+    index++;
+  }
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnArcPlayStoreEnabledChanged_Disabled) {
+  // Setup to pass IsArcAllowedForProfile() DCHECK.
+  EnableArcForProfile();
+
+  // Need to enable it first before disabling it, otherwise
+  // it will be no-op.
+  volume_manager()->OnArcPlayStoreEnabledChanged(true);
+
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnArcPlayStoreEnabledChanged(false);
+
+  ASSERT_EQ(5U, observer.events().size());
+
+  unsigned index = 0;
+  for (const auto& event : observer.events()) {
+    EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED, event.type);
+    EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
+    if (index < 4) {
+      EXPECT_EQ(arc::GetMediaViewVolumeId(arc_volume_ids[index]),
+                event.volume_id);
+    } else {
+      EXPECT_EQ(arc_volume_ids[index], event.volume_id);
+    }
+    index++;
+  }
 
   volume_manager()->RemoveObserver(&observer);
 }

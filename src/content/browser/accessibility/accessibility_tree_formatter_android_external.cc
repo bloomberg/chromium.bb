@@ -21,7 +21,9 @@ AccessibilityTreeFormatterAndroidExternal::
 
 base::Value AccessibilityTreeFormatterAndroidExternal::BuildTree(
     ui::AXPlatformNodeDelegate* root) const {
-  CHECK(root);
+  if (!root) {
+    return base::Value(base::Value::Type::DICTIONARY);
+  }
 
   BrowserAccessibility* root_internal =
       BrowserAccessibility::FromAXPlatformNodeDelegate(root);
@@ -42,22 +44,22 @@ void AccessibilityTreeFormatterAndroidExternal::RecursiveBuildTree(
   // TODO: It would be interesting to allow filtering here in the future.
   std::u16string str = android_node->GenerateAccessibilityNodeInfoString();
   if (str.empty()) {
-    dict->SetString(kStringKey, kErrorMessage);
+    dict->SetStringKey(kStringKey, kErrorMessage);
     return;
   }
 
-  dict->SetString(kStringKey, str);
+  dict->SetStringKey(kStringKey, str);
 
-  base::ListValue children;
+  base::Value::List children;
 
   for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
     BrowserAccessibility* child_node = node.PlatformGetChild(i);
     std::unique_ptr<base::DictionaryValue> child_dict(
         new base::DictionaryValue);
     RecursiveBuildTree(*child_node, child_dict.get());
-    children.Append(std::move(child_dict));
+    children.Append(base::Value::FromUniquePtrValue(std::move(child_dict)));
   }
-  dict->SetKey(kChildrenDictAttr, std::move(children));
+  dict->GetDict().Set(kChildrenDictAttr, std::move(children));
 }
 
 std::string AccessibilityTreeFormatterAndroidExternal::ProcessTreeForOutput(

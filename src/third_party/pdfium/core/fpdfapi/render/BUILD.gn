@@ -44,7 +44,10 @@ source_set("render") {
     "cpdf_type3glyphmap.cpp",
     "cpdf_type3glyphmap.h",
   ]
-  configs += [ "../../../:pdfium_strict_config" ]
+  configs += [
+    "../../../:pdfium_strict_config",
+    "../../../:pdfium_noshorten_config",
+  ]
   deps = [
     "../../../constants",
     "../../fxcodec",
@@ -54,13 +57,13 @@ source_set("render") {
     "../page",
     "../parser",
   ]
+  visibility = [ "../../../*" ]
   if (is_win) {
     sources += [
       "cpdf_windowsrenderdevice.cpp",
       "cpdf_windowsrenderdevice.h",
     ]
   }
-  visibility = [ "../../../*" ]
 }
 
 pdfium_unittest_source_set("unittests") {

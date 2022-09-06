@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -21,18 +23,18 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/user_education/common/user_education_class_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/menu_model.h"
@@ -66,8 +68,7 @@ AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view,
                                         base::Unretained(this))),
       browser_(browser_view->browser()),
       parent_(parent),
-      creation_time_(base::TimeTicks::Now()),
-      feature_promo_controller_(browser_view->feature_promo_controller()) {
+      creation_time_(base::TimeTicks::Now()) {
   delegate_ =
       std::make_unique<AvatarToolbarButtonDelegate>(this, browser_->profile());
 
@@ -142,6 +143,7 @@ void AvatarToolbarButton::UpdateText() {
   absl::optional<SkColor> color;
   std::u16string text;
 
+  const auto* const color_provider = GetColorProvider();
   switch (delegate_->GetState()) {
     case State::kIncognitoProfile: {
       const int incognito_window_count = delegate_->GetWindowCount();
@@ -156,15 +158,11 @@ void AvatarToolbarButton::UpdateText() {
       break;
     }
     case State::kSyncError:
-      color = AdjustHighlightColorForContrast(
-          GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
-          gfx::kGoogleRed050, gfx::kGoogleRed900);
+      color = color_provider->GetColor(kColorAvatarButtonHighlightSyncError);
       text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
       break;
     case State::kSyncPaused:
-      color = AdjustHighlightColorForContrast(
-          GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
-          gfx::kGoogleBlue050, gfx::kGoogleBlue900);
+      color = color_provider->GetColor(kColorAvatarButtonHighlightSyncPaused);
       text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
       break;
     case State::kGuestSession: {
@@ -185,9 +183,7 @@ void AvatarToolbarButton::UpdateText() {
     }
     case State::kNormal:
       if (delegate_->IsHighlightAnimationVisible()) {
-        color = AdjustHighlightColorForContrast(
-            GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
-            gfx::kGoogleBlue050, gfx::kGoogleBlue900);
+        color = color_provider->GetColor(kColorAvatarButtonHighlightNormal);
       }
       break;
   }
@@ -228,10 +224,14 @@ void AvatarToolbarButton::NotifyHighlightAnimationFinished() {
 
 void AvatarToolbarButton::MaybeShowProfileSwitchIPH() {
   // If the tracker is already initialized, the callback is called immediately.
-  feature_promo_controller_->feature_engagement_tracker()
-      ->AddOnInitializedCallback(base::BindOnce(
-          &AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized,
-          weak_ptr_factory_.GetWeakPtr()));
+  auto* const promo_controller =
+      BrowserFeaturePromoController::GetForView(this);
+  if (promo_controller) {
+    promo_controller->feature_engagement_tracker()->AddOnInitializedCallback(
+        base::BindOnce(
+            &AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
@@ -262,15 +262,14 @@ void AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(
 
 void AvatarToolbarButton::ButtonPressed() {
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       /*is_source_accelerator=*/false);
 }
 
 void AvatarToolbarButton::AfterPropertyChange(const void* key,
                                               int64_t old_value) {
-  if (key == kHasInProductHelpPromoKey)
-    delegate_->SetHasInProductHelpPromo(GetProperty(kHasInProductHelpPromoKey));
+  if (key == user_education::kHasInProductHelpPromoKey)
+    delegate_->SetHasInProductHelpPromo(
+        GetProperty(user_education::kHasInProductHelpPromoKey));
   ToolbarButton::AfterPropertyChange(key, old_value);
 }
 
@@ -323,7 +322,7 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
     case State::kSyncPaused:
     case State::kNormal:
       return ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(
-          delegate_->GetProfileAvatarImage(gaia_account_image, icon_size), true,
+          delegate_->GetProfileAvatarImage(gaia_account_image, icon_size),
           icon_size, icon_size, profiles::SHAPE_CIRCLE));
   }
   NOTREACHED();
@@ -356,12 +355,11 @@ void AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized(bool success) {
     return;
   }
 
-  DCHECK(
-      feature_promo_controller_->feature_engagement_tracker()->IsInitialized());
-  if (browser_->window()->IsActive() ||
-      FeaturePromoControllerViews::IsActiveWindowCheckBlockedForTesting())
-    feature_promo_controller_->MaybeShowPromo(
-        feature_engagement::kIPHProfileSwitchFeature);
+  auto* const promo_controller =
+      BrowserFeaturePromoController::GetForView(this);
+  DCHECK(promo_controller->feature_engagement_tracker()->IsInitialized());
+  promo_controller->MaybeShowPromo(
+      feature_engagement::kIPHProfileSwitchFeature);
 }
 
 BEGIN_METADATA(AvatarToolbarButton, ToolbarButton)

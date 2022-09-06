@@ -22,7 +22,6 @@
 
 namespace feedui {
 class StreamUpdate;
-class LoggingParameters;
 }  // namespace feedui
 namespace feedstore {
 class DataOperation;
@@ -32,6 +31,7 @@ namespace feed {
 class FeedStreamSurface;
 class PersistentKeyValueStore;
 class WebFeedSubscriptions;
+struct LoggingParameters;
 
 // This is the public access point for interacting with the Feed contents.
 // FeedApi serves multiple streams of data, one for each StreamType.
@@ -49,6 +49,12 @@ class FeedApi {
   virtual void AttachSurface(FeedStreamSurface*) = 0;
   virtual void DetachSurface(FeedStreamSurface*) = 0;
 
+  // Notifies |this| that the user clicked on a feed card with its |url| and
+  // |entity_mids| entities.
+  virtual void UpdateUserProfileOnLinkClick(
+      const GURL& url,
+      const std::vector<int64_t>& entity_mids) = 0;
+
   // Begin/stop observing a stream type. An observer instance should not be
   // added twice without first being removed.
   virtual void AddUnreadContentObserver(const StreamType& stream_type,
@@ -57,16 +63,6 @@ class FeedApi {
                                            UnreadContentObserver* observer) = 0;
 
   virtual bool IsArticlesListVisible() = 0;
-
-  // Returns true if activity logging is enabled. The returned value is
-  // ephemeral, this should be called for each candidate log, as it can change
-  // as the feed is refreshed or the user signs in/out.
-  virtual bool IsActivityLoggingEnabled(
-      const StreamType& stream_type) const = 0;
-
-  // Returns the signed-in client_instance_id. This value is reset whenever the
-  // feed stream is cleared (on sign-in, sign-out, and some data clear events).
-  virtual std::string GetClientInstanceId() const = 0;
 
   // Returns the client's signed-out session id. This value is reset whenever
   // the feed stream is cleared (on sign-in, sign-out, and some data clear
@@ -139,21 +135,24 @@ class FeedApi {
 
   // Sends 'ThereAndBackAgainData' back to the server. |data| is a serialized
   // |feedwire::ThereAndBackAgainData| message.
-  virtual void ProcessThereAndBackAgain(base::StringPiece data) = 0;
   virtual void ProcessThereAndBackAgain(
       base::StringPiece data,
-      const feedui::LoggingParameters& logging_parameters) = 0;
+      const LoggingParameters& logging_parameters) = 0;
   // Saves a view action for eventual upload. |data| is a serialized
   //|feedwire::FeedAction| message. `logging_parameters` are the logging
   // parameters associated with this item, see `feedui::StreamUpdate`.
-  virtual void ProcessViewAction(base::StringPiece data) = 0;
   virtual void ProcessViewAction(
       base::StringPiece data,
-      const feedui::LoggingParameters& logging_parameters) = 0;
+      const LoggingParameters& logging_parameters) = 0;
 
   // Returns whether `url` is a suggested Feed URLs, recently
   // navigated to by the user.
   virtual bool WasUrlRecentlyNavigatedFromFeed(const GURL& url) = 0;
+
+  // Requests that the cache of the feed identified by |stream_kind| be
+  // invalidated so that its contents are re-fetched the next time that feed is
+  // shown/loaded.
+  virtual void InvalidateContentCacheFor(StreamKind stream_kind) = 0;
 
   // User interaction reporting. Unless otherwise documented, these have no
   // side-effects other than reporting metrics.
@@ -193,19 +192,23 @@ class FeedApi {
   // reporting function above..
   virtual void ReportOtherUserAction(const StreamType& stream_type,
                                      FeedUserActionType action_type) = 0;
-  // The notice identified by |key| is created.
-  virtual void ReportNoticeCreated(const StreamType& stream_type,
-                                   const std::string& key) = 0;
-  // The notice identified by |key| is viewed (fully visible in the viewport).
-  virtual void ReportNoticeViewed(const StreamType& stream_type,
-                                  const std::string& key) = 0;
-  // The notice identified by |key| has been clicked/tapped to perform an open
-  // action.
-  virtual void ReportNoticeOpenAction(const StreamType& stream_type,
-                                      const std::string& key) = 0;
-  // The notice identified by |key| is dismissed.
-  virtual void ReportNoticeDismissed(const StreamType& stream_type,
-                                     const std::string& key) = 0;
+  // Reports that the info card is being tracked for its full visibility.
+  virtual void ReportInfoCardTrackViewStarted(const StreamType& stream_type,
+                                              int info_card_type) = 0;
+  // Reports that the info card is visible in the viewport within the threshold.
+  virtual void ReportInfoCardViewed(const StreamType& stream_type,
+                                    int info_card_type,
+                                    int minimum_view_interval_seconds) = 0;
+  // Reports that the user taps the info card.
+  virtual void ReportInfoCardClicked(const StreamType& stream_type,
+                                     int info_card_type) = 0;
+  // Reports that the user dismisses the info card explicitly by tapping the
+  // close button.
+  virtual void ReportInfoCardDismissedExplicitly(const StreamType& stream_type,
+                                                 int info_card_type) = 0;
+  // Resets all the states of the info card.
+  virtual void ResetInfoCardStates(const StreamType& stream_type,
+                                   int info_card_type) = 0;
 
   // The following methods are used for the internals page.
 
@@ -219,6 +222,9 @@ class FeedApi {
       const feedui::StreamUpdate& stream_update) = 0;
   // Returns the time of the last successful content fetch.
   virtual base::Time GetLastFetchTime(const StreamType& stream_type) = 0;
+  // Increase the count of the number of times the user has followed from the
+  // web page menu.
+  virtual void IncrementFollowedFromWebPageMenuCount() = 0;
 };
 
 }  // namespace feed

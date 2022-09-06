@@ -93,6 +93,8 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
 
   bool IsUsingAAudioForTesting() { return UseAAudio(); }
 
+  static int GetSinkAudioEncodingFormats();
+
  protected:
   void ShutdownOnAudioThread() override;
   AudioParameters GetPreferredOutputStreamParameters(
@@ -108,6 +110,11 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   bool IsAudioLowLatencySupported();
   int GetAudioLowLatencyOutputFrameSize();
   int GetOptimalOutputFrameSize(int sample_rate, int channels);
+  AudioParameters GetAudioFormatsSupportedBySinkDevice(
+      const std::string& output_device_id,
+      ChannelLayout channel_layout,
+      int sample_rate,
+      int buffer_size);
 
   void DoSetMuteOnAudioThread(bool muted);
   void DoSetVolumeOnAudioThread(double volume);

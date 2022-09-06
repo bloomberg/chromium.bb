@@ -46,8 +46,17 @@ class FastPairHandshakeLookup {
   // Get an existing instance for |device|.
   FastPairHandshake* Get(scoped_refptr<Device> device);
 
+  // Get an existing instance for |address|.
+  FastPairHandshake* Get(const std::string& address);
+
   // Erases the FastPairHandshake instance for |device| if exists.
   bool Erase(scoped_refptr<Device> device);
+
+  // Erases the FastPairHandshake instance for |address| if exists.
+  bool Erase(const std::string& address);
+
+  // Deletes all existing FastPairHandshake instances.
+  void Clear();
 
   // Creates and returns a new instance for |device| if no instance already
   // exists. Returns the existing instance if there is one.

@@ -37,6 +37,8 @@ set(SYSTEM_SRC_FILES
     Socket.cpp
     Socket.hpp
     Synchronization.hpp
+    SwiftConfig.cpp
+    SwiftConfig.hpp
     Timer.cpp
     Timer.hpp
     Types.hpp
@@ -54,6 +56,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     list(APPEND SYSTEM_COMPILE_OPTIONS
         "-Wexit-time-destructors"  # declaration requires an exit-time destructor
     )
+    # We use exit-time destructors for the global configuration.
+    SET_SOURCE_FILES_PROPERTIES("SwiftConfig.cpp" PROPERTIES COMPILE_FLAGS "-Wno-exit-time-destructors")
 endif()
 
 add_library(vk_system EXCLUDE_FROM_ALL

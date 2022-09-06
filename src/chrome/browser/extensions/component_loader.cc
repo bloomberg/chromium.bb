@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -57,6 +58,7 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
@@ -65,8 +67,11 @@
 #include "extensions/common/switches.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/chromeos/devicetype_utils.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
@@ -127,7 +132,7 @@ std::unique_ptr<base::DictionaryValue> LoadManifestOnFileThread(
 
 bool IsNormalSession() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kGuestSession) &&
+             ash::switches::kGuestSession) &&
          user_manager::UserManager::IsInitialized() &&
          user_manager::UserManager::Get()->IsUserLoggedIn();
 }
@@ -344,8 +349,8 @@ void ComponentLoader::AddWithNameAndDescription(
       ParseManifest(manifest_contents);
 
   if (manifest) {
-    manifest->SetString(manifest_keys::kName, name_string);
-    manifest->SetString(manifest_keys::kDescription, description_string);
+    manifest->SetStringKey(manifest_keys::kName, name_string);
+    manifest->SetStringKey(manifest_keys::kDescription, description_string);
     Add(std::move(manifest), root_directory, true);
   }
 }
@@ -381,10 +386,11 @@ void ComponentLoader::AddFileManagerExtension() {
 }
 
 void ComponentLoader::AddAudioPlayerExtension() {
-  // TODO(b/189172062): Guard this with ShouldInstallObsoleteComponentExtension
-  // when the feature is on and stable.
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kMediaAppHandlesAudio)) {
+  // TODO(b/189172062): Delete this entirely around M106 when it has has a
+  // chance to be cleaned up.
+  if (extensions::ExtensionPrefs::Get(profile_)
+          ->ShouldInstallObsoleteComponentExtension(
+              file_manager::kAudioPlayerAppId)) {
     Add(IDR_AUDIO_PLAYER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("audio_player")));
   }
@@ -446,7 +452,8 @@ void ComponentLoader::AddDefaultComponentExtensions(
   if (!skip_session_components) {
     AddWebStoreApp();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    AddChromeApp();
+    if (crosapi::browser_util::IsAshWebBrowserEnabled())
+      AddChromeApp();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(ENABLE_PDF)
     Add(pdf_extension_util::GetManifest(),
@@ -501,17 +508,18 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddHangoutServicesExtension();
 #endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 
-    bool install_feedback = enable_background_extensions_during_testing;
+#if BUILDFLAG(IS_CHROMEOS)
+    Add(IDR_ECHO_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/echo")));
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    install_feedback = true;
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    if (install_feedback) {
-      AddWithNameAndDescription(
-          IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")),
-          l10n_util::GetStringUTF8(IDS_FEEDBACK_REPORT_APP_TITLE),
-          // Description string
-          l10n_util::GetStringUTF8(IDS_FEEDBACK_REPORT_PAGE_TITLE));
+    if (!base::FeatureList::IsEnabled(
+            chromeos::features::kDisableOfficeEditingComponentApp)) {
+      Add(IDR_QUICKOFFICE_MANIFEST,
+          base::FilePath(
+              FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
     }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (command_line->HasSwitch(switches::kLoadGuestModeTestExtension)) {
@@ -524,23 +532,13 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddImageLoaderExtension();
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    if (!base::FeatureList::IsEnabled(
-            chromeos::features::kDisableOfficeEditingComponentApp)) {
-      Add(IDR_QUICKOFFICE_MANIFEST,
-          base::FilePath(
-              FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
-    }
-
     // TODO(https://crbug.com/1005083): Force the off the record profile to be
     // created to allow the virtual keyboard to work in guest mode.
     if (!IsNormalSession())
       ExtensionsBrowserClient::Get()->GetOffTheRecordContext(profile_);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-    Add(IDR_ECHO_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/echo")));
-
-    if (!command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+    if (!command_line->HasSwitch(ash::switches::kGuestSession)) {
       Add(IDR_WALLPAPERMANAGER_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
     }
@@ -663,11 +661,11 @@ void ComponentLoader::FinishAddComponentFromDir(
     return;  // Error already logged.
 
   if (name_string)
-    manifest->SetString(manifest_keys::kName, name_string.value());
+    manifest->SetStringKey(manifest_keys::kName, name_string.value());
 
   if (description_string) {
-    manifest->SetString(manifest_keys::kDescription,
-                        description_string.value());
+    manifest->SetStringKey(manifest_keys::kDescription,
+                           description_string.value());
   }
 
   std::string actual_extension_id =

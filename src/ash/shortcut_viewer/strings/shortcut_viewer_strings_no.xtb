@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">Fokuser adressefelt</translation>
 <translation id="3256109297135787951">Fjern fremhevingen av et element på hyllen</translation>
 <translation id="3288816184963444640">Lukk det aktive vinduet</translation>
+<translation id="3322797428033495633">Fokuser på bilde-i-bilde-vinduet</translation>
 <translation id="3350805006883559974">Vis det aktive vinduet øverst</translation>
 <translation id="3407560819924487926">Hent frem oppgavebehandlingen</translation>
 <translation id="3417835166382867856">Søk på faner</translation>
@@ -157,6 +158,7 @@
 <translation id="6445033640292336367">Flytt fanen tilbake til den opprinnelige plasseringen</translation>
 <translation id="6474744297082284761">Zoom ut (når dokket ELLER forstørrelse med fullskjerm er på)</translation>
 <translation id="649811797655257835">Velg en fil og trykk på <ph name="SPACE" /></translation>
+<translation id="6515089016094047210">Åpne eller lukk kalendermodulen.</translation>
 <translation id="6551886416582667425">Ta delvis skjermdump eller opptak</translation>
 <translation id="6556040137485212400">Åpne vinduet som har vært ubrukt lengst</translation>
 <translation id="666343722268997814">Åpne høyreklikkmenyen for elementet som er fremhevet</translation>
@@ -190,7 +192,7 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SPACE" /> eller <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Åpne en fil i nettleseren</translation>
 <translation id="7952165122793773711">Gå til fane 1–8</translation>
-<translation id="8026334261755873520">Slett nettleserdata</translation>
+<translation id="8026334261755873520">Slett nettlesingsdata</translation>
 <translation id="8130528849632411619">Gå til begynnelsen av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotér skjermen 90 grader</translation>

@@ -14,6 +14,8 @@
 #include "chrome/browser/translate/translate_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
+#include "chrome/browser/ui/views/translate/translate_bubble_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -187,6 +189,12 @@ class TranslateBubbleViewUITest
           ->Wait();
     }
   }
+
+  TranslateBubbleView* GetCurrentTranslateBubble() {
+    return TranslateBubbleController::FromWebContents(
+               browser()->tab_strip_model()->GetActiveWebContents())
+        ->GetTranslateBubble();
+  }
 };
 
 // Verify that source language tab is selected and highlighted by
@@ -207,7 +215,7 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, ClickLanguageTab) {
       // That it's getting the root view of translate dialog via
       // GetCurrentBubble method.
       .AddStep(views::InteractionSequenceViews::WithInitialView(
-          TranslateBubbleView::GetCurrentBubble()))
+          GetCurrentTranslateBubble()))
       // V1.Verify that by default the translate bubble’s source language
       // tab is selected and highlighted.
       .AddStep(ui::InteractionSequence::StepBuilder()
@@ -284,7 +292,7 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, ChooseAnotherLanguage) {
   ui::InteractionSequence::Builder()
       .SetAbortedCallback(aborted.Get())
       .AddStep(views::InteractionSequenceViews::WithInitialView(
-          TranslateBubbleView::GetCurrentBubble()))
+          GetCurrentTranslateBubble()))
       // P2. Click on translate bubble > Click on 3 dot menu.
       .AddStep(ui::InteractionSequence::StepBuilder()
                    .SetElementID(TranslateBubbleView::kOptionsMenuButton)
@@ -305,15 +313,10 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, ChooseAnotherLanguage) {
       .AddStep(ui::InteractionSequence::StepBuilder()
                    .SetElementID(TranslateBubbleView::kTargetLanguageCombobox)
                    .SetType(ui::InteractionSequence::StepType::kShown)
-                   .SetStartCallback(
-                       base::BindOnce([](ui::InteractionSequence*,
-                                         ui::TrackedElement* element) {
-                         EXPECT_FALSE(
-                             ui::ElementTracker::GetElementTracker()
-                                 ->IsElementVisible(
-                                     TranslateBubbleView::kChangeTargetLanguage,
-                                     element->context()));
-                       }))
+                   .Build())
+      .AddStep(ui::InteractionSequence::StepBuilder()
+                   .SetElementID(TranslateBubbleView::kChangeTargetLanguage)
+                   .SetType(ui::InteractionSequence::StepType::kHidden)
                    .Build())
       // P4. Select a language from the list and select translate.
       .AddStep(
@@ -339,21 +342,21 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, ChooseAnotherLanguage) {
                    .SetElementID(TranslateBubbleView::kTargetLanguageCombobox)
                    .SetType(ui::InteractionSequence::StepType::kHidden)
                    .Build())
-      .AddStep(ui::InteractionSequence::StepBuilder()
-                   .SetElementID(TranslateBubbleView::kTargetLanguageTab)
-                   .SetStartCallback(base::BindLambdaForTesting(
-                       [&](ui::InteractionSequence*,
-                           ui::TrackedElement* element) {
-                         WaitForPageTranslated(true);
-                         auto* target_tab =
-                             static_cast<views::Tab*>(ElementToView(element));
-                         EXPECT_EQ(target_tab->GetTitleText(),
-                                   TranslateBubbleView::GetCurrentBubble()
-                                       ->model()
-                                       ->GetTargetLanguageNameAt(0));
-                         EXPECT_TRUE(target_tab->selected());
-                       }))
-                   .Build())
+      .AddStep(
+          ui::InteractionSequence::StepBuilder()
+              .SetElementID(TranslateBubbleView::kTargetLanguageTab)
+              .SetStartCallback(base::BindLambdaForTesting(
+                  [&](ui::InteractionSequence*, ui::TrackedElement* element) {
+                    WaitForPageTranslated(true);
+                    auto* target_tab =
+                        static_cast<views::Tab*>(ElementToView(element));
+                    EXPECT_EQ(target_tab->GetTitleText(),
+                              GetCurrentTranslateBubble()
+                                  ->model()
+                                  ->GetTargetLanguageNameAt(0));
+                    EXPECT_TRUE(target_tab->selected());
+                  }))
+              .Build())
       // P5. Select revert.
       .AddStep(ui::InteractionSequence::StepBuilder()
                    .SetElementID(TranslateBubbleView::kSourceLanguageTab)
@@ -388,7 +391,7 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest,
   ui::InteractionSequence::Builder()
       .SetAbortedCallback(aborted.Get())
       .AddStep(views::InteractionSequenceViews::WithInitialView(
-          TranslateBubbleView::GetCurrentBubble()))
+          GetCurrentTranslateBubble()))
       // P2. Click on translate bubble > Click on 3 dot menu.
       .AddStep(ui::InteractionSequence::StepBuilder()
                    .SetElementID(TranslateBubbleView::kOptionsMenuButton)
@@ -406,15 +409,10 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest,
       .AddStep(ui::InteractionSequence::StepBuilder()
                    .SetElementID(TranslateBubbleView::kSourceLanguageCombobox)
                    .SetType(ui::InteractionSequence::StepType::kShown)
-                   .SetStartCallback(
-                       base::BindOnce([](ui::InteractionSequence*,
-                                         ui::TrackedElement* element) {
-                         EXPECT_FALSE(
-                             ui::ElementTracker::GetElementTracker()
-                                 ->IsElementVisible(
-                                     TranslateBubbleView::kChangeSourceLanguage,
-                                     element->context()));
-                       }))
+                   .Build())
+      .AddStep(ui::InteractionSequence::StepBuilder()
+                   .SetElementID(TranslateBubbleView::kChangeSourceLanguage)
+                   .SetType(ui::InteractionSequence::StepType::kHidden)
                    .Build())
       // P4. Select a language from the list and select translate.
       .AddStep(ui::InteractionSequence::StepBuilder()
@@ -452,7 +450,7 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest,
                     auto* source_tab =
                         static_cast<views::Tab*>(ElementToView(element));
                     EXPECT_EQ(source_tab->GetTitleText(),
-                              TranslateBubbleView::GetCurrentBubble()
+                              GetCurrentTranslateBubble()
                                   ->model()
                                   ->GetSourceLanguageNameAt(1));
                     EXPECT_TRUE(!source_tab->selected());
@@ -520,7 +518,7 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, NetworkInterruption) {
   ui::InteractionSequence::Builder()
       .SetAbortedCallback(aborted.Get())
       .AddStep(views::InteractionSequenceViews::WithInitialView(
-          TranslateBubbleView::GetCurrentBubble()))
+          GetCurrentTranslateBubble()))
       // P2. Tap the target language tab.
       .AddStep(ui::InteractionSequence::StepBuilder()
                    .SetElementID(TranslateBubbleView::kTargetLanguageTab)
@@ -576,12 +574,6 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, NetworkInterruption) {
               .SetType(ui::InteractionSequence::StepType::kShown)
               .SetStartCallback(base::BindOnce(
                   [](ui::InteractionSequence*, ui::TrackedElement* element) {
-                    EXPECT_FALSE(
-                        ui::ElementTracker::GetElementTracker()
-                            ->IsElementVisible(
-                                TranslateBubbleView::kChangeTargetLanguage,
-                                element->context()));
-
                     auto* error_message_label =
                         static_cast<views::Label*>(ElementToView(element));
                     EXPECT_EQ(
@@ -590,6 +582,10 @@ IN_PROC_BROWSER_TEST_P(TranslateBubbleViewUITest, NetworkInterruption) {
                             IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE));
                   }))
               .Build())
+      .AddStep(ui::InteractionSequence::StepBuilder()
+                   .SetElementID(TranslateBubbleView::kChangeTargetLanguage)
+                   .SetType(ui::InteractionSequence::StepType::kHidden)
+                   .Build())
       .Build()
       ->RunSynchronouslyForTesting();
 }

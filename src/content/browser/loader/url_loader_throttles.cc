@@ -9,8 +9,6 @@
 #include "components/variations/net/variations_url_loader_throttle.h"
 #include "content/browser/client_hints/client_hints.h"
 #include "content/browser/client_hints/critical_client_hints_throttle.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/browser/renderer_host/navigation_request.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/content_browser_client.h"
@@ -21,6 +19,7 @@
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/parsed_headers.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -47,13 +46,12 @@ CreateContentBrowserURLLoaderThrottles(
 
   ClientHintsControllerDelegate* client_hint_delegate =
       browser_context->GetClientHintsControllerDelegate();
-  if ((base::FeatureList::IsEnabled(features::kCriticalClientHint) ||
-       base::FeatureList::IsEnabled(network::features::kAcceptCHFrame)) &&
-      request.is_main_frame && net::HttpUtil::IsMethodSafe(request.method) &&
-      client_hint_delegate &&
-      ShouldAddClientHints(request.url,
-                           FrameTreeNode::GloballyFindByID(frame_tree_node_id),
-                           client_hint_delegate)) {
+  // TODO(bokan): How to handle client hints in a fenced frame is still an open
+  // question, see:
+  // https://github.com/WICG/fenced-frame/blob/master/explainer/permission_document_policies.md#ua-client-hints-open-question
+  if (base::FeatureList::IsEnabled(features::kCriticalClientHint) &&
+      net::HttpUtil::IsMethodSafe(request.method) &&
+      request.is_outermost_main_frame && client_hint_delegate) {
     throttles.push_back(std::make_unique<CriticalClientHintsThrottle>(
         browser_context, client_hint_delegate, frame_tree_node_id));
   }

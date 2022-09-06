@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/search_engines/template_url_service.h"
-
 #include <stddef.h>
 
 #include <memory>
@@ -12,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -35,6 +32,7 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -296,24 +294,22 @@ std::unique_ptr<TemplateURL> TemplateURLServiceTest::CreatePreloadedTemplateURL(
 
 void TemplateURLServiceTest::SetOverriddenEngines() {
   // Set custom search engine as default fallback through overrides.
-  auto entry = std::make_unique<base::DictionaryValue>();
-  entry->SetString("name", "override_name");
-  entry->SetString("keyword", "override_keyword");
-  entry->SetString("search_url", "http://override.com/s?q={searchTerms}");
-  entry->SetString("favicon_url", "http://override.com/favicon.ico");
-  entry->SetString("encoding", "UTF-8");
-  entry->SetInteger("id", 1001);
-  entry->SetString("suggest_url",
-                   "http://override.com/suggest?q={searchTerms}");
+  base::Value::Dict entry;
+  entry.Set("name", "override_name");
+  entry.Set("keyword", "override_keyword");
+  entry.Set("search_url", "http://override.com/s?q={searchTerms}");
+  entry.Set("favicon_url", "http://override.com/favicon.ico");
+  entry.Set("encoding", "UTF-8");
+  entry.Set("id", 1001);
+  entry.Set("suggest_url", "http://override.com/suggest?q={searchTerms}");
 
-  auto overrides_list = std::make_unique<base::ListValue>();
-  overrides_list->Append(std::move(entry));
+  base::Value::List overrides_list;
+  overrides_list.Append(std::move(entry));
 
   auto* prefs = test_util()->profile()->GetTestingPrefService();
-  prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     std::make_unique<base::Value>(1));
+  prefs->SetUserPref(prefs::kSearchProviderOverridesVersion, base::Value(1));
   prefs->SetUserPref(prefs::kSearchProviderOverrides,
-                     std::move(overrides_list));
+                     base::Value(std::move(overrides_list)));
 }
 
 void TemplateURLServiceTest::VerifyObserverCount(int expected_changed_count) {
@@ -1186,6 +1182,49 @@ TEST_F(TemplateURLServiceTest,
                 prefs::kSyncedDefaultSearchProviderGUID));
 }
 
+TEST_F(TemplateURLServiceTest, RepairStarterPackEngines) {
+  test_util()->VerifyLoad();
+
+  // Edit @bookmarks engine
+  TemplateURL* bookmarks = model()->GetTemplateURLForKeyword(u"@bookmarks");
+  ASSERT_TRUE(bookmarks);
+  model()->ResetTemplateURL(bookmarks, u"trash", u"xxx",
+                            "http://www.foo.com/s?q={searchTerms}");
+  EXPECT_EQ(u"trash", bookmarks->short_name());
+  EXPECT_EQ(u"xxx", bookmarks->keyword());
+
+  // Remove @history. Despite the extension added below, it will still be
+  // restored.
+  TemplateURL* history = model()->GetTemplateURLForKeyword(u"@history");
+  ASSERT_TRUE(history);
+  model()->Remove(history);
+  EXPECT_FALSE(model()->GetTemplateURLForKeyword(u"@history"));
+
+  // Register an extension with @history keyword.
+  model()->RegisterOmniboxKeyword("abcdefg", "extension_name", "@history",
+                                  "http://abcdefg", Time());
+  EXPECT_TRUE(model()->GetTemplateURLForKeyword(u"@history"));
+
+  // Now perform the actual repair that should restore @history.
+  model()->RepairStarterPackEngines();
+
+  // The keyword for bookmarks wasn't reverted.
+  EXPECT_EQ(u"trash", bookmarks->short_name());
+  EXPECT_EQ("chrome://bookmarks/?q={searchTerms}", bookmarks->url());
+
+  // @history was repaired, verify that the NORMAL built-in engine is still back
+  // even though the @history extension outranks the built-in engine.
+  history = nullptr;
+  for (TemplateURL* turl : model()->GetTemplateURLs()) {
+    if (turl->keyword() == u"@history" && turl->type() == TemplateURL::NORMAL &&
+        turl->starter_pack_id() > 0) {
+      history = turl;
+      break;
+    }
+  }
+  EXPECT_THAT(history, NotNull());
+}
+
 TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
   struct TestData {
     const std::string url;
@@ -1209,7 +1248,7 @@ TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
                      "http://sugg1", "http://x/foo#query={searchTerms}",
                      "http://icon1", false, "UTF-8;UTF-16");
 
-  for (size_t i = 0; i < base::size(data); ++i) {
+  for (size_t i = 0; i < std::size(data); ++i) {
     TemplateURLService::URLVisitedDetails details = {
       GURL(data[i].url), false
     };
@@ -1231,7 +1270,7 @@ TEST_F(TemplateURLServiceTest, DontUpdateKeywordSearchForNonReplaceable) {
   AddKeywordWithDate("name", "x", "http://x/foo", "http://sugg1", std::string(),
                      "http://icon1", false, "UTF-8;UTF-16");
 
-  for (size_t i = 0; i < base::size(data); ++i) {
+  for (size_t i = 0; i < std::size(data); ++i) {
     TemplateURLService::URLVisitedDetails details = {
       GURL(data[i].url), false
     };

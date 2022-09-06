@@ -9,7 +9,6 @@
 #include "components/accuracy_tips/accuracy_service.h"
 #include "components/accuracy_tips/accuracy_tip_status.h"
 #include "components/safe_browsing/core/common/features.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/page_visibility_state.h"
@@ -44,7 +43,7 @@ void AccuracyWebContentsObserver::DidFinishNavigation(
     return;
   }
 
-  if (web_contents()->GetMainFrame()->GetVisibilityState() !=
+  if (web_contents()->GetPrimaryMainFrame()->GetVisibilityState() !=
       content::PageVisibilityState::kVisible) {
     return;
   }
@@ -76,7 +75,7 @@ void AccuracyWebContentsObserver::OnAccuracyStatusObtained(
 
   UMA_HISTOGRAM_ENUMERATION("Privacy.AccuracyTip.PageStatus", result);
   ukm::builders::AccuracyTipStatus(
-      ukm::GetSourceIdForWebContentsDocument(web_contents()))
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId())
       .SetStatus(static_cast<int>(result))
       .Record(ukm::UkmRecorder::Get());
 

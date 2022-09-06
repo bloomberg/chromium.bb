@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 10
+
 module crosapi.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
@@ -78,10 +80,17 @@ struct GoogleServiceAuthError {
   InvalidGaiaCredentialsReason invalid_gaia_credentials_reason@3;
 };
 
+// See components/account_manager_core/account_addition_options.h
+[Stable]
+struct AccountAdditionOptions {
+  bool is_available_in_arc@0;
+  bool show_arc_availability_picker@1;
+};
+
 [Stable]
 struct AccountAdditionResult {
   // The result of account addition request.
-  // Next value: 5.
+  // Next value: 6.
   [Stable, Extensible]
   enum Status {
     kSuccess = 0,
@@ -89,6 +98,7 @@ struct AccountAdditionResult {
     kCancelledByUser = 2,
     kNetworkError = 3,
     kUnexpectedResponse = 4,
+    [MinVersion = 9] kBlockedByPolicy = 5,
   };
 
   Status status@0;
@@ -148,7 +158,7 @@ interface AccountManagerObserver {
 // ARC++ uses components/arc/mojom/auth.mojom to talk to the Chrome OS Account
 // Manager.
 //
-// Next version: 8
+// Next version: 9
 // Next method id: 9
 [Stable, Uuid="85b9a674-9d8e-497f-98d5-22c8dca6f2b8"]
 interface AccountManager {
@@ -174,7 +184,9 @@ interface AccountManager {
   // Launches account addition dialog and returns `result` with the added
   // account.
   [MinVersion = 3]
-  ShowAddAccountDialog@3() => (AccountAdditionResult result);
+  ShowAddAccountDialog@3(
+    [MinVersion=8] AccountAdditionOptions? add_account_options) =>
+    (AccountAdditionResult result);
 
   // Launches account reauthentication dialog for provided `email`.
   [MinVersion = 3]

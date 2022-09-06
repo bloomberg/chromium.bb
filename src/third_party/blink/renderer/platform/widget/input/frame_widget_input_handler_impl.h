@@ -82,18 +82,20 @@ class PLATFORM_EXPORT FrameWidgetInputHandlerImpl
   void SelectAll() override;
   void CollapseSelection() override;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void SelectAroundCaret(mojom::blink::SelectionGranularity granularity,
                          bool should_show_handle,
                          bool should_show_context_menu,
                          SelectAroundCaretCallback callback) override;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   void AdjustSelectionByCharacterOffset(
       int32_t start,
       int32_t end,
       blink::mojom::SelectionMenuBehavior selection_menu_behavior) override;
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
-  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
+  void ScrollFocusedEditableNodeIntoView() override;
+  void WaitForPageScaleAnimationForTesting(
+      WaitForPageScaleAnimationForTestingCallback callback) override;
   void MoveCaret(const gfx::Point& point) override;
 
  private:

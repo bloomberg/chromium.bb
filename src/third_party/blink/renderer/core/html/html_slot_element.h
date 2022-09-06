@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SLOT_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SLOT_ELEMENT_H_
 
+#include "base/check_op.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_element_text.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -89,6 +90,11 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   // shadow host.  This method should be used only when |assigned_nodes_| is
   // dirty.  e.g. To detect a slotchange event in DOM mutations.
   bool HasAssignedNodesSlow() const;
+
+  // Returns true if the slot has assigned nodes, without doing assignment
+  // recalc. Used by FlatTreeParentForChildDirty() which needs to avoid doing
+  // slot assignments while marking the tree style-dirty.
+  bool HasAssignedNodesNoRecalc() const { return !assigned_nodes_.IsEmpty(); }
 
   bool SupportsAssignment() const { return IsInShadowTree(); }
 

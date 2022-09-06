@@ -15,7 +15,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -86,9 +85,14 @@ class Service {
     // cancels requests early if one does not exist.
     web_contents->SetDelegate(&contents_delegate_);
 
-    service_ = std::make_unique<WebOTPService>(
-        &fetcher_, OriginList{origin}, web_contents->GetMainFrame(),
-        service_remote_.BindNewPipeAndPassReceiver());
+    // WebOTPService is a DocumentService and normally self-deletes. For the
+    // purposes of the test, `~Service` is responsible for manually cleaning
+    // up `service_`. A normal std::unique_ptr<T> is not allowed here, since a
+    // DocumentService implementation must be deleted by calling one of the
+    // `*AndDeleteThis()` methods.
+    service_ = new WebOTPService(&fetcher_, OriginList{origin},
+                                 web_contents->GetMainFrame(),
+                                 service_remote_.BindNewPipeAndPassReceiver());
     service_->SetConsentHandlerForTesting(consent_handler_.get());
   }
 
@@ -98,6 +102,14 @@ class Service {
                 web_contents->GetMainFrame()->GetLastCommittedOrigin(),
                 /* avoid showing user prompts */
                 std::make_unique<NoopUserConsentHandler>()) {}
+
+  ~Service() {
+    // WebOTPService sends IPCs in its destructor, so for the unit test, pretend
+    // that this works.
+    service_->WillBeDestroyed(
+        DocumentServiceDestructionReason::kEndOfDocumentLifetime);
+    service_->ResetAndDeleteThis();
+  }
 
   NiceMock<MockSmsProvider>* provider() { return &provider_; }
   SmsFetcher* fetcher() { return &fetcher_; }
@@ -129,7 +141,7 @@ class Service {
   SmsFetcherImpl fetcher_;
   std::unique_ptr<UserConsentHandler> consent_handler_;
   mojo::Remote<blink::mojom::WebOTPService> service_remote_;
-  std::unique_ptr<WebOTPService> service_;
+  raw_ptr<WebOTPService> service_;
 };
 
 class WebOTPServiceTest : public RenderViewHostTestHarness {
@@ -912,7 +924,7 @@ TEST_F(WebOTPServiceTest, RecordUserDismissPrompt) {
 
 TEST_F(WebOTPServiceTest, RecordUnhandledRequestOnNavigation) {
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigateAndCommit(GURL(kTestUrl));
   NiceMock<MockSmsWebContentsDelegate> delegate;
   WebContentsImpl* web_contents_impl =

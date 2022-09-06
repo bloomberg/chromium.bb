@@ -16,7 +16,6 @@
 
 #include <string>
 
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/notreached.h"
 
 #ifdef USE_SYSTEM_ZLIB
@@ -428,7 +427,7 @@ void ConvertBGRAtoRGB(const uint8_t* bgra,
 #ifdef PNG_TEXT_SUPPORTED
 
 inline char* strdup(const char* str) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return _strdup(str);
 #else
   return ::strdup(str);
@@ -461,11 +460,11 @@ class CommentWriter {
   void AddComment(size_t pos, const Comment& comment) {
     png_text_[pos].compression = PNG_TEXT_COMPRESSION_NONE;
     // A PNG comment's key can only be 79 characters long.
-    if (comment.key.length() > 79)
+    if (comment.key.size() > 79)
       return;
     png_text_[pos].key = strdup(comment.key.substr(0, 78).c_str());
     png_text_[pos].text = strdup(comment.text.c_str());
-    png_text_[pos].text_length = comment.text.length();
+    png_text_[pos].text_length = comment.text.size();
 #ifdef PNG_iTXt_SUPPORTED
     png_text_[pos].itxt_length = 0;
     png_text_[pos].lang = 0;
@@ -571,7 +570,7 @@ std::vector<uint8_t> EncodeWithCompressionLevel(
   switch (format) {
     case FORMAT_BGR:
       converter = ConvertBGRtoRGB;
-      FALLTHROUGH;
+      [[fallthrough]];
 
     case FORMAT_RGB:
       input_color_components = 3;

@@ -7,11 +7,20 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "components/safe_browsing/core/common/proto/csd.pb.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
-#include "services/network/public/mojom/network_context.mojom.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
+#endif
+
+namespace content {
+class BrowserContext;
+class WebContents;
+}  // namespace content
+
+namespace network::mojom {
+class NetworkContext;
+}
 
 namespace safe_browsing {
 
@@ -46,7 +55,7 @@ class SafeBrowsingServiceInterface
   virtual ReferrerChainProvider* GetReferrerChainProviderFromBrowserContext(
       content::BrowserContext* browser_context) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual LoginReputationClientRequest::ReferringAppInfo GetReferringAppInfo(
       content::WebContents* web_contents) = 0;
 #endif

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
@@ -18,10 +21,14 @@
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/base/features.h"
 #include "components/sync/driver/sync_service_impl.h"
+#include "components/sync/engine/cycle/entity_change_metric_recording.h"
+#include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace {
 
@@ -35,11 +42,35 @@ using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
 using password_manager::PasswordForm;
 
-using testing::ElementsAre;
-using testing::IsEmpty;
+using testing::Contains;
 
 const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
     syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
+
+MATCHER_P3(HasPasswordValueAndUnsupportedFields,
+           cryptographer,
+           password_value,
+           unknown_fields,
+           "") {
+  sync_pb::PasswordSpecificsData decrypted;
+  cryptographer->Decrypt(arg.specifics().password().encrypted(), &decrypted);
+  return decrypted.password_value() == password_value &&
+         decrypted.unknown_fields() == unknown_fields;
+}
+
+std::string CreateSerializedProtoField(int field_number,
+                                       const std::string& value) {
+  std::string result;
+  google::protobuf::io::StringOutputStream string_stream(&result);
+  google::protobuf::io::CodedOutputStream output(&string_stream);
+  google::protobuf::internal::WireFormatLite::WriteTag(
+      field_number,
+      google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      &output);
+  output.WriteVarint32(value.size());
+  output.WriteString(value);
+  return result;
+}
 
 class SingleClientPasswordsSyncTest : public SyncTest {
  public:
@@ -57,6 +88,40 @@ class SingleClientPasswordsSyncTestWithVerifier
     // TODO(crbug.com/1137740): rewrite tests to not use verifier.
     return true;
   }
+};
+
+class SingleClientPasswordsSyncTestWithBaseSpecificsInMetadata
+    : public SyncTest {
+ public:
+  SingleClientPasswordsSyncTestWithBaseSpecificsInMetadata()
+      : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{syncer::kCacheBaseEntitySpecificsInMetadata},
+        /*disabled_features=*/{});
+  }
+  ~SingleClientPasswordsSyncTestWithBaseSpecificsInMetadata() override =
+      default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes
+    : public SyncTest {
+ public:
+  SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes()
+      : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{syncer::kCacheBaseEntitySpecificsInMetadata,
+                              syncer::kReadWritePasswordNotesBackupField,
+                              password_manager::features::kPasswordNotes},
+        /*disabled_features=*/{});
+  }
+  ~SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes() override =
+      default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier, Sanity) {
@@ -128,9 +193,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier,
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
-                                  syncer::PassphraseType::kKeystorePassphrase)
-                  .Wait());
+  ASSERT_TRUE(
+      ServerPassphraseTypeChecker(syncer::PassphraseType::kKeystorePassphrase)
+          .Wait());
 
   PasswordForm form = CreateTestPasswordForm(0);
   GetVerifierProfilePasswordStoreInterface()->AddLogin(form);
@@ -156,9 +221,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier,
   ASSERT_FALSE(prior_encryption_key_name.empty());
 
   GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("hunter2");
-  ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
-                                  syncer::PassphraseType::kCustomPassphrase)
-                  .Wait());
+  ASSERT_TRUE(
+      ServerPassphraseTypeChecker(syncer::PassphraseType::kCustomPassphrase)
+          .Wait());
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   const std::vector<sync_pb::SyncEntity> entities =
@@ -188,9 +253,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   // Upon a local creation, the received update will be seen as reflection and
   // get counted as incremental update.
-  EXPECT_EQ(
-      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
-                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PASSWORD",
+                   syncer::ModelTypeEntityChange::kRemoteNonInitialUpdate));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
@@ -208,12 +273,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
   // If that metadata hasn't been properly persisted, the password stored on the
   // server will be received at the client as an initial update or an
   // incremental once.
-  EXPECT_EQ(
-      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
-                                         /*REMOTE_INITIAL_UPDATE=*/5));
-  EXPECT_EQ(
-      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
-                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PASSWORD",
+                   syncer::ModelTypeEntityChange::kRemoteInitialUpdate));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PASSWORD",
+                   syncer::ModelTypeEntityChange::kRemoteNonInitialUpdate));
 }
 
 class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
@@ -394,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 // The unconsented primary account isn't supported on ChromeOS so Sync won't
 // start up for an unconsented account.
 // Signing out on Lacros is not possible.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        ClearsAccountDBOnSignout) {
   AddTestPasswordToFakeServer();
@@ -424,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Make sure the password is gone from the store.
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        SwitchesStoresOnEnablingSync) {
@@ -576,5 +641,136 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithBaseSpecificsInMetadata,
+                       PreservesUnsupportedFieldsDataOnCommits) {
+  // Create an unsupported field with an unused tag.
+  const std::string kUnsupportedField =
+      CreateSerializedProtoField(/*field_number=*/999999, "unknown_field");
+
+  // Create a password on the server with an unsupported field.
+  sync_pb::PasswordSpecificsData password_data;
+  password_data.set_origin("http://fake-site.com/");
+  password_data.set_signon_realm("http://fake-site.com/");
+  password_data.set_username_value("username");
+  password_data.set_password_value("password");
+  *password_data.mutable_unknown_fields() = kUnsupportedField;
+  passwords_helper::InjectKeystoreEncryptedServerPassword(password_data,
+                                                          GetFakeServer());
+
+  // Sign in and enable Sync.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Make a local update to the password.
+  PasswordForm form;
+  form.signon_realm = "http://fake-site.com/";
+  form.url = GURL("http://fake-site.com/");
+  form.username_value = u"username";
+  form.password_value = u"new_password";
+  form.date_created = base::Time::Now();
+  GetProfilePasswordStoreInterface(0)->UpdateLogin(form);
+
+  // Add an obsolete password to make sure that the server has received the
+  // update. Otherwise, calling count match could finish before the local update
+  // actually goes through (as there is already 1 password entity on the
+  // server).
+  GetProfilePasswordStoreInterface(0)->AddLogin(CreateTestPasswordForm(2));
+  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PASSWORDS, 2).Wait());
+
+  // Check that the password was updated and the commit preserved the data for
+  // an unsupported field.
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(
+          base::Base64Encode(fake_server_->GetKeystoreKeys().back()),
+          syncer::KeyDerivationParams::CreateForPbkdf2());
+
+  const std::vector<sync_pb::SyncEntity> entities =
+      fake_server_->GetSyncEntitiesByModelType(syncer::PASSWORDS);
+  EXPECT_THAT(entities,
+              Contains(HasPasswordValueAndUnsupportedFields(
+                  cryptographer.get(), "new_password", kUnsupportedField)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes,
+    PreservesUnsupportedNotesFieldsDataOnCommits) {
+  // Create an unsupported field in the PasswordSpecificsData_Notes with an
+  // unused tag.
+  const std::string kUnsupportedNotesField =
+      CreateSerializedProtoField(/*field_number=*/999999, "unknown_field 1");
+  // Create an unsupported field in the PasswordSpecificsData_Notes_Note with an
+  // unused tag. Since they are different protos, they can use the same
+  // field_number.
+  const std::string kUnsupportedNoteField =
+      CreateSerializedProtoField(/*field_number=*/999999, "unknown_field 2");
+
+  // Create a password on the server with an unsupported field in the notes
+  // proto as well as the individual notes.
+  sync_pb::PasswordSpecificsData password_data;
+  password_data.set_origin("http://fake-site.com/");
+  password_data.set_signon_realm("http://fake-site.com/");
+  password_data.set_username_value("username-with-note");
+  password_data.set_password_value("password");
+
+  *password_data.mutable_notes()->mutable_unknown_fields() =
+      kUnsupportedNotesField;
+
+  sync_pb::PasswordSpecificsData_Notes_Note* note =
+      password_data.mutable_notes()->add_note();
+  note->set_value("note value");
+  *note->mutable_unknown_fields() = kUnsupportedNoteField;
+
+  passwords_helper::InjectKeystoreEncryptedServerPassword(password_data,
+                                                          GetFakeServer());
+
+  // Sign in and enable Sync.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Make a local update to the password note.
+  PasswordForm form;
+  form.signon_realm = "http://fake-site.com/";
+  form.url = GURL("http://fake-site.com/");
+  form.username_value = u"username-with-note";
+  form.password_value = u"password";
+  form.notes.emplace_back(u"new note value",
+                          /*date_created=*/base::Time::Now());
+  GetProfilePasswordStoreInterface(0)->UpdateLogin(form);
+
+  // Add an obsolete password to make sure that the server has received the
+  // update. Otherwise, calling count match could finish before the local update
+  // actually goes through (as there is already 1 password entity on the
+  // server).
+  GetProfilePasswordStoreInterface(0)->AddLogin(CreateTestPasswordForm(2));
+  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PASSWORDS, 2).Wait());
+
+  // Check that the password note was updated and the commit preserved the data
+  // for an unsupported field.
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(
+          base::Base64Encode(fake_server_->GetKeystoreKeys().back()),
+          syncer::KeyDerivationParams::CreateForPbkdf2());
+
+  const std::vector<sync_pb::SyncEntity> entities =
+      fake_server_->GetSyncEntitiesByModelType(syncer::PASSWORDS);
+  for (const sync_pb::SyncEntity& entity : entities) {
+    // Find the password with the notes.
+    sync_pb::PasswordSpecificsData decrypted;
+    cryptographer->Decrypt(entity.specifics().password().encrypted(),
+                           &decrypted);
+    if (decrypted.username_value() != "username-with-note") {
+      continue;
+    }
+    EXPECT_EQ(kUnsupportedNotesField, decrypted.notes().unknown_fields());
+    ASSERT_EQ(1, decrypted.notes().note_size());
+    sync_pb::PasswordSpecificsData_Notes_Note decrypted_note =
+        decrypted.notes().note(0);
+    EXPECT_EQ("new note value", decrypted_note.value());
+    EXPECT_EQ(kUnsupportedNoteField, decrypted_note.unknown_fields());
+  }
+}
 
 }  // namespace

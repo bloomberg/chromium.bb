@@ -20,13 +20,15 @@ class SiteInfo;
 class ChromePageInfoUiDelegate;
 class PageInfo;
 class PageInfoNavigationHandler;
+class PageInfoHistoryController;
 
 // A factory class that creates pages and individual views for page info.
 class PageInfoViewFactory {
  public:
   PageInfoViewFactory(PageInfo* presenter,
                       ChromePageInfoUiDelegate* ui_delegate,
-                      PageInfoNavigationHandler* navigation_handler);
+                      PageInfoNavigationHandler* navigation_handler,
+                      PageInfoHistoryController* history_controller);
 
   // Bubble width constraints.
   static constexpr int kMinBubbleWidth = 320;
@@ -53,16 +55,19 @@ class PageInfoViewFactory {
     VIEW_ID_PAGE_INFO_CURRENT_VIEW,
     VIEW_ID_PAGE_INFO_RESET_PERMISSIONS_BUTTON,
     VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,
+    VIEW_ID_PAGE_INFO_HISTORY_BUTTON,
+    VIEW_ID_PAGE_INFO_AD_PERSONALIZATION_BUTTON,
+    VIEW_ID_PAGE_INFO_MORE_ABOUT_THIS_PAGE_BUTTON,
   };
 
   // Creates a separator view with padding on top and bottom. Use with flex
   // layout only.
-  static std::unique_ptr<views::View> CreateSeparator() WARN_UNUSED_RESULT;
+  [[nodiscard]] static std::unique_ptr<views::View> CreateSeparator();
 
   // Creates a label container view with padding on left and right side.
   // Supports multiple multiline labels in a column (ex. title and subtitle
   // labels). Use with flex layout only.
-  static std::unique_ptr<views::View> CreateLabelWrapper() WARN_UNUSED_RESULT;
+  [[nodiscard]] static std::unique_ptr<views::View> CreateLabelWrapper();
 
   // Returns icons for the given PageInfo::PermissionInfo |info|. If |info|'s
   // current setting is CONTENT_SETTING_DEFAULT, it will return the icon for
@@ -107,29 +112,42 @@ class PageInfoViewFactory {
   // Returns the icon for 'About this site' button.
   static const ui::ImageModel GetAboutThisSiteIcon();
 
-  std::unique_ptr<views::View> CreateMainPageView(
-      base::OnceClosure initialized_callback) WARN_UNUSED_RESULT;
-  std::unique_ptr<views::View> CreateSecurityPageView() WARN_UNUSED_RESULT;
-  std::unique_ptr<views::View> CreatePermissionPageView(
-      ContentSettingsType type) WARN_UNUSED_RESULT;
-  std::unique_ptr<views::View> CreateAboutThisSitePageView(
-      const page_info::proto::SiteInfo& info) WARN_UNUSED_RESULT;
+  // Returns the icon for 'About this page' button.
+  static const ui::ImageModel GetAboutThisPageIcon();
+
+  // Returns the icon for the history button.
+  static const ui::ImageModel GetHistoryIcon();
+
+  // Returns the icon for the 'Ad personalization' button.
+  static const ui::ImageModel GetAdPersonalizationIcon();
+
+  [[nodiscard]] std::unique_ptr<views::View> CreateMainPageView(
+      base::OnceClosure initialized_callback);
+  [[nodiscard]] std::unique_ptr<views::View> CreateSecurityPageView();
+  [[nodiscard]] std::unique_ptr<views::View> CreatePermissionPageView(
+      ContentSettingsType type);
+  [[nodiscard]] std::unique_ptr<views::View> CreateAboutThisSitePageView(
+      const page_info::proto::SiteInfo& info);
+  [[nodiscard]] std::unique_ptr<views::View> CreateAdPersonalizationPageView();
 
  private:
   // Creates a subpage header with back button that opens the main page, a
-  // title label with text |title|, a subtitle label with the site origin text,
-  // and close button that closes the bubble.
+  // title label with text |title|, an optional subtitle label with text
+  // |subtitle| if |subtitle| is not empty and close button that closes the
+  // bubble.
   // *------------------------------------------------*
   // | Back | |title|                           Close |
   // |------------------------------------------------|
-  // |      | Site origin (example.com)               |
+  // |      | |subtitle|
   // *-------------------------------------------------*
-  std::unique_ptr<views::View> CreateSubpageHeader(std::u16string title)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] std::unique_ptr<views::View> CreateSubpageHeader(
+      std::u16string title,
+      std::u16string subtitle);
 
   raw_ptr<PageInfo> presenter_;
   raw_ptr<ChromePageInfoUiDelegate> ui_delegate_;
   raw_ptr<PageInfoNavigationHandler> navigation_handler_;
+  raw_ptr<PageInfoHistoryController> history_controller_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_VIEW_FACTORY_H_

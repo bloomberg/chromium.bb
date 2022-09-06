@@ -154,7 +154,7 @@ bool PreviewModeClient::IsPrintPreview() const {
   return true;
 }
 
-SkColor PreviewModeClient::GetBackgroundColor() {
+SkColor PreviewModeClient::GetBackgroundColor() const {
   NOTREACHED();
   return SK_ColorTRANSPARENT;
 }
@@ -171,14 +171,6 @@ void PreviewModeClient::SetLinkUnderCursor(
 bool PreviewModeClient::IsValidLink(const std::string& url) {
   NOTREACHED();
   return false;
-}
-
-void PreviewModeClient::ScheduleTaskOnMainThread(
-    const base::Location& from_here,
-    ResultCallback callback,
-    int32_t result,
-    base::TimeDelta delay) {
-  NOTREACHED();
 }
 
 }  // namespace chrome_pdf

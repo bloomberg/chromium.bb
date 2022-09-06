@@ -5,7 +5,7 @@
 
 base_dir=$(dirname "$0")
 
-if [[ "#grep#fetch#cleanup#diff#setdep#" != *"#$1#"* ]]; then
+if [[ "#grep#fetch#cleanup#diff#setdep#recurse#" != *"#$1#"* ]]; then
   # Shall skip authomatic update?
   if [[ $DEPOT_TOOLS_UPDATE != 0 ]]; then
     "$base_dir"/update_depot_tools "$@"

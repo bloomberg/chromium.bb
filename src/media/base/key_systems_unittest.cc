@@ -14,6 +14,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/decrypt_config.h"
@@ -99,8 +100,8 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
                : EmeConfigRule::NOT_SUPPORTED;
   }
 
-  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
-    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  EmeConfigRule GetPersistentLicenseSessionSupport() const override {
+    return EmeConfigRule::NOT_SUPPORTED;
   }
 
   EmeFeatureSupport GetPersistentStateSupport() const override {
@@ -157,8 +158,8 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
     return EmeConfigRule::NOT_SUPPORTED;
   }
 
-  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
-    return EmeSessionTypeSupport::SUPPORTED;
+  EmeConfigRule GetPersistentLicenseSessionSupport() const override {
+    return EmeConfigRule::SUPPORTED;
   }
 
   EmeFeatureSupport GetPersistentStateSupport() const override {
@@ -246,16 +247,10 @@ class TestMediaClient : public MediaClient {
   ~TestMediaClient() override;
 
   // MediaClient implementation.
-  bool IsKeySystemsUpdateNeeded() final;
-  void AddSupportedKeySystems(std::vector<std::unique_ptr<KeySystemProperties>>*
-                                  key_systems_properties) override;
+  void GetSupportedKeySystems(GetSupportedKeySystemsCB cb) final;
   bool IsSupportedAudioType(const media::AudioType& type) final;
   bool IsSupportedVideoType(const media::VideoType& type) final;
   bool IsSupportedBitstreamAudioCodec(AudioCodec codec) final;
-
-  // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
-  // after AddSupportedKeySystems() is called.
-  void SetKeySystemsUpdateNeeded();
 
   // Helper function to disable "kExternal" key system support so that we can
   // test the key system update case.
@@ -265,29 +260,21 @@ class TestMediaClient : public MediaClient {
   GetAudioRendererAlgorithmParameters(AudioParameters audio_parameters) final;
 
  private:
-  bool is_update_needed_;
-  bool supports_external_key_system_;
+  KeySystemPropertiesVector GetSupportedKeySystemsInternal();
+
+  GetSupportedKeySystemsCB get_supported_key_systems_cb_;
+  bool supports_external_key_system_ = true;
 };
 
-TestMediaClient::TestMediaClient()
-    : is_update_needed_(true), supports_external_key_system_(true) {}
-
+TestMediaClient::TestMediaClient() = default;
 TestMediaClient::~TestMediaClient() = default;
 
-bool TestMediaClient::IsKeySystemsUpdateNeeded() {
-  return is_update_needed_;
-}
+void TestMediaClient::GetSupportedKeySystems(GetSupportedKeySystemsCB cb) {
+  // Save the callback for future updates.
+  DCHECK(!get_supported_key_systems_cb_);
+  get_supported_key_systems_cb_ = cb;
 
-void TestMediaClient::AddSupportedKeySystems(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-  DCHECK(is_update_needed_);
-
-  key_systems->emplace_back(new AesKeySystemProperties(kUsesAes));
-
-  if (supports_external_key_system_)
-    key_systems->emplace_back(new ExternalKeySystemProperties());
-
-  is_update_needed_ = false;
+  get_supported_key_systems_cb_.Run(GetSupportedKeySystemsInternal());
 }
 
 bool TestMediaClient::IsSupportedAudioType(const media::AudioType& type) {
@@ -302,18 +289,26 @@ bool TestMediaClient::IsSupportedBitstreamAudioCodec(AudioCodec codec) {
   return false;
 }
 
-void TestMediaClient::SetKeySystemsUpdateNeeded() {
-  is_update_needed_ = true;
-}
-
 void TestMediaClient::DisableExternalKeySystemSupport() {
   supports_external_key_system_ = false;
+  get_supported_key_systems_cb_.Run(GetSupportedKeySystemsInternal());
 }
 
 absl::optional<::media::AudioRendererAlgorithmParameters>
 TestMediaClient::GetAudioRendererAlgorithmParameters(
     AudioParameters audio_parameters) {
   return absl::nullopt;
+}
+
+KeySystemPropertiesVector TestMediaClient::GetSupportedKeySystemsInternal() {
+  KeySystemPropertiesVector key_systems;
+
+  key_systems.emplace_back(new AesKeySystemProperties(kUsesAes));
+
+  if (supports_external_key_system_)
+    key_systems.emplace_back(new ExternalKeySystemProperties());
+
+  return key_systems;
 }
 
 }  // namespace
@@ -360,7 +355,13 @@ class KeySystemsTest : public testing::Test {
     SetMediaClient(&test_media_client_);
   }
 
-  void SetUp() override { AddContainerAndCodecMasksForTest(); }
+  void SetUp() override {
+    AddContainerAndCodecMasksForTest();
+
+    base::RunLoop run_loop;
+    KeySystems::GetInstance()->UpdateIfNeeded(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   ~KeySystemsTest() override {
     // Clear the use of |test_media_client_|, which was set in SetUp().
@@ -370,8 +371,11 @@ class KeySystemsTest : public testing::Test {
   }
 
   void UpdateClientKeySystems() {
-    test_media_client_.SetKeySystemsUpdateNeeded();
     test_media_client_.DisableExternalKeySystemSupport();
+
+    base::RunLoop run_loop;
+    KeySystems::GetInstance()->UpdateIfNeeded(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   typedef std::vector<std::string> CodecVector;
@@ -410,6 +414,8 @@ class KeySystemsTest : public testing::Test {
   const CodecVector& mixed_codecs() const { return mixed_codecs_; }
 
  private:
+  base::test::TaskEnvironment task_environment_;
+
   const CodecVector no_codecs_;
   CodecVector vp8_codec_;
   CodecVector vp80_codec_;

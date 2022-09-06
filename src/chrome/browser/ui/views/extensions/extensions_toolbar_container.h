@@ -122,8 +122,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  ui::mojom::DragOperation OnPerformDrop(
-      const ui::DropTargetEvent& event) override;
   views::View::DropCallback GetDropCallback(
       const ui::DropTargetEvent& event) override;
 
@@ -142,12 +140,10 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void HideActivePopup() override;
   bool CloseOverflowMenuIfOpen() override;
   void PopOutAction(ToolbarActionViewController* action,
-                    bool is_sticky,
                     base::OnceClosure closure) override;
-  bool ShowToolbarActionPopupForAPICall(const std::string& action_id) override;
+  bool ShowToolbarActionPopupForAPICall(const std::string& action_id,
+                                        ShowPopupCallback callback) override;
   void ShowToolbarActionBubble(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
-  void ShowToolbarActionBubbleAsync(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
   void ToggleExtensionsMenu() override;
   bool HasAnyExtensions() const override;
@@ -244,7 +240,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void OnToolbarPinnedActionsChanged() override;
 
   // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // Moves the dragged extension `action_id`.
@@ -263,7 +258,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   base::ScopedObservation<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observation_{this};
   // TODO(emiliapaz): Remove `extensions_button_` once
-  // `features::kExtensionsMenuAccessControl` experiment is released.
+  // `extensions_features::kExtensionsMenuAccessControl` experiment is released.
   // Exactly one of `extensions_button_ and `extensions_controls_` is created;
   // the other is null.
   const raw_ptr<ExtensionsToolbarButton> extensions_button_;

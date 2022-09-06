@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.clang builder group."""
 
-load("//lib/builders.star", "goma", "os", "sheriff_rotations", "xcode")
+load("//lib/builders.star", "os", "reclient", "sheriff_rotations", "xcode")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -96,12 +96,14 @@ def clang_tot_linux_builder(short_name, category = "ToT Linux", **kwargs):
 
 ci.builder(
     name = "CFI Linux CF",
-    goma_backend = goma.backend.RBE_PROD,
+    goma_backend = None,
     console_view_entry = consoles.console_view_entry(
         category = "CFI|Linux",
         short_name = "CF",
     ),
     notifies = ["CFI Linux"],
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 ci.builder(
@@ -169,7 +171,6 @@ ci.builder(
         category = "ToT Code Coverage",
         short_name = "and",
     ),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.builder(
@@ -222,7 +223,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "misc",
+            category = "fyi",
             short_name = "clang-x64",
         ),
     ],
@@ -238,7 +239,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "misc",
+            category = "fyi",
             short_name = "clang-off",
         ),
     ],
@@ -359,24 +360,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "ToTWinCFI",
-    console_view_entry = consoles.console_view_entry(
-        category = "CFI|Win",
-        short_name = "x86",
-    ),
-    os = os.WINDOWS_ANY,
-)
-
-ci.builder(
-    name = "ToTWinCFI64",
-    console_view_entry = consoles.console_view_entry(
-        category = "CFI|Win",
-        short_name = "x64",
-    ),
-    os = os.WINDOWS_ANY,
-)
-
-ci.builder(
     name = "ToTWindowsCoverage",
     console_view_entry = consoles.console_view_entry(
         category = "ToT Code Coverage",
@@ -411,7 +394,7 @@ ci.builder(
         short_name = "sim",
     ),
     cores = None,
-    os = os.MAC_11,
+    os = os.MAC_12,
     ssd = True,
     xcode = xcode.x13main,
 )
@@ -424,7 +407,7 @@ ci.builder(
         short_name = "dev",
     ),
     cores = None,
-    os = os.MAC_11,
+    os = os.MAC_12,
     ssd = True,
     xcode = xcode.x13main,
 )

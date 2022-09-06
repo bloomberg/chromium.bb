@@ -21,6 +21,7 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #endif
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -62,5 +63,8 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(
   view->GetWidget()->GetNativeWindow()->SetProperty(
       aura::client::kCreatedByUserGesture, user_gesture);
 #endif
+  if (profiles::IsKioskSession())
+    view->SetForceFullscreen(true);
+
   return view;
 }

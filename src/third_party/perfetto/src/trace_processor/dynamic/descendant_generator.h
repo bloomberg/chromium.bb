@@ -17,9 +17,8 @@
 #ifndef SRC_TRACE_PROCESSOR_DYNAMIC_DESCENDANT_GENERATOR_H_
 #define SRC_TRACE_PROCESSOR_DYNAMIC_DESCENDANT_GENERATOR_H_
 
-#include "src/trace_processor/sqlite/db_sqlite_table.h"
-
 #include "perfetto/ext/base/optional.h"
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 namespace perfetto {
@@ -32,7 +31,7 @@ class TraceProcessorContext;
 // * descendant_slice_by_stack
 //
 // See docs/analysis/trace-processor for usage.
-class DescendantGenerator : public DbSqliteTable::DynamicTableGenerator {
+class DescendantGenerator : public DynamicTableGenerator {
  public:
   enum class Descendant { kSlice = 1, kSliceByStack = 2 };
 
@@ -41,16 +40,17 @@ class DescendantGenerator : public DbSqliteTable::DynamicTableGenerator {
   Table::Schema CreateSchema() override;
   std::string TableName() override;
   uint32_t EstimateRowCount() override;
-  util::Status ValidateConstraints(const QueryConstraints&) override;
-  std::unique_ptr<Table> ComputeTable(const std::vector<Constraint>& cs,
-                                      const std::vector<Order>& ob) override;
+  base::Status ValidateConstraints(const QueryConstraints&) override;
+  base::Status ComputeTable(const std::vector<Constraint>& cs,
+                            const std::vector<Order>& ob,
+                            const BitVector& cols_used,
+                            std::unique_ptr<Table>& table_return) override;
 
-  // Returns a RowMap of slice IDs which are descendants of |slice_id|. Returns
-  // NULL if an invalid |slice_id| is given. This is used by
+  // Returns a vector of slice rows which are descendants of |slice_id|. Returns
+  // base::nullopt if an invalid |slice_id| is given. This is used by
   // ConnectedFlowGenerator to traverse flow indirectly connected flow events.
-  static base::Optional<RowMap> GetDescendantSlices(
-      const tables::SliceTable& slices,
-      SliceId slice_id);
+  static base::Optional<std::vector<tables::SliceTable::RowNumber>>
+  GetDescendantSlices(const tables::SliceTable& slices, SliceId slice_id);
 
  private:
   Descendant type_;

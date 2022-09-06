@@ -17,6 +17,8 @@
 #ifndef SRC_ANDROID_INTERNAL_TRACING_SERVICE_PROXY_H_
 #define SRC_ANDROID_INTERNAL_TRACING_SERVICE_PROXY_H_
 
+#include <stdint.h>
+
 namespace perfetto {
 namespace android_internal {
 
@@ -25,8 +27,16 @@ extern "C" {
 bool __attribute__((visibility("default")))
 NotifyTraceSessionEnded(bool session_stolen);
 
-} // extern "C"
+bool __attribute__((visibility("default")))
+ReportTrace(const char* reporter_package_name,
+            const char* reporter_class_name,
+            int owned_trace_fd,
+            int64_t uuid_lsb,
+            int64_t uuid_msb,
+            bool use_pipe_in_framework_for_testing);
 
-} // namespace android_internal
-} // namespace perfetto
+}  // extern "C"
+
+}  // namespace android_internal
+}  // namespace perfetto
 #endif  // SRC_ANDROID_INTERNAL_TRACING_SERVICE_PROXY_H_

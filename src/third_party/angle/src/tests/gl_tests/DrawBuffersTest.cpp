@@ -375,6 +375,186 @@ TEST_P(DrawBuffersTest, ClearWithGaps)
     EXPECT_GL_NO_ERROR();
 }
 
+// Test that mid-render pass clear works with gaps
+TEST_P(DrawBuffersTest, MidRenderPassClearWithGaps)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &mMaxDrawBuffers);
+    ASSERT_GE(mMaxDrawBuffers, 4);
+
+    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTextures[0], 0);
+
+    glBindTexture(GL_TEXTURE_2D, mTextures[1]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, mTextures[1], 0);
+
+    const GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT3};
+
+    bool flags[8] = {true, false, false, true};
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    setDrawBuffers(4, bufs);
+
+    drawQuad(program, positionAttrib(), 0.5);
+
+    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // A bogus draw to make sure clears are done with a render pass in the Vulkan backend.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ZERO, GL_ONE);
+    drawQuad(program, positionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    verifyAttachment2DColor(0, mTextures[0], GL_TEXTURE_2D, 0, GLColor::yellow);
+    verifyAttachment2DColor(3, mTextures[1], GL_TEXTURE_2D, 0, GLColor::yellow);
+
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that mid-render pass clear works with gaps.  Uses RGB format.
+TEST_P(DrawBuffersTest, MidRenderPassClearWithGapsRGB)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &mMaxDrawBuffers);
+    ASSERT_GE(mMaxDrawBuffers, 4);
+
+    GLTexture textures[2];
+
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[0], 0);
+
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, textures[1], 0);
+
+    const GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT3};
+
+    bool flags[8] = {true, false, false, true};
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    setDrawBuffers(4, bufs);
+
+    drawQuad(program, positionAttrib(), 0.5);
+
+    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // A bogus draw to make sure clears are done with a render pass in the Vulkan backend.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ZERO, GL_ONE);
+    drawQuad(program, positionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    verifyAttachment2DColor(0, textures[0], GL_TEXTURE_2D, 0, GLColor::yellow);
+    verifyAttachment2DColor(3, textures[1], GL_TEXTURE_2D, 0, GLColor::yellow);
+
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that a masked draw and a mid-render pass clear works with gaps.
+TEST_P(DrawBuffersTest, MaskedDrawMidRPClearWithGaps)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &mMaxDrawBuffers);
+    ASSERT_GE(mMaxDrawBuffers, 4);
+
+    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTextures[0], 0);
+
+    glBindTexture(GL_TEXTURE_2D, mTextures[1]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, mTextures[1], 0);
+
+    // Mask out attachment 3, so we only draw to attachment 1.
+    GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_NONE};
+    bool flags[8] = {true, false, false, false};
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    setDrawBuffers(4, bufs);
+
+    drawQuad(program, positionAttrib(), 0.5);
+
+    // Re-enable attachment 3, so we clear both attachment 1 and 3.
+    bufs[3] = GL_COLOR_ATTACHMENT3;
+    setDrawBuffers(4, bufs);
+    flags[3] = true;
+    setupMRTProgram(flags, &program);
+
+    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // A bogus draw to make sure clears are done with a render pass in the Vulkan backend.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ZERO, GL_ONE);
+    drawQuad(program, positionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    verifyAttachment2DColor(0, mTextures[0], GL_TEXTURE_2D, 0, GLColor::yellow);
+    verifyAttachment2DColor(3, mTextures[1], GL_TEXTURE_2D, 0, GLColor::yellow);
+
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that a masked draw and a mid-render pass clear works with gaps.  Uses RGB format.
+TEST_P(DrawBuffersTest, MaskedDrawMidRPClearWithGapsRGB)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &mMaxDrawBuffers);
+    ASSERT_GE(mMaxDrawBuffers, 4);
+
+    GLTexture textures[2];
+
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[0], 0);
+
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, textures[1], 0);
+
+    // Mask out attachment 3, so we only draw to attachment 1.
+    GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_NONE};
+    bool flags[8] = {true, false, false, false};
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    setDrawBuffers(4, bufs);
+
+    drawQuad(program, positionAttrib(), 0.5);
+
+    // Re-enable attachment 3, so we clear both attachment 1 and 3.
+    bufs[3] = GL_COLOR_ATTACHMENT3;
+    setDrawBuffers(4, bufs);
+    flags[3] = true;
+    setupMRTProgram(flags, &program);
+
+    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // A bogus draw to make sure clears are done with a render pass in the Vulkan backend.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ZERO, GL_ONE);
+    drawQuad(program, positionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    verifyAttachment2DColor(0, textures[0], GL_TEXTURE_2D, 0, GLColor::yellow);
+    verifyAttachment2DColor(3, textures[1], GL_TEXTURE_2D, 0, GLColor::yellow);
+
+    EXPECT_GL_NO_ERROR();
+}
+
 TEST_P(DrawBuffersTest, FirstAndLast)
 {
     ANGLE_SKIP_TEST_IF(!setupTest());
@@ -462,6 +642,47 @@ TEST_P(DrawBuffersTest, DefaultFramebufferDrawBufferQuery)
     EXPECT_EQ(GL_NONE, drawbuffer);
 }
 
+// Test that draws to every buffer and verifies that every buffer was drawn to.
+TEST_P(DrawBuffersTest, AllRGBA8)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+
+    // TODO(syoussefi): Qualcomm driver crashes in the presence of VK_ATTACHMENT_UNUSED.
+    // http://anglebug.com/3423
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+
+    bool flags[8]  = {false};
+    GLenum bufs[8] = {GL_NONE};
+    GLTexture textures[8];
+
+    for (GLint texIndex = 0; texIndex < mMaxDrawBuffers; ++texIndex)
+    {
+        glBindTexture(GL_TEXTURE_2D, textures[texIndex]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWindowWidth(), getWindowHeight(), 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + texIndex, GL_TEXTURE_2D,
+                               textures[texIndex], 0);
+        flags[texIndex] = true;
+        bufs[texIndex]  = GL_COLOR_ATTACHMENT0 + texIndex;
+    }
+
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    setDrawBuffers(mMaxDrawBuffers, bufs);
+    drawQuad(program, positionAttrib(), 0.5);
+
+    for (GLint texIndex = 0; texIndex < mMaxDrawBuffers; ++texIndex)
+    {
+        verifyAttachment2D(texIndex, textures[texIndex], GL_TEXTURE_2D, 0);
+    }
+
+    EXPECT_GL_NO_ERROR();
+
+    glDeleteProgram(program);
+}
 // Same as above but adds a state change from a program with different masks after a clear.
 TEST_P(DrawBuffersWebGL2Test, TwoProgramsWithDifferentOutputsAndClear)
 {
@@ -480,7 +701,7 @@ TEST_P(DrawBuffersWebGL2Test, TwoProgramsWithDifferentOutputsAndClear)
     bool flags[8]      = {false};
     GLenum someBufs[4] = {GL_NONE};
     GLenum allBufs[4]  = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
-                         GL_COLOR_ATTACHMENT3};
+                          GL_COLOR_ATTACHMENT3};
 
     constexpr GLuint kMaxBuffers     = 4;
     constexpr GLuint kHalfMaxBuffers = 2;
@@ -810,6 +1031,90 @@ TEST_P(DrawBuffersTestES3, 2DArrayTextures)
     verifyAttachmentLayer(1, texture.get(), 0, 1);
     verifyAttachmentLayer(2, texture.get(), 0, 2);
     verifyAttachmentLayer(3, texture.get(), 0, 3);
+
+    EXPECT_GL_NO_ERROR();
+
+    glDeleteProgram(program);
+}
+
+// Test that binding multiple faces of a CubeMap texture works correctly
+TEST_P(DrawBuffersTestES3, CubeMapTextures)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture.get());
+    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA8, getWindowWidth(), getWindowHeight());
+    EXPECT_GL_NO_ERROR();
+
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.get(), 0, 3);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture.get(), 0, 2);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, texture.get(), 0, 1);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, texture.get(), 0, 0);
+    EXPECT_GL_NO_ERROR();
+
+    bool flags[8] = {true, true, true, true, false};
+
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    const GLenum bufs[] = {
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+        GL_COLOR_ATTACHMENT3,
+    };
+
+    glDrawBuffers(4, bufs);
+    drawQuad(program, positionAttrib(), 0.5);
+
+    verifyAttachmentLayer(0, texture.get(), 0, 3);
+    verifyAttachmentLayer(1, texture.get(), 0, 2);
+    verifyAttachmentLayer(2, texture.get(), 0, 1);
+    verifyAttachmentLayer(3, texture.get(), 0, 0);
+
+    EXPECT_GL_NO_ERROR();
+
+    glDeleteProgram(program);
+}
+
+// Test that binding multiple layers of a CubeMap array texture works correctly
+TEST_P(DrawBuffersTestES3, CubeMapArrayTextures)
+{
+    ANGLE_SKIP_TEST_IF(!setupTest());
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_cube_map_array"));
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, texture.get());
+    glTexStorage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 1, GL_RGBA8, getWindowWidth(), getWindowHeight(),
+                   static_cast<GLint>(kCubeFaces.size()));
+    EXPECT_GL_NO_ERROR();
+
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.get(), 0, 3);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture.get(), 0, 2);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, texture.get(), 0, 1);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, texture.get(), 0, 0);
+    EXPECT_GL_NO_ERROR();
+
+    bool flags[8] = {true, true, true, true, false};
+
+    GLuint program;
+    setupMRTProgram(flags, &program);
+
+    const GLenum bufs[] = {
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+        GL_COLOR_ATTACHMENT3,
+    };
+
+    glDrawBuffers(4, bufs);
+    drawQuad(program, positionAttrib(), 0.5);
+
+    verifyAttachmentLayer(0, texture.get(), 0, 3);
+    verifyAttachmentLayer(1, texture.get(), 0, 2);
+    verifyAttachmentLayer(2, texture.get(), 0, 1);
+    verifyAttachmentLayer(3, texture.get(), 0, 0);
 
     EXPECT_GL_NO_ERROR();
 
@@ -1190,7 +1495,11 @@ TEST_P(ColorMaskForDrawBuffersTest, Blit)
 ANGLE_INSTANTIATE_TEST(DrawBuffersTest,
                        ANGLE_ALL_TEST_PLATFORMS_ES2,
                        ANGLE_ALL_TEST_PLATFORMS_ES3,
-                       WithNoTransformFeedback(ES2_VULKAN()));
+                       ES2_METAL().enable(Feature::LimitMaxDrawBuffersForTesting),
+                       ES2_VULKAN()
+                           .disable(Feature::SupportsTransformFeedbackExtension)
+                           .disable(Feature::SupportsGeometryStreamsCapability)
+                           .disable(Feature::EmulateTransformFeedback));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DrawBuffersWebGL2Test);
 ANGLE_INSTANTIATE_TEST_ES3(DrawBuffersWebGL2Test);

@@ -24,7 +24,7 @@ class LinkLabelButton : public views::LabelButton {
  public:
   LinkLabelButton(PressedCallback callback, const std::u16string& text)
       : LabelButton(std::move(callback), text, views::style::CONTEXT_BUTTON) {
-    SetBorder(views::CreateEmptyBorder(0, 0, 0, 0));
+    SetBorder(views::CreateEmptyBorder(0));
     label()->SetTextStyle(views::style::STYLE_LINK);
   }
 
@@ -48,11 +48,27 @@ AuthenticatorPaaskSheetView::BuildStepSpecificContent() {
     return std::make_pair(nullptr, AutoFocus::kNo);
   }
 
+  std::u16string link_text;
+  switch (dialog_model->experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      link_text =
+          l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_SERVERLINK_TROUBLE);
+      break;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+      link_text = l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_CABLEV2_SERVERLINK_TROUBLE_ALT);
+      break;
+  }
+
   return std::make_pair(
       std::make_unique<LinkLabelButton>(
           base::BindRepeating(&AuthenticatorPaaskSheetView::OnLinkClicked,
                               base::Unretained(this)),
-          l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_SERVERLINK_TROUBLE)),
+          link_text),
       AutoFocus::kNo);
 }
 

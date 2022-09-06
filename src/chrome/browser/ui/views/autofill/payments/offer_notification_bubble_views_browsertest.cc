@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
                        InvalidOfferData) {
   auto offer_data = CreateCardLinkedOfferDataWithDomains(
       {GURL("https://www.example.com/"), GURL("https://www.test.com/")});
-  offer_data->eligible_instrument_id.clear();
+  offer_data->SetEligibleInstrumentIdForTesting({});
   personal_data()->AddOfferDataForTest(std::move(offer_data));
   personal_data()->NotifyPersonalDataObserver();
 
@@ -45,27 +45,12 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
   EXPECT_FALSE(GetOfferNotificationBubbleViews());
 }
 
-IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest, OpenNewTab) {
-  SetUpCardLinkedOfferDataWithDomains(
-      {GURL("https://www.example.com/"), GURL("https://www.test.com/")});
-
-  NavigateTo(chrome::kChromeUINewTabURL);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("https://www.example.com/"),
-      WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-
-  browser()->tab_strip_model()->ActivateTabAt(1);
-  EXPECT_TRUE(IsIconVisible());
-  EXPECT_FALSE(GetOfferNotificationBubbleViews());
-}
-
 // TODO(crbug.com/1270516): Does not work for Wayland-based tests.
 // TODO(crbug.com/1256480): Disabled on Mac, Win, ChromeOS, and Lacros due to
 // flakiness.
 IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
                        DISABLED_PromoCodeOffer) {
-  auto offer_data = CreatePromoCodeOfferDataWithDomains(
+  auto offer_data = CreateGPayPromoCodeOfferDataWithDomains(
       {GURL("https://www.example.com/"), GURL("https://www.test.com/")});
   personal_data()->AddOfferDataForTest(std::move(offer_data));
   personal_data()->NotifyPersonalDataObserver();
@@ -81,8 +66,8 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
 // TODO(crbug.com/1256480): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
                        DISABLED_PromoCodeOffer_FromCouponService) {
-  auto offer_data =
-      CreatePromoCodeOfferDataWithDomains({GURL("https://www.example.com/")});
+  auto offer_data = CreateFreeListingCouponDataWithDomains(
+      {GURL("https://www.example.com/")});
   SetUpFreeListingCouponOfferDataForCouponService(std::move(offer_data));
 
   ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
@@ -97,9 +82,9 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
                        PromoCodeOffer_FromCouponService_WithinTimeGap) {
   const GURL orgin("https://www.example.com/");
   SetUpFreeListingCouponOfferDataForCouponService(
-      CreatePromoCodeOfferDataWithDomains({orgin}));
+      CreateFreeListingCouponDataWithDomains({orgin}));
   UpdateFreeListingCouponDisplayTime(
-      CreatePromoCodeOfferDataWithDomains({orgin}));
+      CreateFreeListingCouponDataWithDomains({orgin}));
 
   NavigateTo("https://www.example.com/first/");
 
@@ -136,8 +121,8 @@ IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
 // TODO(crbug.com/1256480): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTest,
                        DISABLED_PromoCodeOffer_DeleteCoupon) {
-  auto offer_data =
-      CreatePromoCodeOfferDataWithDomains({GURL("https://www.example.com/")});
+  auto offer_data = CreateFreeListingCouponDataWithDomains(
+      {GURL("https://www.example.com/")});
   SetUpFreeListingCouponOfferDataForCouponService(std::move(offer_data));
 
   ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
@@ -171,7 +156,7 @@ class OfferNotificationBubbleViewsBrowserTestWithoutPromoCodes
 // offer if the feature flag is disabled.
 IN_PROC_BROWSER_TEST_F(OfferNotificationBubbleViewsBrowserTestWithoutPromoCodes,
                        NoPromoCodeOffer) {
-  auto offer_data = CreatePromoCodeOfferDataWithDomains(
+  auto offer_data = CreateGPayPromoCodeOfferDataWithDomains(
       {GURL("https://www.example.com/"), GURL("https://www.test.com/")});
   personal_data()->AddOfferDataForTest(std::move(offer_data));
   personal_data()->NotifyPersonalDataObserver();

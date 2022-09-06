@@ -5,6 +5,7 @@
 #ifndef UI_GFX_MOJOM_ACCELERATED_WIDGET_MOJOM_TRAITS_H_
 #define UI_GFX_MOJOM_ACCELERATED_WIDGET_MOJOM_TRAITS_H_
 
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "ui/gfx/mojom/accelerated_widget.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -15,9 +16,9 @@ template <>
 struct StructTraits<gfx::mojom::AcceleratedWidgetDataView,
                     gfx::AcceleratedWidget> {
   static uint64_t widget(gfx::AcceleratedWidget widget) {
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     return reinterpret_cast<uint64_t>(widget);
-#elif defined(USE_OZONE) || defined(OS_MAC)
+#elif defined(USE_OZONE) || BUILDFLAG(IS_MAC)
     return static_cast<uint64_t>(widget);
 #else
     NOTREACHED();
@@ -27,10 +28,10 @@ struct StructTraits<gfx::mojom::AcceleratedWidgetDataView,
 
   static bool Read(gfx::mojom::AcceleratedWidgetDataView data,
                    gfx::AcceleratedWidget* out) {
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     *out = reinterpret_cast<gfx::AcceleratedWidget>(data.widget());
     return true;
-#elif defined(USE_OZONE) || defined(OS_MAC)
+#elif defined(USE_OZONE) || BUILDFLAG(IS_MAC)
     *out = static_cast<gfx::AcceleratedWidget>(data.widget());
     return true;
 #else

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/crosapi/test_controller_ash.h"
 
+#include <utility>
+
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -13,13 +15,25 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/callback_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/version.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chrome/browser/ash/crosapi/vpn_service_ash.h"
 #include "chrome/browser/ash/crosapi/window_util.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sharesheet/sharesheet_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_third_party_vpn_driver_client.h"
+#include "components/version_info/version_info.h"
+#include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -30,6 +44,8 @@
 #include "ui/events/event_source.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/interaction/interaction_test_util_views.h"
 
 namespace crosapi {
 
@@ -44,9 +60,10 @@ bool Dispatch(aura::WindowTreeHost* host, ui::Event* event) {
 }
 
 // Returns whether the dispatcher or target was destroyed.
-bool DispatchMouseEvent(aura::Window* window, ui::EventType type) {
-  const gfx::Point center = window->bounds().CenterPoint();
-  ui::MouseEvent press(type, center, center, ui::EventTimeForNow(),
+bool DispatchMouseEvent(aura::Window* window,
+                        ui::EventType type,
+                        gfx::Point location) {
+  ui::MouseEvent press(type, location, location, ui::EventTimeForNow(),
                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   return Dispatch(window->GetHost(), &press);
 }
@@ -76,13 +93,48 @@ void TestControllerAsh::BindReceiver(
 #endif
 }
 
+void TestControllerAsh::ClickElement(const std::string& element_name,
+                                     ClickElementCallback callback) {
+  ui::ElementIdentifier id =
+      ui::ElementIdentifier::FromName(element_name.c_str());
+  if (!id) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  auto views = views::ElementTrackerViews::GetInstance()
+                   ->GetAllMatchingViewsInAnyContext(id);
+  if (views.empty()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  // Pick the first view that matches the element name.
+  views::View* view = views[0];
+
+  // We directly send mouse events to the view. It's also possible to use
+  // EventGenerator to move the mouse and send a click. Unfortunately, that
+  // approach has occasional flakiness. This is presumably due to another window
+  // appearing on top of the dialog and taking the mouse events but has not been
+  // explicitly diagnosed.
+  views::TrackedElementViews* tracked_element =
+      views::ElementTrackerViews::GetInstance()->GetElementForView(
+          view, /*assign_temporary_id=*/false);
+  views::test::InteractionTestUtilSimulatorViews simulator;
+  simulator.PressButton(tracked_element,
+                        ui::test::InteractionTestUtil::InputType::kMouse);
+
+  std::move(callback).Run(/*success=*/true);
+}
+
 void TestControllerAsh::ClickWindow(const std::string& window_id) {
   aura::Window* window = GetShellSurfaceWindow(window_id);
   if (!window)
     return;
-  bool destroyed = DispatchMouseEvent(window, ui::ET_MOUSE_PRESSED);
+  const gfx::Point center = window->bounds().CenterPoint();
+  bool destroyed = DispatchMouseEvent(window, ui::ET_MOUSE_PRESSED, center);
   if (!destroyed) {
-    DispatchMouseEvent(window, ui::ET_MOUSE_RELEASED);
+    DispatchMouseEvent(window, ui::ET_MOUSE_RELEASED, center);
   }
 }
 
@@ -93,10 +145,31 @@ void TestControllerAsh::DoesItemExistInShelf(
   std::move(callback).Run(exists);
 }
 
+void TestControllerAsh::DoesElementExist(const std::string& element_name,
+                                         DoesElementExistCallback callback) {
+  ui::ElementIdentifier id =
+      ui::ElementIdentifier::FromName(element_name.c_str());
+  if (!id) {
+    std::move(callback).Run(/*exists=*/false);
+    return;
+  }
+
+  bool any_elements_exist = !views::ElementTrackerViews::GetInstance()
+                                 ->GetAllMatchingViewsInAnyContext(id)
+                                 .empty();
+  std::move(callback).Run(/*exists=*/any_elements_exist);
+}
+
 void TestControllerAsh::DoesWindowExist(const std::string& window_id,
                                         DoesWindowExistCallback callback) {
   aura::Window* window = GetShellSurfaceWindow(window_id);
-  std::move(callback).Run(window != nullptr);
+  // A window exists if it is either visible or minimized.
+  bool exists = false;
+  if (window) {
+    auto* window_state = ash::WindowState::Get(window);
+    exists = window->IsVisible() || window_state->IsMinimized();
+  }
+  std::move(callback).Run(exists);
 }
 
 void TestControllerAsh::EnterOverviewMode(EnterOverviewModeCallback callback) {
@@ -203,6 +276,21 @@ void TestControllerAsh::SelectItemInShelf(const std::string& item_id,
   std::move(callback).Run(/*success=*/true);
 }
 
+void TestControllerAsh::SelectContextMenuForShelfItem(
+    const std::string& item_id,
+    uint32_t index,
+    SelectContextMenuForShelfItemCallback callback) {
+  ash::ShelfItemDelegate* delegate =
+      ash::ShelfModel::Get()->GetShelfItemDelegate(ash::ShelfID(item_id));
+  if (!delegate) {
+    std::move(callback).Run(false);
+    return;
+  }
+  delegate->GetContextMenu(
+      /*display_id=*/0,
+      base::BindOnce(&TestControllerAsh::OnSelectContextMenuForShelfItem,
+                     std::move(callback), item_id, index));
+}
 void TestControllerAsh::SendTouchEvent(const std::string& window_id,
                                        mojom::TouchEventType type,
                                        uint8_t pointer_id,
@@ -285,10 +373,24 @@ void TestControllerAsh::OnGetContextMenuForShelfItem(
     GetContextMenuForShelfItemCallback callback,
     std::unique_ptr<ui::SimpleMenuModel> model) {
   std::vector<std::string> items;
+  items.reserve(model->GetItemCount());
   for (int i = 0; i < model->GetItemCount(); ++i) {
     items.push_back(base::UTF16ToUTF8(model->GetLabelAt(i)));
   }
   std::move(callback).Run(std::move(items));
+}
+
+void TestControllerAsh::OnSelectContextMenuForShelfItem(
+    SelectContextMenuForShelfItemCallback callback,
+    const std::string& item_id,
+    uint32_t index,
+    std::unique_ptr<ui::SimpleMenuModel> model) {
+  if (index < model->GetItemCount()) {
+    model->ActivatedAt(index, /*event_flags=*/0);
+    std::move(callback).Run(/*success=*/true);
+    return;
+  }
+  std::move(callback).Run(/*success=*/false);
 }
 
 void TestControllerAsh::GetOpenAshBrowserWindows(
@@ -303,6 +405,40 @@ void TestControllerAsh::CloseAllBrowserWindows(
   }
 
   std::move(callback).Run(/*success*/ true);
+}
+
+void TestControllerAsh::TriggerTabScrubbing(
+    float x_offset,
+    TriggerTabScrubbingCallback callback) {
+  crosapi::BrowserManager::Get()->HandleTabScrubbing(x_offset);
+
+  // Return whether tab scrubbing logic has started or not in Ash.
+  //
+  // In practice, it is expected that it does not trigger the scrubbing logic,
+  // returning |false|, and signal Lacros to do so.
+  bool scrubbing = TabScrubberChromeOS::GetInstance()->IsActivationPending();
+  std::move(callback).Run(scrubbing);
+}
+
+void TestControllerAsh::SetSelectedSharesheetApp(
+    const std::string& app_id,
+    SetSelectedSharesheetAppCallback callback) {
+  sharesheet::SharesheetService::SetSelectedAppForTesting(
+      base::UTF8ToUTF16(app_id));
+
+  std::move(callback).Run();
+}
+
+void TestControllerAsh::GetAshVersion(GetAshVersionCallback callback) {
+  std::move(callback).Run(version_info::GetVersion().GetString());
+}
+
+void TestControllerAsh::BindTestShillController(
+    mojo::PendingReceiver<crosapi::mojom::TestShillController> receiver,
+    BindTestShillControllerCallback callback) {
+  mojo::MakeSelfOwnedReceiver<crosapi::mojom::TestShillController>(
+      std::make_unique<crosapi::TestShillControllerAsh>(), std::move(receiver));
+  std::move(callback).Run();
 }
 
 // This class waits for overview mode to either enter or exit and fires a
@@ -356,5 +492,44 @@ class TestControllerAsh::OverviewWaiter : public ash::OverviewObserver {
   // The test controller owns this object so is never invalid.
   TestControllerAsh* test_controller_;
 };
+
+TestShillControllerAsh::TestShillControllerAsh() {
+  chromeos::ShillProfileClient::Get()->GetTestInterface()->AddProfile(
+      "/network/test", ash::ProfileHelper::GetUserIdHashFromProfile(
+                           ProfileManager::GetPrimaryUserProfile()));
+}
+
+TestShillControllerAsh::~TestShillControllerAsh() = default;
+
+void TestShillControllerAsh::OnPacketReceived(
+    const std::string& extension_id,
+    const std::string& configuration_name,
+    const std::vector<uint8_t>& data) {
+  const std::string key = crosapi::VpnServiceForExtensionAsh::GetKey(
+      extension_id, configuration_name);
+  const std::string shill_key = shill::kObjectPathBase + key;
+  // On linux ShillThirdPartyVpnDriverClient is initialized as Fake and
+  // therefore exposes a testing interface.
+  auto* client =
+      chromeos::ShillThirdPartyVpnDriverClient::Get()->GetTestInterface();
+  CHECK(client);
+  client->OnPacketReceived(shill_key,
+                           std::vector<char>(data.begin(), data.end()));
+}
+
+void TestShillControllerAsh::OnPlatformMessage(
+    const std::string& extension_id,
+    const std::string& configuration_name,
+    uint32_t message) {
+  const std::string key = crosapi::VpnServiceForExtensionAsh::GetKey(
+      extension_id, configuration_name);
+  const std::string shill_key = shill::kObjectPathBase + key;
+  // On linux ShillThirdPartyVpnDriverClient is initialized as Fake and
+  // therefore exposes a testing interface.
+  auto* client =
+      chromeos::ShillThirdPartyVpnDriverClient::Get()->GetTestInterface();
+  CHECK(client);
+  client->OnPlatformMessage(shill_key, message);
+}
 
 }  // namespace crosapi

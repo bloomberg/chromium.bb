@@ -145,6 +145,15 @@ uint32_t WelsCPUFeatureDetect (int32_t* pNumberOfLogicProcessors) {
     }
   }
 
+  if (uiMaxCpuidLevel >= 7) {
+    uiFeatureC = WelsCPUDetectAVX512();
+    if (uiFeatureC & 0x10000) uiCPU |= WELS_CPU_AVX512F;
+    if (uiFeatureC & 0x10000000) uiCPU |= WELS_CPU_AVX512CD;
+    if (uiFeatureC & 0x20000) uiCPU |= WELS_CPU_AVX512DQ;
+    if (uiFeatureC & 0x40000000) uiCPU |= WELS_CPU_AVX512BW;
+    if (uiFeatureC & 0x80000000) uiCPU |= WELS_CPU_AVX512VL;
+  }
+
   if (pNumberOfLogicProcessors != NULL) {
     if (uiCPU & WELS_CPU_HTT) {
       *pNumberOfLogicProcessors = (uiFeatureB & 0x00ff0000) >> 16; // feature bits: 23-16 on returned EBX
@@ -308,7 +317,7 @@ uint32_t WelsCPUFeatureDetect (int32_t* pNumberOfLogicProcessors) {
 }
 
 #elif defined(mips)
-/* for loongson */
+/* Get cpu features from cpuinfo. */
 static uint32_t get_cpu_flags_from_cpuinfo(void)
 {
     uint32_t flags = 0;
@@ -348,6 +357,33 @@ static uint32_t get_cpu_flags_from_cpuinfo(void)
 
 uint32_t WelsCPUFeatureDetect (int32_t* pNumberOfLogicProcessors) {
     return get_cpu_flags_from_cpuinfo();
+}
+
+#elif defined(__loongarch__) && defined(__linux__)
+/* The CPUCFG instruction is used to dynamically identify the characteristics
+ * of the loongarch in the running processor during software execution. */
+#define LOONGARCH_CFG2 0x02
+#define LOONGARCH_CFG2_LSX  (1<<6)
+#define LOONGARCH_CFG2_LASX (1<<7)
+
+static uint32_t get_cpu_flags_from_cpucfg(void) {
+  uint32_t reg = 0;
+  uint32_t flags = 0;
+
+  __asm__ volatile(
+    "cpucfg %0, %1 \n\t"
+    : "+&r"(reg)
+    : "r"(LOONGARCH_CFG2)
+  );
+  if (reg & LOONGARCH_CFG2_LSX)
+      flags |= WELS_CPU_LSX;
+  if (reg & LOONGARCH_CFG2_LASX)
+      flags |= WELS_CPU_LASX;
+  return flags;
+}
+
+uint32_t WelsCPUFeatureDetect (int32_t* pNumberOfLogicProcessors) {
+    return get_cpu_flags_from_cpucfg();
 }
 
 #else /* Neither X86_ASM, HAVE_NEON, HAVE_NEON_AARCH64 nor mips */

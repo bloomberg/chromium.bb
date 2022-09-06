@@ -18,6 +18,9 @@ extern const char kHistogramPrerenderActivationToLargestContentfulPaint2[];
 extern const char kHistogramPrerenderFirstInputDelay4[];
 extern const char kHistogramPrerenderCumulativeShiftScore[];
 extern const char kHistogramPrerenderCumulativeShiftScoreMainFrame[];
+extern const char
+    kHistogramPrerenderMaxCumulativeShiftScoreSessionWindowGap1000msMax5000ms2
+        [];
 
 }  // namespace internal
 
@@ -33,6 +36,9 @@ class PrerenderPageLoadMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override;
   ObservePolicy OnPrerenderStart(content::NavigationHandle* navigation_handle,
                                  const GURL& currently_committed_url) override;
   void DidActivatePrerenderedPage(

@@ -4,6 +4,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 #include "content/browser/web_package/web_bundle_browsertest_base.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/public/common/content_client.h"
@@ -91,14 +92,14 @@ class WebBundleTrustableFileBrowserTest
                                 contents.size()) > 0);
   }
 
-  void WriteCommonWebBundleFile(std::string version_suffix = "_b2") {
+  void WriteCommonWebBundleFile() {
     std::string contents;
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::ReadFileToString(
-          web_bundle_browsertest_utils::GetTestDataPath(
-              "web_bundle_browsertest" + version_suffix + ".wbn"),
-          &contents));
+      ASSERT_TRUE(
+          base::ReadFileToString(web_bundle_browsertest_utils::GetTestDataPath(
+                                     "web_bundle_browsertest_b2.wbn"),
+                                 &contents));
     }
     WriteWebBundleFile(contents);
   }
@@ -130,12 +131,12 @@ class WebBundleTrustableFileBrowserTest
       test_data_url_ = net::FilePathToFileURL(file_path);
       return;
     }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     DCHECK_EQ(web_bundle_browsertest_utils::TestFilePathMode::kContentURI,
               GetParam());
     web_bundle_browsertest_utils::CopyFileAndGetContentUri(
         file_path, &test_data_url_, &test_data_file_path_);
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   GURL test_data_url_;
@@ -143,14 +144,7 @@ class WebBundleTrustableFileBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
-                       TrustableWebBundleFileB1) {
-  WriteCommonWebBundleFile("_b1");
-  NavigateToBundleAndWaitForReady(
-      test_data_url(), GURL(web_bundle_browsertest_utils::kTestPageUrl));
-}
-
-IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
-                       TrustableWebBundleFileB2) {
+                       TrustableWebBundleFile) {
   WriteCommonWebBundleFile();
   NavigateToBundleAndWaitForReady(
       test_data_url(), GURL(web_bundle_browsertest_utils::kTestPageUrl));
@@ -192,7 +186,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
       &web_bundle_browsertest_utils::RunSameDocumentNavigationTest);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_IframeNavigation DISABLED_IframeNavigation
 #else
 #define MAYBE_IframeNavigation IframeNavigation
@@ -219,7 +213,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
           RunIframeParentInitiatedOutOfBundleNavigationTest);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_IframeSameDocumentNavigation DISABLED_IframeSameDocumentNavigation
 #else
 #define MAYBE_IframeSameDocumentNavigation IframeSameDocumentNavigation
@@ -290,7 +284,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, WindowOpen) {
 }
 
 // TODO(https://crbug.com/1225178): flaky
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_NoPrimaryURLFound DISABLED_NoPrimaryURLFound
 #else
 #define MAYBE_NoPrimaryURLFound NoPrimaryURLFound
@@ -346,7 +340,7 @@ class WebBundleTrustableFileNotFoundBrowserTest
 };
 
 // TODO(https://crbug.com/1227439): flaky
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_NotFound DISABLED_NotFound
 #else
 #define MAYBE_NotFound NotFound

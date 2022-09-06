@@ -6,7 +6,6 @@
 #define BASE_POWER_MONITOR_POWER_MONITOR_SOURCE_H_
 
 #include "base/base_export.h"
-#include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -36,8 +35,8 @@ class BASE_EXPORT PowerMonitorSource {
 
   // Reads the initial operating system CPU speed limit, if available on the
   // platform. Otherwise returns PowerThermalObserver::kSpeedLimitMax.
-  // Only called on the main thead in PowerMonitor::Initialize().
-  // The actual speed limit value will be updated asynchronosulsy via the
+  // Only called on the main thread in PowerMonitor::Initialize().
+  // The actual speed limit value will be updated asynchronously via the
   // ProcessSpeedLimitEvent() if/when the value changes.
   virtual int GetInitialSpeedLimit();
 
@@ -49,10 +48,10 @@ class BASE_EXPORT PowerMonitorSource {
   // running on battery power.
   virtual bool IsOnBatteryPower() = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Read and return the current remaining battery capacity (microampere-hours).
   virtual int GetRemainingBatteryCapacity();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   static const char* DeviceThermalStateToString(
       PowerThermalObserver::DeviceThermalState state);
@@ -62,6 +61,8 @@ class BASE_EXPORT PowerMonitorSource {
 
   // Friend function that is allowed to access the protected ProcessPowerEvent.
   friend void ProcessPowerEventHelper(PowerEvent);
+  friend void ProcessThermalEventHelper(
+      PowerThermalObserver::DeviceThermalState);
 
   // Process*Event should only be called from a single thread, most likely
   // the UI thread or, in child processes, the IO thread.

@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 namespace {
@@ -28,14 +29,20 @@ namespace {
 using ::testing::_;
 using ::testing::Contains;
 using ::testing::Eq;
+using ::testing::FieldsAre;
+using ::testing::FloatNear;
 using ::testing::IsEmpty;
+using ::testing::IsSupersetOf;
 using ::testing::Key;
 using ::testing::Mock;
 using ::testing::Ne;
 using ::testing::NotNull;
+using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
+
+constexpr float kMarkerEpsilon = .01f;
 
 class MockFrameDataCallback {
  public:
@@ -117,10 +124,16 @@ TEST(SkottieWrapperTest, LoadsImageAssetsMetadata) {
   EXPECT_THAT(
       metadata.asset_storage(),
       UnorderedElementsAre(
-          Pair("image_0", base::FilePath(FILE_PATH_LITERAL("images/img_0.jpg"))
-                              .NormalizePathSeparators()),
-          Pair("image_1", base::FilePath(FILE_PATH_LITERAL("images/img_1.jpg"))
-                              .NormalizePathSeparators())));
+          Pair("image_0",
+               FieldsAre(base::FilePath(FILE_PATH_LITERAL("images/img_0.jpg"))
+                             .NormalizePathSeparators(),
+                         Optional(gfx::Size(kLottieDataWith2AssetsWidth,
+                                            kLottieDataWith2AssetsHeight)))),
+          Pair("image_1",
+               FieldsAre(base::FilePath(FILE_PATH_LITERAL("images/img_1.jpg"))
+                             .NormalizePathSeparators(),
+                         Optional(gfx::Size(kLottieDataWith2AssetsWidth,
+                                            kLottieDataWith2AssetsHeight))))));
 }
 
 TEST(SkottieWrapperTest, LoadsCorrectAssetsForDraw) {
@@ -132,13 +145,15 @@ TEST(SkottieWrapperTest, LoadsCorrectAssetsForDraw) {
   EXPECT_CALL(mock_callback,
               OnAssetLoaded(HashSkottieResourceId("image_0"), _, _, _));
   skottie->Draw(&canvas, /*t=*/0.25, SkRect::MakeWH(500, 500),
-                mock_callback.Get());
+                mock_callback.Get(), SkottieColorMap(),
+                SkottieTextPropertyValueMap());
   Mock::VerifyAndClearExpectations(&mock_callback);
 
   EXPECT_CALL(mock_callback,
               OnAssetLoaded(HashSkottieResourceId("image_1"), _, _, _));
   skottie->Draw(&canvas, /*t=*/0.75, SkRect::MakeWH(500, 500),
-                mock_callback.Get());
+                mock_callback.Get(), SkottieColorMap(),
+                SkottieTextPropertyValueMap());
   Mock::VerifyAndClearExpectations(&mock_callback);
 }
 
@@ -149,7 +164,8 @@ TEST(SkottieWrapperTest, AllowsNullFrameDataCallbackForDraw) {
   // Just verify that this call does not cause a CHECK failure.
   ::testing::NiceMock<MockCanvas> canvas;
   skottie->Draw(&canvas, /*t=*/0, SkRect::MakeWH(500, 500),
-                SkottieWrapper::FrameDataCallback());
+                SkottieWrapper::FrameDataCallback(), SkottieColorMap(),
+                SkottieTextPropertyValueMap());
 }
 
 TEST(SkottieWrapperTest, LoadsCorrectAssetsForSeek) {
@@ -167,6 +183,141 @@ TEST(SkottieWrapperTest, LoadsCorrectAssetsForSeek) {
               OnAssetLoaded(HashSkottieResourceId("image_1"), _, _, _));
   skottie->Seek(/*t=*/0.75, mock_callback.Get());
   Mock::VerifyAndClearExpectations(&mock_callback);
+}
+
+TEST(SkottieWrapperTest, LoadsColorNodes) {
+  auto skottie = CreateSkottieFromString(kLottieDataWithoutAssets1);
+  ASSERT_TRUE(skottie->is_valid());
+  EXPECT_THAT(
+      skottie->GetCurrentColorPropertyValues(),
+      UnorderedElementsAre(
+          Pair(HashSkottieResourceId(kLottieDataWithoutAssets1Color1Node),
+               kLottieDataWithoutAssets1Color1),
+          Pair(HashSkottieResourceId(kLottieDataWithoutAssets1Color2Node),
+               kLottieDataWithoutAssets1Color2)));
+}
+
+TEST(SkottieWrapperTest, SetsColorNodesWithDraw) {
+  auto skottie = CreateSkottieFromString(kLottieDataWithoutAssets1);
+  ASSERT_TRUE(skottie->is_valid());
+  ::testing::NiceMock<MockCanvas> canvas;
+
+  SkottieColorMap color_map = {
+      {HashSkottieResourceId(kLottieDataWithoutAssets1Color1Node),
+       SK_ColorYELLOW},
+      {HashSkottieResourceId(kLottieDataWithoutAssets1Color2Node),
+       SK_ColorCYAN}};
+  skottie->Draw(&canvas, /*t=*/0, SkRect::MakeWH(500, 500),
+                SkottieWrapper::FrameDataCallback(), color_map,
+                SkottieTextPropertyValueMap());
+  EXPECT_THAT(
+      skottie->GetCurrentColorPropertyValues(),
+      UnorderedElementsAre(
+          Pair(HashSkottieResourceId(kLottieDataWithoutAssets1Color1Node),
+               SK_ColorYELLOW),
+          Pair(HashSkottieResourceId(kLottieDataWithoutAssets1Color2Node),
+               SK_ColorCYAN)));
+
+  color_map = {{HashSkottieResourceId(kLottieDataWithoutAssets1Color2Node),
+                SK_ColorMAGENTA}};
+  skottie->Draw(&canvas, /*t=*/0, SkRect::MakeWH(500, 500),
+                SkottieWrapper::FrameDataCallback(), color_map,
+                SkottieTextPropertyValueMap());
+  EXPECT_THAT(
+      skottie->GetCurrentColorPropertyValues(),
+      UnorderedElementsAre(
+          Pair(HashSkottieResourceId(kLottieDataWithoutAssets1Color1Node),
+               SK_ColorYELLOW),
+          Pair(HashSkottieResourceId(kLottieDataWithoutAssets1Color2Node),
+               SK_ColorMAGENTA)));
+}
+
+TEST(SkottieWrapperTest, LoadsTextNodes) {
+  auto skottie = CreateSkottieFromTestDataDir(kLottieDataWith2TextFileName);
+  ASSERT_TRUE(skottie->is_valid());
+  EXPECT_THAT(skottie->GetTextNodeNames(),
+              UnorderedElementsAre(kLottieDataWith2TextNode1,
+                                   kLottieDataWith2TextNode2));
+  EXPECT_THAT(skottie->GetCurrentTextPropertyValues(),
+              UnorderedElementsAre(
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                       SkottieTextPropertyValue(
+                           std::string(kLottieDataWith2TextNode1Text),
+                           kLottieDataWith2TextNode1Box)),
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                       SkottieTextPropertyValue(
+                           std::string(kLottieDataWith2TextNode2Text),
+                           kLottieDataWith2TextNode2Box))));
+}
+
+TEST(SkottieWrapperTest, SetsTextNodesWithDraw) {
+  auto skottie = CreateSkottieFromTestDataDir(kLottieDataWith2TextFileName);
+  ASSERT_TRUE(skottie->is_valid());
+  ::testing::NiceMock<MockCanvas> canvas;
+
+  SkottieTextPropertyValueMap text_map = {
+      {HashSkottieResourceId(kLottieDataWith2TextNode1),
+       SkottieTextPropertyValue("new-test-text-1", gfx::RectF(1, 1, 1, 1))},
+      {HashSkottieResourceId(kLottieDataWith2TextNode2),
+       SkottieTextPropertyValue("new-test-text-2", gfx::RectF(2, 2, 2, 2))}};
+  skottie->Draw(&canvas, /*t=*/0, SkRect::MakeWH(500, 500),
+                SkottieWrapper::FrameDataCallback(), SkottieColorMap(),
+                text_map);
+  EXPECT_THAT(skottie->GetCurrentTextPropertyValues(),
+              UnorderedElementsAre(
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                       SkottieTextPropertyValue("new-test-text-1",
+                                                gfx::RectF(1, 1, 1, 1))),
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                       SkottieTextPropertyValue("new-test-text-2",
+                                                gfx::RectF(2, 2, 2, 2)))));
+
+  text_map = {
+      {HashSkottieResourceId(kLottieDataWith2TextNode2),
+       SkottieTextPropertyValue("new-test-text-2b", gfx::RectF(3, 3, 3, 3))}};
+  skottie->Draw(&canvas, /*t=*/0.1, SkRect::MakeWH(500, 500),
+                SkottieWrapper::FrameDataCallback(), SkottieColorMap(),
+                text_map);
+  EXPECT_THAT(skottie->GetCurrentTextPropertyValues(),
+              UnorderedElementsAre(
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                       SkottieTextPropertyValue("new-test-text-1",
+                                                gfx::RectF(1, 1, 1, 1))),
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                       SkottieTextPropertyValue("new-test-text-2b",
+                                                gfx::RectF(3, 3, 3, 3)))));
+}
+
+TEST(SkottieWrapperTest, Marker) {
+  auto skottie = CreateSkottieFromString(kLottieDataWith2Markers);
+  ASSERT_TRUE(skottie->is_valid());
+  EXPECT_THAT(
+      skottie->GetAllMarkers(),
+      UnorderedElementsAre(
+          FieldsAre(
+              kLottieDataWith2MarkersMarker1,
+              FloatNear(kLottieDataWith2MarkersMarker1Time, kMarkerEpsilon),
+              FloatNear(kLottieDataWith2MarkersMarker1Time, kMarkerEpsilon)),
+          FieldsAre(
+              kLottieDataWith2MarkersMarker2,
+              FloatNear(kLottieDataWith2MarkersMarker2Time, kMarkerEpsilon),
+              FloatNear(kLottieDataWith2MarkersMarker2Time, kMarkerEpsilon))));
+}
+
+TEST(SkottieWrapperTest, LoadsTransformNodes) {
+  auto skottie = CreateSkottieFromTestDataDir(kLottieDataWith2TextFileName);
+  ASSERT_TRUE(skottie->is_valid());
+  EXPECT_THAT(skottie->GetTextNodeNames(),
+              UnorderedElementsAre(kLottieDataWith2TextNode1,
+                                   kLottieDataWith2TextNode2));
+  EXPECT_THAT(
+      skottie->GetCurrentTransformPropertyValues(),
+      IsSupersetOf({Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                         SkottieTransformPropertyValue(
+                             {kLottieDataWith2TextNode1Position})),
+                    Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                         SkottieTransformPropertyValue(
+                             {kLottieDataWith2TextNode2Position}))}));
 }
 
 }  // namespace

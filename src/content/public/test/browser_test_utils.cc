@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
+#include "base/no_destructor.h"
 #include "base/process/kill.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -28,7 +29,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
@@ -77,7 +77,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -97,6 +96,7 @@
 #include "net/base/io_buffer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/same_party_context.h"
 #include "net/filter/gzip_header.h"
@@ -134,7 +134,7 @@
 #include "ui/latency/latency_info.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <combaseapi.h>
 #include <uiautomation.h>
 #include <wrl/client.h>
@@ -155,22 +155,14 @@
 namespace content {
 namespace {
 
-// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
-                         const std::string& script,
-                         bool user_gesture,
-                         int32_t world_id,
-                         std::unique_ptr<base::Value>* result)
-    WARN_UNUSED_RESULT;
-
 // Executes the passed |script| in the frame specified by |render_frame_host|.
 // If |result| is not NULL, stores the value that the evaluation of the script
 // in |result|.  Returns true on success.
-bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
-                         const std::string& script,
-                         bool user_gesture,
-                         int32_t world_id,
-                         std::unique_ptr<base::Value>* result) {
+[[nodiscard]] bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
+                                       const std::string& script,
+                                       bool user_gesture,
+                                       int32_t world_id,
+                                       std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(render_frame_host);
 
@@ -179,8 +171,8 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
     // Prerendering pages will never have user gesture.
     CHECK(render_frame_host->GetLifecycleState() !=
           RenderFrameHost::LifecycleState::kPrerendering);
-    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16,
-                                                                world_id);
+    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
+        script16, base::NullCallback(), world_id);
   } else {
     // Note that |user_gesture| here is ignored when the world is not main. We
     // allow a value of |true| because it's the default, but in blink, the
@@ -238,10 +230,8 @@ bool ExecuteScriptWithUserGestureControl(RenderFrameHost* frame,
   }
 
   DCHECK_EQ(base::Value::Type::STRING, value->type());
-  std::string actual_response;
-  if (value->GetAsString(&actual_response))
-    DCHECK_EQ(expected_response, actual_response);
-
+  if (value->is_string())
+    DCHECK_EQ(expected_response, value->GetString());
   return true;
 }
 
@@ -812,8 +802,10 @@ BindFakeFrameWidgetInterfaces(RenderFrameHost* frame) {
 }
 
 void SimulateActiveStateForWidget(RenderFrameHost* frame, bool active) {
-  static_cast<RenderFrameHostImpl*>(frame)->GetRenderWidgetHost()->SetActive(
-      active);
+  static_cast<RenderFrameHostImpl*>(frame)
+      ->GetRenderWidgetHost()
+      ->delegate()
+      ->SendActiveState(active);
 }
 
 void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
@@ -856,7 +848,7 @@ void PrepContentsForBeforeUnloadTest(WebContents* web_contents,
       [](bool trigger_user_activation, RenderFrameHost* render_frame_host) {
         if (trigger_user_activation) {
           render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
-              std::u16string());
+              std::u16string(), base::NullCallback());
         }
 
         // Disable the hang monitor, otherwise there will be a race between the
@@ -929,7 +921,7 @@ void WaitForResizeComplete(WebContents* web_contents) {
     resize_observer.Wait();
   }
 }
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
 bool IsResizeComplete(RenderWidgetHostImpl* widget_host) {
   return !widget_host->visual_properties_ack_pending_for_testing();
 }
@@ -1001,13 +993,13 @@ void SimulateMouseClickOrTapElementWithId(content::WebContents* web_contents,
   gfx::Point point = gfx::ToFlooredPoint(
       GetCenterCoordinatesOfElementWithId(web_contents, id));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SimulateTapDownAt(web_contents, point);
   SimulateTapAt(web_contents, point);
 #else
   SimulateMouseClickAt(web_contents, 0, blink::WebMouseEvent::Button::kLeft,
                        point);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void SimulateMouseEvent(WebContents* web_contents,
@@ -1053,7 +1045,7 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
   widget_host->ForwardWheelEvent(wheel_event);
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
                                      bool zoom_in,
@@ -1095,7 +1087,7 @@ void SimulateTouchscreenPinch(WebContents* web_contents,
           std::move(on_complete)));
 }
 
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 void SimulateGesturePinchSequence(WebContents* web_contents,
                                   const gfx::Point& point,
@@ -1399,12 +1391,17 @@ void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
   // Prerendering pages will never have user gesture.
   if (adapter.render_frame_host()->GetLifecycleState() ==
       RenderFrameHost::LifecycleState::kPrerendering) {
-    adapter.render_frame_host()->ExecuteJavaScriptForTests(
-        base::UTF8ToUTF16(script), base::NullCallback());
+    ExecuteScriptAsyncWithoutUserGesture(adapter, script);
   } else {
     adapter.render_frame_host()->ExecuteJavaScriptWithUserGestureForTests(
-        base::UTF8ToUTF16(script));
+        base::UTF8ToUTF16(script), base::NullCallback());
   }
+}
+
+void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
+                                          const std::string& script) {
+  adapter.render_frame_host()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16(script), base::NullCallback());
 }
 
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
@@ -1467,9 +1464,15 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
   // Prerendering pages will never have user gesture.
   bool user_gesture = adapter.render_frame_host()->GetLifecycleState() !=
                       RenderFrameHost::LifecycleState::kPrerendering;
-  return ExecuteScriptHelper(adapter.render_frame_host(), script, user_gesture,
-                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
-         value && value->GetAsString(result);
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, user_gesture,
+                           ISOLATED_WORLD_ID_GLOBAL, &value)) {
+    return false;
+  }
+  if (value && value->is_string()) {
+    *result = value->GetString();
+    return true;
+  }
+  return false;
 }
 
 bool ExecuteScriptWithoutUserGestureAndExtractBool(
@@ -1493,9 +1496,16 @@ bool ExecuteScriptWithoutUserGestureAndExtractString(
     std::string* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
-         value && value->GetAsString(result);
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, false,
+                           ISOLATED_WORLD_ID_GLOBAL, &value)) {
+    return false;
+  }
+
+  if (value && value->is_string()) {
+    *result = value->GetString();
+    return true;
+  }
+  return false;
 }
 
 // EvalJsResult methods.
@@ -1542,13 +1552,13 @@ double EvalJsResult::ExtractDouble() const {
   return value.GetDouble();
 }
 
-base::ListValue EvalJsResult::ExtractList() const {
+base::Value EvalJsResult::ExtractList() const {
   CHECK(error.empty())
       << "Can't ExtractList() because the script encountered a problem: "
       << error;
   CHECK(value.is_list()) << "Can't ExtractList() because script result: "
                          << value << "is not a list.";
-  return base::ListValue(value.GetList());
+  return value.Clone();
 }
 
 void PrintTo(const EvalJsResult& bar, ::std::ostream* os) {
@@ -1588,7 +1598,7 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
   // |source_frame_pattern| should match any line that looks like a stack frame
   // from a source file named |source_name|.
   const std::string source_frame_pattern =
-      base::StringPrintf("    at * (%s:*:*)", source_name.c_str());
+      base::StringPrintf("    at *%s:*:*", source_name.c_str());
 
   // This is the amount of indentation that is applied to the lines of inserted
   // annotations.
@@ -1658,91 +1668,149 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
   return annotated_error.str();
 }
 
-EvalJsResult EvalRunnerScript(const ToRenderFrameHost& execution_target,
-                              const std::string& script,
-                              int options,
-                              int32_t world_id,
-                              const std::string& token) {
-  const char* kSourceURL = "__const_std::string&_script__";
-  bool use_automatic_reply = !(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY);
-  bool user_gesture =
-      execution_target.render_frame_host()->GetLifecycleState() ==
-              RenderFrameHost::LifecycleState::kPrerendering
-          ? false
-          : !(options & EXECUTE_SCRIPT_NO_USER_GESTURE);
-  std::ostringstream error_stream;
-  std::unique_ptr<base::Value> response;
-  if (!execution_target.render_frame_host()->IsRenderFrameLive()) {
-    error_stream << "Error: EvalJs won't work on an already-crashed frame.";
-  } else if (!ExecuteScriptHelper(execution_target.render_frame_host(), script,
-                                  user_gesture, world_id, &response)) {
-    error_stream << "Internal Error: ExecuteScriptHelper failed";
-  } else if (!response) {
-    error_stream << "Internal Error: no value";
-  } else {
-    bool is_reply_from_script = response->is_list() &&
-                                response->GetList().size() == 2 &&
-                                response->GetList()[0].is_string() &&
-                                response->GetList()[0].GetString() == token;
+// Waits for a response from ExecuteJavaScriptForTests, simulating an
+// error if the target renderer is destroyed while executing the script.
+class ExecuteJavaScriptForTestsWaiter : public WebContentsObserver {
+ public:
+  explicit ExecuteJavaScriptForTestsWaiter(const ToRenderFrameHost& adapter)
+      : WebContentsObserver(
+            WebContents::FromRenderFrameHost(adapter.render_frame_host())),
+        render_frame_host_(adapter.render_frame_host()) {}
 
-    bool is_error = is_reply_from_script && response->GetList()[1].is_string();
-    bool is_automatic_success_reply =
-        is_reply_from_script && response->GetList()[1].is_list() &&
-        response->GetList()[1].GetList().size() == 1;
-
-    if (is_error) {
-      // This is a response generated by the error handler in our runner
-      // script. This occurs when the script throws an exception, or when
-      // eval throws a SyntaxError.
-      //
-      // Parse the stack trace here, and interleave lines of source code from
-      // |script| to aid debugging.
-      std::string error_text = response->GetList()[1].GetString();
-
-      if (base::StartsWith(error_text,
-                           "a JavaScript error:\nEvalError: Refused",
-                           base::CompareCase::SENSITIVE)) {
-        error_text =
-            "EvalJs encountered an EvalError, because eval() is blocked by the "
-            "document's CSP on this page. To test content that is protected by "
-            "CSP, consider using EvalJs with an isolated world. Details: " +
-            error_text;
-      }
-
-      CHECK(!error_text.empty());
-      error_stream << AnnotateAndAdjustJsStackTraces(error_text, kSourceURL,
-                                                     script, 0);
-    } else if (!use_automatic_reply) {
-      // When |script| itself calls domAutomationController.send() on success,
-      // |response| could be anything; so there's no more checking we can do:
-      // return |response| as success, with an empty error.
-      return EvalJsResult(std::move(*response), std::string());
-    } else if (is_automatic_success_reply) {
-      // Got a response from the runner script that indicates success (of the
-      // form [token, [completion_value]]. Return the completion value, with an
-      // empty error.
-      return EvalJsResult(std::move(response->GetList()[1].GetList()[0]),
-                          std::string());
-    } else {
-      // The response was not well-formed (it failed the token match), so it's
-      // not from our runner script. Fail with an explanation of the raw
-      // message. This allows us to reject other calls
-      // domAutomationController.send().
-      error_stream
-          << "Internal Error: expected a 2-element list of the form "
-          << "['" << token << "', [result]]; but got instead: " << *response
-          << " ... This is potentially because a script tried to call "
-             "domAutomationController.send itself -- that is only allowed "
-             "when using EXECUTE_SCRIPT_USE_MANUAL_REPLY.  When using "
-             "EvalJs(), result values are just the result of calling eval() on "
-             "the script -- the completion value is the value of the last "
-             "executed statement.  When using ExecJs(), there is no result "
-             "value.";
-    }
+  blink::mojom::LocalFrame::JavaScriptExecuteRequestForTestsCallback
+  GetCallback() {
+    return base::BindOnce(&ExecuteJavaScriptForTestsWaiter::SetValue,
+                          weak_ptr_factory_.GetWeakPtr());
   }
 
-  // Something went wrong. Return an empty value and a non-empty error.
-  return EvalJsResult(base::Value(), error_stream.str());
+  bool Wait() {
+    if (!has_value_)
+      run_loop_.Run();
+    return has_value_;
+  }
+
+  blink::mojom::JavaScriptExecutionResultType GetResultType() {
+    DCHECK(has_value_);
+    return type_;
+  }
+
+  const base::Value& GetResult() {
+    DCHECK(has_value_);
+    return value_;
+  }
+
+  // WebContentsObserver
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override {
+    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
+        status == base::TERMINATION_STATUS_STILL_RUNNING) {
+      return;
+    }
+    RendererTerminated();
+  }
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+    if (render_frame_host_ != render_frame_host)
+      return;
+    RendererTerminated();
+  }
+
+ private:
+  void RendererTerminated() {
+    render_frame_host_ = nullptr;
+    if (has_value_)
+      return;
+    SetValue(blink::mojom::JavaScriptExecutionResultType::kException,
+             base::Value("Renderer terminated"));
+  }
+
+  void SetValue(blink::mojom::JavaScriptExecutionResultType type,
+                base::Value value) {
+    DCHECK(!has_value_);
+    has_value_ = true;
+    type_ = type;
+    value_ = value.Clone();
+    run_loop_.Quit();
+  }
+
+  raw_ptr<RenderFrameHost> render_frame_host_;
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
+  bool has_value_ = false;
+  blink::mojom::JavaScriptExecutionResultType type_;
+  base::Value value_;
+
+  base::WeakPtrFactory<ExecuteJavaScriptForTestsWaiter> weak_ptr_factory_{this};
+};
+
+EvalJsResult EvalJsRunner(const ToRenderFrameHost& execution_target,
+                          const std::string& script,
+                          const std::string& source_url,
+                          int options,
+                          int32_t world_id) {
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(execution_target.render_frame_host());
+  if (!rfh->IsRenderFrameLive()) {
+    return EvalJsResult(
+        base::Value(), "Error: EvalJs won't work on an already-crashed frame.");
+  }
+
+  bool resolve_promises = !(options & EXECUTE_SCRIPT_NO_RESOLVE_PROMISES);
+  bool user_gesture = rfh->GetLifecycleState() !=
+                          RenderFrameHost::LifecycleState::kPrerendering &&
+                      !(options & EXECUTE_SCRIPT_NO_USER_GESTURE) &&
+                      world_id == ISOLATED_WORLD_ID_GLOBAL;
+
+  DOMMessageQueue dom_message_queue(rfh);
+  ExecuteJavaScriptForTestsWaiter waiter(rfh);
+  rfh->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script), user_gesture,
+                                 resolve_promises, world_id,
+                                 waiter.GetCallback());
+
+  bool has_value = waiter.Wait();
+  if (!has_value) {
+    return EvalJsResult(base::Value(),
+                        "Timeout waiting for Javascript to execute.");
+  }
+
+  using blink::mojom::JavaScriptExecutionResultType;
+  JavaScriptExecutionResultType result_type = waiter.GetResultType();
+  const base::Value& result_value = waiter.GetResult();
+
+  if (result_type == JavaScriptExecutionResultType::kException) {
+    // Parse the stack trace here, and interleave lines of source code from
+    // |script| to aid debugging.
+    CHECK(result_value.is_string() && !result_value.GetString().empty());
+    std::string error_text =
+        "a JavaScript error: \"" + result_value.GetString() + "\"";
+    return EvalJsResult(base::Value(), AnnotateAndAdjustJsStackTraces(
+                                           error_text, source_url, script, 0));
+  } else if (options & EXECUTE_SCRIPT_USE_MANUAL_REPLY) {
+    // Callers that set EXECUTE_SCRIPT_USE_MANUAL_REPLY expect this function to
+    // block until their JS calls `window.domAutomationController.send`. To
+    // support this, wait for a message from DOMMessageQueue and parse it as
+    // JSON.
+    std::string json;
+    if (!dom_message_queue.WaitForMessage(&json)) {
+      return EvalJsResult(base::Value(),
+                          "Cannot communicate with DOMMessageQueue.");
+    }
+
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            json, base::JSON_ALLOW_TRAILING_COMMAS);
+    if (!parsed_json.value)
+      return EvalJsResult(base::Value(), parsed_json.error_message);
+    result_type = JavaScriptExecutionResultType::kSuccess;
+    return EvalJsResult(parsed_json.value->Clone(), std::string());
+  } else if (dom_message_queue.HasMessages()) {
+    return EvalJsResult(base::Value(),
+                        "Calling domAutomationController.send is only allowed "
+                        "when using EXECUTE_SCRIPT_USE_MANUAL_REPLY. When "
+                        "using EvalJs(), the completion value is the value of "
+                        "the last executed statement. When using ExecJs(), "
+                        "there is no result value.");
+  }
+
+  return EvalJsResult(result_value.Clone(), std::string());
 }
 
 }  // namespace
@@ -1771,64 +1839,20 @@ EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     int options,
                     int32_t world_id) {
   TRACE_EVENT1("test", "EvalJs", "script", script);
+
   // The sourceURL= parameter provides a string that replaces <anonymous> in
   // stack traces, if an Error is thrown. 'std::string' is meant to communicate
   // that this is a dynamic argument originating from C++ code.
+  //
+  // Wrapping the script in braces makes it run in a block scope so that
+  // let/const don't leak outside the code being run, but vars will float to
+  // the outer scope.
   const char* kSourceURL = "__const_std::string&_script__";
-  std::string modified_script =
-      base::StringPrintf("%s;\n//# sourceURL=%s", script.c_str(), kSourceURL);
+  std::string modified_script = base::StringPrintf("{%s\n}\n//# sourceURL=%s",
+                                                   script.c_str(), kSourceURL);
 
-  // An extra eval() indirection is used here to catch syntax errors and return
-  // them as assertion failures. This eval() operation deliberately occurs in
-  // the global scope, so 'var' declarations in |script| will persist for later
-  // script executions. (As an aside: global/local scope for eval depends on
-  // whether 'eval' is called directly or indirectly; 'window.eval()' is
-  // indirect).
-  //
-  // The call to eval() itself is inside a .then() handler so that syntax errors
-  // result in Promise rejection. Calling eval() either throws (in the event of
-  // a SyntaxError) or returns the script's completion value.
-  //
-  // The result of eval() (i.e., the statement completion value of |script|) is
-  // wrapped in an array and passed to a second .then() handler. If eval()
-  // returned a Promise and the |resolve_promises| option is set, this handler
-  // calls Promise.all to reply after the returned Promise resolves.
-  //
-  // If |script| evaluated successfully, the third.then() handler maps the
-  // resolved |result| of eval() to a |reply| that is a one-element list
-  // containing the value (this element can be any JSON-serializable type). If
-  // the manual reply option is being used, no reply is emitted after successful
-  // execution -- the script is expected to call send() itself. The call to
-  // Promise.reject() squelches this reply, and the final .then() handler is not
-  // called.
-  //
-  // If an uncaught error was thrown, or eval() returns a Promise that is
-  // rejected, the third .then() handler maps the |error| to a |reply| that is
-  // a string value.
-  //
-  // The fourth and final .then() handler passes the |reply| (whether
-  // successful or unsuccessful) to domAutomationController.send(), so that it's
-  // transmitted back here in browser process C++ land. A GUID token is also
-  // included, that protects against |script| directly calling
-  // domAutomationController.send() itself, which is disallowed in EvalJs.
-  bool use_automatic_reply = !(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY);
-  bool resolve_promises = !(options & EXECUTE_SCRIPT_NO_RESOLVE_PROMISES);
-
-  std::string token = "EvalJs-" + base::GenerateGUID();
-  std::string runner_script = JsReplace(
-      R"(Promise.resolve($1)
-         .then(script => [window.eval(script)])
-         .then((result) => $2 ? Promise.all(result) : result )
-         .then((result) => $3 ? result : Promise.reject(),
-               (error) => 'a JavaScript error:' +
-                          (error && error.stack ? '\n' + error.stack
-                                                : ' "' + error + '"'))
-         .then((reply) => window.domAutomationController.send([$4, reply]));
-      //# sourceURL=EvalJs-runner.js)",
-      modified_script, resolve_promises, use_automatic_reply, token);
-
-  return EvalRunnerScript(execution_target, runner_script, options, world_id,
-                          token);
+  return EvalJsRunner(execution_target, modified_script, kSourceURL, options,
+                      world_id);
 }
 
 EvalJsResult EvalJsAfterLifecycleUpdate(
@@ -1837,10 +1861,11 @@ EvalJsResult EvalJsAfterLifecycleUpdate(
     const std::string& script,
     int options,
     int32_t world_id) {
-  bool use_automatic_reply = !(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY);
-  bool resolve_promises = !(options & EXECUTE_SCRIPT_NO_RESOLVE_PROMISES);
-  std::string token = "EvalJs-" + base::GenerateGUID();
+  TRACE_EVENT2("test", "EvalJsAfterLifecycleUpdate", "raf_script", raf_script,
+               "script", script);
+
   const char* kSourceURL = "__const_std::string&_script__";
+  const char* kWrapperURL = "__const_std::string&_EvalJsAfterLifecycleUpdate__";
   std::string modified_raf_script;
   if (raf_script.length()) {
     modified_raf_script = base::StringPrintf("%s;\n//# sourceURL=%s",
@@ -1849,29 +1874,34 @@ EvalJsResult EvalJsAfterLifecycleUpdate(
   std::string modified_script =
       base::StringPrintf("%s;\n//# sourceURL=%s", script.c_str(), kSourceURL);
 
-  // This runner_script is very similar to that used by EvalJs, except that
-  // this one delays running the argument script until just before
+  // This runner_script delays running the argument scripts until just before
   // (|raf_script|) and after (|script|) a rendering update.
   std::string runner_script = JsReplace(
-      R"(Promise.all([$1, $2])
-         .then(scripts => new Promise((resolve, reject) => {
-               requestAnimationFrame(() => {
-                 window.eval(scripts[0]);
-                 setTimeout(() => {
-                   resolve([window.eval(scripts[1])])
-                 }) }) }) )
-         .then((result) => $3 ? Promise.all(result) : result )
-         .then((result) => $4 ? result : Promise.reject(),
-               (error) => 'a JavaScript error:' +
-                          (error && error.stack ? '\n' + error.stack
-                                                : ' "' + error + '"'))
-         .then((reply) => window.domAutomationController.send([$5, reply]));
-      //# sourceURL=EvalJs-runner.js)",
-      modified_raf_script, modified_script, resolve_promises,
-      use_automatic_reply, token);
+      R"(new Promise((resolve, reject) => {
+           requestAnimationFrame(() => {
+             try { window.eval($1); } catch (e) { reject(e); }
+             setTimeout(() => {
+               try { resolve(window.eval($2)); } catch (e) { reject(e); }
+             });
+           });
+         })
+         //# sourceURL=$3)",
+      modified_raf_script, modified_script, kWrapperURL);
 
-  return EvalRunnerScript(execution_target, runner_script, options, world_id,
-                          token);
+  EvalJsResult result = EvalJsRunner(execution_target, runner_script,
+                                     kWrapperURL, options, world_id);
+
+  if (base::StartsWith(result.error, "a JavaScript error: \"EvalError: Refused",
+                       base::CompareCase::SENSITIVE)) {
+    return EvalJsResult(
+        base::Value(),
+        "EvalJsAfterLifecycleUpdate encountered an EvalError, because eval() "
+        "is blocked by the document's CSP on this page. To test content that "
+        "is protected by CSP, consider using EvalJsAfterLifecycleUpdate in an "
+        "isolated world. Details: " +
+            result.error);
+  }
+  return result;
 }
 
 namespace {
@@ -1884,14 +1914,23 @@ void AddToSetIfFrameMatchesPredicate(
 }
 }
 
-RenderFrameHost* FrameMatchingPredicate(
+RenderFrameHost* FrameMatchingPredicateOrNullptr(
     Page& page,
     base::RepeatingCallback<bool(RenderFrameHost*)> predicate) {
   std::set<RenderFrameHost*> frame_set;
   page.GetMainDocument().ForEachRenderFrameHost(base::BindRepeating(
       &AddToSetIfFrameMatchesPredicate, &frame_set, predicate));
-  EXPECT_EQ(1U, frame_set.size());
+  EXPECT_LE(frame_set.size(), 1u);
   return frame_set.size() == 1 ? *frame_set.begin() : nullptr;
+}
+
+RenderFrameHost* FrameMatchingPredicate(
+    Page& page,
+    base::RepeatingCallback<bool(RenderFrameHost*)> predicate) {
+  content::RenderFrameHost* rfh =
+      FrameMatchingPredicateOrNullptr(page, std::move(predicate));
+  EXPECT_TRUE(rfh);
+  return rfh;
 }
 
 bool FrameMatchesName(const std::string& name, RenderFrameHost* frame) {
@@ -1956,7 +1995,7 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents) {
   script.append("\n");
   ExecuteScriptAsync(web_contents, script);
 
-  DOMMessageQueue message_queue;
+  DOMMessageQueue message_queue(web_contents);
 
   bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kWaitForDebuggerWebUI);
@@ -1983,7 +2022,8 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents) {
 
 std::string GetCookies(BrowserContext* browser_context,
                        const GURL& url,
-                       net::CookieOptions::SameSiteCookieContext context) {
+                       net::CookieOptions::SameSiteCookieContext context,
+                       net::CookiePartitionKeyCollection key_collection) {
   std::string cookies;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
@@ -1993,7 +2033,7 @@ std::string GetCookies(BrowserContext* browser_context,
   net::CookieOptions options;
   options.set_same_site_cookie_context(context);
   cookie_manager->GetCookieList(
-      url, options, net::CookiePartitionKeyCollection(),
+      url, options, key_collection,
       base::BindOnce(
           [](std::string* cookies_out, base::RunLoop* run_loop,
              const net::CookieAccessResultList& cookies,
@@ -2008,7 +2048,8 @@ std::string GetCookies(BrowserContext* browser_context,
 
 std::vector<net::CanonicalCookie> GetCanonicalCookies(
     BrowserContext* browser_context,
-    const GURL& url) {
+    const GURL& url,
+    net::CookiePartitionKeyCollection key_collection) {
   std::vector<net::CanonicalCookie> cookies;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
@@ -2020,7 +2061,7 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   cookie_manager->GetCookieList(
-      url, options, net::CookiePartitionKeyCollection(),
+      url, options, key_collection,
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<net::CanonicalCookie>* cookies_out,
@@ -2274,7 +2315,7 @@ ui::AXPlatformNodeDelegate* FindAccessibilityNodeInSubtree(
   return nullptr;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
     ui::AXPlatformNodeDelegate* node) {
@@ -2509,7 +2550,7 @@ absl::optional<int> RenderProcessHostKillWaiter::Wait() {
 
   // Wait for the renderer kill.
   exit_watcher_.Wait();
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Getting termination status on android is not reliable. To avoid flakiness,
   // we can skip this check and just check bad message. On other platforms we
   // want to verify that the renderer got killed, rather than exiting normally.
@@ -2578,15 +2619,14 @@ void RenderProcessHostBadMojoMessageWaiter::OnBadMojoMessage(
 }
 
 DOMMessageQueue::DOMMessageQueue() {
+  // TODO(https://crbug.com/1174774): Remove the need to listen for this
+  // notification.
   registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());
 }
 
 DOMMessageQueue::DOMMessageQueue(WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-  registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 Source<WebContents>(web_contents));
-}
+    : WebContentsObserver(web_contents) {}
 
 DOMMessageQueue::DOMMessageQueue(RenderFrameHost* render_frame_host)
     : DOMMessageQueue(WebContents::FromRenderFrameHost(render_frame_host)) {
@@ -2599,9 +2639,12 @@ void DOMMessageQueue::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   Details<std::string> dom_op_result(details);
-  message_queue_.push(*dom_op_result.ptr());
-  if (quit_closure_)
-    std::move(quit_closure_).Run();
+  OnDomMessageReceived(*dom_op_result.ptr());
+}
+
+void DOMMessageQueue::DomOperationResponse(RenderFrameHost* render_frame_host,
+                                           const std::string& json_string) {
+  OnDomMessageReceived(json_string);
 }
 
 void DOMMessageQueue::PrimaryMainFrameRenderProcessGone(
@@ -2632,6 +2675,12 @@ void DOMMessageQueue::ClearQueue() {
   message_queue_ = base::queue<std::string>();
 }
 
+void DOMMessageQueue::OnDomMessageReceived(const std::string& message) {
+  message_queue_.push(message);
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
+}
+
 bool DOMMessageQueue::WaitForMessage(std::string* message) {
   DCHECK(message);
   if (!renderer_crashed_ && message_queue_.empty()) {
@@ -2650,6 +2699,10 @@ bool DOMMessageQueue::PopMessage(std::string* message) {
   *message = message_queue_.front();
   message_queue_.pop();
   return true;
+}
+
+bool DOMMessageQueue::HasMessages() {
+  return !message_queue_.empty();
 }
 
 WebContentsAddedObserver::WebContentsAddedObserver()
@@ -3074,35 +3127,17 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
   if (!ShouldMonitorNavigation(handle))
     return;
 
-  was_prerendered_page_activation_ = handle->IsPrerenderedPageActivation();
+  DCHECK(!handle->IsPageActivation())
+      << "For PageActivating navigations, use TestActivationManager.";
 
   request_ = NavigationRequest::From(handle);
-  if (request_->IsPageActivation()) {
-    // For activating navigations, we have no way of stopping at
-    // WillStartRequest since we don't run throttles. Callers should use
-    // WaitForResponse() or WaitForFirstYieldAfterDidStartNavigation().
-    DCHECK_NE(desired_state_, NavigationState::STARTED);
-
-    // For prerendered page activation, CommitDeferringConditions has already
-    // been run before starting navigation. Don't run them again.
-    if (!request_->IsPrerenderedPageActivation()) {
-      auto condition = std::make_unique<MockCommitDeferringCondition>(
-          /*is_ready_to_commit=*/false,
-          base::BindOnce(
-              &TestNavigationManager::OnRunningCommitDeferringConditions,
-              weak_factory_.GetWeakPtr()));
-      request_->RegisterCommitDeferringConditionForTesting(
-          std::move(condition));
-    }
-  } else {
-    auto throttle = std::make_unique<TestNavigationManagerThrottle>(
-        request_,
-        base::BindOnce(&TestNavigationManager::OnWillStartRequest,
-                       weak_factory_.GetWeakPtr()),
-        base::BindOnce(&TestNavigationManager::OnWillProcessResponse,
-                       weak_factory_.GetWeakPtr()));
-    request_->RegisterThrottleForTesting(std::move(throttle));
-  }
+  auto throttle = std::make_unique<TestNavigationManagerThrottle>(
+      request_,
+      base::BindOnce(&TestNavigationManager::OnWillStartRequest,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TestNavigationManager::OnWillProcessResponse,
+                     weak_factory_.GetWeakPtr()));
+  request_->RegisterThrottleForTesting(std::move(throttle));
 
   current_state_ = NavigationState::WILL_START;
 
@@ -3124,8 +3159,6 @@ void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
     return;
   was_committed_ = handle->HasCommitted();
   was_successful_ = was_committed_ && !handle->IsErrorPage();
-  DCHECK_EQ(was_prerendered_page_activation_.value(),
-            request_->IsPrerenderedPageActivation());
   current_state_ = NavigationState::FINISHED;
   navigation_paused_ = false;
   request_ = nullptr;
@@ -3146,14 +3179,6 @@ void TestNavigationManager::OnWillStartRequest() {
 
 void TestNavigationManager::OnWillProcessResponse() {
   current_state_ = NavigationState::RESPONSE;
-  navigation_paused_ = true;
-  OnNavigationStateChanged();
-}
-
-void TestNavigationManager::OnRunningCommitDeferringConditions(
-    base::OnceClosure resume_closure) {
-  current_state_ = NavigationState::RESPONSE;
-  commit_deferring_condition_resume_closure_ = std::move(resume_closure);
   navigation_paused_ = true;
   OnNavigationStateChanged();
 }
@@ -3185,12 +3210,6 @@ void TestNavigationManager::OnNavigationStateChanged() {
   TRACE_EVENT("test", "TestNavigationManager::OnNavigationStateChanged", "this",
               this);
 
-  if (request_ && request_->IsPageActivation()) {
-    DCHECK_NE(desired_state_, NavigationState::STARTED)
-        << "Cannot use WaitForRequestStart() when managing an activating "
-           "navigation. Use either WaitForFirstYieldAfterDidStartNavigation() "
-           "or WaitForResponse()";
-  }
   // If the state the user was waiting for has been reached, exit the message
   // loop.
   if (current_state_ >= desired_state_) {
@@ -3211,10 +3230,7 @@ void TestNavigationManager::ResumeIfPaused() {
 
   navigation_paused_ = false;
 
-  if (!request_->IsPageActivation())
-    request_->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
-  else if (commit_deferring_condition_resume_closure_)
-    std::move(commit_deferring_condition_resume_closure_).Run();
+  request_->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
 }
 
 bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
@@ -3237,6 +3253,249 @@ void TestNavigationManager::WriteIntoTrace(
   dict.Add("navigation_paused", navigation_paused_);
   dict.Add("current_state", current_state_);
   dict.Add("desired_state", desired_state_);
+}
+
+namespace {
+
+// A helper CommitDeferringCondition instantiated and inserted into all
+// navigations from TestActivationManager. It delegates WillCommitNavigation
+// method of the CommitDeferringCondition back to the TestActivationManager so
+// that the manager can see and decide how to proceed with the condition for
+// every occurring navigation.
+class TestActivationManagerCondition : public CommitDeferringCondition {
+  using WillCommitCallback =
+      base::OnceCallback<Result(CommitDeferringCondition&, base::OnceClosure)>;
+
+ public:
+  TestActivationManagerCondition(NavigationHandle& handle,
+                                 WillCommitCallback on_will_commit_navigation)
+      : CommitDeferringCondition(handle),
+        on_will_commit_navigation_(std::move(on_will_commit_navigation)) {}
+  ~TestActivationManagerCondition() override = default;
+
+  TestActivationManagerCondition(const TestActivationManagerCondition&) =
+      delete;
+  TestActivationManagerCondition& operator=(
+      const TestActivationManagerCondition&) = delete;
+
+  Result WillCommitNavigation(base::OnceClosure resume) override {
+    return std::move(on_will_commit_navigation_).Run(*this, std::move(resume));
+  }
+
+ private:
+  WillCommitCallback on_will_commit_navigation_;
+};
+
+// We need this wrapper since the TestActivationManager can be destroyed while
+// navigations are ongoing so we need to pass the callback with a WeakPtr.
+// However, we can't bind a WeakPtr to a method that returns non-void so we use
+// this wrapper to provide the default return value.
+CommitDeferringCondition::Result ConditionCallbackWeakWrapper(
+    base::WeakPtr<TestActivationManager> manager,
+    base::RepeatingCallback<
+        CommitDeferringCondition::Result(TestActivationManager*,
+                                         CommitDeferringCondition&,
+                                         base::OnceClosure)> manager_func,
+    CommitDeferringCondition& condition,
+    base::OnceClosure resume_callback) {
+  // If the manager was destroyed, we don't need to pause navigation any longer
+  // so just proceed.
+  if (!manager)
+    return CommitDeferringCondition::Result::kProceed;
+
+  return manager_func.Run(manager.get(), condition, std::move(resume_callback));
+}
+
+}  // namespace
+
+class TestActivationManager::ConditionInserter {
+  using WillCommitCallback =
+      base::RepeatingCallback<CommitDeferringCondition::Result(
+          CommitDeferringCondition&,
+          base::OnceClosure)>;
+
+ public:
+  explicit ConditionInserter(WillCommitCallback callback,
+                             CommitDeferringConditionRunner::InsertOrder order)
+      : condition_callback_(std::move(callback)),
+        generator_id_(
+            CommitDeferringConditionRunner::InstallConditionGeneratorForTesting(
+                base::BindRepeating(&ConditionInserter::Install,
+                                    base::Unretained(this)),
+                order)) {}
+  ~ConditionInserter() {
+    CommitDeferringConditionRunner::UninstallConditionGeneratorForTesting(
+        generator_id_);
+  }
+
+ private:
+  std::unique_ptr<CommitDeferringCondition> Install(
+      NavigationHandle& handle,
+      CommitDeferringCondition::NavigationType navigation_type) {
+    // TestActivationManager should only pause during checks for an activating
+    // navigation. It's possible for a navigation to start off as activating
+    // but become non-activating after the initial checks. In that case,
+    // CommitDeferringConditions will be run a second time as non-activating so
+    // we'll avoid registering the second time with this early out.
+    // TODO(bokan): We can't check navigation_type here because BFCache is
+    // considered kOther. Ideally all page activations would be a single type.
+    // crbug.com/1226442.
+    auto* request = NavigationRequest::From(&handle);
+    if (!request->IsServedFromBackForwardCache() &&
+        !request->is_potentially_prerendered_page_activation_for_testing()) {
+      return nullptr;
+    }
+
+    return std::make_unique<TestActivationManagerCondition>(
+        handle, condition_callback_);
+  }
+
+  WillCommitCallback condition_callback_;
+  const int generator_id_;
+};
+
+TestActivationManager::TestActivationManager(WebContents* web_contents,
+                                             const GURL& url)
+    : WebContentsObserver(web_contents), url_(url) {
+  first_condition_inserter_ = std::make_unique<ConditionInserter>(
+      base::BindRepeating(
+          &ConditionCallbackWeakWrapper, weak_factory_.GetWeakPtr(),
+          base::BindRepeating(&TestActivationManager::FirstConditionCallback)),
+      CommitDeferringConditionRunner::InsertOrder::kBefore);
+  last_condition_inserter_ = std::make_unique<ConditionInserter>(
+      base::BindRepeating(
+          &ConditionCallbackWeakWrapper, weak_factory_.GetWeakPtr(),
+          base::BindRepeating(&TestActivationManager::LastConditionCallback)),
+      CommitDeferringConditionRunner::InsertOrder::kAfter);
+}
+
+TestActivationManager::~TestActivationManager() {
+  DCHECK(!quit_closure_);
+  if (is_paused())
+    std::move(resume_callback_).Run();
+}
+
+bool TestActivationManager::WaitForBeforeChecks() {
+  TRACE_EVENT("test", "TestActivationManager::WaitForBeforeChecks");
+  desired_state_ = ActivationState::kBeforeChecks;
+  return WaitForDesiredState();
+}
+
+bool TestActivationManager::WaitForAfterChecks() {
+  TRACE_EVENT("test", "TestActivationManager::WaitForAfterChecks");
+  desired_state_ = ActivationState::kAfterChecks;
+  return WaitForDesiredState();
+}
+
+void TestActivationManager::WaitForNavigationFinished() {
+  TRACE_EVENT("test", "TestActivationManager::WaitForNavigationFinished");
+  desired_state_ = ActivationState::kFinished;
+  bool finished = WaitForDesiredState();
+  DCHECK(finished);
+}
+
+void TestActivationManager::ResumeActivation() {
+  TRACE_EVENT("test", "TestActivationManager::ResumeActivation");
+  DCHECK(is_paused());
+
+  // Set desired_state_ to kFinished so the navigation can proceed to finish
+  // unless it yields somewhere and/or the caller calls another WaitFor method.
+  desired_state_ = ActivationState::kFinished;
+  std::move(resume_callback_).Run();
+}
+
+NavigationHandle* TestActivationManager::GetNavigationHandle() {
+  return request_;
+}
+
+CommitDeferringCondition::Result TestActivationManager::FirstConditionCallback(
+    CommitDeferringCondition& condition,
+    base::OnceClosure resume_callback) {
+  if (condition.GetNavigationHandle().GetURL() != url_)
+    return CommitDeferringCondition::Result::kProceed;
+
+  DCHECK(!is_tracking_activation_)
+      << "Second request for watched URL: " << url_;
+  is_tracking_activation_ = true;
+
+  DCHECK(!request_);
+  request_ = NavigationRequest::From(&condition.GetNavigationHandle());
+  DCHECK(request_->is_potentially_prerendered_page_activation_for_testing() ||
+         request_->IsServedFromBackForwardCache())
+      << "TestActivationManager should only be used for for page "
+         "activations. For regular navigations, use TestNavigationManager.";
+
+  DCHECK_EQ(current_state_, ActivationState::kInitial);
+  current_state_ = ActivationState::kBeforeChecks;
+
+  if (current_state_ < desired_state_)
+    return CommitDeferringCondition::Result::kProceed;
+
+  resume_callback_ = std::move(resume_callback);
+  StopWaitingIfNeeded();
+
+  // Always defer here so test code gets a chance to set WaitFor... before the
+  // navigation finishes.
+  return CommitDeferringCondition::Result::kDefer;
+}
+
+CommitDeferringCondition::Result TestActivationManager::LastConditionCallback(
+    CommitDeferringCondition& condition,
+    base::OnceClosure resume_callback) {
+  if (request_ != &condition.GetNavigationHandle())
+    return CommitDeferringCondition::Result::kProceed;
+
+  DCHECK(is_tracking_activation_);
+
+  current_state_ = ActivationState::kAfterChecks;
+  if (current_state_ < desired_state_)
+    return CommitDeferringCondition::Result::kProceed;
+
+  resume_callback_ = std::move(resume_callback);
+  StopWaitingIfNeeded();
+
+  return CommitDeferringCondition::Result::kDefer;
+}
+
+void TestActivationManager::DidFinishNavigation(NavigationHandle* handle) {
+  if (handle == request_) {
+    DCHECK(is_tracking_activation_);
+    was_committed_ = handle->HasCommitted();
+    was_successful_ = was_committed_ && !handle->IsErrorPage();
+    was_activated_ = was_successful_ && handle->IsPageActivation();
+    request_ = nullptr;
+    current_state_ = ActivationState::kFinished;
+    StopWaitingIfNeeded();
+  }
+}
+
+bool TestActivationManager::WaitForDesiredState() {
+  DCHECK_LE(current_state_, desired_state_);
+
+  // If the desired state has already been reached, just return.
+  if (current_state_ == desired_state_)
+    return true;
+
+  // Resume the navigation if it was paused.
+  if (is_paused())
+    ResumeActivation();
+
+  // Wait for the desired state if needed.
+  if (current_state_ < desired_state_) {
+    DCHECK(!quit_closure_);
+    base::RunLoop run_loop(base::RunLoop::Type::kDefault);
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  // Return false if the navigation did not reach the state specified by the
+  // user.
+  return current_state_ == desired_state_;
+}
+
+void TestActivationManager::StopWaitingIfNeeded() {
+  if (current_state_ == desired_state_ && quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 NavigationHandleCommitObserver::NavigationHandleCommitObserver(
@@ -3453,17 +3712,14 @@ ContextMenuInterceptor::ContextMenuInterceptor(
     ShowBehavior behavior)
     : render_frame_host_impl_(
           static_cast<RenderFrameHostImpl*>(render_frame_host)),
+      swapped_impl_(
+          render_frame_host_impl_->local_frame_host_receiver_for_testing(),
+          this),
       run_loop_(std::make_unique<base::RunLoop>()),
       quit_closure_(run_loop_->QuitClosure()),
-      show_behavior_(behavior) {
-  impl_ = render_frame_host_impl_->local_frame_host_receiver_for_testing()
-              .SwapImplForTesting(this);
-}
+      show_behavior_(behavior) {}
 
-ContextMenuInterceptor::~ContextMenuInterceptor() {
-  render_frame_host_impl_->local_frame_host_receiver_for_testing()
-      .SwapImplForTesting(impl_);
-}
+ContextMenuInterceptor::~ContextMenuInterceptor() = default;
 
 void ContextMenuInterceptor::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -3478,7 +3734,7 @@ void ContextMenuInterceptor::Reset() {
 }
 
 blink::mojom::LocalFrameHost* ContextMenuInterceptor::GetForwardingInterface() {
-  return impl_;
+  return render_frame_host_impl_;
 }
 
 void ContextMenuInterceptor::ShowContextMenu(
@@ -3499,15 +3755,13 @@ void ContextMenuInterceptor::ShowContextMenu(
 UpdateUserActivationStateInterceptor::UpdateUserActivationStateInterceptor(
     content::RenderFrameHost* render_frame_host)
     : render_frame_host_impl_(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)) {
-  impl_ = render_frame_host_impl_->local_frame_host_receiver_for_testing()
-              .SwapImplForTesting(this);
-}
+          static_cast<RenderFrameHostImpl*>(render_frame_host)),
+      swapped_impl_(
+          render_frame_host_impl_->local_frame_host_receiver_for_testing(),
+          this) {}
 
-UpdateUserActivationStateInterceptor::~UpdateUserActivationStateInterceptor() {
-  render_frame_host_impl_->local_frame_host_receiver_for_testing()
-      .SwapImplForTesting(impl_);
-}
+UpdateUserActivationStateInterceptor::~UpdateUserActivationStateInterceptor() =
+    default;
 
 void UpdateUserActivationStateInterceptor::set_quit_handler(
     base::OnceClosure handler) {
@@ -3516,7 +3770,7 @@ void UpdateUserActivationStateInterceptor::set_quit_handler(
 
 blink::mojom::LocalFrameHost*
 UpdateUserActivationStateInterceptor::GetForwardingInterface() {
-  return impl_;
+  return render_frame_host_impl_;
 }
 
 void UpdateUserActivationStateInterceptor::UpdateUserActivationState(
@@ -3660,16 +3914,12 @@ bool TestGuestAutoresize(WebContents* embedder_web_contents,
 SynchronizeVisualPropertiesInterceptor::SynchronizeVisualPropertiesInterceptor(
     RenderFrameProxyHost* render_frame_proxy_host)
     : render_frame_proxy_host_(render_frame_proxy_host),
-      screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()) {
-  impl_ = render_frame_proxy_host_->frame_host_receiver_for_testing()
-              .SwapImplForTesting(this);
-}
+      screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
+      swapped_impl_(render_frame_proxy_host_->frame_host_receiver_for_testing(),
+                    this) {}
 
 SynchronizeVisualPropertiesInterceptor::
-    ~SynchronizeVisualPropertiesInterceptor() {
-  render_frame_proxy_host_->frame_host_receiver_for_testing()
-      .SwapImplForTesting(impl_);
-}
+    ~SynchronizeVisualPropertiesInterceptor() = default;
 
 blink::mojom::RemoteFrameHost*
 SynchronizeVisualPropertiesInterceptor::GetForwardingInterface() {
@@ -3709,15 +3959,14 @@ void SynchronizeVisualPropertiesInterceptor::SynchronizeVisualProperties(
   last_pinch_gesture_active_ = visual_properties.is_pinch_gesture_active;
 
   gfx::Rect screen_space_rect_in_dip = visual_properties.screen_space_rect;
-  if (IsUseZoomForDSFEnabled()) {
-    const float dsf =
-        visual_properties.screen_infos.current().device_scale_factor;
-    screen_space_rect_in_dip =
-        gfx::Rect(gfx::ScaleToFlooredPoint(
-                      visual_properties.screen_space_rect.origin(), 1.f / dsf),
-                  gfx::ScaleToCeiledSize(
-                      visual_properties.screen_space_rect.size(), 1.f / dsf));
-  }
+  const float dsf =
+      visual_properties.screen_infos.current().device_scale_factor;
+  screen_space_rect_in_dip =
+      gfx::Rect(gfx::ScaleToFlooredPoint(
+                    visual_properties.screen_space_rect.origin(), 1.f / dsf),
+                gfx::ScaleToCeiledSize(
+                    visual_properties.screen_space_rect.size(), 1.f / dsf));
+
   // Track each rect updates.
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -3946,6 +4195,66 @@ bool HistoryGoBack(WebContents* wc) {
 bool HistoryGoForward(WebContents* wc) {
   wc->GetController().GoForward();
   return WaitForLoadStop(wc);
+}
+
+CreateAndLoadWebContentsObserver::CreateAndLoadWebContentsObserver()
+    : web_contents_created_callback_(base::BindRepeating(
+          &CreateAndLoadWebContentsObserver::OnWebContentsCreated,
+          base::Unretained(this))) {
+  WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
+      web_contents_created_callback_);
+}
+
+CreateAndLoadWebContentsObserver::~CreateAndLoadWebContentsObserver() {
+  UnregisterIfNeeded();
+}
+
+void CreateAndLoadWebContentsObserver::OnWebContentsCreated(
+    WebContents* web_contents) {
+  // If there is already a WebContents, then this will fail the test later.
+  if (web_contents_) {
+    failed_ = true;
+    // If we're called before Wait(), then `quit_closure_` has not been set.  If
+    // we're called after, then we'll clear this the first time through and it
+    // won't be set again.
+    DCHECK(!quit_closure_);
+    return;
+  }
+
+  web_contents_ = web_contents;
+  load_stop_observer_.emplace(web_contents_);
+
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
+}
+
+void CreateAndLoadWebContentsObserver::UnregisterIfNeeded() {
+  if (!web_contents_created_callback_)
+    return;
+
+  WebContentsImpl::FriendWrapper::RemoveCreatedCallbackForTesting(
+      web_contents_created_callback_);
+  web_contents_created_callback_.Reset();
+}
+
+WebContents* CreateAndLoadWebContentsObserver::Wait() {
+  // Wait for a new WebContents if we haven't gotten one yet.
+  if (!load_stop_observer_) {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  load_stop_observer_->Wait();
+
+  // Do this after waiting for load to complete, since exactly one WebContents
+  // should be created before Wait() returns.  If a second one is created while
+  // the first is loading, then it's still broken.
+  UnregisterIfNeeded();
+
+  EXPECT_FALSE(failed_);
+
+  return web_contents_;
 }
 
 }  // namespace content

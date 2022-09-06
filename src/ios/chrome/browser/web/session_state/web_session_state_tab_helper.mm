@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #import "build/branding_buildflags.h"
@@ -23,7 +22,6 @@
 #include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/navigation/navigation_context.h"
@@ -94,9 +92,7 @@ bool WebSessionStateTabHelper::RestoreSessionFromCache() {
   if (!restore_session_succeeded)
     return false;
 
-  web::NavigationManager* navigationManager =
-      web_state_->GetNavigationManager();
-  DCHECK(navigationManager->GetItemCount());
+  DCHECK(web_state_->GetNavigationItemCount());
   web::GetWebClient()->CleanupNativeRestoreURLs(web_state_);
   return true;
 }
@@ -162,10 +158,11 @@ void WebSessionStateTabHelper::WebFrameDidBecomeAvailable(
   // -WebFrameDidBecomeAvailable is called much more often than navigations, so
   // check if either |item_count_| or |last_committed_item_index_| has changed
   // before marking a page as stale.
-  web::NavigationManager* navigationManager = web_state->GetNavigationManager();
-  if (item_count_ == navigationManager->GetItemCount() &&
+  web::NavigationManager* navigation_manager =
+      web_state->GetNavigationManager();
+  if (item_count_ == web_state->GetNavigationItemCount() &&
       last_committed_item_index_ ==
-          navigationManager->GetLastCommittedItemIndex())
+          navigation_manager->GetLastCommittedItemIndex())
     return;
 
   MarkStale();
@@ -179,7 +176,7 @@ void WebSessionStateTabHelper::MarkStale() {
 
   web::NavigationManager* navigationManager =
       web_state_->GetNavigationManager();
-  item_count_ = navigationManager->GetItemCount();
+  item_count_ = web_state_->GetNavigationItemCount();
   last_committed_item_index_ = navigationManager->GetLastCommittedItemIndex();
 
   stale_ = true;

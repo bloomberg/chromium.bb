@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -111,7 +112,8 @@ void SetKeyframeValue(Element* element,
             : keyframe.SetCSSPropertyValue(css_property, value,
                                            secure_context_mode,
                                            style_sheet_contents);
-    if (!set_result.did_parse && execution_context) {
+    if (set_result == MutableCSSPropertyValueSet::kParseError &&
+        execution_context) {
       if (document.GetFrame()) {
         document.GetFrame()->Console().AddMessage(
             MakeGarbageCollected<ConsoleMessage>(
@@ -441,7 +443,7 @@ bool GetPropertyIndexedKeyframeValues(const v8::Local<v8::Object>& keyframe,
 // Implements the procedure to "process a keyframes argument" from the
 // web-animations spec for an object form keyframes argument.
 //
-// See https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
+// See https://w3.org/TR/web-animations-1/#processing-a-keyframes-argument
 StringKeyframeVector ConvertObjectForm(Element* element,
                                        Document& document,
                                        const v8::Local<v8::Object>& v8_keyframe,

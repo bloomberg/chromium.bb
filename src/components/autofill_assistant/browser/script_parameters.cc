@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/autofill_assistant/browser/user_data.h"
@@ -92,6 +93,9 @@ const char kIntent[] = "INTENT";
 // Parameter that allows enabling Text-to-Speech functionality.
 const char kEnableTtsParameterName[] = "ENABLE_TTS";
 
+// Allows enabling observer-based WaitForDOM.
+const char kEnableObserversParameter[] = "ENABLE_OBSERVER_WAIT_FOR_DOM";
+
 // Parameter name of the CALLER script parameter. Note that the corresponding
 // values are integers, corresponding to the caller proto in the backend.
 const char kCallerParameterName[] = "CALLER";
@@ -103,9 +107,18 @@ const char kSourceParameterName[] = "SOURCE";
 // Parameter to specify experiments.
 const char kExperimentsParameterName[] = "EXPERIMENT_IDS";
 
-// The list of script parameters that trigger scripts are allowed to send to
-// the backend.
-constexpr std::array<const char*, 6> kAllowlistedTriggerScriptParameters = {
+// Parameter to disable CUP RPC signing. Intended for internal use only.
+const char kDisableRpcSigningParamaterName[] = "DISABLE_RPC_SIGNING";
+
+// Parameter to send the annotate DOM model version. Should only be used if we
+// expect the model to be used.
+const char kSendAnnotateDomModelVersion[] = "SEND_ANNOTATE_DOM_MODEL_VERSION";
+
+// The list of non sensitive script parameters that client requests are allowed
+// to send to the backend i.e., they do not require explicit approval in the
+// autofill-assistant onboarding. Even so, please always reach out to Chrome
+// privacy when you plan to make use of this list, and/or adjust it.
+constexpr std::array<const char*, 6> kNonSensitiveScriptParameters = {
     "DEBUG_BUNDLE_ID",    "DEBUG_BUNDLE_VERSION",    "DEBUG_SOCKET_ID",
     "FALLBACK_BUNDLE_ID", "FALLBACK_BUNDLE_VERSION", kIntent};
 
@@ -156,10 +169,10 @@ bool ScriptParameters::Matches(const ScriptParameterMatchProto& proto) const {
 }
 
 google::protobuf::RepeatedPtrField<ScriptParameterProto>
-ScriptParameters::ToProto(bool only_trigger_script_allowlisted) const {
+ScriptParameters::ToProto(bool only_non_sensitive_allowlisted) const {
   google::protobuf::RepeatedPtrField<ScriptParameterProto> out;
-  if (only_trigger_script_allowlisted) {
-    for (const char* key : kAllowlistedTriggerScriptParameters) {
+  if (only_non_sensitive_allowlisted) {
+    for (const char* key : kNonSensitiveScriptParameters) {
       auto iter = parameters_.find(key);
       if (iter == parameters_.end()) {
         continue;
@@ -193,6 +206,10 @@ absl::optional<std::string> ScriptParameters::GetParameter(
     return absl::nullopt;
 
   return iter->second.strings().values(0);
+}
+
+bool ScriptParameters::HasExperimentId(const std::string& experiment_id) const {
+  return base::ranges::count(GetExperiments(), experiment_id) > 0;
 }
 
 absl::optional<std::string> ScriptParameters::GetOverlayColors() const {
@@ -243,6 +260,10 @@ absl::optional<bool> ScriptParameters::GetEnableTts() const {
   return GetTypedParameter<bool>(parameters_, kEnableTtsParameterName);
 }
 
+absl::optional<bool> ScriptParameters::GetEnableObserverWaitForDom() const {
+  return GetTypedParameter<bool>(parameters_, kEnableObserversParameter);
+}
+
 absl::optional<int> ScriptParameters::GetCaller() const {
   return GetTypedParameter<int>(parameters_, kCallerParameterName);
 }
@@ -261,6 +282,14 @@ std::vector<std::string> ScriptParameters::GetExperiments() const {
   return base::SplitString(*experiments_str, ",",
                            base::WhitespaceHandling::TRIM_WHITESPACE,
                            base::SplitResult::SPLIT_WANT_NONEMPTY);
+}
+
+absl::optional<bool> ScriptParameters::GetDisableRpcSigning() const {
+  return GetTypedParameter<bool>(parameters_, kDisableRpcSigningParamaterName);
+}
+
+absl::optional<bool> ScriptParameters::GetSendAnnotateDomModelVersion() const {
+  return GetTypedParameter<bool>(parameters_, kSendAnnotateDomModelVersion);
 }
 
 absl::optional<bool> ScriptParameters::GetDetailsShowInitial() const {

@@ -37,7 +37,7 @@ const char kSecondSpeechResult[] = "the brown fox jumped over the lazy dog";
 
 const char kEnglishLocale[] = "en-US";
 
-inline const void SetLocale(const std::string& locale) {
+inline void SetLocale(const std::string& locale) {
   g_browser_process->SetApplicationLocale(locale);
 }
 
@@ -95,6 +95,7 @@ class ProjectorClientImplUnitTest : public testing::Test {
     SetLocale(kEnglishLocale);
     soda_installer_ = std::make_unique<MockSodaInstaller>();
     soda_installer_->NotifySodaInstalledForTesting();
+    soda_installer_->NotifySodaInstalledForTesting(speech::LanguageCode::kEnUs);
     projector_client_ =
         std::make_unique<ProjectorClientImpl>(&projector_controller_);
   }

@@ -6,7 +6,10 @@
 
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
+#include "chrome/browser/prefetch/prefetch_headers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -22,8 +25,6 @@
 #include "content/public/common/content_constants.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/site_for_cookies.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -33,9 +34,9 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/omnibox/geolocation_header.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -71,35 +72,45 @@ class CheckForCancelledOrPausedDelegate
     cancelled_or_paused_ = true;
   }
 
-  void RestartWithURLResetAndFlagsNow(int additional_load_flags) override {
-    cancelled_or_paused_ = true;
-  }
-
   bool cancelled_or_paused() const { return cancelled_or_paused_; }
 
  private:
   bool cancelled_or_paused_ = false;
 };
 
+bool DoesHeaderContainClientHint(
+    const net::HttpRequestHeaders& headers,
+    const network::mojom::WebClientHintsType hint) {
+  const std::string& header = network::GetClientHintToNameMap().at(hint);
+  std::string value;
+  return headers.GetHeader(header, &value) && value == "?1";
+}
+
 // Computes the user agent value that should set for the User-Agent header.
 std::string GetUserAgentValue(const net::HttpRequestHeaders& headers) {
-  // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
-  // UserAgentReduction Origin Trial has been validated and we should send a
-  // reduced UA string on the request.
-  std::string header = network::GetClientHintToNameMap().at(
-      network::mojom::WebClientHintsType::kUAReduced);
-  std::string value;
-  return headers.GetHeader(header, &value) && value == "?1"
-             ? embedder_support::GetReducedUserAgent()
-             : embedder_support::GetUserAgent();
+  // If Sec-CH-UA-Full is set on the headers, it means that the token for the
+  // SendFullUserAgentAfterReduction Origin Trial has been validated and we
+  // should send a reduced UA string on the request.  Then check if
+  // Sec-CH-UA-Reduced is set on the headers, it means that the token for the
+  // UserAgentReduction Origin Trial has been validated and we
+  // should send a reduced UA string on the request.
+  const bool ua_reduced = DoesHeaderContainClientHint(
+      headers, network::mojom::WebClientHintsType::kUAReduced);
+  const bool ua_full = DoesHeaderContainClientHint(
+      headers, network::mojom::WebClientHintsType::kFullUserAgent);
+  return ua_full ? embedder_support::GetUserAgent()
+                 : (ua_reduced ? embedder_support::GetReducedUserAgent()
+                               : embedder_support::GetUserAgent());
 }
 
 }  // namespace
 
 BaseSearchPrefetchRequest::BaseSearchPrefetchRequest(
     const GURL& prefetch_url,
-    base::OnceClosure report_error_callback)
+    bool navigation_prefetch,
+    base::OnceCallback<void(bool)> report_error_callback)
     : prefetch_url_(prefetch_url),
+      navigation_prefetch_(navigation_prefetch),
       report_error_callback_(std::move(report_error_callback)) {}
 
 BaseSearchPrefetchRequest::~BaseSearchPrefetchRequest() = default;
@@ -143,6 +154,7 @@ BaseSearchPrefetchRequest::NetworkAnnotationForPrefetch() {
 }
 
 bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
+  TRACE_EVENT0("loading", "BaseSearchPrefetchRequest::StartPrefetchRequest");
   net::NetworkTrafficAnnotationTag network_traffic_annotation =
       NetworkAnnotationForPrefetch();
 
@@ -152,7 +164,8 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
   // This prefetch is not as high priority as navigation, but due to its
   // navigation speeding and relatively high likelihood of being served to a
   // navigation, the request is relatively high priority.
-  resource_request->priority = net::MEDIUM;
+  resource_request->priority =
+      navigation_prefetch_ ? net::HIGHEST : net::MEDIUM;
   resource_request->url = prefetch_url_;
   resource_request->credentials_mode =
       network::mojom::CredentialsMode::kInclude;
@@ -174,7 +187,7 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
                                                prefs::kWebKitJavascriptEnabled);
 
   AddClientHintsHeadersToPrefetchNavigation(
-      resource_request->url, &(resource_request->headers), profile,
+      prefetch_origin, &(resource_request->headers), profile,
       profile->GetClientHintsControllerDelegate(),
       /*is_ua_override_on=*/false, js_enabled);
 
@@ -189,16 +202,19 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
   resource_request->headers.SetHeader(content::kCorsExemptPurposeHeaderName,
                                       "prefetch");
   resource_request->headers.SetHeader(
+      prefetch::headers::kSecPurposeHeaderName,
+      prefetch::headers::kSecPurposePrefetchHeaderValue);
+  resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAccept,
       content::FrameAcceptHeaderValue(/*allow_sxg_responses=*/true, profile));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   absl::optional<std::string> geo_header =
       GetGeolocationHeaderIfAllowed(resource_request->url, profile);
   if (geo_header) {
     resource_request->headers.AddHeaderFromString(geo_header.value());
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Before sending out the request, allow throttles to modify the request (not
   // the URL). The rest of the URL Loader throttle calls are captured in the
@@ -225,26 +241,38 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
       &prefetch_url_search_terms);
 
   bool should_defer = false;
-  for (auto& throttle : throttles) {
-    CheckForCancelledOrPausedDelegate cancel_or_pause_delegate;
-    throttle->set_delegate(&cancel_or_pause_delegate);
-    throttle->WillStartRequest(resource_request.get(), &should_defer);
-    // Make sure throttles are deleted before |cancel_or_pause_delegate| in case
-    // they call into the delegate in the destructor.
-    throttle.reset();
+  {
+    TRACE_EVENT0(
+        "loading",
+        "BaseSearchPrefetchRequest::StartPrefetchRequest.ExecuteThrottles");
+    for (auto& throttle : throttles) {
+      CheckForCancelledOrPausedDelegate cancel_or_pause_delegate;
+      throttle->set_delegate(&cancel_or_pause_delegate);
 
-    std::u16string new_url_search_terms;
+      {
+        TRACE_EVENT0(
+            "loading",
+            "BaseSearchPrefetchRequest::StartPrefetchRequest.WillStartRequest");
+        throttle->WillStartRequest(resource_request.get(), &should_defer);
+      }
 
-    // Check that search terms still match. Google URLs can be changed by
-    // by safe search (and other features as well) Make sure the URL still has
-    // the same search terms for the DSE.
-    default_search->ExtractSearchTermsFromURL(
-        resource_request->url, template_url_service->search_terms_data(),
-        &new_url_search_terms);
+      // Make sure throttles are deleted before |cancel_or_pause_delegate| in
+      // case they call into the delegate in the destructor.
+      throttle.reset();
 
-    if (should_defer || new_url_search_terms != prefetch_url_search_terms ||
-        cancel_or_pause_delegate.cancelled_or_paused()) {
-      return false;
+      std::u16string new_url_search_terms;
+
+      // Check that search terms still match. Google URLs can be changed by
+      // by safe search (and other features as well) Make sure the URL still has
+      // the same search terms for the DSE.
+      default_search->ExtractSearchTermsFromURL(
+          resource_request->url, template_url_service->search_terms_data(),
+          &new_url_search_terms);
+
+      if (should_defer || new_url_search_terms != prefetch_url_search_terms ||
+          cancel_or_pause_delegate.cancelled_or_paused()) {
+        return false;
+      }
     }
   }
 
@@ -253,7 +281,8 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
   current_status_ = SearchPrefetchStatus::kInFlight;
 
   StartPrefetchRequestInternal(profile, std::move(resource_request),
-                               network_traffic_annotation);
+                               network_traffic_annotation,
+                               std::move(report_error_callback_));
   return true;
 }
 
@@ -265,12 +294,10 @@ void BaseSearchPrefetchRequest::CancelPrefetch() {
 }
 
 void BaseSearchPrefetchRequest::ErrorEncountered() {
-  DCHECK(!report_error_callback_.is_null());
   DCHECK(current_status_ == SearchPrefetchStatus::kInFlight ||
          current_status_ == SearchPrefetchStatus::kCanBeServed ||
          current_status_ == SearchPrefetchStatus::kCanBeServedAndUserClicked);
   current_status_ = SearchPrefetchStatus::kRequestFailed;
-  std::move(report_error_callback_).Run();
   StopPrefetch();
 }
 
@@ -291,16 +318,14 @@ void BaseSearchPrefetchRequest::MarkPrefetchAsClicked() {
   current_status_ = SearchPrefetchStatus::kCanBeServedAndUserClicked;
 }
 
-bool BaseSearchPrefetchRequest::CanServePrefetchRequest(
-    const scoped_refptr<net::HttpResponseHeaders> headers) {
-  if (!headers)
-    return false;
+void BaseSearchPrefetchRequest::MarkPrefetchAsServed() {
+  DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServedAndUserClicked ||
+         current_status_ == SearchPrefetchStatus::kComplete);
+  current_status_ = SearchPrefetchStatus::kServed;
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchPrefetch.ClickToNavigationIntercepted",
+                      base::TimeTicks::Now() - time_clicked_);
+}
 
-  // Any 200 response can be served.
-  if (headers->response_code() >= net::HTTP_OK &&
-      headers->response_code() < net::HTTP_MULTIPLE_CHOICES) {
-    return true;
-  }
-
-  return false;
+void BaseSearchPrefetchRequest::RecordClickTime() {
+  time_clicked_ = base::TimeTicks::Now();
 }

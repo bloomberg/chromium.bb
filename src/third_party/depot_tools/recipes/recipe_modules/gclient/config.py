@@ -79,7 +79,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     #  - if revision is given, it's passed verbatim to bot_update for
     #    corresponding dependency. Otherwise (i.e. None), the patch will be
     #    applied on top of version pinned in DEPS.
-    # This is essentially a whitelist of which repos inside a solution
+    # This is essentially a allowlist of which repos inside a solution
     # can be patched automatically by bot_update based on
     # api.buildbucket.build.input.gerrit_changes[0].project
     # For example, if bare chromium solution has this entry in repo_path_map
@@ -104,8 +104,6 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
         required=False,
         hidden=True),
 
-    disable_syntax_validation = Single(bool, empty_val=False, required=False),
-
     USE_MIRROR = Static(bool(USE_MIRROR)),
     BUILDSPEC_VERSION= Static(BUILDSPEC_VERSION, hidden=True),
   )
@@ -118,10 +116,6 @@ def ChromiumGitURL(_c, *pieces):
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
   return '/'.join(('https://chrome-internal.googlesource.com',) + pieces)
-
-@config_ctx()
-def disable_syntax_validation(c):
-  c.disable_syntax_validation = True
 
 @config_ctx()
 def android(c):

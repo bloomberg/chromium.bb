@@ -8,64 +8,56 @@
 
 #include "base/bind.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/sync/driver/model_type_controller.h"
-#include "components/sync/driver/sync_client.h"
-
-using syncer::SyncClient;
+#include "components/sync/base/features.h"
 
 namespace history {
 
 namespace {
 
 std::unique_ptr<syncer::ModelTypeControllerDelegate>
-GetDelegateFromHistoryService(HistoryService* history_service) {
-  if (history_service) {
+GetDelegateFromHistoryService(syncer::ModelType model_type,
+                              HistoryService* history_service) {
+  if (!history_service) {
+    return nullptr;
+  }
+
+  if (model_type == syncer::TYPED_URLS) {
     return history_service->GetTypedURLSyncControllerDelegate();
   }
-  return nullptr;
+  DCHECK_EQ(model_type, syncer::HISTORY);
+  return history_service->GetHistorySyncControllerDelegate();
 }
 
 }  // namespace
 
 TypedURLModelTypeController::TypedURLModelTypeController(
+    syncer::ModelType model_type,
+    syncer::SyncService* sync_service,
     HistoryService* history_service,
     PrefService* pref_service)
-    : ModelTypeController(syncer::TYPED_URLS,
-                          GetDelegateFromHistoryService(history_service)),
-      history_service_(history_service),
-      pref_service_(pref_service) {
-  pref_registrar_.Init(pref_service_);
-  pref_registrar_.Add(
-      prefs::kSavingBrowserHistoryDisabled,
-      base::BindRepeating(
-          &TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged,
-          base::AsWeakPtr(this)));
+    : ModelTypeController(
+          model_type,
+          GetDelegateFromHistoryService(model_type, history_service)),
+      helper_(model_type, sync_service, pref_service) {
+  DCHECK(model_type == syncer::TYPED_URLS || model_type == syncer::HISTORY);
+  DCHECK(model_type == syncer::TYPED_URLS ||
+         base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType));
 }
 
-TypedURLModelTypeController::~TypedURLModelTypeController() {}
+TypedURLModelTypeController::~TypedURLModelTypeController() = default;
 
 syncer::DataTypeController::PreconditionState
 TypedURLModelTypeController::GetPreconditionState() const {
-  return (history_service_ &&
-          !pref_service_->GetBoolean(prefs::kSavingBrowserHistoryDisabled))
-             ? PreconditionState::kPreconditionsMet
-             : PreconditionState::kMustStopAndClearData;
-}
-
-void TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged() {
-  if (pref_service_->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
-    // We've turned off history persistence, so if we are running,
-    // generate an unrecoverable error. This can be fixed by restarting
-    // Chrome (on restart, typed urls will not be a registered type).
-    // TODO(crbug.com/990802): Adopt DataTypePreconditionChanged().
-    if (state() != NOT_RUNNING && state() != STOPPING) {
-      ReportModelError(
-          syncer::SyncError::DATATYPE_POLICY_ERROR,
-          {FROM_HERE, "History saving is now disabled by policy."});
+  if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
+    // If the feature flag is enabled, syncer::HISTORY replaces
+    // syncer::TYPED_URLS.
+    // TODO(crbug.com/1318028): Consider whether this is the best way to go
+    // about things - maybe we'll want to keep the TypedURLs (meta)data for now?
+    if (type() == syncer::TYPED_URLS) {
+      return PreconditionState::kMustStopAndClearData;
     }
   }
+  return helper_.GetPreconditionState();
 }
 
 }  // namespace history

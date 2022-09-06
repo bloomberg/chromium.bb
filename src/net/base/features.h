@@ -34,6 +34,9 @@ NET_EXPORT extern const base::Feature kAvoidH2Reprioritization;
 // origin requests are restricted to contain at most the source origin.
 NET_EXPORT extern const base::Feature kCapReferrerToOriginOnCrossOrigin;
 
+// Enables the ParsedCookie domain attribute to be the empty string.
+NET_EXPORT extern const base::Feature kCookieDomainAttributeEmptyString;
+
 // Support for altering the parameters used for DNS transaction timeout. See
 // ResolveContext::SecureTransactionTimeout().
 NET_EXPORT extern const base::Feature kDnsTransactionDynamicTimeouts;
@@ -126,20 +129,42 @@ NET_EXPORT extern const base::FeatureParam<bool>
 NET_EXPORT extern const base::FeatureParam<bool> kUseDnsHttpsSvcbEnableInsecure;
 
 // If we are still waiting for an HTTPS transaction after all the
-// other transactions in a DnsTask have completed, we will compute a timeout for
-// the remaining transaction. The timeout will be the min of:
-//   (a) `kUseDnsHttpsSvcbExtraTimeAbsolute.Get()`
-//   (b) `kUseDnsHttpsSvcbExtraTimePercent.Get() / 100 * t`, where `t` is
-//   the
-//       time delta since the first query began.
+// other transactions in an insecure DnsTask have completed, we will compute a
+// timeout for the remaining transaction. The timeout will be
+// `kUseDnsHttpsSvcbInsecureExtraTimePercent.Get() / 100 * t`, where `t` is the
+// time delta since the first query began. And the timeout will additionally be
+// clamped by:
+//   (a) `kUseDnsHttpsSvcbInsecureExtraTimeMin.Get()`
+//   (b) `kUseDnsHttpsSvcbInsecureExtraTimeMax.Get()`
 //
-// Either param is ignored if zero. If both are zero, there is no timeout
-// specific to HTTPS transactions, only the regular DNS query timeout and server
-// fallback.
+// Any param is ignored if zero, and if one of min/max is non-zero with a zero
+// percent param it will be used as an absolute timeout. If all are zero, there
+// is no timeout specific to HTTPS transactions, only the regular DNS query
+// timeout and server fallback.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbInsecureExtraTimeMax;
+NET_EXPORT extern const base::FeatureParam<int>
+    kUseDnsHttpsSvcbInsecureExtraTimePercent;
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbInsecureExtraTimeMin;
+
+// Same as `kUseDnsHttpsSvcbInsecureExtraTime...` except for secure DnsTasks.
 //
 // If `kUseDnsHttpsSvcbEnforceSecureResponse` is enabled, the timeouts will not
-// be used for secure requests because there is no sense killing a transaction
-// early if that will just kill the entire request.
+// be used because there is no sense killing a transaction early if that will
+// just kill the entire request.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbSecureExtraTimeMax;
+NET_EXPORT extern const base::FeatureParam<int>
+    kUseDnsHttpsSvcbSecureExtraTimePercent;
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbSecureExtraTimeMin;
+
+// Deprecated in favor of `kUseDnsHttpsSvcbInsecureExtraTime...` and
+// `kUseDnsHttpsSvcbSecureExtraTime...` params. Ignored for insecure DnsTasks if
+// any `kUseDnsHttpsSvcbInsecureExtraTime...` params are non-zero, and ignored
+// for secure DnsTasks if any `kUseDnsHttpsSvcbSecureExtraTime...` params are
+// non-zero.
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kUseDnsHttpsSvcbExtraTimeAbsolute;
 NET_EXPORT extern const base::FeatureParam<int>
@@ -150,9 +175,6 @@ NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 
 // Enables the TLS Encrypted ClientHello feature.
 // https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-13
-//
-// TODO(https://crbug.com/1091403): This flag does not currently do much yet.
-// ECH is still in development.
 NET_EXPORT extern const base::Feature kEncryptedClientHello;
 
 // Enables optimizing the network quality estimation algorithms in network
@@ -175,6 +197,12 @@ NET_EXPORT extern const base::Feature kSplitHostCacheByNetworkIsolationKey;
 // request.
 NET_EXPORT extern const base::Feature
     kPartitionConnectionsByNetworkIsolationKey;
+
+// Forces the `frame_origin` value in IsolationInfo to the `top_level_origin`
+// value when an IsolationInfo instance is created. This is to enable
+// expirimenting with double keyed network partitions.
+NET_EXPORT extern const base::Feature
+    kForceIsolationInfoFrameOriginToTopLevelFrame;
 
 // Partitions HttpServerProperties based on the NetworkIsolationKey associated
 // with a request.
@@ -237,6 +265,11 @@ NET_EXPORT extern const base::FeatureParam<int> kExpectCTPruneDelaySecs;
 // servers.
 NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
 
+// Enables permuting TLS extensions in the ClientHello, to reduce the risk of
+// non-compliant servers ossifying parts of the ClientHello and interfering with
+// deployment of future security improvements.
+NET_EXPORT extern const base::Feature kPermuteTLSExtensions;
+
 // Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections.
 NET_EXPORT extern const base::Feature kPostQuantumCECPQ2;
 
@@ -269,19 +302,19 @@ NET_EXPORT extern const base::Feature kSameSiteDefaultChecksMethodRigorously;
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 NET_EXPORT extern const base::FeatureParam<int> kCertVerifierBuiltinImpl;
 NET_EXPORT extern const base::FeatureParam<int> kCertVerifierBuiltinCacheSize;
-#endif /* defined(OS_MAC) */
+#endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) */
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 NET_EXPORT extern const base::Feature kCertDualVerificationTrialFeature;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 NET_EXPORT extern const base::FeatureParam<int> kCertDualVerificationTrialImpl;
 NET_EXPORT extern const base::FeatureParam<int>
     kCertDualVerificationTrialCacheSize;
-#endif /* defined(OS_MAC) */
+#endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) */
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
@@ -331,13 +364,6 @@ NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kTimeoutTcpConnectAttemptMax;
 
-// Enables usage of First Party Sets to determine cookie availability.
-NET_EXPORT extern const base::Feature kFirstPartySets;
-
-// Controls whether the client is considered a dogfooder for the FirstPartySets
-// feature.
-NET_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
-
 #if BUILDFLAG(ENABLE_REPORTING)
 // When enabled this feature will allow a new Reporting-Endpoints header to
 // configure reporting endpoints for report delivery. This is used to support
@@ -345,14 +371,14 @@ NET_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
 NET_EXPORT extern const base::Feature kDocumentReporting;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // When enabled, UDPSocketPosix increments the global counter of bytes received
 // every time bytes are received, instead of using a timer to batch updates.
 // This should reduce the number of wake ups and improve battery consumption.
 // TODO(https://crbug.com/1189805): Cleanup the feature after verifying that it
 // doesn't negatively affect performance.
 NET_EXPORT extern const base::Feature kUdpSocketPosixAlwaysUpdateBytesReceived;
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 // When this feature is enabled, redirected requests will be considered
 // cross-site for the purpose of SameSite cookies if any redirect hop was
@@ -374,6 +400,17 @@ NET_EXPORT extern const base::Feature kSamePartyCookiesConsideredFirstParty;
 // be sent when the browser is on the same top-level site that it was on when
 // the cookie was set.
 NET_EXPORT extern const base::Feature kPartitionedCookies;
+// Flag to bypass the origin trial opt-in to use Partitioned cookies. This
+// allows developers to test Partitioned cookies manually in development
+// environments.
+// TODO(crbug.com/1296161): Remove this feature when the CHIPS OT ends.
+NET_EXPORT extern const base::Feature kPartitionedCookiesBypassOriginTrial;
+
+// When enabled, then we allow partitioned cookies even if kPartitionedCookies
+// is disabled only if the cookie partition key contains a nonce. So far, this
+// is used to create temporary cookie jar partitions for fenced and anonymous
+// frames.
+NET_EXPORT extern const base::Feature kNoncedPartitionedCookies;
 
 // When enabled, additional cookie-related APIs will perform cookie field size
 // and character set validation to enforce stricter conformance with RFC6265bis.
@@ -381,13 +418,30 @@ NET_EXPORT extern const base::Feature kPartitionedCookies;
 // feature flag, assuming no breakage occurs with it enabled.
 NET_EXPORT extern const base::Feature kExtraCookieValidityChecks;
 
-// When enabled, the client will opt in to the V2 component format for the
-// First-Party Sets component.
-NET_EXPORT extern const base::Feature kFirstPartySetsV2ComponentFormat;
-
 // Enable recording UMAs for network activities which can wake-up radio on
 // Android.
 NET_EXPORT extern const base::Feature kRecordRadioWakeupTrigger;
+
+// When enabled, cookies cannot have an expiry date further than 400 days in the
+// future.
+NET_EXPORT extern const base::Feature kClampCookieExpiryTo400Days;
+
+// Controls whether static key pinning is enforced.
+NET_EXPORT extern const base::Feature kStaticKeyPinningEnforcement;
+
+// When enabled, cookies with a non-ASCII domain attribute will be rejected.
+NET_EXPORT extern const base::Feature kCookieDomainRejectNonASCII;
+
+NET_EXPORT extern const base::Feature kOptimizeNetworkBuffers;
+
+NET_EXPORT
+extern const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit;
+
+NET_EXPORT extern const base::FeatureParam<int>
+    kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown;
+
+NET_EXPORT extern const base::FeatureParam<int>
+    kOptimizeNetworkBuffersFilterSourceStreamBufferSize;
 
 }  // namespace features
 }  // namespace net

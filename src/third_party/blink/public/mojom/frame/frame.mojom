@@ -53,8 +53,11 @@ import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom"
 import "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
+import "third_party/blink/public/mojom/messaging/delegated_capability.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/opengraph/metadata.mojom";
 import "third_party/blink/public/mojom/widget/platform_widget.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
@@ -62,7 +65,7 @@ import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
 import "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom";
 import "third_party/blink/public/mojom/timing/resource_timing.mojom";
 import "third_party/blink/public/mojom/tokens/tokens.mojom";
-import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
+import "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -140,6 +143,12 @@ enum PluginActionType {
   kRotate90Counterclockwise,
 };
 
+// The result of executing JavaScript within a frame.
+enum JavaScriptExecutionResultType {
+  kSuccess,
+  kException,
+};
+
 // The maximum number of characters of the document's title that we're willing
 // to accept in the browser process.
 const uint16 kMaxTitleChars = 4096; // 4 * 1024;
@@ -166,6 +175,14 @@ struct OpenURLParams {
   ui.mojom.WindowOpenDisposition disposition;
   bool should_replace_current_entry;
   bool user_gesture;
+
+  // Whether this should be interpreted as a navigation to _unfencedTop,
+  // i.e. to the outermost frame from a fenced frame in a renderer process that
+  // doesn't get a handle to that frame.
+  // The disposition should always be CURRENT_TAB when this flag is set;
+  // the browser will target the outermost frame instead of the current frame.
+  // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+  bool is_unfenced_top_navigation = false;
 
   // Extra information about the triggering of the OpenURL.
   blink.mojom.TriggeringEventInfo triggering_event_info;
@@ -250,7 +267,7 @@ interface LocalFrameHost {
   // Indicates that the document element is available for the top-level frame.
   // This happens after the page starts loading, but before all resources are
   // finished.
-  DocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
+  MainDocumentElementAvailable(bool uses_temporary_zoom_level);
 
   // Indicates that a child frame requires its parent frame to send it
   // information about whether it is occluded or has visual effects applied,
@@ -311,7 +328,7 @@ interface LocalFrameHost {
   HadStickyUserActivationBeforeNavigationChanged(bool has_gesture);
 
   // Sent by a local root to request scrolling in its parent process.
-  ScrollRectToVisibleInParentFrame(gfx.mojom.Rect rect_to_scroll,
+  ScrollRectToVisibleInParentFrame(gfx.mojom.RectF rect_to_scroll,
                                    ScrollIntoViewParams params);
 
   // Sent by a local root to continue bubbling a logical scroll in its parent
@@ -345,15 +362,15 @@ interface LocalFrameHost {
   // Tells the browser to navigate back or forward in session history to the
   // history entry associated with |key|. |key| is a renderer-generated random
   // UUID, per
-  // https://wicg.github.io/app-history/#session-history-entry-app-history-key
+  // https://wicg.github.io/navigation-api/#session-history-entry-navigation-api-key
   //
   // The key is only used to trigger a back/forward navigation, so it is
-  // fundamentally similar to |offset| in GoToEntryAtOffset(). However,
-  // appHistory also requires that |key| match a FrameNavigationEntry in this
-  // frame, and that the target FNE is contiguously same-origin and
+  // fundamentally similar to |offset| in GoToEntryAtOffset(). However, the
+  // navigation API also requires that |key| match a FrameNavigationEntry in
+  // this frame, and that the target FNE is contiguously same-origin and
   // same-site-instance with the current FNE, so navigating via this
   // function is more restrictive than GoToEntryAtOffset().
-  NavigateToAppHistoryKey(string key, bool has_user_gesture);
+  NavigateToNavigationApiKey(string key, bool has_user_gesture);
 
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes. Sent for top-level frames. This can be null when loading an
@@ -556,6 +573,17 @@ interface LocalFrameHost {
 
   // Notifies the frame that the document's color scheme has been inferred.
   DidInferColorScheme(PreferredColorScheme color_scheme);
+
+  // Notifies the browser that a subframe's srcdoc attribute has changed, and
+  // sends the new value to the browser. Also sent when a subframe's content
+  // frame is changed.
+  DidChangeSrcDoc(blink.mojom.FrameToken child_frame_token, string srcdoc_value);
+
+  // Notifies the browser that this frame received a message from a local frame
+  // with a delegated capability (https://wicg.github.io/capability-delegation).
+  // `delegated_capability` is the capability delegated via postMessage().
+  // RemoteFrameHost messages already signal the browser via RouteMessageEvent.
+  ReceivedDelegatedCapability(DelegatedCapability delegated_capability);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -693,10 +721,12 @@ interface LocalFrame {
   AdvanceFocusInFrame(blink.mojom.FocusType focus_type,
                       blink.mojom.RemoteFrameToken? source_frame_token);
 
-  // Notifies this Frame to advance the focus to next input node in the form by
-  // moving in specified direction if the currently focused node is a Text node
-  // (textfield, text area or content editable nodes).
-  AdvanceFocusInForm(blink.mojom.FocusType focus_type);
+  // Notifies this Frame to advance the focus to next input node within its form
+  // by moving in specified direction if the currently focused node is a Text
+  // node (textfield, text area or content editable nodes). The next input node
+  // chosen (if available) will always have the same form owner as the currently
+  // focused node.
+  AdvanceFocusForIME(blink.mojom.FocusType focus_type);
 
   // Notifies the document navigation was blocked because a content security
   // policy was violated.
@@ -755,13 +785,14 @@ interface LocalFrame {
 
   // ONLY FOR TESTS: Same as above but this can optionally trigger a fake user
   // activation notification to test functionalities that are gated by user
-  // activation.
+  // activation, and can block until a resulting promise is resolved.
   JavaScriptExecuteRequestForTests(
       mojo_base.mojom.BigString16 javascript,
-      bool wants_result,
       bool has_user_gesture,
+      bool resolve_promises,
       int32 world_id)
-      => (mojo_base.mojom.Value result);
+      => (JavaScriptExecutionResultType result_type,
+          mojo_base.mojom.Value result);
 
   // Same as JavaScriptExecuteRequest above except the script is run in the
   // isolated world specified by the fourth parameter.
@@ -830,6 +861,18 @@ interface LocalFrame {
   // Requests the link-rel calnonical URL. The canonical url could be null if
   // the document of this frame doesn't have the HTMLLinkElement.
   GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
+
+  // Requests the OpenGraph metadata for the page. See https://ogp.me/. If the
+  // page has no OpenGraph tags that are understood by this implementation, or
+  // if it has no OpenGraph tags at all, an empty OpenGraphMetadata is returned.
+  GetOpenGraphMetadata() => (blink.mojom.OpenGraphMetadata metadata);
+
+  // Updates navigation.entries() when restoring from bfcache.
+  // navigation.entries() represents a subset of the back/forward list visible
+  // to this frame, and that subset may have changed while the page was in
+  // bfcache.
+  SetNavigationApiHistoryEntriesForRestore(
+      NavigationApiHistoryEntryArrays entry_arrays);
 };
 
 // Also implemented in Blink, this interface defines frame-specific methods
@@ -1068,7 +1111,7 @@ interface RemoteFrame {
 
   // Sent to the remote frame placeholder in the parent process to request
   // scrolling.
-  ScrollRectToVisible(gfx.mojom.Rect rect, ScrollIntoViewParams params);
+  ScrollRectToVisible(gfx.mojom.RectF rect, ScrollIntoViewParams params);
 
   // Notifies this remote frame that its corresponding document has started
   // loading.

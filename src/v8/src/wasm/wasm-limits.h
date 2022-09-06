@@ -40,7 +40,7 @@ constexpr size_t kV8MaxWasmDataSegments = 100000;
 // Also, do not use this limit to validate declared memory, use
 // kSpecMaxMemoryPages for that.
 constexpr size_t kV8MaxWasmMemoryPages = kSystemPointerSize == 4
-                                             ? 32768   // = 2 GiB
+                                             ? 32767   // = 2 GiB - 64Kib
                                              : 65536;  // = 4 GiB
 constexpr size_t kV8MaxWasmStringSize = 100000;
 constexpr size_t kV8MaxWasmModuleSize = 1024 * 1024 * 1024;  // = 1 GiB
@@ -52,13 +52,16 @@ constexpr size_t kV8MaxWasmFunctionBrTableSize = 65520;
 // Don't use this limit directly, but use the value of FLAG_wasm_max_table_size.
 constexpr size_t kV8MaxWasmTableSize = 10000000;
 constexpr size_t kV8MaxWasmTableInitEntries = 10000000;
-constexpr size_t kV8MaxWasmTables = 1;
+constexpr size_t kV8MaxWasmTables = 100000;
 constexpr size_t kV8MaxWasmMemories = 1;
 
 // GC proposal. These limits are not standardized yet.
 constexpr size_t kV8MaxWasmStructFields = 999;
 constexpr uint32_t kV8MaxRttSubtypingDepth = 31;
-constexpr size_t kV8MaxWasmArrayInitLength = 999;
+constexpr size_t kV8MaxWasmArrayInitLength = 10000;
+
+// Stringref proposal. This limit is not standardized yet.
+constexpr size_t kV8MaxWasmStringLiterals = 1000000;
 
 static_assert(kV8MaxWasmTableSize <= 4294967295,  // 2^32 - 1
               "v8 should not exceed WebAssembly's non-web embedding limits");

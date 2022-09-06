@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With ブロック"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "広告オークションのワークレット"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "ビッダーの入札フェーズの開始"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "ビッダーのレポート フェーズの開始"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "販売者のレポート フェーズの開始"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "販売者のスコアフェーズの開始"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Cross-Origin Read Blocking（CORB）により、MIME タイプ {PH2} のクロスオリジン レスポンス {PH1} がブロックされました。詳しくは、https://www.chromestatus.com/feature/5629709824032768 をご覧ください。"
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "WebP 形式を無効にする"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "無効にする"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "非同期のスタック トレースをキャプチャしない"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "グリッド トラック サイズを表示しない"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "カーソルを合わせたときに定規を表示しない"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "フォーカスのあるページをエミュレート"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "WebP 形式を有効にする"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "有効にする"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "グリッド線を延長"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "フレーム/秒（FPS）メーターを非表示"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "ヒットテストの枠線を非表示"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "レイヤの枠線を非表示"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "グリッド トラック サイズを表示"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "ヒットテストの枠線を表示"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "レイヤの枠線を表示"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "ペイント点滅の矩形を表示"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "定規を表示"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "カーソルを合わせたときに定規を表示する"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "スクロール パフォーマンスのボトルネックを表示"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "フォーカスのあるページをエミュレートする"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "自動ダークモードを有効にする"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "フォーカスのあるページをエミュレートします。"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "検査ページで自動ダークモードを有効にする"
+    "message": "自動ダークモードを有効にして、prefers-color-scheme を dark に設定します。"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "CSS color-gamut メディア特性を強制します"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "CSS 強制色のメディア機能を自動適用します"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "CSS prefers-color-scheme メディア特性を強制します"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "広告として検出されたフレーム（赤）をハイライト表示します。"
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "ヒットテストの枠線"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "レイヤの枠線"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "ウェブに関する主な指標でオーバーレイを表示します。"
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "ヒットテスト領域の周りに枠線を表示します。"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "レイヤの枠線（オレンジ / オリーブ）とタイル（シアン）を表示します。"
@@ -998,10 +1004,13 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | showRendering": {
     "message": "レンダリングを表示"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | toggleCssPrefersColorSchemeMedia": {
+    "message": "Toggle forces CSS prefers-color-scheme color"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "色覚異常"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "メイン"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1045,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "コンソール ドロワーを表示"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "システム設定のカラーパターンが変更されました。この変更を DevTools に適用するには、再読み込みしてください。"
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "固定を解除して別ウィンドウに表示"
@@ -1190,41 +1196,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "縮小"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "ノード"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "ノード"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "接続を追加"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "ネットワーク アドレス（例: localhost:9229）"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "接続が指定されていません"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js デバッグガイド"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "ネットワーク エンドポイントを指定すると、DevTools が自動的に接続されます。詳しくは {PH1} をご覧ください。"
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "メイン"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "接続"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
     "message": "ノード"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | node": {
+    "message": "ノード"
+  },
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "接続を表示"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "ノード"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "メイン"
@@ -1304,6 +1310,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "ファイルを書き込んでいます…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints インフラストラクチャ"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "コンテンツ セキュリティ ポリシー - Eval"
   },
@@ -1319,17 +1328,182 @@
   "models/issues_manager/ContentSecurityPolicyIssue.ts | trustedTypesPolicyViolation": {
     "message": "Trusted Type - ポリシー違反"
   },
+  "models/issues_manager/CookieIssue.ts | aSecure": {
+    "message": "安全な"
+  },
+  "models/issues_manager/CookieIssue.ts | anInsecure": {
+    "message": "安全ではない"
+  },
+  "models/issues_manager/CookieIssue.ts | firstPartySetsExplained": {
+    "message": "First-Party Sets と SameParty 属性"
+  },
+  "models/issues_manager/CookieIssue.ts | howSchemefulSamesiteWorks": {
+    "message": "スキームフル Same-Site の仕組み"
+  },
+  "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
+    "message": "SameSite Cookie の説明"
+  },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "クロスオリジン リソース シェアリング（CORS）"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "プライベート ネットワークの CORS（RFC1918）"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "プライベート ネットワーク アクセス"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP と COEP"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | samesiteAndSameorigin": {
     "message": "Same-Site と Same-Origin"
+  },
+  "models/issues_manager/DeprecationIssue.ts | authorizationCoveredByWildcard": {
+    "message": "Authorization will not be covered by the wildcard symbol (*) in CORS Access-Control-Allow-Headers handling."
+  },
+  "models/issues_manager/DeprecationIssue.ts | canRequestURLHTTPContainingNewline": {
+    "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesConnectionInfo": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesFirstPaintAfterLoadTime": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Paint Timing."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesWasAlternateProtocolAvailable": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: nextHopProtocol in Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cookieWithTruncatingChar": {
+    "message": "Cookies containing a \\(0|r|n) character will be rejected instead of truncated."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginAccessBasedOnDocumentDomain": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. This deprecation warning is for a cross-origin access that was enabled by setting document.domain."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginWindowApi": {
+    "message": "Triggering {PH1} from cross origin iframes has been deprecated and will be removed in the future."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cssSelectorInternalMediaControlsOverlayCastButton": {
+    "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
+  },
+  "models/issues_manager/DeprecationIssue.ts | customCursorIntersectsViewport": {
+    "message": "Custom cursors with size greater than 32x32 DIP intersecting native UI is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecatedWithReplacement": {
+    "message": "{PH1} is deprecated. Please use {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecationExample": {
+    "message": "サポート終了に関する問題の翻訳されたメッセージのサンプルです。"
+  },
+  "models/issues_manager/DeprecationIssue.ts | documentDomainSettingWithoutOriginAgentClusterHeader": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. To continue using this feature, please opt-out of origin-keyed agent clusters by sending an Origin-Agent-Cluster: ?0 header along with the HTTP response for the document and frames. See https://developer.chrome.com/blog/immutable-document-domain/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | eventPath": {
+    "message": "Event.path is deprecated and will be removed. Please use Event.composedPath() instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | feature": {
+    "message": "詳しくは、機能のステータスページをご覧ください。"
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOrigin": {
+    "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOriginDeprecatedNotRemoved": {
+    "message": "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | getUserMediaInsecureOrigin": {
+    "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | hostCandidateAttributeGetter": {
+    "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | insecurePrivateNetworkSubresourceRequest": {
+    "message": "The website requested a subresource from a network that it could only access because of its users' privileged network position. These requests expose non-public devices and servers to the internet, increasing the risk of a cross-site request forgery (CSRF) attack, and/or information leakage. To mitigate these risks, Chrome deprecates requests to non-public subresources when initiated from non-secure contexts, and will start blocking them."
+  },
+  "models/issues_manager/DeprecationIssue.ts | legacyConstraintGoogIPv6": {
+    "message": "IPv6 is enabled-by-default and the ability to disable it using googIPv6 will soon be removed. Please stop using this legacy constraint."
+  },
+  "models/issues_manager/DeprecationIssue.ts | localCSSFileExtensionRejected": {
+    "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaElementAudioSourceNode": {
+    "message": "Creating a MediaElementAudioSourceNode on an OfflineAudioContext is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceAbortRemove": {
+    "message": "Using SourceBuffer.abort() to abort remove()'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should instead await updateend. abort() is intended to only abort an asynchronous media append or reset parser state."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceDurationTruncatingBuffered": {
+    "message": "Setting MediaSource.duration below the highest presentation timestamp of any buffered coded frames is deprecated due to specification change. Support for implicit removal of truncated buffered media will be removed in the future. You should instead perform explicit remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration."
+  },
+  "models/issues_manager/DeprecationIssue.ts | milestone": {
+    "message": "この変更はマイルストーン {milestone} で有効になります。"
+  },
+  "models/issues_manager/DeprecationIssue.ts | noSysexWebMIDIWithoutPermission": {
+    "message": "Web MIDI will ask a permission to use even if the sysex is not specified in the MIDIOptions."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationInsecureOrigin": {
+    "message": "The Notification API may no longer be used from insecure origins. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationPermissionRequestedIframe": {
+    "message": "Permission for the Notification API may no longer be requested from a cross-origin iframe. You should consider requesting permission from a top-level frame or opening a new window instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | obsoleteWebRtcCipherSuite": {
+    "message": "Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestBasicCard": {
+    "message": "The basic-card payment method is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestShowWithoutGesture": {
+    "message": "Calling PaymentRequest.show() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | pictureSourceSrc": {
+    "message": "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | prefixedStorageInfo": {
+    "message": "window.webkitStorageInfo is deprecated. Please use navigator.webkitTemporaryStorage or navigator.webkitPersistentStorage instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | requestedSubresourceWithEmbeddedCredentials": {
+    "message": "Subresource requests whose URLs contain embedded credentials (e.g. https://user:pass@host/) are blocked."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpFalse": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a false value for this constraint, which is interpreted as an attempt to use the removed SDES key negotiation method. This functionality is removed; use a service that supports DTLS key negotiation instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpTrue": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a true value for this constraint, which had no effect, but you can remove this constraint for tidiness."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics": {
+    "message": "Complex Plan B SDP detected. This dialect of the Session Description Protocol is no longer supported. Please use Unified Plan SDP instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionSdpSemanticsPlanB": {
+    "message": "Plan B SDP semantics, which is used when constructing an RTCPeerConnection with {sdpSemantics:'plan-b'}, is a legacy non-standard version of the Session Description Protocol that has been permanently deleted from the Web Platform. It is still available when building with IS_FUCHSIA, but we intend to delete it as soon as possible. Stop depending on it. See https://crbug.com/1302249 for status."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcpMuxPolicyNegotiate": {
+    "message": "The rtcpMuxPolicy option is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtpDataChannel": {
+    "message": "RTP data channels are no longer supported. The RtpDataChannels constraint is currently ignored, and may cause an error at a later date."
+  },
+  "models/issues_manager/DeprecationIssue.ts | sharedArrayBufferConstructedWithoutIsolation": {
+    "message": "SharedArrayBuffer will require cross-origin isolation. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | textToSpeech_DisallowedByAutoplay": {
+    "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | title": {
+    "message": "サポートの終了した機能が使用されています"
+  },
+  "models/issues_manager/DeprecationIssue.ts | v8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
+    "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | vendorSpecificApi": {
+    "message": "{PH1} is vendor-specific. Please use the standard {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xhrJSONEncodingDetection": {
+    "message": "UTF-16 is not supported by response json in XMLHttpRequest"
+  },
+  "models/issues_manager/DeprecationIssue.ts | xmlHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
+    "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help, check https://xhr.spec.whatwg.org/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xrSupportsSession": {
+    "message": "supportsSession() is deprecated. Please use isSessionSupported() and check the resolved boolean value instead."
+  },
+  "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
+    "message": "Federated Credential Management API"
   },
   "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
     "message": "ポータル - 同じオリジンの通信チャネル"
@@ -1367,29 +1541,11 @@
   "models/issues_manager/QuirksModeIssue.ts | documentCompatibilityMode": {
     "message": "ドキュメント互換モード"
   },
-  "models/issues_manager/SameSiteCookieIssue.ts | aSecure": {
-    "message": "安全な"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | anInsecure": {
-    "message": "安全ではない"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | firstPartySetsExplained": {
-    "message": "First-Party Sets と SameParty 属性"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | howSchemefulSamesiteWorks": {
-    "message": "スキームフル Same-Site の仕組み"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | samesiteCookiesExplained": {
-    "message": "SameSite Cookie の説明"
-  },
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "SharedArrayBuffer を有効にしています"
   },
   "models/issues_manager/TrustedWebActivityIssue.ts | changesToQualityCriteriaForPwas": {
     "message": "Trusted Web Activity の使用による PWA の品質基準の変更"
-  },
-  "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
-    "message": "Wasm モジュールの共有を同じオリジンに制限"
   },
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<匿名>"
@@ -1414,9 +1570,6 @@
   },
   "models/logs/logs-meta.ts | reset": {
     "message": "リセット"
-  },
-  "models/persistence/Automapping.ts | theAttemptToBindSInTheWorkspace": {
-    "message": "ワークスペースで「{PH1}」をバインドする試行が、この URI の形式が正しくないため失敗しました。"
   },
   "models/persistence/EditFileSystemView.ts | add": {
     "message": "追加"
@@ -1559,8 +1712,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "ユーザー補助ツリー"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "アクセシビリティ ツリーは、DOM ツリーの右上に移動しました。"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "アクセシビリティ ツリーの全ページ表示を有効にする"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "除外"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "変更を反映するには、再読み込みする必要があります。"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "表示される位置までスクロール"
@@ -2051,6 +2213,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "マ二フェストから必要なアイコンをダウンロードできませんでした"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "暗い背景の色"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "ダークモードの色"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "説明"
   },
@@ -2315,384 +2483,6 @@
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "ワーカー"
   },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "バックフォワード キャッシュの対象になるのは、GET リクエストで読み込まれたページのみです。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "キャッシュに保存できるのは、ステータス コードが 2XX のページのみです。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "キャッシュにある間に JavaScript を実行しようとしていることが検出されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "AppBanner をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "バックフォワード キャッシュはフラグにより無効になっています。chrome://flags/#back-forward-cache に移動して、このデバイスでローカルに有効化してください。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "バックフォワード キャッシュはコマンドラインにより無効になっています。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "バックフォワード キャッシュはメモリ不足のため無効になっています。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "バックフォワード キャッシュは委任には対応していません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "バックフォワード キャッシュは事前レンダリングのため無効になっています。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "このページにはリスナーが登録された BroadcastChannel インスタンスがあるため、キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Cache-Control: no-store ヘッダーがあるページは、バックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "キャッシュは意図的に消去されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "別のページをキャッシュに保存できるようにするため、ページがキャッシュから削除されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "プラグインを含むページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "FileChooser API を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "File System Access API を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "メディア デバイス ディスパッチャーを使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "ページから移動するときにメディア プレーヤーが再生中でした。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "MediaSession API を使用しており再生状態にあるページは、バックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "MediaSession API を使用しておりアクション ハンドラを設定するページは、バックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "SecurityHandler を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Serial API を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "WebAuthentication API を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "WebBluetooth API を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "WebUSB API を使用するページはバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "専用のワーカーまたはワークレットを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "読み込みが終了していないドキュメントから移動しました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "ページがバックフォワード キャッシュにある間に、Service Worker が起動されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "別のページをキャッシュに保存できるようにするため、ページがキャッシュから削除されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "メディア ストリーム アクセスが可能なページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "ポータルを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "IdleManager を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "IndexedDB 接続が開いているページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "対象外の API が使用されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "拡張機能によって JavaScript が挿入されるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "拡張機能によってスタイルシートが挿入されるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "内部エラーが発生しました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "キーボード ロックを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "読み込みが終了していないページから移動しました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Cache-Control: no-cache のメインリソースがあるページは、バックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Cache-Control: no-store のメインリソースがあるページは、バックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "ページがバックフォワード キャッシュから復元される前に移動がキャンセルされました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "アクティブなネットワーク接続による受信データが多すぎたため、ページがキャッシュから削除されました。Chrome は、キャッシュに保存されたページが受信できるデータ量に上限を設けています。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "処理中の fetch() または XHR があるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "アクティブなネットワーク リクエストにリダイレクトが含まれていたため、ページがバックフォワード キャッシュから削除されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "ネットワーク接続の時間が長すぎたため、ページがキャッシュから削除されました。Chrome は、キャッシュに保存されたページがデータを受信できる時間に上限を設けています。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "有効なレスポンス ヘッダーのないページはバックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "メインフレーム以外のフレームで移動が行われました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "ページのアンロード ハンドラにバックフォワード キャッシュ オプトイン ヘッダーがありません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "インデックス登録済み DB のトランザクションが進行中のページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "処理中のネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "処理中の fetch ネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "処理中のネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "処理中の XHR ネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "PaymentManager を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "ピクチャー イン ピクチャーを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "ポータルを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "印刷 UI を表示するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "このページは、window.open() で開かれて他のタブから参照されているか、またはウィンドウを開いています。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "バックフォワード キャッシュにあるページのレンダラ プロセスに問題が発生しました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "バックフォワード キャッシュにあるページのレンダラ プロセスが強制終了されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "音声キャプチャの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "センサーの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "バックグラウンド同期またはバックグラウンド フェッチの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "MIDI の権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "通知の権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "ストレージ アクセスをリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "動画キャプチャの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "キャッシュに保存できるのは、URL スキームが HTTP または HTTPS のページのみです。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "ページがバックフォワード キャッシュにある間に Service Worker に要求されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "Service Worker がバックフォワード キャッシュ内のページに MessageEvent を送信しようとしました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "ページがバックフォワード キャッシュにある間に Service Worker が登録解除されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Service Worker の起動により、ページがバックフォワード キャッシュから削除されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome が再起動し、バックフォワード キャッシュの内容が消去されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "SharedWorker を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "SpeechRecognizer を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "SpeechSynthesis を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "ページ上で iframe が移動を開始し、完了しませんでした。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Cache-Control: no-cache のサブリソースがあるページは、バックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Cache-Control: no-store のサブリソースがあるページは、バックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "このページは、バックフォワード キャッシュの最大保存時間を超えたため期限切れとなりました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "ページのバックフォワード キャッシュへの保存がタイムアウトしました（長時間実行中の pagehide ハンドラが原因である可能性があります）。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "ページのメインフレームにアンロード ハンドラがあります。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "ページのサブフレームにアンロード ハンドラがあります。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "ブラウザによりユーザー エージェント オーバーライド ヘッダーが変更されました。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "録画や録音が可能なページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "WebDatabase を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "WebHID を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "WebLocks を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "WebNFC を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "WebOTPService を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "WebRTC を使用するページは、バックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "WebShare を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "WebSocket を使用するページはバックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "WebTransport を使用するページはバックフォワード キャッシュに保存できません。"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "WebXR を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "バックフォワード キャッシュ"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "バックフォワード キャッシュのステータス"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "対応不可"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "これらの原因は対処不可能です。つまり、ページから直接制御できない外部要因によってキャッシュ保存が妨げられました。"
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "メインフレーム"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "通常のナビゲーション（バックフォワード キャッシュからの復元でない）"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "対応可能"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "これらの原因は対処可能です。つまり、解消してページをバックフォワード キャッシュの対象にできます。"
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "バックフォワード キャッシュから復元"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "テストを実行"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "サポート保留中"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "これらの原因に対する Chrome のサポートは保留中です。つまり、Chrome の将来のバージョンでは、これらはページがバックフォワード キャッシュの対象から外れる原因にはなりません。"
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "使用不可"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "不明"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
-  },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "バックグラウンド フェッチ"
   },
@@ -2911,6 +2701,15 @@
   },
   "panels/application/IndexedDBViews.ts | version": {
     "message": "バージョン"
+  },
+  "panels/application/InterestGroupStorageView.ts | clickToDisplayBody": {
+    "message": "インタレスト グループ イベントをクリックすると、そのグループの現在の状態が表示されます"
+  },
+  "panels/application/InterestGroupStorageView.ts | noDataAvailable": {
+    "message": "選択したインタレスト グループについて表示できる情報はありません。ブラウザでグループの情報が記録されていない可能性があります。"
+  },
+  "panels/application/InterestGroupTreeElement.ts | interestGroups": {
+    "message": "インタレスト グループ"
   },
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "オープナーへのアクセス"
@@ -3251,6 +3050,411 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "イベントの録画を停止"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "バックフォワード キャッシュの対象になるのは、GET リクエストで読み込まれたページのみです。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "キャッシュに保存できるのは、ステータス コードが 2XX のページのみです。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "キャッシュにある間に JavaScript を実行しようとしていることが検出されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "AppBanner をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "バックフォワード キャッシュはフラグにより無効になっています。chrome://flags/#back-forward-cache に移動して、このデバイスでローカルに有効化してください。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "バックフォワード キャッシュはコマンドラインにより無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "バックフォワード キャッシュはメモリ不足のため無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "バックフォワード キャッシュは委任には対応していません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "バックフォワード キャッシュは事前レンダリングのため無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "このページにはリスナーが登録された BroadcastChannel インスタンスがあるため、キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Cache-Control: no-store ヘッダーがあるページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "キャッシュは意図的に消去されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "別のページをキャッシュに保存できるようにするため、ページがキャッシュから削除されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "プラグインを含むページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "FileChooser API を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "File System Access API を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "メディア デバイス ディスパッチャーを使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "ページから移動するときにメディア プレーヤーが再生中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "MediaSession API を使用しており再生状態にあるページは、バックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "MediaSession API を使用しておりアクション ハンドラを設定するページは、バックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "バックフォワード キャッシュはスクリーン リーダーが原因で無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "SecurityHandler を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Serial API を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "WebAuthentication API を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "WebBluetooth API を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "WebUSB API を使用するページはバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "専用のワーカーまたはワークレットを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "読み込みが終了していないドキュメントから移動しました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "ページから移動するときにアプリバナーが実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "ページから移動するときに Chrome パスワード マネージャーが実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "ページから移動するときに DOM 抽出の処理が実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "ページから移動するときに DOM Distiller ビューアが実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "バックフォワード キャッシュは、Messaging API を使用している拡張機能が原因で無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "バックフォワード キャッシュを使用する前に、持続的に接続している拡張機能の接続を終了する必要があります。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "持続的に接続している拡張機能で、バックフォワード キャッシュのフレームへのメッセージ送信が試行されていました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "バックフォワード キャッシュは拡張機能が原因で無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "ページから移動するときにフォームの再送信や HTTP パスワード ダイアログなどのモーダル ダイアログがページに表示されていました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "ページから移動するときにオフラインのページが表示されていました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "ページから移動するときにメモリ不足介入バーが実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "ページから移動するときに権限リクエストが実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "ページから移動するときにポップアップ ブロッカーが実行中でした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "ページから移動するときにセーフ ブラウジングのメッセージが表示されていました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "セーフ ブラウジングでこのページが不正と判断され、ポップアップがブロックされました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "ページがバックフォワード キャッシュにある間に、Service Worker が起動されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | errorDocument": {
+    "message": "バックフォワード キャッシュはドキュメントのエラーが原因で無効になっています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | fencedFramesEmbedder": {
+    "message": "Fenced Frame を使用しているページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "別のページをキャッシュに保存できるようにするため、ページがキャッシュから削除されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "メディア ストリーム アクセスが可能なページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "ポータルを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "IdleManager を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "IndexedDB 接続が開いているページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "対象外の API が使用されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "拡張機能によって JavaScript が挿入されるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "拡張機能によってスタイルシートが挿入されるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "内部エラーが発生しました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "キーボード ロックを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "読み込みが終了していないページから移動しました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Cache-Control: no-cache のメインリソースがあるページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Cache-Control: no-store のメインリソースがあるページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "ページがバックフォワード キャッシュから復元される前に移動がキャンセルされました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "アクティブなネットワーク接続による受信データが多すぎたため、ページがキャッシュから削除されました。Chrome は、キャッシュに保存されたページが受信できるデータ量に上限を設けています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "処理中の fetch() または XHR があるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "アクティブなネットワーク リクエストにリダイレクトが含まれていたため、ページがバックフォワード キャッシュから削除されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "ネットワーク接続の時間が長すぎたため、ページがキャッシュから削除されました。Chrome は、キャッシュに保存されたページがデータを受信できる時間に上限を設けています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "有効なレスポンス ヘッダーのないページはバックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "メインフレーム以外のフレームで移動が行われました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "インデックス登録済み DB のトランザクションが進行中のページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "処理中のネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "処理中の fetch ネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "処理中のネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "処理中の XHR ネットワーク リクエストがあるページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "PaymentManager を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "ピクチャー イン ピクチャーを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "ポータルを使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "印刷 UI を表示するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "このページは、window.open() を使用して開かれ、他のタブから参照されているか、ウィンドウが開かれています。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "バックフォワード キャッシュにあるページのレンダラ プロセスに問題が発生しました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "バックフォワード キャッシュにあるページのレンダラ プロセスが強制終了されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "音声キャプチャの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "センサーの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "バックグラウンド同期またはバックグラウンド フェッチの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "MIDI の権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "通知の権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "ストレージ アクセスをリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "動画キャプチャの権限をリクエストしたページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "キャッシュに保存できるのは、URL スキームが HTTP または HTTPS のページのみです。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "ページがバックフォワード キャッシュにある間に Service Worker に要求されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "Service Worker がバックフォワード キャッシュ内のページに MessageEvent を送信しようとしました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "ページがバックフォワード キャッシュにある間に Service Worker が登録解除されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Service Worker の起動により、ページがバックフォワード キャッシュから削除されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome が再起動し、バックフォワード キャッシュの内容が消去されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "SharedWorker を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "SpeechRecognizer を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "SpeechSynthesis を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "ページ上で iframe が移動を開始し、完了しませんでした。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Cache-Control: no-cache のサブリソースがあるページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Cache-Control: no-store のサブリソースがあるページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "このページは、バックフォワード キャッシュの最大保存時間を超えたため期限切れとなりました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "ページのバックフォワード キャッシュへの保存がタイムアウトしました（長時間実行中の pagehide ハンドラが原因である可能性があります）。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "ページのメインフレームにアンロード ハンドラがあります。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "ページのサブフレームにアンロード ハンドラがあります。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "ブラウザによりユーザー エージェント オーバーライド ヘッダーが変更されました。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "録画や録音が可能なページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "WebDatabase を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "WebHID を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "WebLocks を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "WebNFC を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "WebOTPService を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "WebRTC を使用するページは、バックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "WebShare を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "WebSocket を使用するページはバックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "WebTransport を使用するページはバックフォワード キャッシュに保存できません。"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "WebXR を使用するページは、現時点ではバックフォワード キャッシュの対象になりません。"
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "バックフォワード キャッシュ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blankURLTitle": {
+    "message": "空白の URL [{PH1}]"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blockingExtensionId": {
+    "message": "拡張機能 ID: "
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "対応不可"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "これらの原因は対処不可能です。つまり、ページから直接制御できない外部要因によってキャッシュ保存が妨げられました。"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesPerIssue": {
+    "message": "{n,plural, =1{# 個のフレーム}other{# 個のフレーム}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesTitle": {
+    "message": "フレーム"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInMultipleFrames": {
+    "message": "{n,plural, =1{{m} 個のフレームで # 件の問題が見つかりました。}other{{m} 個のフレームで # 件の問題が見つかりました。}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInSingleFrame": {
+    "message": "{n,plural, =1{1 個のフレームで # 件の問題が見つかりました。}other{1 個のフレームで # 件の問題が見つかりました。}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "バックフォワード キャッシュの使用に関する詳細"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "メインフレーム"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "バックフォワード キャッシュから配信されませんでした: バックフォワード キャッシュを読み込むには、Chrome の戻る / 進むボタンを使用するか、下のテストボタンを使用して、自動で前後に移動してください。"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "対応可能"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "これらの原因は対処可能です。つまり、解消してページをバックフォワード キャッシュの対象にできます。"
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "バックフォワード キャッシュから正常に配信されました。"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "バックフォワード キャッシュをテスト"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "テスト実行中"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "サポート保留中"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "これらの原因に対する Chrome のサポートは保留中です。つまり、Chrome の将来のバージョンでは、これらはページがバックフォワード キャッシュの対象から外れる原因にはなりません。"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "使用不可"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "不明なステータス"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "表示するエンドポイントがありません"
   },
@@ -3297,22 +3501,16 @@
     "message": "クリックして [ソース] パネルに表示"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "このフレームを作成したときの（非同期の）スタックに広告スクリプトがありました。フレーム作成時のスタック トレースで、より詳しい情報を確認できる可能性があります。"
+    "message": "このフレームを作成したときの (async) stack に広告スクリプトがありました。フレーム作成時の stack trace で、より詳しい情報を確認できる可能性があります。"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "フレーム作成のスタック トレース"
+    "message": "フレーム作成の Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "このフレームはプログラムで作成されました。スタック トレースにこの発生場所が示されています。"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "クロスオリジンの埋め込みポリシー"
+    "message": "このフレームはプログラムで作成されました。stack trace でその発生場所を確認できます。"
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "クロスオリジン分離"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "クロスオリジンのオープナー ポリシー"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "ドキュメント"
@@ -3324,7 +3522,7 @@
     "message": "詳細"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "ローカルホストは常に安全なコンテキスト"
+    "message": "Localhost は常に安全なコンテキストです"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "このフレームは、現在（または前の）メイン ドキュメントが広告リソースのため、広告フレームと考えられます。"
@@ -3338,14 +3536,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "オリジン"
   },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "オリジン トライアル"
-  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "所有者要素"
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "このフレームは、親フレームが広告フレームのため、広告フレームと考えられます。"
+  },
+  "panels/application/components/FrameDetailsView.ts | refresh": {
+    "message": "更新"
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "報告先:"
@@ -3366,19 +3564,19 @@
     "message": "セキュリティと隔離"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "SharedArrayBuffer コンストラクタを利用できます。SAB は postMessage 経由で転送できます"
+    "message": "SharedArrayBuffer コンストラクタを利用できます。SABs は postMessage 経由で転送できます"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer コンストラクタを利用できますが、SAB は postMessage 経由で転送できません。"
+    "message": "SharedArrayBuffer コンストラクタを利用できますが、SABs は postMessage 経由で転送できません"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "フレームのスキームが安全ではありません"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformanceAPI": {
-    "message": "performance.measureUserAgentSpecificMemory() API を利用できます"
+    "message": "performance.measureUserAgentSpecificMemory() API を使用できます"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "performance.measureUserAgentSpecificMemory() API は利用できません"
+    "message": "performance.measureUserAgentSpecificMemory() API は使用できません"
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "「プロトコル モニター」テストが有効であるため、この追加（デバッグ）情報が表示されています。"
@@ -3400,6 +3598,24 @@
   },
   "panels/application/components/FrameDetailsView.ts | yes": {
     "message": "はい"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | allInterestGroupStorageEvents": {
+    "message": "すべてのインタレスト グループのストレージ イベント。"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventTime": {
+    "message": "イベント時間"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventType": {
+    "message": "アクセスタイプ"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupName": {
+    "message": "名前"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupOwner": {
+    "message": "オーナー"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | noEvents": {
+    "message": "インタレスト グループ イベントは記録されていません。"
   },
   "panels/application/components/OriginTrialTreeView.ts | expiryTime": {
     "message": "有効期限"
@@ -3440,6 +3656,9 @@
   "panels/application/components/PermissionsPolicySection.ts | clickToShowIframe": {
     "message": "クリックすると、この機能を許可しない最上位の iframe が [要素] パネルに表示されます。"
   },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByFencedFrame": {
+    "message": "fencedframe 内では無効になっています"
+  },
   "panels/application/components/PermissionsPolicySection.ts | disabledByHeader": {
     "message": "「Permissions-Policy」ヘッダーで無効"
   },
@@ -3455,8 +3674,17 @@
   "panels/application/components/PermissionsPolicySection.ts | showDetails": {
     "message": "詳細を表示"
   },
+  "panels/application/components/ReportsGrid.ts | destination": {
+    "message": "送信先"
+  },
+  "panels/application/components/ReportsGrid.ts | generatedAt": {
+    "message": "生成日"
+  },
   "panels/application/components/ReportsGrid.ts | noReportsToDisplay": {
     "message": "表示するレポートがありません"
+  },
+  "panels/application/components/ReportsGrid.ts | status": {
+    "message": "ステータス"
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "スタック トレースをレンダリングできません"
@@ -3620,6 +3848,12 @@
   "panels/changes/ChangesView.ts | binaryData": {
     "message": "バイナリデータ"
   },
+  "panels/changes/ChangesView.ts | copy": {
+    "message": "コピー"
+  },
+  "panels/changes/ChangesView.ts | copyAllChangesFromCurrentFile": {
+    "message": "現在のファイルから変更をすべてコピー"
+  },
   "panels/changes/ChangesView.ts | noChanges": {
     "message": "変更はありません"
   },
@@ -3698,11 +3932,20 @@
   "panels/console/ConsoleView.ts | allLevels": {
     "message": "すべてのレベル"
   },
+  "panels/console/ConsoleView.ts | autocompleteFromHistory": {
+    "message": "履歴からオートコンプリート"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "コンソールが消去されました"
   },
   "panels/console/ConsoleView.ts | consoleSettings": {
     "message": "コンソールの設定"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarHidden": {
+    "message": "コンソールのサイドバーが非表示になっています"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarShown": {
+    "message": "コンソールのサイドバーが表示されています"
   },
   "panels/console/ConsoleView.ts | copyVisibleStyledSelection": {
     "message": "表示されているスタイル設定済みの選択項目をコピー"
@@ -3773,6 +4016,9 @@
   "panels/console/ConsoleView.ts | logLevels": {
     "message": "ログレベル"
   },
+  "panels/console/ConsoleView.ts | logXMLHttpRequests": {
+    "message": "XMLHttpRequests をログ"
+  },
   "panels/console/ConsoleView.ts | onlyShowMessagesFromTheCurrentContext": {
     "message": "現在のコンテキストのメッセージのみを表示（top、iframe、worker、extension）"
   },
@@ -3805,6 +4051,9 @@
   },
   "panels/console/ConsoleView.ts | showCorsErrorsInConsole": {
     "message": "コンソールに CORS エラーを表示する"
+  },
+  "panels/console/ConsoleView.ts | treatEvaluationAsUserActivation": {
+    "message": "評価をユーザー アクティベーションとして扱う"
   },
   "panels/console/ConsoleView.ts | verbose": {
     "message": "詳細"
@@ -4086,16 +4335,16 @@
     "message": "カバレッジ"
   },
   "panels/coverage/coverage-meta.ts | instrumentCoverage": {
-    "message": "インストルメントのカバレッジ"
+    "message": "計測のカバレッジ"
   },
   "panels/coverage/coverage-meta.ts | showCoverage": {
     "message": "カバレッジを表示"
   },
   "panels/coverage/coverage-meta.ts | startInstrumentingCoverageAnd": {
-    "message": "カバレッジのインストルメント化を開始してページを再読み込み"
+    "message": "カバレッジの計測を開始してページを再読み込み"
   },
   "panels/coverage/coverage-meta.ts | stopInstrumentingCoverageAndShow": {
-    "message": "カバレッジのインストルメント化を停止して結果を表示"
+    "message": "カバレッジの計測を停止して結果を表示"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | aa": {
     "message": "AA"
@@ -4229,20 +4478,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "インライン要素に Width が適用されています"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "現在、この機能に全力で取り組んでおり、皆様からの {PH1} をお待ちしております。"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "概要をキャプチャ"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "自分のページの CSS について概要を把握する"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "フィードバック"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "フィードバック"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "CSS の潜在的な改善点を特定する"
@@ -4253,14 +4493,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "影響を受ける要素を要素パネルで特定する"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "プレビュー機能"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "クイック スタート: 新しい「CSS の概要」パネルのスタートガイド"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "動画とドキュメント"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS の概要"
@@ -4375,6 +4609,12 @@
   },
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "計算済み"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesHidden": {
+    "message": "計算済みスタイルのサイドバーが非表示になっています"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesShown": {
+    "message": "計算済みスタイルのサイドバーが表示されています"
   },
   "panels/elements/ElementsPanel.ts | domTreeExplorer": {
     "message": "DOM ツリー エクスプローラ"
@@ -4571,6 +4811,12 @@
   "panels/elements/EventListenersWidget.ts | showListenersOnTheAncestors": {
     "message": "祖先のリスナーを表示します"
   },
+  "panels/elements/LayersWidget.ts | cssLayersTitle": {
+    "message": "CSS レイヤ"
+  },
+  "panels/elements/LayersWidget.ts | toggleCSSLayers": {
+    "message": "CSS レイヤビューを切り替え"
+  },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
     "message": "DOM ブレークポイント"
   },
@@ -4591,6 +4837,63 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "レンダリング フォント"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "フィルタ"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "フィルタ プロパティ"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "一致するプロパティはありません"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "すべて表示"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "チェックボックスをオフにすると、値が null および未定義でないプロパティのみが表示されます"
+  },
+  "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
+    "message": "作成されたスタイルシート"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllCSSChanges": {
+    "message": "CSS の変更をすべてコピー"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllDeclarations": {
+    "message": "宣言をすべてコピー"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyRule": {
+    "message": "ルールをコピー"
+  },
+  "panels/elements/StylePropertiesSection.ts | copySelector": {
+    "message": "selector をコピー"
+  },
+  "panels/elements/StylePropertiesSection.ts | cssSelector": {
+    "message": "CSS セレクタ"
+  },
+  "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
+    "message": "注入されたスタイルシート"
+  },
+  "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
+    "message": "以下にスタイルルールを挿入します"
+  },
+  "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
+    "message": "{PH1} [属性スタイル]"
+  },
+  "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
+    "message": "プロパティをすべて表示（他 {PH1} 件）"
+  },
+  "panels/elements/StylePropertiesSection.ts | styleAttribute": {
+    "message": "style 属性"
+  },
+  "panels/elements/StylePropertiesSection.ts | userAgentStylesheet": {
+    "message": "ユーザー エージェント スタイルシート"
+  },
+  "panels/elements/StylePropertiesSection.ts | viaInspector": {
+    "message": "インスペクタ経由"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | copyAllCSSChanges": {
+    "message": "CSS の変更をすべてコピー"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "すべての宣言を JS としてコピー"
@@ -4637,26 +4940,23 @@
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "計算値を見る"
   },
-  "panels/elements/StylesSidebarPane.ts | constructedStylesheet": {
-    "message": "作成されたスタイルシート"
+  "panels/elements/StylesSidebarPane.ts | automaticDarkMode": {
+    "message": "ダークモードを自動的に設定する"
   },
-  "panels/elements/StylesSidebarPane.ts | copyAllDeclarations": {
-    "message": "宣言をすべてコピー"
+  "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
+    "message": "クリックするとレイヤツリーでレイヤを表示します"
   },
-  "panels/elements/StylesSidebarPane.ts | copyRule": {
-    "message": "ルールをコピー"
+  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
+    "message": "クリップボードにコピーしました"
   },
-  "panels/elements/StylesSidebarPane.ts | copySelector": {
-    "message": "selector をコピー"
+  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
+    "message": "CSS の変更箇所をすべてコピー"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
-    "message": "CSS プロパティ名"
+    "message": "CSS プロパティ名: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
-    "message": "CSS プロパティ値"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssSelector": {
-    "message": "CSS セレクタ"
+    "message": "CSS プロパティ値: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "フィルタ"
@@ -4670,20 +4970,20 @@
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
     "message": "マウスホイールまたは上 / 下矢印キーを使って増減を調整します。{PH1}: R ±1、Shift: G ±1、Alt: B ±1"
   },
+  "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
+    "message": "次の疑似要素 ::{PH1} から継承 "
+  },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "継承元 "
-  },
-  "panels/elements/StylesSidebarPane.ts | injectedStylesheet": {
-    "message": "注入されたスタイルシート"
-  },
-  "panels/elements/StylesSidebarPane.ts | insertStyleRuleBelow": {
-    "message": "以下にスタイルルールを挿入します"
   },
   "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
     "message": "プロパティ値が無効"
   },
   "panels/elements/StylesSidebarPane.ts | invalidString": {
     "message": "{PH1}、プロパティ名: {PH2}、プロパティ値: {PH3}"
+  },
+  "panels/elements/StylesSidebarPane.ts | layer": {
+    "message": "レイヤ"
   },
   "panels/elements/StylesSidebarPane.ts | newStyleRule": {
     "message": "新しいスタイルルール"
@@ -4694,23 +4994,11 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "疑似 ::{PH1} 要素"
   },
-  "panels/elements/StylesSidebarPane.ts | sattributesStyle": {
-    "message": "{PH1} [属性スタイル]"
-  },
-  "panels/elements/StylesSidebarPane.ts | showAllPropertiesSMore": {
-    "message": "プロパティをすべて表示（他 {PH1} 件）"
-  },
-  "panels/elements/StylesSidebarPane.ts | styleAttribute": {
-    "message": "style 属性"
+  "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
+    "message": "一般的なレンダリング エミュレーションを切り替え"
   },
   "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
     "message": "不明なプロパティ名"
-  },
-  "panels/elements/StylesSidebarPane.ts | userAgentStylesheet": {
-    "message": "ユーザー エージェント スタイルシート"
-  },
-  "panels/elements/StylesSidebarPane.ts | viaInspector": {
-    "message": "インスペクタ経由"
   },
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "除外"
@@ -4980,7 +5268,7 @@
     "message": "メディアクエリを非表示"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "定規を非表示"
+    "message": "Device Mode ツールバーで定規を非表示にする"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "デバイスのフレームを表示"
@@ -4989,7 +5277,7 @@
     "message": "メディアクエリを表示"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "定規を表示"
+    "message": "Device Mode ツールバーで定規を表示する"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "デバイスのツールバーを切り替え"
@@ -5014,36 +5302,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "イベントリスナーをパッシブにするかブロックにするかを切り替え"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "閉じる"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "詳細"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "バグ"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "更新後に新情報のアイコンを毎回表示しない"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "リリースノート"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "DevTools の問題を報告"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "翻訳に関する問題を報告"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "最新情報を表示"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "更新時に新機能を表示"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "最新情報"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "すべてクリア"
@@ -5255,14 +5513,8 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | frame": {
     "message": "フレーム"
   },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidEventSourceTriggerData": {
-    "message": "event-source-trigger-data が無効です"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
-    "message": "attributionsourceeventid が無効です"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
-    "message": "trigger-data が無効です"
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidHeaderValue": {
+    "message": "Invalid Header Value"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# 件の違反}other{# 件の違反}}"
@@ -5275,6 +5527,9 @@
   },
   "panels/issues/CSPViolationsView.ts | filter": {
     "message": "フィルタ"
+  },
+  "panels/issues/ComboBoxOfCheckBoxes.ts | genericMenuLabel": {
+    "message": "メニュー"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
     "message": "Access-Control-Allow-Credentials のヘッダー値"
@@ -5290,6 +5545,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "許可されなかったリクエスト メソッド"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "リクエストに失敗しました"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "ヘッダー"
@@ -5366,8 +5624,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "すべて再表示"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "現在の{PH1}をすべて非表示"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "現在のすべての互換性を破る変更を非表示にする"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "現在のすべての改善を非表示にする"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "現在のすべてのページエラーを非表示にする"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "影響を受けるリソース"
@@ -5461,27 +5725,6 @@
   },
   "panels/issues/IssuesPane.ts | trustedWebActivity": {
     "message": "Trusted Web Activity"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | blocked": {
-    "message": "ブロック中"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | nModuleTransfers": {
-    "message": "{n,plural, =1{# 件のモジュール}other{# 件のモジュール}}"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | sourceOrigin": {
-    "message": "ソースオリジン"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | status": {
-    "message": "ステータス"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | targetOrigin": {
-    "message": "ターゲット オリジン"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | warned": {
-    "message": "警告"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | wasmModuleUrl": {
-    "message": "Wasm モジュール URL"
   },
   "panels/issues/components/HideIssuesMenu.ts | tooltipTitle": {
     "message": "問題を非表示"
@@ -5723,6 +5966,15 @@
   "panels/lighthouse/LighthouseController.ts | isThisPageUsableByPeopleWith": {
     "message": "このページは障がいを持つ人や身体の不自由な人が利用できるか"
   },
+  "panels/lighthouse/LighthouseController.ts | javaScriptDisabled": {
+    "message": "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
+  },
+  "panels/lighthouse/LighthouseController.ts | legacyNavigation": {
+    "message": "ナビゲーション（従来）"
+  },
+  "panels/lighthouse/LighthouseController.ts | lighthouseMode": {
+    "message": "Lighthouse モード"
+  },
   "panels/lighthouse/LighthouseController.ts | localStorage": {
     "message": "ローカル ストレージ"
   },
@@ -5731,6 +5983,12 @@
   },
   "panels/lighthouse/LighthouseController.ts | multipleTabsAreBeingControlledBy": {
     "message": "複数のタブが同じ service worker によって制御されています。このページを監査するには、オリジンが同じである他のタブを閉じてください。"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigation": {
+    "message": "Navigation (Default)"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigationTooltip": {
+    "message": "Navigation mode analyzes a page load, exactly like the original Lighthouse reports."
   },
   "panels/lighthouse/LighthouseController.ts | performance": {
     "message": "パフォーマンス"
@@ -5744,6 +6002,9 @@
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "監査前にストレージ（cache、service workers など）をリセットします（パフォーマンスと PWA のテストにおすすめです）。"
   },
+  "panels/lighthouse/LighthouseController.ts | runLighthouseInMode": {
+    "message": "ナビゲーション モード、タイムスパン モード、スナップショット モードで Lighthouse を実行します"
+  },
   "panels/lighthouse/LighthouseController.ts | seo": {
     "message": "SEO"
   },
@@ -5753,11 +6014,26 @@
   "panels/lighthouse/LighthouseController.ts | simulatedThrottling": {
     "message": "スロットリングのシミュレーション"
   },
+  "panels/lighthouse/LighthouseController.ts | snapshot": {
+    "message": "スナップショット"
+  },
+  "panels/lighthouse/LighthouseController.ts | snapshotTooltip": {
+    "message": "Snapshot mode analyzes the page in a particular state, typically after user interactions."
+  },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingLoadingPlural": {
     "message": "次の場所に保存されているデータが読み込みパフォーマンスに影響を与えている可能性があります: {PH1}。これらのリソースがスコアに影響しないようにするためには、シークレット ウィンドウでこのページを監査してください。"
   },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingSingular": {
     "message": "次の場所に保存されているデータが読み込みパフォーマンスに影響を与えている可能性があります: {PH1}。これらのリソースがスコアに影響しないようにするためには、シークレット ウィンドウでこのページを監査してください。"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespan": {
+    "message": "測定期間"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespanTooltip": {
+    "message": "Timespan mode analyzes an arbitrary period of time, typically containing user interactions."
+  },
+  "panels/lighthouse/LighthouseController.ts | useLegacyNavigation": {
+    "message": "ナビゲーション モードでは従来の Lighthouse を使用してページを分析します。"
   },
   "panels/lighthouse/LighthouseController.ts | webSql": {
     "message": "ウェブ SQL"
@@ -5799,7 +6075,7 @@
     "message": "レポート"
   },
   "panels/lighthouse/LighthouseStartView.ts | categories": {
-    "message": "カテゴリ"
+    "message": "Categories"
   },
   "panels/lighthouse/LighthouseStartView.ts | communityPluginsBeta": {
     "message": "コミュニティ プラグイン（ベータ版）"
@@ -5815,6 +6091,27 @@
   },
   "panels/lighthouse/LighthouseStartView.ts | learnMore": {
     "message": "詳細"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeNavigation": {
+    "message": "Analyze page load"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeSnapshot": {
+    "message": "Analyze page state"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | categories": {
+    "message": "Categories"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | generateLighthouseReport": {
+    "message": "Generate a Lighthouse report"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | mode": {
+    "message": "モード"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | plugins": {
+    "message": "Plugins"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | startTimespan": {
+    "message": "測定期間を開始"
   },
   "panels/lighthouse/LighthouseStatusView.ts | OfGlobalMobileUsersInWereOnGOrG": {
     "message": "2016 年には全世界のモバイル ユーザーの 75% が 2G または 3G を使用していました [出典: GSMA Mobile]"
@@ -5902,6 +6199,18 @@
   },
   "panels/lighthouse/LighthouseStatusView.ts | walmartSawAIncreaseInRevenueFor": {
     "message": "Walmart では、ページの読み込み速度が 100 ms 改善されるたびに、収益が 1% ずつ向上していきました [ソース: WPO Stats]。"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | cancel": {
+    "message": "キャンセル"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | endTimespan": {
+    "message": "測定期間を終了"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarted": {
+    "message": "測定期間を開始し、ページを監査しています"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
+    "message": "測定期間を開始しています…"
   },
   "panels/lighthouse/lighthouse-meta.ts | showLighthouse": {
     "message": "Lighthouse を表示"
@@ -6308,6 +6617,9 @@
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "キャッシュ"
   },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "ユーザー エージェントが更新されました。"
+  },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "カスタム..."
   },
@@ -6319,6 +6631,9 @@
   },
   "panels/network/NetworkConfigView.ts | enterACustomUserAgent": {
     "message": "カスタム ユーザー エージェントを入力"
+  },
+  "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
+    "message": "ネットワーク状況が表示されています"
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "ネットワーク スロットリング"
@@ -6935,6 +7250,9 @@
   "panels/network/RequestHeadersView.ts | general": {
     "message": "全般"
   },
+  "panels/network/RequestHeadersView.ts | headerOverrides": {
+    "message": "ヘッダーのオーバーライド"
+  },
   "panels/network/RequestHeadersView.ts | learnMore": {
     "message": "詳細"
   },
@@ -7188,7 +7506,7 @@
     "message": "不明"
   },
   "panels/network/RequestTimingView.ts | waitingTtfb": {
-    "message": "待機中（TTFB）"
+    "message": "Waiting for server response"
   },
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "ウォーターフォール"
@@ -7716,7 +8034,7 @@
     "message": "メソッド「{PH1}」の呼び出し中にエラーが発生しました"
   },
   "panels/profiler/HeapSnapshotView.ts | AllocationTimelinesShowInstrumented": {
-    "message": "割り当てタイムラインには、インストルメント化された JavaScript メモリ割り当ての推移が表示されます。プロファイルを記録したら、プロファイル内に割り当てられ、記録終了時点でも有効だったオブジェクトを表示する時間間隔を選択します。このプロファイルを使用して、メモリリークを隔離します。"
+    "message": "割り当てタイムラインには、計測された JavaScript メモリ割り当ての推移が表示されます。プロファイルを記録したら、プロファイル内に割り当てられ、記録終了時点でも有効だったオブジェクトを表示する時間間隔を選択します。このプロファイルを使用して、メモリリークを隔離します。"
   },
   "panels/profiler/HeapSnapshotView.ts | allObjects": {
     "message": "すべてのオブジェクト"
@@ -7725,7 +8043,7 @@
     "message": "割り当て"
   },
   "panels/profiler/HeapSnapshotView.ts | allocationInstrumentationOn": {
-    "message": "タイムラインのインストルメンテーション割り当て"
+    "message": "タイムラインの計測手法割り当て"
   },
   "panels/profiler/HeapSnapshotView.ts | allocationStack": {
     "message": "割り当てスタック"
@@ -8304,10 +8622,10 @@
     "message": "詳細をすべて非表示"
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownIn": {
-    "message": "このメッセージが誤って表示されたと思われる場合は、https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals から問題を報告してください。"
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownInErrorSafety": {
-    "message": "このメッセージが誤って表示されたと思われる場合は、https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals から問題を報告してください。"
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | info": {
     "message": "情報"
@@ -8865,7 +9183,7 @@
     "message": "このショートカットは {PH1} によって使用されています: {PH2}。"
   },
   "panels/settings/SettingsScreen.ts | experiments": {
-    "message": "テスト"
+    "message": "試験運用版"
   },
   "panels/settings/SettingsScreen.ts | filterExperimentsLabel": {
     "message": "フィルタ"
@@ -9036,7 +9354,7 @@
     "message": "ドキュメント"
   },
   "panels/settings/settings-meta.ts | experiments": {
-    "message": "テスト"
+    "message": "試験運用版"
   },
   "panels/settings/settings-meta.ts | ignoreList": {
     "message": "無視リスト"
@@ -9153,7 +9471,7 @@
     "message": "カバレッジ: N/A"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "カバレッジ: {PH1} %"
+    "message": "カバレッジ: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "詳細を表示"
@@ -9413,6 +9731,15 @@
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "記号を確認するには、JavaScript ファイルまたは CSS ファイルを開いてください"
   },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "KB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
+  },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "クロージャ"
   },
@@ -9515,6 +9842,12 @@
   "panels/sources/SourcesPanel.ts | copyStringContents": {
     "message": "文字列をそのままコピー"
   },
+  "panels/sources/SourcesPanel.ts | debuggerHidden": {
+    "message": "デバッガのサイドバーが非表示になっています"
+  },
+  "panels/sources/SourcesPanel.ts | debuggerShown": {
+    "message": "デバッガのサイドバーが表示されています"
+  },
   "panels/sources/SourcesPanel.ts | dontPauseOnExceptions": {
     "message": "例外で一時停止しない"
   },
@@ -9532,6 +9865,12 @@
   },
   "panels/sources/SourcesPanel.ts | moreOptions": {
     "message": "その他のオプション"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorHidden": {
+    "message": "ナビゲーターのサイドバーが非表示になっています"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorShown": {
+    "message": "ナビゲーターのサイドバーが表示されています"
   },
   "panels/sources/SourcesPanel.ts | openInSourcesPanel": {
     "message": "[ソース] パネルで開く"
@@ -9610,6 +9949,24 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "Watch 式を更新します"
+  },
+  "panels/sources/components/HeadersView.ts | addHeader": {
+    "message": "ヘッダーを追加"
+  },
+  "panels/sources/components/HeadersView.ts | addHeaderOverride": {
+    "message": "ヘッダーのオーバーライドを追加"
+  },
+  "panels/sources/components/HeadersView.ts | errorWhenParsing": {
+    "message": "「{PH1}」の解析中にエラーが発生しました。"
+  },
+  "panels/sources/components/HeadersView.ts | parsingErrorExplainer": {
+    "message": "多くの場合、「{PH1}」の構文エラーが原因です。外部エディタでこのファイルを開いてエラーを修正するか、ファイルを削除してから作成しなおしてください。"
+  },
+  "panels/sources/components/HeadersView.ts | removeBlock": {
+    "message": "この「ApplyTo」セクションを削除"
+  },
+  "panels/sources/components/HeadersView.ts | removeHeader": {
+    "message": "このヘッダーを削除"
   },
   "panels/sources/sources-meta.ts | activateBreakpoints": {
     "message": "ブレークポイントを有効化"
@@ -9866,6 +10223,12 @@
   "panels/sources/sources-meta.ts | toggleBreakpointInputWindow": {
     "message": "ブレークポイント入力ウィンドウを切り替え"
   },
+  "panels/sources/sources-meta.ts | toggleDebuggerSidebar": {
+    "message": "Toggle debugger sidebar"
+  },
+  "panels/sources/sources-meta.ts | toggleNavigatorSidebar": {
+    "message": "Toggle navigator sidebar"
+  },
   "panels/sources/sources-meta.ts | trailing": {
     "message": "末尾"
   },
@@ -9947,9 +10310,6 @@
   "panels/timeline/TimelineEventOverview.ts | cpu": {
     "message": "CPU"
   },
-  "panels/timeline/TimelineEventOverview.ts | fps": {
-    "message": "FPS"
-  },
   "panels/timeline/TimelineEventOverview.ts | heap": {
     "message": "ヒープ"
   },
@@ -9986,9 +10346,6 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "アイドル状態のフレーム"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | input": {
-    "message": "入力"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | interactions": {
     "message": "操作"
   },
@@ -10007,14 +10364,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
     "message": "無視リスト上"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
+    "message": "部分的に表示されたフレーム"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | raster": {
     "message": "ラスター"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | rasterizerThreadS": {
     "message": "ラスタライザ スレッド {PH1}"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sFfps": {
-    "message": "{PH1}～{PH2} FPS"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
     "message": "{PH1}（セルフ {PH2}）"
@@ -10086,7 +10443,7 @@
     "message": "- ネットワーク スロットリングが有効です"
   },
   "panels/timeline/TimelinePanel.ts | SignificantOverheadDueToPaint": {
-    "message": "- ペイント インストルメンテーションによる重大なオーバーヘッド"
+    "message": "- 描画パフォーマンスの計測による重大なオーバーヘッド"
   },
   "panels/timeline/TimelinePanel.ts | afterRecordingSelectAnAreaOf": {
     "message": "記録後、ドラッグして概要内で関心のある範囲を選択します。選択したら、マウスホイールまたは {PH1} キーでタイムラインのズーム、パンを行います。{PH2}"
@@ -10101,7 +10458,7 @@
     "message": "キャプチャの設定"
   },
   "panels/timeline/TimelinePanel.ts | capturesAdvancedPaint": {
-    "message": "高度なペイント インストルメンテーションをキャプチャし、重大なパフォーマンス オーバーヘッドを提示します"
+    "message": "高度な描画パフォーマンス計測により、重大なパフォーマンスオーバーヘッドが生じます"
   },
   "panels/timeline/TimelinePanel.ts | clear": {
     "message": "消去"
@@ -10134,7 +10491,7 @@
     "message": "タイムラインのファイルまたは URL をここにドロップ"
   },
   "panels/timeline/TimelinePanel.ts | enableAdvancedPaint": {
-    "message": "高度なペイント インストルメンテーション（低速）を有効にする"
+    "message": "高度な描画パフォーマンスの計測（低速）を有効にする"
   },
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSSS": {
     "message": "タイムフレームの保存に失敗しました（{PH1}（{PH2}、{PH3}））"
@@ -10249,6 +10606,12 @@
   },
   "panels/timeline/TimelineTreeView.ts | heaviestStack": {
     "message": "最も時間がかかったスタック"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackHidden": {
+    "message": "最も時間がかかったスタックのサイドバーが非表示になっています"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackShown": {
+    "message": "最も時間がかかったスタックのサイドバーが表示されています"
   },
   "panels/timeline/TimelineTreeView.ts | hideHeaviestStack": {
     "message": "最も時間がかかったスタックを非表示にします"
@@ -10541,9 +10904,6 @@
   "panels/timeline/TimelineUIUtils.ts | forcedReflow": {
     "message": "強制リフロー"
   },
-  "panels/timeline/TimelineUIUtils.ts | fps": {
-    "message": "FPS"
-  },
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "フレーム"
   },
@@ -10777,6 +11137,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | pinchUpdate": {
     "message": "ピンチ更新"
+  },
+  "panels/timeline/TimelineUIUtils.ts | prePaint": {
+    "message": "プリペイント"
   },
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "プレビュー"
@@ -11306,6 +11669,9 @@
   "panels/webauthn/WebauthnPane.ts | signCount": {
     "message": "署名数"
   },
+  "panels/webauthn/WebauthnPane.ts | supportsLargeBlob": {
+    "message": "Supports large blob"
+  },
   "panels/webauthn/WebauthnPane.ts | supportsResidentKeys": {
     "message": "常駐キーをサポート"
   },
@@ -11429,6 +11795,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Memory Inspector を表示"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "フィードバック"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "プレビュー機能"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "現在、この機能に全力で取り組んでおり、皆様からのご意見をお待ちしております。"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "ご感想をお聞かせください。"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "動画とドキュメント"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "ご感想をお聞かせください。"
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "ネットワーク パネルをクリックして開き、URL「{url}」のリクエストを表示します"
   },
@@ -11472,7 +11856,7 @@
     "message": "すべて"
   },
   "ui/legacy/FilterBar.ts | clearFilter": {
-    "message": "入力内容を削除"
+    "message": "Clear input"
   },
   "ui/legacy/FilterBar.ts | egSmalldUrlacomb": {
     "message": "例: /small[d]+/ url:a.com/b"
@@ -11500,6 +11884,12 @@
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "ツールドロワー"
+  },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "ドロワーが非表示になっています"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "ドロワーが表示されています"
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "メインのツールバー"
@@ -11539,6 +11929,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "保存"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "デバッグ接続を終了しました。理由: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "DevTools を再接続"
@@ -11632,6 +12025,9 @@
   },
   "ui/legacy/TargetCrashedScreen.ts | oncePageIsReloadedDevtoolsWill": {
     "message": "ページの再読み込み後、DevTools は自動的に再接続します。"
+  },
+  "ui/legacy/Toolbar.ts | clearInput": {
+    "message": "Clear input"
   },
   "ui/legacy/Toolbar.ts | notPressed": {
     "message": "オフです"
@@ -11773,6 +12169,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "名前"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "（不透明）"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "セッション"
@@ -11942,15 +12341,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "JavaScript オブジェクトとして表示"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "キー"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "キーワード"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "字句スコープ変数"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "子を折りたたむ"
   },
@@ -12038,15 +12428,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} を選択中"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "KB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "高"
   },
@@ -12119,8 +12500,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1}（確定するには Enter キー、キャンセルするには Esc キーを押します）。"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "コマンドを切り替えるには、Tab キーを使用します。使用可能なコマンドを表示するには、「?」を入力してください"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "使用可能なコマンドを表示するには、「?」を入力してください"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "ファイルを開く"
@@ -12223,9 +12604,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "タブ文字"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "コードエディタ"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "現在のソース:"

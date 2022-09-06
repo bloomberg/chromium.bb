@@ -5,6 +5,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
@@ -111,7 +112,7 @@ const UIStrings = {
   *@description Second part of the body of message to display in devtools security tab when you are viewing a page that triggered a safety tip.
   */
   ifYouBelieveThisIsShownIn:
-      'If you believe this is shown in error please visit https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.',
+      'If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings.',
   /**
   *@description Summary of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
   */
@@ -126,7 +127,7 @@ const UIStrings = {
   *@description second part of body of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
   */
   ifYouBelieveThisIsShownInErrorSafety:
-      'If you believe this is shown in error please visit https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.',
+      'If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings.',
   /**
   *@description Title of the devtools security tab when the page you are on triggered a safety tip.
   */
@@ -513,7 +514,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar implements
     return certificateButton;
   }
 
-  static createHighlightedUrl(url: string, securityState: string): Element {
+  static createHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): Element {
     const schemeSeparator = '://';
     const index = url.indexOf(schemeSeparator);
 
@@ -548,7 +549,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar implements
     // The sidebar element will trigger displaying the main view. Rather than making a redundant call to display the main view, we rely on this.
     this.sidebarMainViewElement.select(true);
   }
-  showOrigin(origin: string): void {
+  showOrigin(origin: Platform.DevToolsPath.UrlString): void {
     const originState = this.origins.get(origin);
     if (!originState) {
       return;
@@ -797,11 +798,11 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
   }
 
   private originGroupTitle(originGroup: OriginGroup): string {
-    return /** @type {string} */ this.originGroupTitles.get(originGroup) as string;
+    return this.originGroupTitles.get(originGroup) as string;
   }
 
   private originGroupElement(originGroup: OriginGroup): UI.TreeOutline.TreeElement {
-    return /** @type {!UI.TreeOutline.TreeElement} */ this.originGroups.get(originGroup) as UI.TreeOutline.TreeElement;
+    return this.originGroups.get(originGroup) as UI.TreeOutline.TreeElement;
   }
 
   private createOriginGroupElement(originGroupTitle: string): UI.TreeOutline.TreeElement {
@@ -820,7 +821,7 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
     }
   }
 
-  addOrigin(origin: string, securityState: Protocol.Security.SecurityState): void {
+  addOrigin(origin: Platform.DevToolsPath.UrlString, securityState: Protocol.Security.SecurityState): void {
     const originElement = new SecurityPanelSidebarTreeElement(
         SecurityPanel.createHighlightedUrl(origin, securityState), this.showOriginInPanel.bind(this, origin),
         'security-sidebar-tree-item', 'security-property');
@@ -1382,7 +1383,7 @@ export class SecurityMainView extends UI.Widget.VBox {
 
   showNetworkFilter(filterKey: string, e: Event): void {
     e.consume();
-    Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
+    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
         [{filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey}]));
   }
   wasShown(): void {
@@ -1394,7 +1395,7 @@ export class SecurityMainView extends UI.Widget.VBox {
 export class SecurityOriginView extends UI.Widget.VBox {
   private readonly panel: SecurityPanel;
   private readonly originLockIcon: HTMLElement;
-  constructor(panel: SecurityPanel, origin: string, originState: OriginState) {
+  constructor(panel: SecurityPanel, origin: Platform.DevToolsPath.UrlString, originState: OriginState) {
     super();
     this.panel = panel;
     this.setMinimumSize(200, 100);
@@ -1416,7 +1417,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
     const originNetworkButton = UI.UIUtils.createTextButton(i18nString(UIStrings.viewRequestsInNetworkPanel), event => {
       event.consume();
       const parsedURL = new Common.ParsedURL.ParsedURL(origin);
-      Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
+      void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
         {filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host},
         {filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme},
       ]));
@@ -1657,4 +1658,4 @@ export interface OriginState {
   originView?: SecurityOriginView|null;
 }
 
-export type Origin = string;
+export type Origin = Platform.DevToolsPath.UrlString;

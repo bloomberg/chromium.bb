@@ -8,12 +8,12 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "net/base/escape.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_capture_mode.h"
@@ -64,9 +64,7 @@ HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair(
     : key(key.data(), key.size()), value(value.data(), value.size()) {}
 
 HttpRequestHeaders::Iterator::Iterator(const HttpRequestHeaders& headers)
-    : started_(false),
-      curr_(headers.headers_.begin()),
-      end_(headers.headers_.end()) {}
+    : curr_(headers.headers_.begin()), end_(headers.headers_.end()) {}
 
 HttpRequestHeaders::Iterator::~Iterator() = default;
 

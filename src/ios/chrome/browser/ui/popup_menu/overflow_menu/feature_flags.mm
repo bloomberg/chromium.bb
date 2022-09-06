@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
+
 #include "components/password_manager/core/common/password_manager_features.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -12,6 +12,18 @@
 
 const base::Feature kNewOverflowMenu{"NewOverflowMenu",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewOverflowMenuCBDAction{
+    "NewOverflowMenuCBDAction", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewOverflowMenuSettingsAction{
+    "NewOverflowMenuSettingsAction", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewOverflowMenuSimpleDestinationIcons{
+    "NewOverflowMenuSimpleDestinationIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSmartSortingNewOverflowMenu{
+    "kSmartSortingNewOverflowMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsNewOverflowMenuEnabled() {
   if (@available(iOS 15, *)) {
@@ -22,6 +34,21 @@ bool IsNewOverflowMenuEnabled() {
   return false;
 }
 
+bool IsNewOverflowMenuCBDActionEnabled() {
+  return IsNewOverflowMenuEnabled() &&
+         base::FeatureList::IsEnabled(kNewOverflowMenuCBDAction);
+}
+
+bool IsNewOverflowMenuSettingsActionEnabled() {
+  return IsNewOverflowMenuEnabled() &&
+         base::FeatureList::IsEnabled(kNewOverflowMenuSettingsAction);
+}
+
+bool IsNewOverflowMenuSimpleDestinationIconsEnabled() {
+  return IsNewOverflowMenuEnabled() &&
+         base::FeatureList::IsEnabled(kNewOverflowMenuSimpleDestinationIcons);
+}
+
 bool IsPasswordManagerBrandingUpdateEnabled() {
   if (IsNewOverflowMenuEnabled()) {
     return base::FeatureList::IsEnabled(
@@ -29,4 +56,9 @@ bool IsPasswordManagerBrandingUpdateEnabled() {
   }
 
   return false;
+}
+
+bool IsSmartSortingNewOverflowMenuEnabled() {
+  return IsNewOverflowMenuEnabled() &&
+         base::FeatureList::IsEnabled(kSmartSortingNewOverflowMenu);
 }

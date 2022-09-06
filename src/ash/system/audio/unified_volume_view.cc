@@ -12,7 +12,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,7 +43,7 @@ const gfx::VectorIcon* const kVolumeLevelIcons[] = {
 };
 
 // The maximum index of kVolumeLevelIcons.
-constexpr int kVolumeLevels = base::size(kVolumeLevelIcons) - 1;
+constexpr int kVolumeLevels = std::size(kVolumeLevelIcons) - 1;
 
 // Get vector icon reference that corresponds to the given volume level. |level|
 // is between 0.0 to 1.0.
@@ -153,7 +152,7 @@ UnifiedVolumeView::UnifiedVolumeView(
       more_button_(new MoreButton(
           base::BindRepeating(&UnifiedVolumeSliderController::Delegate::
                                   OnAudioSettingsButtonClicked,
-                              base::Unretained(delegate)))) {
+                              delegate->weak_ptr_factory_.GetWeakPtr()))) {
   CrasAudioHandler::Get()->AddAudioObserver(this);
   AddChildView(more_button_);
   Update(false /* by_user */);

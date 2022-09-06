@@ -6,10 +6,12 @@
 #define CHROMEOS_NETWORK_NETWORK_CONNECTION_HANDLER_IMPL_H_
 
 #include "base/component_export.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -58,6 +60,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
       CellularConnectionHandler* cellular_connection_handler) override;
 
  private:
+  // Cellular configuration failure type. These values are persisted to logs.
+  // Entries should not be renumbered and numeric values should
+  // never be reused.
+  enum class CellularConfigurationFailureType {
+    kFailureGetShillProperties = 0,
+    kFailurePropertiesWithNoType = 1,
+    kFailureSetShillProperties = 2,
+    kMaxValue = kFailureSetShillProperties
+  };
+
   struct ConnectRequest {
     ConnectRequest(ConnectCallbackMode mode,
                    const std::string& service_path,
@@ -118,11 +130,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   // Calls Shill.Manager.Connect asynchronously.
   void CallShillConnect(const std::string& service_path);
 
+  // Called when setting shill properties fails.
+  void OnSetShillPropertiesFailed(const std::string& service_path,
+                                  const std::string& error_name);
+
   // Handles failure from ConfigurationHandler calls.
   void HandleConfigurationFailure(
       const std::string& service_path,
       const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+      CellularConfigurationFailureType failure_type);
 
   // Handles success or failure from Shill.Service.Connect.
   void HandleShillConnectSuccess(const std::string& service_path);
@@ -155,9 +171,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   void HandleShillDisconnectSuccess(const std::string& service_path,
                                     base::OnceClosure success_callback);
 
+  // Logs the cellular configuration failure type to UMA.
+  void LogConfigurationFailureTypeIfCellular(
+      const std::string& service_path,
+      CellularConfigurationFailureType failure_type);
+
   // Local references to the associated handler instances.
   NetworkCertLoader* network_cert_loader_ = nullptr;
   NetworkStateHandler* network_state_handler_ = nullptr;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
   NetworkConfigurationHandler* configuration_handler_ = nullptr;
   ManagedNetworkConfigurationHandler* managed_configuration_handler_ = nullptr;
   CellularConnectionHandler* cellular_connection_handler_ = nullptr;

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
@@ -178,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceBrowserTest, GetThumbnailTest) {
 class DriveIntegrationServiceWithGaiaDisabledBrowserTest
     : public DriveIntegrationServiceBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kDisableGaiaServices);
+    command_line->AppendSwitch(ash::switches::kDisableGaiaServices);
   }
 };
 
@@ -251,9 +254,9 @@ IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceBrowserTest,
   CHECK(mount_path.AppendRelativePath(path, &some_other_file));
 
   fake->SetMetadata(some_file, "text/plain", some_file.BaseName().value(),
-                    false, false, {}, {}, "abc123");
+                    false, false, {}, {}, "abc123", "");
   fake->SetMetadata(some_other_file, "text/plain", some_file.BaseName().value(),
-                    false, false, {}, {}, "qwertyqwerty");
+                    false, false, {}, {}, "qwertyqwerty", "");
 
   {
     base::RunLoop run_loop;
@@ -294,6 +297,284 @@ IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceWithPrefDisabledBrowserTest,
 
   profile->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
   EXPECT_FALSE(drive_service->is_enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceBrowserTest,
+                       EnableMirrorSync_FeatureDisabled) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->ToggleMirroring(
+        /*enabled=*/true,
+        base::BindLambdaForTesting(
+            [quit_closure](drivefs::mojom::MirrorSyncStatus status) {
+              EXPECT_EQ(drivefs::mojom::MirrorSyncStatus::kFeatureNotEnabled,
+                        status);
+              quit_closure.Run();
+            }));
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->ToggleMirroring(
+        /*enabled=*/false,
+        base::BindLambdaForTesting(
+            [quit_closure](drivefs::mojom::MirrorSyncStatus status) {
+              EXPECT_EQ(drivefs::mojom::MirrorSyncStatus::kFeatureNotEnabled,
+                        status);
+              quit_closure.Run();
+            }));
+    run_loop.Run();
+  }
+}
+
+class DriveMirrorSyncStatusObserver : public DriveIntegrationServiceObserver {
+ public:
+  explicit DriveMirrorSyncStatusObserver(bool expected_status)
+      : expected_status_(expected_status) {
+    quit_closure_ = run_loop_.QuitClosure();
+  }
+
+  DriveMirrorSyncStatusObserver(const DriveMirrorSyncStatusObserver&) = delete;
+  DriveMirrorSyncStatusObserver& operator=(
+      const DriveMirrorSyncStatusObserver&) = delete;
+
+  ~DriveMirrorSyncStatusObserver() override {}
+
+  void WaitForStatusChange() { run_loop_.Run(); }
+
+  void OnMirroringEnabled() override {
+    quit_closure_.Run();
+    EXPECT_TRUE(expected_status_);
+  }
+
+  void OnMirroringDisabled() override {
+    quit_closure_.Run();
+    EXPECT_FALSE(expected_status_);
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  base::RepeatingClosure quit_closure_;
+  bool expected_status_ = false;
+};
+
+class DriveIntegrationBrowserTestWithMirrorSyncEnabled
+    : public DriveIntegrationServiceBrowserTest {
+ public:
+  DriveIntegrationBrowserTestWithMirrorSyncEnabled() {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kDriveFsMirroring}, {});
+  }
+
+  DriveIntegrationBrowserTestWithMirrorSyncEnabled(
+      const DriveIntegrationBrowserTestWithMirrorSyncEnabled&) = delete;
+  DriveIntegrationBrowserTestWithMirrorSyncEnabled& operator=(
+      const DriveIntegrationBrowserTestWithMirrorSyncEnabled&) = delete;
+
+  ~DriveIntegrationBrowserTestWithMirrorSyncEnabled() override {}
+
+  void ToggleMirrorSync(bool status) {
+    auto observer = std::make_unique<DriveMirrorSyncStatusObserver>(status);
+    auto* drive_service =
+        DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+    drive_service->AddObserver(observer.get());
+
+    browser()->profile()->GetPrefs()->SetBoolean(
+        prefs::kDriveFsEnableMirrorSync, status);
+    observer->WaitForStatusChange();
+    EXPECT_EQ(browser()->profile()->GetPrefs()->GetBoolean(
+                  prefs::kDriveFsEnableMirrorSync),
+              status);
+
+    drive_service->RemoveObserver(observer.get());
+  }
+
+  void AddSyncingPath(const base::FilePath& path) {
+    auto* drive_service =
+        DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->ToggleSyncForPath(
+        path, drivefs::mojom::MirrorPathStatus::kStart,
+        base::BindLambdaForTesting([quit_closure](FileError status) {
+          EXPECT_EQ(FILE_ERROR_OK, status);
+          quit_closure.Run();
+        }));
+    run_loop.Run();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       EnableMirrorSync) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  // Ensure the mirror syncing service is disabled.
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kDriveFsEnableMirrorSync));
+  EXPECT_FALSE(drive_service->IsMirroringEnabled());
+
+  // Enable mirroring and ensure the integration service has it enabled.
+  ToggleMirrorSync(true);
+  EXPECT_TRUE(drive_service->IsMirroringEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       DisableMirrorSync) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  // Ensure the mirror syncing service is disabled.
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kDriveFsEnableMirrorSync));
+  EXPECT_FALSE(drive_service->IsMirroringEnabled());
+
+  // Enable mirror syncing.
+  ToggleMirrorSync(true);
+  EXPECT_TRUE(drive_service->IsMirroringEnabled());
+
+  // Disable mirroring and ensure the integration service has it disabled.
+  ToggleMirrorSync(false);
+  EXPECT_FALSE(drive_service->IsMirroringEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       ToggleSyncForPath_MirroringDisabled) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->ToggleSyncForPath(
+        base::FilePath("/fake/path"), drivefs::mojom::MirrorPathStatus::kStart,
+        base::BindLambdaForTesting([quit_closure](FileError status) {
+          EXPECT_EQ(FILE_ERROR_SERVICE_UNAVAILABLE, status);
+          quit_closure.Run();
+        }));
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       ToggleSyncForPath_MirroringEnabledFileNotFound) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  // Enable mirror sync.
+  ToggleMirrorSync(true);
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->ToggleSyncForPath(
+        base::FilePath("/fake/path"), drivefs::mojom::MirrorPathStatus::kStart,
+        base::BindLambdaForTesting([quit_closure](FileError status) {
+          EXPECT_EQ(FILE_ERROR_NOT_FOUND, status);
+          quit_closure.Run();
+        }));
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       ToggleSyncForPath_MirroringEnabled) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  // Enable mirror sync.
+  ToggleMirrorSync(true);
+
+  base::ScopedTempDir temp_dir;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  }
+
+  {
+    base::FilePath sync_path = temp_dir.GetPath();
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->ToggleSyncForPath(
+        sync_path, drivefs::mojom::MirrorPathStatus::kStart,
+        base::BindLambdaForTesting([quit_closure](FileError status) {
+          EXPECT_EQ(FILE_ERROR_OK, status);
+          quit_closure.Run();
+        }));
+    run_loop.Run();
+  }
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(temp_dir.Delete());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       GetSyncingPaths_MirroringDisabled) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->GetSyncingPaths(base::BindLambdaForTesting(
+        [quit_closure](drive::FileError status,
+                       const std::vector<base::FilePath>& paths) {
+          EXPECT_EQ(drive::FILE_ERROR_SERVICE_UNAVAILABLE, status);
+          EXPECT_EQ(0, paths.size());
+          quit_closure.Run();
+        }));
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationBrowserTestWithMirrorSyncEnabled,
+                       GetSyncingPaths_MirroringEnabled) {
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  // Enable mirror sync and add |sync_path| that we expect to return from
+  // |GetSyncingPaths|.
+  ToggleMirrorSync(true);
+
+  base::ScopedTempDir temp_dir;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  }
+
+  {
+    base::FilePath sync_path = temp_dir.GetPath();
+    AddSyncingPath(sync_path);
+
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->GetSyncingPaths(base::BindLambdaForTesting(
+        [quit_closure, sync_path](drive::FileError status,
+                                  const std::vector<base::FilePath>& paths) {
+          EXPECT_EQ(drive::FILE_ERROR_OK, status);
+          EXPECT_EQ(1, paths.size());
+          EXPECT_EQ(sync_path, paths[0]);
+          quit_closure.Run();
+        }));
+    run_loop.Run();
+  }
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(temp_dir.Delete());
+  }
 }
 
 }  // namespace drive

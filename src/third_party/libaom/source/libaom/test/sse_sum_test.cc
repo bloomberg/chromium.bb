@@ -46,7 +46,7 @@ class SumSSETest : public ::testing::TestWithParam<TestFuncs> {
     params_ = this->GetParam();
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<int16_t *>(aom_memalign(16, 256 * 256 * 2));
-    ASSERT_TRUE(src_ != NULL);
+    ASSERT_NE(src_, nullptr);
   }
 
   virtual void TearDown() { aom_free(src_); }

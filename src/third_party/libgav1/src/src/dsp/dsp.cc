@@ -78,6 +78,12 @@ dsp::Dsp* GetWritableDspTable(int bitdepth) {
       return &dsp_10bpp;
     }
 #endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+    case 12: {
+      static dsp::Dsp dsp_12bpp;
+      return &dsp_12bpp;
+    }
+#endif
   }
   return nullptr;
 }
@@ -157,6 +163,7 @@ void DspInit() {
 #if LIBGAV1_MAX_BITDEPTH >= 10
     ConvolveInit10bpp_NEON();
     InverseTransformInit10bpp_NEON();
+    LoopFilterInit10bpp_NEON();
     LoopRestorationInit10bpp_NEON();
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 #endif  // LIBGAV1_ENABLE_NEON

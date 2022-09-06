@@ -42,7 +42,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -210,9 +210,18 @@ UChar32 ReplaceControlCharacter(UChar32 codepoint) {
   constexpr char16_t kSymbolsCodepoint = 0x2400;
 
   if (codepoint >= 0 && codepoint <= 0x1F) {
-    // Replace codepoints with their visual symbols, which are
-    // at the same offset from kSymbolsCodepoint.
-    return kSymbolsCodepoint + codepoint;
+    switch (codepoint) {
+      case 0x09:
+        // Replace character tabulation ('\t') with its visual arrow symbol.
+        return 0x21E5;
+      case 0x0A:
+        // Replace line feed ('\n') with space character.
+        return 0x20;
+      default:
+        // Replace codepoints with their visual symbols, which are
+        // at the same offset from kSymbolsCodepoint.
+        return kSymbolsCodepoint + codepoint;
+    }
   }
   if (codepoint == 0x7F) {
     // Replace the 'del' codepoint by its symbol (u2421).
@@ -230,13 +239,13 @@ UChar32 ReplaceControlCharacter(UChar32 codepoint) {
   if (codepoint > 0x7F) {
     // Private use codepoints are working with a pair of font
     // and codepoint, but they are not used in Chrome.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Support Apple defined PUA on Mac.
     // see: http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CORPCHAR.TXT
     if (codepoint == 0xF8FF)
       return codepoint;
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Support Microsoft defined PUA on Windows.
     // see:
     // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
@@ -965,8 +974,13 @@ int RenderText::GetContentWidth() {
 
 int RenderText::GetBaseline() {
   if (baseline_ == kInvalidBaseline) {
-    baseline_ =
-        DetermineBaselineCenteringText(display_rect().height(), font_list());
+    const int centering_height =
+        (vertical_alignment_ == ALIGN_MIDDLE)
+            ? display_rect().height()
+            : std::max(font_list().GetHeight(), min_line_height());
+    baseline_ = DetermineBaselineCenteringText(centering_height, font_list());
+    if (vertical_alignment_ == ALIGN_BOTTOM)
+      baseline_ += display_rect().height() - centering_height;
   }
   DCHECK_NE(kInvalidBaseline, baseline_);
   return baseline_;
@@ -1229,7 +1243,11 @@ void RenderText::SetDisplayOffset(int horizontal_offset) {
 }
 
 void RenderText::SetDisplayOffset(Vector2d offset) {
-  const int extra_content = GetContentWidth() - display_rect_.width();
+  // Use ClampedNumeric for extra content, as it can otherwise overflow during
+  // later operations if GetContentWidth() returns INT_MAX and
+  // display_rect_.width() is 0.
+  const base::ClampedNumeric<int> extra_content =
+      base::ClampedNumeric<int>(GetContentWidth()) - display_rect_.width();
   const int cursor_width = cursor_enabled_ ? 1 : 0;
 
   int min_offset = 0;
@@ -1769,11 +1787,12 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
   if (horizontal_alignment != ALIGN_LEFT) {
     const int width =
-        multiline_
-            ? std::ceil(GetShapedText()->lines()[line_number].size.width()) +
-                  (cursor_enabled_ ? 1 : 0)
-            : GetContentWidth();
+        multiline_ ? base::ClampCeil(
+                         GetShapedText()->lines()[line_number].size.width() +
+                         (cursor_enabled_ ? 1.0f : 0.0f))
+                   : GetContentWidth();
     offset.set_x(display_rect().width() - width);
+
     // Put any extra margin pixel on the left to match legacy behavior.
     if (horizontal_alignment == ALIGN_CENTER)
       offset.set_x((offset.x() + 1) / 2);
@@ -1812,13 +1831,15 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   Rect right_part;
   if (horizontal_alignment != ALIGN_LEFT) {
     left_part = solid_part;
-    left_part.Inset(0, 0, solid_part.width() - gradient_width, 0);
-    solid_part.Inset(gradient_width, 0, 0, 0);
+    left_part.Inset(
+        gfx::Insets::TLBR(0, 0, 0, solid_part.width() - gradient_width));
+    solid_part.Inset(gfx::Insets::TLBR(0, gradient_width, 0, 0));
   }
   if (horizontal_alignment != ALIGN_RIGHT) {
     right_part = solid_part;
-    right_part.Inset(solid_part.width() - gradient_width, 0, 0, 0);
-    solid_part.Inset(0, 0, gradient_width, 0);
+    right_part.Inset(
+        gfx::Insets::TLBR(0, solid_part.width() - gradient_width, 0, 0));
+    solid_part.Inset(gfx::Insets::TLBR(0, 0, 0, gradient_width));
   }
 
   // CreateFadeShader() expects at least one part to not be empty.
@@ -1827,7 +1848,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
     return;
 
   Rect text_rect = display_rect();
-  text_rect.Inset(GetAlignmentOffset(0).x(), 0, 0, 0);
+  text_rect.Inset(gfx::Insets::TLBR(0, GetAlignmentOffset(0).x(), 0, 0));
 
   // TODO(msw): Use the actual text colors corresponding to each faded part.
   renderer->SetShader(

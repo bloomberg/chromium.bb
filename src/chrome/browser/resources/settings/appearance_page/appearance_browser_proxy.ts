@@ -11,12 +11,12 @@ export interface AppearanceBrowserProxy {
   getDefaultZoom(): Promise<number>;
   getThemeInfo(themeId: string): Promise<chrome.management.ExtensionInfo>;
 
-  /** @return Whether the current profile is supervised. */
-  isSupervised(): boolean;
+  /** @return Whether the current profile is a child account. */
+  isChildAccount(): boolean;
 
   useDefaultTheme(): void;
 
-  // <if expr="is_linux and not chromeos">
+  // <if expr="is_linux">
   useSystemTheme(): void;
   // </if>
 
@@ -36,15 +36,15 @@ export class AppearanceBrowserProxyImpl implements AppearanceBrowserProxy {
     });
   }
 
-  isSupervised() {
-    return loadTimeData.getBoolean('isSupervised');
+  isChildAccount() {
+    return loadTimeData.getBoolean('isChildAccount');
   }
 
   useDefaultTheme() {
     chrome.send('useDefaultTheme');
   }
 
-  // <if expr="is_linux and not chromeos">
+  // <if expr="is_linux">
   useSystemTheme() {
     chrome.send('useSystemTheme');
   }

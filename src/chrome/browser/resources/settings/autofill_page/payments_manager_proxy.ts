@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-
 import {PersonalDataChangedListener} from './autofill_manager_proxy.js';
 
 /**
@@ -61,6 +59,16 @@ export interface PaymentsManagerProxy {
    * Requests the list of UPI IDs from personal data.
    */
   getUpiIdList(callback: (entries: Array<string>) => void): void;
+
+  /**
+   * Enrolls the card into virtual cards.
+   */
+  addVirtualCard(cardId: string): void;
+
+  /**
+   * Unenrolls the card from virtual cards.
+   */
+  removeVirtualCard(cardId: string): void;
 }
 
 /**
@@ -82,11 +90,11 @@ export class PaymentsManagerImpl implements PaymentsManagerProxy {
   }
 
   removeCreditCard(guid: string) {
-    chrome.autofillPrivate.removeEntry(assert(guid));
+    chrome.autofillPrivate.removeEntry(guid);
   }
 
   clearCachedCreditCard(guid: string) {
-    chrome.autofillPrivate.maskCreditCard(assert(guid));
+    chrome.autofillPrivate.maskCreditCard(guid);
   }
 
   saveCreditCard(creditCard: chrome.autofillPrivate.CreditCardEntry) {
@@ -107,6 +115,14 @@ export class PaymentsManagerImpl implements PaymentsManagerProxy {
 
   getUpiIdList(callback: (entries: Array<string>) => void) {
     chrome.autofillPrivate.getUpiIdList(callback);
+  }
+
+  addVirtualCard(cardId: string) {
+    chrome.autofillPrivate.addVirtualCard(cardId);
+  }
+
+  removeVirtualCard(serverId: string) {
+    chrome.autofillPrivate.removeVirtualCard(serverId);
   }
 
   static getInstance(): PaymentsManagerProxy {

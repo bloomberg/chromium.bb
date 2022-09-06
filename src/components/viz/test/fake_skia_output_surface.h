@@ -19,11 +19,8 @@
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "third_party/skia/include/core/SkDeferredDisplayList.h"
 
 namespace viz {
-
-class TextureDeleter;
 
 class FakeSkiaOutputSurface : public SkiaOutputSurface {
  public:
@@ -47,22 +44,12 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   void BindToClient(OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  void BindFramebuffer() override;
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
-               bool use_stencil) override;
+  void Reshape(const ReshapeParams& params) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   void ScheduleOutputSurfaceAsOverlay(
       OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane)
       override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
-  unsigned GetOverlayTextureId() const override;
-  bool HasExternalStencilTest() const override;
-  void ApplyExternalStencil() override;
-  unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
   void SetUpdateVSyncParametersCallback(
@@ -83,8 +70,11 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                                  ResourceFormat format,
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space,
+                                 bool is_overlay,
                                  const gpu::Mailbox& mailbox) override;
-  void EndPaint(base::OnceClosure on_finished) override;
+  void EndPaint(base::OnceClosure on_finished,
+                base::OnceCallback<void(gfx::GpuFenceHandle)>
+                    return_release_fence_cb) override;
   void MakePromiseSkImage(ImageContext* image_context) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const AggregatedRenderPassId& id,
@@ -96,9 +86,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   void RemoveRenderPassResource(
       std::vector<AggregatedRenderPassId> ids) override;
   void ScheduleOverlays(OverlayList overlays,
-                        std::vector<gpu::SyncToken> sync_tokens,
-                        base::OnceClosure on_finished) override {}
-#if defined(OS_WIN)
+                        std::vector<gpu::SyncToken> sync_tokens) override {}
+#if BUILDFLAG(IS_WIN)
   void SetEnableDCLayers(bool enable) override {}
 #endif
   void CopyOutput(AggregatedRenderPassId id,
@@ -110,16 +99,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
   gpu::SharedImageInterface* GetSharedImageInterface() override;
   gpu::SyncToken Flush() override;
-  void OnObservingBeginFrameSourceChanged(bool observing) override {}
-#if defined(OS_APPLE) || defined(USE_OZONE)
-  SkCanvas* BeginPaintRenderPassOverlay(
-      const gfx::Size& size,
-      ResourceFormat format,
-      bool mipmap,
-      sk_sp<SkColorSpace> color_space) override;
-  sk_sp<SkDeferredDisplayList> EndPaintRenderPassOverlay() override;
-#endif
-
+  bool EnsureMinNumberOfBuffers(int n) override;
   void PreserveChildSurfaceControls() override {}
 
   // ExternalUseClient implementation:
@@ -131,7 +111,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       ResourceFormat format,
       bool concurrent_reads,
       const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
-      sk_sp<SkColorSpace> color_space) override;
+      sk_sp<SkColorSpace> color_space,
+      bool raw_draw_if_possible) override;
 
   // If set true, callbacks triggering will be in a reverse order as SignalQuery
   // calls.
@@ -157,21 +138,29 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
     return delegated_ink_renderer_receiver_arrived_;
   }
 
- private:
+ protected:
   explicit FakeSkiaOutputSurface(
       scoped_refptr<ContextProvider> context_provider);
 
+ private:
   ContextProvider* context_provider() { return context_provider_.get(); }
   GrDirectContext* gr_context() { return context_provider()->GrContext(); }
+
+  gpu::SyncToken GenerateSyncToken();
 
   bool GetGrBackendTexture(const ImageContext& image_context,
                            GrBackendTexture* backend_texture);
   void SwapBuffersAck();
 
+  // Provided as a release callback for CopyOutputRequest.
+  void DestroyCopyOutputTexture(const gpu::Mailbox& mailbox,
+                                const gpu::SyncToken& sync_token,
+                                bool is_lost);
+
   scoped_refptr<ContextProvider> context_provider_;
   raw_ptr<OutputSurfaceClient> client_ = nullptr;
 
-  std::unique_ptr<TextureDeleter> texture_deleter_;
+  uint64_t next_sync_fence_release_ = 1;
 
   // The current render pass id set by BeginPaintRenderPass.
   AggregatedRenderPassId current_render_pass_id_;

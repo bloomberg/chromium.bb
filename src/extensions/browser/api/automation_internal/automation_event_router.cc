@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/containers/cxx20_erase.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -65,6 +66,14 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
     content::WebContents* web_contents) {
   Register(extension_id, listener_process_id, web_contents,
            ui::AXTreeIDUnknown(), true);
+}
+
+void AutomationEventRouter::UnregisterListenerWithDesktopPermission(
+    int listener_process_id) {
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(listener_process_id);
+  if (host)
+    RemoveAutomationListener(host);
 }
 
 void AutomationEventRouter::DispatchAccessibilityEventsInternal(
@@ -292,7 +301,8 @@ void AutomationEventRouter::RemoveAutomationListener(
   base::EraseIf(listeners_, [process_id](const auto& item) {
     return item->process_id == process_id;
   });
-  rph_observers_.RemoveObservation(host);
+  if (rph_observers_.IsObservingSource(host))
+    rph_observers_.RemoveObservation(host);
   UpdateActiveProfile();
 
   if (rph_observers_.GetSourcesCount() == 0) {

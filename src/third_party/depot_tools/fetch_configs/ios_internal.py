@@ -18,7 +18,6 @@ class IOSInternal(config_util.Config):
       'alias': {
         'config': 'chromium',
         'props': [
-          '--flash=False',
           '--internal=True',
           '--target_os=ios',
           '--target_os_only=True',

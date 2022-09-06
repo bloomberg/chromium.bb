@@ -22,12 +22,12 @@ class AshBrowserTestStarter {
   // Returns whether the --lacros-chrome-path is provided.
   // If returns false, we should not do any Lacros related testing
   // because the Lacros instance is not provided.
-  bool HasLacrosArgument();
+  bool HasLacrosArgument() const;
 
   // Prepares ash so it can work with Lacros. You should call this
   // in SetUpInProcessBrowserTestFixture().
   // Returns true if everything works.
-  bool PrepareEnvironmentForLacros() WARN_UNUSED_RESULT;
+  [[nodiscard]] bool PrepareEnvironmentForLacros();
 
   // Starts Lacros and waits for it's fully started. You should call
   // this no earlier than SetUpOnMainThread().

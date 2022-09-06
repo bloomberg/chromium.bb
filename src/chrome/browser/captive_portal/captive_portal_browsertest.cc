@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -85,7 +85,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -611,10 +611,6 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   bool IsShowingInterstitial(WebContents* contents);
 
-  // Asserts an interstitial is showing and waits for the render frame to be
-  // ready.
-  void WaitForInterstitial(content::WebContents* contents);
-
   // Returns the captive_portal::CaptivePortalTabReloader::State of
   // |web_contents|.
   captive_portal::CaptivePortalTabReloader::State GetStateOfTabReloader(
@@ -916,7 +912,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_num_jobs,
               static_cast<int>(ongoing_mock_requests_.size()));
     for (auto& job : ongoing_mock_requests_)
-      ignore_result(job.client.Unbind().PassPipe().release());
+      std::ignore = job.client.Unbind().PassPipe().release();
     ongoing_mock_requests_.clear();
   }
 
@@ -946,7 +942,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   std::vector<content::URLLoaderInterceptor::RequestParams>
       ongoing_mock_requests_;
   std::atomic<bool> behind_captive_portal_;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::win::ScopedDomainStateForTesting scoped_domain_;
 #endif
   raw_ptr<const BrowserList> browser_list_;
@@ -955,7 +951,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
 CaptivePortalBrowserTest::CaptivePortalBrowserTest()
     : behind_captive_portal_(true),
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // Mark as not enterprise managed to prevent the secure DNS mode from
       // being downgraded to off.
       scoped_domain_(false),
@@ -1168,12 +1164,6 @@ CaptivePortalBrowserTest::GetInterstitialType(WebContents* contents) const {
 
 bool CaptivePortalBrowserTest::IsShowingInterstitial(WebContents* contents) {
   return GetInterstitialType(contents) != nullptr;
-}
-
-void CaptivePortalBrowserTest::WaitForInterstitial(
-    content::WebContents* contents) {
-  ASSERT_TRUE(IsShowingInterstitial(contents));
-  ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
 }
 
 captive_portal::CaptivePortalTabReloader::State
@@ -2028,7 +2018,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Wait for the interstitial to load all the JavaScript code. Otherwise,
   // trying to click on a button will fail.
   content::RenderFrameHost* rfh;
-  rfh = broken_tab_contents->GetMainFrame();
+  rfh = broken_tab_contents->GetPrimaryMainFrame();
   EXPECT_TRUE(WaitForRenderFrameReady(rfh));
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
@@ -2055,7 +2045,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   LoginCertError(browser());
 
   // Once logged in, broken tab should reload and display the SSL interstitial.
-  WaitForInterstitial(broken_tab_contents);
+  ASSERT_TRUE(IsShowingInterstitial((broken_tab_contents)));
   tab_strip_model->ActivateTabAt(cert_error_tab_index);
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
@@ -2080,6 +2070,47 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   final_portal_observer.WaitForResults(1);
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));
+}
+
+// A cert error triggers a captive portal check and results in opening a login
+// tab; that login tab should not itself show a captive portal interstitial.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
+                       CertErrorOnCaptivePortalLoginShowsSSLErrorInterstitial) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+  SSLErrorHandler::SetOSReportsCaptivePortalForTesting(true);
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  WebContents* broken_tab_contents = tab_strip_model->GetActiveWebContents();
+
+  // The path does not matter.
+  GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
+
+  // Cause an interstitial to be loaded.
+  FastErrorBehindCaptivePortal(browser(), true /* expect_open_login_tab */,
+                               false /* expect_new_login_browser */,
+                               cert_error_url);
+  EXPECT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
+            GetInterstitialType(broken_tab_contents));
+
+  WebContents* login_tab_contents = tab_strip_model->GetActiveWebContents();
+  int login_tab_index = tab_strip_model->active_index();
+  EXPECT_EQ(1, login_tab_index);
+  EXPECT_TRUE(IsLoginTab(login_tab_contents));
+
+  // Navigate the Login tab to a cert error. In the real world, the captive
+  // portal might take the user to a Login page with a bad certificate.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), cert_error_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  EXPECT_TRUE(IsLoginTab(login_tab_contents));
+
+  // Ensure that the Login tab is showing a cert error interstitial and not a
+  // captive portal interstitial.
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
+            GetInterstitialType(login_tab_contents));
 }
 
 // Tests this scenario:
@@ -2289,7 +2320,6 @@ IN_PROC_BROWSER_TEST_F(
                                             ui::PAGE_TRANSITION_TYPED, false));
   test_navigation_observer.WaitForNavigations(1);
   // Should end up with an SSL interstitial.
-  WaitForInterstitial(broken_tab_contents);
   ASSERT_TRUE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));
@@ -2337,7 +2367,6 @@ IN_PROC_BROWSER_TEST_F(
   // 2- For completing the load of the login tab.
   test_navigation_observer.WaitForNavigations(2);
   // Should end up with a captive portal interstitial and a new login tab.
-  WaitForInterstitial(broken_tab_contents);
   ASSERT_TRUE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));
@@ -2526,7 +2555,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 }
 
 // Fails on Windows only, mostly on Win7. http://crbug.com/170033
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_NavigateLoadingTabToTimeoutTwoSites \
         DISABLED_NavigateLoadingTabToTimeoutTwoSites
 #else
@@ -2866,7 +2895,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // none.
   EXPECT_EQ(captive_portal::CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), broken_tab_index));
-  WaitForInterstitial(broken_tab_contents);
+  ASSERT_TRUE(IsShowingInterstitial((broken_tab_contents)));
   portal_observer.WaitForResults(2);
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
@@ -2874,7 +2903,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 }
 
 // Fails on Windows only, mostly on Win7. http://crbug.com/170033
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_SecureDnsCaptivePortal DISABLED_SecureDnsCaptivePortal
 #else
 #define MAYBE_SecureDnsCaptivePortal SecureDnsCaptivePortal
@@ -2915,7 +2944,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_SecureDnsCaptivePortal) {
 }
 
 // Fails on Windows only, mostly on Win7. http://crbug.com/170033
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_SecureDnsErrorTriggersCheck DISABLED_SecureDnsErrorTriggersCheck
 #else
 #define MAYBE_SecureDnsErrorTriggersCheck SecureDnsErrorTriggersCheck
@@ -2960,7 +2989,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 }
 
 // Fails on Windows only, mostly on Win7. http://crbug.com/170033
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_SlowLoadSecureDnsErrorWithCaptivePortal \
   DISABLED_SlowLoadSecureDnsErrorWithCaptivePortal
 #else
@@ -2997,7 +3026,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 }
 
 // Fails on Windows only, more frequently on Win7. https://crbug.com/1225823
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_SlowLoadSecureDnsErrorAfterLogin \
   DISABLED_SlowLoadSecureDnsErrorAfterLogin
 #else

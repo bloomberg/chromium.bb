@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">下一个 6 级标题</translation>
 <translation id="1268366246392928616">没有上一个数学表达式</translation>
 <translation id="1273314450961659276">文字转语音设置</translation>
-<translation id="1275718070701477396">已选中</translation>
+<translation id="1275718070701477396">已选择</translation>
 <translation id="1284576163386164372">您可随时查看各个教程，只需用 4 根手指点按打开相关菜单，然后在“ChromeVox”部分中激活相应教程。</translation>
 <translation id="1291286136605998134">切换按钮</translation>
 <translation id="1299774449519412690">浅天蓝色</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">表格“<ph name="TABLENAME" />”<ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">将忽略下一次按键</translation>
 <translation id="4623097797855662355">版权页</translation>
+<translation id="4624970070706497034">我们不再支持在 Chromebook 上自定义 TalkBack 功能。您仍能使用此功能，但应改用 TalkBack 默认键盘快捷键。先按搜索键+A，然后按 K 键，即可查看可用的键盘快捷键。如果您仍想使用 TalkBack，请再次按相应命令。</translation>
 <translation id="463135993322337640">按 ChromeVox 的 O 键、N 键，即可了解最新功能</translation>
 <translation id="4649220074413114917">用 2 根手指点按屏幕可停止任何当前语音。如果您不想让 ChromeVox 读出某些内容，此手势很有用。若要继续，请用 2 根手指点按屏幕。</translation>
 <translation id="4660783501463101648">移除了 Classic。现已无法再通过键盘切换回 ChromeVox Classic。</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">已启用盲文字幕</translation>
 <translation id="5183440668879371625">上一行盲文</translation>
 <translation id="5189244881767082992">行</translation>
-<translation id="5234747236692380506">输入“<ph name="TEXT" />”</translation>
 <translation id="5263034204789987535">玉米丝色</translation>
 <translation id="5263344797180442561">2级标题标记</translation>
 <translation id="528468243742722775">结束</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">已完成快速入门教程！</translation>
 <translation id="5534303576632885660">标头标记</translation>
 <translation id="5539820223028224601">庚斯博罗灰色</translation>
+<translation id="554893713779400387">开启/关闭语音输入</translation>
 <translation id="5549179427201066174">开启或关闭声音反馈（耳标）</translation>
 <translation id="556042886152191864">按钮</translation>
 <translation id="5561345396546889625">下一个列表</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">日志</translation>
 <translation id="5628125749885014029">4级标题标记</translation>
 <translation id="5632083598315326067">图形符号</translation>
+<translation id="5648939288050772726">恭喜！您已成功完成对 ChromeVox 基本使用方法的学习。提示：您可以随时通过按下“搜索键+句点键”打开 ChromeVox 命令菜单。如需详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
+    若要退出此教程，请使用 ChromeVox 找到“关闭”按钮，然后点击该按钮。</translation>
 <translation id="5653397561111110475">使用 Chromebook 触摸屏无障碍功能</translation>
 <translation id="5655682562155942719">跳转命令</translation>
 <translation id="56637627897541303">文本区域</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{1个冒号}other{#个冒号}}</translation>
 <translation id="6444046323172968959">提醒对话框</translation>
 <translation id="6452403590345320472">目录</translation>
+<translation id="6457542714329819968">输入</translation>
 <translation id="6468049171101508116">下一个按钮</translation>
 <translation id="646954774886932461">索引</translation>
 <translation id="6475604559827479857">字词的突出显示颜色：</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">自然语音</translation>
 <translation id="7714340021005120797">没有下一个组合框</translation>
-<translation id="772146615414628379">恭喜！您已完成对 ChromeVox 基本使用方法的学习。提示：您可以随时通过按下“搜索键+句点键”打开 ChromeVox 命令菜单。如需详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
-    若要退出此教程，请使用 ChromeVox 找到“关闭”按钮，然后点击该按钮。</translation>
 <translation id="7724603315864178912">剪切</translation>
 <translation id="7731785449856576010">没有下一个媒体微件</translation>
 <translation id="7735498529470878067">“触摸浏览”功能可帮助您快速了解屏幕上的内容。</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">深红色</translation>
 <translation id="923331726185079994">ChromeVox 已更新</translation>
 <translation id="93384979447910801">暗海绿色</translation>
+<translation id="937605981140327129">目前未安装 TalkBack。请通过 Play 商店安装 Android AccessibilitySuite，然后重试。</translation>
 <translation id="948171205378458592">减慢语速</translation>
 <translation id="957570623732056069">用 1 根手指向左或向右滑动屏幕即可浏览此课程</translation>
 <translation id="958854023026327378">向下滑动一根手指</translation>

@@ -4,10 +4,12 @@
 
 #include "net/base/backoff_entry.h"
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/backoff_entry_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -200,6 +202,29 @@ TEST(BackoffEntrySerializerTest, SerializeNoFailures) {
   EXPECT_EQ(original.GetReleaseTime(), deserialized->GetReleaseTime());
 }
 
+// Test that deserialization fails instead of producing an entry with an
+// infinite release time. (Regression test for https://crbug.com/1293904)
+TEST(BackoffEntrySerializerTest, DeserializeNeverInfiniteReleaseTime) {
+  const base::Value kSerialized[] = {
+      base::Value(2),
+      base::Value(2),
+      base::Value("-9223372036854775807"),
+      base::Value("2"),
+  };
+  base::Value serialized(base::make_span(kSerialized));
+
+  TestTickClock original_ticks;
+  original_ticks.set_now(base::TimeTicks() + base::Microseconds(-1));
+
+  base::Time time_now =
+      base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(-1));
+
+  std::unique_ptr<BackoffEntry> entry =
+      BackoffEntrySerializer::DeserializeFromValue(serialized, &base_policy,
+                                                   &original_ticks, time_now);
+  ASSERT_FALSE(entry);
+}
+
 TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
   Time original_time = Time::FromJsTime(1430907555111);  // May 2015 for realism
   TestTickClock original_ticks;
@@ -306,74 +331,74 @@ TEST(BackoffEntrySerializerTest, SerializeTimeOffsets) {
 }
 
 TEST(BackoffEntrySerializerTest, DeserializeUnknownVersion) {
-  base::Value serialized(base::Value::Type::LIST);
+  base::Value::List serialized;
   serialized.Append(0);       // Format version that never existed
   serialized.Append(0);       // Failure count
   serialized.Append(2.0);     // Backoff duration
   serialized.Append("1234");  // Absolute release time
 
   auto deserialized = BackoffEntrySerializer::DeserializeFromValue(
-      serialized, &base_policy, nullptr, kParseTime);
+      base::Value(std::move(serialized)), &base_policy, nullptr, kParseTime);
   ASSERT_FALSE(deserialized);
 }
 
 TEST(BackoffEntrySerializerTest, DeserializeVersion1) {
-  base::Value serialized(base::Value::Type::LIST);
+  base::Value::List serialized;
   serialized.Append(SerializationFormatVersion::kVersion1);
   serialized.Append(0);       // Failure count
   serialized.Append(2.0);     // Backoff duration in seconds as double
   serialized.Append("1234");  // Absolute release time
 
   auto deserialized = BackoffEntrySerializer::DeserializeFromValue(
-      serialized, &base_policy, nullptr, kParseTime);
+      base::Value(std::move(serialized)), &base_policy, nullptr, kParseTime);
   ASSERT_TRUE(deserialized);
 }
 
 TEST(BackoffEntrySerializerTest, DeserializeVersion2) {
-  base::Value serialized(base::Value::Type::LIST);
+  base::Value::List serialized;
   serialized.Append(SerializationFormatVersion::kVersion2);
   serialized.Append(0);       // Failure count
   serialized.Append("2000");  // Backoff duration
   serialized.Append("1234");  // Absolute release time
 
   auto deserialized = BackoffEntrySerializer::DeserializeFromValue(
-      serialized, &base_policy, nullptr, kParseTime);
+      base::Value(std::move(serialized)), &base_policy, nullptr, kParseTime);
   ASSERT_TRUE(deserialized);
 }
 
 TEST(BackoffEntrySerializerTest, DeserializeVersion2NegativeDuration) {
-  base::Value serialized(base::Value::Type::LIST);
+  base::Value::List serialized;
   serialized.Append(SerializationFormatVersion::kVersion2);
   serialized.Append(0);        // Failure count
   serialized.Append("-2000");  // Backoff duration
   serialized.Append("1234");   // Absolute release time
 
   auto deserialized = BackoffEntrySerializer::DeserializeFromValue(
-      serialized, &base_policy, nullptr, kParseTime);
+      base::Value(std::move(serialized)), &base_policy, nullptr, kParseTime);
   ASSERT_TRUE(deserialized);
 }
 
 TEST(BackoffEntrySerializerTest, DeserializeVersion1WrongDurationType) {
-  base::Value serialized(base::Value::Type::LIST);
+  base::Value::List serialized;
   serialized.Append(SerializationFormatVersion::kVersion1);
   serialized.Append(0);       // Failure count
   serialized.Append("2000");  // Backoff duration in seconds as double
   serialized.Append("1234");  // Absolute release time
 
   auto deserialized = BackoffEntrySerializer::DeserializeFromValue(
-      serialized, &base_policy, nullptr, kParseTime);
+      base::Value(std::move(serialized)), &base_policy, nullptr, kParseTime);
   ASSERT_FALSE(deserialized);
 }
 
 TEST(BackoffEntrySerializerTest, DeserializeVersion2WrongDurationType) {
-  base::Value serialized(base::Value::Type::LIST);
+  base::Value::List serialized;
   serialized.Append(SerializationFormatVersion::kVersion2);
   serialized.Append(0);       // Failure count
   serialized.Append(2.0);     // Backoff duration
   serialized.Append("1234");  // Absolute release time
 
   auto deserialized = BackoffEntrySerializer::DeserializeFromValue(
-      serialized, &base_policy, nullptr, kParseTime);
+      base::Value(std::move(serialized)), &base_policy, nullptr, kParseTime);
   ASSERT_FALSE(deserialized);
 }
 

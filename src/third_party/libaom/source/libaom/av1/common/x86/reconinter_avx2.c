@@ -514,6 +514,8 @@ void av1_build_compound_diffwtd_mask_d16_avx2(
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
+
 void av1_build_compound_diffwtd_mask_highbd_avx2(
     uint8_t *mask, DIFFWTD_MASK_TYPE mask_type, const uint8_t *src0,
     int src0_stride, const uint8_t *src1, int src1_stride, int h, int w,
@@ -618,3 +620,5 @@ void av1_build_compound_diffwtd_mask_highbd_avx2(
     }
   }
 }
+
+#endif  // CONFIG_AV1_HIGHBITDEPTH

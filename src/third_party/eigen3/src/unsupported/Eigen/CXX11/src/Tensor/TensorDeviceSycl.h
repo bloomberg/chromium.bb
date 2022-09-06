@@ -381,11 +381,11 @@ class QueueInterface {
     eigen_assert(typed_offset >= 0);
     const auto typed_size = original_buffer.get_size() / sizeof(T);
     auto buffer = original_buffer.template reinterpret<
-        typename Eigen::internal::remove_const<T>::type>(
+        std::remove_const_t<T>>(
         cl::sycl::range<1>(typed_size));
     const ptrdiff_t size = buffer.get_count() - typed_offset;
     eigen_assert(size >= 0);
-    typedef cl::sycl::accessor<typename Eigen::internal::remove_const<T>::type,
+    typedef cl::sycl::accessor<std::remove_const_t<T>,
                                1, AcMd, global_access, is_place_holder>
         placeholder_accessor_t;
     const auto start_ptr = static_cast<internal_ptr_t>(ptr) - offset;
@@ -441,7 +441,7 @@ class QueueInterface {
     const ptrdiff_t typed_offset = offset / sizeof(T);
     const size_t typed_size = buffer.get_size() / sizeof(T);
     auto reint = buffer.template reinterpret<
-        typename Eigen::internal::remove_const<T>::type>(
+        std::remove_const_t<T>>(
         cl::sycl::range<1>(typed_size));
     return reint.template get_access<AcMd, global_access>(
         cgh, cl::sycl::range<1>(count), cl::sycl::id<1>(typed_offset));

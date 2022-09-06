@@ -220,7 +220,7 @@ TEST(ParsedCertificateTest, ExtendedKeyUsage) {
   ASSERT_EQ(4u, cert->extensions().size());
 
   ParsedExtension extension;
-  ASSERT_TRUE(cert->GetExtension(ExtKeyUsageOid(), &extension));
+  ASSERT_TRUE(cert->GetExtension(der::Input(kExtKeyUsageOid), &extension));
 
   EXPECT_FALSE(extension.critical);
   EXPECT_EQ(45u, extension.value.Length());
@@ -255,7 +255,8 @@ TEST(ParsedCertificateTest, Policies) {
   ASSERT_EQ(4u, cert->extensions().size());
 
   ParsedExtension extension;
-  ASSERT_TRUE(cert->GetExtension(CertificatePoliciesOid(), &extension));
+  ASSERT_TRUE(
+      cert->GetExtension(der::Input(kCertificatePoliciesOid), &extension));
 
   EXPECT_FALSE(extension.critical);
   EXPECT_EQ(95u, extension.value.Length());
@@ -306,7 +307,8 @@ TEST(ParsedCertificateTest, ExtensionsReal) {
             cert->subject_key_identifier());
 
   ParsedExtension extension;
-  ASSERT_TRUE(cert->GetExtension(CertificatePoliciesOid(), &extension));
+  ASSERT_TRUE(
+      cert->GetExtension(der::Input(kCertificatePoliciesOid), &extension));
 
   EXPECT_FALSE(extension.critical);
   EXPECT_EQ(16u, extension.value.Length());
@@ -420,10 +422,9 @@ TEST(ParsedCertificateTest, PolicyConstraintsRequire) {
   ASSERT_TRUE(cert);
 
   EXPECT_TRUE(cert->has_policy_constraints());
-  EXPECT_TRUE(cert->policy_constraints().has_require_explicit_policy);
-  EXPECT_EQ(3, cert->policy_constraints().require_explicit_policy);
-  EXPECT_FALSE(cert->policy_constraints().has_inhibit_policy_mapping);
-  EXPECT_EQ(0, cert->policy_constraints().inhibit_policy_mapping);
+  EXPECT_TRUE(cert->policy_constraints().require_explicit_policy.has_value());
+  EXPECT_EQ(3, cert->policy_constraints().require_explicit_policy.value());
+  EXPECT_FALSE(cert->policy_constraints().inhibit_policy_mapping.has_value());
 }
 
 // Tests parsing a certificate that contains a policyConstraints
@@ -434,10 +435,9 @@ TEST(ParsedCertificateTest, PolicyConstraintsInhibit) {
   ASSERT_TRUE(cert);
 
   EXPECT_TRUE(cert->has_policy_constraints());
-  EXPECT_FALSE(cert->policy_constraints().has_require_explicit_policy);
-  EXPECT_EQ(0, cert->policy_constraints().require_explicit_policy);
-  EXPECT_TRUE(cert->policy_constraints().has_inhibit_policy_mapping);
-  EXPECT_EQ(1, cert->policy_constraints().inhibit_policy_mapping);
+  EXPECT_FALSE(cert->policy_constraints().require_explicit_policy.has_value());
+  EXPECT_TRUE(cert->policy_constraints().inhibit_policy_mapping.has_value());
+  EXPECT_EQ(1, cert->policy_constraints().inhibit_policy_mapping.value());
 }
 
 // Tests parsing a certificate that contains a policyConstraints
@@ -448,10 +448,10 @@ TEST(ParsedCertificateTest, PolicyConstraintsInhibitRequire) {
   ASSERT_TRUE(cert);
 
   EXPECT_TRUE(cert->has_policy_constraints());
-  EXPECT_TRUE(cert->policy_constraints().has_require_explicit_policy);
-  EXPECT_EQ(5, cert->policy_constraints().require_explicit_policy);
-  EXPECT_TRUE(cert->policy_constraints().has_inhibit_policy_mapping);
-  EXPECT_EQ(2, cert->policy_constraints().inhibit_policy_mapping);
+  EXPECT_TRUE(cert->policy_constraints().require_explicit_policy.has_value());
+  EXPECT_EQ(5, cert->policy_constraints().require_explicit_policy.value());
+  EXPECT_TRUE(cert->policy_constraints().inhibit_policy_mapping.has_value());
+  EXPECT_EQ(2, cert->policy_constraints().inhibit_policy_mapping.value());
 }
 
 // Tests parsing a certificate that has a policyConstraints
@@ -559,7 +559,7 @@ TEST(ParsedCertificateTest, InhibitAnyPolicy) {
   ASSERT_TRUE(cert);
 
   ParsedExtension extension;
-  ASSERT_TRUE(cert->GetExtension(InhibitAnyPolicyOid(), &extension));
+  ASSERT_TRUE(cert->GetExtension(der::Input(kInhibitAnyPolicyOid), &extension));
 
   uint8_t skip_count;
   ASSERT_TRUE(ParseInhibitAnyPolicy(extension.value, &skip_count));

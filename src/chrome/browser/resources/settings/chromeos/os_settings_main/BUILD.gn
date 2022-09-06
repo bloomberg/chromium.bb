@@ -7,15 +7,15 @@ import("//tools/polymer/html_to_js.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
-  closure_flags = os_settings_closure_flags
+  closure_flags = os_settings_closure_flags + mojom_js_args
   is_polymer3 = true
   deps = [ ":os_settings_main" ]
 }
 
 js_library("os_settings_main") {
   deps = [
-    "..:os_page_visibility.m",
-    "..:os_route.m",
+    "..:os_page_visibility",
+    "..:os_route",
     "..:route_observer_behavior",
     "../..:router",
     "../os_settings_page:os_settings_page",

@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
@@ -23,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/core/browser/sync/sync_utils.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
@@ -32,6 +32,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -93,7 +94,8 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
         profile && IsEnhancedProtectionEnabled(*profile->GetPrefs());
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
-    if (!profile->IsOffTheRecord() && identity_manager) {
+    if (!profile->IsOffTheRecord() && identity_manager &&
+        safe_browsing::SyncUtils::IsPrimaryAccountSignedIn(identity_manager)) {
       token_fetcher_ = std::make_unique<SafeBrowsingPrimaryAccountTokenFetcher>(
           identity_manager);
     }
@@ -192,7 +194,7 @@ void CheckClientDownloadRequestBase::OnUrlAllowlistCheckDone(
   if (is_allowlisted) {
     DVLOG(2) << source_url_ << " is on the download allowlist.";
     if (ShouldSampleAllowlistedDownload()) {
-      skipped_url_whitelist_ = true;
+      skipped_url_allowlist_ = true;
     } else {
       // TODO(grt): Continue processing without uploading so that
       // ClientDownloadRequest callbacks can be run even for this type of safe
@@ -324,9 +326,9 @@ void CheckClientDownloadRequestBase::SendRequest() {
     return;
   }
 
-  client_download_request_->set_skipped_url_whitelist(skipped_url_whitelist_);
-  client_download_request_->set_skipped_certificate_whitelist(
-      skipped_certificate_whitelist_);
+  client_download_request_->set_skipped_url_allowlist(skipped_url_allowlist_);
+  client_download_request_->set_skipped_certificate_allowlist(
+      skipped_certificate_allowlist_);
 
   if (!client_download_request_->SerializeToString(
           &client_download_request_data_)) {
@@ -527,6 +529,33 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
 
   // We don't need the loader anymore.
   loader_.reset();
+
+  DownloadFileType::InspectionType inspection_type =
+      FileTypePolicies::GetInstance()
+          ->PolicyForFile(target_file_path_, GURL{}, nullptr)
+          .inspection_type();
+  switch (inspection_type) {
+    case DownloadFileType::NONE:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.None",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::ZIP:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Zip",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::RAR:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Rar",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::DMG:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Dmg",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::OFFICE_DOCUMENT:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Document",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+  }
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
                       base::TimeTicks::Now() - start_time_);
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestNetworkDuration",

@@ -7,6 +7,7 @@ import './strings.m.js';
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
+import {getTemplate} from './alert_indicator.html.js';
 import {TabAlertState} from './tabs.mojom-webui.js';
 
 const MAX_WIDTH: string = '16px';
@@ -68,8 +69,8 @@ function getAlertStateAttribute(alertState: TabAlertState): string {
 }
 
 export class AlertIndicatorElement extends CustomElement {
-  static get template() {
-    return `{__html_template__}`;
+  static override get template() {
+    return getTemplate();
   }
 
   private alertState_: TabAlertState;

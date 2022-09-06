@@ -33,7 +33,6 @@
  */
 
 import * as Host from '../../../../core/host/host.js';
-import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
 
 import timelineGridStyles from './timelineGrid.css.legacy.js';
@@ -49,7 +48,7 @@ export class TimelineGrid {
 
   constructor() {
     this.element = document.createElement('div');
-    UI.Utils.appendStyle(this.element, timelineGridStyles);
+    ThemeSupport.ThemeSupport.instance().appendStyle(this.element, timelineGridStyles);
 
     this.dividersElementInternal = this.element.createChild('div', 'resources-dividers');
 
@@ -132,12 +131,10 @@ export class TimelineGrid {
     const width = Math.ceil(context.canvas.width / window.devicePixelRatio);
 
     context.beginPath();
-    context.fillStyle = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(255, 255, 255, 0.5)', ThemeSupport.ThemeSupport.ColorUsage.Background);
+    context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-opacity-50');
     context.fillRect(0, 0, width, headerHeight);
 
-    context.fillStyle =
-        ThemeSupport.ThemeSupport.instance().patchColorText('#333', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
     context.textBaseline = 'hanging';
     context.font = '11px ' + Host.Platform.fontFamily();
 

@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/modules/file_system_access/global_file_system_access.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -12,6 +13,8 @@
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_button_element.h"
@@ -155,7 +158,7 @@ TEST_F(GlobalFileSystemAccessTest, UserActivationChooseEntriesSuccessful) {
 
         mojo::PendingRemote<mojom::blink::FileSystemAccessFileHandle>
             pending_remote;
-        ignore_result(pending_remote.InitWithNewPipeAndPassReceiver());
+        std::ignore = pending_remote.InitWithNewPipeAndPassReceiver();
         auto handle = mojom::blink::FileSystemAccessHandle::NewFile(
             std::move(pending_remote));
         auto entry = mojom::blink::FileSystemAccessEntry::New(std::move(handle),

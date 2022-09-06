@@ -3,7 +3,7 @@ Test related to depth buffer, depth op, compare func, etc.
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { kDepthStencilFormats } from '../../../capability_info.js';
+import { kDepthStencilFormats, kTextureFormatInfo } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
 
 const backgroundColor = [0x00, 0x00, 0x00, 0xff];
@@ -23,6 +23,10 @@ g.test('depth_write_disabled')
   .desc(`Tests render results with depth write disabled`)
   .unimplemented();
 
+// Use a depth value that's not exactly 0.5 because it is exactly between two depth16unorm value and
+// can get rounded either way (and a different way between shaders and clearDepthValue).
+const kMiddleDepthValue = 0.5001;
+
 g.test('depth_compare_func')
   .desc(
     `Tests each depth compare function works properly. Clears the depth attachment to various values, and renders a point at depth 0.5 with various depthCompare modes.`
@@ -31,38 +35,52 @@ g.test('depth_compare_func')
     u
       .combine(
         'format',
-        kDepthStencilFormats.filter(format => format !== 'stencil8')
+        kDepthStencilFormats.filter(format => kTextureFormatInfo[format].depth)
       )
       .combineWithParams([
-        { depthCompare: 'never', depthLoadValue: 1.0, _expected: backgroundColor },
-        { depthCompare: 'never', depthLoadValue: 0.5, _expected: backgroundColor },
-        { depthCompare: 'never', depthLoadValue: 0.0, _expected: backgroundColor },
-        { depthCompare: 'less', depthLoadValue: 1.0, _expected: triangleColor },
-        { depthCompare: 'less', depthLoadValue: 0.5, _expected: backgroundColor },
-        { depthCompare: 'less', depthLoadValue: 0.0, _expected: backgroundColor },
-        { depthCompare: 'less-equal', depthLoadValue: 1.0, _expected: triangleColor },
-        { depthCompare: 'less-equal', depthLoadValue: 0.5, _expected: triangleColor },
-        { depthCompare: 'less-equal', depthLoadValue: 0.0, _expected: backgroundColor },
-        { depthCompare: 'equal', depthLoadValue: 1.0, _expected: backgroundColor },
-        { depthCompare: 'equal', depthLoadValue: 0.5, _expected: triangleColor },
-        { depthCompare: 'equal', depthLoadValue: 0.0, _expected: backgroundColor },
-        { depthCompare: 'not-equal', depthLoadValue: 1.0, _expected: triangleColor },
-        { depthCompare: 'not-equal', depthLoadValue: 0.5, _expected: backgroundColor },
-        { depthCompare: 'not-equal', depthLoadValue: 0.0, _expected: triangleColor },
-        { depthCompare: 'greater-equal', depthLoadValue: 1.0, _expected: backgroundColor },
-        { depthCompare: 'greater-equal', depthLoadValue: 0.5, _expected: triangleColor },
-        { depthCompare: 'greater-equal', depthLoadValue: 0.0, _expected: triangleColor },
-        { depthCompare: 'greater', depthLoadValue: 1.0, _expected: backgroundColor },
-        { depthCompare: 'greater', depthLoadValue: 0.5, _expected: backgroundColor },
-        { depthCompare: 'greater', depthLoadValue: 0.0, _expected: triangleColor },
-        { depthCompare: 'always', depthLoadValue: 1.0, _expected: triangleColor },
-        { depthCompare: 'always', depthLoadValue: 0.5, _expected: triangleColor },
-        { depthCompare: 'always', depthLoadValue: 0.0, _expected: triangleColor },
+        { depthCompare: 'never', depthClearValue: 1.0, _expected: backgroundColor },
+        { depthCompare: 'never', depthClearValue: kMiddleDepthValue, _expected: backgroundColor },
+        { depthCompare: 'never', depthClearValue: 0.0, _expected: backgroundColor },
+        { depthCompare: 'less', depthClearValue: 1.0, _expected: triangleColor },
+        { depthCompare: 'less', depthClearValue: kMiddleDepthValue, _expected: backgroundColor },
+        { depthCompare: 'less', depthClearValue: 0.0, _expected: backgroundColor },
+        { depthCompare: 'less-equal', depthClearValue: 1.0, _expected: triangleColor },
+        {
+          depthCompare: 'less-equal',
+          depthClearValue: kMiddleDepthValue,
+          _expected: triangleColor,
+        },
+        { depthCompare: 'less-equal', depthClearValue: 0.0, _expected: backgroundColor },
+        { depthCompare: 'equal', depthClearValue: 1.0, _expected: backgroundColor },
+        { depthCompare: 'equal', depthClearValue: kMiddleDepthValue, _expected: triangleColor },
+        { depthCompare: 'equal', depthClearValue: 0.0, _expected: backgroundColor },
+        { depthCompare: 'not-equal', depthClearValue: 1.0, _expected: triangleColor },
+        {
+          depthCompare: 'not-equal',
+          depthClearValue: kMiddleDepthValue,
+          _expected: backgroundColor,
+        },
+        { depthCompare: 'not-equal', depthClearValue: 0.0, _expected: triangleColor },
+        { depthCompare: 'greater-equal', depthClearValue: 1.0, _expected: backgroundColor },
+        {
+          depthCompare: 'greater-equal',
+          depthClearValue: kMiddleDepthValue,
+          _expected: triangleColor,
+        },
+        { depthCompare: 'greater-equal', depthClearValue: 0.0, _expected: triangleColor },
+        { depthCompare: 'greater', depthClearValue: 1.0, _expected: backgroundColor },
+        { depthCompare: 'greater', depthClearValue: kMiddleDepthValue, _expected: backgroundColor },
+        { depthCompare: 'greater', depthClearValue: 0.0, _expected: triangleColor },
+        { depthCompare: 'always', depthClearValue: 1.0, _expected: triangleColor },
+        { depthCompare: 'always', depthClearValue: kMiddleDepthValue, _expected: triangleColor },
+        { depthCompare: 'always', depthClearValue: 0.0, _expected: triangleColor },
       ] as const)
   )
+  .beforeAllSubcases(t => {
+    t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
+  })
   .fn(async t => {
-    const { depthCompare, depthLoadValue, _expected, format } = t.params;
-    await t.selectDeviceForTextureFormatOrSkipTestCase(format);
+    const { depthCompare, depthClearValue, _expected, format } = t.params;
 
     const colorAttachmentFormat = 'rgba8unorm';
     const colorAttachment = t.device.createTexture({
@@ -80,12 +98,13 @@ g.test('depth_compare_func')
     const depthTextureView = depthTexture.createView();
 
     const pipelineDescriptor: GPURenderPipelineDescriptor = {
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-              return vec4<f32>(0.5, 0.5, 0.5, 1.0);
+            @vertex fn main(
+              @builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
+              return vec4<f32>(0.5, 0.5, ${kMiddleDepthValue}, 1.0);
             }
             `,
         }),
@@ -94,7 +113,7 @@ g.test('depth_compare_func')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @fragment fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(1.0, 1.0, 1.0, 1.0);
             }
             `,
@@ -112,26 +131,31 @@ g.test('depth_compare_func')
     const pipeline = t.device.createRenderPipeline(pipelineDescriptor);
 
     const encoder = t.device.createCommandEncoder();
+    const depthStencilAttachment: GPURenderPassDepthStencilAttachment = {
+      view: depthTextureView,
+      depthClearValue,
+      depthLoadOp: 'clear',
+      depthStoreOp: 'store',
+    };
+    if (kTextureFormatInfo[format].stencil) {
+      depthStencilAttachment.stencilClearValue = 0;
+      depthStencilAttachment.stencilLoadOp = 'clear';
+      depthStencilAttachment.stencilStoreOp = 'store';
+    }
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
           view: colorAttachmentView,
           storeOp: 'store',
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
         },
       ],
-      depthStencilAttachment: {
-        view: depthTextureView,
-
-        depthLoadValue,
-        depthStoreOp: 'store',
-        stencilLoadValue: 0,
-        stencilStoreOp: 'store',
-      },
+      depthStencilAttachment,
     });
     pass.setPipeline(pipeline);
     pass.draw(1);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     t.expectSinglePixelIn2DTexture(
@@ -167,17 +191,18 @@ g.test('reverse_depth')
     const depthTextureView = depthTexture.createView();
 
     const pipelineDescriptor: GPURenderPipelineDescriptor = {
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
             struct Output {
-              [[builtin(position)]] Position : vec4<f32>;
-              [[location(0)]] color : vec4<f32>;
+              @builtin(position) Position : vec4<f32>,
+              @location(0) color : vec4<f32>,
             };
 
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32,
-              [[builtin(instance_index)]] InstanceIndex : u32) -> Output {
+            @vertex fn main(
+              @builtin(vertex_index) VertexIndex : u32,
+              @builtin(instance_index) InstanceIndex : u32) -> Output {
               // TODO: remove workaround for Tint unary array access broke
               var zv : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
                   vec2<f32>(0.2, 0.2),
@@ -204,9 +229,9 @@ g.test('reverse_depth')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main(
-              [[location(0)]] color : vec4<f32>
-              ) -> [[location(0)]] vec4<f32> {
+            @fragment fn main(
+              @location(0) color : vec4<f32>
+              ) -> @location(0) vec4<f32> {
               return color;
             }
             `,
@@ -229,21 +254,21 @@ g.test('reverse_depth')
         {
           view: colorAttachmentView,
           storeOp: 'store',
-          loadValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+          clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+          loadOp: 'clear',
         },
       ],
       depthStencilAttachment: {
         view: depthTextureView,
 
-        depthLoadValue: t.params.reversed ? 0.0 : 1.0,
+        depthClearValue: t.params.reversed ? 0.0 : 1.0,
+        depthLoadOp: 'clear',
         depthStoreOp: 'store',
-        stencilLoadValue: 0,
-        stencilStoreOp: 'store',
       },
     });
     pass.setPipeline(pipeline);
     pass.draw(1, 4);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     t.expectSinglePixelIn2DTexture(

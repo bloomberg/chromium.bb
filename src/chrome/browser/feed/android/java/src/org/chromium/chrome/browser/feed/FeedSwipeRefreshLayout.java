@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.feed;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityManager;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -21,6 +23,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.third_party.android.swiperefresh.CircleImageView;
@@ -63,8 +66,8 @@ public class FeedSwipeRefreshLayout extends SwipeRefreshLayout implements Scroll
         FeedSwipeRefreshLayout instance = new FeedSwipeRefreshLayout(activity, anchorViewId);
         instance.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        instance.setProgressBackgroundColorSchemeResource(
-                org.chromium.ui.R.color.default_bg_color_elev_2);
+        instance.setProgressBackgroundColorSchemeColor(
+                ChromeColors.getSurfaceColor(activity, R.dimen.default_elevation_2));
         instance.setColorSchemeColors(SemanticColorUtils.getDefaultControlColorActive(activity));
         instance.setEnabled(false);
         final DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
@@ -73,9 +76,19 @@ public class FeedSwipeRefreshLayout extends SwipeRefreshLayout implements Scroll
         instance.addOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                String accessibilityRefreshString =
-                        activity.getResources().getString(R.string.accessibility_swipe_refresh);
-                instance.announceForAccessibility(accessibilityRefreshString);
+                AccessibilityManager accessibilityManager =
+                        (AccessibilityManager) instance.getContext().getSystemService(
+                                Context.ACCESSIBILITY_SERVICE);
+                if (accessibilityManager != null && accessibilityManager.isEnabled()) {
+                    try {
+                        accessibilityManager.interrupt();
+                    } catch (NullPointerException e) {
+                        // The interrupt call can throw an exception due to a framework bug
+                        // (http://b/32507871).
+                    }
+                    instance.announceForAccessibility(activity.getResources().getString(
+                            R.string.accessibility_swipe_refresh));
+                }
                 RecordUserAction.record("MobilePullGestureReloadNTP");
             }
         });
@@ -245,7 +258,8 @@ public class FeedSwipeRefreshLayout extends SwipeRefreshLayout implements Scroll
                 final float yDiff = y - mLastMotionY;
                 if (yDiff > mTouchSlop && !mIsBeingDragged) {
                     mIsBeingDragged = true;
-                    start();
+                    // TODO(1335416): Update this to |true| if experiment is successful
+                    start(false);
                 }
                 break;
             }

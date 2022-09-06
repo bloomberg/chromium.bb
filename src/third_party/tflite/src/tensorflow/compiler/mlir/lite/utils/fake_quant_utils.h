@@ -36,7 +36,7 @@ struct FetchMinMaxAttrs {
                   AttrType &max_value) const {
     min_value = tf_op.minAttr();
     max_value = tf_op.maxAttr();
-    return true;  // Succesfully matched and fetched.
+    return true;  // Successfully matched and fetched.
   }
 };
 
@@ -52,7 +52,7 @@ struct FetchConstantMinMaxInputs {
     if (!matchPattern(max, m_Constant(&max_value))) {
       return false;
     }
-    return true;  // Succesfully matched and fetched.
+    return true;  // Successfully matched and fetched.
   }
 };
 
@@ -155,7 +155,7 @@ class InsertTFLQuantOpsAfterTFFakeQuantOp {
 
 // Removes the wrapper of the tf.FakeQuant* ops and creates the tfl.quantize
 // and tfl.dequantize pairs before tf.FakeQuant* being foled.
-LogicalResult ConvertFakeQuantOps(FuncOp func, MLIRContext *ctx,
+LogicalResult ConvertFakeQuantOps(func::FuncOp func, MLIRContext *ctx,
                                   bool use_fake_quant_num_bits = false);
 
 // Returns the names of all the considered tf.FakeQuant* ops.

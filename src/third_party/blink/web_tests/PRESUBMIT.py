@@ -10,6 +10,7 @@ for more details about the presubmit API built into gcl.
 
 import filecmp
 import inspect
+import os
 import sys
 
 USE_PYTHON3 = True
@@ -30,16 +31,32 @@ def _CheckTestharnessResults(input_api, output_api):
     checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
         '..', 'tools', 'check_testharness_expected_pass.py')
 
-    args = [input_api.python_executable, checker_path]
-    args.extend(baseline_files)
-    _, errs = input_api.subprocess.Popen(
-        args,
-        stdout=input_api.subprocess.PIPE,
-        stderr=input_api.subprocess.PIPE,
-        universal_newlines=True).communicate()
-    if errs:
-        return [output_api.PresubmitError(errs)]
-    return []
+    # When running git cl presubmit --all this presubmit may be asked to check
+    # ~19,000 files, leading to a command line that is over 2,000,000 characters.
+    # This goes past the Windows 8191 character cmd.exe limit and causes cryptic
+    # failures. To avoid these we break the command up into smaller pieces. The
+    # non-Windows limit is chosen so that the code that splits up commands will
+    # get some exercise on other platforms.
+    # Depending on how long the command is on Windows the error may be:
+    #     The command line is too long.
+    # Or it may be:
+    #     OSError: Execution failed with error: [WinError 206] The filename or
+    #     extension is too long.
+    # I suspect that the latter error comes from CreateProcess hitting its 32768
+    # character limit.
+    files_per_command = 25 if input_api.is_windows else 1000
+    results = []
+    for i in range(0, len(baseline_files), files_per_command):
+        args = [input_api.python3_executable, checker_path]
+        args.extend(baseline_files[i:i + files_per_command])
+        _, errs = input_api.subprocess.Popen(
+            args,
+            stdout=input_api.subprocess.PIPE,
+            stderr=input_api.subprocess.PIPE,
+            universal_newlines=True).communicate()
+        if errs:
+            results.append(output_api.PresubmitError(errs))
+    return results
 
 
 def _TestharnessGenericBaselinesToCheck(input_api):
@@ -52,11 +69,10 @@ def _TestharnessGenericBaselinesToCheck(input_api):
         path = f.AbsoluteLocalPath()
         if not path.endswith('-expected.txt'):
             continue
-        if (input_api.os_path.join(this_dir, 'platform') in path or
-            input_api.os_path.join(this_dir, 'virtual') in path or
-            input_api.os_path.join(this_dir, 'flag-specific') in path):
-            continue
-        baseline_files.append(path)
+        if (input_api.os_path.join(this_dir, 'platform', 'generic') in path and
+                input_api.os_path.join(this_dir, 'platform', 'generic',
+                                       'virtual') not in path):
+            baseline_files.append(path)
     return baseline_files
 
 
@@ -151,7 +167,7 @@ def _CheckForUnlistedTestFolder(input_api, output_api):
     """Checks all the test folders under web_tests are listed in BUILD.gn.
     """
     this_dir = input_api.PresubmitLocalPath()
-    possible_new_dirs = []
+    possible_new_dirs = set()
     for f in input_api.AffectedFiles():
         if f.Action() == 'A':
             # We only check added folders. For deleted folders, if BUILD.gn is
@@ -161,7 +177,7 @@ def _CheckForUnlistedTestFolder(input_api, output_api):
             path = f.AbsoluteLocalPath()
             fns = path[len(this_dir)+1:].split('/')
             if len(fns) > 1:
-                possible_new_dirs.append(fns[0])
+                possible_new_dirs.add(fns[0])
 
     if possible_new_dirs:
         path_build_gn = input_api.os_path.join(input_api.change.RepositoryRoot(), 'BUILD.gn')
@@ -179,7 +195,8 @@ def _CheckForUnlistedTestFolder(input_api, output_api):
                     break
                 if len(line.split('/')) > 1:
                     dirs_from_build_gn.append(line.split('/')[-2])
-        dirs_from_build_gn.extend(['platform', 'FlagExpectations', 'flag-specific'])
+        dirs_from_build_gn.extend(
+            ['platform', 'FlagExpectations', 'flag-specific', 'SmokeTests'])
 
         new_dirs = [x for x in possible_new_dirs if x not in dirs_from_build_gn]
         if new_dirs:
@@ -197,7 +214,6 @@ def _CheckForUnlistedTestFolder(input_api, output_api):
 def _CheckForExtraVirtualBaselines(input_api, output_api):
     """Checks that expectations in virtual test suites are for virtual test suites that exist
     """
-
     os_path = input_api.os_path
 
     local_dir = os_path.relpath(
@@ -212,9 +228,7 @@ def _CheckForExtraVirtualBaselines(input_api, output_api):
         local_path = os_path.relpath(local_path, local_dir)
         path_components = local_path.split(os_path.sep)
         if f.Action() == 'A':
-            if len(path_components) > 2 and path_components[0] == 'virtual':
-                check_files.append((local_path, path_components[1]))
-            elif (len(path_components) > 4 and path_components[2] == 'virtual'
+            if (len(path_components) > 4 and path_components[2] == 'virtual'
                   and (path_components[0] == 'platform'
                        or path_components[0] == 'flag-specific')):
                 check_files.append((local_path, path_components[3]))
@@ -222,6 +236,11 @@ def _CheckForExtraVirtualBaselines(input_api, output_api):
             check_all = True
 
     if not check_all and len(check_files) == 0:
+        return []
+
+    # The rest of this test fails on Windows because win32pipe is not available
+    # and other errors.
+    if os.name == 'nt':
         return []
 
     from blinkpy.common.host import Host
@@ -233,21 +252,10 @@ def _CheckForExtraVirtualBaselines(input_api, output_api):
 
     results = []
     if check_all:
-        for f in input_api.change.AllFiles(
-                os_path.join(input_api.PresubmitLocalPath(), "virtual")):
-            suite = f.split(os_path.sep)[0]
-            if not suite in known_virtual_suites:
-                path = os_path.relpath(
-                    os_path.join(input_api.PresubmitLocalPath(), "virtual", f),
-                    input_api.change.RepositoryRoot())
-                results.append(
-                    output_api.PresubmitError(
-                        "Baseline %s exists, but %s is not a known virtual test suite."
-                        % (path, suite)))
         for subdir in ["platform", "flag-specific"]:
             for f in input_api.change.AllFiles(
                     os_path.join(input_api.PresubmitLocalPath(), subdir)):
-                path_components = f.split(os_path.sep)
+                path_components = f.split('/')
                 if len(path_components) < 3 or path_components[1] != 'virtual':
                     continue
                 suite = path_components[2]

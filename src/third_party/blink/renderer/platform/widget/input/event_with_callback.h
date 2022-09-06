@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/widget/input/input_handler_proxy.h"
@@ -47,7 +48,7 @@ class PLATFORM_EXPORT EventWithCallback {
                     OriginalEventList original_events);
   ~EventWithCallback();
 
-  bool CanCoalesceWith(const EventWithCallback& other) const WARN_UNUSED_RESULT;
+  [[nodiscard]] bool CanCoalesceWith(const EventWithCallback& other) const;
   void CoalesceWith(EventWithCallback* other, base::TimeTicks timestamp_now);
 
   void RunCallbacks(InputHandlerProxy::EventDisposition,
@@ -77,7 +78,7 @@ class PLATFORM_EXPORT EventWithCallback {
   }
   void SetScrollbarManipulationHandledOnCompositorThread();
 
-  const cc::EventMetrics* metrics() const {
+  cc::EventMetrics* metrics() const {
     return original_events_.empty() ? nullptr
                                     : original_events_.front().metrics_.get();
   }

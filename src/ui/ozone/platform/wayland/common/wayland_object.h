@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/check.h"
-#include "base/compiler_specific.h"
 #include "ui/ozone/platform/wayland/common/wayland.h"
 
 struct wl_proxy;
@@ -41,8 +40,7 @@ template <typename T>
 class GlobalObjectRegistrar {
  public:
   GlobalObjectRegistrar() {
-    GlobalObjectFactory Instantiate = T::Instantiate;
-    ALLOW_UNUSED_LOCAL(Instantiate);
+    [[maybe_unused]] GlobalObjectFactory Instantiate = T::Instantiate;
   }
 };
 
@@ -106,6 +104,7 @@ bool CanBind(const std::string& interface,
 
 // For convenience, keep aphabetical order in this list.
 DECLARE_WAYLAND_OBJECT_TRAITS(augmented_surface)
+DECLARE_WAYLAND_OBJECT_TRAITS(augmented_sub_surface)
 DECLARE_WAYLAND_OBJECT_TRAITS(gtk_primary_selection_device)
 DECLARE_WAYLAND_OBJECT_TRAITS(gtk_primary_selection_device_manager)
 DECLARE_WAYLAND_OBJECT_TRAITS(gtk_primary_selection_offer)
@@ -149,6 +148,7 @@ DECLARE_WAYLAND_OBJECT_TRAITS(xdg_positioner)
 DECLARE_WAYLAND_OBJECT_TRAITS(xdg_surface)
 DECLARE_WAYLAND_OBJECT_TRAITS(xdg_toplevel)
 DECLARE_WAYLAND_OBJECT_TRAITS(xdg_wm_base)
+DECLARE_WAYLAND_OBJECT_TRAITS(zaura_output)
 DECLARE_WAYLAND_OBJECT_TRAITS(zaura_shell)
 DECLARE_WAYLAND_OBJECT_TRAITS(zaura_surface)
 DECLARE_WAYLAND_OBJECT_TRAITS(zaura_toplevel)
@@ -162,9 +162,15 @@ DECLARE_WAYLAND_OBJECT_TRAITS(zcr_extended_drag_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zcr_extended_drag_source_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zcr_extended_drag_offer_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zcr_extended_text_input_v1)
+DECLARE_WAYLAND_OBJECT_TRAITS(zcr_pointer_stylus_v2)
+DECLARE_WAYLAND_OBJECT_TRAITS(zcr_touch_stylus_v2)
+DECLARE_WAYLAND_OBJECT_TRAITS(zcr_stylus_v2)
 DECLARE_WAYLAND_OBJECT_TRAITS(zcr_text_input_extension_v1)
+DECLARE_WAYLAND_OBJECT_TRAITS(zcr_touchpad_haptics_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zwp_idle_inhibit_manager_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zwp_idle_inhibitor_v1)
+DECLARE_WAYLAND_OBJECT_TRAITS(zwp_keyboard_shortcuts_inhibit_manager_v1)
+DECLARE_WAYLAND_OBJECT_TRAITS(zwp_keyboard_shortcuts_inhibitor_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zwp_linux_buffer_release_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zwp_linux_buffer_params_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zwp_linux_dmabuf_v1)

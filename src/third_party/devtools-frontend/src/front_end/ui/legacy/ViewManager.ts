@@ -15,7 +15,18 @@ import type {ToolbarItem} from './Toolbar.js';
 import {Toolbar, ToolbarMenuButton} from './Toolbar.js';
 import {createTextChild} from './UIUtils.js';
 import type {TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js';
-import {getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, ViewLocationCategoryValues, ViewLocationValues, ViewPersistence, ViewRegistration} from './ViewRegistration.js';
+import {
+  getRegisteredLocationResolvers,
+  getRegisteredViewExtensions,
+  maybeRemoveViewExtension,
+  registerLocationResolver,
+  registerViewExtension,
+  ViewLocationCategoryValues,
+  ViewLocationValues,
+  ViewPersistence,
+  type ViewRegistration,
+  resetViewRegistration,
+} from './ViewRegistration.js';
 import type {Widget, WidgetElement} from './Widget.js';
 import {VBox} from './Widget.js';
 import viewContainersStyles from './viewContainers.css.legacy.js';
@@ -239,7 +250,7 @@ export class ViewManager {
     }
 
     // Find new location and show view there
-    this.resolveLocation(locationName).then(location => {
+    void this.resolveLocation(locationName).then(location => {
       if (!location) {
         throw new Error('Move view: Could not resolve location for view: ' + viewId);
       }
@@ -393,7 +404,7 @@ export class ContainerWidget extends VBox {
   }
 
   wasShown(): void {
-    this.materialize().then(() => {
+    void this.materialize().then(() => {
       const widget = widgetForView.get(this.view);
       if (widget) {
         widget.show(this.element);
@@ -423,7 +434,7 @@ export class _ExpandableContainerWidget extends VBox {
 
     this.titleElement = document.createElement('div');
     this.titleElement.classList.add('expandable-view-title');
-    ARIAUtils.markAsButton(this.titleElement);
+    ARIAUtils.markAsTreeitem(this.titleElement);
     this.titleExpandIcon = Icon.create('smallicon-triangle-right', 'title-expand-icon');
     this.titleElement.appendChild(this.titleExpandIcon);
     const titleText = view.title();
@@ -442,7 +453,7 @@ export class _ExpandableContainerWidget extends VBox {
 
   wasShown(): void {
     if (this.widget && this.materializePromise) {
-      this.materializePromise.then(() => {
+      void this.materializePromise.then(() => {
         if (this.titleElement.classList.contains('expanded') && this.widget) {
           this.widget.show(this.element);
         }
@@ -496,7 +507,7 @@ export class _ExpandableContainerWidget extends VBox {
     this.titleElement.classList.remove('expanded');
     ARIAUtils.setExpanded(this.titleElement, false);
     this.titleExpandIcon.setIconType('smallicon-triangle-right');
-    this.materialize().then(() => {
+    void this.materialize().then(() => {
       if (this.widget) {
         this.widget.detach();
       }
@@ -510,7 +521,7 @@ export class _ExpandableContainerWidget extends VBox {
     if (this.titleElement.classList.contains('expanded')) {
       this.collapse();
     } else {
-      this.expand();
+      void this.expand();
     }
   }
 
@@ -523,7 +534,7 @@ export class _ExpandableContainerWidget extends VBox {
       this.collapse();
     } else if (keyEvent.key === 'ArrowRight') {
       if (!this.titleElement.classList.contains('expanded')) {
-        this.expand();
+        void this.expand();
       } else if (this.widget) {
         this.widget.focus();
       }
@@ -685,7 +696,7 @@ export class _TabbedLocation extends Location implements TabbedViewLocation {
         const view = Array.from(this.views.values()).find(view => view.viewId() === this.defaultTab);
         if (view) {
           // defaultTab is indeed part of the views for this tabbed location
-          this.showView(view);
+          void this.showView(view);
         }
       }
     } else if (this.lastSelectedTabSetting && this.tabbedPaneInternal.hasTab(this.lastSelectedTabSetting.get())) {
@@ -702,7 +713,7 @@ export class _TabbedLocation extends Location implements TabbedViewLocation {
       if (view.viewId() === 'issues-pane') {
         contextMenu.defaultSection().appendItem(title, () => {
           Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HamburgerMenu);
-          this.showView(view, undefined, true);
+          void this.showView(view, undefined, true);
         });
         continue;
       }
@@ -801,7 +812,7 @@ export class _TabbedLocation extends Location implements TabbedViewLocation {
     }
     const view = this.views.get(tabId);
     if (view) {
-      view.disposeView();
+      void view.disposeView();
     }
   }
 
@@ -847,6 +858,7 @@ class _StackLocation extends Location implements ViewLocation {
     const vbox = new VBox();
     super(manager, vbox, revealCallback);
     this.vbox = vbox;
+    ARIAUtils.markAsTree(vbox.element);
 
     this.expandableContainers = new Map();
 
@@ -913,4 +925,5 @@ export {
   getRegisteredLocationResolvers,
   registerLocationResolver,
   ViewLocationCategoryValues,
+  resetViewRegistration,
 };

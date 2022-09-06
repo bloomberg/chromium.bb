@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_recipe.h"
 #include "ui/color/color_test_ids.h"
 #include "ui/gfx/color_palette.h"
 
@@ -30,7 +31,8 @@ ColorProvider* GetLightNormalColorProvider() {
   return ColorProviderManager::GetForTesting().GetColorProviderFor(
       {ColorProviderManager::ColorMode::kLight,
        ColorProviderManager::ContrastMode::kNormal,
-       ColorProviderManager::SystemTheme::kDefault, nullptr});
+       ColorProviderManager::SystemTheme::kDefault,
+       ColorProviderManager::FrameType::kChromium, nullptr});
 }
 
 }  // namespace
@@ -46,11 +48,10 @@ TEST_F(ColorProviderManagerTest, Persistence) {
 // provider.
 TEST_F(ColorProviderManagerTest, SetInitializer) {
   ColorProviderManager::GetForTesting().AppendColorProviderInitializer(
-      base::BindRepeating([](ColorProvider* provider,
-                             const ColorProviderManager::Key&) {
-        provider->AddMixer().AddSet(
-            {kColorSetTest0, {{kColorTest0, SK_ColorBLUE}}});
-      }));
+      base::BindRepeating(
+          [](ColorProvider* provider, const ColorProviderManager::Key&) {
+            provider->AddMixer()[kColorTest0] = {SK_ColorBLUE};
+          }));
 
   ColorProvider* provider = GetLightNormalColorProvider();
   ASSERT_NE(nullptr, provider);
@@ -63,8 +64,7 @@ TEST_F(ColorProviderManagerTest, Reset) {
   ColorProviderManager::GetForTesting().AppendColorProviderInitializer(
       base::BindRepeating(
           [](ColorProvider* provider, const ColorProviderManager::Key&) {
-            provider->AddMixer().AddSet(
-                {kColorSetTest0, {{kColorTest0, SK_ColorBLUE}}});
+            provider->AddMixer()[kColorTest0] = {SK_ColorBLUE};
           }));
   ColorProvider* provider = GetLightNormalColorProvider();
   ASSERT_NE(nullptr, provider);

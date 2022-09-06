@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/cronet/android/cronet_context_adapter.h"
 #include "components/cronet/android/cronet_jni_headers/CronetBidirectionalStream_jni.h"
-#include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/android/io_buffer_with_byte_buffer.h"
 #include "components/cronet/android/url_request_error.h"
 #include "components/cronet/metrics_util.h"
@@ -28,8 +28,8 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_header_block.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
@@ -83,10 +83,10 @@ static jlong JNI_CronetBidirectionalStream_CreateBidirectionalStream(
     jboolean jtraffic_stats_tag_set,
     jint jtraffic_stats_tag,
     jboolean jtraffic_stats_uid_set,
-    jint jtraffic_stats_uid) {
-  CronetURLRequestContextAdapter* context_adapter =
-      reinterpret_cast<CronetURLRequestContextAdapter*>(
-          jurl_request_context_adapter);
+    jint jtraffic_stats_uid,
+    jlong jnetwork_handle) {
+  CronetContextAdapter* context_adapter =
+      reinterpret_cast<CronetContextAdapter*>(jurl_request_context_adapter);
   DCHECK(context_adapter);
 
   CronetBidirectionalStreamAdapter* adapter =
@@ -94,13 +94,13 @@ static jlong JNI_CronetBidirectionalStream_CreateBidirectionalStream(
           context_adapter, env, jbidi_stream,
           jsend_request_headers_automatically, jenable_metrics,
           jtraffic_stats_tag_set, jtraffic_stats_tag, jtraffic_stats_uid_set,
-          jtraffic_stats_uid);
+          jtraffic_stats_uid, jnetwork_handle);
 
   return reinterpret_cast<jlong>(adapter);
 }
 
 CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
-    CronetURLRequestContextAdapter* context,
+    CronetContextAdapter* context,
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jbidi_stream,
     bool send_request_headers_automatically,
@@ -108,7 +108,8 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     bool traffic_stats_tag_set,
     int32_t traffic_stats_tag,
     bool traffic_stats_uid_set,
-    int32_t traffic_stats_uid)
+    int32_t traffic_stats_uid,
+    net::NetworkChangeNotifier::NetworkHandle network)
     : context_(context),
       owner_(env, jbidi_stream),
       send_request_headers_automatically_(send_request_headers_automatically),
@@ -117,6 +118,7 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
       traffic_stats_tag_(traffic_stats_tag),
       traffic_stats_uid_set_(traffic_stats_uid_set),
       traffic_stats_uid_(traffic_stats_uid),
+      network_(network),
       stream_failed_(false) {}
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {
@@ -355,15 +357,23 @@ void CronetBidirectionalStreamAdapter::StartOnNetworkThread(
     std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info) {
   DCHECK(context_->IsOnNetworkThread());
   DCHECK(!bidi_stream_);
+
+  request_info->detect_broken_connection =
+      context_->cronet_url_request_context()
+          ->bidi_stream_detect_broken_connection();
+  request_info->heartbeat_interval =
+      context_->cronet_url_request_context()->heartbeat_interval();
   request_info->extra_headers.SetHeaderIfMissing(
-      net::HttpRequestHeaders::kUserAgent, context_->GetURLRequestContext()
-                                               ->http_user_agent_settings()
-                                               ->GetUserAgent());
-  bidi_stream_.reset(new net::BidirectionalStream(
-      std::move(request_info), context_->GetURLRequestContext()
-                                   ->http_transaction_factory()
-                                   ->GetSession(),
-      send_request_headers_automatically_, this));
+      net::HttpRequestHeaders::kUserAgent,
+      context_->GetURLRequestContext(network_)
+          ->http_user_agent_settings()
+          ->GetUserAgent());
+  bidi_stream_.reset(
+      new net::BidirectionalStream(std::move(request_info),
+                                   context_->GetURLRequestContext(network_)
+                                       ->http_transaction_factory()
+                                       ->GetSession(),
+                                   send_request_headers_automatically_, this));
 }
 
 void CronetBidirectionalStreamAdapter::SendRequestHeadersOnNetworkThread() {

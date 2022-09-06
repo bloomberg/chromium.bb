@@ -5,13 +5,14 @@
 #include "ash/webui/diagnostics_ui/backend/network_health_provider.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/webui/diagnostics_ui/backend/networking_log.h"
+#include "ash/system/diagnostics/networking_log.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -21,7 +22,6 @@
 #include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
@@ -304,7 +304,7 @@ class NetworkHealthProviderTest : public testing::Test {
   }
 
   void SetWifiPortal() {
-    SetNetworkState(kWlan0DevicePath, shill::kStatePortal);
+    SetNetworkState(kWlan0DevicePath, shill::kStateRedirectFound);
   }
 
   void SetCellularConnected() {
@@ -1390,11 +1390,7 @@ TEST_F(NetworkHealthProviderTest, NetworkingLog) {
 TEST_F(NetworkHealthProviderTest, ResetReceiverOnDisconnect) {
   // Ensure required features are enabled before binding to avoid DCHECK.
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      std::vector<base::Feature>{features::kDiagnosticsAppNavigation,
-                                 features::kEnableNetworkingInDiagnosticsApp,
-                                 features::kDiagnosticsApp},
-      std::vector<base::Feature>{});
+  features.InitAndEnableFeature(features::kEnableNetworkingInDiagnosticsApp);
   ASSERT_FALSE(network_health_provider_->ReceiverIsBound());
   mojo::Remote<mojom::NetworkHealthProvider> remote;
   network_health_provider_->BindInterface(remote.BindNewPipeAndPassReceiver());

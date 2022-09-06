@@ -69,8 +69,9 @@ export class DOMNode {
   #xmlVersion!: string|undefined;
   #isSVGNodeInternal!: boolean;
   #creationStackTraceInternal: Promise<Protocol.Runtime.StackTrace|null>|null;
-  pseudoElementsInternal: Map<string, DOMNode>;
+  #pseudoElements: Map<string, DOMNode[]>;
   #distributedNodesInternal: DOMNodeShortcut[];
+  assignedSlot: DOMNodeShortcut|null;
   readonly shadowRootsInternal: DOMNode[];
   #attributesInternal: Map<string, Attribute>;
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -99,8 +100,9 @@ export class DOMNode {
     this.#agent = this.#domModelInternal.getAgent();
     this.index = undefined;
     this.#creationStackTraceInternal = null;
-    this.pseudoElementsInternal = new Map();
+    this.#pseudoElements = new Map();
     this.#distributedNodesInternal = [];
+    this.assignedSlot = null;
     this.shadowRootsInternal = [];
     this.#attributesInternal = new Map();
     this.#markers = new Map();
@@ -179,6 +181,10 @@ export class DOMNode {
 
     if (payload.distributedNodes) {
       this.setDistributedNodePayloads(payload.distributedNodes);
+    }
+
+    if (payload.assignedSlot) {
+      this.setAssignedSlot(payload.assignedSlot);
     }
 
     if (payload.children) {
@@ -313,32 +319,37 @@ export class DOMNode {
   }
 
   hasPseudoElements(): boolean {
-    return this.pseudoElementsInternal.size > 0;
+    return this.#pseudoElements.size > 0;
   }
 
-  pseudoElements(): Map<string, DOMNode> {
-    return this.pseudoElementsInternal;
+  pseudoElements(): Map<string, DOMNode[]> {
+    return this.#pseudoElements;
   }
 
-  beforePseudoElement(): DOMNode|null {
-    if (!this.pseudoElementsInternal) {
-      return null;
-    }
-    return this.pseudoElementsInternal.get(DOMNode.PseudoElementNames.Before) || null;
+  beforePseudoElement(): DOMNode|undefined {
+    return this.#pseudoElements.get(DOMNode.PseudoElementNames.Before)?.at(-1);
   }
 
-  afterPseudoElement(): DOMNode|null {
-    if (!this.pseudoElementsInternal) {
-      return null;
-    }
-    return this.pseudoElementsInternal.get(DOMNode.PseudoElementNames.After) || null;
+  afterPseudoElement(): DOMNode|undefined {
+    return this.#pseudoElements.get(DOMNode.PseudoElementNames.After)?.at(-1);
   }
 
-  markerPseudoElement(): DOMNode|null {
-    if (!this.pseudoElementsInternal) {
-      return null;
-    }
-    return this.pseudoElementsInternal.get(DOMNode.PseudoElementNames.Marker) || null;
+  markerPseudoElement(): DOMNode|undefined {
+    return this.#pseudoElements.get(DOMNode.PseudoElementNames.Marker)?.at(-1);
+  }
+
+  pageTransitionPseudoElements(): DOMNode[] {
+    return [
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransition) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionContainer) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionImageWrapper) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionOutgoingImage) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionIncomingImage) || [],
+    ];
+  }
+
+  hasAssignedSlot(): boolean {
+    return this.assignedSlot !== null;
   }
 
   isInsertionPoint(): boolean {
@@ -408,12 +419,8 @@ export class DOMNode {
     return this.localName();
   }
 
-  setNodeName(
-      name: string,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: string|null, arg1: DOMNode|null) => any)): void {
-    this.#agent.invoke_setNodeName({nodeId: this.id, name}).then(response => {
+  setNodeName(name: string, callback?: ((arg0: string|null, arg1: DOMNode|null) => void)): void {
+    void this.#agent.invoke_setNodeName({nodeId: this.id, name}).then(response => {
       if (!response.getError()) {
         this.#domModelInternal.markUndoableState();
       }
@@ -435,10 +442,8 @@ export class DOMNode {
     this.nodeValueInternal = nodeValue;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setNodeValue(value: string, callback?: ((arg0: string|null) => any)): void {
-    this.#agent.invoke_setNodeValue({nodeId: this.id, value}).then(response => {
+  setNodeValue(value: string, callback?: ((arg0: string|null) => void)): void {
+    void this.#agent.invoke_setNodeValue({nodeId: this.id, value}).then(response => {
       if (!response.getError()) {
         this.#domModelInternal.markUndoableState();
       }
@@ -453,12 +458,8 @@ export class DOMNode {
     return attr ? attr.value : undefined;
   }
 
-  setAttribute(
-      name: string, text: string,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: string|null) => any)): void {
-    this.#agent.invoke_setAttributesAsText({nodeId: this.id, text, name}).then(response => {
+  setAttribute(name: string, text: string, callback?: ((arg0: string|null) => void)): void {
+    void this.#agent.invoke_setAttributesAsText({nodeId: this.id, text, name}).then(response => {
       if (!response.getError()) {
         this.#domModelInternal.markUndoableState();
       }
@@ -468,12 +469,8 @@ export class DOMNode {
     });
   }
 
-  setAttributeValue(
-      name: string, value: string,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: string|null) => any)): void {
-    this.#agent.invoke_setAttributeValue({nodeId: this.id, name, value}).then(response => {
+  setAttributeValue(name: string, value: string, callback?: ((arg0: string|null) => void)): void {
+    void this.#agent.invoke_setAttributeValue({nodeId: this.id, name, value}).then(response => {
       if (!response.getError()) {
         this.#domModelInternal.markUndoableState();
       }
@@ -505,7 +502,7 @@ export class DOMNode {
       callback(this.children());
       return;
     }
-    this.#agent.invoke_requestChildNodes({nodeId: this.id}).then(response => {
+    void this.#agent.invoke_requestChildNodes({nodeId: this.id}).then(response => {
       callback(response.getError() ? null : this.children());
     });
   }
@@ -520,10 +517,8 @@ export class DOMNode {
     return outerHTML;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setOuterHTML(html: string, callback?: ((arg0: string|null) => any)): void {
-    this.#agent.invoke_setOuterHTML({nodeId: this.id, outerHTML: html}).then(response => {
+  setOuterHTML(html: string, callback?: ((arg0: string|null) => void)): void {
+    void this.#agent.invoke_setOuterHTML({nodeId: this.id, outerHTML: html}).then(response => {
       if (!response.getError()) {
         this.#domModelInternal.markUndoableState();
       }
@@ -533,10 +528,7 @@ export class DOMNode {
     });
   }
 
-  removeNode(callback?: (
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (arg0: string|null, arg1?: Protocol.DOM.NodeId|undefined) => any)): Promise<void> {
+  removeNode(callback?: ((arg0: string|null, arg1?: Protocol.DOM.NodeId|undefined) => void)): Promise<void> {
     return this.#agent.invoke_removeNode({nodeId: this.id}).then(response => {
       if (!response.getError()) {
         this.#domModelInternal.markUndoableState();
@@ -641,7 +633,12 @@ export class DOMNode {
   removeChild(node: DOMNode): void {
     const pseudoType = node.pseudoType();
     if (pseudoType) {
-      this.pseudoElementsInternal.delete(pseudoType);
+      const updatedPseudoElements = this.#pseudoElements.get(pseudoType)?.filter(element => element !== node);
+      if (updatedPseudoElements && updatedPseudoElements.length > 0) {
+        this.#pseudoElements.set(pseudoType, updatedPseudoElements);
+      } else {
+        this.#pseudoElements.delete(pseudoType);
+      }
     } else {
       const shadowRootIndex = this.shadowRootsInternal.indexOf(node);
       if (shadowRootIndex !== -1) {
@@ -687,7 +684,12 @@ export class DOMNode {
       if (!pseudoType) {
         throw new Error('DOMNode.pseudoType() is expected to be defined.');
       }
-      this.pseudoElementsInternal.set(pseudoType, node);
+      const currentPseudoElements = this.#pseudoElements.get(pseudoType);
+      if (currentPseudoElements) {
+        currentPseudoElements.push(node);
+      } else {
+        this.#pseudoElements.set(pseudoType, [node]);
+      }
     }
   }
 
@@ -697,6 +699,11 @@ export class DOMNode {
       this.#distributedNodesInternal.push(new DOMNodeShortcut(
           this.#domModelInternal.target(), payload.backendNodeId, payload.nodeType, payload.nodeName));
     }
+  }
+
+  setAssignedSlot(payload: Protocol.DOM.BackendNode): void {
+    this.assignedSlot =
+        new DOMNodeShortcut(this.#domModelInternal.target(), payload.backendNodeId, payload.nodeType, payload.nodeName);
   }
 
   private renumber(): void {
@@ -738,12 +745,9 @@ export class DOMNode {
     this.#attributesInternal.delete(name);
   }
 
-  copyTo(
-      targetNode: DOMNode, anchorNode: DOMNode|null,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: string|null, arg1: DOMNode|null) => any)): void {
-    this.#agent
+  copyTo(targetNode: DOMNode, anchorNode: DOMNode|null, callback?: ((arg0: string|null, arg1: DOMNode|null) => void)):
+      void {
+    void this.#agent
         .invoke_copyTo(
             {nodeId: this.id, targetNodeId: targetNode.id, insertBeforeNodeId: anchorNode ? anchorNode.id : undefined})
         .then(response => {
@@ -756,12 +760,9 @@ export class DOMNode {
         });
   }
 
-  moveTo(
-      targetNode: DOMNode, anchorNode: DOMNode|null,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: string|null, arg1: DOMNode|null) => any)): void {
-    this.#agent
+  moveTo(targetNode: DOMNode, anchorNode: DOMNode|null, callback?: ((arg0: string|null, arg1: DOMNode|null) => void)):
+      void {
+    void this.#agent
         .invoke_moveTo(
             {nodeId: this.id, targetNodeId: targetNode.id, insertBeforeNodeId: anchorNode ? anchorNode.id : undefined})
         .then(response => {
@@ -833,9 +834,9 @@ export class DOMNode {
     traverse(this);
   }
 
-  resolveURL(url: string): string|null {
+  resolveURL(url: string): Platform.DevToolsPath.UrlString|null {
     if (!url) {
-      return url;
+      return url as Platform.DevToolsPath.UrlString;
     }
     for (let frameOwnerCandidate: (DOMNode|null) = (this as DOMNode | null); frameOwnerCandidate;
          frameOwnerCandidate = frameOwnerCandidate.parentNode) {
@@ -910,7 +911,7 @@ export class DOMNode {
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // @ts-expect-error
-    object.callFunction(scrollIntoView);
+    void object.callFunction(scrollIntoView);
     object.release();
     node.highlightForTwoSeconds();
 
@@ -970,6 +971,11 @@ export namespace DOMNode {
     Before = 'before',
     After = 'after',
     Marker = 'marker',
+    PageTransition = 'page-transition',
+    PageTransitionContainer = 'page-transition-container',
+    PageTransitionImageWrapper = 'page-transition-image-wrapper',
+    PageTransitionOutgoingImage = 'page-transition-outgoing-image',
+    PageTransitionIncomingImage = 'page-transition-incoming-image',
   }
 
   // TODO(crbug.com/1167717): Make this a const enum again
@@ -991,7 +997,7 @@ export class DeferredDOMNode {
   }
 
   resolve(callback: (arg0: DOMNode|null) => void): void {
-    this.resolvePromise().then(callback);
+    void this.resolvePromise().then(callback);
   }
 
   async resolvePromise(): Promise<DOMNode|null> {
@@ -1027,15 +1033,15 @@ export class DOMNodeShortcut {
 export class DOMDocument extends DOMNode {
   body: DOMNode|null;
   documentElement: DOMNode|null;
-  documentURL: string;
-  baseURL: string;
+  documentURL: Platform.DevToolsPath.UrlString;
+  baseURL: Platform.DevToolsPath.UrlString;
   constructor(domModel: DOMModel, payload: Protocol.DOM.Node) {
     super(domModel);
     this.body = null;
     this.documentElement = null;
     this.init(this, false, payload);
-    this.documentURL = payload.documentURL || '';
-    this.baseURL = payload.baseURL || '';
+    this.documentURL = (payload.documentURL || '') as Platform.DevToolsPath.UrlString;
+    this.baseURL = (payload.baseURL || '') as Platform.DevToolsPath.UrlString;
   }
 }
 
@@ -1063,11 +1069,11 @@ export class DOMModel extends SDKModel<EventTypes> {
     this.#pendingDocumentRequestPromise = null;
 
     if (!target.suspended()) {
-      this.agent.invoke_enable();
+      void this.agent.invoke_enable({});
     }
 
     if (Root.Runtime.experiments.isEnabled('captureNodeCreationStacks')) {
-      this.agent.invoke_setNodeStackTracesEnabled({enable: true});
+      void this.agent.invoke_setNodeStackTracesEnabled({enable: true});
     }
   }
 
@@ -1076,11 +1082,11 @@ export class DOMModel extends SDKModel<EventTypes> {
   }
 
   cssModel(): CSSModel {
-    return /** @type {!CSSModel} */ this.target().model(CSSModel) as CSSModel;
+    return this.target().model(CSSModel) as CSSModel;
   }
 
   overlayModel(): OverlayModel {
-    return /** @type {!OverlayModel} */ this.target().model(OverlayModel) as OverlayModel;
+    return this.target().model(OverlayModel) as OverlayModel;
   }
 
   static cancelSearch(): void {
@@ -1095,7 +1101,7 @@ export class DOMModel extends SDKModel<EventTypes> {
     }
 
     this.#lastMutationId = (this.#lastMutationId || 0) + 1;
-    Promise.resolve().then(callObserve.bind(this, node, this.#lastMutationId));
+    void Promise.resolve().then(callObserve.bind(this, node, this.#lastMutationId));
 
     function callObserve(this: DOMModel, node: DOMNode, mutationId: number): void {
       if (!this.hasEventListeners(Events.DOMMutated) || this.#lastMutationId !== mutationId) {
@@ -1233,7 +1239,7 @@ export class DOMModel extends SDKModel<EventTypes> {
   private loadNodeAttributes(): void {
     this.#loadNodeAttributesTimeout = undefined;
     for (const nodeId of this.#attributeLoadNodeIds) {
-      this.agent.invoke_getAttributes({nodeId}).then(({attributes}) => {
+      void this.agent.invoke_getAttributes({nodeId}).then(({attributes}) => {
         if (!attributes) {
           // We are calling loadNodeAttributes asynchronously, it is ok if node is not found.
           return;
@@ -1268,11 +1274,11 @@ export class DOMModel extends SDKModel<EventTypes> {
 
   documentUpdated(): void {
     // If we have this.#pendingDocumentRequestPromise in flight,
-    // if it hits backend post #document update, it will contain most recent result.
-    const documentWasRequested = this.#document || this.#pendingDocumentRequestPromise;
+    // it will contain most recent result.
+    const documentWasRequested = this.#pendingDocumentRequestPromise;
     this.setDocument(null);
-    if (this.parentModel() && documentWasRequested) {
-      this.requestDocument();
+    if (this.parentModel() && !documentWasRequested) {
+      void this.requestDocument();
     }
   }
 
@@ -1385,11 +1391,15 @@ export class DOMModel extends SDKModel<EventTypes> {
     if (!pseudoType) {
       throw new Error('DOMModel._pseudoElementAdded expects pseudoType to be defined.');
     }
-    const previousPseudoType = parent.pseudoElements().get(pseudoType);
-    if (previousPseudoType) {
-      throw new Error('DOMModel._pseudoElementAdded expects parent to not already have this pseudo type added.');
+    const currentPseudoElements = parent.pseudoElements().get(pseudoType);
+    if (currentPseudoElements) {
+      Platform.DCHECK(
+          () => pseudoType.startsWith('page-transition'),
+          'DOMModel.pseudoElementAdded expects parent to not already have this pseudo type added; only page-transition* pseudo elements can coexist under the same parent.');
+      currentPseudoElements.push(node);
+    } else {
+      parent.pseudoElements().set(pseudoType, [node]);
     }
-    parent.pseudoElements().set(pseudoType, node);
     this.dispatchEventToListeners(Events.NodeInserted, node);
     this.scheduleMutationEvent(node);
   }
@@ -1430,7 +1440,9 @@ export class DOMModel extends SDKModel<EventTypes> {
     }
     const pseudoElements = node.pseudoElements();
     for (const value of pseudoElements.values()) {
-      this.unbind(value);
+      for (const pseudoElement of value) {
+        this.unbind(pseudoElement);
+      }
     }
     const templateContent = node.templateContent();
     if (templateContent) {
@@ -1477,7 +1489,7 @@ export class DOMModel extends SDKModel<EventTypes> {
     if (!this.#searchId) {
       return;
     }
-    this.agent.invoke_discardSearchResults({searchId: this.#searchId});
+    void this.agent.invoke_discardSearchResults({searchId: this.#searchId});
     this.#searchId = undefined;
   }
 
@@ -1494,7 +1506,7 @@ export class DOMModel extends SDKModel<EventTypes> {
   }
 
   markUndoableState(minorChange?: boolean): void {
-    DOMModelUndoStack.instance().markUndoableState(this, minorChange || false);
+    void DOMModelUndoStack.instance().markUndoableState(this, minorChange || false);
   }
 
   async nodeForLocation(x: number, y: number, includeUserAgentShadowDOM: boolean): Promise<DOMNode|null> {
@@ -1522,7 +1534,7 @@ export class DOMModel extends SDKModel<EventTypes> {
   }
 
   async resumeModel(): Promise<void> {
-    await this.agent.invoke_enable();
+    await this.agent.invoke_enable({});
   }
 
   dispose(): void {

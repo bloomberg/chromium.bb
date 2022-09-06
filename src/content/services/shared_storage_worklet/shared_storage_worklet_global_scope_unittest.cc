@@ -6,12 +6,16 @@
 
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "components/services/storage/shared_storage/public/mojom/shared_storage.mojom.h"
 #include "content/services/shared_storage_worklet/worklet_v8_helper.h"
+#include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
+#include "gin/function_template.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8-context.h"
+#include "v8/include/v8-function.h"
 #include "v8/include/v8-value-serializer.h"
 
 namespace shared_storage_worklet {
@@ -19,7 +23,8 @@ namespace shared_storage_worklet {
 namespace {
 
 std::vector<shared_storage_worklet::mojom::SharedStorageKeyAndOrValuePtr>
-CreateBatchResult(std::vector<std::pair<std::string, std::string>> input) {
+CreateBatchResult(
+    std::vector<std::pair<std::u16string, std::u16string>> input) {
   std::vector<shared_storage_worklet::mojom::SharedStorageKeyAndOrValuePtr>
       result;
   for (const auto& p : input) {
@@ -53,9 +58,14 @@ std::vector<uint8_t> Serialize(v8::Isolate* isolate,
 }
 
 struct SetParams {
-  std::string key;
-  std::string value;
+  std::u16string key;
+  std::u16string value;
   bool ignore_if_present;
+};
+
+struct AppendParams {
+  std::u16string key;
+  std::u16string value;
 };
 
 class TestClient
@@ -64,8 +74,8 @@ class TestClient
   explicit TestClient(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {}
 
-  void SharedStorageSet(const std::string& key,
-                        const std::string& value,
+  void SharedStorageSet(const std::u16string& key,
+                        const std::u16string& value,
                         bool ignore_if_present,
                         SharedStorageSetCallback callback) override {
     observed_set_params_.push_back({key, value, ignore_if_present});
@@ -77,9 +87,11 @@ class TestClient
         }));
   }
 
-  void SharedStorageAppend(const std::string& key,
-                           const std::string& value,
+  void SharedStorageAppend(const std::u16string& key,
+                           const std::u16string& value,
                            SharedStorageAppendCallback callback) override {
+    observed_append_params_.push_back({key, value});
+
     task_runner_->PostTask(
         FROM_HERE,
         base::BindLambdaForTesting([callback = std::move(callback)]() mutable {
@@ -89,20 +101,24 @@ class TestClient
         }));
   }
 
-  void SharedStorageDelete(const std::string& key,
-                           SharedStorageDeleteCallback callback) override {}
+  void SharedStorageDelete(const std::u16string& key,
+                           SharedStorageDeleteCallback callback) override {
+    observed_delete_params_.push_back(key);
+  }
 
   void SharedStorageClear(SharedStorageClearCallback callback) override {}
 
-  void SharedStorageGet(const std::string& key,
+  void SharedStorageGet(const std::u16string& key,
                         SharedStorageGetCallback callback) override {
+    observed_get_params_.push_back(key);
+
     task_runner_->PostTask(
         FROM_HERE,
         base::BindLambdaForTesting([callback = std::move(callback)]() mutable {
           std::move(callback).Run(
-              /*success=*/true,
+              shared_storage_worklet::mojom::SharedStorageGetStatus::kSuccess,
               /*error_message=*/{},
-              /*value=*/"test-value");
+              /*value=*/u"test-value");
         }));
   }
 
@@ -137,6 +153,18 @@ class TestClient
 
   const std::vector<SetParams>& observed_set_params() const {
     return observed_set_params_;
+  }
+
+  const std::vector<AppendParams>& observed_append_params() const {
+    return observed_append_params_;
+  }
+
+  const std::vector<std::u16string>& observed_delete_params() const {
+    return observed_delete_params_;
+  }
+
+  const std::vector<std::u16string>& observed_get_params() const {
+    return observed_get_params_;
   }
 
   const std::vector<std::string>& observed_console_log_messages() const {
@@ -187,6 +215,9 @@ class TestClient
       pending_entries_listeners_;
 
   std::vector<SetParams> observed_set_params_;
+  std::vector<AppendParams> observed_append_params_;
+  std::vector<std::u16string> observed_delete_params_;
+  std::vector<std::u16string> observed_get_params_;
   std::vector<std::string> observed_console_log_messages_;
 };
 
@@ -228,6 +259,104 @@ class SharedStorageWorkletGlobalScopeTest : public testing::Test {
     return gin::V8ToString(Isolate(), result);
   }
 
+  void RegisterAsyncReturnForTesting() {
+    WorkletV8Helper::HandleScope scope(Isolate());
+
+    v8::Local<v8::Context> context = global_scope_->LocalContext();
+    v8::Context::Scope context_scope(context);
+
+    v8::Local<v8::Object> global = context->Global();
+
+    global
+        ->Set(context, gin::StringToSymbol(Isolate(), "asyncFulfillForTesting"),
+              gin::CreateFunctionTemplate(
+                  Isolate(),
+                  base::BindRepeating(&SharedStorageWorkletGlobalScopeTest::
+                                          AsyncFulfillForTesting,
+                                      base::Unretained(this)))
+                  ->GetFunction(context)
+                  .ToLocalChecked())
+        .Check();
+
+    global
+        ->Set(
+            context, gin::StringToSymbol(Isolate(), "asyncRejectForTesting"),
+            gin::CreateFunctionTemplate(
+                Isolate(),
+                base::BindRepeating(
+                    &SharedStorageWorkletGlobalScopeTest::AsyncRejectForTesting,
+                    base::Unretained(this)))
+                ->GetFunction(context)
+                .ToLocalChecked())
+        .Check();
+  }
+
+  v8::Local<v8::Promise> AsyncFulfillForTesting(gin::Arguments* args) {
+    std::vector<v8::Local<v8::Value>> v8_args = args->GetAll();
+
+    v8::Local<v8::Value> val =
+        !v8_args.empty()
+            ? v8_args[0]
+            : v8::Local<v8::Value>(v8::Object::New(args->isolate()));
+
+    v8::Local<v8::Promise::Resolver> resolver =
+        v8::Promise::Resolver::New(args->GetHolderCreationContext())
+            .ToLocalChecked();
+
+    v8::Local<v8::Promise> promise = resolver->GetPromise();
+
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindLambdaForTesting(
+            [isolate = args->isolate(),
+             global_val = v8::Global<v8::Value>(args->isolate(), val),
+             global_resolver = v8::Global<v8::Promise::Resolver>(
+                 args->isolate(), resolver)]() mutable {
+              WorkletV8Helper::HandleScope scope(isolate);
+              v8::Local<v8::Value> val = global_val.Get(isolate);
+              v8::Local<v8::Promise::Resolver> resolver =
+                  global_resolver.Get(isolate);
+              v8::Local<v8::Context> context =
+                  resolver->GetCreationContextChecked();
+              resolver->Resolve(context, val).ToChecked();
+            }));
+
+    return promise;
+  }
+
+  v8::Local<v8::Promise> AsyncRejectForTesting(gin::Arguments* args) {
+    std::vector<v8::Local<v8::Value>> v8_args = args->GetAll();
+
+    v8::Local<v8::Value> val =
+        !v8_args.empty()
+            ? v8_args[0]
+            : v8::Local<v8::Value>(v8::Object::New(args->isolate()));
+
+    v8::Local<v8::Promise::Resolver> resolver =
+        v8::Promise::Resolver::New(args->GetHolderCreationContext())
+            .ToLocalChecked();
+
+    v8::Local<v8::Promise> promise = resolver->GetPromise();
+
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindLambdaForTesting(
+            [isolate = args->isolate(),
+             global_val = v8::Global<v8::Value>(args->isolate(), val),
+             global_resolver = v8::Global<v8::Promise::Resolver>(
+                 args->isolate(), resolver)]() mutable {
+              WorkletV8Helper::HandleScope scope(isolate);
+              v8::Local<v8::Value> val = global_val.Get(isolate);
+              v8::Local<v8::Promise::Resolver> resolver =
+                  global_resolver.Get(isolate);
+              v8::Local<v8::Context> context =
+                  resolver->GetCreationContextChecked();
+              resolver->Reject(context, val).ToChecked();
+            }));
+
+    return promise;
+  }
+
   TestClient* test_client() { return test_client_.get(); }
 
  protected:
@@ -252,9 +381,7 @@ TEST_F(SharedStorageWorkletGlobalScopeTest, OnModuleScriptDownloadedSuccess) {
 
   EXPECT_EQ(GetTypeOf("console"), "object");
   EXPECT_EQ(GetTypeOf("console.log"), "function");
-  EXPECT_EQ(GetTypeOf("registerURLSelectionOperation"), "function");
-  EXPECT_EQ(GetTypeOf("registerOperation"), "function");
-  EXPECT_EQ(GetTypeOf("sharedStorage"), "object");
+  EXPECT_EQ(GetTypeOf("register"), "function");
   EXPECT_EQ(GetTypeOf("sharedStorage"), "object");
   EXPECT_EQ(GetTypeOf("sharedStorage.set"), "function");
   EXPECT_EQ(GetTypeOf("sharedStorage.append"), "function");
@@ -336,8 +463,7 @@ TEST_F(SharedStorageAddModuleTest, VanillaScriptError) {
 TEST_F(SharedStorageAddModuleTest, ObjectDefinedStatusDuringAddModule) {
   SimulateAddModule(R"(
     if (typeof(console) !== 'object' ||
-        typeof(registerOperation) !== 'function' ||
-        typeof(registerURLSelectionOperation) !== 'function' ||
+        typeof(register) !== 'function' ||
         typeof(sharedStorage) !== 'undefined') {
       throw Error('Unexpected object defined status.');
     }
@@ -349,7 +475,7 @@ TEST_F(SharedStorageAddModuleTest, ObjectDefinedStatusDuringAddModule) {
 
 TEST_F(SharedStorageAddModuleTest, RegisterOperation_MissingOperationName) {
   SimulateAddModule(R"(
-    registerOperation();
+    register();
   )");
 
   EXPECT_FALSE(success());
@@ -360,7 +486,7 @@ TEST_F(SharedStorageAddModuleTest, RegisterOperation_MissingOperationName) {
 
 TEST_F(SharedStorageAddModuleTest, RegisterOperation_EmptyOperationName) {
   SimulateAddModule(R"(
-    registerOperation("");
+    register("");
   )");
 
   EXPECT_FALSE(success());
@@ -372,7 +498,7 @@ TEST_F(SharedStorageAddModuleTest, RegisterOperation_EmptyOperationName) {
 TEST_F(SharedStorageAddModuleTest,
        RegisterOperation_MissingClassName_MissingArgument) {
   SimulateAddModule(R"(
-    registerOperation("test-operation");
+    register("test-operation");
   )");
 
   EXPECT_FALSE(success());
@@ -384,7 +510,7 @@ TEST_F(SharedStorageAddModuleTest,
 TEST_F(SharedStorageAddModuleTest,
        RegisterOperation_MissingClassName_NotAnObject) {
   SimulateAddModule(R"(
-    registerOperation("test-operation", 1);
+    register("test-operation", 1);
   )");
 
   EXPECT_FALSE(success());
@@ -395,7 +521,7 @@ TEST_F(SharedStorageAddModuleTest,
 
 TEST_F(SharedStorageAddModuleTest, RegisterOperation_ClassNameNotAConstructor) {
   SimulateAddModule(R"(
-    registerOperation("test-operation", {});
+    register("test-operation", {});
   )");
 
   EXPECT_FALSE(success());
@@ -412,7 +538,7 @@ TEST_F(SharedStorageAddModuleTest, RegisterOperation_MissingRunFunction) {
       }
     }
 
-    registerOperation("test-operation", TestClass);
+    register("test-operation", TestClass);
   )");
 
   EXPECT_FALSE(success());
@@ -427,7 +553,7 @@ TEST_F(SharedStorageAddModuleTest, RegisterOperation_Success) {
       async run() {}
     }
 
-    registerOperation("test-operation", TestClass);
+    register("test-operation", TestClass);
   )");
 
   EXPECT_TRUE(success());
@@ -444,8 +570,8 @@ TEST_F(SharedStorageAddModuleTest, RegisterOperation_AlreadyRegistered) {
       async run() {}
     }
 
-    registerOperation("test-operation", TestClass1);
-    registerOperation("test-operation", TestClass2);
+    register("test-operation", TestClass1);
+    register("test-operation", TestClass2);
   )");
 
   EXPECT_FALSE(success());
@@ -474,6 +600,8 @@ class SharedStorageRunOperationTest
         std::make_unique<std::string>(script_body), /*error_message=*/{});
 
     ASSERT_TRUE(add_module_callback_called);
+
+    RegisterAsyncReturnForTesting();
   }
 
   void SimulateRunOperation(const std::string& name,
@@ -491,7 +619,7 @@ class SharedStorageRunOperationTest
 
   void SimulateRunURLSelectionOperation(
       const std::string& name,
-      const std::vector<std::string>& urls,
+      const std::vector<GURL>& urls,
       const std::vector<uint8_t>& serialized_data) {
     auto run_operation_callback = base::BindLambdaForTesting(
         [&](bool success, const std::string& error_message, uint32_t index) {
@@ -558,7 +686,7 @@ TEST_F(SharedStorageRunOperationTest,
         async run() {}
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation-1", /*serialized_data=*/{});
@@ -576,7 +704,7 @@ TEST_F(SharedStorageRunOperationTest, UnnamedOperation_FunctionError) {
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -594,7 +722,7 @@ TEST_F(SharedStorageRunOperationTest, UnnamedOperation_ReturnValueNotAPromise) {
         run() {}
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -614,7 +742,7 @@ TEST_F(SharedStorageRunOperationTest, UnnamedOperation_Microtask) {
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -631,7 +759,7 @@ TEST_F(SharedStorageRunOperationTest,
         async run() {}
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -650,7 +778,7 @@ TEST_F(SharedStorageRunOperationTest,
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -670,7 +798,7 @@ TEST_F(SharedStorageRunOperationTest,
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -693,7 +821,7 @@ TEST_F(SharedStorageRunOperationTest,
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   SimulateRunOperation("test-operation", /*serialized_data=*/{});
@@ -718,7 +846,7 @@ TEST_F(SharedStorageRunOperationTest, UnnamedOperation_ExpectedCustomData) {
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   std::vector<uint8_t> serialized_data;
@@ -750,7 +878,7 @@ TEST_F(SharedStorageRunOperationTest, UnnamedOperation_UnexpectedCustomData) {
         }
       }
 
-      registerOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
   std::vector<uint8_t> serialized_data;
@@ -782,11 +910,12 @@ TEST_F(SharedStorageRunOperationTest,
         }
       }
 
-      registerURLSelectionOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
-  SimulateRunURLSelectionOperation("test-operation", {"url0", "url1"},
-                                   /*serialized_data=*/{});
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
 
   EXPECT_TRUE(url_selection_operation_finished());
   EXPECT_TRUE(url_selection_operation_success());
@@ -794,19 +923,161 @@ TEST_F(SharedStorageRunOperationTest,
   EXPECT_EQ(url_selection_operation_index(), 1u);
 }
 
-TEST_F(SharedStorageRunOperationTest,
-       URLSelectionOperation_ResultPromiseRejectedSynchronously) {
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledSynchronously_NumberOverflow) {
   SimulateAddModule(R"(
       class TestClass {
         async run(urls) {
-          return '';
+          return -4294967295;
         }
       }
 
-      registerURLSelectionOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
-  SimulateRunURLSelectionOperation("test-operation", {"url0", "url1"},
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 1u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledSynchronously_StringConvertedToUint32) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return '1';
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 1u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledSynchronously_RandomStringConvertedTo0) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return 'abc';
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledSynchronously_DefaultUndefinedResultConvertedTo0) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {}
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseRejectedSynchronously_SynchronousScriptError) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          undefined_variable;
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation("test-operation", {GURL("https://foo.com")},
+                                   /*serialized_data=*/{});
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_FALSE(url_selection_operation_success());
+  EXPECT_EQ(url_selection_operation_error_message(),
+            "ReferenceError: undefined_variable is not defined");
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseRejectedSynchronously_ReturnValueOutOfRange) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return 1;
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation("test-operation", {GURL("https://foo.com")},
+                                   /*serialized_data=*/{});
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_FALSE(url_selection_operation_success());
+  EXPECT_EQ(
+      url_selection_operation_error_message(),
+      "Promise resolved to a number outside the length of the input urls.");
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseRejectedSynchronously_ReturnValueToInt32Error) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          class CustomClass {
+            toString() { throw Error('error 123'); }
+          }
+
+          return new CustomClass();
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation("test-operation", {GURL("https://foo.com")},
                                    /*serialized_data=*/{});
 
   EXPECT_TRUE(url_selection_operation_finished());
@@ -821,15 +1092,16 @@ TEST_F(SharedStorageRunOperationTest,
   SimulateAddModule(R"(
       class TestClass {
         async run(urls) {
-          return sharedStorage.length();
+          return asyncFulfillForTesting(1);
         }
       }
 
-      registerURLSelectionOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
-  SimulateRunURLSelectionOperation("test-operation", {"url0", "url1"},
-                                   /*serialized_data=*/{});
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
 
   EXPECT_FALSE(url_selection_operation_finished());
 
@@ -841,19 +1113,187 @@ TEST_F(SharedStorageRunOperationTest,
   EXPECT_EQ(url_selection_operation_index(), 1u);
 }
 
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledAsynchronously_NumberOverflow) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return asyncFulfillForTesting(-4294967295);
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_FALSE(url_selection_operation_finished());
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 1u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledAsynchronously_StringConvertedToUint32) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return asyncFulfillForTesting('1');
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_FALSE(url_selection_operation_finished());
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 1u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledAsynchronously_RandomStringConvertedTo0) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return asyncFulfillForTesting('abc');
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_FALSE(url_selection_operation_finished());
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseFulfilledAsynchronously_DefaultUndefinedResultConvertedTo0) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return asyncFulfillForTesting();
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_FALSE(url_selection_operation_finished());
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_TRUE(url_selection_operation_success());
+  EXPECT_TRUE(url_selection_operation_error_message().empty());
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
 TEST_F(SharedStorageRunOperationTest,
        URLSelectionOperation_ResultPromiseRejectedAsynchronously) {
   SimulateAddModule(R"(
       class TestClass {
         async run(urls) {
-          return sharedStorage.get('test-key');
+          return asyncRejectForTesting('custom error message 123');
         }
       }
 
-      registerURLSelectionOperation("test-operation", TestClass);
+      register("test-operation", TestClass);
     )");
 
-  SimulateRunURLSelectionOperation("test-operation", {"url0", "url1"},
+  SimulateRunURLSelectionOperation(
+      "test-operation", {GURL("https://foo.com"), GURL("https://bar.com")},
+      /*serialized_data=*/{});
+
+  EXPECT_FALSE(url_selection_operation_finished());
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_FALSE(url_selection_operation_success());
+  EXPECT_EQ(url_selection_operation_error_message(),
+            "custom error message 123");
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseRejectedAsynchronously_ReturnValueOutOfRange) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          return asyncFulfillForTesting(1);
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation("test-operation", {GURL("https://foo.com")},
+                                   /*serialized_data=*/{});
+
+  EXPECT_FALSE(url_selection_operation_finished());
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(url_selection_operation_finished());
+  EXPECT_FALSE(url_selection_operation_success());
+  EXPECT_EQ(
+      url_selection_operation_error_message(),
+      "Promise resolved to a number outside the length of the input urls.");
+  EXPECT_EQ(url_selection_operation_index(), 0u);
+}
+
+TEST_F(
+    SharedStorageRunOperationTest,
+    URLSelectionOperation_ResultPromiseRejectedAsynchronously_ReturnValueToInt32Error) {
+  SimulateAddModule(R"(
+      class TestClass {
+        async run(urls) {
+          class CustomClass {
+            toString() { throw Error('error 123'); }
+          }
+
+          return asyncFulfillForTesting(new CustomClass());
+        }
+      }
+
+      register("test-operation", TestClass);
+    )");
+
+  SimulateRunURLSelectionOperation("test-operation", {GURL("https://foo.com")},
                                    /*serialized_data=*/{});
 
   EXPECT_FALSE(url_selection_operation_finished());
@@ -880,6 +1320,7 @@ class SharedStorageObjectMethodTest : public SharedStorageRunOperationTest {
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::Value> v8_result = EvalJs(script_body);
+
     ASSERT_TRUE(!v8_result.IsEmpty());
     ASSERT_TRUE(v8_result->IsPromise());
 
@@ -927,6 +1368,36 @@ TEST_F(SharedStorageObjectMethodTest, SetOperation_MissingKey) {
   EXPECT_TRUE(test_client()->observed_set_params().empty());
 }
 
+TEST_F(SharedStorageObjectMethodTest, SetOperation_InvalidKey_Empty) {
+  ExecuteScript("sharedStorage.set('', 'value')");
+  EXPECT_TRUE(finished());
+  EXPECT_FALSE(fulfilled());
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"key\" argument in sharedStorage.set()");
+  }
+
+  EXPECT_TRUE(test_client()->observed_set_params().empty());
+}
+
+TEST_F(SharedStorageObjectMethodTest, SetOperation_InvalidKey_LengthTooBig) {
+  ExecuteScript("sharedStorage.set('a'.repeat(1025), 'value')");
+  EXPECT_TRUE(finished());
+  EXPECT_FALSE(fulfilled());
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"key\" argument in sharedStorage.set()");
+  }
+
+  EXPECT_TRUE(test_client()->observed_set_params().empty());
+}
+
 TEST_F(SharedStorageObjectMethodTest, SetOperation_MissingValue) {
   ExecuteScript("sharedStorage.set('key')");
   EXPECT_TRUE(finished());
@@ -942,8 +1413,8 @@ TEST_F(SharedStorageObjectMethodTest, SetOperation_MissingValue) {
   EXPECT_TRUE(test_client()->observed_set_params().empty());
 }
 
-TEST_F(SharedStorageObjectMethodTest, SetOperation_InvalidValue) {
-  ExecuteScript("sharedStorage.set('key', 123)");
+TEST_F(SharedStorageObjectMethodTest, SetOperation_InvalidValue_LengthTooBig) {
+  ExecuteScript("sharedStorage.set('key', 'a'.repeat(1025))");
   EXPECT_TRUE(finished());
   EXPECT_FALSE(fulfilled());
 
@@ -983,27 +1454,103 @@ TEST_F(SharedStorageObjectMethodTest, SetOperation_FulfilledAsynchronously) {
   }
 
   EXPECT_EQ(test_client()->observed_set_params().size(), 1u);
-  EXPECT_EQ(test_client()->observed_set_params()[0].key, "key");
-  EXPECT_EQ(test_client()->observed_set_params()[0].value, "value");
+  EXPECT_EQ(test_client()->observed_set_params()[0].key, u"key");
+  EXPECT_EQ(test_client()->observed_set_params()[0].value, u"value");
   EXPECT_FALSE(test_client()->observed_set_params()[0].ignore_if_present);
 }
 
-TEST_F(SharedStorageObjectMethodTest, SetOperation_IgnoreIfPresent) {
-  ExecuteScript("sharedStorage.set('key', 'value', {ignoreIfPresent: true})");
-  EXPECT_FALSE(finished());
+TEST_F(SharedStorageObjectMethodTest,
+       SetOperation_KeyAndValueConvertedToString) {
+  ExecuteScript("sharedStorage.set(123, 456)");
+  ExecuteScript("sharedStorage.set(null, null)");
+  ExecuteScript("sharedStorage.set(undefined, undefined)");
+  ExecuteScript(
+      "sharedStorage.set({dictKey1: 'dictValue1'}, {dictKey2: 'dictValue2'})");
   task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(test_client()->observed_set_params().size(), 4u);
+  EXPECT_EQ(test_client()->observed_set_params()[0].key, u"123");
+  EXPECT_EQ(test_client()->observed_set_params()[0].value, u"456");
+  EXPECT_EQ(test_client()->observed_set_params()[1].key, u"null");
+  EXPECT_EQ(test_client()->observed_set_params()[1].value, u"null");
+  EXPECT_EQ(test_client()->observed_set_params()[2].key, u"undefined");
+  EXPECT_EQ(test_client()->observed_set_params()[2].value, u"undefined");
+  EXPECT_EQ(test_client()->observed_set_params()[3].key, u"[object Object]");
+  EXPECT_EQ(test_client()->observed_set_params()[3].value, u"[object Object]");
+}
+
+TEST_F(SharedStorageObjectMethodTest, SetOperation_KeyConvertedToStringError) {
+  ExecuteScript(
+      "class CustomClass {"
+      "  toString() { throw Error('error 123'); }"
+      "}"
+      "sharedStorage.set(new CustomClass(), new CustomClass())");
   EXPECT_TRUE(finished());
-  EXPECT_TRUE(fulfilled());
+  EXPECT_FALSE(fulfilled());
 
   {
     WorkletV8Helper::HandleScope scope(Isolate());
-    EXPECT_TRUE(v8_resolved_value()->IsUndefined());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"key\" argument in sharedStorage.set()");
   }
 
-  EXPECT_EQ(test_client()->observed_set_params().size(), 1u);
-  EXPECT_EQ(test_client()->observed_set_params()[0].key, "key");
-  EXPECT_EQ(test_client()->observed_set_params()[0].value, "value");
+  EXPECT_TRUE(test_client()->observed_set_params().empty());
+}
+
+TEST_F(SharedStorageObjectMethodTest,
+       SetOperation_ValueConvertedToStringError) {
+  ExecuteScript(
+      "class CustomClass {"
+      "  toString() { throw Error('error 123'); }"
+      "}"
+      "sharedStorage.set(123, new CustomClass())");
+  EXPECT_TRUE(finished());
+  EXPECT_FALSE(fulfilled());
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"value\" argument in sharedStorage.set()");
+  }
+
+  EXPECT_TRUE(test_client()->observed_set_params().empty());
+}
+
+TEST_F(SharedStorageObjectMethodTest, SetOperation_IgnoreIfPresent_False) {
+  ExecuteScript("sharedStorage.set('key', 'value')");
+  ExecuteScript("sharedStorage.set('key', 'value', {})");
+  ExecuteScript("sharedStorage.set('key', 'value', {ignoreIfPresent: false})");
+  ExecuteScript("sharedStorage.set('key', 'value', {ignoreIfPresent: ''})");
+  ExecuteScript("sharedStorage.set('key', 'value', {ignoreIfPresent: null})");
+  ExecuteScript(
+      "sharedStorage.set('key', 'value', {ignoreIfPresent: undefined})");
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(test_client()->observed_set_params().size(), 6u);
+  EXPECT_FALSE(test_client()->observed_set_params()[0].ignore_if_present);
+  EXPECT_FALSE(test_client()->observed_set_params()[1].ignore_if_present);
+  EXPECT_FALSE(test_client()->observed_set_params()[2].ignore_if_present);
+  EXPECT_FALSE(test_client()->observed_set_params()[3].ignore_if_present);
+  EXPECT_FALSE(test_client()->observed_set_params()[4].ignore_if_present);
+  EXPECT_FALSE(test_client()->observed_set_params()[5].ignore_if_present);
+}
+
+TEST_F(SharedStorageObjectMethodTest, SetOperation_IgnoreIfPresent_True) {
+  ExecuteScript("sharedStorage.set('key', 'value', {ignoreIfPresent: true})");
+  // A non-empty string will evaluate to true.
+  ExecuteScript(
+      "sharedStorage.set('key', 'value', {ignoreIfPresent: 'false'})");
+  // A dictionary object will evaluate to true.
+  ExecuteScript("sharedStorage.set('key', 'value', {ignoreIfPresent: {}})");
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(test_client()->observed_set_params().size(), 3u);
   EXPECT_TRUE(test_client()->observed_set_params()[0].ignore_if_present);
+  EXPECT_TRUE(test_client()->observed_set_params()[1].ignore_if_present);
+  EXPECT_TRUE(test_client()->observed_set_params()[2].ignore_if_present);
 }
 
 TEST_F(SharedStorageObjectMethodTest, AppendOperation_MissingKey) {
@@ -1011,10 +1558,38 @@ TEST_F(SharedStorageObjectMethodTest, AppendOperation_MissingKey) {
   EXPECT_TRUE(finished());
   EXPECT_FALSE(fulfilled());
 
-  WorkletV8Helper::HandleScope scope(Isolate());
-  EXPECT_TRUE(v8_resolved_value()->IsString());
-  EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
-            "Missing or invalid \"key\" argument in sharedStorage.append()");
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"key\" argument in sharedStorage.append()");
+  }
+}
+
+TEST_F(SharedStorageObjectMethodTest, AppendOperation_InvalidKey_Empty) {
+  ExecuteScript("sharedStorage.append('', 'value')");
+  EXPECT_TRUE(finished());
+  EXPECT_FALSE(fulfilled());
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"key\" argument in sharedStorage.append()");
+  }
+}
+
+TEST_F(SharedStorageObjectMethodTest, AppendOperation_InvalidKey_LengthTooBig) {
+  ExecuteScript("sharedStorage.append('a'.repeat(1025), 'value')");
+  EXPECT_TRUE(finished());
+  EXPECT_FALSE(fulfilled());
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
+              "Missing or invalid \"key\" argument in sharedStorage.append()");
+  }
 }
 
 TEST_F(SharedStorageObjectMethodTest, AppendOperation_MissingValue) {
@@ -1022,10 +1597,50 @@ TEST_F(SharedStorageObjectMethodTest, AppendOperation_MissingValue) {
   EXPECT_TRUE(finished());
   EXPECT_FALSE(fulfilled());
 
-  WorkletV8Helper::HandleScope scope(Isolate());
-  EXPECT_TRUE(v8_resolved_value()->IsString());
-  EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()),
-            "Missing or invalid \"value\" argument in sharedStorage.append()");
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(
+        gin::V8ToString(Isolate(), v8_resolved_value()),
+        "Missing or invalid \"value\" argument in sharedStorage.append()");
+  }
+}
+
+TEST_F(SharedStorageObjectMethodTest,
+       AppendOperation_InvalidValue_LengthTooBig) {
+  ExecuteScript("sharedStorage.append('key', 'a'.repeat(1025))");
+  EXPECT_TRUE(finished());
+  EXPECT_FALSE(fulfilled());
+
+  {
+    WorkletV8Helper::HandleScope scope(Isolate());
+    EXPECT_TRUE(v8_resolved_value()->IsString());
+    EXPECT_EQ(
+        gin::V8ToString(Isolate(), v8_resolved_value()),
+        "Missing or invalid \"value\" argument in sharedStorage.append()");
+  }
+}
+
+TEST_F(SharedStorageObjectMethodTest,
+       AppendOperation_KeyAndValueConvertedToString) {
+  ExecuteScript("sharedStorage.append(123, 456)");
+  ExecuteScript("sharedStorage.append(null, null)");
+  ExecuteScript("sharedStorage.append(undefined, undefined)");
+  ExecuteScript(
+      "sharedStorage.append({dictKey1: 'dictValue1'}, {dictKey2: "
+      "'dictValue2'})");
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(test_client()->observed_append_params().size(), 4u);
+  EXPECT_EQ(test_client()->observed_append_params()[0].key, u"123");
+  EXPECT_EQ(test_client()->observed_append_params()[0].value, u"456");
+  EXPECT_EQ(test_client()->observed_append_params()[1].key, u"null");
+  EXPECT_EQ(test_client()->observed_append_params()[1].value, u"null");
+  EXPECT_EQ(test_client()->observed_append_params()[2].key, u"undefined");
+  EXPECT_EQ(test_client()->observed_append_params()[2].value, u"undefined");
+  EXPECT_EQ(test_client()->observed_append_params()[3].key, u"[object Object]");
+  EXPECT_EQ(test_client()->observed_append_params()[3].value,
+            u"[object Object]");
 }
 
 TEST_F(SharedStorageObjectMethodTest, AppendOperation_RejectedAsynchronously) {
@@ -1052,6 +1667,20 @@ TEST_F(SharedStorageObjectMethodTest, DeleteOperation_MissingKey) {
             "Missing or invalid \"key\" argument in sharedStorage.delete()");
 }
 
+TEST_F(SharedStorageObjectMethodTest, DeleteOperation_KeyConvertedToString) {
+  ExecuteScript("sharedStorage.delete(123)");
+  ExecuteScript("sharedStorage.delete(null)");
+  ExecuteScript("sharedStorage.delete(undefined)");
+  ExecuteScript("sharedStorage.delete({dictKey1: 'dictValue1'})");
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(test_client()->observed_delete_params().size(), 4u);
+  EXPECT_EQ(test_client()->observed_delete_params()[0], u"123");
+  EXPECT_EQ(test_client()->observed_delete_params()[1], u"null");
+  EXPECT_EQ(test_client()->observed_delete_params()[2], u"undefined");
+  EXPECT_EQ(test_client()->observed_delete_params()[3], u"[object Object]");
+}
+
 TEST_F(SharedStorageObjectMethodTest, GetOperation_MissingKey) {
   ExecuteScript("sharedStorage.get()");
   EXPECT_TRUE(finished());
@@ -1073,6 +1702,20 @@ TEST_F(SharedStorageObjectMethodTest, GetOperation_FulfilledAsynchronously) {
   WorkletV8Helper::HandleScope scope(Isolate());
   EXPECT_TRUE(v8_resolved_value()->IsString());
   EXPECT_EQ(gin::V8ToString(Isolate(), v8_resolved_value()), "test-value");
+}
+
+TEST_F(SharedStorageObjectMethodTest, GetOperation_KeyConvertedToString) {
+  ExecuteScript("sharedStorage.get(123)");
+  ExecuteScript("sharedStorage.get(null)");
+  ExecuteScript("sharedStorage.get(undefined)");
+  ExecuteScript("sharedStorage.get({dictKey1: 'dictValue1'})");
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(test_client()->observed_get_params().size(), 4u);
+  EXPECT_EQ(test_client()->observed_get_params()[0], u"123");
+  EXPECT_EQ(test_client()->observed_get_params()[1], u"null");
+  EXPECT_EQ(test_client()->observed_get_params()[2], u"undefined");
+  EXPECT_EQ(test_client()->observed_get_params()[3], u"[object Object]");
 }
 
 TEST_F(SharedStorageObjectMethodTest, LengthOperation_FulfilledAsynchronously) {
@@ -1169,7 +1812,7 @@ TEST_F(SharedStorageObjectMethodTest,
 
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key0", "value0"}}),
+      CreateBatchResult({{u"key0", u"value0"}}),
       /*has_more_entries=*/true);
   task_environment_.RunUntilIdle();
 
@@ -1179,7 +1822,7 @@ TEST_F(SharedStorageObjectMethodTest,
 
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key1", "value1"}, {"key2", "value2"}}),
+      CreateBatchResult({{u"key1", u"value1"}, {u"key2", u"value2"}}),
       /*has_more_entries=*/false);
   task_environment_.RunUntilIdle();
 
@@ -1209,7 +1852,7 @@ TEST_F(SharedStorageObjectMethodTest,
 
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key0", "value0"}}),
+      CreateBatchResult({{u"key0", u"value0"}}),
       /*has_more_entries=*/true);
   task_environment_.RunUntilIdle();
 
@@ -1253,7 +1896,7 @@ TEST_F(SharedStorageObjectMethodTest,
   // It's harmless to still send the `value` field. They will simply be ignored.
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key0", "value0"}, {"key1", "value1"}}),
+      CreateBatchResult({{u"key0", u"value0"}, {u"key1", u"value1"}}),
       /*has_more_entries=*/false);
   task_environment_.RunUntilIdle();
 
@@ -1296,7 +1939,7 @@ TEST_F(SharedStorageObjectMethodTest,
 
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key0", /*value=*/{}}}),
+      CreateBatchResult({{u"key0", /*value=*/{}}}),
       /*has_more_entries=*/true);
   task_environment_.RunUntilIdle();
 
@@ -1305,7 +1948,7 @@ TEST_F(SharedStorageObjectMethodTest,
 
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key1", /*value=*/{}}, {"key2", /*value=*/{}}}),
+      CreateBatchResult({{u"key1", /*value=*/{}}, {u"key2", /*value=*/{}}}),
       /*has_more_entries=*/true);
   task_environment_.RunUntilIdle();
 
@@ -1316,7 +1959,7 @@ TEST_F(SharedStorageObjectMethodTest,
 
   remote_listener->DidReadEntries(
       /*success=*/true, /*error_message=*/{},
-      CreateBatchResult({{"key3", /*value=*/{}}}),
+      CreateBatchResult({{u"key3", /*value=*/{}}}),
       /*has_more_entries=*/false);
   task_environment_.RunUntilIdle();
 

@@ -32,21 +32,21 @@ export class MarkdownView extends HTMLElement {
 
   set data(data: MarkdownViewData) {
     this.#tokenData = data.tokens;
-    this.update();
+    this.#update();
   }
 
-  private update(): void {
-    this.render();
+  #update(): void {
+    this.#render();
   }
 
-  private render(): void {
+  #render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
       <div class='message'>
         ${this.#tokenData.map(renderToken)}
       </div>
-    `, this.#shadow);
+    `, this.#shadow, {host: this});
     // clang-format on
   }
 }
@@ -69,7 +69,6 @@ const renderChildTokens = (token: any): string => {
 const unescape = (text: string): string => {
   // Unescape will get rid of the escaping done by Marked to avoid double escaping due to escaping it also with Lit-html
   // Table taken from: front_end/third_party/marked/package/src/helpers.js
-  /** @type {Map<string,string>} */
   const escapeReplacements = new Map<string, string>([
     ['&amp;', '&'],
     ['&lt;', '<'],

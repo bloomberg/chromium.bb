@@ -61,7 +61,6 @@ build_flatbuffers(
 )
 
 set(DELEGATE_PROVIDERS_SUPP
-  ${TFLITE_SOURCE_DIR}/delegates/external/external_delegate.cc
   ${TFLITE_SOURCE_DIR}/nnapi/sl/SupportLibrary.cc
   ${TFLITE_SOURCE_DIR}/tools/delegates/delegate_provider.cc
   ${TFLITE_SOURCE_DIR}/tools/evaluation/utils.cc
@@ -75,6 +74,10 @@ set(DELEGATE_PROVIDERS
   ${TFLITE_SOURCE_DIR}/tools/delegates/nnapi_delegate_provider.cc
   ${TFLITE_SOURCE_DIR}/tools/delegates/xnnpack_delegate_provider.cc
 )
+
+if(TFLITE_ENABLE_EXTERNAL_DELEGATE)
+  list(APPEND DELEGATE_PROVIDERS ${TFLITE_SOURCE_DIR}/tools/delegates/external_delegate_provider.cc)
+endif()
 
 set(TEST_FRAMEWORK_SRC
   ${TFLITE_SOURCE_DIR}/delegates/nnapi/acceleration_test_list.cc
@@ -145,6 +148,16 @@ macro(add_kernel_test TEST_SRC TEST_LIB)
   add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME}
     WORKING_DIRECTORY ${TENSORFLOW_SOURCE_DIR}
   )
+  set_tests_properties(${TEST_NAME} PROPERTIES LABELS "plain")
+
+  if(_TFLITE_ENABLE_NNAPI OR TFLITE_ENABLE_EXTERNAL_DELEGATE OR TFLITE_ENABLE_XNNPACK)
+    set(DELEGATE_TEST "${TEST_NAME}_delegate")
+    add_test(
+      NAME ${DELEGATE_TEST}
+      COMMAND cmake -DTEST_EXECUTABLE=$<TARGET_FILE:${TEST_NAME}> -P run-tests.cmake
+    )
+    set_tests_properties(${DELEGATE_TEST} PROPERTIES LABELS "delegate")
+  endif()
 endmacro()
 
 # Tests where main() is provided by the file referenced in TEST_FRAMEWORK_MAIN_SRC
@@ -238,8 +251,7 @@ set(TEST_WITH_EXTERNAL_MAIN_LIST
   pow_test.cc
   quant_basic_lstm_test.cc
   quantize_test.cc
-  random_standard_normal_test.cc
-  random_uniform_test.cc
+  random_ops_test.cc
   range_test.cc
   rank_test.cc
   reduce_test.cc
@@ -301,3 +313,12 @@ endforeach()
 foreach(test_src IN LISTS TEST_WITH_GTEST_MAIN_LIST)
   add_kernel_test(${test_src} tensorflow-lite-test-gtest-main)
 endforeach()
+
+# Copy the test utility that facilitates cross-compiled kernel tests run with launch arguments
+if(${CMAKE_CROSSCOMPILING})
+  configure_file(
+    ${TFLITE_SOURCE_DIR}/tools/cmake/test_utils/run-tests.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/run-tests.cmake
+    COPYONLY
+  )
+endif()

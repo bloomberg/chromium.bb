@@ -50,10 +50,15 @@ extern const char kServerServiceSwitch[];
 extern const char kServerUpdateServiceInternalSwitchValue[];
 extern const char kServerUpdateServiceSwitchValue[];
 
-// This switch starts the COM service. This switch is invoked by the Service
-// Manager when CoCreate is called on one of several CLSIDs that the server
-// supports.
-// We expect to use the COM service for the following scenarios:
+// This switch starts the Windows service. This switch is invoked by the SCM
+// either as a part of system startup (`SERVICE_AUTO_START`) or when `CoCreate`
+// is called on one of several CLSIDs that the server supports.
+extern const char kWindowsServiceSwitch[];
+
+// This switch indicates that the Windows service is in the COM server mode.
+// This switch is passed to `ServiceMain` by the SCM when CoCreate is called on
+// one of several CLSIDs that the server supports. We expect to use the COM
+// service for the following scenarios:
 // * The Server for the UI when installing Machine applications.
 // * The On-Demand COM Server for Machine applications.
 // * COM Server for launching processes at System Integrity, i.e., an Elevator.
@@ -78,13 +83,11 @@ extern const char kInstallSwitch[];
 // currently encoded as a ASCII string.
 extern const char kTagSwitch[];
 
-#if defined(OS_WIN)
-// A debug switch to indicate that --install is running from the `out` directory
-// of the build. When this switch is present, the setup picks up the run time
-// dependencies of the updater from the `out` directory instead of using the
-// metainstaller uncompressed archive.
-extern const char kInstallFromOutDir[];
-#endif  // OS_WIN
+// The --installerdata=file.dat switch is passed to an installer if an
+// installdataindex is specified in the tag or if installerdata is passed in via
+// --appargs. The corresponding installerdata is written to file.dat with an
+// UTF8 encoding as well as a UTF8 BOM.
+extern const char kInstallerDataSwitch[];
 
 // Uninstalls the updater.
 extern const char kUninstallSwitch[];
@@ -104,6 +107,18 @@ extern const char kSystemSwitch[];
 
 // Runs in test mode. Currently, it exits right away.
 extern const char kTestSwitch[];
+
+// Run in recovery mode.
+extern const char kRecoverSwitch[];
+
+// The version of the program triggering recovery.
+extern const char kBrowserVersionSwitch[];
+
+// The session ID of the Omaha session triggering recovery.
+extern const char kSessionIdSwitch[];
+
+// The app ID of the program triggering recovery.
+extern const char kAppGuidSwitch[];
 
 // Disables throttling for the crash reported until the following bug is fixed:
 // https://bugs.chromium.org/p/crashpad/issues/detail?id=23
@@ -127,6 +142,33 @@ extern const char kAppIdSwitch[];
 // Specifies the version of the application that the updater needs to register.
 extern const char kAppVersionSwitch[];
 
+// Specifies that the Updater should perform some minimal checks to verify that
+// it is operational/healthy. This is for backward compatibility with Omaha 3.
+// Omaha 3 runs "GoogleUpdate.exe /healthcheck" and expects an exit code of
+// HRESULT SUCCESS, i.e., S_OK, in which case it will hand off the installation
+// to Omaha 4.
+extern const char kHealthCheckSwitch[];
+
+// Specifies the handoff request argument. On Windows, the request may
+// be from legacy updaters which pass the argument in the format of
+// `/handoff <install-args-details>`. Manual argument parsing is needed for that
+// scenario.
+extern const char kHandoffSwitch[];
+
+// Specifies the full path to the offline install resources. The folder
+// contains offline installer and the manifest file.
+extern const char kOfflineDirSwitch[];
+
+// The "expect-elevated" switch indicates that updater setup should be running
+// elevated (at high integrity). This switch is needed to avoid running into a
+// loop trying (but failing repeatedly) to elevate updater setup when attempting
+// to install on a standard user account with UAC disabled.
+extern const char kCmdLineExpectElevated[];
+
+// The "prefers-user" switch indicates that updater setup could not elevate, and
+// is now trying to install the app per-user.
+extern const char kCmdLinePrefersUser[];
+
 // File system paths.
 //
 // The directory name where CRX apps get installed. This is provided for demo
@@ -142,12 +184,14 @@ extern const char kDevOverrideKeyUrl[];
 extern const char kDevOverrideKeyUseCUP[];
 extern const char kDevOverrideKeyInitialDelay[];
 extern const char kDevOverrideKeyServerKeepAliveSeconds[];
+extern const char kDevOverrideKeyCrxVerifierFormat[];
+extern const char kDevOverrideKeyGroupPolicies[];
 
 // File name of developer overrides file.
 extern const char kDevOverrideFileName[];
 
 // Timing constants.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // How long to wait for an application installer (such as
 // chrome_installer.exe) to complete.
 constexpr int kWaitForAppInstallerSec = 60;
@@ -155,15 +199,15 @@ constexpr int kWaitForAppInstallerSec = 60;
 // How often the installer progress from registry is sampled. This value may
 // be changed to provide a smoother progress experience (crbug.com/1067475).
 constexpr int kWaitForInstallerProgressSec = 1;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 // How long to wait for launchd changes to be reported by launchctl.
 constexpr int kWaitForLaunchctlUpdateSec = 5;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // The user defaults suite name.
 extern const char kUserDefaultsSuiteName[];
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 // Install Errors.
 //
@@ -188,7 +232,7 @@ constexpr int kErrorMissingRunableFile = kCustomInstallErrorBase + 2;
 // Running the application installer failed.
 constexpr int kErrorApplicationInstallerFailed = kCustomInstallErrorBase + 3;
 
-// Server Errors.
+// Error codes.
 //
 // The server process may exit with any of these exit codes.
 constexpr int kErrorOk = 0;
@@ -198,6 +242,79 @@ constexpr int kErrorFailedToLockPrefsMutex = 1;
 
 // The server candidate failed to promote itself to active.
 constexpr int kErrorFailedToSwap = 2;
+
+constexpr int kErrorRegistrationFailed = 3;
+constexpr int kErrorPermissionDenied = 4;
+constexpr int kErrorWaitFailedUninstall = 5;
+constexpr int kErrorWaitFailedInstall = 6;
+constexpr int kErrorPathServiceFailed = 7;
+constexpr int kErrorComInitializationFailed = 8;
+constexpr int kErrorUnknownCommandLine = 9;
+constexpr int kErrorNoVersionedDirectory = 11;
+constexpr int kErrorNoBaseDirectory = 12;
+constexpr int kErrorPathTooLong = 13;
+constexpr int kErrorProcessLaunchFailed = 14;
+
+// Failed to copy the updater's bundle.
+constexpr int kErrorFailedToCopyBundle = 15;
+
+// Failed to delete the updater's install folder.
+constexpr int kErrorFailedToDeleteFolder = 16;
+
+// Failed to delete the updater's data folder.
+constexpr int kErrorFailedToDeleteDataFolder = 17;
+
+// Failed to get versioned updater folder path.
+constexpr int kErrorFailedToGetVersionedUpdaterFolderPath = 18;
+
+// Failed to get the installed app bundle path.
+constexpr int kErrorFailedToGetAppBundlePath = 19;
+
+// Failed to remove the active(unversioned) update service job from Launchd.
+constexpr int kErrorFailedToRemoveActiveUpdateServiceJobFromLaunchd = 20;
+
+// Failed to remove versioned update service job from Launchd.
+constexpr int kErrorFailedToRemoveCandidateUpdateServiceJobFromLaunchd = 21;
+
+// Failed to remove versioned update service internal job from Launchd.
+constexpr int kErrorFailedToRemoveUpdateServiceInternalJobFromLaunchd = 22;
+
+// Failed to remove versioned wake job from Launchd.
+constexpr int kErrorFailedToRemoveWakeJobFromLaunchd = 23;
+
+// Failed to create the active(unversioned) update service Launchd plist.
+constexpr int kErrorFailedToCreateUpdateServiceLaunchdJobPlist = 24;
+
+// Failed to create the versioned update service Launchd plist.
+constexpr int kErrorFailedToCreateVersionedUpdateServiceLaunchdJobPlist = 25;
+
+// Failed to create the versioned update service internal Launchd plist.
+constexpr int kErrorFailedToCreateUpdateServiceInternalLaunchdJobPlist = 26;
+
+// Failed to create the versioned wake Launchd plist.
+constexpr int kErrorFailedToCreateWakeLaunchdJobPlist = 27;
+
+// Failed to start the active(unversioned) update service job.
+constexpr int kErrorFailedToStartLaunchdActiveServiceJob = 28;
+
+// Failed to start the versioned update service job.
+constexpr int kErrorFailedToStartLaunchdVersionedServiceJob = 29;
+
+// Failed to start the update service internal job.
+constexpr int kErrorFailedToStartLaunchdUpdateServiceInternalJob = 30;
+
+// Failed to start the wake job.
+constexpr int kErrorFailedToStartLaunchdWakeJob = 31;
+
+// Timed out while awaiting launchctl to become aware of the update service
+// internal job.
+constexpr int kErrorFailedAwaitingLaunchdUpdateServiceInternalJob = 32;
+
+constexpr int kErrorTagParsing = 50;
+
+// Metainstaller errors.
+constexpr int kErrorCreatingTempDir = 60;
+constexpr int kErrorUnpackingResource = 61;
 
 // Policy Management constants.
 // The maximum value allowed for policy AutoUpdateCheckPeriodMinutes.
@@ -213,6 +330,10 @@ extern const char kProxyModeFixedServers[];
 extern const char kProxyModeSystem[];
 
 extern const char kDownloadPreferenceCacheable[];
+
+// UTF8 byte order mark (BOM) used to prefix the contents of the installerdata
+// file.
+extern const char kUTF8BOM[];
 
 constexpr int kPolicyNotSet = -1;
 constexpr int kPolicyDisabled = 0;

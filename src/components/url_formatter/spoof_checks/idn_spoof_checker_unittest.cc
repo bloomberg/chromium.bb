@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_formatter/url_formatter.h"
+#include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 
 #include <stddef.h>
 #include <string.h>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
+#include "components/url_formatter/spoof_checks/skeleton_generator.h"
+#include "components/url_formatter/url_formatter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -133,7 +133,7 @@ const IDNTestCase kIdnCases[] = {
      kSafe},
 
     // Block mixed numeric + numeric lookalike (12.com, using U+0577).
-    {"xn--1-9dd.com", u"1\u07f3.com", kUnsafe},
+    {"xn--1-xcc.com", u"1\u0577.com", kUnsafe},
 
     // Block mixed numeric lookalike + numeric (੨0.com, uses U+0A68).
     {"xn--0-6ee.com", u"\u0a680.com", kUnsafe},
@@ -735,7 +735,7 @@ const IDNTestCase kIdnCases[] = {
     {"xn--ab-yod.com", u"a\u05f4b.com", kInvalid},
     // Hebrew Gershayim with Arabic is disallowed.
     {"xn--5eb7h.eg", u"\u0628\u05f4.eg", kUnsafe},
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     // These characters are blocked due to a font issue on Mac.
     // Tibetan transliteration characters.
     {"xn--com-lum.test.pl", u"com\u0f8c.test.pl", kUnsafe},
@@ -1038,7 +1038,7 @@ const IDNTestCase kIdnCases[] = {
      u"\u1090\u1091\u1095\u1096\u1097.\u1019\u103c\u1014\u103a\u1019\u102c",
      kSafe},
 // Thai:
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     {"xn--o3cedqz2c.com", u"\u0e17\u0e19\u0e1a\u0e1e\u0e23\u0e2b.com", kUnsafe},
     {"xn--o3cedqz2c.th", u"\u0e17\u0e19\u0e1a\u0e1e\u0e23\u0e2b.th", kSafe},
     {"xn--o3cedqz2c.xn--o3cw4h",
@@ -1078,6 +1078,22 @@ const IDNTestCase kIdnCases[] = {
     // Skeleton of the eTLD+1 matches a top domain, but the eTLD+1 itself is
     // not a top domain. Should not be decoded to unicode.
     {"xn--xample-9ua.test.xn--nt-bja", u"\u00e9xample.test.n\u00e9t", kUnsafe},
+
+    // Digit lookalike check of 16კ.com with character “კ” (U+10D9)
+    // Test case for https://crbug.com/1156531
+    {"xn--16-1ik.com", u"16\u10d9.com", kUnsafe},
+
+    // Skeleton generator check of officeკ65.com with character “კ” (U+10D9)
+    // Test case for https://crbug.com/1156531
+    {"xn--office65-l04a.com", u"office\u10d965.com", kUnsafe},
+
+    // Digit lookalike check of 16ੜ.com with character “ੜ” (U+0A5C)
+    // Test case for https://crbug.com/1156531 (missed skeleton map)
+    {"xn--16-ogg.com", u"16\u0a5c.com", kUnsafe},
+
+    // Skeleton generator check of officeੜ65.com with character “ੜ” (U+0A5C)
+    // Test case for https://crbug.com/1156531 (missed skeleton map)
+    {"xn--office65-hts.com", u"office\u0a5c65.com", kUnsafe},
 
     // New test cases go ↑↑ above.
 
@@ -1124,7 +1140,7 @@ class IDNSpoofCheckerTest : public ::testing::Test {
 // E.g. Mathematical Monospace Small A (U+1D68A) is canonicalized to "a" when
 // used in a domain name.
 TEST_F(IDNSpoofCheckerTest, IDNToUnicode) {
-  for (size_t i = 0; i < base::size(kIdnCases); i++) {
+  for (size_t i = 0; i < std::size(kIdnCases); i++) {
     SCOPED_TRACE(
         base::StringPrintf("input #%zu: \"%s\"", i, kIdnCases[i].input));
 
@@ -1172,7 +1188,17 @@ TEST_F(IDNSpoofCheckerTest, GetSimilarTopDomain) {
       {u"subdomain.test.net", ""},
       // An IDN subdomain of a top domain should not return a similar top domain
       // result.
-      {u"subdómain.test.net", ""}};
+      {u"subdómain.test.net", ""},
+      // Test cases for https://crbug.com/1250993:
+      {u"tesł.net", "test.net"},
+      {u"łest.net", "test.net"},
+      {u"łesł.net", "test.net"},
+      // Test case for https://crbug.com/1207187
+      {u"စ2.com", "o2.com"},
+      // Test case for https://crbug.com/1156531
+      {u"კ9.com", "39.com"},
+      // Test case for https://crbug.com/1156531 (missed skeleton map)
+      {u"ੜ9.com", "39.com"}};
   for (const TestCase& test_case : kTestCases) {
     const TopDomainEntry entry =
         IDNSpoofChecker().GetSimilarTopDomain(test_case.hostname);
@@ -1328,11 +1354,129 @@ TEST(IDNSpoofCheckerNoFixtureTest, Skeletons) {
 TEST(IDNSpoofCheckerNoFixtureTest, MultipleSkeletons) {
   IDNSpoofChecker checker;
   // apple with U+04CF (ӏ)
-  const GURL url("http://appӏe.com");
-  const url_formatter::IDNConversionResult result =
-      UnsafeIDNToUnicodeWithDetails(url.host());
-  Skeletons skeletons = checker.GetSkeletons(result.result);
-  EXPECT_EQ(Skeletons({"apple.corn", "appie.corn"}), skeletons);
+  const GURL url1("http://appӏe.com");
+  const url_formatter::IDNConversionResult result1 =
+      UnsafeIDNToUnicodeWithDetails(url1.host());
+  Skeletons skeletons1 = checker.GetSkeletons(result1.result);
+  EXPECT_EQ(Skeletons({"apple.corn", "appie.corn"}), skeletons1);
+
+  const GURL url2("http://œxamþle.com");
+  const url_formatter::IDNConversionResult result2 =
+      UnsafeIDNToUnicodeWithDetails(url2.host());
+  Skeletons skeletons2 = checker.GetSkeletons(result2.result);
+  // This skeleton set doesn't include strings with "œ" because it gets
+  // converted to "oe" by ICU during skeleton extraction.
+  EXPECT_EQ(Skeletons({"oexarnþle.corn", "oexarnple.corn", "oexarnble.corn",
+                       "cexarnþle.corn", "cexarnple.corn", "cexarnble.corn"}),
+            skeletons2);
+}
+
+TEST(IDNSpoofCheckerNoFixtureTest, AlternativeSkeletons) {
+  struct TestCase {
+    // String whose alternative strings will be generated
+    std::u16string input;
+    // Maximum number of alternative strings to generate.
+    size_t max_alternatives;
+    // Expected string set.
+    base::flat_set<std::u16string> expected_strings;
+  } kTestCases[] = {
+      {u"", 0, {}},
+      {u"", 1, {}},
+      {u"", 2, {}},
+      {u"", 100, {}},
+
+      {u"a", 0, {}},
+      {u"a", 1, {u"a"}},
+      {u"a", 2, {u"a"}},
+      {u"a", 100, {u"a"}},
+
+      {u"ab", 0, {}},
+      {u"ab", 1, {u"ab"}},
+      {u"ab", 2, {u"ab"}},
+      {u"ab", 100, {u"ab"}},
+
+      {u"œ", 0, {}},
+      {u"œ", 1, {u"œ"}},
+      {u"œ", 2, {u"œ", u"ce"}},
+      {u"œ", 100, {u"œ", u"ce", u"oe"}},
+
+      {u"œxample", 0, {}},
+      {u"œxample", 1, {u"œxample"}},
+      {u"œxample", 2, {u"œxample", u"cexample"}},
+      {u"œxample", 100, {u"œxample", u"cexample", u"oexample"}},
+
+      {u"œxamþle", 0, {}},
+      {u"œxamþle", 1, {u"œxamþle"}},
+      {u"œxamþle", 2, {u"œxamþle", u"œxamble"}},
+      {u"œxamþle",
+       100,
+       {u"œxamþle", u"œxample", u"œxamble", u"oexamþle", u"oexample",
+        u"oexamble", u"cexamþle", u"cexample", u"cexamble"}},
+
+      // Strings with many multi-character skeletons shouldn't generate any
+      // supplemental hostnames.
+      {u"œœœœœœœœœœœœœœœœœœœœœœœœœœœœœœ", 0, {}},
+      {u"œœœœœœœœœœœœœœœœœœœœœœœœœœœœœœ", 1, {}},
+      {u"œœœœœœœœœœœœœœœœœœœœœœœœœœœœœœ", 2, {}},
+      {u"œœœœœœœœœœœœœœœœœœœœœœœœœœœœœœ", 100, {}},
+
+      {u"łwiłłer", 0, {}},
+      {u"łwiłłer", 1, {u"łwiłłer"}},
+      {u"łwiłłer",
+       2,
+       {u"\x142wi\x142ler",
+        u"\x142wi\x142\x142"
+        u"er"}},
+      {u"łwiłłer",
+       100,
+       {u"lwiller",
+        u"lwilter",
+        u"lwil\x142"
+        u"er",
+        u"lwitler",
+        u"lwitter",
+        u"lwit\x142"
+        u"er",
+        u"lwi\x142ler",
+        u"lwi\x142ter",
+        u"lwi\x142\x142"
+        u"er",
+        u"twiller",
+        u"twilter",
+        u"twil\x142"
+        u"er",
+        u"twitler",
+        u"twitter",
+        u"twit\x142"
+        u"er",
+        u"twi\x142ler",
+        u"twi\x142ter",
+        u"twi\x142\x142"
+        u"er",
+        u"\x142willer",
+        u"\x142wilter",
+        u"\x142wil\x142"
+        u"er",
+        u"\x142witler",
+        u"\x142witter",
+        u"\x142wit\x142"
+        u"er",
+        u"\x142wi\x142ler",
+        u"\x142wi\x142ter",
+        u"\x142wi\x142\x142"
+        u"er"}},
+  };
+  SkeletonMap skeleton_map;
+  skeleton_map[u'œ'] = {"ce", "oe"};
+  skeleton_map[u'þ'] = {"b", "p"};
+  skeleton_map[u'ł'] = {"l", "t"};
+
+  for (const TestCase& test_case : kTestCases) {
+    const auto strings = SkeletonGenerator::GenerateSupplementalHostnames(
+        test_case.input, test_case.max_alternatives, skeleton_map);
+    EXPECT_LE(strings.size(), test_case.max_alternatives);
+    EXPECT_EQ(strings, test_case.expected_strings);
+  }
 }
 
 TEST(IDNSpoofCheckerNoFixtureTest, MaybeRemoveDiacritics) {

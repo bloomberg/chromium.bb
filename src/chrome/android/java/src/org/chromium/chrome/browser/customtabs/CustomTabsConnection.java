@@ -41,7 +41,6 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.TimeUtilsJni;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -62,7 +61,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -210,10 +208,6 @@ public class CustomTabsConnection {
 
     @Nullable
     private Callback<CustomTabsSessionToken> mDisconnectCallback;
-
-    // Conversion between native TimeTicks and SystemClock.uptimeMillis().
-    private long mNativeTickOffsetUs;
-    private boolean mNativeTickOffsetUsComputed;
 
     private volatile ChainedTasks mWarmupTasks;
 
@@ -706,6 +700,8 @@ public class CustomTabsConnection {
         logCall("requestPostMessageChannel() with origin "
                         + (postMessageOrigin != null ? postMessageOrigin.toString() : ""),
                 success);
+        RecordHistogram.recordBooleanHistogram(
+                "CustomTabs.PostMessage.RequestPostMessageChannel", success);
         return success;
     }
 
@@ -1192,28 +1188,17 @@ public class CustomTabsConnection {
      * Creates a Bundle with a value for navigation start and the specified page load metric.
      *
      * @param metricName Name of the page load metric.
-     * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
+     * @param navigationStartMicros Absolute navigation start time, in microseconds, in
+     *         {@link SystemClock#uptimeMillis()} timebase.
      * @param offsetMs Offset in ms from navigationStart for the page load metric.
      *
      * @return A Bundle containing navigation start and the page load metric.
      */
     Bundle createBundleWithNavigationStartAndPageLoadMetric(
-            String metricName, long navigationStartTick, long offsetMs) {
-        if (!mNativeTickOffsetUsComputed) {
-            // Compute offset from time ticks to uptimeMillis.
-            mNativeTickOffsetUsComputed = true;
-            long nativeNowUs = TimeUtilsJni.get().getTimeTicksNowUs();
-            long javaNowUs = SystemClock.uptimeMillis() * 1000;
-            mNativeTickOffsetUs = nativeNowUs - javaNowUs;
-        }
+            String metricName, long navigationStartMicros, long offsetMs) {
         Bundle args = new Bundle();
         args.putLong(metricName, offsetMs);
-        // SystemClock.uptimeMillis() is used here as it (as of June 2017) uses the same system call
-        // as all the native side of Chrome, that is clock_gettime(CLOCK_MONOTONIC). Meaning that
-        // the offset relative to navigationStart is to be compared with a
-        // SystemClock.uptimeMillis() value.
-        args.putLong(PageLoadMetrics.NAVIGATION_START,
-                (navigationStartTick - mNativeTickOffsetUs) / 1000);
+        args.putLong(PageLoadMetrics.NAVIGATION_START, navigationStartMicros / 1000);
         return args;
     }
 
@@ -1222,16 +1207,17 @@ public class CustomTabsConnection {
      *
      * @param session Session identifier.
      * @param metricName Name of the page load metric.
-     * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
+     * @param navigationStartMicros Absolute navigation start time, in microseconds, in
+     *         {@link SystemClock#uptimeMillis()} timebase.
      * @param offsetMs Offset in ms from navigationStart for the page load metric.
      *
      * @return Whether the metric has been dispatched to the client.
      */
     boolean notifySinglePageLoadMetric(CustomTabsSessionToken session, String metricName,
-            long navigationStartTick, long offsetMs) {
+            long navigationStartMicros, long offsetMs) {
         return notifyPageLoadMetrics(session,
                 createBundleWithNavigationStartAndPageLoadMetric(
-                        metricName, navigationStartTick, offsetMs));
+                        metricName, navigationStartMicros, offsetMs));
     }
 
     /**
@@ -1271,12 +1257,15 @@ public class CustomTabsConnection {
      * Wraps calling extraCallback in a try/catch so exceptions thrown by the host app don't crash
      * Chrome. See https://crbug.com/517023.
      */
+    // The string passed is safe since it is a method name.
+    @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
     protected boolean safeExtraCallback(
             CustomTabsSessionToken session, String callbackName, @Nullable Bundle args) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
 
-        try {
+        try (TraceEvent te = TraceEvent.scoped(
+                     "CustomTabsConnection::safeExtraCallback", callbackName)) {
             callback.extraCallback(callbackName, args);
         } catch (Exception e) {
             return false;
@@ -1290,12 +1279,15 @@ public class CustomTabsConnection {
      * host app don't crash Chrome.
      */
     @Nullable
+    // The string passed is safe since it is a method name.
+    @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
     public Bundle sendExtraCallbackWithResult(
             CustomTabsSessionToken session, String callbackName, @Nullable Bundle args) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return null;
 
-        try {
+        try (TraceEvent te = TraceEvent.scoped(
+                     "CustomTabsConnection::safeExtraCallbackWithResult", callbackName)) {
             return callback.extraCallbackWithResult(callbackName, args);
         } catch (Exception e) {
             return null;
@@ -1454,11 +1446,6 @@ public class CustomTabsConnection {
         }
         if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED;
-        }
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                && !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES)) {
-            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED;
         }
         ConnectivityManager cm =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(

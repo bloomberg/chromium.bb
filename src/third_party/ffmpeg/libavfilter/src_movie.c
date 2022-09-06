@@ -27,6 +27,8 @@
  * @todo support a PTS correction mechanism
  */
 
+#include "config_components.h"
+
 #include <float.h>
 #include <stdint.h>
 
@@ -67,12 +69,14 @@ typedef struct MovieContext {
     int loop_count;
     int64_t discontinuity_threshold;
     int64_t ts_offset;
+    int dec_threads;
 
     AVFormatContext *format_ctx;
 
     int max_stream_index; /**< max stream # actually used for output */
     MovieStream *st; /**< array of all streams, one per output */
     int *out_index; /**< stream number -> output number map, or -1 */
+    AVDictionary *format_opts;
 } MovieContext;
 
 #define OFFSET(x) offsetof(MovieContext, x)
@@ -90,6 +94,8 @@ static const AVOption movie_options[]= {
     { "s",            "set streams",             OFFSET(stream_specs), AV_OPT_TYPE_STRING, {.str =  0},  0, 0, FLAGS },
     { "loop",         "set loop count",          OFFSET(loop_count),   AV_OPT_TYPE_INT,    {.i64 =  1},  0,        INT_MAX, FLAGS },
     { "discontinuity", "set discontinuity threshold", OFFSET(discontinuity_threshold), AV_OPT_TYPE_DURATION, {.i64 = 0}, 0, INT64_MAX, FLAGS },
+    { "dec_threads",  "set the number of threads for decoding", OFFSET(dec_threads), AV_OPT_TYPE_INT, {.i64 =  0}, 0, INT_MAX, FLAGS },
+    { "format_opts",  "set format options for the opened file", OFFSET(format_opts), AV_OPT_TYPE_DICT, {.str = NULL}, 0, 0, FLAGS},
     { NULL },
 };
 
@@ -150,7 +156,7 @@ static AVStream *find_stream(void *log, AVFormatContext *avf, const char *spec)
     return found;
 }
 
-static int open_stream(AVFilterContext *ctx, MovieStream *st)
+static int open_stream(AVFilterContext *ctx, MovieStream *st, int dec_threads)
 {
     const AVCodec *codec;
     int ret;
@@ -169,7 +175,9 @@ static int open_stream(AVFilterContext *ctx, MovieStream *st)
     if (ret < 0)
         return ret;
 
-    st->codec_ctx->thread_count = ff_filter_get_nb_threads(ctx);
+    if (!dec_threads)
+        dec_threads = ff_filter_get_nb_threads(ctx);
+    st->codec_ctx->thread_count = dec_threads;
 
     if ((ret = avcodec_open2(st->codec_ctx, codec, NULL)) < 0) {
         av_log(ctx, AV_LOG_ERROR, "Failed to open codec\n");
@@ -183,23 +191,24 @@ static int guess_channel_layout(MovieStream *st, int st_index, void *log_ctx)
 {
     AVCodecParameters *dec_par = st->st->codecpar;
     char buf[256];
-    int64_t chl = av_get_default_channel_layout(dec_par->channels);
+    AVChannelLayout chl = { 0 };
 
-    if (!chl) {
+    av_channel_layout_default(&chl, dec_par->ch_layout.nb_channels);
+
+    if (!KNOWN(&chl)) {
         av_log(log_ctx, AV_LOG_ERROR,
                "Channel layout is not set in stream %d, and could not "
                "be guessed from the number of channels (%d)\n",
-               st_index, dec_par->channels);
+               st_index, dec_par->ch_layout.nb_channels);
         return AVERROR(EINVAL);
     }
 
-    av_get_channel_layout_string(buf, sizeof(buf), dec_par->channels, chl);
+    av_channel_layout_describe(&chl, buf, sizeof(buf));
     av_log(log_ctx, AV_LOG_WARNING,
            "Channel layout is not set in output stream %d, "
            "guessed channel layout is '%s'\n",
            st_index, buf);
-    dec_par->channel_layout = chl;
-    return 0;
+    return av_channel_layout_copy(&dec_par->ch_layout, &chl);
 }
 
 static av_cold int movie_common_init(AVFilterContext *ctx)
@@ -239,7 +248,7 @@ static av_cold int movie_common_init(AVFilterContext *ctx)
     iformat = movie->format_name ? av_find_input_format(movie->format_name) : NULL;
 
     movie->format_ctx = NULL;
-    if ((ret = avformat_open_input(&movie->format_ctx, movie->file_name, iformat, NULL)) < 0) {
+    if ((ret = avformat_open_input(&movie->format_ctx, movie->file_name, iformat, &movie->format_opts)) < 0) {
         av_log(ctx, AV_LOG_ERROR,
                "Failed to avformat_open_input '%s'\n", movie->file_name);
         return ret;
@@ -309,12 +318,12 @@ static av_cold int movie_common_init(AVFilterContext *ctx)
         if ((ret = ff_append_outpad_free_name(ctx, &pad)) < 0)
             return ret;
         if ( movie->st[i].st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
-            !movie->st[i].st->codecpar->channel_layout) {
+            !KNOWN(&movie->st[i].st->codecpar->ch_layout)) {
             ret = guess_channel_layout(&movie->st[i], i, ctx);
             if (ret < 0)
                 return ret;
         }
-        ret = open_stream(ctx, &movie->st[i]);
+        ret = open_stream(ctx, &movie->st[i], movie->dec_threads);
         if (ret < 0)
             return ret;
     }
@@ -345,7 +354,7 @@ static int movie_query_formats(AVFilterContext *ctx)
 {
     MovieContext *movie = ctx->priv;
     int list[] = { 0, -1 };
-    int64_t list64[] = { 0, -1 };
+    AVChannelLayout list64[] = { { 0 }, { 0 } };
     int i, ret;
 
     for (i = 0; i < ctx->nb_outputs; i++) {
@@ -366,8 +375,8 @@ static int movie_query_formats(AVFilterContext *ctx)
             list[0] = c->sample_rate;
             if ((ret = ff_formats_ref(ff_make_format_list(list), &outlink->incfg.samplerates)) < 0)
                 return ret;
-            list64[0] = c->channel_layout;
-            if ((ret = ff_channel_layouts_ref(ff_make_format64_list(list64),
+            list64[0] = c->ch_layout;
+            if ((ret = ff_channel_layouts_ref(ff_make_channel_layout_list(list64),
                                    &outlink->incfg.channel_layouts)) < 0)
                 return ret;
             break;

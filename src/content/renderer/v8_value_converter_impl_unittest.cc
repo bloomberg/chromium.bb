@@ -22,7 +22,6 @@
 #include "v8/include/v8-date.h"
 #include "v8/include/v8-isolate.h"
 #include "v8/include/v8-local-handle.h"
-#include "v8/include/v8-locker.h"
 #include "v8/include/v8-microtask-queue.h"
 #include "v8/include/v8-object.h"
 #include "v8/include/v8-persistent-handle.h"
@@ -78,7 +77,6 @@ class V8ValueConverterImplTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    v8::Locker locked(isolate_);
     v8::HandleScope handle_scope(isolate_);
     v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
     context_.Reset(isolate_, v8::Context::New(isolate_, nullptr, global));
@@ -111,7 +109,7 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   std::string GetString(base::ListValue* value, uint32_t index) {
-    base::Value::ConstListView value_list = value->GetList();
+    base::Value::ConstListView value_list = value->GetListDeprecated();
     if (index >= value_list.size() || !value_list[index].is_string()) {
       ADD_FAILURE();
       return std::string();
@@ -176,12 +174,12 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   bool IsNull(base::ListValue* value, uint32_t index) {
-    base::Value* child = nullptr;
-    if (!value->Get(static_cast<size_t>(index), &child)) {
+    const auto& list = value->GetListDeprecated();
+    if (list.size() <= index) {
       ADD_FAILURE();
       return false;
     }
-    return child->type() == base::Value::Type::NONE;
+    return list[index].type() == base::Value::Type::NONE;
   }
 
   bool IsNull(v8::Local<v8::Array> value, uint32_t index) {
@@ -203,7 +201,7 @@ class V8ValueConverterImplTest : public testing::Test {
 
     if (expected_value) {
       ASSERT_TRUE(raw.get());
-      EXPECT_TRUE(expected_value->Equals(raw.get()));
+      EXPECT_TRUE(*expected_value == *raw);
       EXPECT_EQ(expected_type, raw->type());
     } else {
       EXPECT_FALSE(raw.get());
@@ -217,35 +215,36 @@ class V8ValueConverterImplTest : public testing::Test {
                   .ToLocalChecked(),
               val)
         .Check();
-    std::unique_ptr<base::DictionaryValue> dictionary(
-        base::DictionaryValue::From(converter.FromV8Value(object, context)));
+    std::unique_ptr<base::Value> dictionary(
+        converter.FromV8Value(object, context));
     ASSERT_TRUE(dictionary.get());
+    ASSERT_TRUE(dictionary->is_dict());
 
     if (expected_value) {
-      base::Value* temp = nullptr;
-      ASSERT_TRUE(dictionary->Get("test", &temp));
+      const base::Value* temp = dictionary->FindKey("test");
+      ASSERT_TRUE(temp);
       EXPECT_EQ(expected_type, temp->type());
-      EXPECT_TRUE(expected_value->Equals(temp));
+      EXPECT_EQ(*expected_value, *temp);
     } else {
-      EXPECT_FALSE(dictionary->HasKey("test"));
+      EXPECT_FALSE(dictionary->FindKey("test"));
     }
 
     v8::Local<v8::Array> array(v8::Array::New(isolate_));
     array->Set(context, 0, val).Check();
-    std::unique_ptr<base::ListValue> list(
-        base::ListValue::From(converter.FromV8Value(array, context)));
+    std::unique_ptr<base::Value> list(converter.FromV8Value(array, context));
     ASSERT_TRUE(list.get());
+    ASSERT_TRUE(list->is_list());
     if (expected_value) {
-      base::Value* temp = nullptr;
-      ASSERT_TRUE(list->Get(0, &temp));
-      EXPECT_EQ(expected_type, temp->type());
-      EXPECT_TRUE(expected_value->Equals(temp));
+      ASSERT_FALSE(list->GetListDeprecated().empty());
+      const base::Value& temp = list->GetListDeprecated()[0];
+      EXPECT_EQ(expected_type, temp.type());
+      EXPECT_EQ(*expected_value, temp);
     } else {
       // Arrays should preserve their length, and convert unconvertible
       // types into null.
-      base::Value* temp = nullptr;
-      ASSERT_TRUE(list->Get(0, &temp));
-      EXPECT_EQ(base::Value::Type::NONE, temp->type());
+      ASSERT_FALSE(list->GetListDeprecated().empty());
+      const base::Value& temp = list->GetListDeprecated()[0];
+      EXPECT_EQ(base::Value::Type::NONE, temp.type());
     }
   }
 
@@ -291,7 +290,6 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
       "  \"empty-list\": [], \n"
       "}");
 
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -406,14 +404,13 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
   std::unique_ptr<base::Value> new_root(
       converter.FromV8Value(v8_object, context));
   EXPECT_NE(original_root.get(), new_root.get());
-  EXPECT_TRUE(original_root->Equals(new_root.get()));
+  EXPECT_TRUE(*original_root == *new_root);
 }
 
 TEST_F(V8ValueConverterImplTest, KeysWithDots) {
   std::unique_ptr<base::Value> original =
       base::test::ParseJsonDeprecated("{ \"foo.bar\": \"baz\" }");
 
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -423,11 +420,10 @@ TEST_F(V8ValueConverterImplTest, KeysWithDots) {
   std::unique_ptr<base::Value> copy(converter.FromV8Value(
       converter.ToV8Value(original.get(), context), context));
 
-  EXPECT_TRUE(original->Equals(copy.get()));
+  EXPECT_TRUE(*original == *copy);
 }
 
 TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -472,7 +468,6 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
 }
 
 TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -498,7 +493,7 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
       base::ListValue::From(converter.FromV8Value(array, context)));
   ASSERT_TRUE(converted.get());
   // http://code.google.com/p/v8/issues/detail?id=1342
-  EXPECT_EQ(2u, converted->GetList().size());
+  EXPECT_EQ(2u, converted->GetListDeprecated().size());
   EXPECT_TRUE(IsNull(converted.get(), 0));
 
   // Converting to v8 value should not be affected by the getter/setter
@@ -515,7 +510,6 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
 }
 
 TEST_F(V8ValueConverterImplTest, WeirdTypes) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -548,7 +542,6 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
 }
 
 TEST_F(V8ValueConverterImplTest, Prototype) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -574,7 +567,6 @@ TEST_F(V8ValueConverterImplTest, ObjectPrototypeSetter) {
   std::unique_ptr<base::Value> original =
       base::test::ParseJsonDeprecated("{ \"foo\": \"good value\" }");
 
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -643,7 +635,6 @@ TEST_F(V8ValueConverterImplTest, ArrayPrototypeSetter) {
   std::unique_ptr<base::Value> original =
       base::test::ParseJsonDeprecated("[100, 200, 300]");
 
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -709,7 +700,6 @@ TEST_F(V8ValueConverterImplTest, ArrayPrototypeSetter) {
 }
 
 TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -733,7 +723,6 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
 }
 
 TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -774,12 +763,11 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   std::unique_ptr<base::ListValue> list_result(
       base::ListValue::From(converter.FromV8Value(array, context)));
   ASSERT_TRUE(list_result.get());
-  EXPECT_EQ(2u, list_result->GetList().size());
+  EXPECT_EQ(2u, list_result->GetListDeprecated().size());
   EXPECT_TRUE(IsNull(list_result.get(), 1));
 }
 
 TEST_F(V8ValueConverterImplTest, WeirdProperties) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -813,11 +801,10 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
       "  \"undefined\": \"oops\", \n"
       "}");
 
-  EXPECT_TRUE(expected->Equals(actual.get()));
+  EXPECT_TRUE(*expected == *actual);
 }
 
 TEST_F(V8ValueConverterImplTest, ArrayGetters) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -837,11 +824,10 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
   std::unique_ptr<base::ListValue> result(
       base::ListValue::From(converter.FromV8Value(array, context)));
   ASSERT_TRUE(result.get());
-  EXPECT_EQ(2u, result->GetList().size());
+  EXPECT_EQ(2u, result->GetListDeprecated().size());
 }
 
 TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -893,7 +879,6 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 }
 
 TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -926,11 +911,10 @@ TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
   std::unique_ptr<base::Value> value(converter.FromV8Value(root, context));
   ASSERT_TRUE(value.get());
 
-  EXPECT_TRUE(expected->Equals(value.get()));
+  EXPECT_TRUE(*expected == *value);
 }
 
 TEST_F(V8ValueConverterImplTest, DetectCycles) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -944,15 +928,15 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   recursive_array->Set(context, 0, recursive_array).Check();
 
   // The first repetition should be trimmed and replaced by a null value.
-  base::ListValue expected_list;
-  expected_list.Append(std::make_unique<base::Value>());
+  base::Value::List expected_list;
+  expected_list.Append(base::Value());
 
   // The actual result.
   std::unique_ptr<base::Value> actual_list(
       converter.FromV8Value(recursive_array, context));
   ASSERT_TRUE(actual_list.get());
 
-  EXPECT_TRUE(expected_list.Equals(actual_list.get()));
+  EXPECT_TRUE(expected_list == actual_list->GetList());
 
   // Now create a recursive object
   const std::string key("key");
@@ -975,12 +959,11 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
       converter.FromV8Value(recursive_object, context));
   ASSERT_TRUE(actual_dictionary.get());
 
-  EXPECT_TRUE(expected_dictionary.Equals(actual_dictionary.get()));
+  EXPECT_TRUE(expected_dictionary == *actual_dictionary);
 }
 
 // Tests that reused object values with no cycles do not get nullified.
 TEST_F(V8ValueConverterImplTest, ReuseObjects) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -1031,8 +1014,8 @@ TEST_F(V8ValueConverterImplTest, ReuseObjects) {
     std::unique_ptr<base::ListValue> list_result(
         base::ListValue::From(converter.FromV8Value(array, context)));
     ASSERT_TRUE(list_result.get());
-    ASSERT_EQ(2u, list_result->GetList().size());
-    for (size_t i = 0; i < list_result->GetList().size(); ++i) {
+    ASSERT_EQ(2u, list_result->GetListDeprecated().size());
+    for (size_t i = 0; i < list_result->GetListDeprecated().size(); ++i) {
       ASSERT_FALSE(IsNull(list_result.get(), i));
       base::DictionaryValue* dict_value = nullptr;
       ASSERT_TRUE(list_result->GetDictionary(0u, &dict_value));
@@ -1042,7 +1025,6 @@ TEST_F(V8ValueConverterImplTest, ReuseObjects) {
 }
 
 TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -1089,7 +1071,6 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
 }
 
 TEST_F(V8ValueConverterImplTest, NegativeZero) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -1159,7 +1140,6 @@ class V8ValueConverterOverridingStrategyForTesting
 };
 
 TEST_F(V8ValueConverterImplTest, StrategyOverrides) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -1237,7 +1217,6 @@ class V8ValueConverterBypassStrategyForTesting
 // Verify that having a strategy that fallbacks to default behaviour
 // actually preserves it.
 TEST_F(V8ValueConverterImplTest, StrategyBypass) {
-  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);

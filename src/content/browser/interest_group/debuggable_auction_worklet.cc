@@ -22,7 +22,7 @@ std::string DebuggableAuctionWorklet::Title() const {
 }
 
 void DebuggableAuctionWorklet::ConnectDevToolsAgent(
-    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) {
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
   if (auction_worklet::mojom::BidderWorklet** bidder_worklet =
           absl::get_if<auction_worklet::mojom::BidderWorklet*>(&worklet_)) {
     (*bidder_worklet)->ConnectDevToolsAgent(std::move(agent));
@@ -32,20 +32,33 @@ void DebuggableAuctionWorklet::ConnectDevToolsAgent(
   }
 }
 
+absl::optional<base::ProcessId> DebuggableAuctionWorklet::GetPid(
+    PidCallback callback) {
+  return process_handle_->GetPid(std::move(callback));
+}
+
 DebuggableAuctionWorklet::DebuggableAuctionWorklet(
     RenderFrameHostImpl* owning_frame,
+    AuctionProcessManager::ProcessHandle* process_handle,
     const GURL& url,
     auction_worklet::mojom::BidderWorklet* bidder_worklet)
-    : owning_frame_(owning_frame), url_(url), worklet_(bidder_worklet) {
+    : owning_frame_(owning_frame),
+      process_handle_(process_handle),
+      url_(url),
+      worklet_(bidder_worklet) {
   DebuggableAuctionWorkletTracker::GetInstance()->NotifyCreated(
       this, should_pause_on_start_);
 }
 
 DebuggableAuctionWorklet::DebuggableAuctionWorklet(
     RenderFrameHostImpl* owning_frame,
+    AuctionProcessManager::ProcessHandle* process_handle,
     const GURL& url,
     auction_worklet::mojom::SellerWorklet* seller_worklet)
-    : owning_frame_(owning_frame), url_(url), worklet_(seller_worklet) {
+    : owning_frame_(owning_frame),
+      process_handle_(process_handle),
+      url_(url),
+      worklet_(seller_worklet) {
   DebuggableAuctionWorkletTracker::GetInstance()->NotifyCreated(
       this, should_pause_on_start_);
 }

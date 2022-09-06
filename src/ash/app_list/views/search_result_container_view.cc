@@ -34,6 +34,20 @@ void SearchResultContainerView::SetResults(
   Update();
 }
 
+absl::optional<SearchResultContainerView::ResultsAnimationInfo>
+SearchResultContainerView::ScheduleResultAnimations(
+    const ResultsAnimationInfo& aggregate_animation_info) {
+  NOTREACHED();
+  return absl::nullopt;
+}
+
+bool SearchResultContainerView::HasAnimatingChildView() {
+  NOTREACHED();
+  return false;
+}
+
+void SearchResultContainerView::OnSelectedResultChanged() {}
+
 void SearchResultContainerView::Update() {
   update_factory_.InvalidateWeakPtrs();
   num_results_ = DoUpdate();

@@ -10,121 +10,127 @@ import {CalibrationComponentStatus, CalibrationStatus, Component, ComponentRepai
 export const fakeStates = [
   {
     state: State.kWelcomeScreen,
-    canCancel: true,
+    canExit: true,
     canGoBack: false,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kConfigureNetwork,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kUpdateOs,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kSelectComponents,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kChooseDestination,
-    canCancel: true,
+    canExit: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: State.kChooseWipeDevice,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kChooseWriteProtectDisableMethod,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kEnterRSUWPDisableCode,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kWaitForManualWPDisable,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kWPDisableComplete,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kUpdateRoFirmware,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kUpdateDeviceInformation,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kRestock,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kCheckCalibration,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kSetupCalibration,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kRunCalibration,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kProvisionDevice,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kWaitForManualWPEnable,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kFinalize,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kRepairComplete,
-    canCancel: true,
+    canExit: true,
     canGoBack: true,
     error: RmadErrorCode.kOk
   },
   {
     state: State.kUnknown,
-    canCancel: false,
+    canExit: false,
     canGoBack: false,
     error: RmadErrorCode.kOk
   },
@@ -149,22 +155,46 @@ export const fakeRsuChallengeQrCode = {
 
 /** @type {!Array<!Component>} */
 export const fakeComponents = [
-  {component: ComponentType.kCamera, state: ComponentRepairStatus.kOriginal},
-  {component: ComponentType.kBattery, state: ComponentRepairStatus.kMissing},
-  {component: ComponentType.kTouchpad, state: ComponentRepairStatus.kOriginal},
+  {
+    component: ComponentType.kCamera,
+    state: ComponentRepairStatus.kOriginal,
+    identifier: 'Camera_XYZ_1'
+  },
+  {
+    component: ComponentType.kBattery,
+    state: ComponentRepairStatus.kMissing,
+    identifier: 'Battery_XYZ_Lithium'
+  },
+  {
+    component: ComponentType.kTouchpad,
+    state: ComponentRepairStatus.kOriginal,
+    identifier: 'Touchpad_XYZ_2'
+  },
 ];
 
 // onboarding_select_components_page_test needs a components list covering all
 // possible repair states.
 /** @type {!Array<!Component>} */
 export const fakeComponentsForRepairStateTest = [
-  {component: ComponentType.kCamera, state: ComponentRepairStatus.kOriginal},
-  {component: ComponentType.kBattery, state: ComponentRepairStatus.kMissing},
-  {component: ComponentType.kTouchpad, state: ComponentRepairStatus.kReplaced},
+  {
+    component: ComponentType.kCamera,
+    state: ComponentRepairStatus.kOriginal,
+    identifier: 'Camera_XYZ_1'
+  },
+  {
+    component: ComponentType.kBattery,
+    state: ComponentRepairStatus.kMissing,
+    identifier: 'Battery_XYZ_Lithium'
+  },
+  {
+    component: ComponentType.kTouchpad,
+    state: ComponentRepairStatus.kReplaced,
+    identifier: 'Touchpad_XYZ_2'
+  },
 ];
 
 /** @type {!Array<!CalibrationComponentStatus>} */
-export const fakeCalibrationComponents = [
+export const fakeCalibrationComponentsWithFails = [
   {
     component: ComponentType.kCamera,
     status: CalibrationStatus.kCalibrationWaiting,
@@ -192,6 +222,35 @@ export const fakeCalibrationComponents = [
   },
 ];
 
+/** @type {!Array<!CalibrationComponentStatus>} */
+export const fakeCalibrationComponentsWithoutFails = [
+  {
+    component: ComponentType.kCamera,
+    status: CalibrationStatus.kCalibrationComplete,
+    progress: 0.0
+  },
+  {
+    component: ComponentType.kBattery,
+    status: CalibrationStatus.kCalibrationComplete,
+    progress: 1.0
+  },
+  {
+    component: ComponentType.kBaseAccelerometer,
+    status: CalibrationStatus.kCalibrationComplete,
+    progress: 1.0
+  },
+  {
+    component: ComponentType.kLidAccelerometer,
+    status: CalibrationStatus.kCalibrationComplete,
+    progress: 1.0
+  },
+  {
+    component: ComponentType.kTouchpad,
+    status: CalibrationStatus.kCalibrationComplete,
+    progress: 0.0
+  },
+];
+
 /** @type {!Array<!Network>} */
 export const fakeNetworks = [
   OncMojo.getDefaultNetworkState(
@@ -206,7 +265,7 @@ export const fakeDeviceSkus = [1, 2, 3];
 
 /** @type {!Array<string>} */
 export const fakeDeviceWhiteLabels =
-    ['White-label 1', 'White-label 2', 'White-label 3'];
+    ['White-label 1', 'White-label 2', 'White-label 3', ''];
 
 /** @type {string} */
 export const fakeLog =
@@ -386,3 +445,6 @@ export const fakeLog =
     'tristique risus nec. Scelerisque eu ultrices vitae auctor eu augue ut ' +
     'lectus. Tellus pellentesque eu tincidunt tortor aliquam. Fermentum leo ' +
     'vel orci porta non pulvinar neque laoreet suspendisse.\n';
+
+/** @type {string} */
+export const fakeLogSavePath = 'fake/save/path';

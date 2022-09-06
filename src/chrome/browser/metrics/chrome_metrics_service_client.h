@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/metrics/incognito_observer.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "chrome/browser/privacy_budget/identifiability_study_state.h"
@@ -24,15 +25,20 @@
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/ukm/observers/history_delete_observer.h"
 #include "components/ukm/observers/ukm_consent_state_observer.h"
+#include "components/variations/synthetic_trial_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/metrics/per_user_state_manager_chromeos.h"
+#endif
+
 class BrowserActivityWatcher;
-class PluginMetricsProvider;
 class Profile;
 class PrefRegistrySimple;
 
@@ -65,10 +71,15 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Registers profile prefs used by this class.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // metrics::MetricsServiceClient:
+  variations::SyntheticTrialRegistry* GetSyntheticTrialRegistry() override;
   metrics::MetricsService* GetMetricsService() override;
   ukm::UkmService* GetUkmService() override;
-  bool ShouldUploadMetricsForUserId(const uint64_t user_id) override;
   void SetMetricsClientId(const std::string& client_id) override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;
@@ -88,7 +99,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
       override;
   base::TimeDelta GetStandardUploadInterval() override;
   void LoadingStateChanged(bool is_loading) override;
-  void OnPluginLoadingError(const base::FilePath& plugin_path) override;
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
@@ -101,6 +111,13 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
   bool ShouldResetClientIdsOnClonedInstall() override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  bool ShouldUploadMetricsForUserId(const uint64_t user_id) override;
+  void InitPerUserMetrics() override;
+  void UpdateCurrentUserMetricsConsent(bool user_metrics_consent) override;
+  absl::optional<bool> GetCurrentUserMetricsConsent() const override;
+  absl::optional<std::string> GetCurrentUserId() const override;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
@@ -164,11 +181,11 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Called when a URL is opened from the Omnibox.
   void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Counts (and removes) the browser crash dump attempt signals left behind by
   // any previous browser processes which generated a crash dump.
   void CountBrowserCrashDumpAttempts();
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   // Check if an extension is installed via the Web Store.
   static bool IsWebstoreExtension(base::StringPiece id);
@@ -180,6 +197,9 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   // Weak pointer to the MetricsStateManager.
   const raw_ptr<metrics::MetricsStateManager> metrics_state_manager_;
+
+  // The synthetic trial registry shared by metrics_service_ and ukm_service_.
+  std::unique_ptr<variations::SyntheticTrialRegistry> synthetic_trial_registry_;
 
   // The MetricsService that |this| is a client of.
   std::unique_ptr<metrics::MetricsService> metrics_service_;
@@ -204,18 +224,20 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Number of async histogram fetch requests in progress.
   int num_async_histogram_fetches_in_progress_ = 0;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // The PluginMetricsProvider instance that was registered with
-  // MetricsService. Has the same lifetime as |metrics_service_|.
-  raw_ptr<PluginMetricsProvider> plugin_metrics_provider_ = nullptr;
-#endif
-
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
   base::CallbackListSubscription omnibox_url_opened_subscription_;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<BrowserActivityWatcher> browser_activity_watcher_;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // PerUserStateManagerChromeOS that |this| is a client of.
+  std::unique_ptr<metrics::PerUserStateManagerChromeOS> per_user_state_manager_;
+
+  // Subscription for receiving callbacks that user metrics consent has changed.
+  base::CallbackListSubscription per_user_consent_change_subscription_;
 #endif
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_{this};

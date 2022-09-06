@@ -14,7 +14,7 @@ GEN('#include "content/public/test/browser_test.h"');
 const WhatsNewBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overridden by subclasses';
+    throw new Error('this is abstract and should be overridden by subclasses');
   }
 
   /** @override */
@@ -32,7 +32,7 @@ const WhatsNewBrowserTest = class extends PolymerTest {
 var WhatsNewAppTest = class extends WhatsNewBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://whats-new/test_loader.html?module=whats_new/whats_new_app_test.js';
+    return 'chrome://whats-new/test_loader.html?module=whats_new/whats_new_app_test.js&host=webui-test';
   }
 };
 

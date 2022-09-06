@@ -131,6 +131,27 @@ static inline unsigned SkDiv255Round(unsigned prod) {
     static inline uint32_t SkBSwap32(uint32_t v) { return __builtin_bswap32(v); }
 #endif
 
+/*
+ * Return the number of set bits (i.e., the population count) in the provided uint32_t.
+ */
+int SkPopCount_portable(uint32_t n);
+
+#if defined(__GNUC__) || defined(__clang__)
+    static inline int SkPopCount(uint32_t n) {
+        return __builtin_popcount(n);
+    }
+#else
+    static inline int SkPopCount(uint32_t n) {
+        return SkPopCount_portable(n);
+    }
+#endif
+
+/*
+ * Return the 0-based index of the nth bit set in target
+ * Returns 32 if there is no nth bit set.
+ */
+int SkNthSet(uint32_t target, int n);
+
 //! Returns the number of leading zero bits (0...32)
 // From Hacker's Delight 2nd Edition
 constexpr int SkCLZ_portable(uint32_t x) {

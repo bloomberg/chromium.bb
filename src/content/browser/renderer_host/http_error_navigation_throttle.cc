@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/http_error_navigation_throttle.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/public/common/content_client.h"
 
@@ -13,8 +15,8 @@ namespace content {
 std::unique_ptr<NavigationThrottle>
 HttpErrorNavigationThrottle::MaybeCreateThrottleFor(
     NavigationHandle& navigation_handle) {
-  // We only care about main frame navigations.
-  if (!navigation_handle.IsInMainFrame())
+  // We only care about primary main frame navigations.
+  if (!navigation_handle.IsInPrimaryMainFrame())
     return nullptr;
   return base::WrapUnique(new HttpErrorNavigationThrottle(navigation_handle));
 }

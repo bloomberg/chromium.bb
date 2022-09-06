@@ -11,20 +11,17 @@
 #include <memory>
 #include <utility>
 
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
-#include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/base/features.h"
@@ -34,9 +31,9 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_utils.h"
+#include "cc/input/scrollbar_controller.h"
 #include "cc/input/threaded_input_handler.h"
 #include "cc/layers/append_quads_data.h"
-#include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
@@ -44,7 +41,6 @@
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/layers/surface_layer_impl.h"
-#include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -54,7 +50,6 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/fake_mask_layer_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
@@ -76,11 +71,11 @@
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
-#include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -88,7 +83,6 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/region_capture_bounds.h"
-#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -102,7 +96,6 @@
 #include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/transform_operations.h"
@@ -124,10 +117,6 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 using ScrollThread = cc::InputHandler::ScrollThread;
-
-namespace viz {
-struct FrameTimingDetails;
-}
 
 namespace cc {
 namespace {
@@ -225,6 +214,11 @@ class LayerTreeHostImplTest : public testing::Test,
     did_notify_ready_to_activate_ = true;
     host_impl_->ActivateSyncTree();
   }
+  bool IsReadyToActivate() override {
+    // in NotifyReadyToActivate(), call ActivateSyncTree() directly
+    // so this is always false
+    return false;
+  }
   void NotifyReadyToDraw() override {}
   void SetNeedsRedrawOnImplThread() override { did_request_redraw_ = true; }
   void SetNeedsOneBeginImplFrameOnImplThread() override {
@@ -235,8 +229,8 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void SetNeedsCommitOnImplThread() override { did_request_commit_ = true; }
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
+  void SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) override {}
   bool IsInsideDraw() override { return false; }
-  bool IsBeginMainFrameExpected() override { return true; }
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
                                             base::TimeDelta delay) override {
@@ -268,7 +262,6 @@ class LayerTreeHostImplTest : public testing::Test,
     did_request_impl_side_invalidation_ = true;
   }
   void NotifyImageDecodeRequestFinished() override {}
-  void RequestBeginMainFrameNotExpected(bool new_state) override {}
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       PresentationTimeCallbackBuffer::PendingCallbacks activated,
@@ -284,6 +277,8 @@ class LayerTreeHostImplTest : public testing::Test,
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override {}
 
   void DidObserveFirstScrollDelay(
       base::TimeDelta first_scroll_delay,
@@ -686,7 +681,7 @@ class LayerTreeHostImplTest : public testing::Test,
         FakeRasterSource::CreateFromRecordingSource(recording_source.get());
 
     // Create the pending tree.
-    host_impl_->BeginCommit(0);
+    host_impl_->BeginCommit(0, /*trace_id=*/1);
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
     LayerImpl* root = SetupRootLayer<FakePictureLayerImpl>(
         pending_tree, layer_size, raster_source);
@@ -812,8 +807,8 @@ class LayerTreeHostImplTest : public testing::Test,
                                    const gfx::Vector2dF& delta) {
     if (layer_impl->layer_tree_impl()
             ->property_trees()
-            ->scroll_tree.SetScrollOffsetDeltaForTesting(
-                layer_impl->element_id(), delta))
+            ->scroll_tree_mutable()
+            .SetScrollOffsetDeltaForTesting(layer_impl->element_id(), delta))
       layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
           layer_impl->element_id());
   }
@@ -881,6 +876,15 @@ class ScrollUnifiedLayerTreeHostImplTest
       scoped_feature_list.InitAndDisableFeature(features::kScrollUnification);
     }
   }
+
+  class StubGpuBacking : public ResourcePool::GpuBacking {
+   public:
+    void OnMemoryDump(
+        base::trace_event::ProcessMemoryDump* pmd,
+        const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+        uint64_t tracing_process_id,
+        int importance) const override {}
+  };
 
  private:
   base::test::ScopedFeatureList scoped_feature_list;
@@ -978,9 +982,10 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, LocalAndExternalPinchState) {
   // PinchGestureBegin/End update pinch_gesture_active() properly.
   EXPECT_FALSE(GetInputHandler().pinch_gesture_active());
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kTouchscreen);
   EXPECT_TRUE(GetInputHandler().pinch_gesture_active());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), false /* snap_to_min */);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   EXPECT_FALSE(GetInputHandler().pinch_gesture_active());
 
   // set_external_pinch_gesture_active updates pinch_gesture_active() properly.
@@ -991,11 +996,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, LocalAndExternalPinchState) {
 
   // Clearing external_pinch_gesture_active doesn't affect
   // pinch_gesture_active() if it was set by PinchGestureBegin().
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kTouchscreen);
   EXPECT_TRUE(GetInputHandler().pinch_gesture_active());
   GetInputHandler().set_external_pinch_gesture_active(false);
   EXPECT_TRUE(GetInputHandler().pinch_gesture_active());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), false /* snap_to_min */);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   EXPECT_FALSE(GetInputHandler().pinch_gesture_active());
 }
 
@@ -1098,8 +1104,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
   CreateScrollNode(root, gfx::Size(10, 10));
   root->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(root->element_id(),
-                                                     scroll_offset);
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(root->element_id(), scroll_offset);
   UpdateDrawProperties(host_impl_->active_tree());
 
   std::unique_ptr<CompositorCommitData> commit_data;
@@ -1469,9 +1475,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   // Create the pending tree containing only the root layer.
   CreatePendingTree();
-  PropertyTrees pending_property_trees;
-  pending_property_trees.sequence_number =
-      host_impl_->active_tree()->property_trees()->sequence_number + 1;
+  PropertyTrees pending_property_trees(*host_impl_);
+  pending_property_trees.set_sequence_number(
+      host_impl_->active_tree()->property_trees()->sequence_number() + 1);
   host_impl_->pending_tree()->SetPropertyTrees(pending_property_trees);
   SetupRootLayer<LayerImpl>(host_impl_->pending_tree(), gfx::Size(100, 100));
   host_impl_->ActivateSyncTree();
@@ -1673,10 +1679,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 }
 
 gfx::PresentationFeedback ExampleFeedback() {
-  return gfx::PresentationFeedback(
+  auto feedback = gfx::PresentationFeedback(
       base::TimeTicks() + base::Milliseconds(42), base::Microseconds(18),
       gfx::PresentationFeedback::Flags::kVSync |
           gfx::PresentationFeedback::Flags::kHWCompletion);
+#if BUILDFLAG(IS_MAC)
+  feedback.ca_layer_error_code = gfx::kCALayerFailedQuadBlendMode;
+#endif
+  return feedback;
 }
 
 class LayerTreeHostImplTestInvokeMainThreadCallbacks
@@ -2737,8 +2747,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   EXPECT_FALSE(GetInputHandler().animating_for_snap_for_testing());
   // Finish the smooth scroll animation for wheel.
   const int scroll_animation_duration_ms =
-      base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 300
-                                                                       : 150;
+      features::IsImpulseScrollAnimationEnabled() ? 300 : 150;
   BeginImplFrameAndAnimate(
       begin_frame_args,
       start_time + base::Milliseconds(scroll_animation_duration_ms));
@@ -3267,8 +3276,13 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   CopyProperties(root, child);
   CreateTransformNode(child);
 
-  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
-                                             10.0, 3, 0);
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
+  timeline()->AttachAnimation(animation);
+  animation->AttachElement(child->element_id());
+  AddAnimatedTransformToAnimation(animation.get(), 10.0, 3, 0);
+  animation->GetKeyframeModel(TargetProperty::TRANSFORM)
+      ->set_affects_active_elements(false);
   UpdateDrawProperties(host_impl_->pending_tree());
 
   EXPECT_FALSE(did_request_next_frame_);
@@ -3416,8 +3430,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   start.AppendTranslate(6, 7, 0);
   gfx::TransformOperations end;
   end.AppendTranslate(8, 9, 0);
-  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
-                                             4.0, start, end);
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
+  timeline()->AttachAnimation(animation);
+  animation->AttachElement(child->element_id());
+  int keyframe_model_id =
+      AddAnimatedTransformToAnimation(animation.get(), 4.0, start, end);
   UpdateDrawProperties(host_impl_->active_tree());
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -3439,24 +3457,24 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   EXPECT_TRUE(did_request_next_frame_);
   did_request_next_frame_ = false;
 
+  // In the real code, animations are removed at the same time as their property
+  // tree nodes are.
+  animation->RemoveKeyframeModel(keyframe_model_id);
+  host_impl_->ActivateAnimations();
+  EXPECT_FALSE(did_request_next_frame_);
+
   // In the real code, you cannot remove a child on LayerImpl, but a child
   // removed on Layer will force a full tree sync which will rebuild property
   // trees without that child's property tree nodes. Clear active_tree (which
   // also clears property trees) to simulate the rebuild that would happen
   // before/during the commit.
   host_impl_->active_tree()->property_trees()->clear();
-  host_impl_->UpdateElements(ElementListType::ACTIVE);
 
-  // On updating state, we will send an animation event and request one last
-  // frame.
+  // Updating state requires no animation update.
   host_impl_->UpdateAnimationState(true);
-  EXPECT_TRUE(did_request_next_frame_);
-  did_request_next_frame_ = false;
-
-  // Doing Animate() doesn't request another frame after the current one.
-  host_impl_->Animate();
   EXPECT_FALSE(did_request_next_frame_);
 
+  // Doing Animate() doesn't request any frames after the animation is removed.
   host_impl_->Animate();
   EXPECT_FALSE(did_request_next_frame_);
 }
@@ -3474,7 +3492,6 @@ class MissingTilesLayer : public LayerImpl {
                    AppendQuadsData* append_quads_data) override {
     append_quads_data->num_missing_tiles += 10;
     append_quads_data->checkerboarded_no_recording_content_area += 200;
-    append_quads_data->checkerboarded_needs_raster_content_area += 200;
     append_quads_data->visible_layer_area += 200;
   }
 };
@@ -3570,9 +3587,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ImplPinchZoom) {
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(50, 50),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
-    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
     GetInputHandler().ScrollEnd();
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_redraw_);
@@ -3599,9 +3617,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ImplPinchZoom) {
                                              ui::ScrollInputType::kTouchscreen)
                                       .get(),
                                   ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point());
-    GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point());
     GetInputHandler().ScrollEnd();
 
     gfx::Vector2d scroll_delta(0, 10);
@@ -3704,9 +3723,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ViewportScrollOrder) {
                  ui::ScrollInputType::kTouchscreen)
           .get(),
       ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, gfx::Point(0, 0));
-  GetInputHandler().PinchGestureEnd(gfx::Point(0, 0), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point(0, 0));
   GetInputHandler().ScrollEnd();
 
   // Sanity check - we're zoomed in, starting from the origin.
@@ -3828,7 +3848,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollDuringPinchGesture) {
                  ui::ScrollInputType::kTouchscreen)
           .get(),
       ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(250, 250),
+                                      ui::ScrollInputType::kWheel);
 
   GetInputHandler().PinchGestureUpdate(2, gfx::Point(250, 250));
   EXPECT_POINTF_EQ(gfx::PointF(0, 0), CurrentScrollOffset(outer_scroll_layer));
@@ -3857,7 +3878,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollDuringPinchGesture) {
   EXPECT_POINTF_EQ(gfx::PointF(250, 250),
                    CurrentScrollOffset(inner_scroll_layer));
 
-  GetInputHandler().PinchGestureEnd(gfx::Point(250, 250), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point(250, 250));
   GetInputHandler().ScrollEnd();
 }
 
@@ -3883,9 +3904,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchZoomSnapsToScreenEdge) {
       BeginState(anchor, gfx::Vector2dF(), ui::ScrollInputType::kTouchscreen)
           .get(),
       ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(anchor, ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, anchor);
-  GetInputHandler().PinchGestureEnd(anchor, true);
+  GetInputHandler().PinchGestureEnd(anchor);
   GetInputHandler().ScrollEnd();
 
   EXPECT_POINTF_EQ(gfx::PointF(250, 250),
@@ -3903,9 +3924,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchZoomSnapsToScreenEdge) {
       BeginState(anchor, gfx::Vector2dF(), ui::ScrollInputType::kTouchscreen)
           .get(),
       ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(100, 100),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, anchor);
-  GetInputHandler().PinchGestureEnd(anchor, true);
+  GetInputHandler().PinchGestureEnd(anchor);
   GetInputHandler().ScrollEnd();
 
   EXPECT_POINTF_EQ(gfx::PointF(0, 0),
@@ -3923,9 +3945,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchZoomSnapsToScreenEdge) {
       BeginState(anchor, gfx::Vector2dF(), ui::ScrollInputType::kTouchscreen)
           .get(),
       ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(anchor, ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, anchor);
-  GetInputHandler().PinchGestureEnd(anchor, true);
+  GetInputHandler().PinchGestureEnd(anchor);
   GetInputHandler().ScrollEnd();
 
   EXPECT_POINTF_EQ(gfx::PointF(50, 50),
@@ -3944,9 +3966,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchZoomSnapsToScreenEdge) {
       BeginState(anchor, gfx::Vector2dF(), ui::ScrollInputType::kTouchscreen)
           .get(),
       ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(anchor, ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, anchor);
-  GetInputHandler().PinchGestureEnd(anchor, true);
+  GetInputHandler().PinchGestureEnd(anchor);
   GetInputHandler().ScrollEnd();
 
   EXPECT_POINTF_EQ(gfx::PointF(200, 200),
@@ -4159,9 +4181,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(50, 50),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
-    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
     GetInputHandler().ScrollEnd();
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_redraw_);
@@ -4184,9 +4207,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(50, 50),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
-    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
     GetInputHandler().ScrollEnd();
 
     std::unique_ptr<CompositorCommitData> commit_data =
@@ -4201,20 +4225,23 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.CollectScrollDeltasForTesting();
+        ->scroll_tree_mutable()
+        .CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(50, 50));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(50, 50));
 
     float page_scale_delta = 0.1f;
     GetInputHandler().ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(),
                                              ui::ScrollInputType::kTouchscreen)
                                       .get(),
                                   ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point());
-    GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point());
     GetInputHandler().ScrollEnd();
 
     std::unique_ptr<CompositorCommitData> commit_data =
@@ -4231,11 +4258,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.CollectScrollDeltasForTesting();
+        ->scroll_tree_mutable()
+        .CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(20, 20));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(20, 20));
 
     float page_scale_delta = 1;
     GetInputHandler().ScrollBegin(
@@ -4243,10 +4272,11 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(10, 10),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(10, 10));
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(20, 20));
-    GetInputHandler().PinchGestureEnd(gfx::Point(20, 20), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(20, 20));
     GetInputHandler().ScrollEnd();
 
     std::unique_ptr<CompositorCommitData> commit_data =
@@ -4262,11 +4292,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.CollectScrollDeltasForTesting();
+        ->scroll_tree_mutable()
+        .CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(20, 20));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(20, 20));
 
     float page_scale_delta = 1;
     GetInputHandler().ScrollBegin(
@@ -4274,14 +4306,15 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(10, 10),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(10, 10));
     GetInputHandler().ScrollUpdate(
         UpdateState(gfx::Point(10, 10), gfx::Vector2d(-10, -10),
                     ui::ScrollInputType::kTouchscreen)
             .get());
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(20, 20));
-    GetInputHandler().PinchGestureEnd(gfx::Point(20, 20), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(20, 20));
     GetInputHandler().ScrollEnd();
 
     std::unique_ptr<CompositorCommitData> commit_data =
@@ -4297,17 +4330,20 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.CollectScrollDeltasForTesting();
+        ->scroll_tree_mutable()
+        .CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(0, 0));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(0, 0));
 
     GetInputHandler().ScrollBegin(BeginState(gfx::Point(0, 0), gfx::Vector2dF(),
                                              ui::ScrollInputType::kTouchscreen)
                                       .get(),
                                   ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(0, 0),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(2, gfx::Point(0, 0));
     GetInputHandler().PinchGestureUpdate(1, gfx::Point(0, 0));
 
@@ -4319,7 +4355,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PinchGesture) {
                     ui::ScrollInputType::kTouchscreen)
             .get());
     GetInputHandler().PinchGestureUpdate(1, gfx::Point(10, 10));
-    GetInputHandler().PinchGestureEnd(gfx::Point(10, 10), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(10, 10));
     GetInputHandler().ScrollEnd();
 
     std::unique_ptr<CompositorCommitData> commit_data =
@@ -4345,25 +4381,28 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SyncSubpixelScrollDelta) {
   SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.CollectScrollDeltasForTesting();
+      ->scroll_tree_mutable()
+      .CollectScrollDeltasForTesting();
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF(0, 20));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(0, 20));
 
   float page_scale_delta = 1;
   GetInputHandler().ScrollBegin(BeginState(gfx::Point(10, 10), gfx::Vector2dF(),
                                            ui::ScrollInputType::kTouchscreen)
                                     .get(),
                                 ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(10, 10),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(10, 10));
   GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(10, 10),
                                              gfx::Vector2dF(0, -1.001f),
                                              ui::ScrollInputType::kTouchscreen)
                                      .get());
   GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(10, 9));
-  GetInputHandler().PinchGestureEnd(gfx::Point(10, 9), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point(10, 9));
   GetInputHandler().ScrollEnd();
 
   std::unique_ptr<CompositorCommitData> commit_data =
@@ -4375,7 +4414,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SyncSubpixelScrollDelta) {
   // Verify this scroll delta is consistent with the snapped position of the
   // scroll layer.
   draw_property_utils::ComputeTransforms(
-      &scroll_layer->layer_tree_impl()->property_trees()->transform_tree);
+      &scroll_layer->layer_tree_impl()
+           ->property_trees()
+           ->transform_tree_mutable(),
+      scroll_layer->layer_tree_impl()->viewport_property_ids());
   EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(0, -19),
                       scroll_layer->ScreenSpaceTransform().To2dTranslation());
 }
@@ -4391,11 +4433,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.CollectScrollDeltasForTesting();
+      ->scroll_tree_mutable()
+      .CollectScrollDeltasForTesting();
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF(0, 20.5f));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(0, 20.5f));
 
   GetInputHandler().ScrollBegin(
       BeginState(gfx::Point(10, 10), gfx::Vector2dF(0, -1),
@@ -4408,10 +4452,11 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
                                      .get());
   GetInputHandler().ScrollEnd();
 
-  gfx::PointF active_base = host_impl_->active_tree()
-                                ->property_trees()
-                                ->scroll_tree.GetScrollOffsetBaseForTesting(
-                                    scroll_layer->element_id());
+  gfx::PointF active_base =
+      host_impl_->active_tree()
+          ->property_trees()
+          ->scroll_tree()
+          .GetScrollOffsetBaseForTesting(scroll_layer->element_id());
   EXPECT_POINTF_EQ(active_base, gfx::PointF(0, 20.5));
   // Fractional active base should not affect the scroll delta.
   std::unique_ptr<CompositorCommitData> commit_data =
@@ -4443,9 +4488,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(50, 50),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
-    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
     host_impl_->ActivateSyncTree();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_next_frame_);
@@ -4498,9 +4544,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(50, 50),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
-    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
     host_impl_->ActivateSyncTree();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_FALSE(did_request_next_frame_);
@@ -4565,8 +4612,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageScaleAnimation) {
                                                            max_page_scale);
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(50, 50));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(50, 50));
 
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
@@ -4625,8 +4673,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageScaleAnimation) {
                                                            max_page_scale);
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(50, 50));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(50, 50));
 
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
@@ -4691,8 +4740,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageScaleAnimationNoOp) {
                                                            max_page_scale);
     scroll_layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            scroll_layer->element_id(), gfx::PointF(50, 50));
+        ->scroll_tree_mutable()
+        .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                          gfx::PointF(50, 50));
 
     host_impl_->active_tree()->SetPendingPageScaleAnimation(
         std::make_unique<PendingPageScaleAnimation>(gfx::Point(), true, 1,
@@ -4755,8 +4805,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF(50, 50));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(50, 50));
 
   // Make sure TakePageScaleAnimation works properly.
 
@@ -4868,8 +4919,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   host_impl_->active_tree()->PushPageScaleFromMainThread(1, 0.5f, 4);
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF(50, 50));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(50, 50));
 
   did_complete_page_scale_animation_ = false;
   host_impl_->active_tree()->SetPendingPageScaleAnimation(
@@ -5254,7 +5306,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     // scrollbar to appear or schedule a scrollbar animation.
     if (host_impl_->active_tree()
             ->property_trees()
-            ->scroll_tree.UpdateScrollOffsetBaseForTesting(
+            ->scroll_tree_mutable()
+            .UpdateScrollOffsetBaseForTesting(
                 InnerViewportScrollLayer()->element_id(), gfx::PointF(5, 5)))
       host_impl_->active_tree()->DidUpdateScrollOffset(
           InnerViewportScrollLayer()->element_id());
@@ -6101,9 +6154,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CompositorFrameMetadata) {
                                            ui::ScrollInputType::kTouchscreen)
                                     .get(),
                                 ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, gfx::Point());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   GetInputHandler().ScrollEnd();
   {
     viz::CompositorFrameMetadata metadata =
@@ -6196,7 +6250,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   auto* layer = AddLayer<SolidColorLayerImpl>(host_impl_->active_tree());
   layer->SetBounds(gfx::Size(10, 10));
   layer->SetDrawsContent(true);
-  layer->SetBackgroundColor(SK_ColorRED);
+  layer->SetBackgroundColor(SkColors::kRed);
   CopyProperties(root, layer);
 
   UpdateDrawProperties(host_impl_->active_tree());
@@ -6659,8 +6713,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ClampingAfterActivation) {
       host_impl_->pending_tree()->OuterViewportScrollLayerForTesting();
   pending_outer_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          pending_outer_layer->element_id(), pending_scroll);
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(pending_outer_layer->element_id(),
+                                        pending_scroll);
 
   host_impl_->ActivateSyncTree();
   // Scrolloffsets on the active tree will be clamped after activation.
@@ -7572,6 +7627,27 @@ TEST_P(LayerTreeHostImplBrowserControlsTest, BrowserControlsAspectRatio) {
   EXPECT_EQ(expected, InnerViewportScrollLayer()->bounds());
 }
 
+TEST_P(LayerTreeHostImplBrowserControlsTest, NoShrinkNotUserScrollable) {
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(100, 100), gfx::Size(100, 100), gfx::Size(100, 200));
+
+  GetScrollNode(OuterViewportScrollLayer())->user_scrollable_vertical = false;
+  DrawFrame();
+
+  gfx::Vector2dF delta(0, 15);
+  ui::ScrollInputType type = ui::ScrollInputType::kTouchscreen;
+  auto& handler = GetInputHandler();
+
+  handler.ScrollBegin(BeginState(gfx::Point(), delta, type).get(), type);
+  handler.ScrollUpdate(UpdateState(gfx::Point(), delta, type).get());
+  handler.ScrollEnd();
+
+  // Outer viewport has overflow, but is not user-scrollable. Make sure the
+  // browser controls did not shrink when we tried to scroll.
+  EXPECT_EQ(top_controls_height_,
+            host_impl_->browser_controls_manager()->ContentTopOffset());
+}
+
 // Test that scrolling the outer viewport affects the browser controls.
 TEST_P(LayerTreeHostImplBrowserControlsTest,
        BrowserControlsScrollOuterViewport) {
@@ -7833,8 +7909,9 @@ TEST_P(LayerTreeHostImplBrowserControlsTest,
   {
     host_impl_->pending_tree()
         ->property_trees()
-        ->scroll_tree.SetScrollOffsetDeltaForTesting(outer_scroll->element_id(),
-                                                     gfx::Vector2dF(0, 1050));
+        ->scroll_tree_mutable()
+        .SetScrollOffsetDeltaForTesting(outer_scroll->element_id(),
+                                        gfx::Vector2dF(0, 1050));
     host_impl_->ActivateSyncTree();
 
     // Make sure we don't accidentally clamp the outer offset based on a bounds
@@ -8071,9 +8148,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
                                            ui::ScrollInputType::kTouchscreen)
                                     .get(),
                                 ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(page_scale, gfx::Point());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   GetInputHandler().ScrollEnd();
 
   DrawOneFrame();
@@ -8121,9 +8199,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
                                            ui::ScrollInputType::kTouchscreen)
                                     .get(),
                                 ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(new_page_scale, gfx::Point());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   GetInputHandler().ScrollEnd();
   DrawOneFrame();
 
@@ -8131,16 +8210,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // the page scale delta on the root layer is applied hierarchically.
   DrawFrame();
 
-  EXPECT_EQ(1, root->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(1, root->DrawTransform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale,
-            inner_scroll->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale,
-            inner_scroll->DrawTransform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale,
-            outer_scroll->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale,
-            outer_scroll->DrawTransform().matrix().getDouble(1, 1));
+  EXPECT_EQ(1, root->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(1, root->DrawTransform().matrix().rc(1, 1));
+  EXPECT_EQ(new_page_scale, inner_scroll->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(new_page_scale, inner_scroll->DrawTransform().matrix().rc(1, 1));
+  EXPECT_EQ(new_page_scale, outer_scroll->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(new_page_scale, outer_scroll->DrawTransform().matrix().rc(1, 1));
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest,
@@ -8202,12 +8277,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollChildBeyondLimit) {
 
   grand_child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          grand_child_layer->element_id(), gfx::PointF(0, 5));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(grand_child_layer->element_id(),
+                                        gfx::PointF(0, 5));
   child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
-                                                     gfx::PointF(3, 0));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
+                                        gfx::PointF(3, 0));
 
   DrawFrame();
   {
@@ -8255,12 +8332,14 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
 
   grand_child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          grand_child_layer->element_id(), gfx::PointF(0, 30));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(grand_child_layer->element_id(),
+                                        gfx::PointF(0, 30));
   child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
-                                                     gfx::PointF(0, 50));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
+                                        gfx::PointF(0, 50));
 
   DrawFrame();
 
@@ -8340,12 +8419,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollWithoutBubbling) {
 
   grand_child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          grand_child_layer->element_id(), gfx::PointF(0, 2));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(grand_child_layer->element_id(),
+                                        gfx::PointF(0, 2));
   child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
-                                                     gfx::PointF(0, 3));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
+                                        gfx::PointF(0, 3));
 
   DrawFrame();
   {
@@ -8878,8 +8959,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   gfx::Vector2dF initial_scroll_delta(10, 10);
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF());
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF());
   SetScrollOffsetDelta(scroll_layer, initial_scroll_delta);
 
   EXPECT_EQ(gfx::PointF(), scroll_watcher.last_set_scroll_offset());
@@ -8924,10 +9006,11 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
                                            ui::ScrollInputType::kTouchscreen)
                                     .get(),
                                 ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, gfx::Point());
   GetInputHandler().PinchGestureUpdate(.5f, gfx::Point());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   GetInputHandler().ScrollEnd();
 
   // Scrolling should be relative to the offset as given by the delegate.
@@ -9028,7 +9111,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ViewportUserScrollable) {
   auto* inner_scroll = InnerViewportScrollLayer();
 
   ScrollTree& scroll_tree =
-      host_impl_->active_tree()->property_trees()->scroll_tree;
+      host_impl_->active_tree()->property_trees()->scroll_tree_mutable();
   ElementId inner_element_id = inner_scroll->element_id();
   ElementId outer_element_id = outer_scroll->element_id();
 
@@ -9193,7 +9276,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SetRootScrollOffsetUserScrollable) {
   auto* inner_scroll = InnerViewportScrollLayer();
 
   ScrollTree& scroll_tree =
-      host_impl_->active_tree()->property_trees()->scroll_tree;
+      host_impl_->active_tree()->property_trees()->scroll_tree_mutable();
   ElementId inner_element_id = inner_scroll->element_id();
   ElementId outer_element_id = outer_scroll->element_id();
 
@@ -9490,12 +9573,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
 
   child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
-                                                     gfx::PointF(0, 3));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
+                                        gfx::PointF(0, 3));
   grand_child_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          grand_child_layer->element_id(), gfx::PointF(0, 2));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(grand_child_layer->element_id(),
+                                        gfx::PointF(0, 2));
 
   DrawFrame();
   {
@@ -10153,9 +10238,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RootScrollerScrollNonDescendant) {
         BeginState(anchor, gfx::Vector2dF(), ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(anchor, ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_factor, anchor);
-    GetInputHandler().PinchGestureEnd(anchor, true);
+    GetInputHandler().PinchGestureEnd(anchor);
 
     EXPECT_POINTF_EQ(gfx::PointF(anchor.x() / 2, anchor.y() / 2),
                      CurrentScrollOffset(inner_scroll_layer));
@@ -10966,7 +11051,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
 
   layer_tree_host_impl->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   // This will damage everything.
-  root->SetBackgroundColor(SK_ColorBLACK);
+  root->SetBackgroundColor(SkColors::kBlack);
   args = viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
       base::TimeTicks() + base::Milliseconds(1));
@@ -11163,7 +11248,7 @@ class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
                 root_render_pass->quad_list.ElementAt(1)->visible_rect);
     }
 
-    EXPECT_EQ(expect_to_draw, host_impl_->DrawLayers(&frame));
+    EXPECT_EQ(expect_to_draw, host_impl_->DrawLayers(&frame).has_value());
     host_impl_->DidDrawAllLayers(frame);
     host_impl_->DidFinishImplFrame(args);
   }
@@ -11173,13 +11258,13 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   auto* root = SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
                                                    gfx::Size(10, 10));
   root->SetDrawsContent(true);
-  root->SetBackgroundColor(SK_ColorRED);
+  root->SetBackgroundColor(SkColors::kRed);
 
   // Child layer is in the bottom right corner.
   auto* child = AddLayer<SolidColorLayerImpl>(host_impl_->active_tree());
   child->SetBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
-  child->SetBackgroundColor(SK_ColorRED);
+  child->SetBackgroundColor(SkColors::kRed);
   CopyProperties(root, child);
   child->SetOffsetToTransformParent(gfx::Vector2dF(9, 9));
 
@@ -11200,11 +11285,6 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   gfx::Rect no_damage;
   DrawFrameAndTestDamage(no_damage, child);
 }
-
-class GLRendererWithSetupQuadForAntialiasing : public viz::GLRenderer {
- public:
-  using viz::GLRenderer::ShouldAntialiasQuad;
-};
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   // Due to precision issues (especially on Android), sometimes far
@@ -11238,8 +11318,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   gfx::PointF scroll_offset(100000, 0);
   scrolling_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          scrolling_layer->element_id(), scroll_offset);
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scrolling_layer->element_id(),
+                                        scroll_offset);
   host_impl_->ActivateSyncTree();
 
   UpdateDrawProperties(host_impl_->active_tree());
@@ -11256,16 +11337,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
   const viz::DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
-  bool clipped = false, force_aa = false;
-  gfx::QuadF device_layer_quad = MathUtil::MapQuad(
+  bool clipped = false;
+  MathUtil::MapQuad(
       quad->shared_quad_state->quad_to_target_transform,
       gfx::QuadF(gfx::RectF(quad->shared_quad_state->visible_quad_layer_rect)),
       &clipped);
   EXPECT_FALSE(clipped);
-  bool antialiased =
-      GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(
-          device_layer_quad, clipped, force_aa);
-  EXPECT_FALSE(antialiased);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -11452,7 +11529,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage,
 
   LayerImpl* root = SetupRootLayer<SolidColorLayerImpl>(
       host_impl_->active_tree(), gfx::Size(10, 10));
-  root->SetBackgroundColor(SK_ColorRED);
+  root->SetBackgroundColor(SkColors::kRed);
   UpdateDrawProperties(host_impl_->active_tree());
 
   // RequiresHighResToDraw is set when new output surface is used.
@@ -11571,165 +11648,6 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CreateETC1UIResource) {
   EXPECT_EQ(1u, sii->shared_image_count());
   viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(viz::kInvalidResourceId, id1);
-}
-
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, ObeyMSAACaps) {
-  LayerTreeSettings msaaSettings = DefaultSettings();
-  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
-
-  // gpu raster, msaa on
-  {
-    bool msaa_is_slow = false;
-    EXPECT_TRUE(CreateHostImpl(
-        msaaSettings,
-        FakeLayerTreeFrameSink::Create3dForGpuRasterization(
-            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
-    EXPECT_TRUE(host_impl_->can_use_msaa());
-  }
-
-  // gpu raster, msaa off
-  {
-    bool msaa_is_slow = true;
-    EXPECT_TRUE(CreateHostImpl(
-        msaaSettings,
-        FakeLayerTreeFrameSink::Create3dForGpuRasterization(
-            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
-    EXPECT_FALSE(host_impl_->can_use_msaa());
-  }
-
-  // oop raster, msaa on
-  {
-    bool msaa_is_slow = false;
-    EXPECT_TRUE(CreateHostImpl(
-        msaaSettings,
-        FakeLayerTreeFrameSink::Create3dForOopRasterization(
-            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
-    EXPECT_TRUE(host_impl_->can_use_msaa());
-  }
-
-  // oop raster, msaa off
-  {
-    bool msaa_is_slow = true;
-    EXPECT_TRUE(CreateHostImpl(
-        msaaSettings,
-        FakeLayerTreeFrameSink::Create3dForOopRasterization(
-            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
-    EXPECT_FALSE(host_impl_->can_use_msaa());
-  }
-}
-
-class FrameSinkClient : public TestLayerTreeFrameSinkClient {
- public:
-  explicit FrameSinkClient(
-      scoped_refptr<viz::ContextProvider> display_context_provider)
-      : display_context_provider_(std::move(display_context_provider)) {}
-
-  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
-  CreateDisplayController() override {
-    // In this implementation, no output surface has a real gpu thread, and
-    // there is no overlay support.
-    return nullptr;
-  }
-  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface(
-      viz::DisplayCompositorMemoryAndTaskController*) override {
-    return viz::FakeSkiaOutputSurface::Create3d(
-        std::move(display_context_provider_));
-  }
-
-  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider)
-      override {
-    return viz::FakeOutputSurface::Create3d(
-        std::move(display_context_provider_));
-  }
-
-  void DisplayReceivedLocalSurfaceId(
-      const viz::LocalSurfaceId& local_surface_id) override {}
-  void DisplayReceivedCompositorFrame(
-      const viz::CompositorFrame& frame) override {}
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      viz::AggregatedRenderPassList* render_passes) override {}
-  void DisplayDidDrawAndSwap() override {}
-
- private:
-  scoped_refptr<viz::ContextProvider> display_context_provider_;
-};
-
-enum RendererType { RENDERER_GL, RENDERER_SKIA };
-
-class LayerTreeHostImplTestWithRenderer
-    : public LayerTreeHostImplTest,
-      public ::testing::WithParamInterface<RendererType> {
- protected:
-  RendererType renderer_type() const { return GetParam(); }
-
-  viz::DebugRendererSettings debug_settings_;
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         LayerTreeHostImplTestWithRenderer,
-                         ::testing::Values(RENDERER_GL, RENDERER_SKIA));
-
-TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
-  scoped_refptr<viz::TestContextProvider> context_provider =
-      viz::TestContextProvider::Create();
-  FrameSinkClient test_client(context_provider);
-
-  constexpr bool synchronous_composite = true;
-  constexpr bool disable_display_vsync = false;
-  constexpr double refresh_rate = 60.0;
-  viz::RendererSettings renderer_settings = viz::RendererSettings();
-  renderer_settings.use_skia_renderer = renderer_type() == RENDERER_SKIA;
-  auto layer_tree_frame_sink = std::make_unique<TestLayerTreeFrameSink>(
-      context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
-      renderer_settings, &debug_settings_,
-      base::ThreadTaskRunnerHandle::Get().get(), synchronous_composite,
-      disable_display_vsync, refresh_rate);
-  layer_tree_frame_sink->SetClient(&test_client);
-
-  CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));
-
-  LayerImpl* root = SetupDefaultRootLayer(gfx::Size(10, 10));
-  struct Helper {
-    std::unique_ptr<viz::CopyOutputResult> unprocessed_result;
-    void OnResult(base::OnceClosure finished,
-                  std::unique_ptr<viz::CopyOutputResult> result) {
-      unprocessed_result = std::move(result);
-      std::move(finished).Run();
-    }
-  } helper;
-
-  GetEffectNode(root)->has_copy_request = true;
-  base::RunLoop copy_request_run_loop;
-  GetPropertyTrees(root)->effect_tree.AddCopyRequest(
-      root->effect_tree_index(),
-      std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA,
-          viz::CopyOutputRequest::ResultDestination::kNativeTextures,
-          base::BindOnce(&Helper::OnResult, base::Unretained(&helper),
-                         copy_request_run_loop.QuitClosure())));
-  DrawFrame();
-
-  auto* sii = context_provider->SharedImageInterface();
-  // The CopyOutputResult has a ref on the viz::ContextProvider and a shared
-  // image allocated.
-  copy_request_run_loop.Run();
-  EXPECT_TRUE(helper.unprocessed_result);
-  EXPECT_FALSE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, sii->shared_image_count());
-
-  host_impl_->ReleaseLayerTreeFrameSink();
-  host_impl_ = nullptr;
-
-  // The texture release callback that was given to the CopyOutputResult has
-  // been canceled, and the shared image deleted.
-  EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(0u, sii->shared_image_count());
-
-  // When resetting the CopyOutputResult, it will run its texture release
-  // callback. This should not cause a crash, etc.
-  helper.unprocessed_result.reset();
 }
 
 // This tests the case where hit testing only on scrollable layers returns a
@@ -11870,7 +11788,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_P(ScrollUnifiedLayerTreeHostImplTest,
        SelectionBoundsPassedToCompositorFrameMetadata) {
   LayerImpl* root = SetupRootLayer<SolidColorLayerImpl>(
@@ -11935,7 +11853,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
   EXPECT_FALSE(selection_after.start.visible());
   EXPECT_FALSE(selection_after.end.visible());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   {
@@ -12066,8 +11984,9 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest, NoIdleAnimations) {
   auto* scroll_layer = InnerViewportScrollLayer();
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF(0, 10));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(0, 10));
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
   host_impl_->WillBeginImplFrame(begin_frame_args);
@@ -12110,8 +12029,9 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   auto* scroll_layer = InnerViewportScrollLayer();
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
-                                                     gfx::PointF(0, 10));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(0, 10));
   host_impl_->DidChangeBrowserControlsPosition();
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
@@ -12339,8 +12259,9 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   float initial_scroll_offset = 50;
   scroll_layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          scroll_layer->element_id(), gfx::PointF(0, initial_scroll_offset));
+      ->scroll_tree_mutable()
+      .UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                        gfx::PointF(0, initial_scroll_offset));
   DrawFrame();
 
   const float residue = 15;
@@ -12882,9 +12803,15 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, OnMemoryPressure) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   ResourcePool::InUsePoolResource resource =
       host_impl_->resource_pool()->AcquireResource(size, format, color_space);
+  size_t current_memory_usage =
+      host_impl_->resource_pool()->GetTotalMemoryUsageForTesting();
+  EXPECT_EQ(current_memory_usage, 0u);
+
+  resource.set_gpu_backing(std::make_unique<StubGpuBacking>());
+
   host_impl_->resource_pool()->ReleaseResource(std::move(resource));
 
-  size_t current_memory_usage =
+  current_memory_usage =
       host_impl_->resource_pool()->GetTotalMemoryUsageForTesting();
 
   base::MemoryPressureListener::SimulatePressureNotification(
@@ -13699,6 +13626,65 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   host_impl_ = nullptr;
 }
 
+// Tests that no scrolls occur when thumb_len equals track_len.
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollOnLargeThumb) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  layer_tree_impl->set_painted_device_scale_factor(2.5f);
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
+      layer_tree_impl, ScrollbarOrientation::VERTICAL, false, true);
+  SetupScrollbarLayerCommon(scroll_layer, scrollbar);
+  scrollbar->SetHitTestable(true);
+
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(575);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  GetInputHandler().BindToClient(&input_handler_client);
+
+  // PointerDown on the scrollbar should populate drag_state.
+  GetInputHandler().MouseDown(gfx::PointF(350, 300),
+                              /*jump_key_modifier*/ false);
+  EXPECT_TRUE(GetInputHandler()
+                  .scrollbar_controller_for_testing()
+                  ->drag_state_.has_value());
+
+  // Moving the mouse downwards should result in no scroll.
+  InputHandlerPointerResult res =
+      GetInputHandler().MouseMoveAt(gfx::Point(350, 600));
+  EXPECT_EQ(res.scroll_delta.y(), 0);
+
+  // Moving the mouse upwards should result in no scroll.
+  res = GetInputHandler().MouseMoveAt(gfx::Point(350, 0));
+  EXPECT_EQ(res.scroll_delta.y(), 0);
+
+  // End the scroll.
+  GetInputHandler().MouseUp(gfx::PointF(350, 0));
+  EXPECT_TRUE(!GetInputHandler()
+                   .scrollbar_controller_for_testing()
+                   ->drag_state_.has_value());
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
 // Tests that deleting a horizontal scrollbar doesn't affect the autoscroll task
 // for the vertical scrollbar.
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, AutoscrollOnDeletedScrollbar) {
@@ -13747,12 +13733,45 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AutoscrollOnDeletedScrollbar) {
                   ->AutoscrollTaskIsScheduled());
 
   // If a call comes in to delete the scrollbar layer for which the autoscroll
-  // was scheduled, the autoscroll task should be cancelled.
-  host_impl_->DidUnregisterScrollbarLayer(scroll_layer->element_id(),
-                                          ScrollbarOrientation::VERTICAL);
-  EXPECT_FALSE(GetInputHandler()
-                   .scrollbar_controller_for_testing()
-                   ->AutoscrollTaskIsScheduled());
+  // was scheduled, the autoscroll task should set a waiting state instead of
+  // initiating an autoscroll, in case the scrollbar comes back.
+  layer_tree_impl->UnregisterScrollbar(scrollbar);
+
+  EXPECT_TRUE(GetInputHandler()
+                  .scrollbar_controller_for_testing()
+                  ->AutoscrollTaskIsScheduled());
+
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_->callback()
+      .Run();
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_.reset();
+  EXPECT_EQ(GetInputHandler()
+                .scrollbar_controller_for_testing()
+                ->autoscroll_state_->status,
+            ScrollbarController::AutoScrollStatus::AUTOSCROLL_READY);
+
+  // Re-register the scrollbar. An autoscroll task should be posted that
+  // actually starts a scroll animation
+  layer_tree_impl->RegisterScrollbar(scrollbar);
+
+  EXPECT_TRUE(GetInputHandler()
+                  .scrollbar_controller_for_testing()
+                  ->AutoscrollTaskIsScheduled());
+
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_->callback()
+      .Run();
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_.reset();
+  EXPECT_EQ(GetInputHandler()
+                .scrollbar_controller_for_testing()
+                ->autoscroll_state_->status,
+            ScrollbarController::AutoScrollStatus::AUTOSCROLL_SCROLLING);
 
   // End the scroll.
   GetInputHandler().MouseUp(gfx::PointF(350, 580));
@@ -14004,18 +14023,18 @@ TEST_F(LayerTreeHostImplTest,
                     ui::ScrollInputType::kTouchscreen)
             .get());
 
-    // Add a LatencyInfo object that will be accepted by
-    // AverageLagTrackingManager::CollectScrollEventsFromFrame.
-    ui::LatencyInfo latency_info;
-    latency_info.set_source_event_type(ui::SourceEventType::TOUCH);
-    latency_info.AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
-    latency_info.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
-        base::TimeTicks::Now());
-    std::unique_ptr<SwapPromise> swap_promise(
-        new LatencyInfoSwapPromise(latency_info));
-    host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
+    // Add an `EventMetrics` object that will be accepted by
+    // `AverageLagTrackingManager::CollectScrollEventsFromFrame()`.
+    EventMetrics::List events_metrics;
+    events_metrics.push_back(ScrollUpdateEventMetrics::Create(
+        ui::EventType::ET_GESTURE_SCROLL_UPDATE,
+        ui::ScrollInputType::kTouchscreen,
+        /*is_inertial=*/false,
+        i == 0 ? ScrollUpdateEventMetrics::ScrollUpdateType::kStarted
+               : ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
+        /*delta=*/10.0f, base::TimeTicks::Now()));
+    host_impl_->active_tree()->AppendEventsMetricsFromMainThread(
+        std::move(events_metrics));
 
     DrawFrame();
   }
@@ -14306,9 +14325,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ThumbDragAfterJumpClick) {
   scrollbar->SetBounds(scrollbar_size);
   host_impl_->set_force_smooth_wheel_scrolling_for_testing(true);
 
+  const int thumb_len = 50;
   // Set up the thumb dimensions.
   scrollbar->SetThumbThickness(15);
-  scrollbar->SetThumbLength(50);
+  scrollbar->SetThumbLength(thumb_len);
   scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
 
   // Set up scrollbar arrows.
@@ -14341,11 +14361,17 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ThumbDragAfterJumpClick) {
                     .scrollbar_controller_for_testing()
                     ->drag_state_.has_value());
 
-    // This verifies that the jump click delta was accounted for correctly.
+    // This verifies that the start/snap-back position is the scroll position
+    // before any jump-click
     EXPECT_FLOAT_EQ(GetInputHandler()
                         .scrollbar_controller_for_testing()
                         ->drag_state_->scroll_position_at_start_,
-                    243.80952f);
+                    0.0f);
+
+    EXPECT_FLOAT_EQ(GetInputHandler()
+                        .scrollbar_controller_for_testing()
+                        ->drag_state_->drag_origin.y(),
+                    15.0f + thumb_len / 2.0f);
   }
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
@@ -14424,10 +14450,16 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
     // existing scroll offset animations are aborted and a new autoscroll
     // animation is created. Test passes if unit test doesn't hit any DCHECK
     // failures.
+    GetInputHandler().scrollbar_controller_for_testing()->autoscroll_state_ =
+        ScrollbarController::AutoScrollState();
     GetInputHandler()
         .scrollbar_controller_for_testing()
-        ->StartAutoScrollAnimation(/*scroll_velocity*/ 800,
-                                   ScrollbarPart::FORWARD_TRACK);
+        ->autoscroll_state_->velocity = 800;
+    GetInputHandler()
+        .scrollbar_controller_for_testing()
+        ->autoscroll_state_->pressed_scrollbar_part =
+        ScrollbarPart::FORWARD_TRACK;
+    GetInputHandler().scrollbar_controller_for_testing()->StartAutoScroll();
     EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
   }
 
@@ -14827,10 +14859,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
-  EXPECT_NEAR(
-      (base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 87
-                                                                        : 50),
-      CurrentScrollOffset(scrolling_layer).y(), 1);
+  EXPECT_NEAR((features::IsImpulseScrollAnimationEnabled() ? 87 : 50),
+              CurrentScrollOffset(scrolling_layer).y(), 1);
   host_impl_->DidFinishImplFrame(begin_frame_args);
 
   // Update target.
@@ -15383,9 +15413,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
                                              ui::ScrollInputType::kTouchscreen)
                                       .get(),
                                   ui::ScrollInputType::kTouchscreen);
-    GetInputHandler().PinchGestureBegin();
+    GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                        ui::ScrollInputType::kWheel);
     GetInputHandler().PinchGestureUpdate(page_scale_delta, gfx::Point());
-    GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+    GetInputHandler().PinchGestureEnd(gfx::Point());
     GetInputHandler().ScrollEnd();
 
     gfx::Vector2dF scroll_delta(0, 5);
@@ -15642,52 +15673,6 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   EXPECT_FALSE(controller.did_draw_frame());
 }
 
-// Tests that SetDeviceScaleFactor correctly impacts GPU rasterization.
-TEST_P(ScrollUnifiedLayerTreeHostImplTest,
-       GpuRasterizationStatusDeviceScaleFactor) {
-  // Create a host impl with MSAA support (4 samples).
-  LayerTreeSettings msaaSettings = DefaultSettings();
-  msaaSettings.gpu_rasterization_msaa_sample_count = -1;
-  EXPECT_TRUE(CreateHostImpl(
-      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(4)));
-
-  // Set initial state, before varying scale factor.
-  host_impl_->CommitComplete();
-  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-  host_impl_->NotifyReadyToActivate();
-
-  // Set device scale factor to 2, which lowers the required MSAA samples from
-  // 8 to 4.
-  host_impl_->active_tree()->SetDeviceScaleFactor(2.0f);
-  host_impl_->CommitComplete();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-  host_impl_->NotifyReadyToActivate();
-
-  // Set device scale factor back to 1.
-  host_impl_->active_tree()->SetDeviceScaleFactor(1.0f);
-  host_impl_->CommitComplete();
-  EXPECT_FALSE(host_impl_->can_use_msaa());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-  host_impl_->NotifyReadyToActivate();
-}
-
-// Tests that explicit MSAA sample count correctly impacts GPU rasterization.
-TEST_P(ScrollUnifiedLayerTreeHostImplTest,
-       GpuRasterizationStatusExplicitMSAACount) {
-  // Create a host impl with MSAA support and a forced sample count of 4.
-  LayerTreeSettings msaaSettings = DefaultSettings();
-  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
-  EXPECT_TRUE(CreateHostImpl(
-      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
-                        msaaSettings.gpu_rasterization_msaa_sample_count)));
-
-  host_impl_->CommitComplete();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-}
-
 class GpuRasterizationDisabledLayerTreeHostImplTest
     : public LayerTreeHostImplTest {
  public:
@@ -15703,12 +15688,13 @@ class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
     settings.gpu_rasterization_msaa_sample_count = 4;
     auto frame_sink =
         FakeLayerTreeFrameSink::Builder()
-            .AllContexts(&viz::TestGLES2Interface::SetMaxSamples,
-                         settings.gpu_rasterization_msaa_sample_count)
             .AllContexts(&viz::TestGLES2Interface::set_msaa_is_slow,
+                         &viz::TestRasterInterface::set_msaa_is_slow,
                          msaa_is_slow)
-            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
+            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization,
+                         &viz::TestRasterInterface::set_gpu_rasterization, true)
             .AllContexts(&viz::TestGLES2Interface::set_avoid_stencil_buffers,
+                         &viz::TestRasterInterface::set_avoid_stencil_buffers,
                          avoid_stencil_buffers)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
@@ -15720,16 +15706,16 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   // we raster slow paths with msaa.
   CreateHostImplWithCaps(false, false);
   host_impl_->CommitComplete();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_TRUE(host_impl_->can_use_msaa());
 
   // Ensure that with either msaa_is_slow or avoid_stencil_buffers caps
   // we don't raster slow paths with msaa (we'll still use GPU raster, though).
   // msaa_is_slow = true, avoid_stencil_buffers = false
   CreateHostImplWithCaps(true, false);
   host_impl_->CommitComplete();
-  EXPECT_FALSE(host_impl_->can_use_msaa());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->can_use_msaa());
 
   // msaa_is_slow = false, avoid_stencil_buffers = true
   CreateHostImplWithCaps(false, true);
@@ -15752,12 +15738,12 @@ class MsaaCompatibilityLayerTreeHostImplTest : public LayerTreeHostImplTest {
     settings.gpu_rasterization_msaa_sample_count = 4;
     auto frame_sink =
         FakeLayerTreeFrameSink::Builder()
-            .AllContexts(&viz::TestGLES2Interface::SetMaxSamples,
-                         settings.gpu_rasterization_msaa_sample_count)
             .AllContexts(
                 &viz::TestGLES2Interface::set_support_multisample_compatibility,
+                &viz::TestRasterInterface::set_multisample_compatibility,
                 support_multisample_compatibility)
-            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
+            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization,
+                         &viz::TestRasterInterface::set_gpu_rasterization, true)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
   }
@@ -15813,7 +15799,7 @@ TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
-  // Check page scale factor update in property trees when an update is made
+  // Check page scale factor updates the property trees when an update is made
   // on the active tree.
   CreatePendingTree();
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1, 1, 3);
@@ -15829,34 +15815,41 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
       host_impl_->active_tree()->PageScaleTransformNode();
   // SetPageScaleOnActiveTree also updates the factors in property trees.
   EXPECT_TRUE(active_tree_node->local.IsScale2d());
-  EXPECT_EQ(gfx::Vector2dF(2, 2), active_tree_node->local.Scale2d());
+  EXPECT_EQ(gfx::Vector2dF(2, 2), active_tree_node->local.To2dScale());
   EXPECT_EQ(gfx::Point3F(), active_tree_node->origin);
   EXPECT_EQ(2, host_impl_->active_tree()->current_page_scale_factor());
+  EXPECT_EQ(2, host_impl_->active_tree()
+                   ->property_trees()
+                   ->transform_tree()
+                   .page_scale_factor());
 
   TransformNode* pending_tree_node =
       host_impl_->pending_tree()->PageScaleTransformNode();
-  // Before pending tree updates draw properties, its properties are still
-  // based on 1.0 page scale, except for current_page_scale_factor() which is a
-  // shared data between the active and pending trees.
-  EXPECT_TRUE(pending_tree_node->local.IsIdentity());
+
+  // Since the pending tree shares the scale factor with the active tree, its
+  // value and property trees should also have been updated.
+  EXPECT_TRUE(pending_tree_node->local.IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2, 2), pending_tree_node->local.To2dScale());
   EXPECT_EQ(gfx::Point3F(), pending_tree_node->origin);
   EXPECT_EQ(2, host_impl_->pending_tree()->current_page_scale_factor());
-  EXPECT_EQ(1, host_impl_->pending_tree()
+  EXPECT_EQ(2, host_impl_->pending_tree()
                    ->property_trees()
-                   ->transform_tree.page_scale_factor());
+                   ->transform_tree()
+                   .page_scale_factor());
 
+  // Update draw properties doesn't change the correct values
   host_impl_->pending_tree()->set_needs_update_draw_properties();
   UpdateDrawProperties(host_impl_->pending_tree());
   pending_tree_node = host_impl_->pending_tree()->PageScaleTransformNode();
   EXPECT_TRUE(pending_tree_node->local.IsScale2d());
-  EXPECT_EQ(gfx::Vector2dF(2, 2), pending_tree_node->local.Scale2d());
+  EXPECT_EQ(gfx::Vector2dF(2, 2), pending_tree_node->local.To2dScale());
   EXPECT_EQ(gfx::Point3F(), pending_tree_node->origin);
 
   host_impl_->ActivateSyncTree();
   UpdateDrawProperties(host_impl_->active_tree());
   active_tree_node = host_impl_->active_tree()->PageScaleTransformNode();
   EXPECT_TRUE(active_tree_node->local.IsScale2d());
-  EXPECT_EQ(gfx::Vector2dF(2, 2), active_tree_node->local.Scale2d());
+  EXPECT_EQ(gfx::Vector2dF(2, 2), active_tree_node->local.To2dScale());
   EXPECT_EQ(gfx::Point3F(), active_tree_node->origin);
 }
 
@@ -16183,7 +16176,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   host_impl_->WillBeginImplFrame(begin_frame_args);
 
   // Create the pending tree.
-  host_impl_->BeginCommit(0);
+  host_impl_->BeginCommit(0, /*trace_id=*/1);
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
   auto* root = SetupRootLayer<FakePictureLayerImpl>(pending_tree, layer_size,
                                                     raster_source);
@@ -16236,34 +16229,38 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CheckerImagingTileInvalidation) {
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpace) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
   // The default raster color space should be sRGB.
-  EXPECT_EQ(
-      host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
-      gfx::ColorSpace::CreateSRGB());
+  auto wcg_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kWideColorGamut);
+  EXPECT_EQ(wcg_params.color_space, gfx::ColorSpace::CreateSRGB());
+
   // The raster color space should update with tree activation.
   host_impl_->active_tree()->SetDisplayColorSpaces(
       gfx::DisplayColorSpaces(gfx::ColorSpace::CreateDisplayP3D65()));
-  EXPECT_EQ(
-      host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
-      gfx::ColorSpace::CreateDisplayP3D65());
-  EXPECT_EQ(gfx::ColorSpace::kDefaultSDRWhiteLevel,
-            host_impl_->GetSDRWhiteLevel());
+  wcg_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kWideColorGamut);
+  EXPECT_EQ(wcg_params.color_space, gfx::ColorSpace::CreateDisplayP3D65());
+  EXPECT_EQ(wcg_params.sdr_max_luminance_nits,
+            gfx::ColorSpace::kDefaultSDRWhiteLevel);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpaceSoftware) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, FakeLayerTreeFrameSink::CreateSoftware());
+
   // Software composited resources should always use sRGB as their color space.
-  EXPECT_EQ(
-      host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
-      gfx::ColorSpace::CreateSRGB());
+  auto wcg_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kWideColorGamut);
+  EXPECT_EQ(wcg_params.color_space, gfx::ColorSpace::CreateSRGB());
+
   host_impl_->active_tree()->SetDisplayColorSpaces(
       gfx::DisplayColorSpaces(gfx::ColorSpace::CreateDisplayP3D65()));
-  EXPECT_EQ(
-      host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
-      gfx::ColorSpace::CreateSRGB());
-  EXPECT_EQ(gfx::ColorSpace::kDefaultSDRWhiteLevel,
-            host_impl_->GetSDRWhiteLevel());
+  wcg_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kWideColorGamut);
+  EXPECT_EQ(wcg_params.color_space, gfx::ColorSpace::CreateSRGB());
+  EXPECT_EQ(wcg_params.sdr_max_luminance_nits,
+            gfx::ColorSpace::kDefaultSDRWhiteLevel);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorPrefersSRGB) {
@@ -16273,50 +16270,50 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorPrefersSRGB) {
   settings.prefer_raster_in_srgb = true;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDisplayColorSpaces(gfx::DisplayColorSpaces(p3));
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB),
-            gfx::ColorSpace::CreateSRGB());
+
+  auto srgb_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kSRGB);
+  EXPECT_EQ(srgb_params.color_space, gfx::ColorSpace::CreateSRGB());
 
   settings.prefer_raster_in_srgb = false;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDisplayColorSpaces(gfx::DisplayColorSpaces(p3));
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB), p3);
-  EXPECT_EQ(gfx::ColorSpace::kDefaultSDRWhiteLevel,
-            host_impl_->GetSDRWhiteLevel());
+  srgb_params = host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kSRGB);
+  EXPECT_EQ(srgb_params.color_space, p3);
+  EXPECT_EQ(srgb_params.sdr_max_luminance_nits,
+            gfx::ColorSpace::kDefaultSDRWhiteLevel);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpaceHDR) {
-  auto hdr = gfx::ColorSpace::CreateHDR10();
-
-  LayerTreeSettings settings = DefaultSettings();
-  CreateHostImpl(settings, CreateLayerTreeFrameSink());
-  host_impl_->active_tree()->SetDisplayColorSpaces(
-      gfx::DisplayColorSpaces(hdr));
-
-  // Non-HDR content should be rasterized in P3.
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB),
-            gfx::ColorSpace::CreateDisplayP3D65());
-  EXPECT_EQ(
-      host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
-      gfx::ColorSpace::CreateDisplayP3D65());
-
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kHDR), hdr);
-  EXPECT_EQ(gfx::ColorSpace::kDefaultSDRWhiteLevel,
-            host_impl_->GetSDRWhiteLevel());
-}
-
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, SDRWhiteLevel) {
   constexpr float kCustomWhiteLevel = 200.f;
+  constexpr float kHDRMaxLuminanceRelative = 2.f;
   auto hdr = gfx::ColorSpace::CreateHDR10();
-  auto display_cs = gfx::DisplayColorSpaces(hdr);
-  display_cs.SetSDRWhiteLevel(kCustomWhiteLevel);
+  gfx::DisplayColorSpaces display_cs(hdr);
+  display_cs.SetSDRMaxLuminanceNits(kCustomWhiteLevel);
+  display_cs.SetHDRMaxLuminanceRelative(kHDRMaxLuminanceRelative);
 
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDisplayColorSpaces(display_cs);
 
+  const auto srgb_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kSRGB);
+  const auto wcg_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kWideColorGamut);
+  const auto hdr_params =
+      host_impl_->GetTargetColorParams(gfx::ContentColorUsage::kHDR);
+
   // Non-HDR content should be rasterized in P3.
-  EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kHDR), hdr);
-  EXPECT_EQ(kCustomWhiteLevel, host_impl_->GetSDRWhiteLevel());
+  EXPECT_EQ(srgb_params.color_space, gfx::ColorSpace::CreateDisplayP3D65());
+  EXPECT_EQ(srgb_params.sdr_max_luminance_nits, kCustomWhiteLevel);
+  EXPECT_EQ(srgb_params.hdr_max_luminance_relative, 1.f);
+  EXPECT_EQ(wcg_params.color_space, gfx::ColorSpace::CreateDisplayP3D65());
+  EXPECT_EQ(wcg_params.sdr_max_luminance_nits, kCustomWhiteLevel);
+  EXPECT_EQ(wcg_params.hdr_max_luminance_relative, 1.f);
+
+  EXPECT_EQ(hdr_params.color_space, gfx::ColorSpace::CreateExtendedSRGB());
+  EXPECT_EQ(hdr_params.sdr_max_luminance_nits, kCustomWhiteLevel);
+  EXPECT_EQ(hdr_params.hdr_max_luminance_relative, kHDRMaxLuminanceRelative);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {
@@ -16528,7 +16525,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RenderFrameMetadata) {
     EXPECT_EQ(gfx::PointF(), metadata.root_scroll_offset);
     EXPECT_EQ(1, metadata.page_scale_factor);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     EXPECT_EQ(gfx::SizeF(50, 50), metadata.scrollable_viewport_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4, metadata.max_page_scale_factor);
@@ -16558,7 +16555,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RenderFrameMetadata) {
     EXPECT_EQ(gfx::PointF(0, 10), metadata.root_scroll_offset);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Root "overflow: hidden" properties should be reflected on the outer
   // viewport scroll layer.
   {
@@ -16612,9 +16609,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RenderFrameMetadata) {
                                            ui::ScrollInputType::kTouchscreen)
                                     .get(),
                                 ui::ScrollInputType::kTouchscreen);
-  GetInputHandler().PinchGestureBegin();
+  GetInputHandler().PinchGestureBegin(gfx::Point(),
+                                      ui::ScrollInputType::kWheel);
   GetInputHandler().PinchGestureUpdate(2, gfx::Point());
-  GetInputHandler().PinchGestureEnd(gfx::Point(), true);
+  GetInputHandler().PinchGestureEnd(gfx::Point());
   GetInputHandler().ScrollEnd();
   {
     RenderFrameMetadata metadata = StartDrawAndProduceRenderFrameMetadata();
@@ -16622,7 +16620,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RenderFrameMetadata) {
     EXPECT_EQ(gfx::PointF(0, 10), metadata.root_scroll_offset);
     EXPECT_EQ(2, metadata.page_scale_factor);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     EXPECT_EQ(gfx::SizeF(25, 25), metadata.scrollable_viewport_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4, metadata.max_page_scale_factor);
@@ -16640,7 +16638,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RenderFrameMetadata) {
     EXPECT_EQ(gfx::PointF(0, 10), metadata.root_scroll_offset);
     EXPECT_EQ(4, metadata.page_scale_factor);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.scrollable_viewport_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4, metadata.max_page_scale_factor);
@@ -16801,7 +16799,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
 
   ScrollTree& scroll_tree =
-      host_impl_->active_tree()->property_trees()->scroll_tree;
+      host_impl_->active_tree()->property_trees()->scroll_tree_mutable();
 
   EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
             GetInputHandler()
@@ -16903,7 +16901,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
 
   UpdateDrawProperties(host_impl_->active_tree());
   draw_property_utils::ComputeEffects(
-      &host_impl_->active_tree()->property_trees()->effect_tree);
+      &host_impl_->active_tree()->property_trees()->effect_tree_mutable());
 
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
@@ -17412,7 +17410,6 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, PercentBasedScrollbarDeltasDSF3) {
   LayerTreeSettings settings = DefaultSettings();
   settings.percent_based_scrolling = true;
-  settings.use_zoom_for_dsf = true;
   settings.use_painted_device_scale_factor = true;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
 
@@ -17513,7 +17510,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageBasedScroll) {
   const gfx::PointF kCurrentOffset =
       host_impl_->active_tree()
           ->property_trees()
-          ->scroll_tree.current_scroll_offset(
+          ->scroll_tree()
+          .current_scroll_offset(
               host_impl_->OuterViewportScrollNode()->element_id);
 
   EXPECT_EQ(kExpectedOffset, kCurrentOffset);
@@ -17638,12 +17636,12 @@ class UnifiedScrollingTest : public LayerTreeHostImplTest {
   }
 
   gfx::PointF GetScrollOffset(ScrollNode* node) {
-    return GetPropertyTrees()->scroll_tree.current_scroll_offset(
+    return GetPropertyTrees()->scroll_tree().current_scroll_offset(
         node->element_id);
   }
 
   gfx::PointF ScrollerOffset() {
-    return GetPropertyTrees()->scroll_tree.current_scroll_offset(
+    return GetPropertyTrees()->scroll_tree().current_scroll_offset(
         ScrollerElementId());
   }
 
@@ -17656,8 +17654,9 @@ class UnifiedScrollingTest : public LayerTreeHostImplTest {
   }
 
   ScrollNode* ScrollerNode() {
-    ScrollNode* node = GetPropertyTrees()->scroll_tree.FindNodeFromElementId(
-        ScrollerElementId());
+    ScrollNode* node =
+        GetPropertyTrees()->scroll_tree_mutable().FindNodeFromElementId(
+            ScrollerElementId());
     DCHECK(node);
     return node;
   }
@@ -17798,7 +17797,7 @@ TEST_F(UnifiedScrollingTest, MainThreadHitTestScrollNodeNotFound) {
 
   {
     ElementId kUnknown(42);
-    DCHECK(!GetPropertyTrees()->scroll_tree.FindNodeFromElementId(kUnknown));
+    DCHECK(!GetPropertyTrees()->scroll_tree().FindNodeFromElementId(kUnknown));
 
     ScrollStatus status = ScrollBegin(gfx::Vector2d(0, 10));
     status = ContinuedScrollBegin(kUnknown);
@@ -17861,7 +17860,7 @@ TEST_F(UnifiedScrollingTest, MainThreadScrollingReasonsScrollOnCompositor) {
 // tree or not. It is parameterized and used by tests below.
 void UnifiedScrollingTest::TestUncompositedScrollingState(
     bool mutates_transform_tree) {
-  TransformTree& tree = GetPropertyTrees()->transform_tree;
+  TransformTree& tree = GetPropertyTrees()->transform_tree_mutable();
   TransformNode* transform_node = tree.Node(ScrollerNode()->transform_id);
 
   // Ensure we're in a clean state to start.
@@ -17942,7 +17941,7 @@ TEST_F(UnifiedScrollingTest, MainThreadReasonsScrollDoesntAffectTransform) {
 
   ASSERT_EQ(ScrollerNode()->main_thread_scrolling_reasons,
             MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
-  TransformTree& tree = GetPropertyTrees()->transform_tree;
+  TransformTree& tree = GetPropertyTrees()->transform_tree_mutable();
   TransformNode* transform_node = tree.Node(ScrollerNode()->transform_id);
 
   // Removing the main thread reason bit should start mutating the transform
@@ -17975,7 +17974,7 @@ TEST_F(UnifiedScrollingTest, UncompositedScrollerDoesntAffectTransform) {
   TestUncompositedScrollingState(/*mutates_transform_tree=*/false);
 
   ASSERT_FALSE(ScrollerNode()->is_composited);
-  TransformTree& tree = GetPropertyTrees()->transform_tree;
+  TransformTree& tree = GetPropertyTrees()->transform_tree_mutable();
   TransformNode* transform_node = tree.Node(ScrollerNode()->transform_id);
 
   // Marking the node as composited should start updating the transform tree.
@@ -18227,8 +18226,8 @@ TEST_F(LayerTreeHostImplTest, DocumentTransitionRequestCausesDamage) {
 
   // Adding a transition effect should cause us to redraw.
   host_impl_->active_tree()->AddDocumentTransitionRequest(
-      DocumentTransitionRequest::CreateStart(
-          /*document_tag=*/0, /*shared_element_count=*/0, base::OnceClosure()));
+      DocumentTransitionRequest::CreateAnimateRenderer(
+          /*document_tag=*/0));
 
   // Ensure there is damage and we requested a redraw.
   host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,
@@ -18252,14 +18251,12 @@ TEST_F(LayerTreeHostImplTest, CollectRegionCaptureBounds) {
 
   // Set up the root layer.
   LayerImpl* root_layer = SetupDefaultRootLayer(gfx::Size(350, 360));
-  root_layer->SetCaptureBounds(
-      std::make_unique<viz::RegionCaptureBounds>(kRootBounds));
+  root_layer->SetCaptureBounds(kRootBounds);
 
   // Set up a child layer, with a scaling transform.
   LayerImpl* child_layer = AddLayer();
   CopyProperties(root_layer, child_layer);
-  child_layer->SetCaptureBounds(
-      std::make_unique<viz::RegionCaptureBounds>(kChildBounds));
+  child_layer->SetCaptureBounds(kChildBounds);
   gfx::Transform child_layer_transform;
   child_layer_transform.Scale(2.0, 3.0);
   child_layer->draw_properties().screen_space_transform =
@@ -18268,8 +18265,7 @@ TEST_F(LayerTreeHostImplTest, CollectRegionCaptureBounds) {
   // Set up another child layer, with a rotation transform.
   LayerImpl* second_child_layer = AddLayer();
   CopyProperties(root_layer, second_child_layer);
-  second_child_layer->SetCaptureBounds(
-      std::make_unique<viz::RegionCaptureBounds>(kSecondChildBounds));
+  second_child_layer->SetCaptureBounds(kSecondChildBounds);
   gfx::Transform second_layer_transform;
   second_layer_transform.Rotate(45);
   second_child_layer->draw_properties().screen_space_transform =
@@ -18307,4 +18303,62 @@ TEST_F(LayerTreeHostImplTest, CollectRegionCaptureBounds) {
             collected_bounds.bounds().find(kFourthId)->second);
 }
 
+// Check if picturelayer's ScrollInteractionInProgress() return true even when
+// BrowserControl is consuming ScrollUpdate.
+TEST_P(LayerTreeHostImplBrowserControlsTest,
+       BrowserControlsScrollInteractionInProgress) {
+  gfx::Size inner_size = gfx::Size(100, 100);
+  gfx::Size outer_size = gfx::Size(100, 100);
+  gfx::Size content_size = gfx::Size(100, 200);
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(inner_size, outer_size,
+                                                        content_size);
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(content_size));
+
+  auto* picture_layer =
+      AddLayer<FakePictureLayerImpl>(host_impl_->active_tree(), raster_source);
+  CopyProperties(OuterViewportScrollLayer(), picture_layer);
+  picture_layer->SetBounds(content_size);
+  picture_layer->SetDrawsContent(true);
+  picture_layer->SetNeedsPushProperties();
+  active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 2.0f);
+  DrawFrame();
+
+  EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
+            GetInputHandler()
+                .ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 50),
+                                        ui::ScrollInputType::kTouchscreen)
+                                 .get(),
+                             ui::ScrollInputType::kTouchscreen)
+                .thread);
+  // shownratio == 1
+  EXPECT_EQ(1, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), false);
+
+  // 0 < shownratio <1
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(),
+                                             gfx::Vector2dF(0, 25),
+                                             ui::ScrollInputType::kTouchscreen)
+                                     .get());
+  EXPECT_GT(host_impl_->active_tree()->CurrentTopControlsShownRatio(), 0);
+  EXPECT_LT(host_impl_->active_tree()->CurrentTopControlsShownRatio(), 1);
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), true);
+
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(),
+                                             gfx::Vector2dF(0, 30),
+                                             ui::ScrollInputType::kTouchscreen)
+                                     .get());
+  // now shownratio == 0
+  EXPECT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), true);
+
+  GetInputHandler().ScrollEnd();
+  // scroll end, shownratio == 0
+  EXPECT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), false);
+}
 }  // namespace cc

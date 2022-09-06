@@ -133,7 +133,7 @@ static int (*blend_functions[])(int, int, int) = {
 static void test_blend31() {
     int failed = 0;
     int death = 0;
-    if (false) { // avoid bit rot, suppress warning
+    if ((false)) { // avoid bit rot, suppress warning
         failed = (*blend_functions[0])(0,0,0);
     }
     for (int src = 0; src <= 255; src++) {
@@ -415,6 +415,103 @@ static void huge_vector_normalize(skiatest::Reporter* reporter) {
     }
 }
 
+DEF_TEST(PopCount, reporter) {
+    {
+        uint32_t testVal = 0;
+        REPORTER_ASSERT(reporter, SkPopCount(testVal) == 0);
+    }
+
+    for (int i = 0; i < 32; ++i) {
+        uint32_t testVal = 0x1 << i;
+        REPORTER_ASSERT(reporter, SkPopCount(testVal) == 1);
+
+        testVal ^= 0xFFFFFFFF;
+        REPORTER_ASSERT(reporter, SkPopCount(testVal) == 31);
+    }
+
+    {
+        uint32_t testVal = 0xFFFFFFFF;
+        REPORTER_ASSERT(reporter, SkPopCount(testVal) == 32);
+    }
+
+    SkRandom rand;
+    for (int i = 0; i < 100; ++i) {
+        int expectedNumSetBits = 0;
+        uint32_t testVal = 0;
+
+        int numTries = rand.nextULessThan(33);
+        for (int j = 0; j < numTries; ++j) {
+            int bit = rand.nextRangeU(0, 31);
+
+            if (testVal & (0x1 << bit)) {
+                continue;
+            }
+
+            ++expectedNumSetBits;
+            testVal |= 0x1 << bit;
+        }
+
+        REPORTER_ASSERT(reporter, SkPopCount(testVal) == expectedNumSetBits);
+    }
+}
+
+DEF_TEST(NthSet, reporter) {
+    {
+        uint32_t testVal = 0x1;
+        uint32_t recreated = 0;
+        int result = SkNthSet(testVal, 0);
+        recreated |= (0x1 << result);
+        REPORTER_ASSERT(reporter, testVal == recreated);
+    }
+
+    {
+        uint32_t testVal = 0x80000000;
+        uint32_t recreated = 0;
+        int result = SkNthSet(testVal, 0);
+        recreated |= (0x1 << result);
+        REPORTER_ASSERT(reporter, testVal == recreated);
+    }
+
+    {
+        uint32_t testVal = 0x55555555;
+        uint32_t recreated = 0;
+        for (int i = 0; i < 16; ++i) {
+            int result = SkNthSet(testVal, i);
+            REPORTER_ASSERT(reporter, result == 2*i);
+            recreated |= (0x1 << result);
+        }
+        REPORTER_ASSERT(reporter, testVal == recreated);
+    }
+
+    SkRandom rand;
+    for (int i = 0; i < 100; ++i) {
+        int expectedNumSetBits = 0;
+        uint32_t testVal = 0;
+
+        int numTries = rand.nextULessThan(33);
+        for (int j = 0; j < numTries; ++j) {
+            int bit = rand.nextRangeU(0, 31);
+
+            if (testVal & (0x1 << bit)) {
+                continue;
+            }
+
+            ++expectedNumSetBits;
+            testVal |= 0x1 << bit;
+        }
+
+        REPORTER_ASSERT(reporter, SkPopCount(testVal) == expectedNumSetBits);
+        uint32_t recreated = 0;
+
+        for (int j = 0; j < expectedNumSetBits; ++j) {
+            int index = SkNthSet(testVal, j);
+            recreated |= (0x1 << index);
+        }
+
+        REPORTER_ASSERT(reporter, recreated == testVal);
+    }
+}
+
 DEF_TEST(Math, reporter) {
     int         i;
     SkRandom    rand;
@@ -507,10 +604,10 @@ DEF_TEST(Math, reporter) {
         REPORTER_ASSERT(reporter, result == (int32_t)check);
     }
 
-    if (false) test_floor(reporter);
+    if ((false)) test_floor(reporter);
 
     // disable for now
-    if (false) test_blend31();  // avoid bit rot, suppress warning
+    if ((false)) test_blend31();  // avoid bit rot, suppress warning
 
     test_clz(reporter);
     test_ctz(reporter);

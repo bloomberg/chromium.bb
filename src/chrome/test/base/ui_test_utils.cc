@@ -79,7 +79,7 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -150,7 +150,7 @@ class AppModalDialogWaiter : public javascript_dialogs::AppModalDialogObserver {
     // and this will catch that case.
     auto* contents = dialog->web_contents();
     bool found_disabled_for_testing = false;
-    contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
+    contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
         [](bool* found_disabled_for_testing, content::RenderFrameHost* frame) {
           if (frame->IsBeforeUnloadHangMonitorDisabledForTesting()) {
             *found_disabled_for_testing = true;
@@ -296,7 +296,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   }
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     same_tab_observer.Wait();
-    return web_contents->GetMainFrame();
+    return web_contents->GetPrimaryMainFrame();
   } else if (web_contents) {
     content::TestNavigationObserver observer(
         web_contents, number_of_navigations,
@@ -305,7 +305,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     if (!blink::IsRendererDebugURL(url))
       observer.set_expected_initial_url(url);
     observer.Wait();
-    return web_contents->GetMainFrame();
+    return web_contents->GetPrimaryMainFrame();
   }
   EXPECT_TRUE(web_contents)
       << " Unable to wait for navigation to \"" << url.spec() << "\""
@@ -366,11 +366,10 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
     return false;
 
   size_t match, exe_size, src_size;
-  std::vector<base::FilePath::StringType> src_parts, exe_parts;
 
   // Determine point at which src and exe diverge.
-  exe_dir.GetComponents(&exe_parts);
-  src_dir.GetComponents(&src_parts);
+  auto exe_parts = exe_dir.GetComponents();
+  auto src_parts = src_dir.GetComponents();
   exe_size = exe_parts.size();
   src_size = src_parts.size();
   for (match = 0; match < exe_size && match < src_size; ++match) {
@@ -497,7 +496,7 @@ void GetCookies(const GURL& url,
   if (url.is_valid() && contents) {
     base::RunLoop loop;
     auto* storage_partition =
-        contents->GetMainFrame()->GetProcess()->GetStoragePartition();
+        contents->GetPrimaryMainFrame()->GetProcess()->GetStoragePartition();
     net::CookieList cookie_list;
     storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
         url, net::CookieOptions::MakeAllInclusive(),

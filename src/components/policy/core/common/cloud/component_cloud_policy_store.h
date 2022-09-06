@@ -16,6 +16,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/values_util.h"
 #include "components/policy/policy_export.h"
 
 namespace enterprise_management {
@@ -77,6 +78,9 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
 
   // The current list of policies.
   const PolicyBundle& policy() const { return policy_bundle_; }
+
+  // Returns the map of JSON policy value for each namespace.
+  ComponentPolicyMap GetJsonPolicyMap();
 
   // The cached hash for namespace |ns|, or the empty string if |ns| is not
   // cached.

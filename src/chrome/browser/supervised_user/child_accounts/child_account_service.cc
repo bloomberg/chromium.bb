@@ -38,6 +38,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/startup/browser_init_params.h"
 #else
 #include "chrome/browser/signin/signin_util.h"
 #endif
@@ -85,7 +87,7 @@ ChildAccountService::~ChildAccountService() {}
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
 // Child account detection is always enabled on Android and ChromeOS, and
 // disabled in other platforms.
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
   return false;
@@ -101,7 +103,7 @@ void ChildAccountService::Init() {
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
   identity_manager_->AddObserver(this);
 
-  PropagateChildStatusToUser(profile_->IsChild());
+  AssertChildStatusOfTheUser(profile_->IsChild());
 
   // If we're already signed in, check the account immediately just to be sure.
   // (We might have missed an update before registering as an observer.)
@@ -181,7 +183,7 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       std::make_unique<base::Value>(false));
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
     // This is also used by user policies (UserPolicySigninService), but since
     // child accounts can not also be Dasher accounts, there shouldn't be any
     // problems.
@@ -207,7 +209,7 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       nullptr);
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
     signin_util::SetUserSignoutAllowedForProfile(profile_, true);
 #endif
 
@@ -351,14 +353,19 @@ void ChildAccountService::ScheduleNextFamilyInfoUpdate(base::TimeDelta delay) {
       FROM_HERE, delay, this, &ChildAccountService::StartFetchingFamilyInfo);
 }
 
-void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
+void ChildAccountService::AssertChildStatusOfTheUser(bool is_child) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user && is_child != (user->GetType() == user_manager::USER_TYPE_CHILD))
     LOG(FATAL) << "User child flag has changed: " << is_child;
-  if (!user && chromeos::ProfileHelper::IsRegularProfile(profile_))
+  if (!user && ash::ProfileHelper::IsRegularProfile(profile_))
     LOG(DFATAL) << "User instance not found while setting child account flag.";
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  bool is_child_session = chromeos::BrowserInitParams::Get()->session_type ==
+                          crosapi::mojom::SessionType::kChildSession;
+  if (is_child_session != is_child)
+    LOG(FATAL) << "User child flag has changed: " << is_child;
 #endif
 }
 

@@ -18,15 +18,17 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "url/gurl.h"
 
+namespace webapps {
+enum class InstallResultCode;
+}
+
 namespace web_app {
 
-enum class InstallResultCode;
-
 class WebAppRegistrar;
-class OsIntegrationManager;
 class WebAppInstallFinalizer;
-class WebAppInstallManager;
+class WebAppCommandManager;
 class WebAppUiManager;
+class WebAppSyncBridge;
 
 enum class RegistrationResultCode { kSuccess, kAlreadyRegistered, kTimeout };
 
@@ -54,7 +56,7 @@ class ExternallyManagedAppManager {
  public:
   struct InstallResult {
     InstallResult();
-    explicit InstallResult(InstallResultCode code,
+    explicit InstallResult(webapps::InstallResultCode code,
                            absl::optional<AppId> app_id = absl::nullopt,
                            bool did_uninstall_and_replace = false);
     InstallResult(const InstallResult&);
@@ -62,7 +64,7 @@ class ExternallyManagedAppManager {
 
     bool operator==(const InstallResult& other) const;
 
-    InstallResultCode code;
+    webapps::InstallResultCode code;
     absl::optional<AppId> app_id;
     bool did_uninstall_and_replace = false;
   };
@@ -87,10 +89,10 @@ class ExternallyManagedAppManager {
   virtual ~ExternallyManagedAppManager();
 
   void SetSubsystems(WebAppRegistrar* registrar,
-                     OsIntegrationManager* os_integration_manager,
                      WebAppUiManager* ui_manager,
                      WebAppInstallFinalizer* finalizer,
-                     WebAppInstallManager* install_manager);
+                     WebAppCommandManager* command_manager,
+                     WebAppSyncBridge* sync_bridge);
 
   // Queues an installation operation with the highest priority. Essentially
   // installing the app immediately if there are no ongoing operations or
@@ -157,12 +159,10 @@ class ExternallyManagedAppManager {
 
  protected:
   WebAppRegistrar* registrar() { return registrar_; }
-  OsIntegrationManager* os_integration_manager() {
-    return os_integration_manager_;
-  }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   WebAppInstallFinalizer* finalizer() { return finalizer_; }
-  WebAppInstallManager* install_manager() { return install_manager_; }
+  WebAppCommandManager* command_manager() { return command_manager_; }
+  WebAppSyncBridge* sync_bridge() { return sync_bridge_; }
 
   virtual void OnRegistrationFinished(const GURL& launch_url,
                                       RegistrationResultCode result);
@@ -199,10 +199,10 @@ class ExternallyManagedAppManager {
   void ContinueOrCompleteSynchronization(ExternalInstallSource source);
 
   raw_ptr<WebAppRegistrar> registrar_ = nullptr;
-  raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
   raw_ptr<WebAppUiManager> ui_manager_ = nullptr;
   raw_ptr<WebAppInstallFinalizer> finalizer_ = nullptr;
-  raw_ptr<WebAppInstallManager> install_manager_ = nullptr;
+  raw_ptr<WebAppCommandManager> command_manager_ = nullptr;
+  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
 
   base::flat_map<ExternalInstallSource, SynchronizeRequest>
       synchronize_requests_;

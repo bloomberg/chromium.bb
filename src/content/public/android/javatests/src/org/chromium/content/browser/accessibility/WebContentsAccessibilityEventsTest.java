@@ -8,7 +8,6 @@ import static org.chromium.content.browser.accessibility.AccessibilityContentShe
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellActivityTestRule.RESULTS_NULL;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.os.Build;
 
 import androidx.test.filters.SmallTest;
@@ -19,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
@@ -29,10 +27,8 @@ import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
  */
 @RunWith(ContentJUnit4ClassRunner.class)
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @SuppressLint("VisibleForTests")
-@Batch(Batch.UNIT_TESTS)
-@DisabledTest(message = "https://crbug.com/1261677")
+@Batch(Batch.PER_CLASS)
 public class WebContentsAccessibilityEventsTest {
     // File path that holds all the relevant tests.
     private static final String BASE_FILE_PATH = "content/test/data/accessibility/event/";
@@ -152,6 +148,12 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_addAlertContent() {
+        performTest("add-alert-content.html", "add-alert-content-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
     public void test_addChild() {
         performTest("add-child.html", EMPTY_EXPECTATIONS_FILE);
     }
@@ -199,6 +201,12 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_addSubtree() {
         performTest("add-subtree.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_anonymousBlockChildrenChanged() {
+        performTest("anonymous-block-children-changed.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test
@@ -400,6 +408,13 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_ariaPressedChanged() {
         performTest("aria-pressed-changed.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_ariaPressedChangesButtonRole() {
+        performTest("aria-pressed-changes-button-role.html",
+                "aria-pressed-changes-button-role-expected-android.txt");
     }
 
     @Test
@@ -695,8 +710,38 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_immediateRefresh() {
+        performTest("immediate-refresh.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
     public void test_innerHtmlChanged() {
         performTest("inner-html-change.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_iframeSrcChanged() {
+        performTest("iframe-src-changed.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_inputCombobox() {
+        performTest("input-combobox.html", "input-combobox-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
+    public void test_inputComboboxAria1() {
+        performTest("input-combobox-aria1.html", "input-combobox-aria1-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
+    public void test_inputComboboxDialog() {
+        performTest("input-combobox-dialog.html", "input-combobox-dialog-expected-android.txt");
     }
 
     @Test
@@ -845,6 +890,12 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_navigationApi() {
+        performTest("navigation-api.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
     public void test_pressedStateChanged() {
         performTest("pressed-state-change.html", EMPTY_EXPECTATIONS_FILE);
     }
@@ -902,6 +953,12 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_removeSubtree() {
         performTest("remove-subtree.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_reparentElementWithActiveDescendant() {
+        performTest("reparent-element-with-active-descendant.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test

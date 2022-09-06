@@ -27,6 +27,8 @@ SERVICE_ACCOUNT_SUFFIX = [
         'skia-buildbots.google.com', 'skia-swarming-bots', 'skia-public',
         'skia-corp.google.com', 'chops-service-accounts']]
 
+USE_PYTHON3 = True
+
 
 def _CheckChangeHasEol(input_api, output_api, source_file_filter=None):
   """Checks that files end with at least one \n (LF)."""
@@ -88,7 +90,7 @@ def _IfDefChecks(input_api, output_api):
     affected_file_path = affected_file.LocalPath()
     if affected_file_path.endswith('.cpp') or affected_file_path.endswith('.h'):
       f = open(affected_file_path)
-      for line in f.xreadlines():
+      for line in f:
         if is_comment(line) or is_empty_line(line):
           continue
         # The below will be the first real line after comments and newlines.
@@ -118,7 +120,8 @@ def _CopyrightChecks(input_api, output_api, source_file_filter=None):
 
   for affected_file in input_api.AffectedSourceFiles(source_file_filter):
     if ('third_party/' in affected_file.LocalPath() or
-        'tests/sksl/' in affected_file.LocalPath()):
+        'tests/sksl/' in affected_file.LocalPath() or
+        'bazel/rbe/' in affected_file.LocalPath()):
       continue
     contents = input_api.ReadFile(affected_file, 'rb')
     if not re.search(copyright_pattern, contents):
@@ -134,7 +137,7 @@ def _InfraTests(input_api, output_api):
              for f in input_api.AffectedFiles()):
     return results
 
-  cmd = ['python', os.path.join('infra', 'bots', 'infra_tests.py')]
+  cmd = ['python3', os.path.join('infra', 'bots', 'infra_tests.py')]
   try:
     subprocess.check_output(cmd)
   except subprocess.CalledProcessError as e:
@@ -153,7 +156,7 @@ def _CheckGNFormatted(input_api, output_api):
   if not files:
     return []
 
-  cmd = ['python', os.path.join('bin', 'fetch-gn')]
+  cmd = ['python3', os.path.join('bin', 'fetch-gn')]
   try:
     subprocess.check_output(cmd)
   except subprocess.CalledProcessError as e:
@@ -194,7 +197,7 @@ def _CheckGitConflictMarkers(input_api, output_api):
 def _CheckIncludesFormatted(input_api, output_api):
   """Make sure #includes in files we're changing have been formatted."""
   files = [str(f) for f in input_api.AffectedFiles() if f.Action() != 'D']
-  cmd = ['python',
+  cmd = ['python3',
          'tools/rewrite_includes.py',
          '--dry-run'] + files
   if 0 != subprocess.call(cmd):
@@ -224,7 +227,7 @@ def _CheckDEPSValid(input_api, output_api):
       break
   else:
     return results
-  cmd = ['python', script]
+  cmd = ['python3', script]
   try:
     subprocess.check_output(cmd, stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError as e:
@@ -238,7 +241,7 @@ def _RegenerateAllExamplesCPP(input_api, output_api):
              for f in input_api.AffectedFiles()):
     return []
   command_str = 'tools/fiddle/make_all_examples_cpp.py'
-  cmd = ['python', command_str]
+  cmd = ['python3', command_str]
   if 0 != subprocess.call(cmd):
     return [output_api.PresubmitError('`%s` failed' % ' '.join(cmd))]
 
@@ -254,6 +257,124 @@ def _RegenerateAllExamplesCPP(input_api, output_api):
         )
     )]
   return results
+
+def _CheckBazelBUILDFiles(input_api, output_api):
+  """Makes sure our BUILD.bazel files are compatible with G3."""
+  results = []
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    affected_file_path = affected_file.LocalPath()
+    is_bazel = affected_file_path.endswith('BUILD.bazel')
+    # This list lines up with the one in autoroller_lib.py (see G3).
+    excluded_paths = ["infra/", "bazel/rbe/", "bazel/external/", "bazel/common_config_settings/",
+                      "modules/canvaskit/go/", "experimental/"]
+    is_excluded = any(affected_file_path.startswith(n) for n in excluded_paths)
+    if is_bazel and not is_excluded:
+      with open(affected_file_path, 'r') as file:
+        contents = file.read()
+        if 'exports_files_legacy(' not in contents:
+          results.append(output_api.PresubmitError(
+            ('%s needs to call exports_files_legacy() to support legacy G3 ' +
+             'rules.\nPut this near the top of the file, beneath ' +
+             'licenses(["notice"]).') % affected_file_path
+          ))
+        if 'licenses(["notice"])' not in contents:
+          results.append(output_api.PresubmitError(
+            ('%s needs to have\nlicenses(["notice"])\nimmediately after ' +
+             'the load() calls to comply with G3 policies.') % affected_file_path
+          ))
+        if 'cc_library(' in contents and '"cc_library"' not in contents:
+          results.append(output_api.PresubmitError(
+            ('%s needs load cc_library from macros.bzl instead of using the ' +
+             'native one. This allows us to build differently for G3.\n' +
+             'Add "cc_library" to load("//bazel:macros.bzl", ...)')
+            % affected_file_path
+          ))
+  return results
+
+
+def _CheckPublicBzl(input_api, output_api):
+  """Reminds devs to add/remove files from public.bzl."""
+  results = []
+  public_bzl = ''
+  with open('public.bzl', 'r', encoding='utf-8') as f:
+    public_bzl = f.read().strip()
+  for affected_file in input_api.AffectedFiles(include_deletes=True):
+    # action is A for newly added, D for newly deleted, M for modified
+    action = affected_file.Action()
+    affected_file_path = affected_file.LocalPath()
+    if ((affected_file_path.startswith("include") or affected_file_path.startswith("src")) and
+        (affected_file_path.endswith(".cpp") or affected_file_path.endswith(".h"))):
+      affected_file_path = '"' + affected_file_path + '"'
+      if action == "D" and affected_file_path in public_bzl:
+        results.append(output_api.PresubmitError(
+              "Need to delete %s from public.bzl (or rename it)" % affected_file_path))
+      elif action == "A" and affected_file_path not in public_bzl:
+        results.append(output_api.PresubmitPromptWarning(
+              "You may need to add %s to public.bzl" % affected_file_path))
+  return results
+
+
+def _RunCommandAndCheckGitDiff(output_api, command):
+  """Run an arbitrary command. Fail if it produces any diffs."""
+  command_str = ' '.join(command)
+  results = []
+
+  try:
+    output = subprocess.check_output(
+        command,
+        stderr=subprocess.STDOUT, encoding='utf-8')
+  except subprocess.CalledProcessError as e:
+    results += [output_api.PresubmitError(
+        'Command "%s" returned non-zero exit code %d. Output: \n\n%s' % (
+            command_str,
+            e.returncode,
+            e.output,
+        )
+    )]
+
+  git_diff_output = subprocess.check_output(
+      ['git', 'diff', '--no-ext-diff'], encoding='utf-8')
+  if git_diff_output:
+    results += [output_api.PresubmitError(
+        'Diffs found after running "%s":\n\n%s\n'
+        'Please commit or discard the above changes.' % (
+            command_str,
+            git_diff_output,
+        )
+    )]
+
+  return results
+
+
+def _CheckBuildifier(input_api, output_api):
+  """Runs Buildifier and fails on linting errors, or if it produces any diffs.
+
+  This check only runs if the affected files include any WORKSPACE, BUILD,
+  BUILD.bazel or *.bzl files.
+  """
+  files = []
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    affected_file_path = affected_file.LocalPath()
+    if affected_file_path.endswith('BUILD.bazel') or affected_file_path.endswith('.bzl'):
+      if not affected_file_path.endswith('public.bzl'):
+        files.append(affected_file_path)
+  if not files:
+    return []
+  try:
+    subprocess.check_output(
+        ['buildifier', '--version'],
+        stderr=subprocess.STDOUT)
+  except:
+    return [output_api.PresubmitNotifyResult(
+      'Skipping buildifier check because it is not on PATH. \n' +
+      'You can download it from https://github.com/bazelbuild/buildtools/releases')]
+
+  return _RunCommandAndCheckGitDiff(
+    # One can change --lint=warn to --lint=fix to have things automatically fixed where possible.
+    # However, --lint=fix will not cause a presubmit error if there are things that require
+    # manual intervention, so we leave --lint=warn on by default.
+    output_api, ['buildifier', '--mode=fix', '--lint=warn'] + files)
+
 
 def _CommonChecks(input_api, output_api):
   """Presubmit checks common to upload and commit."""
@@ -283,6 +404,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckGNFormatted(input_api, output_api))
   results.extend(_CheckGitConflictMarkers(input_api, output_api))
   results.extend(_RegenerateAllExamplesCPP(input_api, output_api))
+  results.extend(_CheckBazelBUILDFiles(input_api, output_api))
   return results
 
 
@@ -294,6 +416,11 @@ def CheckChangeOnUpload(input_api, output_api):
   # coverage or Go installed.
   results.extend(_InfraTests(input_api, output_api))
   results.extend(_CheckReleaseNotesForPublicAPI(input_api, output_api))
+  # Only check public.bzl on upload because new files are likely to be a source
+  # of false positives and we don't want to unnecessarily block commits.
+  results.extend(_CheckPublicBzl(input_api, output_api))
+  # Buildifier might not be on the CI machines.
+  results.extend(_CheckBuildifier(input_api, output_api))
   return results
 
 

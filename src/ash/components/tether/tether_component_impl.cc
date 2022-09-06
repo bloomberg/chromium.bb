@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/tether/active_host.h"
 #include "ash/components/tether/asynchronous_shutdown_object_container_impl.h"
 #include "ash/components/tether/crash_recovery_manager_impl.h"
@@ -16,15 +17,14 @@
 #include "ash/components/tether/tether_host_response_recorder.h"
 #include "ash/components/tether/tether_session_completion_logger.h"
 #include "ash/components/tether/wifi_hotspot_disconnector_impl.h"
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -245,4 +245,4 @@ void TetherComponentImpl::OnShutdownComplete() {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

@@ -34,24 +34,6 @@
 
 @implementation SigninEarlGreyAppInterface
 
-+ (FakeChromeIdentity*)fakeIdentity1 {
-  return [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
-                                        gaiaID:@"foo1ID"
-                                          name:@"Fake Foo 1"];
-}
-
-+ (FakeChromeIdentity*)fakeIdentity2 {
-  return [FakeChromeIdentity identityWithEmail:@"foo2@gmail.com"
-                                        gaiaID:@"foo2ID"
-                                          name:@"Fake Foo 2"];
-}
-
-+ (FakeChromeIdentity*)fakeManagedIdentity {
-  return [FakeChromeIdentity identityWithEmail:@"foo@google.com"
-                                        gaiaID:@"fooManagedID"
-                                          name:@"Fake Managed"];
-}
-
 + (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       fakeIdentity);
@@ -78,12 +60,12 @@
   return base::SysUTF8ToNSString(info.gaia);
 }
 
-+ (NSString*)primaryAccountEmail {
++ (NSString*)primaryAccountEmailWithConsent:(signin::ConsentLevel)consentLevel {
   ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   CoreAccountInfo info =
       IdentityManagerFactory::GetForBrowserState(browserState)
-          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
+          ->GetPrimaryAccountInfo(consentLevel);
 
   return base::SysUTF8ToNSString(info.email);
 }
@@ -121,7 +103,7 @@
       chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefService->SetString(prefs::kGoogleServicesLastUsername, emailAddress);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+      initWithOperation:AuthenticationOperationReauthenticate
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_RESIGNIN_INFOBAR];
   UIViewController* baseViewController =

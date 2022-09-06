@@ -200,7 +200,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstructionSig
 			sampleId = As<SIMD::Int>(in[i]);
 		}
 
-		SamplerCore s(constants, samplerState);
+		SamplerCore s(constants, samplerState, samplerFunction);
 
 		// For explicit-lod instructions the LOD can be different per SIMD lane. SamplerCore currently assumes
 		// a single LOD per four elements, so we sample the image again for each LOD separately.
@@ -209,8 +209,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstructionSig
 		   samplerFunction.method == Bias || samplerFunction.method == Fetch)
 		{
 			// Only perform per-lane sampling if LOD diverges or we're doing Grad sampling.
-			Bool perLaneSampling = samplerFunction.method == Grad || lodOrBias.x != lodOrBias.y ||
-			                       lodOrBias.x != lodOrBias.z || lodOrBias.x != lodOrBias.w;
+			Bool perLaneSampling = (samplerFunction.method == Grad) || Divergent(As<SIMD::Int>(lodOrBias));
 			auto lod = Pointer<Float>(&lodOrBias);
 			Int i = 0;
 			Do
@@ -225,7 +224,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstructionSig
 				dPdy.y = Pointer<Float>(&dsy.y)[i];
 				dPdy.z = Pointer<Float>(&dsy.z)[i];
 
-				Vector4f sample = s.sampleTexture(texture, uvwa, dRef, lod[i], dPdx, dPdy, offset, sampleId, samplerFunction);
+				Vector4f sample = s.sampleTexture(texture, uvwa, dRef, lod[i], dPdx, dPdy, offset, sampleId);
 
 				If(perLaneSampling)
 				{
@@ -250,7 +249,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstructionSig
 		}
 		else
 		{
-			Vector4f sample = s.sampleTexture(texture, uvwa, dRef, lodOrBias.x, (dsx.x), (dsy.x), offset, sampleId, samplerFunction);
+			Vector4f sample = s.sampleTexture(texture, uvwa, dRef, lodOrBias.x, (dsx.x), (dsy.x), offset, sampleId);
 
 			Pointer<SIMD::Float> rgba = out;
 			rgba[0] = sample.x;

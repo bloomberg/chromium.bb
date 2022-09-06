@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/debug/debug_overlay_handler.h"
 
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -14,13 +15,16 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_paths.h"
 #include "ui/display/display_switches.h"
 #include "ui/snapshot/snapshot.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace chromeos {
 
@@ -60,8 +64,7 @@ void RunStoreScreenshotOnTaskRunner(
 }  // namespace
 // DebugOverlayHandler, public: -----------------------------------------------
 
-DebugOverlayHandler::DebugOverlayHandler(JSCallsContainer* js_calls_container)
-    : BaseWebUIHandler(js_calls_container) {
+DebugOverlayHandler::DebugOverlayHandler() {
   // Rules for base directory:
   // 1) If command-line switch is specified, use the directory
   // 2) else if chromeos-on-linux case create OOBE_Screenshots in user-data-dir
@@ -101,12 +104,13 @@ DebugOverlayHandler::~DebugOverlayHandler() = default;
 void DebugOverlayHandler::DeclareJSCallbacks() {
   AddCallback("debug.captureScreenshot",
               &DebugOverlayHandler::HandleCaptureScreenshot);
+  AddCallback("debug.toggleColorMode", &DebugOverlayHandler::ToggleColorMode);
 }
 
 void DebugOverlayHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {}
 
-void DebugOverlayHandler::Initialize() {}
+void DebugOverlayHandler::InitializeDeprecated() {}
 
 // DebugOverlayHandler, private: ----------------------------------------------
 
@@ -130,12 +134,21 @@ void DebugOverlayHandler::HandleCaptureScreenshot(const std::string& name) {
     if (add_resolution_to_filename_)
       filename.append("_" + rect.size().ToString());
 
+    if (ash::ColorProvider::Get()->IsDarkModeEnabled()) {
+      filename.append("_dark");
+    }
+
     filename.append(".png");
     ui::GrabWindowSnapshotAsyncPNG(
         root_window, rect,
         base::BindOnce(&RunStoreScreenshotOnTaskRunner, screenshot_dir_,
                        filename));
   }
+}
+
+void DebugOverlayHandler::ToggleColorMode() {
+  ash::ColorProvider::Get()->SetDarkModeEnabledForTest(  // IN-TEST
+      !ash::ColorProvider::Get()->IsDarkModeEnabled());
 }
 
 }  // namespace chromeos

@@ -11,8 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -69,7 +72,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
     kRemovingProfile,
     kConnectingToProfile,
     kRefreshingProfileList,
-    kResettingEuiccMemory
+    kResettingEuiccMemory,
+    kDisablingProfile,
   };
 
   // Callback which returns InhibitLock on inhibit success or nullptr on
@@ -167,8 +171,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
   void SetInhibitProperty();
   void OnSetPropertySuccess();
   void OnSetPropertyError(bool attempted_inhibit,
-                          const std::string& error_name,
-                          std::unique_ptr<base::DictionaryValue> error_data);
+                          const std::string& error_name);
   // Returns result of setting inhibit property. |result| is the operation
   // error result and is set only for failures.
   void ReturnSetInhibitPropertyResult(
@@ -176,6 +179,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
       absl::optional<InhibitOperationResult> result);
 
   NetworkStateHandler* network_state_handler_ = nullptr;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
+
   NetworkDeviceHandler* network_device_handler_ = nullptr;
 
   State state_ = State::kIdle;
@@ -195,5 +202,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
 std::ostream& operator<<(
     std::ostream& stream,
     const chromeos::CellularInhibitor::InhibitReason& inhibit_reason);
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::CellularInhibitor;
+}
 
 #endif  // CHROMEOS_NETWORK_CELLULAR_INHIBITOR_H_

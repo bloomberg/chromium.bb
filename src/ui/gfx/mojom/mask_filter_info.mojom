@@ -9,4 +9,5 @@ import "ui/gfx/mojom/rrect_f.mojom";
 // See ui/gfx/mask_filter_info.h.
 struct MaskFilterInfo {
   gfx.mojom.RRectF rounded_corner_bounds;
+  // TODO(crbug.com/1039003): add gradient mask field
 };

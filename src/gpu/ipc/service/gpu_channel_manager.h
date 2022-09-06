@@ -19,6 +19,7 @@
 #include "base/process/process_handle.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -124,7 +125,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const SyncToken& sync_token);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void WakeUpGpu();
 #endif
   void DestroyAllChannels();
@@ -170,7 +171,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   GpuProcessActivityFlags* activity_flags() { return &activity_flags_; }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void DidAccessGpu();
   void OnBackgroundCleanup();
 #endif
@@ -289,7 +290,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void ScheduleWakeUpGpu();
   void DoWakeUpGpu();
 #endif
@@ -328,7 +329,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   GpuFeatureInfo gpu_feature_info_;
   ServiceDiscardableManager discardable_manager_;
   PassthroughDiscardableManager passthrough_discardable_manager_;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Last time we know the GPU was powered on. Global for tracking across all
   // transport surfaces.
   base::TimeTicks last_gpu_access_time_;

@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_UTILS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_UTILS_H_
 
+#include <stddef.h>
 #include <string>
+#include <tuple>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -26,6 +30,20 @@ class BrowserContext;
 }
 
 namespace web_app {
+
+class WebAppProvider;
+
+namespace default_offline {
+// |alternative_error_page_params| dictionary key values in the
+// |AlternativeErrorPageOverrideInfo| mojom struct.
+const char kMessage[] = "web_app_default_offline_message";
+const char kAppShortName[] = "app_short_name";
+const char kThemeColor[] = "theme_color";
+const char kBackgroundColor[] = "customized_background_color";
+const char kIconUrl[] = "icon_url";
+const char kDarkModeBackgroundColor[] = "dark_mode_background_color";
+const char kDarkModeThemeColor[] = "dark_mode_theme_color";
+}  // namespace default_offline
 
 // These functions return true if the WebApp System or its subset is allowed
 // for a given profile.
@@ -87,17 +105,21 @@ bool AreNewFileHandlersASubsetOfOld(const apps::FileHandlers& old_handlers,
                                     const apps::FileHandlers& new_handlers);
 
 // Returns a display-ready string that holds all file type associations handled
-// by the app referenced by `app_id`. This will return capitalized file
-// extensions with the period truncated, like "TXT, PNG". `found_multiple`, when
-// non-null, will be set to indicate whether the returned string is a list
-// (false indicates it's a single object). Note that on Linux, the files must
-// actually match both the specified MIME types as well as the specified file
-// extensions, so this list of extensions is an incomplete picture (subset) of
-// which file types will be accepted.
-std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
+// by the app referenced by `app_id`, as well as the number if items in the
+// list. This will return capitalized file extensions with the period truncated,
+// like "TXT, PNG". Note that on Linux, the files must actually match both the
+// specified MIME types as well as the specified file extensions, so this list
+// of extensions is an incomplete picture (subset) of which file types will be
+// accepted.
+std::tuple<std::u16string, size_t /*count*/>
+GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
+                                                 const AppId& app_id);
+
+// As above, but returns the extensions handled by the app as a vector of
+// strings.
+std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
     Profile* profile,
-    const AppId& app_id,
-    bool* found_multiple = nullptr);
+    const AppId& app_id);
 
 // Updates the approved or disallowed protocol list for the given app. If
 // necessary, it also updates the protocol registration with the OS.
@@ -115,6 +137,19 @@ void PersistFileHandlersUserChoice(Profile* profile,
                                    bool allowed,
                                    base::OnceClosure update_finished_callback);
 
+// Updates the file handler registration with the OS to match the app's
+// settings. Note that this tries to avoid extra work by no-oping if the current
+// OS state matches what is calculated to be the desired stated. For example, if
+// Chromium has already registered file handlers with the OS, and finds that
+// file handlers *should* be registered with the OS, this function will no-op.
+// This will not account for what the current file handlers actually are. The
+// actual set of file handlers can only change on app update, and that path must
+// go through `OsIntegrationManager::UpdateOsHooks()`, which always clobbers and
+// renews the entire set of OS-registered file handlers (and other OS hooks).
+void UpdateFileHandlerOsIntegration(WebAppProvider* provider,
+                                    const AppId& app_id,
+                                    base::OnceClosure update_finished_callback);
+
 // Check if only |specified_sources| exist in the |sources|
 bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
                                              WebAppSources specified_sources);
@@ -122,7 +157,16 @@ bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
 // Check if all types of |sources| are uninstallable by the user.
 bool CanUserUninstallWebApp(WebAppSources sources);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Extracts app_id from chrome://app-settings/<app-id> URL path.
+AppId GetAppIdFromAppSettingsUrl(const GURL& url);
+
+// Check if |url|'s path is an installed web app.
+bool HasAppSettingsPage(Profile* profile, const GURL& url);
+
+// Returns whether `url` is in scope `scope`. False if scope is invalid.
+bool IsInScope(const GURL& url, const GURL& scope);
+
+#if BUILDFLAG(IS_CHROMEOS)
 // The kLacrosPrimary and kWebAppsCrosapi features are each independently
 // sufficient to enable the web apps Crosapi (used for Lacros web app
 // management).
@@ -137,6 +181,19 @@ void EnableSystemWebAppsInLacrosForTesting();
 // Allow user web apps on profiles other than the main profile.
 void SkipMainProfileCheckForTesting();
 #endif
+
+constexpr char kAppSettingsPageEntryPointsHistogramName[] =
+    "WebApp.AppSettingsPage.EntryPoints";
+
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppSettingsPageEntryPoint enum listing in
+// tools/metrics/histograms/enums.xml.
+enum class AppSettingsPageEntryPoint {
+  kPageInfoView = 0,
+  kChromeAppsPage = 1,
+  kMaxValue = kChromeAppsPage,
+};
 
 }  // namespace web_app
 

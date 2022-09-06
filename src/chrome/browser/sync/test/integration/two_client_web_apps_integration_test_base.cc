@@ -10,7 +10,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "services/network/public/cpp/network_switches.h"
 
-namespace web_app {
+namespace web_app::integration_tests {
 
 TwoClientWebAppsIntegrationTestBase::TwoClientWebAppsIntegrationTestBase()
     : WebAppsSyncTestBase(TWO_CLIENT), helper_(this) {}
@@ -24,8 +24,8 @@ void TwoClientWebAppsIntegrationTestBase::AddBlankTabAndShow(Browser* browser) {
   InProcessBrowserTest::AddBlankTabAndShow(browser);
 }
 
-net::EmbeddedTestServer*
-TwoClientWebAppsIntegrationTestBase::EmbeddedTestServer() {
+const net::EmbeddedTestServer*
+TwoClientWebAppsIntegrationTestBase::EmbeddedTestServer() const {
   return embedded_test_server();
 }
 
@@ -38,21 +38,20 @@ bool TwoClientWebAppsIntegrationTestBase::IsSyncTest() {
 }
 
 void TwoClientWebAppsIntegrationTestBase::SyncTurnOff() {
-  for (auto* client : GetSyncClients()) {
+  for (SyncServiceImplHarness* client : GetSyncClients()) {
     client->StopSyncServiceAndClearData();
   }
 }
 
 void TwoClientWebAppsIntegrationTestBase::SyncTurnOn() {
-  for (auto* client : GetSyncClients()) {
+  for (SyncServiceImplHarness* client : GetSyncClients()) {
     client->StartSyncService();
   }
   AwaitWebAppQuiescence();
 }
 
 void TwoClientWebAppsIntegrationTestBase::AwaitWebAppQuiescence() {
-  ASSERT_TRUE(AwaitQuiescence());
-  apps_helper::AwaitWebAppQuiescence(GetAllProfiles());
+  ASSERT_TRUE(apps_helper::AwaitWebAppQuiescence(GetAllProfiles()));
 }
 
 void TwoClientWebAppsIntegrationTestBase::SetUp() {
@@ -67,8 +66,9 @@ void TwoClientWebAppsIntegrationTestBase::SetUpOnMainThread() {
 }
 
 bool TwoClientWebAppsIntegrationTestBase::SetupClients() {
-  if (!SyncTest::SetupClients())
+  if (!SyncTest::SetupClients()) {
     return false;
+  }
 
   for (Profile* profile : GetAllProfiles()) {
     auto* web_app_provider = WebAppProvider::GetForTest(profile);
@@ -91,4 +91,4 @@ void TwoClientWebAppsIntegrationTestBase::SetUpCommandLine(
   command_line->AppendSwitch("disable-fake-server-failure-output");
 }
 
-}  // namespace web_app
+}  // namespace web_app::integration_tests

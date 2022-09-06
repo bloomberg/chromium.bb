@@ -11,7 +11,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/dom_action.pb.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/element_finder_result.h"
 
 namespace autofill_assistant {
 
@@ -33,8 +33,8 @@ class CheckOptionElementAction : public Action {
 
   void EndAction(const ClientStatus& status);
 
-  ElementFinder::Result select_;
-  ElementFinder::Result option_;
+  ElementFinderResult select_;
+  ElementFinderResult option_;
   ProcessActionCallback callback_;
 
   base::WeakPtrFactory<CheckOptionElementAction> weak_ptr_factory_{this};

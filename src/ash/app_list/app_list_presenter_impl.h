@@ -20,6 +20,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -104,6 +105,16 @@ class ASH_EXPORT AppListPresenterImpl
   ShelfAction ToggleAppList(int64_t display_id,
                             AppListShowSource show_source,
                             base::TimeTicks event_time_stamp);
+
+  // Handles `AppListController::UpdateAppListWithNewSortingOrder()` for the
+  // app list presenter.
+  void UpdateForNewSortingOrder(
+      const absl::optional<AppListSortOrder>& new_order,
+      bool animate,
+      base::OnceClosure update_position_closure);
+
+  // Updates the continue section visibility based on user preference.
+  void UpdateContinueSectionVisibility();
 
   // Returns current visibility of the app list. Deprecated, use
   // |IsAtLeastPartiallyVisible| instead.
@@ -208,6 +219,9 @@ class ASH_EXPORT AppListPresenterImpl
   // https://crbug.com/884889).
   void SnapAppListBoundsToDisplayEdge();
 
+  // Called when the reorder animation completes.
+  void OnAppListReorderAnimationDone();
+
   // Owns |this|.
   AppListControllerImpl* const controller_;
 
@@ -238,6 +252,8 @@ class ASH_EXPORT AppListPresenterImpl
   // Data we need to store for metrics.
   absl::optional<base::Time> last_open_time_;
   absl::optional<AppListShowSource> last_open_source_;
+
+  base::WeakPtrFactory<AppListPresenterImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

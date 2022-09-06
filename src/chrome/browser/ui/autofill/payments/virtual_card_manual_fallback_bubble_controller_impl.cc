@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -101,9 +102,16 @@ VirtualCardManualFallbackBubbleControllerImpl::GetBubbleTitleText() const {
 }
 
 std::u16string
-VirtualCardManualFallbackBubbleControllerImpl::GetEducationalBodyLabel() const {
+VirtualCardManualFallbackBubbleControllerImpl::GetLearnMoreLinkText() const {
   return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_EDUCATIONAL_BODY_LABEL);
+      IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LEARN_MORE_LINK_LABEL);
+}
+
+std::u16string
+VirtualCardManualFallbackBubbleControllerImpl::GetEducationalBodyLabel() const {
+  return l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_EDUCATIONAL_BODY_LABEL,
+      GetLearnMoreLinkText());
 }
 
 std::u16string
@@ -166,6 +174,13 @@ VirtualCardManualFallbackBubbleControllerImpl::GetVirtualCard() const {
 bool VirtualCardManualFallbackBubbleControllerImpl::ShouldIconBeVisible()
     const {
   return should_icon_be_visible_;
+}
+
+void VirtualCardManualFallbackBubbleControllerImpl::OnLinkClicked(
+    const GURL& url) {
+  web_contents()->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
 }
 
 void VirtualCardManualFallbackBubbleControllerImpl::OnBubbleClosed(

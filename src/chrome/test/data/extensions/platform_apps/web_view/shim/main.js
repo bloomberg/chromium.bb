@@ -3373,6 +3373,48 @@ function testWebRequestBlockedNavigation() {
   document.body.appendChild(webview);
 }
 
+function testBlankWebview() {
+  var webview = new WebView();
+  webview.src = "about:blank";
+  document.body.appendChild(webview);
+  webview.addEventListener('loadstop', function() {
+    // This lets the browser know that it can start sending down input events
+    // for the remainder of the test.
+    embedder.test.succeed();
+  });
+}
+
+function testAddFencedFrame() {
+  let fencedFrameHostURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/fenced_frame_host.html';
+
+  let webview = new WebView();
+  webview.src = fencedFrameHostURL;
+  webview.addEventListener('loadstop', () => {
+    embedder.test.succeed();
+  });
+  document.body.appendChild(webview);
+}
+
+function testActivatePortal() {
+  let portalHostURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/portal_host.html';
+  let webview = new WebView();
+  webview.src = portalHostURL;
+  webview.addEventListener('loadstop', () => {
+    webview.contentWindow.postMessage('activate', '*');
+  });
+  window.addEventListener('message', (e) => {
+    // TODO(crbug.com/942534): Support portals in guest views.
+    // Once we do, update this test to check for correct behaviour. For now,
+    // we're basically just checking that attempting this doesn't cause a crash.
+    embedder.test.assertTrue(e.data.includes('Not implemented'));
+    embedder.test.succeed();
+  });
+
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -3381,6 +3423,7 @@ embedder.test.testList = {
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,
   'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
   'testAPIMethodExistence': testAPIMethodExistence,
+  'testBlankWebview': testBlankWebview,
   'testCustomElementCallbacksInaccessible':
       testCustomElementCallbacksInaccessible,
   'testChromeExtensionURL': testChromeExtensionURL,
@@ -3500,7 +3543,9 @@ embedder.test.testList = {
   'testBlobURL': testBlobURL,
   'testWebViewAndEmbedderInNewWindow': testWebViewAndEmbedderInNewWindow,
   'testSelectPopupPositionInMac': testSelectPopupPositionInMac,
-  'testWebRequestBlockedNavigation': testWebRequestBlockedNavigation
+  'testWebRequestBlockedNavigation': testWebRequestBlockedNavigation,
+  'testAddFencedFrame': testAddFencedFrame,
+  'testActivatePortal': testActivatePortal,
 };
 
 onload = function() {

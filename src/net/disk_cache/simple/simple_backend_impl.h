@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
@@ -46,11 +47,11 @@ namespace disk_cache {
 // destroyed during the iteration will be included in any pre-existing
 // iterations.
 //
-// The non-static functions below must be called on the source creation sequence
-// unless otherwise stated.  Historically the source creation sequence has been
-// the IO thread, but the simple backend may now be used from other sequences.
+// The non-static functions below must be called on the sequence on which the
+// SimpleBackendImpl instance is created.
 
 class BackendCleanupTracker;
+class BackendFileOperationsFactory;
 class SimpleEntryImpl;
 class SimpleFileTracker;
 class SimpleIndex;
@@ -59,17 +60,17 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     public SimpleIndexDelegate,
     public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
-  static const base::Feature kPrioritizedSimpleCacheTasks;
-
   // Note: only pass non-nullptr for |file_tracker| if you don't want the global
   // one (which things other than tests would want). |file_tracker| must outlive
   // the backend and all the entries, including their asynchronous close.
-  SimpleBackendImpl(const base::FilePath& path,
-                    scoped_refptr<BackendCleanupTracker> cleanup_tracker,
-                    SimpleFileTracker* file_tracker,
-                    int64_t max_bytes,
-                    net::CacheType cache_type,
-                    net::NetLog* net_log);
+  SimpleBackendImpl(
+      scoped_refptr<BackendFileOperationsFactory> file_operations_factory,
+      const base::FilePath& path,
+      scoped_refptr<BackendCleanupTracker> cleanup_tracker,
+      SimpleFileTracker* file_tracker,
+      int64_t max_bytes,
+      net::CacheType cache_type,
+      net::NetLog* net_log);
 
   ~SimpleBackendImpl() override;
 
@@ -85,9 +86,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // Returns the maximum file size permitted in this backend.
   int64_t MaxFileSize() const override;
-
-  // Flush our SequencedWorkerPool.
-  static void FlushWorkerPoolForTesting();
 
   // The entry for |entry_hash| is being doomed; the backend will not attempt
   // run new operations for this |entry_hash| until the Doom is completed.
@@ -135,7 +133,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     return prioritized_task_runner_.get();
   }
 
-#if defined(OS_ANDROID)
+  static constexpr base::TaskTraits kWorkerPoolTaskTraits = {
+      base::MayBlock(), base::WithBaseSyncPrimitives(),
+      base::TaskPriority::USER_BLOCKING,
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+
+#if BUILDFLAG(IS_ANDROID)
   void set_app_status_listener(
       base::android::ApplicationStatusListener* app_status_listener) {
     app_status_listener_ = app_status_listener;
@@ -181,10 +184,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                                            int result);
 
   // Try to create the directory if it doesn't exist. This must run on the
-  // source creation sequence.
-  static DiskStatResult InitCacheStructureOnDisk(const base::FilePath& path,
-                                                 uint64_t suggested_max_size,
-                                                 net::CacheType cache_type);
+  // sequence on which SimpleIndexFile is running disk I/O.
+  static DiskStatResult InitCacheStructureOnDisk(
+      std::unique_ptr<BackendFileOperations> file_operations,
+      const base::FilePath& path,
+      uint64_t suggested_max_size,
+      net::CacheType cache_type);
 
   // Looks at current state of |entries_pending_doom_| and |active_entries_|
   // relevant to |entry_hash|, and, as appropriate, either returns a valid entry
@@ -249,6 +254,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // Calculates and returns a new entry's worker pool priority.
   uint32_t GetNewEntryPriority(net::RequestPriority request_priority);
 
+  scoped_refptr<BackendFileOperationsFactory> file_operations_factory_;
+
   // We want this destroyed after every other field.
   scoped_refptr<BackendCleanupTracker> cleanup_tracker_;
 
@@ -256,10 +263,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   const base::FilePath path_;
   std::unique_ptr<SimpleIndex> index_;
-
-  // This is only used for initial open (including potential format upgrade)
-  // and index load/save.
-  const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
 
   // This is used for all the entry I/O.
   scoped_refptr<net::PrioritizedTaskRunner> prioritized_task_runner_;
@@ -280,7 +283,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   uint32_t entry_count_ = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   raw_ptr<base::android::ApplicationStatusListener> app_status_listener_ =
       nullptr;
 #endif

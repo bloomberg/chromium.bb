@@ -47,6 +47,8 @@ const char kHevcMimeType[] = "video/hevc";
 const char kVp8MimeType[] = "video/x-vnd.on2.vp8";
 const char kVp9MimeType[] = "video/x-vnd.on2.vp9";
 const char kAv1MimeType[] = "video/av01";
+const char kDtsMimeType[] = "audio/vnd.dts";
+const char kDtsxP2MimeType[] = "audio/vnd.dts.uhd;profile=p2";
 }  // namespace
 
 static CodecProfileLevel MediaCodecProfileLevelToChromiumProfileLevel(
@@ -116,7 +118,20 @@ static bool HasVp9Profile23Decoder() {
 
 // static
 std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
-  if (IsPassthroughAudioFormat(codec))
+  return CodecToAndroidMimeType(codec, kUnknownSampleFormat);
+}
+
+// static
+std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec,
+                                                   SampleFormat sample_format) {
+  // Passthrough is possible for some bitstream formats.
+  const bool is_passthrough = sample_format == kSampleFormatDts ||
+                              sample_format == kSampleFormatDtsxP2 ||
+                              sample_format == kSampleFormatAc3 ||
+                              sample_format == kSampleFormatEac3 ||
+                              sample_format == kSampleFormatMpegHAudio;
+
+  if (IsPassthroughAudioFormat(codec) || is_passthrough)
     return kBitstreamAudioMimeType;
 
   switch (codec) {
@@ -134,6 +149,10 @@ std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
       return kAc3MimeType;
     case AudioCodec::kEAC3:
       return kEac3MimeType;
+    case AudioCodec::kDTS:
+      return kDtsMimeType;
+    case AudioCodec::kDTSXP2:
+      return kDtsxP2MimeType;
     default:
       return std::string();
   }
@@ -269,7 +288,14 @@ bool MediaCodecUtil::IsSetOutputSurfaceSupported() {
 
 // static
 bool MediaCodecUtil::IsPassthroughAudioFormat(AudioCodec codec) {
-  return codec == AudioCodec::kAC3 || codec == AudioCodec::kEAC3;
+  switch (codec) {
+    case AudioCodec::kAC3:
+    case AudioCodec::kEAC3:
+    case AudioCodec::kMpegHAudio:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // static
@@ -283,12 +309,8 @@ bool MediaCodecUtil::CanDecode(AudioCodec codec) {
 }
 
 // static
-bool MediaCodecUtil::IsH264EncoderAvailable(bool use_codec_list) {
-  if (use_codec_list)
-    return IsEncoderSupportedByDevice(kAvcMimeType);
-
-  // Assume support since Chrome only supports Marshmallow+.
-  return true;
+bool MediaCodecUtil::IsH264EncoderAvailable() {
+  return IsEncoderSupportedByDevice(kAvcMimeType);
 }
 
 // static

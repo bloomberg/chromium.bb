@@ -28,6 +28,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -36,16 +37,19 @@
 #include "api/async_dns_resolver.h"
 #include "api/async_resolver_factory.h"
 #include "api/candidate.h"
+#include "api/ice_transport_interface.h"
 #include "api/rtc_error.h"
 #include "api/sequence_checker.h"
 #include "api/transport/enums.h"
 #include "api/transport/stun.h"
 #include "logging/rtc_event_log/events/rtc_event_ice_candidate_pair_config.h"
 #include "logging/rtc_event_log/ice_logger.h"
+#include "p2p/base/basic_async_resolver_factory.h"
 #include "p2p/base/candidate_pair_interface.h"
 #include "p2p/base/connection.h"
 #include "p2p/base/ice_controller_factory_interface.h"
 #include "p2p/base/ice_controller_interface.h"
+#include "p2p/base/ice_switch_reason.h"
 #include "p2p/base/ice_transport_internal.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/p2p_transport_channel_ice_field_trials.h"
@@ -56,7 +60,6 @@
 #include "p2p/base/transport_description.h"
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/constructor_magic.h"
 #include "rtc_base/dscp.h"
 #include "rtc_base/network/sent_packet.h"
 #include "rtc_base/network_route.h"
@@ -105,24 +108,19 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
   static std::unique_ptr<P2PTransportChannel> Create(
       const std::string& transport_name,
       int component,
-      PortAllocator* allocator,
-      webrtc::AsyncDnsResolverFactoryInterface* async_dns_resolver_factory,
-      webrtc::RtcEventLog* event_log = nullptr,
-      IceControllerFactoryInterface* ice_controller_factory = nullptr);
+      webrtc::IceTransportInit init);
+
   // For testing only.
   // TODO(zstein): Remove once AsyncDnsResolverFactory is required.
   P2PTransportChannel(const std::string& transport_name,
                       int component,
-                      PortAllocator* allocator);
-  ABSL_DEPRECATED("bugs.webrtc.org/12598")
-  P2PTransportChannel(
-      const std::string& transport_name,
-      int component,
-      PortAllocator* allocator,
-      webrtc::AsyncResolverFactory* async_resolver_factory,
-      webrtc::RtcEventLog* event_log = nullptr,
-      IceControllerFactoryInterface* ice_controller_factory = nullptr);
+                      PortAllocator* allocator,
+                      const webrtc::FieldTrialsView* field_trials = nullptr);
+
   ~P2PTransportChannel() override;
+
+  P2PTransportChannel(const P2PTransportChannel&) = delete;
+  P2PTransportChannel& operator=(const P2PTransportChannel&) = delete;
 
   // From TransportChannelImpl:
   IceTransportState GetState() const override;
@@ -210,6 +208,7 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
 
   // Public for unit tests.
   rtc::ArrayView<Connection*> connections() const;
+  void RemoveConnectionForTest(Connection* connection);
 
   // Public for unit tests.
   PortAllocatorSession* allocator_session() const {
@@ -247,29 +246,32 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
       // on release, this pointer is set.
       std::unique_ptr<webrtc::AsyncDnsResolverFactoryInterface>
           owned_dns_resolver_factory,
-      webrtc::RtcEventLog* event_log = nullptr,
-      IceControllerFactoryInterface* ice_controller_factory = nullptr);
+      webrtc::RtcEventLog* event_log,
+      IceControllerFactoryInterface* ice_controller_factory,
+      const webrtc::FieldTrialsView* field_trials);
   bool IsGettingPorts() {
     RTC_DCHECK_RUN_ON(network_thread_);
     return allocator_session()->IsGettingPorts();
   }
 
   // Returns true if it's possible to send packets on `connection`.
-  bool ReadyToSend(Connection* connection) const;
+  bool ReadyToSend(const Connection* connection) const;
   bool PresumedWritable(const Connection* conn) const;
   void UpdateConnectionStates();
-  void RequestSortAndStateUpdate(IceControllerEvent reason_to_sort);
+  void RequestSortAndStateUpdate(IceSwitchReason reason_to_sort);
   // Start pinging if we haven't already started, and we now have a connection
   // that's pingable.
   void MaybeStartPinging();
 
-  void SortConnectionsAndUpdateState(IceControllerEvent reason_to_sort);
+  void SortConnectionsAndUpdateState(IceSwitchReason reason_to_sort);
   void SortConnections();
   void SortConnectionsIfNeeded();
-  void SwitchSelectedConnection(Connection* conn, IceControllerEvent reason);
+  rtc::NetworkRoute ConfigureNetworkRoute(const Connection* conn);
+  void SwitchSelectedConnection(Connection* conn, IceSwitchReason reason);
   void UpdateState();
   void HandleAllTimedOut();
   void MaybeStopPortAllocatorSessions();
+  void OnSelectedConnectionDestroyed() RTC_RUN_ON(network_thread_);
 
   // ComputeIceTransportState computes the RTCIceTransportState as described in
   // https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate. ComputeState
@@ -340,9 +342,9 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
 
   // Returns true if the new_connection is selected for transmission.
   bool MaybeSwitchSelectedConnection(Connection* new_connection,
-                                     IceControllerEvent reason);
+                                     IceSwitchReason reason);
   bool MaybeSwitchSelectedConnection(
-      IceControllerEvent reason,
+      IceSwitchReason reason,
       IceControllerInterface::SwitchResult result);
   void PruneConnections();
 
@@ -398,6 +400,8 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
 
   int64_t ComputeEstimatedDisconnectedTimeMs(int64_t now,
                                              Connection* old_connection);
+
+  void ParseFieldTrials(const webrtc::FieldTrialsView* field_trials);
 
   webrtc::ScopedTaskSafety task_safety_;
   std::string transport_name_ RTC_GUARDED_BY(network_thread_);
@@ -486,6 +490,12 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
       Candidate candidate,
       const webrtc::AsyncDnsResolverResult& result);
 
+  // Bytes/packets sent/received on this channel.
+  uint64_t bytes_sent_ = 0;
+  uint64_t bytes_received_ = 0;
+  uint64_t packets_sent_ = 0;
+  uint64_t packets_received_ = 0;
+
   // Number of times the selected_connection_ has been modified.
   uint32_t selected_candidate_pair_changes_ = 0;
 
@@ -493,9 +503,8 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
   // from connection->last_data_received() that uses rtc::TimeMillis().
   int64_t last_data_received_ms_ = 0;
 
-  IceFieldTrials field_trials_;
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(P2PTransportChannel);
+  // Parsed field trials.
+  IceFieldTrials ice_field_trials_;
 };
 
 }  // namespace cricket

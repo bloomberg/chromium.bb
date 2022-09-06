@@ -31,6 +31,7 @@
 #include "atsc_a53.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "decode.h"
 #include "internal.h"
 
@@ -230,12 +231,15 @@ static av_cold int libdav1d_init(AVCodecContext *c)
     s.frame_size_limit = c->max_pixels;
     if (dav1d->apply_grain >= 0)
         s.apply_grain = dav1d->apply_grain;
-    else if (c->export_side_data & AV_CODEC_EXPORT_DATA_FILM_GRAIN)
-        s.apply_grain = 0;
+    else
+        s.apply_grain = !(c->export_side_data & AV_CODEC_EXPORT_DATA_FILM_GRAIN);
 
     s.all_layers = dav1d->all_layers;
     if (dav1d->operating_point >= 0)
         s.operating_point = dav1d->operating_point;
+#if FF_DAV1D_VERSION_AT_LEAST(6,2)
+    s.strict_std_compliance = c->strict_std_compliance > 0;
+#endif
 
 #if FF_DAV1D_VERSION_AT_LEAST(6,0)
     if (dav1d->frame_threads || dav1d->tile_threads)
@@ -344,8 +348,10 @@ static int libdav1d_receive_frame(AVCodecContext *c, AVFrame *frame)
     if (res < 0) {
         if (res == AVERROR(EINVAL))
             res = AVERROR_INVALIDDATA;
-        if (res != AVERROR(EAGAIN))
+        if (res != AVERROR(EAGAIN)) {
+            dav1d_data_unref(data);
             return res;
+        }
     }
 
     res = dav1d_get_picture(dav1d->c, p);
@@ -376,7 +382,8 @@ static int libdav1d_receive_frame(AVCodecContext *c, AVFrame *frame)
 
 #if FF_DAV1D_VERSION_AT_LEAST(5,1)
     dav1d_get_event_flags(dav1d->c, &event_flags);
-    if (event_flags & DAV1D_EVENT_FLAG_NEW_SEQUENCE)
+    if (c->pix_fmt == AV_PIX_FMT_NONE ||
+        event_flags & DAV1D_EVENT_FLAG_NEW_SEQUENCE)
 #endif
     libdav1d_init_params(c, p->seq_hdr);
     res = ff_decode_frame_props(c, frame);
@@ -567,19 +574,19 @@ static const AVClass libdav1d_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_libdav1d_decoder = {
-    .name           = "libdav1d",
-    .long_name      = NULL_IF_CONFIG_SMALL("dav1d AV1 decoder by VideoLAN"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_AV1,
+const FFCodec ff_libdav1d_decoder = {
+    .p.name         = "libdav1d",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("dav1d AV1 decoder by VideoLAN"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_AV1,
     .priv_data_size = sizeof(Libdav1dContext),
     .init           = libdav1d_init,
     .close          = libdav1d_close,
     .flush          = libdav1d_flush,
-    .receive_frame  = libdav1d_receive_frame,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    FF_CODEC_RECEIVE_FRAME_CB(libdav1d_receive_frame),
+    .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_SETS_PKT_DTS |
                       FF_CODEC_CAP_AUTO_THREADS,
-    .priv_class     = &libdav1d_class,
-    .wrapper_name   = "libdav1d",
+    .p.priv_class   = &libdav1d_class,
+    .p.wrapper_name = "libdav1d",
 };

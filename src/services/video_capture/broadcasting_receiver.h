@@ -49,7 +49,7 @@ class BroadcastingReceiver : public mojom::VideoFrameHandler {
     // have to unwrap it before we can clone it. Instead of unwrapping, cloning,
     // and than wrapping back each time we need to clone it, we convert it to
     // a regular shared memory and keep it in this form.
-    void ConvertRawFileDescriptorToSharedBuffer();
+    void ConvertRawFileDescriptorToUnsafeShmemRegion();
 
     int32_t buffer_context_id_;
     int32_t buffer_id_;
@@ -95,6 +95,7 @@ class BroadcastingReceiver : public mojom::VideoFrameHandler {
   void OnBufferRetired(int32_t buffer_id) override;
   void OnError(media::VideoCaptureError error) override;
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
+  void OnFrameWithEmptyRegionCapture() override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;

@@ -5,7 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    Exposed(Window WebGPU, Worker WebGPU)
+    Exposed(Window WebGPU, DedicatedWorker WebGPU),
+    SecureContext
 ] interface GPUQueue {
     void submit(sequence<GPUCommandBuffer> buffers);
 
@@ -37,12 +38,6 @@
         ArrayBuffer data,
         GPUImageDataLayout dataLayout,
         GPUExtent3D size);
-
-    // Deprecated
-    [RaisesException] void copyImageBitmapToTexture(
-        GPUImageCopyImageBitmap source,
-        GPUImageCopyTexture destination,
-        GPUExtent3D copySize);
 
     [RaisesException] void copyExternalImageToTexture(
         GPUImageCopyExternalImage source,

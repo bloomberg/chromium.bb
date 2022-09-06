@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace blink {
 
@@ -57,12 +58,12 @@ AXInlineTextBox::AXInlineTextBox(
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
 void AXInlineTextBox::GetRelativeBounds(AXObject** out_container,
-                                        FloatRect& out_bounds_in_container,
-                                        skia::Matrix44& out_container_transform,
+                                        gfx::RectF& out_bounds_in_container,
+                                        gfx::Transform& out_container_transform,
                                         bool* clips_children) const {
   *out_container = nullptr;
-  out_bounds_in_container = FloatRect();
-  out_container_transform.setIdentity();
+  out_bounds_in_container = gfx::RectF();
+  out_container_transform.MakeIdentity();
 
   if (!inline_text_box_ || !ParentObject() ||
       !ParentObject()->GetLayoutObject()) {
@@ -70,11 +71,11 @@ void AXInlineTextBox::GetRelativeBounds(AXObject** out_container,
   }
 
   *out_container = ParentObject();
-  out_bounds_in_container = FloatRect(inline_text_box_->LocalBounds());
+  out_bounds_in_container = gfx::RectF(inline_text_box_->LocalBounds());
 
   // Subtract the local bounding box of the parent because they're
   // both in the same coordinate system.
-  FloatRect parent_bounding_box =
+  gfx::RectF parent_bounding_box =
       ParentObject()->LocalBoundingBoxRectForAccessibility();
   out_bounds_in_container.Offset(-parent_bounding_box.OffsetFromOrigin());
 }
@@ -251,8 +252,7 @@ void AXInlineTextBox::SerializeMarkerAttributes(
 
   if (IsDetached())
     return;
-  if (!GetDocument() ||
-      GetDocument()->IsSlotAssignmentOrLegacyDistributionDirty()) {
+  if (!GetDocument() || GetDocument()->IsSlotAssignmentDirty()) {
     // In order to retrieve the document markers we need access to the flat
     // tree. If the slot assignments in a shadow DOM subtree are dirty,
     // accessing the flat tree will cause them to be updated, which could in

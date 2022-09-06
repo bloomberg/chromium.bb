@@ -31,8 +31,7 @@ CopyPreventionSettingsPolicyHandler::~CopyPreventionSettingsPolicyHandler() =
 bool CopyPreventionSettingsPolicyHandler::CheckPolicySettings(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors) {
-  const base::Value* value = policies.GetValue(policy_name());
-  if (!value)
+  if (!policies.IsPolicySet(policy_name()))
     return true;
 
   if (!SchemaValidatingPolicyHandler::CheckPolicySettings(policies, errors))
@@ -45,9 +44,11 @@ bool CopyPreventionSettingsPolicyHandler::CheckPolicySettings(
     return false;
   }
 
-  const base::Value* enable = value->FindListKey(
+  const base::Value::Dict& dict =
+      policies.GetValue(policy_name(), base::Value::Type::DICT)->GetDict();
+  const base::Value::List* enable = dict.FindList(
       enterprise::content::kCopyPreventionSettingsEnableFieldName);
-  const base::Value* disable = value->FindListKey(
+  const base::Value::List* disable = dict.FindList(
       enterprise::content::kCopyPreventionSettingsDisableFieldName);
   if (!enable || !disable) {
     errors->AddError(policy_name(),
@@ -55,7 +56,7 @@ bool CopyPreventionSettingsPolicyHandler::CheckPolicySettings(
     return false;
   }
 
-  for (auto& pattern : disable->GetList()) {
+  for (auto& pattern : *disable) {
     if (pattern.GetString() == "*") {
       errors->AddError(
           policy_name(),
@@ -70,7 +71,8 @@ bool CopyPreventionSettingsPolicyHandler::CheckPolicySettings(
 void CopyPreventionSettingsPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
-  const base::Value* value = policies.GetValue(policy_name());
+  const base::Value* value =
+      policies.GetValue(policy_name(), base::Value::Type::DICT);
   if (!value)
     return;
 

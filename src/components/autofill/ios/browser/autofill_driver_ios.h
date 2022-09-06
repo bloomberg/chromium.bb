@@ -34,29 +34,26 @@ class AutofillDriverIOS : public AutofillDriver {
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
-      BrowserAutofillManager::AutofillDownloadManagerState
-          enable_download_manager);
+      AutofillManager::EnableDownloadManager enable_download_manager);
 
   static AutofillDriverIOS* FromWebStateAndWebFrame(web::WebState* web_state,
                                                     web::WebFrame* web_frame);
 
   // AutofillDriver:
   bool IsIncognito() const override;
-  bool IsInMainFrame() const override;
+  bool IsInAnyMainFrame() const override;
   bool IsPrerendering() const override;
   bool CanShowAutofillUi() const override;
   ui::AXTreeID GetAxTreeId() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
-  base::flat_map<FieldGlobalId, ServerFieldType> FillOrPreviewForm(
+  std::vector<FieldGlobalId> FillOrPreviewForm(
       int query_id,
       mojom::RendererFormDataAction action,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override;
-  void PropagateAutofillPredictions(
-      const std::vector<autofill::FormStructure*>& forms) override;
   void HandleParsedForms(const std::vector<const FormData*>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
@@ -87,13 +84,13 @@ class AutofillDriverIOS : public AutofillDriver {
   void set_processed(bool processed) { processed_ = processed; }
 
  protected:
-  AutofillDriverIOS(web::WebState* web_state,
-                    web::WebFrame* web_frame,
-                    AutofillClient* client,
-                    id<AutofillDriverIOSBridge> bridge,
-                    const std::string& app_locale,
-                    BrowserAutofillManager::AutofillDownloadManagerState
-                        enable_download_manager);
+  AutofillDriverIOS(
+      web::WebState* web_state,
+      web::WebFrame* web_frame,
+      AutofillClient* client,
+      id<AutofillDriverIOSBridge> bridge,
+      const std::string& app_locale,
+      AutofillManager::EnableDownloadManager enable_download_manager);
 
  private:
   // The WebState with which this object is associated.

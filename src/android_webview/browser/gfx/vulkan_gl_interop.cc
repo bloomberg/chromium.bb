@@ -15,6 +15,7 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
@@ -53,8 +54,9 @@ class VulkanGLInterop::GLNonOwnedCompatibilityContext
  public:
   GLNonOwnedCompatibilityContext()
       : gl::GLContextEGL(nullptr),
-        surface_(
-            base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(gfx::Size(1, 1))) {
+        surface_(base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(
+            gl::GLSurfaceEGL::GetGLDisplayEGL(),
+            gfx::Size(1, 1))) {
     gl::GLContextAttribs attribs;
     Initialize(surface_.get(), attribs);
 

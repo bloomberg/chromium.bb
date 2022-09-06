@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/phonehub/browser_tabs_metadata_fetcher_impl.h"
 
 #include "base/barrier_closure.h"
+#include "base/time/time.h"
 #include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/sync_sessions/synced_session.h"
@@ -26,7 +27,7 @@ GetSortedMetadataWithoutFavicons(const sync_sessions::SyncedSession* session) {
     for (const std::unique_ptr<sessions::SessionTab>& tab : window.tabs) {
       int selected_index = tab->normalized_navigation_index();
 
-      if (selected_index + 1 > tab->navigations.size() ||
+      if (selected_index + 1 > static_cast<int>(tab->navigations.size()) ||
           tab->navigations.empty()) {
         continue;
       }

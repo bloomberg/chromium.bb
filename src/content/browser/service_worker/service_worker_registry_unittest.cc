@@ -30,6 +30,9 @@ namespace content {
 
 namespace {
 
+using ::testing::Eq;
+using ::testing::Pointee;
+
 struct ReadResponseHeadResult {
   int result;
   network::mojom::URLResponseHeadPtr response_head;
@@ -129,7 +132,7 @@ int WriteBasicResponse(
     int64_t id) {
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0Content-Length: 5\0\0";
   const char kHttpBody[] = "Hello";
-  std::string headers(kHttpHeaders, base::size(kHttpHeaders));
+  std::string headers(kHttpHeaders, std::size(kHttpHeaders));
   return WriteStringResponse(storage, id, headers, std::string(kHttpBody));
 }
 
@@ -715,13 +718,14 @@ TEST_F(ServiceWorkerRegistryTest, StoreFindUpdateDeleteRegistration) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(options, kKey, kRegistrationId,
-                                    context()->AsWeakPtr());
-  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      live_registration.get(), kResource1, blink::mojom::ScriptType::kClassic,
-      kVersionId,
-      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
-      context()->AsWeakPtr());
+      base::MakeRefCounted<ServiceWorkerRegistration>(
+          options, kKey, kRegistrationId, context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version =
+      base::MakeRefCounted<ServiceWorkerVersion>(
+          live_registration.get(), kResource1,
+          blink::mojom::ScriptType::kClassic, kVersionId,
+          mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+          context()->AsWeakPtr());
   live_version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
@@ -757,9 +761,9 @@ TEST_F(ServiceWorkerRegistryTest, StoreFindUpdateDeleteRegistration) {
             found_registration->resources_total_size_bytes());
   EXPECT_EQ(used_features,
             found_registration->waiting_version()->used_features());
-  EXPECT_EQ(
+  EXPECT_THAT(
       found_registration->waiting_version()->cross_origin_embedder_policy(),
-      coep_require_corp);
+      Pointee(Eq(coep_require_corp)));
   found_registration = nullptr;
 
   // But FindRegistrationForScope is always async.
@@ -2440,10 +2444,8 @@ TEST_F(ServiceWorkerRegistryResourceTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registry()->UpdateToActiveState(
-      registration_->id(),
-      blink::StorageKey(url::Origin::Create(registration_->scope())),
-      base::DoNothing());
+  registry()->UpdateToActiveState(registration_->id(), registration_->key(),
+                                  base::DoNothing());
   ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       CreateContainerHostForWindow(

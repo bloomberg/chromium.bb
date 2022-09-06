@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
@@ -323,8 +322,6 @@ void CorsURLLoaderFactory::ClearBindings() {
 }
 
 void CorsURLLoaderFactory::DeleteIfNeeded() {
-  if (!context_)
-    return;
   if (receivers_.empty() && url_loaders_.empty() && cors_url_loaders_.empty())
     context_->DestroyURLLoaderFactory(this);
 }
@@ -474,16 +471,16 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
 
   // Depending on the type of request, compare either `request_initiator` or
   // `request.url` to `request_initiator_origin_lock_`.
-  InitiatorLockCompatibility initiator_lock_compatibility =
-      VerifyRequestInitiatorLockWithPluginCheck(
-          process_id_, request_initiator_origin_lock_, origin_to_validate);
-  UMA_HISTOGRAM_ENUMERATION(
-      "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-      initiator_lock_compatibility);
+  InitiatorLockCompatibility initiator_lock_compatibility;
+  if (process_id_ == mojom::kBrowserProcessId) {
+    initiator_lock_compatibility = InitiatorLockCompatibility::kBrowserProcess;
+  } else {
+    initiator_lock_compatibility = VerifyRequestInitiatorLock(
+        request_initiator_origin_lock_, origin_to_validate);
+  }
   switch (initiator_lock_compatibility) {
     case InitiatorLockCompatibility::kCompatibleLock:
     case InitiatorLockCompatibility::kBrowserProcess:
-    case InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin:
       break;
 
     case InitiatorLockCompatibility::kNoLock:
@@ -509,7 +506,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       return false;
   }
 
-  if (context_ && !GetAllowAnyCorsExemptHeaderForBrowser() &&
+  if (!GetAllowAnyCorsExemptHeaderForBrowser() &&
       !IsValidCorsExemptHeaders(*context_->cors_exempt_header_list(),
                                 request.cors_exempt_headers)) {
     return false;
@@ -588,6 +585,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
     if (request.net_log_create_info) {
       mojo::ReportBadMessage(
           "CorsURLLoaderFactory: net_log_create_info field is not expected.");
+      return false;
     }
 
     // `net_log_reference_info` field is expected to be used within network
@@ -596,13 +594,14 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       mojo::ReportBadMessage(
           "CorsURLLoaderFactory: net_log_reference_info field is not "
           "expected.");
+      return false;
     }
-  }
 
-  if (request.target_ip_address_space != mojom::IPAddressSpace::kUnknown) {
-    mojo::ReportBadMessage(
-        "CorsURLLoaderFactory: target_ip_address_space field is set");
-    return false;
+    if (request.target_ip_address_space != mojom::IPAddressSpace::kUnknown) {
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: target_ip_address_space field is set");
+      return false;
+    }
   }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
@@ -610,29 +609,8 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
   return true;
 }
 
-InitiatorLockCompatibility
-CorsURLLoaderFactory::VerifyRequestInitiatorLockWithPluginCheck(
-    uint32_t process_id,
-    const absl::optional<url::Origin>& request_initiator_origin_lock,
-    const absl::optional<url::Origin>& request_initiator) {
-  if (process_id == mojom::kBrowserProcessId)
-    return InitiatorLockCompatibility::kBrowserProcess;
-
-  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
-      request_initiator_origin_lock, request_initiator);
-
-  if (result == InitiatorLockCompatibility::kIncorrectLock &&
-      request_initiator.has_value() &&
-      context_->network_service()->IsInitiatorAllowedForPlugin(
-          process_id, request_initiator.value())) {
-    result = InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin;
-  }
-
-  return result;
-}
-
 bool CorsURLLoaderFactory::GetAllowAnyCorsExemptHeaderForBrowser() const {
-  return context_ && process_id_ == mojom::kBrowserProcessId &&
+  return process_id_ == mojom::kBrowserProcessId &&
          context_->allow_any_cors_exempt_header_for_browser();
 }
 

@@ -24,7 +24,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -166,15 +166,16 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       portal_contents,
       autofill::ChromeAutofillClient::FromWebContents(portal_contents),
-      g_browser_process->GetApplicationLocale(),
-      autofill::BrowserAutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      base::BindRepeating(
+          &autofill::BrowserDriverInitHook,
+          autofill::ChromeAutofillClient::FromWebContents(portal_contents),
+          g_browser_process->GetApplicationLocale()));
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       portal_contents,
       autofill::ChromeAutofillClient::FromWebContents(portal_contents));
   HistoryTabHelper::CreateForWebContents(portal_contents);
   infobars::ContentInfoBarManager::CreateForWebContents(portal_contents);
   PrefsTabHelper::CreateForWebContents(portal_contents);
-  DataReductionProxyTabHelper::CreateForWebContents(portal_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
       portal_contents, HostContentSettingsMapFactory::GetForProfile(profile),
       safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
@@ -283,14 +284,6 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     return javascript_dialogs::TabModalDialogManager::FromWebContents(source);
   }
   return javascript_dialogs::AppModalDialogManager::GetInstance();
-}
-
-void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(
-    content::WebContents* web_contents,
-    blink::PreviewsState* previews_state) {
-  if (GetDisplayMode(web_contents) != blink::mojom::DisplayMode::kBrowser) {
-    *previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
-  }
 }
 
 void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
@@ -451,11 +444,9 @@ void TabWebContentsDelegateAndroid::UpdateUserGestureCarryoverInfo(
 
 content::PictureInPictureResult
 TabWebContentsDelegateAndroid::EnterPictureInPicture(
-    content::WebContents* web_contents,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
-  return PictureInPictureWindowManager::GetInstance()->EnterPictureInPicture(
-      web_contents, surface_id, natural_size);
+    content::WebContents* web_contents) {
+  return PictureInPictureWindowManager::GetInstance()
+      ->EnterVideoPictureInPicture(web_contents);
 }
 
 void TabWebContentsDelegateAndroid::ExitPictureInPicture() {
@@ -466,8 +457,11 @@ bool TabWebContentsDelegateAndroid::IsBackForwardCacheSupported() {
   return true;
 }
 
-bool TabWebContentsDelegateAndroid::IsPrerender2Supported() {
-  return true;
+bool TabWebContentsDelegateAndroid::IsPrerender2Supported(
+    content::WebContents& web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents.GetBrowserContext());
+  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs());
 }
 
 std::unique_ptr<content::WebContents>
@@ -644,7 +638,7 @@ void JNI_TabWebContentsDelegateAndroidImpl_OnRendererUnresponsive(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   if (base::RandDouble() < 0.01)
-    web_contents->GetMainFrame()->GetProcess()->DumpProcessStack();
+    web_contents->GetPrimaryMainFrame()->GetProcess()->DumpProcessStack();
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHungRendererInfoBar)) {
@@ -655,7 +649,7 @@ void JNI_TabWebContentsDelegateAndroidImpl_OnRendererUnresponsive(
       infobars::ContentInfoBarManager::FromWebContents(web_contents);
   DCHECK(!FindHungRendererInfoBar(infobar_manager));
   HungRendererInfoBarDelegate::Create(
-      infobar_manager, web_contents->GetMainFrame()->GetProcess());
+      infobar_manager, web_contents->GetPrimaryMainFrame()->GetProcess());
 }
 
 void JNI_TabWebContentsDelegateAndroidImpl_OnRendererResponsive(
@@ -670,9 +664,6 @@ void JNI_TabWebContentsDelegateAndroidImpl_OnRendererResponsive(
   if (!hung_renderer_infobar)
     return;
 
-  hung_renderer_infobar->delegate()
-      ->AsHungRendererInfoBarDelegate()
-      ->OnRendererResponsive();
   infobar_manager->RemoveInfoBar(hung_renderer_infobar);
 }
 

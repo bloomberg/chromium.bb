@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,7 @@
 #include "device_memory_state.h"
 #include "image_layout_map.h"
 #include "vk_format_utils.h"
+#include "vk_layer_utils.h"
 
 class ValidationStateTracker;
 class SURFACE_STATE;
@@ -65,6 +66,16 @@ static inline VkImageSubresourceRange RangeFromLayers(const VkImageSubresourceLa
     return subresource_range;
 }
 
+class GlobalImageLayoutRangeMap : public subresource_adapter::BothRangeMap<VkImageLayout, 16> {
+  public:
+    GlobalImageLayoutRangeMap(index_type index) : BothRangeMap<VkImageLayout, 16>(index) {}
+    ReadLockGuard ReadLock() const { return ReadLockGuard(lock_); }
+    WriteLockGuard WriteLock() { return WriteLockGuard(lock_); }
+
+  private:
+    mutable ReadWriteLock lock_;
+};
+
 // State for VkImage objects.
 // Parent -> child relationships in the object usage tree:
 // 1. Normal images:
@@ -94,12 +105,13 @@ class IMAGE_STATE : public BINDABLE {
     const VkSwapchainKHR create_from_swapchain;
     std::shared_ptr<SWAPCHAIN_NODE> bind_swapchain;
     uint32_t swapchain_image_index;
-    const VkFormatFeatureFlags format_features;
+    const VkFormatFeatureFlags2KHR format_features;
     // Need to memory requirments for each plane if image is disjoint
     const bool disjoint;  // True if image was created with VK_IMAGE_CREATE_DISJOINT_BIT
     static constexpr int MAX_PLANES = 3;
     using MemoryReqs = std::array<VkMemoryRequirements, MAX_PLANES>;
     const MemoryReqs requirements;
+    const VkMemoryRequirements *const memory_requirements_pointer = &requirements[0];
     std::array<bool, MAX_PLANES> memory_requirements_checked;
     using SparseReqs = std::vector<VkSparseImageMemoryRequirements>;
     const SparseReqs sparse_requirements;
@@ -111,17 +123,21 @@ class IMAGE_STATE : public BINDABLE {
     std::unique_ptr<const subresource_adapter::ImageRangeEncoder> fragment_encoder;  // Fragment resolution encoder
     const VkDevice store_device_as_workaround;                                       // TODO REMOVE WHEN encoder can be const
 
-    layer_data::unordered_set<IMAGE_STATE *> aliasing_images;
+    std::shared_ptr<GlobalImageLayoutRangeMap> layout_range_map;
 
-    IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkFormatFeatureFlags features);
+    IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo,
+                VkFormatFeatureFlags2KHR features);
     IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkSwapchainKHR swapchain,
-                uint32_t swapchain_index, VkFormatFeatureFlags features);
+                uint32_t swapchain_index, VkFormatFeatureFlags2KHR features);
     IMAGE_STATE(IMAGE_STATE const &rh_obj) = delete;
 
     VkImage image() const { return handle_.Cast<VkImage>(); }
 
     bool HasAHBFormat() const { return ahb_format != 0; }
     bool IsCompatibleAliasing(IMAGE_STATE *other_image_state) const;
+
+    // returns true if this image could be using the same memory as another image
+    bool CanAlias() const { return ((createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) != 0) || bind_swapchain; }
 
     bool IsCreateInfoEqual(const VkImageCreateInfo &other_createInfo) const;
     bool IsCreateInfoDedicatedAllocationImageAliasingCompatible(const VkImageCreateInfo &other_createInfo) const;
@@ -171,32 +187,39 @@ class IMAGE_STATE : public BINDABLE {
         }
     }
 
-    void SetMemBinding(std::shared_ptr<DEVICE_MEMORY_STATE> &mem, VkDeviceSize memory_offset) override;
-
     void SetSwapchain(std::shared_ptr<SWAPCHAIN_NODE> &swapchain, uint32_t swapchain_index);
 
     VkDeviceSize GetFakeBaseAddress() const override;
 
     void Destroy() override;
 
+    VkExtent3D GetSubresourceExtent(VkImageAspectFlags aspect_mask, uint32_t mip_level) const;
     VkExtent3D GetSubresourceExtent(const VkImageSubresourceLayers &subresource) const;
 
     VkImageSubresourceRange NormalizeSubresourceRange(const VkImageSubresourceRange &range) const {
         return ::NormalizeSubresourceRange(createInfo, range);
     }
 
+    void SetInitialLayoutMap();
+
   protected:
-    void AddAliasingImage(IMAGE_STATE *bound_image);
-    void Unlink();
     void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
 };
+
+using IMAGE_STATE_NO_BINDING = MEMORY_TRACKED_RESOURCE_STATE<IMAGE_STATE, BindableNoMemoryTracker>;
+using IMAGE_STATE_LINEAR = MEMORY_TRACKED_RESOURCE_STATE<IMAGE_STATE, BindableLinearMemoryTracker>;
+template <bool IS_RESIDENT>
+using IMAGE_STATE_SPARSE = MEMORY_TRACKED_RESOURCE_STATE<IMAGE_STATE, BindableSparseMemoryTracker<IS_RESIDENT>>;
+template <unsigned PLANE_COUNT>
+using IMAGE_STATE_MULTIPLANAR = MEMORY_TRACKED_RESOURCE_STATE<IMAGE_STATE, BindableMultiplanarMemoryTracker<PLANE_COUNT>>;
 
 // State for VkImageView objects.
 // Parent -> child relationships in the object usage tree:
 //    IMAGE_VIEW_STATE [N] -> [1] IMAGE_STATE
 class IMAGE_VIEW_STATE : public BASE_NODE {
   public:
-    const VkImageViewCreateInfo create_info;
+    const safe_VkImageViewCreateInfo safe_create_info;
+    const VkImageViewCreateInfo &create_info;
     const VkImageSubresourceRange normalized_subresource_range;
     const image_layout_map::RangeGenerator range_generator;
     const VkSampleCountFlagBits samples;
@@ -204,15 +227,19 @@ class IMAGE_VIEW_STATE : public BASE_NODE {
     const VkSamplerYcbcrConversion samplerConversion;  // Handle of the ycbcr sampler conversion the image was created with, if any
     const VkFilterCubicImageViewImageFormatPropertiesEXT filter_cubic_props;
     const float min_lod;
-    const VkFormatFeatureFlags format_features;
+    const VkFormatFeatureFlags2KHR format_features;
     const VkImageUsageFlags inherited_usage;  // from spec #resources-image-inherited-usage
     std::shared_ptr<IMAGE_STATE> image_state;
 
     IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &image_state, VkImageView iv, const VkImageViewCreateInfo *ci,
-                     VkFormatFeatureFlags ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props);
+                     VkFormatFeatureFlags2KHR ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props);
     IMAGE_VIEW_STATE(const IMAGE_VIEW_STATE &rh_obj) = delete;
-
     VkImageView image_view() const { return handle_.Cast<VkImageView>(); }
+
+    void LinkChildNodes() override {
+        // Connect child node(s), which cannot safely be done in the constructor.
+        image_state->AddParent(this);
+    }
 
     virtual ~IMAGE_VIEW_STATE() {
         if (!Destroyed()) {
@@ -228,6 +255,9 @@ class IMAGE_VIEW_STATE : public BASE_NODE {
 
     VkOffset3D GetOffset() const;
     VkExtent3D GetExtent() const;
+    uint32_t GetAttachmentLayerCount() const;
+
+    bool Invalid() const override { return Destroyed() || !image_state || image_state->Invalid(); }
 };
 
 struct SWAPCHAIN_IMAGE {
@@ -249,6 +279,7 @@ class SWAPCHAIN_NODE : public BASE_NODE {
     uint32_t get_swapchain_image_count = 0;
     uint64_t max_present_id = 0;
     const safe_VkImageCreateInfo image_create_info;
+
     std::shared_ptr<SURFACE_STATE> surface;
     ValidationStateTracker *dev_data;
     uint32_t acquired_images = 0;
@@ -268,8 +299,6 @@ class SWAPCHAIN_NODE : public BASE_NODE {
     void AcquireImage(uint32_t image_index);
 
     void Destroy() override;
-
-    const NodeSet &ObjectBindings() const { return parent_nodes_; }
 
   protected:
     void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
@@ -329,6 +358,8 @@ class SURFACE_STATE : public BASE_NODE {
     SWAPCHAIN_NODE *swapchain{nullptr};
 
   private:
+    std::unique_lock<std::mutex> Lock() const { return std::unique_lock<std::mutex>(lock_); }
+    mutable std::mutex lock_;
     mutable layer_data::unordered_map<GpuQueue, bool> gpu_queue_support_;
     mutable layer_data::unordered_map<VkPhysicalDevice, std::vector<VkPresentModeKHR>> present_modes_;
     mutable layer_data::unordered_map<VkPhysicalDevice, std::vector<VkSurfaceFormatKHR>> formats_;

@@ -21,6 +21,7 @@
 namespace ash {
 
 namespace {
+
 // Projector network traffic annotation tags.
 constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
     net::DefineNetworkTrafficAnnotation("projector_xhr_loader", R"(
@@ -39,7 +40,10 @@ constexpr char kAuthorizationHeaderPrefix[] = "Bearer ";
 const char* kUrlAllowlist[] = {
     "https://www.googleapis.com/drive/v3/files/",
     "https://www.googleapis.com/upload/drive/v3/files/",
+    // TODO(b/229792620): Remove this URL prefix once web component is updated
+    // with the base URL that force using primary account credential.
     "https://drive.google.com/get_video_info",
+    "https://drive.google.com/u/0/get_video_info",
     "https://translation.googleapis.com/language/translate/v2"};
 
 // Return true if the url matches the allowed URL prefix.
@@ -50,6 +54,11 @@ bool IsUrlAllowlisted(const std::string& url) {
   }
   return false;
 }
+
+// The maximum number of retries for the SimpleURLLoader requests. Three times
+// is an arbitrary number to start with.
+const int kMaxRetries = 3;
+
 }  // namespace
 
 ProjectorXhrSender::ProjectorXhrSender(
@@ -133,7 +142,10 @@ void ProjectorXhrSender::SendRequest(const GURL& url,
 
   if (!request_body.empty())
     loader->AttachStringForUpload(request_body, "application/json");
-
+  loader->SetRetryOptions(
+      kMaxRetries,
+      network::SimpleURLLoader::RETRY_ON_5XX |
+          network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_,
       base::BindOnce(&ProjectorXhrSender::OnSimpleURLLoaderComplete,

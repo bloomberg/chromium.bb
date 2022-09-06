@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_error_or.h"
 #include "base/files/file_path.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -29,7 +30,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "google_apis/common/task_util.h"
-#include "net/base/escape.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/open_file_system_mode.h"
@@ -57,8 +57,8 @@ GURL ConvertRelativeFilePathToFileSystemUrl(const base::FilePath& relative_path,
   GURL base_url = storage::GetFileSystemRootURI(
       source_url, storage::kFileSystemTypeExternal);
   return GURL(base_url.spec() +
-              net::EscapeUrlEncodedData(relative_path.AsUTF8Unsafe(),
-                                        false));  // Space to %20 instead of +.
+              base::EscapeUrlEncodedData(relative_path.AsUTF8Unsafe(),
+                                         false));  // Space to %20 instead of +.
 }
 
 // Creates an ErrorDefinition with an error set to |error|.
@@ -471,13 +471,13 @@ void GenerateUnusedFilenameOnGotMetadata(
     GenerateUnusedFilenameState state,
     base::OnceCallback<void(base::FileErrorOr<storage::FileSystemURL>)>
         callback,
-    base::File::Error error,
-    const base::File::Info& file_info) {
+    base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (error == base::File::FILE_ERROR_NOT_FOUND) {
     std::move(callback).Run(std::move(trial_url));
     return;
-  } else if (error != base::File::FILE_OK) {
+  } else if (error != base::File::FILE_OK &&
+             error != base::File::FILE_ERROR_NOT_A_DIRECTORY) {
     std::move(callback).Run(error);
     return;
   }
@@ -493,9 +493,8 @@ void GenerateUnusedFilenameOnGotMetadata(
       state.destination_folder.mount_type(),
       state.destination_folder.virtual_path().Append(
           base::FilePath::FromUTF8Unsafe(filename)));
-  GetMetadataForPathOnIoThread(
+  CheckIfDirectoryExistsOnIoThread(
       file_system_context, filesystem_url,
-      storage::FileSystemOperation::GET_METADATA_FIELD_NONE,
       base::BindOnce(&GenerateUnusedFilenameOnGotMetadata, filesystem_url,
                      std::move(state), std::move(callback)));
 }
@@ -609,12 +608,12 @@ void ConvertSelectedFileInfoListToFileChooserFileInfoList(
 std::unique_ptr<base::DictionaryValue> ConvertEntryDefinitionToValue(
     const EntryDefinition& entry_definition) {
   auto entry = std::make_unique<base::DictionaryValue>();
-  entry->SetString("fileSystemName", entry_definition.file_system_name);
-  entry->SetString("fileSystemRoot", entry_definition.file_system_root_url);
-  entry->SetString(
+  entry->SetStringKey("fileSystemName", entry_definition.file_system_name);
+  entry->SetStringKey("fileSystemRoot", entry_definition.file_system_root_url);
+  entry->SetStringKey(
       "fileFullPath",
       base::FilePath("/").Append(entry_definition.full_path).AsUTF8Unsafe());
-  entry->SetBoolean("fileIsDirectory", entry_definition.is_directory);
+  entry->SetBoolKey("fileIsDirectory", entry_definition.is_directory);
   return entry;
 }
 
@@ -623,7 +622,8 @@ std::unique_ptr<base::ListValue> ConvertEntryDefinitionListToListValue(
   auto entries = std::make_unique<base::ListValue>();
   for (auto it = entry_definition_list.begin();
        it != entry_definition_list.end(); ++it) {
-    entries->Append(ConvertEntryDefinitionToValue(*it));
+    entries->GetList().Append(
+        base::Value::FromUniquePtrValue(ConvertEntryDefinitionToValue(*it)));
   }
   return entries;
 }
@@ -718,10 +718,8 @@ void GenerateUnusedFilename(
       google_apis::CreateRelayCallback(std::move(callback)));
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&GetMetadataForPathOnIoThread, file_system_context,
-                     std::move(trial_url),
-                     storage::FileSystemOperation::GET_METADATA_FIELD_NONE,
-                     std::move(get_metadata_callback)));
+      base::BindOnce(&CheckIfDirectoryExistsOnIoThread, file_system_context,
+                     std::move(trial_url), std::move(get_metadata_callback)));
 }
 
 }  // namespace util

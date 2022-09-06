@@ -32,6 +32,7 @@ class AppListNotifier;
 enum class AppListViewState;
 struct AppLaunchedMetricParams;
 
+// Wrapper for AppListControllerImpl, used by various app list views.
 class ASH_PUBLIC_EXPORT AppListViewDelegate {
  public:
   virtual ~AppListViewDelegate() = default;
@@ -49,6 +50,13 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // box by the user.
   virtual void StartSearch(const std::u16string& raw_query) = 0;
 
+  // Starts zero state search to load suggested content shown in productivity
+  // launcher. Called when the tablet mode productivity launcher visibility
+  // starts changing to visible. `callback` is called when the zero state search
+  // completes, or times out (i.e. takes more time than `timeout`).
+  virtual void StartZeroStateSearch(base::OnceClosure callback,
+                                    base::TimeDelta timeout) = 0;
+
   // Invoked to open the search result and log a click. If the result is
   // represented by a SuggestedChipView or is a zero state result,
   // |suggested_index| is the index of the view in the list of suggestions.
@@ -59,7 +67,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // |launch_as_default|: True if the result is launched as the default result
   // by user pressing ENTER key.
   virtual void OpenSearchResult(const std::string& result_id,
-                                AppListSearchResultType result_type,
                                 int event_flags,
                                 AppListLaunchedFrom launched_from,
                                 AppListLaunchType launch_type,
@@ -99,11 +106,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Returns the context menu model for a ChromeAppListItem with |id|, or
   // nullptr if there is currently no menu for the item (e.g. during install).
-  // Requests the menu model to include sort options that can sort the app list
-  // if `add_sort_options` is true. Note the returned menu model is owned by
-  // that item.
+  // `item_context` indicates which piece of UI is showing the item (e.g. apps
+  // grid or recent apps). Note the returned menu model is owned by that item.
   virtual void GetContextMenuModel(const std::string& id,
-                                   bool add_sort_options,
+                                   AppListItemContext item_context,
                                    GetContextMenuModelCallback callback) = 0;
 
   // Returns an animation observer if the |target_state| is interesting to the
@@ -123,7 +129,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // its descendants.
   virtual bool CanProcessEventsOnApplistViews() = 0;
 
-  // Returns whether the AppListView should dismiss immediately.
+  // Returns whether the app list should dismiss immediately. For example, when
+  // the assistant takes a screenshot the app list is closed immediately so it
+  // doesn't appear in the screenshot.
   virtual bool ShouldDismissImmediately() = 0;
 
   // Gets the ideal y position for the close animation, which depends on
@@ -208,6 +216,21 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Loads the icon of an app item identified by `app_id`.
   virtual void LoadIcon(const std::string& app_id) = 0;
+
+  // Whether the controller has a valid profile, and hence a valid data model.
+  // Returns false during startup and shutdown.
+  virtual bool HasValidProfile() const = 0;
+
+  // Whether the user wants to hide the continue section and recent apps. Used
+  // by productivity launcher only.
+  virtual bool ShouldHideContinueSection() const = 0;
+
+  // Sets whether the user wants to hide the continue section and recent apps.
+  // Used by productivity launcher only.
+  virtual void SetHideContinueSection(bool hide) = 0;
+
+  // Commits the app list item positions under the temporary sort order.
+  virtual void CommitTemporarySortOrder() = 0;
 };
 
 }  // namespace ash

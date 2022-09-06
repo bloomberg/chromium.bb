@@ -13,6 +13,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/app_list/model/search/search_result.h"
+#include "ash/app_list/views/continue_section_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/shell.h"
@@ -22,6 +23,9 @@
 #include "ui/compositor/compositor.h"
 
 namespace ash {
+
+// The number of files removed from the continue section during this session.
+int g_continue_file_removals_in_session = 0;
 
 const char kAppListPeekingToFullscreenHistogram[] =
     "Apps.AppListPeekingToFullscreenSource";
@@ -51,10 +55,18 @@ constexpr char kCardifiedStateAnimationSmoothnessExit[] =
 constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
     "Apps.AppList.ZeroStateSearchResultUserActionType";
 
-// The UMA histogram that logs user's decision(remove or cancel) for zero state
+// The UMA histogram that logs user's decision (remove or cancel) for zero state
 // search result removal confirmation.
 constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
     "Apps.AppList.ZeroStateSearchResultRemovalDecision";
+
+// The UMA histogram that logs user's decision (remove or cancel) for search
+// result removal confirmation. Recorded if productivity launcher is enabled, in
+// which case search result removal is enabled outside zero state search.
+// Otherwise, the dialog result is reported using
+// `kAppListZeroStateSearchResultRemovalHistogram`.
+constexpr char kSearchResultRemovalDialogDecisionHistogram[] =
+    "Apps.AppList.SearchResultRemovalDecision";
 
 // The base UMA histogram that logs app launches within the HomeLauncher (tablet
 // mode AppList), and the fullscreen AppList (when ProductivityLauncher is
@@ -106,9 +118,22 @@ constexpr char kAppListAppLaunchedHomecherAllApps[] =
 constexpr char kAppListAppLaunchedHomecherSearch[] =
     "Apps.AppListAppLaunchedV2.HomecherSearch";
 
+constexpr char kClamshellReorderAnimationSmoothnessHistogram[] =
+    "Apps.Launcher.ProductivityReorderAnimationSmoothness.ClamshellMode";
+constexpr char kTabletReorderAnimationSmoothnessHistogram[] =
+    "Apps.Launcher.ProductivityReorderAnimationSmoothness.TabletMode";
+
+constexpr char kClamshellReorderActionHistogram[] =
+    "Apps.Launcher.ProductivityReorderAction.ClamshellMode";
+constexpr char kTabletReorderActionHistogram[] =
+    "Apps.Launcher.ProductivityReorderAction.TabletMode";
+
 // The prefix for all the variants that track how long the app list is kept
 // open by open method. Suffix is decided in `GetAppListOpenMethod`
 constexpr char kAppListOpenTimePrefix[] = "Apps.AppListOpenTime.";
+
+constexpr char kContinueSectionFilesRemovedInSessionHistogram[] =
+    "Apps.AppList.Search.ContinueSectionFilesRemovedPerSession";
 
 // The different sources from which a search result is displayed. These values
 // are written to logs.  New enum values can be added, but existing enums must
@@ -202,9 +227,15 @@ void RecordZeroStateSearchResultUserActionHistogram(
 }
 
 void RecordZeroStateSearchResultRemovalHistogram(
-    ZeroStateSearchResutRemovalConfirmation removal_decision) {
+    SearchResultRemovalConfirmation removal_decision) {
   UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSearchResultRemovalHistogram,
                             removal_decision);
+}
+
+void RecordSearchResultRemovalDialogDecision(
+    SearchResultRemovalConfirmation removal_decision) {
+  base::UmaHistogramEnumeration(kSearchResultRemovalDialogDecisionHistogram,
+                                removal_decision);
 }
 
 std::string GetAppListOpenMethod(AppListShowSource source) {
@@ -237,25 +268,47 @@ void RecordAppListUserJourneyTime(AppListShowSource source,
 void RecordPeriodicAppListMetrics() {
   int number_of_apps_in_launcher = 0;
   int number_of_root_level_items = 0;
+  int number_of_folders = 0;
+  int number_of_non_system_folders = 0;
+  int number_of_apps_in_non_system_folders = 0;
 
   AppListModel* const model = AppListModelProvider::Get()->model();
   AppListItemList* const item_list = model->top_level_item_list();
   for (size_t i = 0; i < item_list->item_count(); ++i) {
     AppListItem* item = item_list->item_at(i);
+    if (item->is_page_break())
+      continue;
+    number_of_root_level_items++;
+
+    // Item is a folder.
     if (item->GetItemType() == AppListFolderItem::kItemType) {
       AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
       number_of_apps_in_launcher += folder->item_list()->item_count();
-      number_of_root_level_items++;
-    } else if (!item->is_page_break()) {
-      number_of_apps_in_launcher++;
-      number_of_root_level_items++;
+      number_of_folders++;
+
+      // Ignore the OEM folder and the "Linux apps" folder because those folders
+      // are automatically created. The following metrics are trying to measure
+      // how often users engage with folders that they created themselves.
+      if (folder->IsSystemFolder())
+        continue;
+      number_of_apps_in_non_system_folders += folder->item_list()->item_count();
+      number_of_non_system_folders++;
+      continue;
     }
+
+    // Item is an app that isn't in a folder.
+    number_of_apps_in_launcher++;
   }
 
   UMA_HISTOGRAM_COUNTS_100("Apps.AppList.NumberOfApps",
                            number_of_apps_in_launcher);
   UMA_HISTOGRAM_COUNTS_100("Apps.AppList.NumberOfRootLevelItems",
                            number_of_root_level_items);
+  UMA_HISTOGRAM_COUNTS_100("Apps.AppList.NumberOfFolders", number_of_folders);
+  UMA_HISTOGRAM_COUNTS_100("Apps.AppList.NumberOfNonSystemFolders",
+                           number_of_non_system_folders);
+  UMA_HISTOGRAM_COUNTS_100("Apps.AppList.NumberOfAppsInNonSystemFolders",
+                           number_of_apps_in_non_system_folders);
 }
 
 void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
@@ -422,6 +475,7 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::REORDER_BY_NAME_ALPHABETICAL:
     case CommandId::REORDER_BY_NAME_REVERSE_ALPHABETICAL:
     case CommandId::REORDER_BY_COLOR:
+    case CommandId::HIDE_CONTINUE_SECTION:
     case CommandId::SHUTDOWN_GUEST_OS:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
@@ -455,6 +509,64 @@ void ReportCardifiedSmoothness(bool is_entering_cardified, int smoothness) {
   } else {
     UMA_HISTOGRAM_PERCENTAGE(kCardifiedStateAnimationSmoothnessExit,
                              smoothness);
+  }
+}
+
+// Reports reorder animation smoothness.
+void ReportReorderAnimationSmoothness(bool in_tablet, int smoothness) {
+  if (in_tablet) {
+    base::UmaHistogramPercentage(kTabletReorderAnimationSmoothnessHistogram,
+                                 smoothness);
+  } else {
+    base::UmaHistogramPercentage(kClamshellReorderAnimationSmoothnessHistogram,
+                                 smoothness);
+  }
+}
+
+void RecordAppListSortAction(AppListSortOrder new_order, bool in_tablet) {
+  // NOTE: (1) kNameReverseAlphabetical is not used for now; (2) Resetting the
+  // sort order is not recorded here.
+  DCHECK(new_order != AppListSortOrder::kNameReverseAlphabetical &&
+         new_order != AppListSortOrder::kCustom);
+
+  if (in_tablet)
+    base::UmaHistogramEnumeration(kTabletReorderActionHistogram, new_order);
+  else
+    base::UmaHistogramEnumeration(kClamshellReorderActionHistogram, new_order);
+}
+
+void RecordMetricsOnSessionEnd() {
+  if (ContinueSectionView::EnableContinueSectionFileRemovalMetrics() &&
+      g_continue_file_removals_in_session == 0) {
+    base::UmaHistogramCounts100(kContinueSectionFilesRemovedInSessionHistogram,
+                                0);
+  }
+}
+
+void RecordCumulativeContinueSectionResultRemovedNumber() {
+  base::UmaHistogramCounts100(kContinueSectionFilesRemovedInSessionHistogram,
+                              ++g_continue_file_removals_in_session);
+}
+
+void ResetContinueSectionFileRemovedCountForTest() {
+  g_continue_file_removals_in_session = 0;
+}
+
+void RecordHideContinueSectionMetric() {
+  // The continue section is a productivity launcher feature.
+  if (!features::IsProductivityLauncherEnabled())
+    return;
+
+  const bool hide_continue_section =
+      Shell::Get()->app_list_controller()->ShouldHideContinueSection();
+  if (Shell::Get()->IsInTabletMode()) {
+    base::UmaHistogramBoolean(
+        "Apps.AppList.ContinueSectionHiddenByUser.TabletMode",
+        hide_continue_section);
+  } else {
+    base::UmaHistogramBoolean(
+        "Apps.AppList.ContinueSectionHiddenByUser.ClamshellMode",
+        hide_continue_section);
   }
 }
 

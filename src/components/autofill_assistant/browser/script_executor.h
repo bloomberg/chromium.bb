@@ -13,8 +13,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
@@ -24,8 +26,11 @@
 #include "components/autofill_assistant/browser/retry_timer.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
+#include "components/autofill_assistant/browser/script_executor_ui_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/service/service_request_sender.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/wait_for_dom_observer.h"
 #include "components/autofill_assistant/browser/web/element.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -33,15 +38,15 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace autofill_assistant {
+class ElementFinderResult;
 class ElementStore;
 class UserModel;
-class WaitForDocumentOperation;
+class WaitForDomOperation;
 class WebController;
 
 // Class to execute an assistant script.
 class ScriptExecutor : public ActionDelegate,
-                       public ScriptExecutorDelegate::NavigationListener,
-                       public ScriptExecutorDelegate::Listener {
+                       public ScriptExecutorDelegate::NavigationListener {
  public:
   // Listens to events on ScriptExecutor.
   // TODO(b/806868): Make global_payload a part of callback instead of the
@@ -70,7 +75,8 @@ class ScriptExecutor : public ActionDelegate,
                  const std::string& script_payload,
                  ScriptExecutor::Listener* listener,
                  const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
-                 ScriptExecutorDelegate* delegate);
+                 ScriptExecutorDelegate* delegate,
+                 ScriptExecutorUiDelegate* ui_delegate);
 
   ScriptExecutor(const ScriptExecutor&) = delete;
   ScriptExecutor& operator=(const ScriptExecutor&) = delete;
@@ -113,10 +119,6 @@ class ScriptExecutor : public ActionDelegate,
   // Override ScriptExecutorDelegate::NavigationListener
   void OnNavigationStateChanged() override;
 
-  // Override ScriptExecutorDelegate::Listener
-  void OnPause(const std::string& message,
-               const std::string& button_label) override;
-
   // Override ActionDelegate:
   void RunElementChecks(BatchElementChecker* checker) override;
   void ShortWaitForElement(
@@ -129,6 +131,7 @@ class ScriptExecutor : public ActionDelegate,
       override;
   void WaitForDom(
       base::TimeDelta max_wait_time,
+      bool allow_observer_mode,
       bool allow_interrupt,
       WaitForDomObserver* observer,
       base::RepeatingCallback<
@@ -163,7 +166,7 @@ class ScriptExecutor : public ActionDelegate,
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
       const override;
   void WriteUserData(
-      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
+      base::OnceCallback<void(UserData*, UserDataFieldChange*)>) override;
   void GetFullCard(const autofill::CreditCard* credit_card,
                    GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
@@ -171,7 +174,7 @@ class ScriptExecutor : public ActionDelegate,
               base::OnceCallback<void()> end_on_navigation_callback,
               bool browse_mode,
               bool browse_mode_invisible) override;
-  void CleanUpAfterPrompt() override;
+  void CleanUpAfterPrompt(bool consume_touchable_area = true) override;
   void SetBrowseDomainsAllowlist(std::vector<std::string> domains) override;
   void RetrieveElementFormAndFieldData(
       const Selector& selector,
@@ -179,7 +182,7 @@ class ScriptExecutor : public ActionDelegate,
                               const autofill::FormData& form_data,
                               const autofill::FormFieldData& field_data)>
           callback) override;
-  void StoreScrolledToElement(const ElementFinder::Result& element) override;
+  void StoreScrolledToElement(const ElementFinderResult& element) override;
   void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) override;
   void ExpectNavigation() override;
@@ -188,14 +191,14 @@ class ScriptExecutor : public ActionDelegate,
   void WaitForDocumentReadyState(
       base::TimeDelta max_wait_time,
       DocumentReadyState min_ready_state,
-      const ElementFinder::Result& optional_frame_element,
+      const ElementFinderResult& optional_frame_element,
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
                               base::TimeDelta)> callback) override;
   void WaitUntilDocumentIsInReadyState(
       base::TimeDelta max_wait_time,
       DocumentReadyState min_ready_state,
-      const ElementFinder::Result& optional_frame_element,
+      const ElementFinderResult& optional_frame_element,
       base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback)
       override;
 
@@ -204,7 +207,10 @@ class ScriptExecutor : public ActionDelegate,
   void Close() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   WebsiteLoginManager* GetWebsiteLoginManager() const override;
+  password_manager::PasswordChangeSuccessTracker*
+  GetPasswordChangeSuccessTracker() const override;
   content::WebContents* GetWebContents() const override;
+  JsFlowDevtoolsWrapper* GetJsFlowDevtoolsWrapper() const override;
   ElementStore* GetElementStore() const override;
   WebController* GetWebController() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
@@ -256,160 +262,53 @@ class ScriptExecutor : public ActionDelegate,
   void MaybeShowSlowConnectionWarning() override;
   base::WeakPtr<ActionDelegate> GetWeakPtr() const override;
   ProcessedActionStatusDetailsProto& GetLogInfo() override;
+  void RequestUserData(
+      UserDataEventField event_field,
+      const CollectUserDataOptions& options,
+      base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback)
+      override;
+  bool SupportsExternalActions() override;
+  void RequestExternalAction(
+      const ExternalActionProto& external_action,
+      base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
+          start_dom_checks_callback,
+      base::OnceCallback<void(const external::Result& result)>
+          end_action_callback) override;
+  bool MustUseBackendData() const override;
+  void MaybeSetPreviousAction(
+      const ProcessedActionProto& processed_action) override;
 
  private:
-  // Helper for WaitForElementVisible that keeps track of the state required to
-  // run interrupts while waiting for a specific element.
-  class WaitForDomOperation : public ScriptExecutor::Listener,
-                              ScriptExecutorDelegate::NavigationListener {
-   public:
-    // Let the caller know about either the result of looking for the element or
-    // of an abnormal result from an interrupt.
-    //
-    // If the given result is non-null, it should be forwarded as the result of
-    // the main script.
-    using Callback = base::OnceCallback<void(const ClientStatus&,
-                                             const ScriptExecutor::Result*,
-                                             base::TimeDelta)>;
-
-    using WarningCallback =
-        base::OnceCallback<void(base::OnceCallback<void(bool)>)>;
-
-    // |main_script_| must not be null and outlive this instance.
-    WaitForDomOperation(
-        ScriptExecutor* main_script,
-        ScriptExecutorDelegate* delegate,
-        base::TimeDelta max_wait_time,
-        bool allow_interrupt,
-        WaitForDomObserver* observer,
-        base::RepeatingCallback<
-            void(BatchElementChecker*,
-                 base::OnceCallback<void(const ClientStatus&)>)> check_elements,
-        WaitForDomOperation::Callback callback);
-
-    WaitForDomOperation(const WaitForDomOperation&) = delete;
-    WaitForDomOperation& operator=(const WaitForDomOperation&) = delete;
-
-    ~WaitForDomOperation() override;
-
-    void Run();
-    void Terminate();
-    void SetTimeoutWarningCallback(WarningCallback timeout_warning);
-
-   private:
-    struct ExecutorState {
-      // The status message that was displayed when the interrupt started.
-      std::string status_message;
-      // The state the controller was in when the interrupt triggered.
-      AutofillAssistantState controller_state;
-    };
-
-    void Start();
-    void Pause();
-    void Continue();
-
-    // Implements ScriptExecutorDelegate::NavigationListener
-    void OnNavigationStateChanged() override;
-
-    // Implements ScriptExecutor::Listener
-    void OnServerPayloadChanged(const std::string& global_payload,
-                                const std::string& script_payload) override;
-    void OnScriptListChanged(
-        std::vector<std::unique_ptr<Script>> scripts) override;
-
-    void RunChecks(
-        base::OnceCallback<void(const ClientStatus&)> report_attempt_result);
-    void OnPreconditionCheckDone(const std::string& interrupt_path,
-                                 bool precondition_match);
-    void OnElementCheckDone(const ClientStatus&);
-    void OnAllChecksDone(
-        base::OnceCallback<void(const ClientStatus&)> report_attempt_result);
-    void RunInterrupt(const std::string& path);
-    void OnInterruptDone(const ScriptExecutor::Result& result);
-    void RunCallback(const ClientStatus& element_status);
-    void RunCallbackWithResult(const ClientStatus& element_status,
-                               const ScriptExecutor::Result* result);
-    void SetSlowWarningStatus(bool was_shown);
-
-    // Saves the current state and sets save_pre_interrupt_state_.
-    void SavePreInterruptState();
-
-    // Restores the state as found by SavePreInterruptState.
-    void RestorePreInterruptState();
-
-    // if save_pre_interrupt_state_ is set, attempt to scroll the page back to
-    // the original area.
-    void RestorePreInterruptScroll();
-
-    void TimeoutWarning();
-
-    raw_ptr<ScriptExecutor> main_script_;
-    raw_ptr<ScriptExecutorDelegate> delegate_;
-    const base::TimeDelta max_wait_time_;
-    const bool allow_interrupt_;
-    raw_ptr<WaitForDomObserver> observer_;
-    base::RepeatingCallback<void(BatchElementChecker*,
-                                 base::OnceCallback<void(const ClientStatus&)>)>
-        check_elements_;
-    WaitForDomOperation::Callback callback_;
-    base::OnceCallback<void(base::OnceCallback<void(bool)>)> warning_callback_;
-    std::unique_ptr<base::OneShotTimer> warning_timer_;
-    base::TimeDelta timeout_warning_delay_;
-
-    SlowWarningStatus warning_status_ = NO_WARNING;
-
-    std::unique_ptr<BatchElementChecker> batch_element_checker_;
-
-    // Path of interrupts from |ordered_interrupts_| that have been found
-    // runnable.
-    std::set<std::string> runnable_interrupts_;
-    ClientStatus element_check_result_;
-
-    // An empty vector of interrupts that can be passed to interrupt_executor_
-    // and outlives it. Interrupts must not run interrupts.
-    const std::vector<std::unique_ptr<Script>> no_interrupts_;
-    Stopwatch wait_time_stopwatch_;
-    Stopwatch period_stopwatch_;
-    base::TimeDelta wait_time_total_;
-
-    // The interrupt that's currently running.
-    std::unique_ptr<ScriptExecutor> interrupt_executor_;
-
-    // The state of the ScriptExecutor, as registered before the first interrupt
-    // is run.
-    absl::optional<ExecutorState> saved_pre_interrupt_state_;
-
-    // Paths of the interrupts that were just run. These interrupts are
-    // prevented from firing for one round.
-    std::set<std::string> ran_interrupts_;
-
-    RetryTimer retry_timer_;
-
-    base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_{this};
-  };
+  // TODO(b/220079189): remove this friend declaration.
+  friend class WaitForDomOperation;
 
   void OnGetActions(base::TimeTicks start_time,
                     int http_status,
-                    const std::string& response);
-  bool ProcessNextActionResponse(const std::string& response);
+                    const std::string& response,
+                    const ServiceRequestSender::ResponseInfo& response_info);
+  bool ProcessNextActionResponse(
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
   void ReportPayloadsToListener();
   void ReportScriptsUpdateToListener(
       std::vector<std::unique_ptr<Script>> scripts);
   void RunCallback(bool success);
   void RunCallbackWithResult(const Result& result);
   void ProcessNextAction();
-  void ProcessAction(Action* action);
+  void ProcessCurrentAction();
   void GetNextActions();
   void OnProcessedAction(base::TimeTicks start_time,
                          std::unique_ptr<ProcessedActionProto> action);
-  void CheckElementMatches(
+  void CheckElementConditionMatches(
       const Selector& selector,
       BatchElementChecker* checker,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void CheckElementMatchesCallback(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      const ElementFinder::Result& ignored_element);
+      const std::vector<std::string>& ignored_payloads,
+      const std::vector<std::string>& ignored_tags,
+      const base::flat_map<std::string, DomObjectFrameStack>& ignored_elements);
   void OnShortWaitForElement(
       base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback,
       const ClientStatus& element_status,
@@ -444,11 +343,23 @@ class ScriptExecutor : public ActionDelegate,
       const ClientStatus& status,
       DocumentReadyState ready_state,
       base::TimeDelta wait_time);
-  void OnResume();
+  void OnRequestUserData(
+      base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback,
+      int http_status,
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
+  void OnExternalActionFinished(
+      const ExternalActionProto& external_action,
+      const bool prompt,
+      base::OnceCallback<void(const external::Result& result)> callback,
+      const external::Result& result);
 
   // Maybe shows the message specified in a callout, depending on the current
   // state and client settings.
   bool MaybeShowSlowWarning(const std::string& message, bool enabled);
+
+  // Returns the current ActionData, or nullptr if there is no current action.
+  Action::ActionData* GetCurrentActionData();
 
   const std::string script_path_;
   std::unique_ptr<TriggerContext> additional_context_;
@@ -457,6 +368,7 @@ class ScriptExecutor : public ActionDelegate,
   std::string last_script_payload_;
   const raw_ptr<ScriptExecutor::Listener> listener_;
   const raw_ptr<ScriptExecutorDelegate> delegate_;
+  const raw_ptr<ScriptExecutorUiDelegate> ui_delegate_;
   // Set of interrupts that might run during wait for dom or prompt action with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the
   // vector first should run first. Note that the content of this vector can
@@ -493,37 +405,20 @@ class ScriptExecutor : public ActionDelegate,
   // Callback called the next time |expected_navigation_step_| becomes DONE.
   base::OnceCallback<void(bool)> on_expected_navigation_done_;
 
-  // Data only relevant to the currently running action. It is cleared before an
-  // action is run.
-  struct CurrentActionData {
-    CurrentActionData();
-    ~CurrentActionData();
-    CurrentActionData& operator=(CurrentActionData&& other);
-
-    // Navigation information relevant to the current action.
-    NavigationInfoProto navigation_info;
-
-    std::unique_ptr<WaitForDomOperation> wait_for_dom;
-    std::unique_ptr<WaitForDocumentOperation> wait_for_document;
-
-    // This callback is set when a navigation event should terminate an ongoing
-    // prompt action. Only a prompt action will set a valid callback here.
-    base::OnceCallback<void()> end_prompt_on_navigation_callback;
-  };
-  CurrentActionData current_action_data_;
-  absl::optional<size_t> current_action_index_;
+  // Only set while an action is being executed.
+  raw_ptr<Action> current_action_ = nullptr;
 
   raw_ptr<const UserData> user_data_ = nullptr;
 
-  bool is_paused_ = false;
-  std::string last_status_message_;
-
   base::TimeTicks batch_start_time_;
   RoundtripTimingStats roundtrip_timing_stats_;
+  RoundtripNetworkStats roundtrip_network_stats_;
 
   bool connection_warning_already_shown_ = false;
   bool website_warning_already_shown_ = false;
   int consecutive_slow_roundtrip_counter_ = 0;
+
+  uint64_t run_id_ = 0;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
 };

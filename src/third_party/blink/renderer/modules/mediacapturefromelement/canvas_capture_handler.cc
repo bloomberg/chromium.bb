@@ -15,7 +15,6 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
@@ -280,15 +279,15 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
       std::move(source));
   auto* stream_video_source_ptr = stream_video_source.get();
   auto* stream_source = MakeGarbageCollected<MediaStreamSource>(
-      track_id, MediaStreamSource::kTypeVideo, track_id, false);
-  stream_source->SetPlatformSource(std::move(stream_video_source));
+      track_id, MediaStreamSource::kTypeVideo, track_id, false,
+      std::move(stream_video_source));
   stream_source->SetCapabilities(ComputeCapabilitiesForVideoSource(
       track_id, preferred_formats, mojom::blink::FacingMode::NONE,
       false /* is_device_capture */));
 
-  *component = MakeGarbageCollected<MediaStreamComponent>(stream_source);
-  (*component)
-      ->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  *component = MakeGarbageCollected<MediaStreamComponent>(
+      stream_source,
+      std::make_unique<MediaStreamVideoTrack>(
           stream_video_source_ptr,
           MediaStreamVideoSource::ConstraintsOnceCallback(), true));
 }

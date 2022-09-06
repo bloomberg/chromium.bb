@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -50,9 +51,11 @@ namespace viz {
 class CapturableFrameSink;
 class CompositorFrameSinkSupport;
 class FrameSinkBundleImpl;
+class GmbVideoFramePoolContextProvider;
 class HintSessionFactory;
 class OutputSurfaceProvider;
 class SharedBitmapManager;
+struct VideoCaptureTarget;
 
 // FrameSinkManagerImpl manages BeginFrame hierarchy. This is the implementation
 // detail for FrameSinkManagerImpl.
@@ -67,7 +70,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     InitParams();
     explicit InitParams(
         SharedBitmapManager* shared_bitmap_manager,
-        OutputSurfaceProvider* output_surface_provider = nullptr);
+        OutputSurfaceProvider* output_surface_provider = nullptr,
+        GmbVideoFramePoolContextProvider* gmb_context_provider = nullptr);
     InitParams(InitParams&& other);
     ~InitParams();
     InitParams& operator=(InitParams&& other);
@@ -76,12 +80,14 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     absl::optional<uint32_t> activation_deadline_in_frames =
         kDefaultActivationDeadlineInFrames;
     raw_ptr<OutputSurfaceProvider> output_surface_provider = nullptr;
+    raw_ptr<GmbVideoFramePoolContextProvider> gmb_context_provider = nullptr;
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
     DebugRendererSettings debug_renderer_settings;
     base::ProcessId host_process_id = base::kNullProcessId;
     raw_ptr<HintSessionFactory> hint_session_factory = nullptr;
+    size_t max_uncommitted_frames = 0;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
 
@@ -139,10 +145,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void EvictSurfaces(const std::vector<SurfaceId>& surface_ids) override;
   void RequestCopyOfOutput(const SurfaceId& surface_id,
                            std::unique_ptr<CopyOutputRequest> request) override;
-  void SetHitTestAsyncQueriedDebugRegions(
-      const FrameSinkId& root_frame_sink_id,
-      const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue)
-      override;
   void CacheBackBuffer(uint32_t cache_id,
                        const FrameSinkId& root_frame_sink_id) override;
   void EvictBackBuffer(uint32_t cache_id,
@@ -151,6 +153,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const DebugRendererSettings& debug_settings) override;
   void Throttle(const std::vector<FrameSinkId>& ids,
                 base::TimeDelta interval) override;
+  void StartThrottlingAllFrameSinks(base::TimeDelta interval) override;
+  void StopThrottlingAllFrameSinks() override;
 
   void DestroyFrameSinkBundle(const FrameSinkBundleId& id);
 
@@ -301,7 +305,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // FrameSinkVideoCapturerManager implementation:
   CapturableFrameSink* FindCapturableFrameSink(
-      const FrameSinkId& frame_sink_id) override;
+      const VideoCaptureTarget& target) override;
   void OnCapturerConnectionLost(FrameSinkVideoCapturerImpl* capturer) override;
 
   // Returns true if |child framesink| is or has |search_frame_sink_id| as a
@@ -330,6 +334,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // Provides an output surface for CreateRootCompositorFrameSink().
   const raw_ptr<OutputSurfaceProvider> output_surface_provider_;
+
+  const raw_ptr<GmbVideoFramePoolContextProvider> gmb_context_provider_;
 
   SurfaceManager surface_manager_;
 
@@ -391,8 +397,15 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Ids of the frame sinks that have been requested to throttle.
   std::vector<FrameSinkId> frame_sink_ids_to_throttle_;
 
-  // The throttling interval which defines how often BeginFrames are sent.
+  // The throttling interval which defines how often BeginFrames are sent for
+  // frame sinks in `frame_sink_ids_to_throttle_`, if
+  // `global_throttle_interval_` is unset or if this interval is longer than
+  // `global_throttle_interval_`.
   base::TimeDelta throttle_interval_ = BeginFrameArgs::DefaultInterval();
+
+  // If present, the throttling interval which defines the upper bound of how
+  // often BeginFrames are sent for all current and future frame sinks.
+  absl::optional<base::TimeDelta> global_throttle_interval_ = absl::nullopt;
 
   base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
 

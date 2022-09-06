@@ -54,10 +54,6 @@ const UIStrings = {
   */
   onIgnoreList: 'On ignore list',
   /**
-  *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-  */
-  input: 'Input',
-  /**
   *@description Text that refers to the animation of the web page
   */
   animation: 'Animation',
@@ -109,10 +105,6 @@ const UIStrings = {
   */
   experience: 'Experience',
   /**
-  *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-  */
-  interactions: 'Interactions',
-  /**
   *@description Text for rendering frames
   */
   frames: 'Frames',
@@ -131,18 +123,16 @@ const UIStrings = {
   occurrencesS: 'Occurrences: {PH1}',
   /**
   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-  *@example {10ms} PH1
-  *@example {100.0} PH2
-  */
-  sFfps: '{PH1} ~ {PH2} fps',
-  /**
-  *@description Text in Timeline Flame Chart Data Provider of the Performance panel
   */
   idleFrame: 'Idle Frame',
   /**
   *@description Text in Timeline Frame Chart Data Provider of the Performance panel
   */
   droppedFrame: 'Dropped Frame',
+  /**
+  *@description Text in Timeline Frame Chart Data Provider of the Performance panel
+  */
+  partiallyPresentedFrame: 'Partially Presented Frame',
   /**
   *@description Text for a rendering frame
   */
@@ -161,9 +151,13 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartDataProvider.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+type TimelineFlameChartEntry = (SDK.FilmStripModel.Frame|SDK.TracingModel.Event|
+                                TimelineModel.TimelineFrameModel.TimelineFrame|TimelineModel.TimelineIRModel.Phases);
 export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
     PerfUI.FlameChart.FlameChartDataProvider {
   private readonly font: string;
+  private droppedFramePatternCanvas: HTMLCanvasElement;
+  private partialFramePatternCanvas: HTMLCanvasElement;
   private timelineDataInternal: PerfUI.FlameChart.TimelineData|null;
   private currentLevel: number;
   private performanceModel: PerformanceModel|null;
@@ -180,12 +174,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
   private readonly collapsibleTimingsHeader: PerfUI.FlameChart.GroupStyle;
   private readonly timingsHeader: PerfUI.FlameChart.GroupStyle;
   private readonly screenshotsHeader: PerfUI.FlameChart.GroupStyle;
-  private readonly interactionsHeaderLevel1: PerfUI.FlameChart.GroupStyle;
-  private readonly interactionsHeaderLevel2: PerfUI.FlameChart.GroupStyle;
+  private readonly animationsHeader: PerfUI.FlameChart.GroupStyle;
   private readonly experienceHeader: PerfUI.FlameChart.GroupStyle;
   private readonly flowEventIndexById: Map<string, number>;
-  private entryData!: (SDK.FilmStripModel.Frame|SDK.TracingModel.Event|
-                       TimelineModel.TimelineFrameModel.TimelineFrame|TimelineModel.TimelineIRModel.Phases)[];
+  private entryData!: TimelineFlameChartEntry[];
   private entryTypeByLevel!: EntryType[];
   private markers!: TimelineFlameChartMarker[];
   private asyncColorByInteractionPhase!: Map<TimelineModel.TimelineIRModel.Phases, string>;
@@ -206,6 +198,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     super();
     this.reset();
     this.font = '11px ' + Host.Platform.fontFamily();
+    this.droppedFramePatternCanvas = document.createElement('canvas');
+    this.partialFramePatternCanvas = document.createElement('canvas');
+    this.preparePatternCanvas();
     this.timelineDataInternal = null;
     this.currentLevel = 0;
     this.performanceModel = null;
@@ -239,9 +234,26 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.buildGroupStyle({shareHeaderLine: true, useFirstLineForOverview: true, collapsible: false});
     this.screenshotsHeader =
         this.buildGroupStyle({useFirstLineForOverview: true, nestingLevel: 1, collapsible: false, itemsHeight: 150});
-    this.interactionsHeaderLevel1 = this.buildGroupStyle({useFirstLineForOverview: true});
-    this.interactionsHeaderLevel2 = this.buildGroupStyle({padding: 2, nestingLevel: 1});
+    this.animationsHeader = this.buildGroupStyle({useFirstLineForOverview: false});
     this.experienceHeader = this.buildGroupStyle({collapsible: false});
+
+    ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
+      const headers = [
+        this.headerLevel1,
+        this.headerLevel2,
+        this.staticHeader,
+        this.framesHeader,
+        this.collapsibleTimingsHeader,
+        this.timingsHeader,
+        this.screenshotsHeader,
+        this.animationsHeader,
+        this.experienceHeader,
+      ];
+      for (const header of headers) {
+        header.color = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
+        header.backgroundColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background');
+      }
+    });
 
     this.flowEventIndexById = new Map();
   }
@@ -251,16 +263,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
       padding: 4,
       height: 17,
       collapsible: true,
-      color:
-          ThemeSupport.ThemeSupport.instance().patchColorText('#222', ThemeSupport.ThemeSupport.ColorUsage.Foreground),
-      backgroundColor:
-          ThemeSupport.ThemeSupport.instance().patchColorText('white', ThemeSupport.ThemeSupport.ColorUsage.Background),
+      color: ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary'),
+      backgroundColor: ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background'),
       font: this.font,
       nestingLevel: 0,
       shareHeaderLine: true,
     };
-    return /** @type {!PerfUI.FlameChart.GroupStyle} */ Object.assign(defaultGroupStyle, extra) as
-        PerfUI.FlameChart.GroupStyle;
+    return Object.assign(defaultGroupStyle, extra);
   }
 
   setModel(performanceModel: PerformanceModel|null): void {
@@ -408,10 +417,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
 
     const eventEntryType = EntryType.Event;
 
-    const weight = (track: TimelineModel.TimelineModel.Track): 0|1|2|3|4|5|6|7|8|9|10|- 1 => {
+    const weight = (track: TimelineModel.TimelineModel.Track): 1|2|3|4|5|6|7|8|9|10|- 1 => {
       switch (track.type) {
-        case TimelineModel.TimelineModel.TrackType.Input:
-          return 0;
         case TimelineModel.TimelineModel.TrackType.Animation:
           return 1;
         case TimelineModel.TimelineModel.TrackType.Timings:
@@ -444,16 +451,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     let rasterCount = 0;
     for (const track of tracks) {
       switch (track.type) {
-        case TimelineModel.TimelineModel.TrackType.Input: {
-          this.appendAsyncEventsGroup(
-              track, i18nString(UIStrings.input), track.asyncEvents, this.interactionsHeaderLevel2, eventEntryType,
-              false /* selectable */);
-          break;
-        }
-
         case TimelineModel.TimelineModel.TrackType.Animation: {
           this.appendAsyncEventsGroup(
-              track, i18nString(UIStrings.animation), track.asyncEvents, this.interactionsHeaderLevel2, eventEntryType,
+              track, i18nString(UIStrings.animation), track.asyncEvents, this.animationsHeader, eventEntryType,
               false /* selectable */);
           break;
         }
@@ -696,11 +696,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     if (event.name !== TimelineModel.TimelineModel.RecordType.JSFrame) {
       return false;
     }
-    const url = event.args['data']['url'];
+    const url = event.args['data']['url'] as Platform.DevToolsPath.UrlString;
     return url && this.isIgnoreListedURL(url);
   }
 
-  private isIgnoreListedURL(url: string): boolean {
+  private isIgnoreListedURL(url: Platform.DevToolsPath.UrlString): boolean {
     return Bindings.IgnoreListManager.IgnoreListManager.instance().isIgnoreListedURL(url);
   }
 
@@ -745,7 +745,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     if (!interactionRecords.length) {
       return;
     }
-    this.appendHeader(i18nString(UIStrings.interactions), this.interactionsHeaderLevel1, false /* selectable */);
     for (const segment of interactionRecords) {
       const index = this.entryData.length;
       this.entryData.push((segment.data as TimelineModel.TimelineIRModel.Phases));
@@ -933,9 +932,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
   }
 
   private entryType(entryIndex: number): EntryType {
-    return this.entryTypeByLevel[/** @type {!PerfUI.FlameChart.TimelineData} */ (
-                                     this.timelineDataInternal as PerfUI.FlameChart.TimelineData)
-                                     .entryLevels[entryIndex]];
+    return this.entryTypeByLevel[(this.timelineDataInternal as PerfUI.FlameChart.TimelineData).entryLevels[entryIndex]];
   }
 
   prepareHighlightedEntryInfo(entryIndex: number): Element|null {
@@ -981,14 +978,16 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
 
     } else if (type === EntryType.Frame) {
       const frame = (this.entryData[entryIndex] as TimelineModel.TimelineFrameModel.TimelineFrame);
-      time = i18nString(
-          UIStrings.sFfps,
-          {PH1: i18n.TimeUtilities.preciseMillisToString(frame.duration, 1), PH2: (1000 / frame.duration).toFixed(0)});
+      time = i18n.TimeUtilities.preciseMillisToString(frame.duration, 1);
 
       if (frame.idle) {
         title = i18nString(UIStrings.idleFrame);
       } else if (frame.dropped) {
-        title = i18nString(UIStrings.droppedFrame);
+        if (frame.isPartial) {
+          title = i18nString(UIStrings.partiallyPresentedFrame);
+        } else {
+          title = i18nString(UIStrings.droppedFrame);
+        }
         nameSpanTimelineInfoTime = 'timeline-info-warning';
       } else {
         title = i18nString(UIStrings.frame);
@@ -1079,6 +1078,42 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     return key ? `hsl(${Platform.StringUtilities.hashCode(key) % 300 + 30}, 40%, 70%)` : '#ccc';
   }
 
+  private preparePatternCanvas(): void {
+    // Set the candy stripe pattern to 17px so it repeats well.
+    const size = 17;
+    this.droppedFramePatternCanvas.width = size;
+    this.droppedFramePatternCanvas.height = size;
+
+    this.partialFramePatternCanvas.width = size;
+    this.partialFramePatternCanvas.height = size;
+
+    const ctx = this.droppedFramePatternCanvas.getContext('2d');
+    if (ctx) {
+      // Make a dense solid-line pattern.
+      ctx.translate(size * 0.5, size * 0.5);
+      ctx.rotate(Math.PI * 0.25);
+      ctx.translate(-size * 0.5, -size * 0.5);
+
+      ctx.fillStyle = 'rgb(255, 255, 255)';
+      for (let x = -size; x < size * 2; x += 3) {
+        ctx.fillRect(x, -size, 1, size * 3);
+      }
+    }
+
+    const ctx2 = this.partialFramePatternCanvas.getContext('2d');
+    if (ctx2) {
+      // Make a sparse dashed-line pattern.
+      ctx2.strokeStyle = 'rgb(255, 255, 255)';
+      ctx2.lineWidth = 2;
+      ctx2.beginPath();
+      ctx2.moveTo(17, 0);
+      ctx2.lineTo(10, 7);
+      ctx2.moveTo(8, 9);
+      ctx2.lineTo(2, 15);
+      ctx2.stroke();
+    }
+  }
+
   private drawFrame(
       entryIndex: number, context: CanvasRenderingContext2D, text: string|null, barX: number, barY: number,
       barWidth: number, barHeight: number): void {
@@ -1086,8 +1121,31 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     const frame = (this.entryData[entryIndex] as TimelineModel.TimelineFrameModel.TimelineFrame);
     barX += hPadding;
     barWidth -= 2 * hPadding;
-    context.fillStyle =
-        frame.idle ? 'white' : frame.dropped ? '#f0b7b1' : (frame.hasWarnings() ? '#fad1d1' : '#d7f0d1');
+    if (frame.idle) {
+      context.fillStyle = 'white';
+    } else if (frame.dropped) {
+      if (frame.isPartial) {
+        // For partially presented frame boxes, paint a yellow background with
+        // a sparse white dashed-line pattern overlay.
+        context.fillStyle = '#f0e442';
+        context.fillRect(barX, barY, barWidth, barHeight);
+
+        const overlay = context.createPattern(this.partialFramePatternCanvas, 'repeat');
+        context.fillStyle = overlay || context.fillStyle;
+      } else {
+        // For dropped frame boxes, paint a red background with a dense white
+        // solid-line pattern overlay.
+        context.fillStyle = '#f08080';
+        context.fillRect(barX, barY, barWidth, barHeight);
+
+        const overlay = context.createPattern(this.droppedFramePatternCanvas, 'repeat');
+        context.fillStyle = overlay || context.fillStyle;
+      }
+    } else if (frame.hasWarnings()) {
+      context.fillStyle = '#fad1d1';
+    } else {
+      context.fillStyle = '#d7f0d1';
+    }
     context.fillRect(barX, barY, barWidth, barHeight);
 
     const frameDurationText = i18n.TimeUtilities.preciseMillisToString(frame.duration, 1);
@@ -1143,7 +1201,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
 
     if (type === entryTypes.Screenshot) {
-      this.drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight);
+      void this.drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight);
       return true;
     }
 
@@ -1259,11 +1317,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
   }
 
   private appendAsyncEvent(asyncEvent: SDK.TracingModel.AsyncEvent, level: number): void {
-    if (SDK.TracingModel.TracingModel.isNestableAsyncPhase(asyncEvent.phase)) {
-      // FIXME: also add steps once we support event nesting in the FlameChart.
-      this.appendEvent(asyncEvent, level);
-      return;
-    }
     const steps = asyncEvent.steps;
     // If we have past steps, put the end event for each range rather than start one.
     const eventOffset = steps.length > 1 && steps[1].phase === SDK.TracingModel.Phase.AsyncStepPast ? 1 : 0;
@@ -1379,6 +1432,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     return entryIndex >= 0 && this.entryType(entryIndex) === EntryType.Event ?
         this.entryData[entryIndex] as SDK.TracingModel.Event :
         null;
+  }
+
+  entryDataByIndex(entryIndex: number): TimelineFlameChartEntry {
+    return this.entryData[entryIndex];
   }
 
   setEventColorMapping(colorForEvent: (arg0: SDK.TracingModel.Event) => string): void {

@@ -32,7 +32,7 @@ title: Chrome OS Graphics Reading List
   <tr>
     <td>Aura</td>
     <td>Aura Design Docs</td>
-    <td><a href="http://dev.chromium.org/developers/design-documents/aura">http://dev.chromium.org/developers/design-documents/aura</a></td>
+    <td><a href="http://www.chromium.org/developers/design-documents/aura">http://www.chromium.org/developers/design-documents/aura</a></td>
   </tr>
   <tr>
     <td>GEM</td>

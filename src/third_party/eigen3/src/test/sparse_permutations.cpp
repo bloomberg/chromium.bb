@@ -53,7 +53,7 @@ template<int OtherStorage, typename SparseMatrixType> void sparse_permutations(c
 //   bool IsRowMajor1 = SparseMatrixType::IsRowMajor;
 //   bool IsRowMajor2 = OtherSparseMatrixType::IsRowMajor;
   
-  double density = (std::max)(8./(rows*cols), 0.01);
+  double density = (std::max)(8./static_cast<double>(rows*cols), 0.01);
   
   SparseMatrixType mat(rows, cols), up(rows,cols), lo(rows,cols);
   OtherSparseMatrixType res;

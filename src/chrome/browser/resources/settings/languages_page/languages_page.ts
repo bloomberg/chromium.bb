@@ -8,7 +8,6 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
@@ -17,7 +16,10 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
+// <if expr="_google_chrome or not is_macosx">
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+// </if>
+
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './languages.js';
@@ -25,48 +27,45 @@ import './languages_subpage.js';
 import '../controls/controlled_radio_button.js';
 import '../controls/settings_radio_group.js';
 import '../controls/settings_toggle_button.js';
-import '../icons.js';
+import '../icons.html.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
+import '../settings_vars.css.js';
 // <if expr="not is_macosx">
 import './edit_dictionary_page.js';
 
 // </if>
-
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
-import {loadTimeData} from '../i18n_setup.js';
-import {PrefsMixin} from '../prefs/prefs_mixin.js';
+import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
-import {Router} from '../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
+import {getTemplate} from './languages_page.html.js';
 import {LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_settings_metrics_proxy.js';
 import {LanguageHelper, LanguagesModel, LanguageState, SpellCheckLanguageState} from './languages_types.js';
-
-interface RepeaterEvent extends Event {
-  model: {
-    item: LanguageState,
-  };
-}
 
 type FocusConfig = Map<string, (string|(() => void))>;
 
 const SettingsLanguagesPageElementBase =
-    I18nMixin(PrefsMixin(BaseMixin(PolymerElement)));
+    RouteObserverMixin(I18nMixin(PrefsMixin(BaseMixin(PolymerElement)))) as {
+      new (): PolymerElement & RouteObserverMixinInterface &
+          PrefsMixinInterface & I18nMixinInterface,
+    };
 
-class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
+export class SettingsLanguagesPageElement extends
+    SettingsLanguagesPageElementBase {
   static get is() {
     return 'settings-languages-page';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -104,29 +103,9 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
        */
       detailLanguage_: Object,
 
-      enableDesktopRestructuredLanguageSettings_: {
-        type: Boolean,
-        value() {
-          let enabled = false;
-          // <if expr="not lacros">
-          enabled = loadTimeData.getBoolean(
-              'enableDesktopRestructuredLanguageSettings');
-          // </if>
-          return enabled;
-        },
-      },
-
       hideSpellCheckLanguages_: {
         type: Boolean,
         value: false,
-      },
-
-      /**
-       * Whether the language settings list is opened.
-       */
-      languagesOpened_: {
-        type: Boolean,
-        observer: 'onLanguagesOpenedChanged_',
       },
 
       showAddLanguagesDialog_: Boolean,
@@ -138,15 +117,6 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
           // <if expr="not is_macosx">
           if (routes.EDIT_DICTIONARY) {
             map.set(routes.EDIT_DICTIONARY.path, '#spellCheckSubpageTrigger');
-          }
-          // </if>
-          // <if expr="not lacros">
-          if (loadTimeData.getBoolean(
-                  'enableDesktopRestructuredLanguageSettings')) {
-            if (routes.LANGUAGE_SETTINGS) {
-              map.set(
-                  routes.LANGUAGE_SETTINGS.path, '#languagesSubpageTrigger');
-            }
           }
           // </if>
           return map;
@@ -170,9 +140,7 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
   languageHelper: LanguageHelper;
   private spellCheckLanguages_: Array<LanguageState|SpellCheckLanguageState>;
   private detailLanguage_?: LanguageState;
-  private enableDesktopRestructuredLanguageSettings_: boolean;
   private hideSpellCheckLanguages_: boolean;
-  private languagesOpened_: boolean;
   private showAddLanguagesDialog_: boolean;
   private focusConfig_: FocusConfig;
   private languageSettingsMetricsProxy_: LanguageSettingsMetricsProxy =
@@ -293,7 +261,8 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
   /**
    * Handler for enabling or disabling spell check for a specific language.
    */
-  private onSpellCheckLanguageChange_(e: RepeaterEvent) {
+  private onSpellCheckLanguageChange_(
+      e: DomRepeatEvent<LanguageState|SpellCheckLanguageState>) {
     const item = e.model.item;
     if (!item.language.supportsSpellcheck) {
       return;
@@ -304,17 +273,11 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
   }
 
   /**
-   * @return The display name for a given language code.
-   */
-  private getProspectiveUILanguageName_(languageCode: string): string {
-    return this.languageHelper.getLanguage(languageCode)!.displayName;
-  }
-
-  /**
    * Handler to initiate another attempt at downloading the spell check
    * dictionary for a specified language.
    */
-  private onRetryDictionaryDownloadClick_(e: RepeaterEvent) {
+  private onRetryDictionaryDownloadClick_(
+      e: DomRepeatEvent<LanguageState|SpellCheckLanguageState>) {
     assert(this.errorsGreaterThan_(
         e.model.item.downloadDictionaryFailureCount, 0));
     this.languageHelper.retryDownloadDictionary(e.model.item.language.code);
@@ -324,7 +287,8 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
    * Handler for clicking on the name of the language. The action taken must
    * match the control that is available.
    */
-  private onSpellCheckNameClick_(e: RepeaterEvent) {
+  private onSpellCheckNameClick_(
+      e: DomRepeatEvent<LanguageState|SpellCheckLanguageState>) {
     assert(!this.isSpellCheckNameClickDisabled_(e.model.item));
     this.onSpellCheckLanguageChange_(e);
   }
@@ -350,27 +314,12 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
     return undefined;
   }
 
-  /**
-   * @param newVal The new value of languagesOpened_.
-   * @param oldVal The old value of languagesOpened_.
-   */
-  private onLanguagesOpenedChanged_(newVal: boolean, oldVal: boolean) {
-    if (!oldVal && newVal) {
+  override currentRouteChanged(currentRoute: Route) {
+    if (currentRoute === routes.LANGUAGES) {
       this.languageSettingsMetricsProxy_.recordPageImpressionMetric(
           LanguageSettingsPageImpressionType.MAIN);
     }
   }
-
-  // <if expr="not lacros">
-  /**
-   * Opens the Language Settings page.
-   */
-  private onLanguagesSubpageClick_() {
-    if (this.enableDesktopRestructuredLanguageSettings_) {
-      Router.getInstance().navigateTo(routes.LANGUAGE_SETTINGS);
-    }
-  }
-  // </if>
 
   /**
    * Toggles the expand button within the element being listened to.
@@ -390,6 +339,12 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
     assert(expandButton);
     expandButton.expanded = !expandButton.expanded;
     focusWithoutInk(expandButton);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-languages-page': SettingsLanguagesPageElement;
   }
 }
 

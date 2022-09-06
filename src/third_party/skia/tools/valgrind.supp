@@ -104,7 +104,22 @@
    nv_driver_bug_5
    Memcheck:Leak
    fun:malloc
+   ...
    obj:*/libGLX_nvidia.so*
+}
+{
+    nv_driver_bug_6
+    Memcheck:Leak
+    fun:calloc
+    ...
+    obj:*/libGLX_nvidia.so*
+}
+{
+    nv_driver_bug_7
+    Memcheck:Leak
+    fun:realloc
+    ...
+    obj:*/libGLX_nvidia.so*
 }
 {
     #Fixed by FontConfig 2.9.0

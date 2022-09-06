@@ -13,23 +13,27 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_grpc_library("runtime_service") {
+cast_core_grpc_library("runtime_service_proto") {
     sources = [
         "runtime_service.proto",
     ]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/common:application_config_proto",
         "//third_party/cast_core/public/src/proto/common:duration_proto",
         "//third_party/cast_core/public/src/proto/common:service_info_proto",
         "//third_party/cast_core/public/src/proto/v2:url_rewrite_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_grpc_library("media_service") {
+cast_core_grpc_library("media_service_proto") {
     sources = [
         "cast_audio_channel_service.proto",
     ]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/common:duration_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

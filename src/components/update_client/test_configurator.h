@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -100,16 +101,21 @@ class TestConfigurator : public Configurator {
   bool IsPerUserInstall() const override;
   std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const override;
+  absl::optional<bool> IsMachineExternallyManaged() const override;
+  UpdaterStateProvider GetUpdaterStateProvider() const override;
 
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(double seconds);
   void SetDownloadPreference(const std::string& download_preference);
   void SetEnabledCupSigning(bool use_cup_signing);
   void SetUpdateCheckUrl(const GURL& url);
+  void SetUpdateCheckUrls(const std::vector<GURL>& urls);
   void SetPingUrl(const GURL& url);
   void SetCrxDownloaderFactory(
       scoped_refptr<CrxDownloaderFactory> crx_downloader_factory);
-
+  void SetIsMachineExternallyManaged(
+      absl::optional<bool> is_machine_externally_managed);
+  void SetUpdaterStateProvider(UpdaterStateProvider update_state_provider);
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -125,7 +131,7 @@ class TestConfigurator : public Configurator {
   std::string download_preference_;
   bool enabled_cup_signing_;
   raw_ptr<PrefService> pref_service_;  // Not owned by this class.
-  GURL update_check_url_;
+  std::vector<GURL> update_check_urls_;
   GURL ping_url_;
 
   scoped_refptr<update_client::UnzipChromiumFactory> unzip_factory_;
@@ -135,6 +141,9 @@ class TestConfigurator : public Configurator {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;
   scoped_refptr<CrxDownloaderFactory> crx_downloader_factory_;
+  UpdaterStateProvider updater_state_provider_;
+
+  absl::optional<bool> is_machine_externally_managed_;
 };
 
 }  // namespace update_client

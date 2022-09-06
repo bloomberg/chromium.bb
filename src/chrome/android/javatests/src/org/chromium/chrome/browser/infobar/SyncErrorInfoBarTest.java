@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -36,7 +37,6 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -91,10 +91,10 @@ public class SyncErrorInfoBarTest {
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(2).build();
-
-    @Rule
-    public DisableAnimationsTestRule mDisableAnimationsTestRule = new DisableAnimationsTestRule();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(2)
+                    .setBugComponent(ChromeRenderTestRule.Component.SERVICES_SYNC)
+                    .build();
 
     @Before
     public void setUp() {
@@ -210,6 +210,7 @@ public class SyncErrorInfoBarTest {
 
     @Test
     @LargeTest
+    @DisabledTest(message = "https://crbug.com/1299060")
     public void testSyncErrorInfoBarIsNotShownBeforeMinimalIntervalPassed() throws Exception {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mFakeSyncServiceImpl.setAuthError(GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);

@@ -35,6 +35,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "media/cast/test/utility/udp_proxy.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -51,7 +52,7 @@ class SendToFDPipe : public PacketPipe {
   explicit SendToFDPipe(int fd) : fd_(fd) {
   }
   void Send(std::unique_ptr<Packet> packet) final {
-    while (1) {
+    while (true) {
       int written = write(
           fd_,
           reinterpret_cast<char*>(&packet->front()),

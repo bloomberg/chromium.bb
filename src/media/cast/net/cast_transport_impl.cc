@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "media/cast/common/encoded_frame.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/rtcp/sender_rtcp_session.h"
 #include "media/cast/net/transport_util.h"
@@ -417,7 +418,7 @@ void CastTransportImpl::AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
   valid_rtp_receiver_ssrcs_.insert(rtp_receiver_ssrc);
 }
 
-void CastTransportImpl::SetOptions(const base::DictionaryValue& options) {
+void CastTransportImpl::SetOptions(const base::Value::Dict& options) {
   // Set PacedSender options.
   int burst_size = LookupOptionWithDefault(options, kOptionPacerTargetBurstSize,
                                            media::cast::kTargetBurstSize);
@@ -430,10 +431,10 @@ void CastTransportImpl::SetOptions(const base::DictionaryValue& options) {
 
   // Set Wifi options.
   int wifi_options = 0;
-  if (options.HasKey(kOptionWifiDisableScan)) {
+  if (options.contains(kOptionWifiDisableScan)) {
     wifi_options |= net::WIFI_OPTIONS_DISABLE_SCAN;
   }
-  if (options.HasKey(kOptionWifiMediaStreamingMode)) {
+  if (options.contains(kOptionWifiMediaStreamingMode)) {
     wifi_options |= net::WIFI_OPTIONS_MEDIA_STREAMING_MODE;
   }
   if (wifi_options)

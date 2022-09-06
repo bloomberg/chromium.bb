@@ -38,11 +38,6 @@ enum NotificationType {
   // TODO(https://crbug.com/1174728): Remove.
   NOTIFICATION_CRX_INSTALLER_DONE = NOTIFICATION_EXTENSIONS_START,
 
-  // Sent when attempting to load a new extension, but they are disabled. The
-  // details are an Extension, and the source is a BrowserContext*.
-  // TODO(https://crbug.com/1174732): Remove.
-  NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-
   // Sent when an extension's permissions change. The details are an
   // UpdatedExtensionPermissionsInfo, and the source is a BrowserContext*.
   // TODO(https://crbug.com/1174733): Remove.
@@ -52,28 +47,6 @@ enum NotificationType {
   // details about why the install failed.
   // TODO(https://crbug.com/1174734): Remove.
   NOTIFICATION_EXTENSION_INSTALL_ERROR,
-
-  // Sent when an bookmarks extensions API function was successfully invoked.
-  // The source is the id of the extension that invoked the function, and the
-  // details are a pointer to the const BookmarksFunction in question.
-  // TODO(https://crbug.com/1174748): Remove.
-  NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-
-  // Sent when an omnibox extension has sent back omnibox suggestions. The
-  // source is the BrowserContext*, and the details are an
-  // extensions::api::omnibox::SendSuggestions::Params object.
-  // TODO(https://crbug.com/1174750): Remove.
-  NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-
-  // Sent when an omnibox extension has updated the default suggestion. The
-  // source is the BrowserContext*.
-  // TODO(https://crbug.com/1174752): Remove.
-  NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-
-  // Sent when the extension updater starts checking for updates to installed
-  // extensions. The source is a BrowserContext*, and there are no details.
-  // TODO(https://crbug.com/1174753): Remove.
-  NOTIFICATION_EXTENSION_UPDATING_STARTED,
 
   // The extension updater found an update and will attempt to download and
   // install it. The source is a BrowserContext*, and the details are an

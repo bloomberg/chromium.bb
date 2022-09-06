@@ -77,14 +77,14 @@ const char* kAndroidSupportedMediaExtensions[] = {
     ".xmf",    // FILE_TYPE_MID, audio/midi
 };
 const int kAndroidSupportedMediaExtensionsSize =
-    base::size(kAndroidSupportedMediaExtensions);
+    std::size(kAndroidSupportedMediaExtensions);
 
 bool AppendRelativePathForRemovableMedia(const base::FilePath& cros_path,
                                          base::FilePath* android_path) {
-  std::vector<base::FilePath::StringType> parent_components;
-  base::FilePath(kCrosRemovableMediaDir).GetComponents(&parent_components);
-  std::vector<base::FilePath::StringType> child_components;
-  cros_path.GetComponents(&child_components);
+  std::vector<base::FilePath::StringType> parent_components =
+      base::FilePath(kCrosRemovableMediaDir).GetComponents();
+  std::vector<base::FilePath::StringType> child_components =
+      cros_path.GetComponents();
   auto child_itr = child_components.begin();
   for (const auto& parent_component : parent_components) {
     if (child_itr == child_components.end() || parent_component != *child_itr) {

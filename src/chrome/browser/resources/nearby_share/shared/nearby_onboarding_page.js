@@ -2,18 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/cr_icons_css.m.js';
+import '//resources/cr_elements/cr_input/cr_input.m.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import './nearby_page_template.js';
+
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {NearbyShareOnboardingFinalState, processOnboardingCancelledMetrics, processOnboardingInitiatedMetrics} from './nearby_metrics_logger.js';
+import {getNearbyShareSettings} from './nearby_share_settings.js';
+import {NearbySettings} from './nearby_share_settings_behavior.js';
+
 /**
  * @fileoverview The 'nearby-onboarding-page' component handles the Nearby Share
  * onboarding flow. It is embedded in chrome://os-settings, chrome://settings
  * and as a standalone dialog via chrome://nearby.
  */
+
+/**
+ * @type {string}
+ */
+const ONBOARDING_SPLASH_LIGHT_ICON =
+    'nearby-images:nearby-onboarding-splash-light';
+
+/**
+ * @type {string}
+ */
+const ONBOARDING_SPLASH_DARK_ICON =
+    'nearby-images:nearby-onboarding-splash-dark';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'nearby-onboarding-page',
 
   behaviors: [I18nBehavior],
 
   properties: {
-    /** @type {?nearby_share.NearbySettings} */
+    /** @type {?NearbySettings} */
     settings: {
       type: Object,
     },
@@ -22,6 +50,15 @@ Polymer({
     errorMessage: {
       type: String,
       value: '',
+    },
+
+    /**
+     * Whether the onboarding page is being rendered in dark mode.
+     * @private {boolean}
+     */
+    isDarkModeActive_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -66,7 +103,7 @@ Polymer({
 
   /** @private */
   onDeviceNameInput_() {
-    nearby_share.getNearbyShareSettings()
+    getNearbyShareSettings()
         .validateDeviceName(this.$.deviceName.value)
         .then((result) => {
           this.updateErrorMessage_(result.result);
@@ -75,7 +112,7 @@ Polymer({
 
   /** @private */
   submitDeviceNameInput_() {
-    nearby_share.getNearbyShareSettings()
+    getNearbyShareSettings()
         .setDeviceName(this.$.deviceName.value)
         .then((result) => {
           this.updateErrorMessage_(result.result);
@@ -118,5 +155,14 @@ Polymer({
    */
   hasErrorMessage_(errorMessage) {
     return errorMessage !== '';
-  }
+  },
+
+  /**
+   * Returns the icon based on Light/Dark mode.
+   * @return {string}
+   */
+  getOnboardingSplashIcon_() {
+    return this.isDarkModeActive_ ? ONBOARDING_SPLASH_DARK_ICON :
+                                    ONBOARDING_SPLASH_LIGHT_ICON;
+  },
 });

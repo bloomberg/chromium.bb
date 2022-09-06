@@ -24,19 +24,13 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 #endif
 
 typedef unsigned int GLenum;
 class GrBackendSurfaceMutableState;
 class SkPromiseImageTexture;
-
-namespace base {
-namespace android {
-class ScopedHardwareBufferFenceSync;
-}  // namespace android
-}  // namespace base
 
 namespace cc {
 class PaintOpBuffer;
@@ -166,11 +160,6 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
   void RegisterImageFactory(SharedImageFactory* factory) {
     backing()->RegisterImageFactory(factory);
   }
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-  GetAHardwareBuffer();
-#endif
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
@@ -201,6 +190,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
 
  protected:
   friend class SharedImageRepresentationSkiaGL;
+  friend class SharedImageRepresentationDawnEGLImage;
   friend class SharedImageRepresentationGLTextureImpl;
 
   // Can be overridden to handle clear state tracking when GL access begins or
@@ -269,7 +259,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
     SkPromiseImageTexture* promise_image_texture() const {
       return promise_image_texture_.get();
     }
-    GrBackendSurfaceMutableState* end_state() const { return end_state_.get(); }
+    [[nodiscard]] std::unique_ptr<GrBackendSurfaceMutableState> TakeEndState();
 
    private:
     sk_sp<SkSurface> surface_;
@@ -290,7 +280,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
       return promise_image_texture_.get();
     }
     sk_sp<SkImage> CreateSkImage(GrDirectContext* context) const;
-    GrBackendSurfaceMutableState* end_state() const { return end_state_.get(); }
+    [[nodiscard]] std::unique_ptr<GrBackendSurfaceMutableState> TakeEndState();
 
    private:
     sk_sp<SkPromiseImageTexture> promise_image_texture_;
@@ -432,7 +422,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
 
     gl::GLImage* gl_image() const { return gl_image_; }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     AHardwareBuffer* GetAHardwareBuffer() {
       return representation()->GetAHardwareBuffer();
     }
@@ -459,17 +449,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
     gfx::GpuFenceHandle release_fence_;
   };
 
-#if defined(OS_ANDROID)
-  virtual void NotifyOverlayPromotion(bool promotion,
-                                      const gfx::Rect& bounds) = 0;
-#endif
-
   std::unique_ptr<ScopedReadAccess> BeginScopedReadAccess(bool needs_gl_image);
 
  protected:
-  // TODO(weiliangc): Currently this only handles Android pre-SurfaceControl
-  // case. Add appropriate fence later.
-
   // Notifies the backing that an access will start. Returns false if there is a
   // conflict. Otherwise, returns true and:
   // - Adds gpu fences to |acquire_fences| that should be waited on before the
@@ -483,7 +465,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
   // |release_fence| will be null in that case.
   virtual void EndReadAccess(gfx::GpuFenceHandle release_fence) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual AHardwareBuffer* GetAHardwareBuffer();
 #elif defined(USE_OZONE)
   scoped_refptr<gfx::NativePixmap> GetNativePixmap();
@@ -493,6 +475,25 @@ class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
   // Get the backing as GLImage for GLSurface::ScheduleOverlayPlane.
   virtual gl::GLImage* GetGLImage() = 0;
 };
+
+#if BUILDFLAG(IS_ANDROID)
+class GPU_GLES2_EXPORT SharedImageRepresentationLegacyOverlay
+    : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationLegacyOverlay(SharedImageManager* manager,
+                                         SharedImageBacking* backing,
+                                         MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
+
+  // Renders shared image to SurfaceView/Dialog overlay. Should only be called
+  // if the image already promoted to overlay.
+  virtual void RenderToOverlay() = 0;
+
+  // Notifies legacy overlay system about overlay promotion.
+  virtual void NotifyOverlayPromotion(bool promotion,
+                                      const gfx::Rect& bounds) = 0;
+};
+#endif
 
 class GPU_GLES2_EXPORT SharedImageRepresentationMemory
     : public SharedImageRepresentation {
@@ -596,17 +597,19 @@ class GPU_GLES2_EXPORT SharedImageRepresentationRaster
     ScopedReadAccess(base::PassKey<SharedImageRepresentationRaster> pass_key,
                      SharedImageRepresentationRaster* representation,
                      const cc::PaintOpBuffer* paint_op_buffer,
-                     const absl::optional<SkColor>& clear_color);
+                     const absl::optional<SkColor4f>& clear_color);
     ~ScopedReadAccess();
 
     const cc::PaintOpBuffer* paint_op_buffer() const {
       return paint_op_buffer_;
     }
-    const absl::optional<SkColor>& clear_color() const { return clear_color_; }
+    const absl::optional<SkColor4f>& clear_color() const {
+      return clear_color_;
+    }
 
    private:
     const raw_ptr<const cc::PaintOpBuffer> paint_op_buffer_;
-    absl::optional<SkColor> clear_color_;
+    absl::optional<SkColor4f> clear_color_;
   };
 
   class GPU_GLES2_EXPORT ScopedWriteAccess
@@ -639,18 +642,22 @@ class GPU_GLES2_EXPORT SharedImageRepresentationRaster
   std::unique_ptr<ScopedReadAccess> BeginScopedReadAccess();
 
   std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
+      scoped_refptr<SharedContextState> context_state,
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
-      const absl::optional<SkColor>& clear_color);
+      const absl::optional<SkColor4f>& clear_color,
+      bool visible);
 
  protected:
   virtual cc::PaintOpBuffer* BeginReadAccess(
-      absl::optional<SkColor>& clear_color) = 0;
+      absl::optional<SkColor4f>& clear_color) = 0;
   virtual void EndReadAccess() = 0;
   virtual cc::PaintOpBuffer* BeginWriteAccess(
+      scoped_refptr<SharedContextState> context_state,
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
-      const absl::optional<SkColor>& clear_color) = 0;
+      const absl::optional<SkColor4f>& clear_color,
+      bool visible) = 0;
   virtual void EndWriteAccess(base::OnceClosure callback) = 0;
 };
 

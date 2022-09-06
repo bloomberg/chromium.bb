@@ -8,7 +8,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -89,7 +88,7 @@ class TestFilesDataSource : public content::URLDataSource {
     if (url_pos != std::string::npos) {
       std::string new_path =
           "ui/webui/resources" +
-          path.substr(url_pos + base::size(kResourcesUrl) - 1);
+          path.substr(url_pos + std::size(kResourcesUrl) - 1);
       src_file_path =
           source_root_.Append(base::FilePath::FromUTF8Unsafe(new_path));
       gen_file_path =

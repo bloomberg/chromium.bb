@@ -86,8 +86,7 @@ struct PendingUpload {
                 const std::string& json,
                 int max_depth,
                 ReportingUploader::UploadCallback callback)
-      : state(CREATED),
-        report_origin(report_origin),
+      : report_origin(report_origin),
         url(url),
         isolation_info(isolation_info),
         payload_reader(UploadOwnedBytesElementReader::CreateWithString(json)),
@@ -98,7 +97,7 @@ struct PendingUpload {
     std::move(callback).Run(outcome);
   }
 
-  State state;
+  State state = CREATED;
   const url::Origin report_origin;
   const GURL url;
   const IsolationInfo isolation_info;
@@ -199,7 +198,13 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // in the case of V1 reporting endpoints, and will be null for V0 reports.
     upload->request->set_site_for_cookies(
         upload->isolation_info.site_for_cookies());
-    upload->request->set_initiator(upload->isolation_info.frame_origin());
+    // Prior to using `isolation_info` directly here we built the
+    // `upload->network_isolation_key` to create the set the `isolation_info`.
+    // As experiments roll out to determine whether network partitions should be
+    // double or triple keyed the isolation_info might have a null value for
+    // `frame_origin`. Thus we should again get it from `network_isolation_key`
+    // until we can trust `isolation_info::frame_origin`.
+    upload->request->set_initiator(upload->report_origin);
     upload->request->set_isolation_info(upload->isolation_info);
 
     upload->request->SetExtraRequestHeaderByName(
@@ -283,17 +288,18 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // Check that the preflight succeeded: it must have an HTTP OK status code,
     // with the following headers:
     // - Access-Control-Allow-Origin: * or the report origin
-    // - Access-Control-Allow-Methods: POST
-    // - Access-Control-Allow-Headers: Content-Type
+    // - Access-Control-Allow-Headers: * or Content-Type
+    // Note that * is allowed here as the credentials mode is never 'include'.
+    // Access-Control-Allow-Methods is not checked, as the preflight is always
+    // for a POST method, which is safelisted.
     URLRequest* request = upload->request.get();
     bool preflight_succeeded =
         (response_code >= 200 && response_code <= 299) &&
         HasHeaderValues(
             request, "Access-Control-Allow-Origin",
             {"*", base::ToLowerASCII(upload->report_origin.Serialize())}) &&
-        HasHeaderValues(request, "Access-Control-Allow-Methods", {"post"}) &&
         HasHeaderValues(request, "Access-Control-Allow-Headers",
-                        {"content-type"});
+                        {"*", "content-type"});
     if (!preflight_succeeded) {
       upload->RunCallback(ReportingUploader::Outcome::FAILURE);
       return;

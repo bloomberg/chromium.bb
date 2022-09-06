@@ -90,6 +90,7 @@ template<typename Scalar> bool areApproxAbs(const Scalar* a, const Scalar* b, in
     if (!isApproxAbs(a[i],b[i],refvalue))
     {
       print_mismatch(a, b, size);
+      std::cout << "Values differ in position " << i << ": " << a[i] << " vs " << b[i] << std::endl;
       return false;
     }
   }
@@ -100,10 +101,11 @@ template<typename Scalar> bool areApprox(const Scalar* a, const Scalar* b, int s
 {
   for (int i=0; i<size; ++i)
   {
-    if ( a[i]!=b[i] && !internal::isApprox(a[i],b[i]) 
+    if ( numext::not_equal_strict(a[i], b[i]) && !internal::isApprox(a[i],b[i])
          && !((numext::isnan)(a[i]) && (numext::isnan)(b[i])) )
     {
       print_mismatch(a, b, size);
+      std::cout << "Values differ in position " << i << ": " << a[i] << " vs " << b[i] << std::endl;
       return false;
     }
   }
@@ -114,9 +116,10 @@ template<typename Scalar> bool areEqual(const Scalar* a, const Scalar* b, int si
 {
   for (int i=0; i<size; ++i)
   {
-    if ( (a[i] != b[i]) && !((numext::isnan)(a[i]) && (numext::isnan)(b[i])) )
+    if ( numext::not_equal_strict(a[i], b[i]) && !((numext::isnan)(a[i]) && (numext::isnan)(b[i])) )
     {
       print_mismatch(a, b, size);
+      std::cout << "Values differ in position " << i << ": " << a[i] << " vs " << b[i] << std::endl;
       return false;
     }
   }

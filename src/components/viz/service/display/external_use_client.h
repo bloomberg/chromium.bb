@@ -60,7 +60,7 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
     gpu::MailboxHolder* mutable_mailbox_holder() { return &mailbox_holder_; }
     const gfx::Size& size() const { return size_; }
     ResourceFormat resource_format() const { return resource_format_; }
-    sk_sp<SkColorSpace> color_space() const { return color_space_; }
+    sk_sp<SkColorSpace> color_space() const;
 
     SkAlphaType alpha_type() const { return alpha_type_; }
     void set_alpha_type(SkAlphaType alpha_type) {
@@ -87,8 +87,10 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
     void set_paint_op_buffer(const cc::PaintOpBuffer* buffer) {
       paint_op_buffer_ = buffer;
     }
-    const absl::optional<SkColor>& clear_color() const { return clear_color_; }
-    void set_clear_color(const absl::optional<SkColor>& color) {
+    const absl::optional<SkColor4f>& clear_color() const {
+      return clear_color_;
+    }
+    void set_clear_color(const absl::optional<SkColor4f>& color) {
       clear_color_ = color;
     }
 
@@ -110,7 +112,7 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
     sk_sp<SkImage> image_;
     GrBackendFormat backend_format_;
     raw_ptr<const cc::PaintOpBuffer> paint_op_buffer_ = nullptr;
-    absl::optional<SkColor> clear_color_;
+    absl::optional<SkColor4f> clear_color_;
   };
 
   // If |maybe_concurrent_reads| is true then there can be concurrent reads to
@@ -121,7 +123,8 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
       ResourceFormat format,
       bool maybe_concurrent_reads,
       const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
-      sk_sp<SkColorSpace> color_space) = 0;
+      sk_sp<SkColorSpace> color_space,
+      bool raw_draw_if_possible) = 0;
 
   virtual gpu::SyncToken ReleaseImageContexts(
       std::vector<std::unique_ptr<ImageContext>> image_contexts) = 0;

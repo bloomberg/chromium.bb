@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/navigation_request_info.h"
 
+#include "content/public/browser/weak_document_ptr.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 
 namespace content {
@@ -13,6 +14,8 @@ NavigationRequestInfo::NavigationRequestInfo(
     blink::mojom::BeginNavigationParamsPtr begin_params,
     network::mojom::WebSandboxFlags sandbox_flags,
     const net::IsolationInfo& isolation_info,
+    bool is_primary_main_frame,
+    bool is_outermost_main_frame,
     bool is_main_frame,
     bool are_ancestors_secure,
     int frame_tree_node_id,
@@ -27,11 +30,14 @@ NavigationRequestInfo::NavigationRequestInfo(
     network::mojom::ClientSecurityStatePtr client_security_state,
     const absl::optional<std::vector<net::SourceStream::SourceType>>&
         devtools_accepted_stream_types,
-    bool is_pdf)
+    bool is_pdf,
+    WeakDocumentPtr initiator_document)
     : common_params(std::move(common_params)),
       begin_params(std::move(begin_params)),
       sandbox_flags(sandbox_flags),
       isolation_info(isolation_info),
+      is_primary_main_frame(is_primary_main_frame),
+      is_outermost_main_frame(is_outermost_main_frame),
       is_main_frame(is_main_frame),
       are_ancestors_secure(are_ancestors_secure),
       frame_tree_node_id(frame_tree_node_id),
@@ -44,7 +50,8 @@ NavigationRequestInfo::NavigationRequestInfo(
       cors_exempt_headers(std::move(cors_exempt_headers)),
       client_security_state(std::move(client_security_state)),
       devtools_accepted_stream_types(devtools_accepted_stream_types),
-      is_pdf(is_pdf) {}
+      is_pdf(is_pdf),
+      initiator_document(std::move(initiator_document)) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 

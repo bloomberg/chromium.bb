@@ -19,8 +19,10 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
+#include "chrome/browser/ui/media_router/media_route_starter.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,6 +44,13 @@ constexpr char kItemId[] = "item_id";
 constexpr char kSinkId[] = "sink_id";
 constexpr char kSinkFriendlyName[] = "Nest Hub";
 constexpr char16_t kSinkFriendlyName16[] = u"Nest Hub";
+
+ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
+                             gfx::Point(),
+                             gfx::Point(),
+                             ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
 
 UIMediaSink CreateMediaSink(
     UIMediaSinkState state = UIMediaSinkState::AVAILABLE) {
@@ -140,10 +149,10 @@ class MockCastDialogController : public CastDialogController {
                void(const std::string& sink_id,
                     media_router::MediaCastMode cast_mode));
   MOCK_METHOD1(StopCasting, void(const std::string& route_id));
-  MOCK_METHOD1(
-      ChooseLocalFile,
-      void(base::OnceCallback<void(const ui::SelectedFileInfo*)> callback));
   MOCK_METHOD1(ClearIssue, void(const media_router::Issue::Id& issue_id));
+  MOCK_METHOD0(GetInitiator, content::WebContents*());
+  MOCK_METHOD0(TakeMediaRouteStarter,
+               std::unique_ptr<media_router::MediaRouteStarter>());
 };
 
 }  // anonymous namespace
@@ -174,8 +183,11 @@ class MediaItemUIDeviceSelectorViewTest : public ChromeViewsTestBase {
 
   void SimulateButtonClick(views::View* view) {
     views::test::ButtonTestApi(static_cast<views::Button*>(view))
-        .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
-                                    gfx::Point(), ui::EventTimeForNow(), 0, 0));
+        .NotifyClick(pressed_event);
+  }
+
+  void SimulateMouseClick(views::View* view) {
+    view->OnMousePressed(pressed_event);
   }
 
   std::string EntryLabelText(views::View* entry_view) {
@@ -261,9 +273,22 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandButtonOpensEntryContainer) {
   AddAudioDevices(delegate);
   view_ = CreateDeviceSelectorView(&delegate);
 
+  // Clicking on the dropdown button should expand the device list.
   ASSERT_TRUE(view_->GetDropdownButtonForTesting());
   EXPECT_FALSE(view_->GetDeviceEntryViewVisibilityForTesting());
   SimulateButtonClick(view_->GetDropdownButtonForTesting());
+  EXPECT_TRUE(view_->GetDeviceEntryViewVisibilityForTesting());
+}
+
+TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandLabelOpensEntryContainer) {
+  NiceMock<MockMediaItemUIDeviceSelectorDelegate> delegate;
+  AddAudioDevices(delegate);
+  view_ = CreateDeviceSelectorView(&delegate);
+
+  // Clicking on the device selector view should expand the device list.
+  ASSERT_TRUE(view_.get());
+  EXPECT_FALSE(view_->GetDeviceEntryViewVisibilityForTesting());
+  SimulateMouseClick(view_.get());
   EXPECT_TRUE(view_->GetDeviceEntryViewVisibilityForTesting());
 }
 
@@ -338,7 +363,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CastDeviceButtonClickStartsCasting) {
       media_router::mojom::MediaRouteProviderId::DIAL;
   dial_connected_sink.route =
       media_router::MediaRoute("routeId1", media_router::MediaSource("source1"),
-                               "sinkId1", "description", true, true);
+                               "sinkId1", "description", true);
   view_->OnModelUpdated(CreateModelWithSinks({dial_connected_sink}));
   EXPECT_CALL(*cast_controller_ptr, StopCasting("routeId1"));
   for (views::View* child : GetDeviceEntryViewsContainer()->children()) {

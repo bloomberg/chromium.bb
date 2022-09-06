@@ -180,9 +180,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Called when the user has validated the download of a mixed content file.
   virtual void ValidateMixedContentDownload() = 0;
 
-  // Called when user accepts Incognito download warning.
-  virtual void AcceptIncognitoWarning() = 0;
-
   // Called to acquire a dangerous download. If |delete_file_afterward| is true,
   // invokes |callback| on the UI thread with the path to the downloaded file,
   // and removes the DownloadItem from views and history if appropriate.
@@ -299,10 +296,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // URL of document that is considered the referrer for the original URL.
   virtual const GURL& GetReferrerUrl() const = 0;
 
-  // Site instance URL. Used to locate the correct storage partition during
-  // subsequent browser sessions. This may be different from all of
-  // GetOriginalUrl(), GetURL() and GetReferrerUrl().
-  virtual const GURL& GetSiteUrl() const = 0;
+  // The serialized EmbedderDownloadData string. This is used by the embedder
+  // for placing extra download data, such as the appropriate storage partition
+  // for this download.
+  virtual const std::string& GetSerializedEmbedderDownloadData() const = 0;
 
   // URL of the top level frame at the time the download was initiated.
   virtual const GURL& GetTabUrl() const = 0;
@@ -433,11 +430,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // False if not mixed content or that function has been called.
   virtual bool IsMixedContent() const = 0;
 
-  // True if file is downloaded in Incognito and user has not accepted it yet.
-  // False if file is downloaded in regular mode or has accepted the incognito
-  // warning.
-  virtual bool ShouldShowIncognitoWarning() const = 0;
-
   // Why |safety_state_| is not SAFE.
   virtual DownloadDangerType GetDangerType() const = 0;
 
@@ -530,6 +522,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // up after completion and not shown in the UI, and will not prompt to user
   // for target file path determination.
   virtual bool IsTransient() const = 0;
+
+  // Returns whether the download requires safety checks. Only downloads
+  // triggered by Chrome itself are excluded from safety checks.
+  virtual bool RequireSafetyChecks() const = 0;
 
   // Returns whether the download item corresponds to a parallel download. This
   // usually means parallel download has been enabled and the download job is

@@ -24,7 +24,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-class PrefChangeRegistrar;
 class Profile;
 
 namespace apps {
@@ -92,10 +91,6 @@ class CrostiniApps : public KeyedService,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
-  void ExecuteContextMenuCommand(const std::string& app_id,
-                                 int command_id,
-                                 const std::string& shortcut_id,
-                                 int64_t display_id) override;
 
   // GuestOsRegistryService::Observer overrides.
   void OnRegistryUpdated(
@@ -105,12 +100,7 @@ class CrostiniApps : public KeyedService,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override;
 
-  // Registers and unregisters terminal with AppService.
-  // TODO(crbug.com/1028898): Move this code into System Apps
-  // once it can support hiding apps.
-  void OnCrostiniEnabledChanged();
-
-  std::unique_ptr<App> CreateApp(
+  AppPtr CreateApp(
       const guest_os::GuestOsRegistryService::Registration& registration,
       bool generate_new_icon_key);
 
@@ -121,14 +111,11 @@ class CrostiniApps : public KeyedService,
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   guest_os::GuestOsRegistryService* registry_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
-
-  bool crostini_enabled_;
 
   base::WeakPtrFactory<CrostiniApps> weak_ptr_factory_{this};
 };

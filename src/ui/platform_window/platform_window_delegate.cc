@@ -4,7 +4,9 @@
 
 #include "ui/platform_window/platform_window_delegate.h"
 
+#include "base/notreached.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -44,6 +46,23 @@ void PlatformWindowDelegate::OnOcclusionStateChanged(
 absl::optional<OwnedWindowAnchor>
 PlatformWindowDelegate::GetOwnedWindowAnchorAndRectInPx() {
   return absl::nullopt;
+}
+
+void PlatformWindowDelegate::SetFrameRateThrottleEnabled(bool enabled) {}
+
+gfx::Rect PlatformWindowDelegate::ConvertRectToPixels(
+    const gfx::Rect& rect_in_dip) const {
+  return rect_in_dip;
+}
+
+gfx::Rect PlatformWindowDelegate::ConvertRectToDIP(
+    const gfx::Rect& rect_in_pixels) const {
+  return rect_in_pixels;
+}
+
+gfx::PointF PlatformWindowDelegate::ConvertScreenPointToLocalDIP(
+    const gfx::Point& screen_in_pixels) const {
+  return gfx::PointF(screen_in_pixels);
 }
 
 }  // namespace ui

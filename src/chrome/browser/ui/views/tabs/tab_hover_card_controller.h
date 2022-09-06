@@ -9,12 +9,14 @@
 
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_metrics.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_controller.h"
 #include "ui/events/event.h"
 #include "ui/views/animation/bubble_slide_animator.h"
 #include "ui/views/animation/widget_fade_animator.h"
@@ -47,7 +49,7 @@ class TabHoverCardController : public views::ViewObserver,
   bool IsHoverCardVisible() const;
   bool IsHoverCardShowingForTab(Tab* tab) const;
   void UpdateHoverCard(Tab* tab,
-                       TabController::HoverCardUpdateType update_type);
+                       TabSlotController::HoverCardUpdateType update_type);
   void PreventImmediateReshow();
   void TabSelectedViaMouse(Tab* tab);
 
@@ -68,6 +70,8 @@ class TabHoverCardController : public views::ViewObserver,
 
   // views::ViewObserver:
   void OnViewIsDeleting(views::View* observed_view) override;
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               views::View* starting_view) override;
 
   // TabHoverCardMetrics::Delegate:
   size_t GetTabCount() const override;
@@ -80,7 +84,7 @@ class TabHoverCardController : public views::ViewObserver,
   void StartThumbnailObservation(Tab* tab);
 
   void UpdateOrShowCard(Tab* tab,
-                        TabController::HoverCardUpdateType update_type);
+                        TabSlotController::HoverCardUpdateType update_type);
   void ShowHoverCard(bool is_initial, const Tab* intended_tab);
   void HideHoverCard();
 
@@ -105,6 +109,9 @@ class TabHoverCardController : public views::ViewObserver,
   void OnPreviewImageAvaialble(TabHoverCardThumbnailObserver* observer,
                                gfx::ImageSkia thumbnail_image);
 
+  void OnMemoryPressureChanged(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   TabHoverCardMetrics* metrics_for_testing() const { return metrics_.get(); }
 
   bool waiting_for_preview() const {
@@ -115,8 +122,6 @@ class TabHoverCardController : public views::ViewObserver,
   // the tab strip. This is used for reshowing the hover card without delay if
   // the mouse reenters within a given amount of time.
   base::TimeTicks last_mouse_exit_timestamp_;
-
-  base::OneShotTimer delayed_show_timer_;
 
   raw_ptr<Tab> target_tab_ = nullptr;
   const raw_ptr<TabStrip> tab_strip_;
@@ -144,6 +149,16 @@ class TabHoverCardController : public views::ViewObserver,
   base::CallbackListSubscription fade_complete_subscription_;
   base::CallbackListSubscription slide_progressed_subscription_;
   base::CallbackListSubscription slide_complete_subscription_;
+
+  // Track memory pressure on the system. We'll delay or stop requesting
+  // previews if memory pressure gets too high.
+  base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_ =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  // Ensure that this timer is destroyed before anything else is cleaned up.
+  base::OneShotTimer delayed_show_timer_;
+  base::WeakPtrFactory<TabHoverCardController> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_CONTROLLER_H_

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_REPORTING_STORAGE_MISSIVE_STORAGE_MODULE_H_
 #define COMPONENTS_REPORTING_STORAGE_MISSIVE_STORAGE_MODULE_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -36,9 +37,8 @@ class MissiveStorageModule : public StorageModuleInterface {
 
     virtual void AddRecord(const Priority priority,
                            Record record,
-                           base::OnceCallback<void(Status)> callback) = 0;
-    virtual void Flush(Priority priority,
-                       base::OnceCallback<void(Status)> callback) = 0;
+                           EnqueueCallback callback) = 0;
+    virtual void Flush(Priority priority, FlushCallback callback) = 0;
     virtual void ReportSuccess(const SequenceInformation& sequence_information,
                                bool force) = 0;
     virtual void UpdateEncryptionKey(
@@ -55,14 +55,13 @@ class MissiveStorageModule : public StorageModuleInterface {
   // Calls |missive_delegate_->AddRecord| forwarding the arguments.
   void AddRecord(Priority priority,
                  Record record,
-                 base::OnceCallback<void(Status)> callback) override;
+                 EnqueueCallback callback) override;
 
   // Calls |missive_delegate_->Flush| to initiate upload of collected records
   // according to the priority. Called usually for a queue with an infinite or
   // very large upload period. Multiple |Flush| calls can safely run in
   // parallel. Returns error if cannot start upload.
-  void Flush(Priority priority,
-             base::OnceCallback<void(Status)> callback) override;
+  void Flush(Priority priority, FlushCallback callback) override;
 
   // Once a record has been successfully uploaded, the sequence information
   // can be passed back to the StorageModule here for record deletion.

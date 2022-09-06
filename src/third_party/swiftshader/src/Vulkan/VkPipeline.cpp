@@ -32,6 +32,13 @@
 
 namespace {
 
+std::shared_ptr<sw::SpirvProfiler> getOrCreateSpirvProfiler()
+{
+	const sw::Configuration &config = sw::getConfiguration();
+	static std::shared_ptr<sw::SpirvProfiler> profiler = sw::getConfiguration().enableSpirvProfiling ? std::make_shared<sw::SpirvProfiler>(config) : nullptr;
+	return profiler;
+}
+
 // optimizeSpirv() applies and freezes specializations into constants, and runs spirv-opt.
 sw::SpirvBinary optimizeSpirv(const vk::PipelineCache::SpirvBinaryKey &key)
 {
@@ -74,6 +81,10 @@ sw::SpirvBinary optimizeSpirv(const vk::PipelineCache::SpirvBinaryKey &key)
 
 	if(optimize)
 	{
+		// Remove DontInline flags so the optimizer force-inlines all functions,
+		// as we currently don't support OpFunctionCall (b/141246700).
+		opt.RegisterPass(spvtools::CreateRemoveDontInlinePass());
+
 		// Full optimization list taken from spirv-opt.
 		opt.RegisterPerformancePasses();
 	}
@@ -86,6 +97,7 @@ sw::SpirvBinary optimizeSpirv(const vk::PipelineCache::SpirvBinaryKey &key)
 	spvtools::ValidatorOptions validatorOptions = {};
 	validatorOptions.SetScalarBlockLayout(true);            // VK_EXT_scalar_block_layout
 	validatorOptions.SetUniformBufferStandardLayout(true);  // VK_KHR_uniform_buffer_standard_layout
+	validatorOptions.SetAllowLocalSizeId(true);             // VK_KHR_maintenance4
 	optimizerOptions.set_validator_options(validatorOptions);
 #endif
 
@@ -154,9 +166,9 @@ public:
 		if(pipelineCreationFeedback)
 		{
 			pipelineCreationFeedback->pPipelineCreationFeedback->flags |=
-			    VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT_EXT;
+			    VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT;
 			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].flags |=
-			    VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT_EXT;
+			    VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT;
 		}
 	}
 
@@ -165,7 +177,7 @@ public:
 		if(pipelineCreationFeedback)
 		{
 			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].flags |=
-			    VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT_EXT;
+			    VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT;
 			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].duration =
 			    now() - pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].duration;
 		}
@@ -178,14 +190,14 @@ public:
 	}
 
 private:
-	static const VkPipelineCreationFeedbackCreateInfoEXT *GetPipelineCreationFeedback(const void *pNext)
+	static const VkPipelineCreationFeedbackCreateInfo *GetPipelineCreationFeedback(const void *pNext)
 	{
 		const VkBaseInStructure *extensionCreateInfo = reinterpret_cast<const VkBaseInStructure *>(pNext);
 		while(extensionCreateInfo)
 		{
-			if(extensionCreateInfo->sType == VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO_EXT)
+			if(extensionCreateInfo->sType == VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO)
 			{
-				return reinterpret_cast<const VkPipelineCreationFeedbackCreateInfoEXT *>(extensionCreateInfo);
+				return reinterpret_cast<const VkPipelineCreationFeedbackCreateInfo *>(extensionCreateInfo);
 			}
 
 			extensionCreateInfo = extensionCreateInfo->pNext;
@@ -210,7 +222,7 @@ private:
 		if(pipelineCreationFeedback)
 		{
 			pipelineCreationFeedback->pPipelineCreationFeedback->flags |=
-			    VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT_EXT;
+			    VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT;
 			pipelineCreationFeedback->pPipelineCreationFeedback->duration =
 			    now() - pipelineCreationFeedback->pPipelineCreationFeedback->duration;
 		}
@@ -236,7 +248,7 @@ private:
 		return std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 	}
 
-	const VkPipelineCreationFeedbackCreateInfoEXT *pipelineCreationFeedback = nullptr;
+	const VkPipelineCreationFeedbackCreateInfo *pipelineCreationFeedback = nullptr;
 };
 
 }  // anonymous namespace
@@ -276,9 +288,10 @@ size_t GraphicsPipeline::ComputeRequiredAllocationSize(const VkGraphicsPipelineC
 	return 0;
 }
 
-void GraphicsPipeline::getIndexBuffers(uint32_t count, uint32_t first, bool indexed, std::vector<std::pair<uint32_t, void *>> *indexBuffers) const
+void GraphicsPipeline::getIndexBuffers(const vk::DynamicState &dynamicState, uint32_t count, uint32_t first, bool indexed, std::vector<std::pair<uint32_t, void *>> *indexBuffers) const
 {
-	indexBuffer.getIndexBuffers(state.getTopology(), count, first, indexed, state.hasPrimitiveRestartEnable(), indexBuffers);
+	VkPrimitiveTopology topology = state.hasDynamicTopology() ? dynamicState.primitiveTopology : state.getTopology();
+	indexBuffer.getIndexBuffers(topology, count, first, indexed, state.hasPrimitiveRestartEnable(), indexBuffers);
 }
 
 bool GraphicsPipeline::containsImageWrite() const
@@ -331,9 +344,10 @@ VkResult GraphicsPipeline::compileShaders(const VkAllocationCallbacks *pAllocato
 
 		pipelineCreationFeedback.stageCreationBegins(stageIndex);
 
-		if(stageInfo.flags != 0)
+		if((stageInfo.flags &
+		    ~(VK_PIPELINE_SHADER_STAGE_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT |
+		      VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT)) != 0)
 		{
-			// Vulkan 1.2: "flags must be 0"
 			UNSUPPORTED("pStage->flags %d", int(stageInfo.flags));
 		}
 
@@ -375,7 +389,7 @@ VkResult GraphicsPipeline::compileShaders(const VkAllocationCallbacks *pAllocato
 
 		// TODO(b/201798871): use allocator.
 		auto shader = std::make_shared<sw::SpirvShader>(stageInfo.stage, stageInfo.pName, spirv,
-		                                                vk::Cast(pCreateInfo->renderPass), pCreateInfo->subpass, robustBufferAccess, dbgctx);
+		                                                vk::Cast(pCreateInfo->renderPass), pCreateInfo->subpass, robustBufferAccess, dbgctx, getOrCreateSpirvProfiler());
 
 		setShader(stageInfo.stage, shader);
 
@@ -449,7 +463,7 @@ VkResult ComputePipeline::compileShaders(const VkAllocationCallbacks *pAllocator
 
 	// TODO(b/201798871): use allocator.
 	shader = std::make_shared<sw::SpirvShader>(stage.stage, stage.pName, spirv,
-	                                           nullptr, 0, robustBufferAccess, dbgctx);
+	                                           nullptr, 0, robustBufferAccess, dbgctx, getOrCreateSpirvProfiler());
 
 	const PipelineCache::ComputeProgramKey programKey(shader->getIdentifier(), layout->identifier);
 

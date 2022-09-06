@@ -12,7 +12,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -122,7 +121,7 @@ class ServerPrintersFetcher::PrivateImplementation
       return;
     }
     // The response parsed successfully. Retrieve the list of printers.
-    std::vector<chromeos::PrinterDetector::DetectedPrinter> printers(
+    std::vector<PrinterDetector::DetectedPrinter> printers(
         response.printer_attributes.GetSize());
     for (size_t i = 0; i < printers.size(); ++i) {
       const std::string& name =
@@ -179,8 +178,7 @@ class ServerPrintersFetcher::PrivateImplementation
   }
 
   // Posts a response with a list of printers.
-  void PostResponse(
-      std::vector<chromeos::PrinterDetector::DetectedPrinter>&& printers) {
+  void PostResponse(std::vector<PrinterDetector::DetectedPrinter>&& printers) {
     task_runner_for_callback_->PostNonNestableTask(
         FROM_HERE, base::BindOnce(callback_, owner_, server_url_, printers));
   }

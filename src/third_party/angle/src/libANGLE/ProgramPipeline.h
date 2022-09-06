@@ -141,9 +141,8 @@ class ProgramPipeline final : public RefCountObject<ProgramPipelineID>,
     void updateImageBindings();
     void updateExecutableGeometryProperties();
     void updateExecutableTessellationProperties();
-    void updateFragmentInoutRange();
+    void updateFragmentInoutRangeAndEnablesPerSampleShading();
     void updateLinkedVaryings();
-    void updateHasBooleans();
     void updateExecutable();
 
     std::unique_ptr<rx::ProgramPipelineImpl> mProgramPipelineImpl;

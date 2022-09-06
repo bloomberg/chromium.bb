@@ -21,7 +21,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
+#include "net/base/privacy_mode.h"
 #include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/http/http_request_info.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
@@ -67,7 +70,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void SetPriority(RequestPriority priority) override;
   void Start() override;
   void Kill() override;
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  ConnectionAttempts GetConnectionAttempts() const override;
   void CloseConnectionOnDestruction() override;
   std::unique_ptr<SourceStream> SetUpSourceStream() override;
 
@@ -110,8 +113,15 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   void DestroyTransaction();
 
+  // Computes the PrivacyMode that should be associated with this leg of the
+  // request. Must be recomputed on redirects.
+  PrivacyMode DeterminePrivacyMode() const;
+
   void AddExtraHeaders();
   void AddCookieHeaderAndStart();
+  void AnnotateAndMoveUserBlockedCookies(
+      CookieAccessResultList& maybe_included_cookies,
+      CookieAccessResultList& excluded_cookies) const;
   void SaveCookiesAndNotifyHeadersComplete(int result);
 
   // Processes the Strict-Transport-Security header, if one exists.
@@ -191,7 +201,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
                          absl::optional<CanonicalCookie> cookie,
                          std::string cookie_string,
                          CookieAccessResult access_result);
-  int num_cookie_lines_left_;
+  int num_cookie_lines_left_ = 0;
   CookieAndLineAccessResultList set_cookie_access_result_list_;
 
   // Some servers send the body compressed, but specify the content length as
@@ -206,18 +216,23 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // `override_response_info_::headers`.
   HttpResponseHeaders* GetResponseHeaders() const;
 
-  // Compute the `cookie_partition_key_` for the request. Partitioned cookies
-  // will be set using this key and only partitioned cookies with this partition
-  // key will be sent.
-  // Sets `cookie_partition_key_` to nullopt if cookie partitioning is not
-  // enabled, if the NIK has no top-frame site, or if the instance has no
-  // cookie store.
-  void ComputeCookiePartitionKey();
+  // Called after getting the FirstPartySetMetadata during Start for this job.
+  void OnGotFirstPartySetMetadata(
+      FirstPartySetMetadata first_party_set_metadata);
 
-  RequestPriority priority_;
+  // Returns true iff this request leg should include the Cookie header. Note
+  // that cookies may still be eventually blocked by the CookieAccessDelegate
+  // even if this method returns true.
+  bool ShouldAddCookieHeader() const;
+
+  // Returns true if partitioned cookies are enabled and can be accessed and/or
+  // set.
+  bool IsPartitionedCookiesEnabled() const;
+
+  RequestPriority priority_ = DEFAULT_PRIORITY;
 
   HttpRequestInfo request_info_;
-  raw_ptr<const HttpResponseInfo> response_info_;
+  raw_ptr<const HttpResponseInfo> response_info_ = nullptr;
 
   // Used for any logic, e.g. DNS-based scheme upgrade, that needs to synthesize
   // response info to override the real response info. Transaction should be
@@ -225,11 +240,11 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   std::unique_ptr<HttpResponseInfo> override_response_info_;
 
   // Auth states for proxy and origin server.
-  AuthState proxy_auth_state_;
-  AuthState server_auth_state_;
+  AuthState proxy_auth_state_ = AUTH_STATE_DONT_NEED_AUTH;
+  AuthState server_auth_state_ = AUTH_STATE_DONT_NEED_AUTH;
   AuthCredentials auth_credentials_;
 
-  bool read_in_progress_;
+  bool read_in_progress_ = false;
 
   std::unique_ptr<HttpTransaction> transaction_;
 
@@ -240,7 +255,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   base::Time request_creation_time_;
 
   // True when we are done doing work.
-  bool done_;
+  bool done_ = false;
 
   // The start time for the job, ignoring re-starts.
   base::TimeTicks start_time_;
@@ -268,26 +283,36 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // True if we are waiting a callback and
   // NetworkDelegate::NotifyURLRequestDestroyed has not been called, yet,
   // to inform the NetworkDelegate that it may not call back.
-  bool awaiting_callback_;
+  bool awaiting_callback_ = false;
 
   raw_ptr<const HttpUserAgentSettings> http_user_agent_settings_;
 
   // Keeps track of total received bytes over the network from transactions used
   // by this job that have already been destroyed.
-  int64_t total_received_bytes_from_previous_transactions_;
+  int64_t total_received_bytes_from_previous_transactions_ = 0;
   // Keeps track of total sent bytes over the network from transactions used by
   // this job that have already been destroyed.
-  int64_t total_sent_bytes_from_previous_transactions_;
+  int64_t total_sent_bytes_from_previous_transactions_ = 0;
 
   RequestHeadersCallback request_headers_callback_;
   ResponseHeadersCallback early_response_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
 
-  // Partitioned cookies will be set using this key and only partitioned cookies
-  // with this partition key will be sent.
+  // The First-Party Set metadata associated with this job. Set when the job is
+  // started.
+  FirstPartySetMetadata first_party_set_metadata_;
+
+  // The cookie partition key for the request. Partitioned cookies should be set
+  // using this key and only partitioned cookies with this partition key should
+  // be sent. The cookie partition key is optional(nullopt) if cookie
+  // partitioning is not enabled, or if the NIK has no top-frame site.
   //
   // Unpartitioned cookies are unaffected by this field.
-  absl::optional<CookiePartitionKey> cookie_partition_key_;
+  //
+  // The two layers of `optional` are because the `cookie_partition_key_` is
+  // lazily computed, and might be "nothing". We want to be able to distinguish
+  // "uncomputed" from "nothing".
+  absl::optional<absl::optional<CookiePartitionKey>> cookie_partition_key_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_{this};
 };

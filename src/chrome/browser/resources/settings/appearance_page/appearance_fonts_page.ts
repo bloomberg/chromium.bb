@@ -9,10 +9,12 @@ import '../settings_shared_css.js';
 import '../controls/settings_dropdown_menu.js';
 
 import {SliderTick} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 
+import {getTemplate} from './appearance_fonts_page.html.js';
 import {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from './fonts_browser_proxy.js';
 
 
@@ -49,11 +51,25 @@ export class SettingsAppearanceFontsPageElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
+      // The font appearance menu to configure the "math" generic family is only
+      // relevant if CSSFontFamilyMath is enabled. Also, it requires MathMLCore
+      // to be enabled in order to properly display the mathematical formula
+      // used in the preview. Both of them are implied by the experimental web
+      // platform features flag, so rely on that flag to decide when to enable
+      // the menu.
+      // TODO(https://crbug.com/1321001): Display the menu unconditionally when
+      // MathMLCore is enabled by default.
+      cssFontFamilyMathMenuEnabled_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
+      },
+
       fontOptions_: Object,
 
       /** Common font sizes. */
@@ -87,13 +103,14 @@ export class SettingsAppearanceFontsPageElement extends PolymerElement {
   }
 
   prefs: Object;
+  private cssFontFamilyMathMenuEnabled_: boolean;
   private fontOptions_: DropdownMenuOptionList;
   private fontSizeRange_: SliderTick[];
   private minimumFontSizeRange_: SliderTick[];
   private browserProxy_: FontsBrowserProxy =
       FontsBrowserProxyImpl.getInstance();
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.browserProxy_.fetchFontsData().then(this.setFontsData_.bind(this));

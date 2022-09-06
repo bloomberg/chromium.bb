@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webstore_private/extension_install_status.h"
@@ -67,7 +68,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
-// flag to #if defined(OS_CHROMEOS)
+// flag to #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -204,6 +205,10 @@ const char kWebstoreBlockByPolicy[] =
     "Extension installation is blocked by policy";
 const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+const char kSecondaryProfileError[] =
+    "Apps may only be installed using the main profile";
+#endif
 const char kEphemeralAppLaunchingNotSupported[] =
     "Ephemeral launching of apps is no longer supported.";
 
@@ -948,6 +953,11 @@ WebstorePrivateCompleteInstallFunction::Run() {
   if (profile->IsGuestSession() || profile->IsOffTheRecord()) {
     return RespondNow(Error(kIncognitoError));
   }
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!profile->IsMainProfile()) {
+    return RespondNow(Error(kSecondaryProfileError));
+  }
+#endif
 
   if (!crx_file::id_util::IdIsValid(params->expected_id))
     return RespondNow(Error(kWebstoreInvalidIdError));
@@ -1198,8 +1208,11 @@ WebstorePrivateGetReferrerChainFunction::Run() {
     return RespondNow(ArgumentList(
         api::webstore_private::GetReferrerChain::Results::Create("")));
 
-  content::WebContents* web_contents = GetSenderWebContents();
-  if (!web_contents) {
+  content::RenderFrameHost* rfh = render_frame_host();
+  content::RenderFrameHost* outermost_rfh =
+      rfh ? rfh->GetOutermostMainFrame() : nullptr;
+
+  if (!outermost_rfh) {
     return RespondNow(ErrorWithArguments(
         api::webstore_private::GetReferrerChain::Results::Create(""),
         kWebstoreUserCancelledError));
@@ -1211,8 +1224,8 @@ WebstorePrivateGetReferrerChainFunction::Run() {
 
   safe_browsing::ReferrerChain referrer_chain;
   SafeBrowsingNavigationObserverManager::AttributionResult result =
-      navigation_observer_manager->IdentifyReferrerChainByWebContents(
-          web_contents, kExtensionReferrerUserGestureLimit, &referrer_chain);
+      navigation_observer_manager->IdentifyReferrerChainByRenderFrameHost(
+          outermost_rfh, kExtensionReferrerUserGestureLimit, &referrer_chain);
 
   // If the referrer chain is incomplete we'll append the most recent
   // navigations to referrer chain for diagnostic purposes. This only happens if

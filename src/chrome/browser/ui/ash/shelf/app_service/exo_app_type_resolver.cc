@@ -6,6 +6,7 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/app_types.h"
+#include "ash/wm/window_properties.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
@@ -13,6 +14,8 @@
 #include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/permission.h"
+#include "components/exo/shell_surface_util.h"
+#include "components/exo/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/class_property.h"
 
@@ -39,8 +42,20 @@ void ExoAppTypeResolver::PopulateProperties(
     out_properties_container.SetProperty(
         exo::kPermissionKey,
         new exo::Permission(exo::Permission::Capability::kActivate));
-  } else if (borealis::BorealisWindowManager::IsBorealisWindowId(
-                 params.app_id.empty() ? params.startup_id : params.app_id)) {
+    // Only Lacros windows should allow restore/fullscreen to kick windows out
+    // of fullscreen.
+    out_properties_container.SetProperty(exo::kRestoreOrMaximizeExitsFullscreen,
+                                         true);
+    out_properties_container.SetProperty(app_restore::kLacrosWindowId,
+                                         params.app_id);
+
+    out_properties_container.SetProperty(ash::kWebAuthnRequestId,
+                                         new std::string(params.app_id));
+    return;
+  }
+
+  if (borealis::BorealisWindowManager::IsBorealisWindowId(
+          params.app_id.empty() ? params.startup_id : params.app_id)) {
     // TODO(b/165865831): Stop using CROSTINI_APP for borealis windows.
     out_properties_container.SetProperty(
         aura::client::kAppType, static_cast<int>(ash::AppType::CROSTINI_APP));
@@ -48,6 +63,16 @@ void ExoAppTypeResolver::PopulateProperties(
     // Auto-maximize causes compatibility issues, and we don't need it anyway.
     out_properties_container.SetProperty(chromeos::kAutoMaximizeXdgShellEnabled,
                                          false);
+
+    // In some instances we don't want new borealis windows to steal focus,
+    // instead they are created as minimized windows.
+    // TODO(b/210569001): this is intended to be a temporary solution.
+    if (borealis::BorealisWindowManager::ShouldNewWindowBeMinimized(
+            params.app_id.empty() ? params.startup_id : params.app_id)) {
+      out_properties_container.SetProperty(aura::client::kShowStateKey,
+                                           ui::SHOW_STATE_MINIMIZED);
+    }
+    return;
   }
 
   auto task_id = arc::GetTaskIdFromWindowAppId(params.app_id);
@@ -59,6 +84,11 @@ void ExoAppTypeResolver::PopulateProperties(
 
   out_properties_container.SetProperty(aura::client::kAppType,
                                        static_cast<int>(ash::AppType::ARC_APP));
+
+  out_properties_container.SetProperty(
+      exo::kProtectedNativePixmapQueryDelegate,
+      reinterpret_cast<exo::ProtectedNativePixmapQueryDelegate*>(
+          &protected_native_pixmap_query_client_));
 
   if (task_id.has_value())
     out_properties_container.SetProperty(app_restore::kWindowIdKey, *task_id);
@@ -81,4 +111,6 @@ void ExoAppTypeResolver::PopulateProperties(
     out_properties_container.SetProperty(
         app_restore::kParentToHiddenContainerKey, true);
   }
+
+  out_properties_container.SetProperty(aura::client::kSkipImeProcessing, true);
 }

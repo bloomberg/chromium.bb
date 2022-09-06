@@ -48,7 +48,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -214,12 +214,12 @@ void CronetEnvironment::StopNetLogOnNetworkThread(
 }
 
 base::Value CronetEnvironment::GetNetLogInfo() const {
-  base::Value net_info = net::GetNetInfo(main_context_.get());
-  if (effective_experimental_options_) {
-    net_info.SetKey("cronetExperimentalParams",
-                    effective_experimental_options_->Clone());
+  base::Value::Dict net_info = net::GetNetInfo(main_context_.get());
+  if (!effective_experimental_options_.empty()) {
+    net_info.Set("cronetExperimentalParams",
+                 effective_experimental_options_.Clone());
   }
-  return net_info;
+  return base::Value(std::move(net_info));
 }
 
 net::HttpNetworkSession* CronetEnvironment::GetHttpNetworkSession(
@@ -360,7 +360,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   effective_experimental_options_ =
-      std::move(config->effective_experimental_options);
+      config->effective_experimental_options.Clone();
 
   // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
   // global HostResolver.

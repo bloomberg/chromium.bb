@@ -14,7 +14,7 @@ component("userdataauth") {
   deps = [
     ":userdataauth_proto",
     "//base",
-    "//chromeos/dbus:common",
+    "//chromeos/dbus/common",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//components/policy/proto",
@@ -47,11 +47,27 @@ component("userdataauth") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_userdataauth_client.cc",
+    "mock_userdataauth_client.h",
+  ]
+  deps = [
+    ":userdataauth",
+    ":userdataauth_proto",
+    "//base",
+    "//testing/gmock",
+  ]
+}
+
 proto_library("userdataauth_proto") {
   deps = [ "//chromeos/dbus/cryptohome:cryptohome_proto" ]
 
   sources = [
     "//third_party/cros_system_api/dbus/cryptohome/UserDataAuth.proto",
+    "//third_party/cros_system_api/dbus/cryptohome/auth_factor.proto",
     "//third_party/cros_system_api/dbus/cryptohome/fido.proto",
   ]
 

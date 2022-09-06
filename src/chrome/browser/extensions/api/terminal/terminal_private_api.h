@@ -199,35 +199,46 @@ class TerminalPrivateOpenOptionsPageFunction : public ExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class TerminalPrivateGetSettingsFunction : public ExtensionFunction {
+class TerminalPrivateOpenSettingsSubpageFunction : public ExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getSettings",
-                             TERMINALPRIVATE_GETSETTINGS)
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.openSettingsSubpage",
+                             TERMINALPRIVATE_OPENSETTINGSSUBPAGE)
 
  protected:
-  ~TerminalPrivateGetSettingsFunction() override;
+  ~TerminalPrivateOpenSettingsSubpageFunction() override;
 
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class TerminalPrivateSetSettingsFunction : public ExtensionFunction {
+class TerminalPrivateGetOSInfoFunction : public ExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("terminalPrivate.setSettings",
-                             TERMINALPRIVATE_SETSETTINGS)
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getOSInfo",
+                             TERMINALPRIVATE_GETOSINFO)
 
  protected:
-  ~TerminalPrivateSetSettingsFunction() override;
+  ~TerminalPrivateGetOSInfoFunction() override;
 
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class TerminalPrivateGetA11yStatusFunction : public ExtensionFunction {
+class TerminalPrivateGetPrefsFunction : public ExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getA11yStatus",
-                             TERMINALPRIVATE_GETA11YSTATUS)
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getPrefs",
+                             TERMINALPRIVATE_GETPREFS)
 
  protected:
-  ~TerminalPrivateGetA11yStatusFunction() override;
+  ~TerminalPrivateGetPrefsFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+};
+
+class TerminalPrivateSetPrefsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.setPrefs",
+                             TERMINALPRIVATE_SETPREFS)
+
+ protected:
+  ~TerminalPrivateSetPrefsFunction() override;
 
   ExtensionFunction::ResponseAction Run() override;
 };

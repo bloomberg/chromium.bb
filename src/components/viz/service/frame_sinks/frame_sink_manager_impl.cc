@@ -14,9 +14,11 @@
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
+#include "components/viz/common/surfaces/video_capture_target.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -25,15 +27,18 @@
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 #include "components/viz/service/performance_hint/utils.h"
 #include "components/viz/service/surfaces/pending_copy_output_request.h"
+#include "components/viz/service/surfaces/surface.h"
 
 namespace viz {
 
 FrameSinkManagerImpl::InitParams::InitParams() = default;
 FrameSinkManagerImpl::InitParams::InitParams(
     SharedBitmapManager* shared_bitmap_manager,
-    OutputSurfaceProvider* output_surface_provider)
+    OutputSurfaceProvider* output_surface_provider,
+    GmbVideoFramePoolContextProvider* gmb_context_provider)
     : shared_bitmap_manager(shared_bitmap_manager),
-      output_surface_provider(output_surface_provider) {}
+      output_surface_provider(output_surface_provider),
+      gmb_context_provider(gmb_context_provider) {}
 FrameSinkManagerImpl::InitParams::InitParams(InitParams&& other) = default;
 FrameSinkManagerImpl::InitParams::~InitParams() = default;
 FrameSinkManagerImpl::InitParams& FrameSinkManagerImpl::InitParams::operator=(
@@ -64,7 +69,10 @@ operator=(FrameSinkData&& other) = default;
 FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
     : shared_bitmap_manager_(params.shared_bitmap_manager),
       output_surface_provider_(params.output_surface_provider),
-      surface_manager_(this, params.activation_deadline_in_frames),
+      gmb_context_provider_(params.gmb_context_provider),
+      surface_manager_(this,
+                       params.activation_deadline_in_frames,
+                       params.max_uncommitted_frames),
       hit_test_manager_(surface_manager()),
       restart_id_(params.restart_id),
       run_all_compositor_stages_before_draw_(
@@ -314,7 +322,7 @@ void FrameSinkManagerImpl::AddVideoDetectorObserver(
 void FrameSinkManagerImpl::CreateVideoCapturer(
     mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver) {
   video_capturers_.emplace(std::make_unique<FrameSinkVideoCapturerImpl>(
-      this, std::move(receiver),
+      this, gmb_context_provider_, std::move(receiver),
       std::make_unique<media::VideoCaptureOracle>(
           true /* enable_auto_throttling */),
       log_capture_pipeline_in_webrtc_));
@@ -346,15 +354,6 @@ void FrameSinkManagerImpl::RequestCopyOfOutput(
   }
   it->second->RequestCopyOfOutput(PendingCopyOutputRequest{
       surface_id.local_surface_id(), SubtreeCaptureId(), std::move(request)});
-}
-
-void FrameSinkManagerImpl::SetHitTestAsyncQueriedDebugRegions(
-    const FrameSinkId& root_frame_sink_id,
-    const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue) {
-  hit_test_manager_.SetHitTestAsyncQueriedDebugRegions(
-      root_frame_sink_id, hit_test_async_queried_debug_queue);
-  DCHECK(base::Contains(root_sink_map_, root_frame_sink_id));
-  root_sink_map_[root_frame_sink_id]->ForceImmediateDrawAndSwapIfPossible();
 }
 
 void FrameSinkManagerImpl::DestroyFrameSinkBundle(const FrameSinkBundleId& id) {
@@ -417,6 +416,11 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
 
   for (auto& observer : observer_list_)
     observer.OnCreatedCompositorFrameSink(frame_sink_id, support->is_root());
+
+  if (global_throttle_interval_) {
+    UpdateThrottlingRecursively(frame_sink_id,
+                                global_throttle_interval_.value());
+  }
 }
 
 void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
@@ -512,10 +516,31 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
 }
 
 CapturableFrameSink* FrameSinkManagerImpl::FindCapturableFrameSink(
-    const FrameSinkId& frame_sink_id) {
+    const VideoCaptureTarget& target) {
+  // Search the known CompositorFrameSinkSupport objects for region capture
+  // bounds matching the crop ID specified by |target| (if one was set), and
+  // return the corresponding frame sink.
+  if (absl::holds_alternative<RegionCaptureCropId>(target.sub_target)) {
+    const auto crop_id = absl::get<RegionCaptureCropId>(target.sub_target);
+    for (const auto& id_and_sink : support_map_) {
+      const RegionCaptureBounds& bounds =
+          id_and_sink.second->current_capture_bounds();
+      auto match = bounds.bounds().find(crop_id);
+      if (match != bounds.bounds().end()) {
+        return id_and_sink.second;
+      }
+    }
+    return nullptr;
+  }
+
+  FrameSinkId frame_sink_id = target.frame_sink_id;
+  if (!frame_sink_id.is_valid())
+    return nullptr;
+
   const auto it = support_map_.find(frame_sink_id);
   if (it == support_map_.end())
     return nullptr;
+
   return it->second;
 }
 
@@ -676,18 +701,18 @@ void FrameSinkManagerImpl::CacheBackBuffer(
     const FrameSinkId& root_frame_sink_id) {
   auto it = root_sink_map_.find(root_frame_sink_id);
 
-  DCHECK(it != root_sink_map_.end());
-  DCHECK(cached_back_buffers_.find(cache_id) == cached_back_buffers_.end());
+  // If creating RootCompositorFrameSinkImpl failed there might not be an entry
+  // in |root_sink_map_|.
+  if (it == root_sink_map_.end())
+    return;
 
+  DCHECK(!base::Contains(cached_back_buffers_, cache_id));
   cached_back_buffers_[cache_id] = it->second->GetCacheBackBufferCb();
 }
 
 void FrameSinkManagerImpl::EvictBackBuffer(uint32_t cache_id,
                                            EvictBackBufferCallback callback) {
-  auto it = cached_back_buffers_.find(cache_id);
-  DCHECK(it != cached_back_buffers_.end());
-
-  cached_back_buffers_.erase(it);
+  cached_back_buffers_.erase(cache_id);
   std::move(callback).Run();
 }
 
@@ -715,16 +740,41 @@ void FrameSinkManagerImpl::Throttle(const std::vector<FrameSinkId>& ids,
   UpdateThrottling();
 }
 
+void FrameSinkManagerImpl::StartThrottlingAllFrameSinks(
+    base::TimeDelta interval) {
+  global_throttle_interval_ = interval;
+  UpdateThrottling();
+}
+
+void FrameSinkManagerImpl::StopThrottlingAllFrameSinks() {
+  global_throttle_interval_ = absl::nullopt;
+  UpdateThrottling();
+}
+
 void FrameSinkManagerImpl::UpdateThrottling() {
   // Clear previous throttling effect on all frame sinks.
   for (auto& support_map_item : support_map_) {
     support_map_item.second->ThrottleBeginFrame(base::TimeDelta());
   }
-  if (throttle_interval_.is_zero())
+  if (throttle_interval_.is_zero() &&
+      (!global_throttle_interval_ ||
+       global_throttle_interval_.value().is_zero()))
     return;
 
-  for (const auto& id : frame_sink_ids_to_throttle_) {
-    UpdateThrottlingRecursively(id, throttle_interval_);
+  if (global_throttle_interval_) {
+    for (const auto& support : support_map_) {
+      support.second->ThrottleBeginFrame(global_throttle_interval_.value());
+    }
+  }
+
+  // If the per-frame sink throttle interval is more aggressive than the global
+  // throttling interval, apply it to those frame sinks effectively always
+  // throttling a frame sink as much as possible.
+  if (!global_throttle_interval_ ||
+      throttle_interval_ > global_throttle_interval_) {
+    for (const auto& id : frame_sink_ids_to_throttle_) {
+      UpdateThrottlingRecursively(id, throttle_interval_);
+    }
   }
   // Clear throttling on frame sinks currently being captured.
   for (const auto& id : captured_frame_sink_ids_) {

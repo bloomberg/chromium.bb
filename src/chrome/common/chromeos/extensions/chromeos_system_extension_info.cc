@@ -15,6 +15,11 @@ namespace chromeos {
 
 namespace switches {
 
+// Overrides |manufacturer| field of the ChromeOSSystemExtensionInfo structure.
+// Used for development/testing.
+const char kTelemetryExtensionManufacturerOverrideForTesting[] =
+    "telemetry-extension-manufacturer-override-for-testing";
+
 // Overrides |pwa_origin| field of the ChromeOSSystemExtensionInfo structure.
 // Used for development/testing.
 const char kTelemetryExtensionPwaOriginOverrideForTesting[] =
@@ -29,12 +34,11 @@ using ChromeOSSystemExtensionInfos =
 
 const ChromeOSSystemExtensionInfos& getMap() {
   static const ChromeOSSystemExtensionInfos kExtensionIdToExtensionInfoMap{
-      // TODO(b/200920331): replace google.com with OEM-specific origin.
       {/*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
        {/*manufacturer=*/"HP", /*pwa_origin=*/"*://www.google.com/*"}},
       {/*extension_id=*/"alnedpmllcfpgldkagbfbjkloonjlfjb",
        {/*manufacturer=*/"HP",
-        /*pwa_origin=*/"*://hpcs-appschr.hpcloud.hp.com/*"}}};
+        /*pwa_origin=*/"https://hpcs-appschr.hpcloud.hp.com/*"}}};
 
   return kExtensionIdToExtensionInfoMap;
 }
@@ -64,6 +68,12 @@ ChromeOSSystemExtensionInfo GetChromeOSExtensionInfoForId(
           switches::kTelemetryExtensionPwaOriginOverrideForTesting)) {
     info.pwa_origin = command_line->GetSwitchValueASCII(
         switches::kTelemetryExtensionPwaOriginOverrideForTesting);
+  }
+
+  if (command_line->HasSwitch(
+          switches::kTelemetryExtensionManufacturerOverrideForTesting)) {
+    info.manufacturer = command_line->GetSwitchValueASCII(
+        switches::kTelemetryExtensionManufacturerOverrideForTesting);
   }
 
   return info;

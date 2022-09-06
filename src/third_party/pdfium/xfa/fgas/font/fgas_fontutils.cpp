@@ -6,10 +6,11 @@
 
 #include "xfa/fgas/font/fgas_fontutils.h"
 
+#include <iterator>
+
 #include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
-#include "third_party/base/cxx17_backports.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 
 namespace {
@@ -190,7 +191,7 @@ const FGAS_FONTUSB kFXGdiFontUSBTable[] = {
     {0xFFA0, 0xFFEF, 68, FX_CodePage::kFailure},
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "Arial", 0, FX_CodePage::kChineseSimplified},
     {0x01e4f102, "YouYuan", "Arial", 1, FX_CodePage::kChineseSimplified},
@@ -540,7 +541,7 @@ const FGAS_FontInfo kXFAFontsMap[] = {
     {0xfef135f8, "AdobeHeitiStd-Regular", "Batang,Century,Dotum", 0,
      FX_CodePage::kChineseSimplified},
 };
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "STHeiti,Heiti TC,STFangsong", 0,
      FX_CodePage::kChineseSimplified},
@@ -1103,7 +1104,7 @@ const FGAS_FontInfo kXFAFontsMap[] = {
     {0xfef135f8, "AdobeHeitiStd-Regular", "Heiti TC,STHeiti", 0,
      FX_CodePage::kChineseSimplified},
 };
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "Droid Sans Fallback", 0,
      FX_CodePage::kChineseSimplified},
@@ -1747,7 +1748,7 @@ const FGAS_FontInfo kXFAFontsMap[] = {
     {0xfef135f8, "AdobeHeitiStd-Regular", "Droid Sans Fallback", 0,
      FX_CodePage::kChineseSimplified},
 };
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun",
      "WenQuanYi Zen Hei Mono,AR PL UMing CN,AR PL UMing HK,AR PL UMing TW,AR "
@@ -2446,9 +2447,10 @@ const FGAS_FONTUSB* FGAS_GetUnicodeBitField(wchar_t unicode) {
   return nullptr;
 }
 
-WideString FGAS_FontNameToEnglishName(WideStringView wsLocalName) {
-  uint32_t dwLocalNameHash = FX_HashCode_GetLoweredW(wsLocalName);
-  const FGAS_FontInfo* pEnd = kXFAFontsMap + pdfium::size(kXFAFontsMap);
+WideString FGAS_FontNameToEnglishName(const WideString& wsLocalName) {
+  uint32_t dwLocalNameHash =
+      FX_HashCode_GetLoweredW(wsLocalName.AsStringView());
+  const FGAS_FontInfo* pEnd = kXFAFontsMap + std::size(kXFAFontsMap);
   const FGAS_FontInfo* pFontInfo =
       std::lower_bound(kXFAFontsMap, pEnd, dwLocalNameHash,
                        [](const FGAS_FontInfo& entry, uint32_t hash) {
@@ -2456,7 +2458,7 @@ WideString FGAS_FontNameToEnglishName(WideStringView wsLocalName) {
                        });
   if (pFontInfo < pEnd && pFontInfo->dwFontNameHash == dwLocalNameHash)
     return WideString::FromASCII(ByteStringView(pFontInfo->pPsName));
-  return WideString(wsLocalName);
+  return wsLocalName;
 }
 
 const FGAS_FontInfo* FGAS_FontInfoByFontName(WideStringView wsFontName) {
@@ -2464,7 +2466,7 @@ const FGAS_FontInfo* FGAS_FontInfoByFontName(WideStringView wsFontName) {
   wsFontNameTemp.Remove(L' ');
   uint32_t dwCurFontNameHash =
       FX_HashCode_GetLoweredW(wsFontNameTemp.AsStringView());
-  const FGAS_FontInfo* pEnd = kXFAFontsMap + pdfium::size(kXFAFontsMap);
+  const FGAS_FontInfo* pEnd = kXFAFontsMap + std::size(kXFAFontsMap);
   const FGAS_FontInfo* pFontInfo =
       std::lower_bound(kXFAFontsMap, pEnd, dwCurFontNameHash,
                        [](const FGAS_FontInfo& entry, uint32_t hash) {

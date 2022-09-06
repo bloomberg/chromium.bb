@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_test_utils.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/check.h"
-#include "base/ignore_result.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -33,13 +33,12 @@ using mojom::blink::PermissionStatus;
 namespace {
 
 void RunWithStack(base::RunLoop* run_loop) {
-  HeapPointersOnStackScope scan_stack(ThreadState::Current());
   run_loop->Run();
 }
 
 // Helper class for WaitForPromise{Fulfillment,Rejection}(). It provides a
 // function that invokes |callback| when a ScriptPromise is resolved.
-class ClosureRunnerCallable final : public NewScriptFunction::Callable {
+class ClosureRunnerCallable final : public ScriptFunction::Callable {
  public:
   explicit ClosureRunnerCallable(base::OnceClosure callback)
       : callback_(std::move(callback)) {}
@@ -54,15 +53,14 @@ class ClosureRunnerCallable final : public NewScriptFunction::Callable {
   base::OnceClosure callback_;
 };
 
-WakeLockType ToBlinkWakeLockType(device::mojom::blink::WakeLockType type) {
+V8WakeLockType::Enum ToBlinkWakeLockType(
+    device::mojom::blink::WakeLockType type) {
   switch (type) {
     case device::mojom::blink::WakeLockType::kPreventDisplaySleep:
-      return WakeLockType::kScreen;
+    case device::mojom::blink::WakeLockType::kPreventDisplaySleepAllowDimming:
+      return V8WakeLockType::Enum::kScreen;
     case device::mojom::blink::WakeLockType::kPreventAppSuspension:
-      return WakeLockType::kSystem;
-    default:
-      NOTREACHED();
-      return WakeLockType::kMaxValue;
+      return V8WakeLockType::Enum::kSystem;
   }
 }
 
@@ -138,7 +136,7 @@ void MockWakeLockService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
                            std::move(handle)));
 }
 
-MockWakeLock& MockWakeLockService::get_wake_lock(WakeLockType type) {
+MockWakeLock& MockWakeLockService::get_wake_lock(V8WakeLockType::Enum type) {
   size_t pos = static_cast<size_t>(type);
   return mock_wake_lock_[pos];
 }
@@ -165,7 +163,7 @@ void MockPermissionService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
       &MockPermissionService::OnConnectionError, WTF::Unretained(this)));
 }
 
-void MockPermissionService::SetPermissionResponse(WakeLockType type,
+void MockPermissionService::SetPermissionResponse(V8WakeLockType::Enum type,
                                                   PermissionStatus status) {
   DCHECK(status == PermissionStatus::GRANTED ||
          status == PermissionStatus::DENIED);
@@ -173,24 +171,25 @@ void MockPermissionService::SetPermissionResponse(WakeLockType type,
 }
 
 void MockPermissionService::OnConnectionError() {
-  ignore_result(receiver_.Unbind());
+  std::ignore = receiver_.Unbind();
 }
 
 bool MockPermissionService::GetWakeLockTypeFromDescriptor(
     const PermissionDescriptorPtr& descriptor,
-    WakeLockType* output) {
+    V8WakeLockType::Enum* output) {
   if (descriptor->name == mojom::blink::PermissionName::SCREEN_WAKE_LOCK) {
-    *output = WakeLockType::kScreen;
+    *output = V8WakeLockType::Enum::kScreen;
     return true;
   }
   if (descriptor->name == mojom::blink::PermissionName::SYSTEM_WAKE_LOCK) {
-    *output = WakeLockType::kSystem;
+    *output = V8WakeLockType::Enum::kSystem;
     return true;
   }
   return false;
 }
 
-void MockPermissionService::WaitForPermissionRequest(WakeLockType type) {
+void MockPermissionService::WaitForPermissionRequest(
+    V8WakeLockType::Enum type) {
   size_t pos = static_cast<size_t>(type);
   DCHECK(!request_permission_callbacks_[pos]);
   base::RunLoop run_loop;
@@ -200,7 +199,7 @@ void MockPermissionService::WaitForPermissionRequest(WakeLockType type) {
 
 void MockPermissionService::HasPermission(PermissionDescriptorPtr permission,
                                           HasPermissionCallback callback) {
-  WakeLockType type;
+  V8WakeLockType::Enum type;
   if (!GetWakeLockTypeFromDescriptor(permission, &type)) {
     std::move(callback).Run(PermissionStatus::DENIED);
     return;
@@ -215,7 +214,7 @@ void MockPermissionService::RequestPermission(
     PermissionDescriptorPtr permission,
     bool user_gesture,
     RequestPermissionCallback callback) {
-  WakeLockType type;
+  V8WakeLockType::Enum type;
   if (!GetWakeLockTypeFromDescriptor(permission, &type)) {
     std::move(callback).Run(PermissionStatus::DENIED);
     return;
@@ -290,7 +289,7 @@ MockPermissionService& WakeLockTestingContext::GetPermissionService() {
 
 void WakeLockTestingContext::WaitForPromiseFulfillment(ScriptPromise promise) {
   base::RunLoop run_loop;
-  promise.Then(MakeGarbageCollected<NewScriptFunction>(
+  promise.Then(MakeGarbageCollected<ScriptFunction>(
       GetScriptState(),
       MakeGarbageCollected<ClosureRunnerCallable>(run_loop.QuitClosure())));
   // Execute pending microtasks, otherwise it can take a few seconds for the
@@ -304,7 +303,7 @@ void WakeLockTestingContext::WaitForPromiseRejection(ScriptPromise promise) {
   base::RunLoop run_loop;
   promise.Then(
       nullptr,
-      MakeGarbageCollected<NewScriptFunction>(
+      MakeGarbageCollected<ScriptFunction>(
           GetScriptState(),
           MakeGarbageCollected<ClosureRunnerCallable>(run_loop.QuitClosure())));
   // Execute pending microtasks, otherwise it can take a few seconds for the

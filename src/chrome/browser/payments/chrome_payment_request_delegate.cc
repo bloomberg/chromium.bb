@@ -76,9 +76,7 @@ bool FrameSupportsPayments(content::RenderFrameHost* rfh) {
 ChromePaymentRequestDelegate::ChromePaymentRequestDelegate(
     content::RenderFrameHost* render_frame_host)
     : shown_dialog_(nullptr),
-      frame_routing_id_(content::GlobalRenderFrameHostId(
-          render_frame_host->GetProcess()->GetID(),
-          render_frame_host->GetRoutingID())) {}
+      frame_routing_id_(render_frame_host->GetGlobalId()) {}
 
 ChromePaymentRequestDelegate::~ChromePaymentRequestDelegate() = default;
 
@@ -158,10 +156,8 @@ bool ChromePaymentRequestDelegate::IsOffTheRecord() const {
 
 const GURL& ChromePaymentRequestDelegate::GetLastCommittedURL() const {
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  return FrameSupportsPayments(rfh)
-             ? content::WebContents::FromRenderFrameHost(rfh)
-                   ->GetLastCommittedURL()
-             : GURL::EmptyGURL();
+  return FrameSupportsPayments(rfh) ? rfh->GetMainFrame()->GetLastCommittedURL()
+                                    : GURL::EmptyGURL();
 }
 
 void ChromePaymentRequestDelegate::DoFullCardRequest(
@@ -171,12 +167,8 @@ void ChromePaymentRequestDelegate::DoFullCardRequest(
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
   if (!FrameSupportsPayments(rfh) || !shown_dialog_)
     return;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-  if (!web_contents)
-    return;
-  shown_dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate,
-                                     web_contents);
+
+  shown_dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate, rfh);
 }
 
 autofill::RegionDataLoader*
@@ -231,7 +223,9 @@ bool ChromePaymentRequestDelegate::IsBrowserWindowActive() const {
 
 void ChromePaymentRequestDelegate::ShowNoMatchingPaymentCredentialDialog(
     const std::u16string& merchant_name,
-    base::OnceClosure response_callback) {
+    const std::string& rp_id,
+    base::OnceClosure response_callback,
+    base::OnceClosure opt_out_callback) {
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
   if (!FrameSupportsPayments(rfh))
     return;
@@ -240,8 +234,9 @@ void ChromePaymentRequestDelegate::ShowNoMatchingPaymentCredentialDialog(
   if (!web_contents)
     return;
   spc_no_creds_dialog_ = SecurePaymentConfirmationNoCreds::Create();
-  spc_no_creds_dialog_->ShowDialog(web_contents, merchant_name,
-                                   std::move(response_callback));
+  spc_no_creds_dialog_->ShowDialog(web_contents, merchant_name, rp_id,
+                                   std::move(response_callback),
+                                   std::move(opt_out_callback));
 }
 
 std::unique_ptr<webauthn::InternalAuthenticator>

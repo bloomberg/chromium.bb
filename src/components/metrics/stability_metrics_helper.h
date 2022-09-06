@@ -9,6 +9,11 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/process/kill.h"
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_types.h"
+#endif
 
 class PrefRegistrySimple;
 class PrefService;
@@ -22,18 +27,21 @@ namespace metrics {
 enum class StabilityEventType {
   kPageLoad = 2,
   kRendererCrash = 3,
-  kRendererHang = 4,
+  // kRendererHang = 4,  // Removed due to disuse and correctness issues.
   kExtensionCrash = 5,
-  kChildProcessCrash = 6,
+  // kChildProcessCrash = 6,  // Removed due to disuse and alternative metrics.
   kLaunch = 15,
   kBrowserCrash = 16,
   // kIncompleteShutdown = 17,  // Removed due to disuse and correctness issues.
+  // kPluginCrash = 22,  // Removed due to plugin deprecation.
   kRendererFailedLaunch = 24,
   kExtensionRendererFailedLaunch = 25,
   kRendererLaunch = 26,
   kExtensionRendererLaunch = 27,
   kGpuCrash = 31,
-  kMaxValue = kGpuCrash
+  kUtilityCrash = 32,
+  kUtilityLaunch = 33,
+  kMaxValue = kUtilityLaunch,
 };
 
 class SystemProfileProto;
@@ -62,16 +70,26 @@ class StabilityMetricsHelper {
   void BrowserUtilityProcessCrashed(const std::string& metrics_name,
                                     int exit_code);
 
-  // Records a browser child process crash.
-  void BrowserChildProcessCrashed();
+  // Records that a utility process with name |metrics_name| failed to launch.
+  // The |launch_error_code| is a platform-specific error code. On Windows, a
+  // |last_error| is also supplied to help diagnose the launch failure.
+  void BrowserUtilityProcessLaunchFailed(const std::string& metrics_name,
+                                         int launch_error_code
+#if BUILDFLAG(IS_WIN)
+                                         ,
+                                         DWORD last_error
+#endif
+  );
 
   // Logs the initiation of a page load.
   void LogLoadStarted();
 
+#if !BUILDFLAG(IS_ANDROID)
   // Records a renderer process crash.
   void LogRendererCrash(bool was_extension_process,
                         base::TerminationStatus status,
                         int exit_code);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Records that a new renderer process was successfully launched.
   void LogRendererLaunched(bool was_extension_process);

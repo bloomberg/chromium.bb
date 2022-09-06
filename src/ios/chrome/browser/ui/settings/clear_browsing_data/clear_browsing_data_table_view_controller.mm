@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -14,6 +15,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -27,12 +29,12 @@
 #include "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,6 +105,13 @@
   return self;
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.delegate clearBrowsingDataTableViewControllerWasRemoved:self];
+  }
+}
+
 #pragma mark - Property
 
 - (UIBarButtonItem*)clearBrowsingDataBarButton {
@@ -138,7 +147,7 @@
 
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
-  // Adds the "Done" button and hooks it up to |dismiss|.
+  // Adds the "Done" button and hooks it up to `dismiss`.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
@@ -152,6 +161,7 @@
   self.suppressTableViewUpdates = YES;
   [self loadModel];
   self.suppressTableViewUpdates = NO;
+  [self.dataManager prepare];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -191,6 +201,7 @@
     self.navigationController.interactivePopGestureRecognizer.delegate = nil;
     self.overlayCoordinator = nil;
   }
+  [self.dataManager disconnect];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
@@ -235,7 +246,7 @@
     viewForFooterInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForFooterInSection:section];
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
   switch (sectionIdentifier) {
     case SectionIdentifierSavedSiteData:
     case SectionIdentifierGoogleAccount: {
@@ -252,7 +263,7 @@
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
   switch (sectionIdentifier) {
     case SectionIdentifierGoogleAccount:
     case SectionIdentifierSavedSiteData:
@@ -297,8 +308,25 @@
 
 #pragma mark - TableViewLinkHeaderFooterItemDelegate
 
-- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)url {
-  [self.delegate openURL:url];
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)url {
+  NSString* baseURL =
+      [NSString stringWithCString:(url.gurl.host() + url.gurl.path()).c_str()
+                         encoding:[NSString defaultCStringEncoding]];
+  if ([[NSString stringWithCString:(kClearBrowsingDataDSESearchUrlInFooterURL)
+                          encoding:[NSString defaultCStringEncoding]]
+          rangeOfString:baseURL]
+          .length > 0) {
+    base::UmaHistogramEnumeration("Settings.ClearBrowsingData.OpenMyActivity",
+                                  MyActivityNavigation::kSearchHistory);
+  } else if ([[NSString stringWithCString:
+                            (kClearBrowsingDataDSEMyActivityUrlInFooterURL)
+                                 encoding:[NSString defaultCStringEncoding]]
+                 rangeOfString:baseURL]
+                 .length > 0) {
+    base::UmaHistogramEnumeration("Settings.ClearBrowsingData.OpenMyActivity",
+                                  MyActivityNavigation::kTopLevel);
+  }
+  [self.delegate openURL:url.gurl];
 }
 
 #pragma mark - ClearBrowsingDataConsumer
@@ -416,7 +444,7 @@
     (UIPresentationController*)presentationController {
   base::RecordAction(
       base::UserMetricsAction("IOSClearBrowsingDataCloseWithSwipe"));
-  // Call prepareForDismissal to clean up state and  stop the Coordinator.
+  // Call prepareForDismissal to clean up state and stop the Coordinator.
   [self prepareForDismissal];
 }
 

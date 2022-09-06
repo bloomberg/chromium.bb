@@ -28,6 +28,11 @@
 // Implements media::mojom::CdmDocumentService. Can only be used on the
 // UI thread because PlatformVerificationFlow and the pref service lives on the
 // UI thread.
+// Ownership Note: There's one CdmDocumentServiceImpl per RenderFrame per
+// service type ( MediaFoundationService or CdmService). For
+// MediaFoundationService's case, this can be seen in the ownership chain of
+// InterfaceFactoryImpl -> MediaFoundationCdmFactory -> MojoCdmHelper
+// -> mojo::Remote<mojom::CdmDocumentService>.
 class CdmDocumentServiceImpl final
     : public content::DocumentService<media::mojom::CdmDocumentService> {
  public:
@@ -44,13 +49,14 @@ class CdmDocumentServiceImpl final
                          const std::string& challenge,
                          ChallengePlatformCallback callback) final;
   void GetStorageId(uint32_t version, GetStorageIdCallback callback) final;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   void IsVerifiedAccessEnabled(IsVerifiedAccessEnabledCallback callback) final;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void GetMediaFoundationCdmData(
       GetMediaFoundationCdmDataCallback callback) final;
   void SetCdmClientToken(const std::vector<uint8_t>& client_token) final;
+  void OnCdmEvent(media::CdmEvent event) final;
 
   static void ClearCdmData(
       Profile* profile,
@@ -58,7 +64,7 @@ class CdmDocumentServiceImpl final
       base::Time end,
       const base::RepeatingCallback<bool(const GURL&)>& filter,
       base::OnceClosure complete_cb);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
  private:
   // |this| can only be destructed as a DocumentService.
@@ -86,6 +92,12 @@ class CdmDocumentServiceImpl final
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   scoped_refptr<ash::attestation::PlatformVerificationFlow>
       platform_verification_flow_;
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  // See comments in OnCdmEvent() implementation.
+  bool has_reported_cdm_error_ = false;
+  bool has_reported_significant_playback_ = false;
 #endif
 
   const raw_ptr<content::RenderFrameHost> render_frame_host_;

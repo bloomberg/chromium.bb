@@ -31,6 +31,7 @@ namespace syncer {
 
 class EngineComponentsFactory;
 class HttpPostProviderFactory;
+class KeyDerivationParams;
 class Nigori;
 class SyncEngineHost;
 struct SyncStatus;
@@ -68,7 +69,6 @@ class SyncEngine : public ModelTypeConfigurer {
     bool enable_local_sync_backend = false;
     base::FilePath local_sync_backend_folder;
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
-    std::string encryption_bootstrap_token;
   };
 
   SyncEngine();
@@ -114,11 +114,17 @@ class SyncEngine : public ModelTypeConfigurer {
   // browser from the cloud / sync servers.
   virtual void StartSyncingWithServer() = 0;
 
+  // Starts handling incoming standalone invalidations. This method must be
+  // called when data types are configured.
+  virtual void StartHandlingInvalidations() = 0;
+
   // Asynchronously set a new passphrase for encryption. Note that it is an
   // error to call SetEncryptionPassphrase under the following circumstances:
   // - An explicit passphrase has already been set
   // - We have pending keys.
-  virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
+  virtual void SetEncryptionPassphrase(
+      const std::string& passphrase,
+      const KeyDerivationParams& key_derivation_params) = 0;
 
   // Use the provided decryption key to asynchronously attempt decryption. If
   // new encrypted keys arrive during the asynchronous call,

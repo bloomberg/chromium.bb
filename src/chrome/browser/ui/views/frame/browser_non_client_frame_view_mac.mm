@@ -113,13 +113,12 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
     return;
   }
   if (browser_view()->IsFullscreen()) {
-    ToggleWebAppFrameToolbarViewVisibility();
-
     [fullscreen_toolbar_controller_ enterFullscreenMode];
   } else {
     // Exiting tab fullscreen requires updating Top UI.
     // Called from here so we can capture exiting tab fullscreen both by
     // pressing 'ESC' key and by clicking green traffic light button.
+
     UpdateFullscreenTopUI();
     [fullscreen_toolbar_controller_ exitFullscreenMode];
   }
@@ -127,10 +126,7 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
 }
 
 bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
-  // In OSX 10.11, caption buttons always get drawn on the left side of the
-  // browser frame instead of the leading edge. This causes a discrepancy in
-  // RTL mode.
-  return !base::i18n::IsRTL() || base::mac::IsAtLeastOS10_12();
+  return true;
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
@@ -147,9 +143,9 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
   if (!frame()->IsFullscreen()) {
     const int kCaptionWidth = base::mac::IsAtMostOS10_15() ? 70 : 85;
     if (CaptionButtonsOnLeadingEdge())
-      bounds.Inset(gfx::Insets(0, kCaptionWidth, 0, 0));
+      bounds.Inset(gfx::Insets::TLBR(0, kCaptionWidth, 0, 0));
     else
-      bounds.Inset(gfx::Insets(0, 0, 0, kCaptionWidth));
+      bounds.Inset(gfx::Insets::TLBR(0, 0, 0, kCaptionWidth));
   }
 
   return bounds;
@@ -220,8 +216,6 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
     browser_view()->UnhideDownloadShelf();
   }
   [fullscreen_toolbar_controller_ setToolbarStyle:new_style];
-
-  ToggleWebAppFrameToolbarViewVisibility();
 
   if (![fullscreen_toolbar_controller_ isInFullscreen] ||
       old_style == new_style)
@@ -384,7 +378,7 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
-  SkColor frame_color = GetFrameColor();
+  SkColor frame_color = GetFrameColor(BrowserFrameActiveState::kUseCurrent);
   canvas->DrawColor(frame_color);
 
   if (window_title_) {
@@ -522,24 +516,25 @@ gfx::Rect BrowserNonClientFrameViewMac::GetCaptionButtonPlaceholderBounds(
     bool is_rtl,
     const gfx::Size& frame,
     int y,
-    int width,
-    int extra_padding) {
+    int width) {
+  gfx::Rect bounds(0, y, width, frame.height());
   if (is_rtl)
-    return gfx::Rect(frame.width() - width, y, width, frame.height());
-  else {
-    // Add extra width to caption_button_placeholder_container_overlay_ so the
-    // maximize button does not look like it is touching the border of the
-    // overlay and there is padding between the two.
-    return gfx::Rect(0, y, width + extra_padding, frame.height());
-  }
+    bounds.set_x(frame.width() - bounds.width());
+
+  return bounds;
 }
 
 void BrowserNonClientFrameViewMac::LayoutWindowControlsOverlay() {
   const bool is_rtl = CaptionButtonsOnLeadingEdge() && base::i18n::IsRTL();
   const gfx::Size frame(width(), GetTopInset(false));
+
+  // Pad the width of caption_button_placeholder_container so the button on the
+  // inner edge doesn't look like it's touching the overlay, but rather has a
+  // little bit of space between them.
   gfx::Rect caption_button_container_bounds = GetCaptionButtonPlaceholderBounds(
-      is_rtl, frame, 0, kFramePaddingLeft,
-      kFrameExtraPaddingForWindowControlsOverlay);
+      is_rtl, frame, 0,
+      kFramePaddingLeft + kFrameExtraPaddingForWindowControlsOverlay);
+
   gfx::Rect web_app_frame_toolbar_available_bounds =
       GetWebAppFrameToolbarAvailableBounds(
           is_rtl, frame, 0, caption_button_container_bounds.width());
@@ -562,7 +557,7 @@ void BrowserNonClientFrameViewMac::LayoutWindowControlsOverlay() {
     const int overlay_height = GetTopInset(false);
     gfx::Rect bounding_rect;
 
-    if (CaptionButtonsOnLeadingEdge() && base::i18n::IsRTL()) {
+    if (is_rtl) {
       bounding_rect =
           gfx::Rect(caption_button_placeholder_container_->size().width() +
                         web_app_frame_toolbar()->size().width(),
@@ -586,7 +581,8 @@ void BrowserNonClientFrameViewMac::
     UpdateCaptionButtonPlaceholderContainerBackground() {
   if (caption_button_placeholder_container_) {
     caption_button_placeholder_container_->SetBackground(
-        views::CreateSolidBackground(GetFrameColor()));
+        views::CreateSolidBackground(
+            GetFrameColor(BrowserFrameActiveState::kUseCurrent)));
   }
 }
 
@@ -602,11 +598,4 @@ void BrowserNonClientFrameViewMac::AddRoutingForWindowControlsOverlayViews() {
           this, web_app_frame_toolbar(),
           remote_cocoa::mojom::WindowControlsOverlayNSViewType::
               kWebAppFrameToolbar);
-}
-
-void BrowserNonClientFrameViewMac::ToggleWebAppFrameToolbarViewVisibility() {
-  if (browser_view()->IsWindowControlsOverlayEnabled()) {
-    web_app_frame_toolbar()->SetVisible(!ShouldHideTopUIForFullscreen());
-    InvalidateLayout();
-  }
 }

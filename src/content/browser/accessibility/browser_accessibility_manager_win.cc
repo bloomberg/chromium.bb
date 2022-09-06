@@ -18,7 +18,6 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
@@ -122,10 +121,11 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
   FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
 }
 
-void BrowserAccessibilityManagerWin::FireBlinkEvent(
-    ax::mojom::Event event_type,
-    BrowserAccessibility* node) {
-  BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
+void BrowserAccessibilityManagerWin::FireBlinkEvent(ax::mojom::Event event_type,
+                                                    BrowserAccessibility* node,
+                                                    int action_request_id) {
+  BrowserAccessibilityManager::FireBlinkEvent(event_type, node,
+                                              action_request_id);
   switch (event_type) {
     case ax::mojom::Event::kClicked:
       if (node->GetData().IsInvocable())
@@ -168,11 +168,12 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
   if (load_complete_pending_ && can_fire_events && GetRoot()) {
     load_complete_pending_ = false;
     FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, GetRoot());
+    FireUiaAccessibilityEvent(UIA_AsyncContentLoadedEventId, GetRoot());
   }
 
   if (!can_fire_events && !load_complete_pending_ &&
       event_type == ui::AXEventGenerator::Event::LOAD_COMPLETE && GetRoot() &&
-      !GetRoot()->IsOffscreen() && GetRoot()->PlatformChildCount() > 0) {
+      !GetRoot()->IsOffscreen() && GetRoot()->IsPlatformDocumentWithContent()) {
     load_complete_pending_ = true;
   }
 
@@ -357,6 +358,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
+      FireUiaAccessibilityEvent(UIA_AsyncContentLoadedEventId, node);
       break;
     case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
       FireUiaAccessibilityEvent(UIA_LayoutInvalidatedEventId, node);

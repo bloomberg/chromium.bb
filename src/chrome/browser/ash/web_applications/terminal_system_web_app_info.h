@@ -7,34 +7,35 @@
 
 #include <memory>
 
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
-struct WebApplicationInfo;
+struct WebAppInstallInfo;
 class Browser;
 
-class TerminalSystemAppDelegate : public web_app::SystemWebAppDelegate {
+class TerminalSystemAppDelegate : public ash::SystemWebAppDelegate {
  public:
   explicit TerminalSystemAppDelegate(Profile* profile);
 
-  // web_app::SystemWebAppDelegate overrides:
-  std::unique_ptr<WebApplicationInfo> GetWebAppInfo() const override;
+  // ash::SystemWebAppDelegate overrides:
+  std::unique_ptr<WebAppInstallInfo> GetWebAppInfo() const override;
   bool ShouldReuseExistingWindow() const override;
   bool ShouldShowNewWindowMenuOption() const override;
   bool ShouldHaveTabStrip() const override;
-  bool HasTitlebarTerminalSelectNewTabButton() const override;
   gfx::Rect GetDefaultBounds(Browser* browser) const override;
   bool HasCustomTabMenuModel() const override;
   std::unique_ptr<ui::SimpleMenuModel> GetTabMenuModel(
       ui::SimpleMenuModel::Delegate* delegate) const override;
   bool ShouldShowTabContextMenuShortcut(Profile* profile,
                                         int command_id) const override;
+  // TODO(crbug.com/1308961): Migrate to use PWA pinned home tab when ready.
+  bool ShouldPinTab(GURL url) const override;
 };
 
-// Returns a WebApplicationInfo used to install the app.
-std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForTerminalSystemWebApp();
+// Returns a WebAppInstallInfo used to install the app.
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForTerminalSystemWebApp();
 
 // Returns the default bounds.
 gfx::Rect GetDefaultBoundsForTerminal(Browser* browser);

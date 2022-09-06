@@ -38,6 +38,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.lifecycle.Stage;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -48,6 +49,7 @@ import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.ContentFrameLayout;
 import androidx.browser.customtabs.CustomTabsCallback;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsService;
@@ -71,6 +73,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -78,6 +81,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -93,6 +97,7 @@ import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.verification.OriginVerifier;
 import org.chromium.chrome.browser.contextmenu.ContextMenuCoordinator;
+import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker.ClientIdentifierType;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
@@ -104,6 +109,8 @@ import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -116,12 +123,14 @@ import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
+import org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.prefs.PrefService;
@@ -137,6 +146,7 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.mojom.WindowOpenDisposition;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
@@ -153,8 +163,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * Instrumentation tests for app menu, context menu, and toolbar of a {@link CustomTabActivity}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DoNotBatch(reason = "Some tests are Testing CCT start up behavior. "
+                + "Unit test conversion tracked in crbug.com/1217031")
 public class CustomTabActivityTest {
     private static final int TIMEOUT_PAGE_LOAD_SECONDS = 10;
+    private static final String TEST_PACKAGE = "org.chromium.chrome.tests";
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
     private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
@@ -218,6 +231,15 @@ public class CustomTabActivityTest {
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
+        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        pref.removeKey(ChromePreferenceKeys.CUSTOM_TABS_LAST_TASK_ID);
+        pref.removeKey(ChromePreferenceKeys.CUSTOM_TABS_LAST_URL);
+        pref.removeKey(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLIENT_PACKAGE);
+
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION);
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP);
 
         stopAndShutdownEmbeddedTestServer();
 
@@ -418,8 +440,10 @@ public class CustomTabActivityTest {
         }
 
         MenuButton menuButtonView = toolbarView.findViewById(R.id.menu_button_wrapper);
-        assertEquals(menuButtonView.getUseLightDrawablesForTesting(),
-                ColorUtils.shouldUseLightForegroundOnBackground(expectedColor));
+        assertEquals(ColorUtils.shouldUseLightForegroundOnBackground(expectedColor)
+                        ? BrandedColorScheme.DARK_BRANDED_THEME
+                        : BrandedColorScheme.LIGHT_BRANDED_THEME,
+                menuButtonView.getBrandedColorSchemeForTesting());
     }
 
     /**
@@ -647,6 +671,75 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.CCT_RETAINING_STATE)
+    public void testRecordRetainableSession_WithCctSession() throws Exception {
+        Activity emptyActivity = startBlankUiTestActivity();
+
+        // Write shared pref as it there's a previous CCT launch with sessions.
+        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        pref.writeString(ChromePreferenceKeys.CUSTOM_TABS_LAST_URL, mTestPage);
+        pref.writeString(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLIENT_PACKAGE, TEST_PACKAGE);
+        pref.writeInt(ChromePreferenceKeys.CUSTOM_TABS_LAST_TASK_ID, emptyActivity.getTaskId());
+        pref.writeLong(
+                ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP, SystemClock.uptimeMillis());
+        pref.writeBoolean(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION, true);
+
+        Intent intent = CustomTabsTestUtils.createCustomTabIntent(
+                InstrumentationRegistry.getContext(), mTestPage, false, builder -> {});
+        CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        connection.newSession(token);
+        intent.setData(Uri.parse(mTestPage));
+
+        CustomTabActivity cctActivity = ApplicationTestUtils.waitForActivityWithClass(
+                CustomTabActivity.class, Stage.CREATED, () -> emptyActivity.startActivity(intent));
+        mCustomTabActivityTestRule.setActivity(cctActivity);
+        mCustomTabActivityTestRule.waitForActivityCompletelyLoaded();
+
+        assertLastLaunchedClientAppRecorded(ClientIdentifierType.PACKAGE_NAME, TEST_PACKAGE,
+                mTestPage, cctActivity.getTaskId(), true);
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.CCT_RETAINING_STATE)
+    public void testRecordRetainableSession_WithoutWarmupAndSession() {
+        Context context = InstrumentationRegistry.getContext();
+        Activity emptyActivity = startBlankUiTestActivity();
+
+        Intent intent =
+                CustomTabsTestUtils
+                        .createCustomTabIntent(context, mTestPage,
+                                /*launchAsNewTask=*/false, builder -> {})
+                        .putExtra(IntentHandler.EXTRA_ACTIVITY_REFERRER, context.getPackageName());
+
+        CustomTabActivity cctActivity = ApplicationTestUtils.waitForActivityWithClass(
+                CustomTabActivity.class, Stage.CREATED, () -> emptyActivity.startActivity(intent));
+        mCustomTabActivityTestRule.setActivity(cctActivity);
+        mCustomTabActivityTestRule.waitForActivityCompletelyLoaded();
+
+        assertLastLaunchedClientAppRecorded(
+                ClientIdentifierType.REFERRER, "", mTestPage, cctActivity.getTaskId(), false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> getActivity().finish());
+        CriteriaHelper.pollUiThread(() -> getActivity().isDestroyed());
+
+        // Write shared prefs as it the last CCT session has saw tab interactions.
+        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        pref.writeBoolean(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION, true);
+
+        // Start another CCT with same intent right away.
+        Intent newIntent = new Intent(intent);
+        cctActivity = ApplicationTestUtils.waitForActivityWithClass(CustomTabActivity.class,
+                Stage.CREATED, () -> emptyActivity.startActivity(newIntent));
+        mCustomTabActivityTestRule.setActivity(cctActivity);
+        mCustomTabActivityTestRule.waitForActivityCompletelyLoaded();
+        assertLastLaunchedClientAppRecorded(
+                ClientIdentifierType.REFERRER, "", mTestPage, getActivity().getTaskId(), true);
+    }
+
+    @Test
+    @SmallTest
+    @DisabledTest(message = "https://crbug.com/1308065")
     public void testLoadNewUrlWithSession() throws Exception {
         final Context context = InstrumentationRegistry.getTargetContext();
         final Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
@@ -832,7 +925,6 @@ public class CustomTabActivityTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "crbug/1216498")
     public void testPageLoadMetricsAreSent() throws Exception {
         checkPageLoadMetrics(true);
     }
@@ -859,10 +951,8 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS,
-            ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP})
-    public void
-    testNavigationHistogramsRecorded() throws Exception {
+    @EnableFeatures({ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS})
+    public void testNavigationHistogramsRecorded() throws Exception {
         String startHistogramPrefix = "CustomTabs.IntentToFirstNavigationStartTime";
         String commitHistogramPrefix = "CustomTabs.IntentToFirstCommitNavigationTime3";
         assertSuffixedHistogramTotalCount(0, startHistogramPrefix);
@@ -1012,7 +1102,7 @@ public class CustomTabActivityTest {
      * Disabled for flake: https://crbug.com/692025.
      */
     @Test
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/692025")
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
     public void testWarmupAndLaunchRegularChrome() throws Exception {
@@ -1338,6 +1428,34 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(()
                                             -> WarmupManager.getInstance().hasSpareWebContents(),
                 "No new spare renderer", 2000, 200);
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Features.EnableFeatures(ChromeFeatureList.CCT_RETAINING_STATE)
+    public void testInteractionRecordedOnClose() throws Exception {
+        Context context = InstrumentationRegistry.getInstrumentation()
+                                  .getTargetContext()
+                                  .getApplicationContext();
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
+                CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
+            activity.finish();
+        });
+        CriteriaHelper.pollUiThread(() -> getActivity().isDestroyed());
+
+        Assert.assertTrue("CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION not recorded.",
+                SharedPreferencesManager.getInstance().contains(
+                        ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION));
+        Assert.assertTrue("CUSTOM_TABS_LAST_CLOSE_TIMESTAMP not recorded.",
+                SharedPreferencesManager.getInstance().contains(
+                        ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "CustomTabs.HadInteractionOnClose"));
     }
 
     /**
@@ -1666,12 +1784,30 @@ public class CustomTabActivityTest {
     @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
     public void testLaunchPartialCustomTabActivity() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        connection.newSession(token);
+        connection.overridePackageNameForSessionForTesting(token, "org.chromium.testapp");
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_HEIGHT_IN_PIXEL, 50);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         WindowManager.LayoutParams attributes = getActivity().getWindow().getAttributes();
-        assertNotEquals("The height shouldn't be match_parent",
-                WindowManager.LayoutParams.MATCH_PARENT, attributes.height);
+        assertNotEquals("The window should have non-zero y offset", 0, attributes.y);
+
+        // Verify the hierarchy of the enclosing layouts that PCCT relies on for its operation.
+        CallbackHelper eventHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            getActivity().getCompositorViewHolderSupplier().addObserver(cvh -> {
+                if (cvh == null) return;
+                assertTrue(
+                        "CoordinatorLayoutForPointer should be the parent of CompositorViewHolder",
+                        cvh.getParent() instanceof CoordinatorLayoutForPointer);
+                assertTrue("ContentFrameLayout should be the parent of CoodinatorLayoutForPointer",
+                        cvh.getParent().getParent() instanceof ContentFrameLayout);
+                eventHelper.notifyCalled();
+            });
+        });
+        eventHelper.waitForCallback(0);
     }
 
     private void verifyHistoryAfterHiddenTab(boolean speculationWasAHit) throws Exception {
@@ -1855,6 +1991,13 @@ public class CustomTabActivityTest {
                 InstrumentationRegistry.getTargetContext(), mTestPage));
     }
 
+    private Activity startBlankUiTestActivity() {
+        Context context = InstrumentationRegistry.getContext();
+        Intent emptyIntent = new Intent(context, BlankUiTestActivity.class);
+        emptyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return InstrumentationRegistry.getInstrumentation().startActivitySync(emptyIntent);
+    }
+
     private static class ElementContentCriteria implements Runnable {
         private final Tab mTab;
         private final String mJsFunction;
@@ -1897,5 +2040,21 @@ public class CustomTabActivityTest {
 
     private SessionDataHolder getSessionDataHolder() {
         return ChromeApplicationImpl.getComponent().resolveSessionDataHolder();
+    }
+
+    private void assertLastLaunchedClientAppRecorded(String histogramSuffix, String clientPackage,
+            String url, int taskId, boolean umaRecorded) {
+        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        String histogramName = "CustomTabs.RetainableSessions.TimeBetweenLaunch" + histogramSuffix;
+
+        Assert.assertEquals("Client package name in shared pref is different.", clientPackage,
+                pref.readString(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLIENT_PACKAGE, ""));
+        Assert.assertEquals("Url in shared pref is different.", url,
+                pref.readString(ChromePreferenceKeys.CUSTOM_TABS_LAST_URL, ""));
+        Assert.assertEquals("Task id in shared pref is different.", taskId,
+                pref.readInt(ChromePreferenceKeys.CUSTOM_TABS_LAST_TASK_ID, 0));
+        Assert.assertEquals(String.format("<%s> not recorded correctly.", histogramName),
+                umaRecorded ? 1 : 0,
+                RecordHistogram.getHistogramTotalCountForTesting(histogramName));
     }
 }

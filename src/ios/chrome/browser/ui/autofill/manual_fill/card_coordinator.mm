@@ -109,26 +109,16 @@
 #pragma mark - CardListDelegate
 
 - (void)openCardSettings {
-  __weak id<CardCoordinatorDelegate> delegate = self.delegate;
-  __weak __typeof(self) weakSelf = self;
+  __weak id<CardCoordinatorDelegate> weakDelegate = self.delegate;
   [self dismissIfNecessaryThenDoCompletion:^{
-    [delegate openCardSettings];
-    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-      // Settings close the popover but don't send a message to reopen it.
-      [delegate fallbackCoordinatorDidDismissPopover:weakSelf];
-    }
+    [weakDelegate openCardSettings];
   }];
 }
 
 - (void)openAddCreditCard {
-  __weak id<CardCoordinatorDelegate> delegate = self.delegate;
-  __weak __typeof(self) weakSelf = self;
+  __weak id<CardCoordinatorDelegate> weakDelegate = self.delegate;
   [self dismissIfNecessaryThenDoCompletion:^{
-    [delegate openAddCreditCard];
-    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-      // Settings close the popover but don't send a message to reopen it.
-      [delegate fallbackCoordinatorDidDismissPopover:weakSelf];
-    }
+    [weakDelegate openAddCreditCard];
   }];
 }
 

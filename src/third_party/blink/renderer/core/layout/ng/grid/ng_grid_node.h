@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_NODE_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 
 namespace blink {
 
-class NGGridPlacement;
 struct GridItems;
 
 // Grid specific extensions to NGBlockNode.
@@ -20,12 +20,13 @@ class CORE_EXPORT NGGridNode final : public NGBlockNode {
     DCHECK(box && box->IsLayoutNGGrid());
   }
 
-  absl::optional<const wtf_size_t> CachedGridItemCount() const;
   const NGGridPlacementData& CachedPlacementData() const;
 
-  const Vector<GridArea>& ResolveGridItemPositions(
-      const GridItems& grid_items,
-      NGGridPlacement* grid_placement) const;
+  GridItems GridItemsIncludingSubgridded(
+      NGGridPlacementData* placement_data) const;
+
+ private:
+  GridItems ConstructGridItems(NGGridPlacementData* placement_data) const;
 };
 
 template <>

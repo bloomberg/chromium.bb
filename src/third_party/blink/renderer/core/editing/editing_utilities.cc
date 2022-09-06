@@ -354,10 +354,16 @@ static bool HasEditableLevel(const Node& node, EditableLevel editable_level) {
   for (const Node& ancestor : NodeTraversal::InclusiveAncestorsOf(node)) {
     if (!(ancestor.IsHTMLElement() || ancestor.IsDocumentNode()))
       continue;
+
+    if (auto* element = DynamicTo<Element>(&ancestor)) {
+      if (element->editContext())
+          return true;
+    }
+
     const ComputedStyle* style = ancestor.GetComputedStyle();
     if (!style)
       continue;
-    switch (style->UserModify()) {
+    switch (style->UsedUserModify()) {
       case EUserModify::kReadOnly:
         return false;
       case EUserModify::kReadWrite:
@@ -1685,7 +1691,7 @@ wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
       position.ComputeOffsetInContainerNode());
 }
 
-FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
+gfx::QuadF LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
   return caret_rect.layout_object->LocalRectToAbsoluteQuad(caret_rect.rect);
 }
 

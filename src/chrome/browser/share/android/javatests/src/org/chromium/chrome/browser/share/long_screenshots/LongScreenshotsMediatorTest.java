@@ -26,12 +26,10 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.long_screenshots.bitmap_generation.EntryManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 
 /** Tests for the LongScreenshotsMediator. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Features.EnableFeatures(ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class LongScreenshotsMediatorTest {
     private Activity mActivity;
@@ -40,8 +38,8 @@ public class LongScreenshotsMediatorTest {
     private LongScreenshotsMediator mMediator;
 
     @Rule
-    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Mock
     private View mView;
@@ -67,13 +65,6 @@ public class LongScreenshotsMediatorTest {
 
         // Instantiate the object under test.
         mMediator = new LongScreenshotsMediator(mActivity, mManager);
-    }
-
-    @Test
-    @MediumTest
-    public void testShowAreaSelectionDone() {
-        mMediator.showAreaSelectionDialog(mBitmap);
-        Assert.assertTrue(mMediator.getDialog().isShowing());
     }
 
     @Test

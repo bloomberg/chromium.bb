@@ -19,11 +19,13 @@ import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {BatteryType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
 import {getBatteryPercentage, getDeviceName, hasAnyDetailedBatteryInfo} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior, FocusRowBehaviorInterface} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {DeviceConnectionState, DeviceType, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 
 import {Router} from '../../router.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 
 /**
  * @constructor
@@ -48,7 +50,7 @@ class SettingsPairedBluetoothListItemElement extends
   static get properties() {
     return {
       /**
-       * @private {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+       * @private {!PairedBluetoothDeviceProperties}
        */
       device: {
         type: Object,
@@ -117,7 +119,7 @@ class SettingsPairedBluetoothListItemElement extends
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {!PairedBluetoothDeviceProperties}
    *     device
    * @return {string}
    * @private
@@ -127,7 +129,7 @@ class SettingsPairedBluetoothListItemElement extends
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {!PairedBluetoothDeviceProperties}
    *     device
    * @return {boolean}
    * @private
@@ -139,7 +141,7 @@ class SettingsPairedBluetoothListItemElement extends
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {!PairedBluetoothDeviceProperties}
    *     device
    * @return {string}
    * @private
@@ -149,27 +151,26 @@ class SettingsPairedBluetoothListItemElement extends
     const leftBudBatteryPercentage =
         getBatteryPercentage(device.deviceProperties, BatteryType.LEFT_BUD);
     if (leftBudBatteryPercentage !== undefined) {
-      label = label +
+      label += ' ' +
           this.i18n(
-              'bluetoothPairedDeviceItemA11yLabelLeftBudBattery',
+              'bluetoothA11yDeviceNamedBatteryInfoLeftBud',
               leftBudBatteryPercentage);
     }
 
     const caseBatteryPercentage =
         getBatteryPercentage(device.deviceProperties, BatteryType.CASE);
     if (caseBatteryPercentage !== undefined) {
-      label = label +
+      label += ' ' +
           this.i18n(
-              'bluetoothPairedDeviceItemA11yLabelCaseBattery',
-              caseBatteryPercentage);
+              'bluetoothA11yDeviceNamedBatteryInfoCase', caseBatteryPercentage);
     }
 
     const rightBudbatteryPercentage =
         getBatteryPercentage(device.deviceProperties, BatteryType.RIGHT_BUD);
     if (rightBudbatteryPercentage !== undefined) {
-      label = label +
+      label += ' ' +
           this.i18n(
-              'bluetoothPairedDeviceItemA11yLabelRightBudBattery',
+              'bluetoothA11yDeviceNamedBatteryInfoRightBud',
               rightBudbatteryPercentage);
     }
 
@@ -177,141 +178,100 @@ class SettingsPairedBluetoothListItemElement extends
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {!PairedBluetoothDeviceProperties}
    *     device
-   * @return {string}
+   * @return {boolean}
    * @private
    */
-  getMultipleBatteryAriaLabel_(device) {
-    const deviceName = this.getDeviceName_(device);
-    const deviceType = chromeos.bluetoothConfig.mojom.DeviceType;
-    let stringName;
-    switch (device.deviceProperties.deviceType) {
-      case deviceType.kComputer:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeComputer';
-        break;
-      case deviceType.kPhone:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypePhone';
-        break;
-      case deviceType.kHeadset:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeHeadset';
-        break;
-      case deviceType.kVideoCamera:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeVideoCamera';
-        break;
-      case deviceType.kGameController:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeGameController';
-        break;
-      case deviceType.kKeyboard:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeKeyboard';
-        break;
-      case deviceType.kMouse:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeMouse';
-        break;
-      case deviceType.kTablet:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeTablet';
-        break;
-      default:
-        stringName = 'bluetoothPairedDeviceItemA11yLabelTypeUnknown';
-    }
-
-    return this.i18n(
-               stringName, this.itemIndex + 1, this.listSize, deviceName) +
-        this.getMultipleBatteryPercentageString_(device);
+  isDeviceConnecting_(device) {
+    return device.deviceProperties.connectionState ===
+        DeviceConnectionState.kConnecting;
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {!PairedBluetoothDeviceProperties}
    *     device
    * @return {string}
    * @private
    */
   getAriaLabel_(device) {
-    // If there are multiple batteries, then we will concatenate the label
-    // describing the battery percentage of each available true wireless
-    // component with only the label describing the device, thus we can
-    // skip the logic below that is used for labels describing default
-    // battery information, or none, if no battery information is available.
+    // Start with the base information of the device name and location within
+    // the list of devices with the same connection state.
+    let a11yLabel = this.i18n(
+        'bluetoothA11yDeviceName', this.itemIndex + 1, this.listSize,
+        this.getDeviceName_(device));
+
+    // Include the connection status.
+    a11yLabel +=
+        ' ' + this.i18n(this.getA11yDeviceConnectionStatusTextName_(device));
+
+    // Include the device type.
+    a11yLabel += ' ' + this.i18n(this.getA11yDeviceTypeTextName_(device));
+
+    // Include any available battery information.
     if (hasAnyDetailedBatteryInfo(device.deviceProperties)) {
-      return this.getMultipleBatteryAriaLabel_(device);
-    }
-
-    const deviceName = this.getDeviceName_(device);
-    const deviceType = chromeos.bluetoothConfig.mojom.DeviceType;
-    const shouldShowBatteryInfo = this.shouldShowBatteryInfo_(device);
-    let stringName;
-    switch (device.deviceProperties.deviceType) {
-      case deviceType.kComputer:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeComputerWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeComputer';
-        break;
-      case deviceType.kPhone:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypePhoneWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypePhone';
-        break;
-      case deviceType.kHeadset:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeHeadsetWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeHeadset';
-        break;
-      case deviceType.kVideoCamera:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeVideoCameraWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeVideoCamera';
-        break;
-      case deviceType.kGameController:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeGameControllerWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeGameController';
-        break;
-      case deviceType.kKeyboard:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeKeyboardWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeKeyboard';
-        break;
-      case deviceType.kMouse:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeMouseWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeMouse';
-        break;
-      case deviceType.kTablet:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeTabletWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeTablet';
-        break;
-      default:
-        stringName = shouldShowBatteryInfo ?
-            'bluetoothPairedDeviceItemA11yLabelTypeUnknownWithBatteryInfo' :
-            'bluetoothPairedDeviceItemA11yLabelTypeUnknown';
-    }
-
-    // If we get to this point and we should show battery information, then
-    // the battery information is only describing the default battery.
-    if (shouldShowBatteryInfo) {
+      a11yLabel += this.getMultipleBatteryPercentageString_(device);
+    } else if (this.shouldShowBatteryInfo_(device)) {
       const batteryPercentage =
           getBatteryPercentage(device.deviceProperties, BatteryType.DEFAULT);
       assert(batteryPercentage !== undefined);
-      return this.i18n(
-          stringName, this.itemIndex + 1, this.listSize, deviceName,
-          batteryPercentage);
+      a11yLabel +=
+          ' ' + this.i18n('bluetoothA11yDeviceBatteryInfo', batteryPercentage);
     }
-
-    // The default contains no battery information in the label.
-    return this.i18n(stringName, this.itemIndex + 1, this.listSize, deviceName);
+    return a11yLabel;
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {!PairedBluetoothDeviceProperties}
    *     device
    * @return {string}
    * @private
    */
-  getSubpageButtonA11yLabel_(device) {
-    const deviceName = this.getDeviceName_(device);
-    return this.i18n(
-        'bluetoothPairedDeviceItemSubpageButtonA11yLabel', deviceName);
+  getA11yDeviceConnectionStatusTextName_(device) {
+    const connectionState = DeviceConnectionState;
+    switch (device.deviceProperties.connectionState) {
+      case connectionState.kConnected:
+        return 'bluetoothA11yDeviceConnectionStateConnected';
+      case connectionState.kConnecting:
+        return 'bluetoothA11yDeviceConnectionStateConnecting';
+      case connectionState.kNotConnected:
+        return 'bluetoothA11yDeviceConnectionStateNotConnected';
+      default:
+        assertNotReached();
+    }
+  }
+
+  /**
+   * @param {!PairedBluetoothDeviceProperties}
+   *     device
+   * @return {string}
+   * @private
+   */
+  getA11yDeviceTypeTextName_(device) {
+    switch (device.deviceProperties.deviceType) {
+      case DeviceType.kUnknown:
+        return 'bluetoothA11yDeviceTypeUnknown';
+      case DeviceType.kComputer:
+        return 'bluetoothA11yDeviceTypeComputer';
+      case DeviceType.kPhone:
+        return 'bluetoothA11yDeviceTypePhone';
+      case DeviceType.kHeadset:
+        return 'bluetoothA11yDeviceTypeHeadset';
+      case DeviceType.kVideoCamera:
+        return 'bluetoothA11yDeviceTypeVideoCamera';
+      case DeviceType.kGameController:
+        return 'bluetoothA11yDeviceTypeGameController';
+      case DeviceType.kKeyboard:
+        return 'bluetoothA11yDeviceTypeKeyboard';
+      case DeviceType.kKeyboardMouseCombo:
+        return 'bluetoothA11yDeviceTypeKeyboardMouseCombo';
+      case DeviceType.kMouse:
+        return 'bluetoothA11yDeviceTypeMouse';
+      case DeviceType.kTablet:
+        return 'bluetoothA11yDeviceTypeTablet';
+      default:
+        assertNotReached();
+    }
   }
 
   /** @private */

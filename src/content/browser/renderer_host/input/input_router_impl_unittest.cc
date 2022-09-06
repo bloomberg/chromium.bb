@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,10 +44,6 @@
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/events/event.h"
-#endif
-
-#if defined(OS_WIN)
-#include "ui/display/win/test/scoped_screen_win.h"
 #endif
 
 using blink::SyntheticWebGestureEventBuilder;
@@ -966,12 +961,11 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   EXPECT_FALSE(HasPendingEvents());
 }
 
-TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
+// Flaky on Linux: https://crbug.com/1295039
+// Flaky on at least Win7 and Win10 as well: https://crbug.com/1326564
+TEST_F(InputRouterImplTest, DISABLED_GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
 
-#if defined(OS_WIN)
-  display::win::test::ScopedScreenWin scoped_screen_win_;
-#endif
   const WebInputEvent::Type eventTypes[] = {
       WebInputEvent::Type::kGestureTapDown,
       WebInputEvent::Type::kGestureShowPress,
@@ -1001,7 +995,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       WebInputEvent::Type::kGesturePinchUpdate,
       WebInputEvent::Type::kGesturePinchEnd,
       WebInputEvent::Type::kGestureScrollEnd};
-  for (size_t i = 0; i < base::size(eventTypes); ++i) {
+  for (size_t i = 0; i < std::size(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
     if (type == WebInputEvent::Type::kGestureFlingStart ||
         type == WebInputEvent::Type::kGestureFlingCancel) {
@@ -1099,7 +1093,7 @@ TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
       WebInputEvent::Type::kGestureScrollUpdate,
       WebInputEvent::Type::kTouchStart,
       WebInputEvent::Type::kTouchMove};
-  for (size_t i = 0; i < base::size(kRequiredEventAckTypes); ++i) {
+  for (size_t i = 0; i < std::size(kRequiredEventAckTypes); ++i) {
     const WebInputEvent::Type required_ack_type = kRequiredEventAckTypes[i];
     ASSERT_TRUE(ShouldBlockEventStream(GetEventWithType(required_ack_type)))
         << WebInputEvent::GetName(required_ack_type);

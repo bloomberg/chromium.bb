@@ -26,6 +26,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/isolation_info.h"
@@ -38,6 +39,8 @@
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -47,6 +50,22 @@ namespace net {
 namespace nqe {
 
 namespace {
+
+// Creates a mock resolver mapping example.com to a public IP address.
+std::unique_ptr<HostResolver> CreateMockHostResolver() {
+  auto host_resolver = std::make_unique<MockCachingHostResolver>(
+      /*cache_invalidation_num=*/0,
+      /*default_result=*/ERR_NAME_NOT_RESOLVED);
+
+  // local.com resolves to a private IP address.
+  host_resolver->rules()->AddRule("local.com", "127.0.0.1");
+  host_resolver->LoadIntoCache(HostPortPair("local.com", 80),
+                               NetworkIsolationKey(), absl::nullopt);
+  // Hosts not listed here (e.g., "example.com") are treated as external. See
+  // ThroughputAnalyzerTest.PrivateHost below.
+
+  return host_resolver;
+}
 
 class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
  public:
@@ -61,9 +80,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
                 &TestThroughputAnalyzer::OnNewThroughputObservationAvailable,
                 base::Unretained(this)),
             tick_clock,
-            NetLogWithSource::Make(NetLogSourceType::NONE)),
-        throughput_observations_received_(0),
-        bits_received_(0) {}
+            NetLogWithSource::Make(NetLogSourceType::NONE)) {}
 
   TestThroughputAnalyzer(const TestThroughputAnalyzer&) = delete;
   TestThroughputAnalyzer& operator=(const TestThroughputAnalyzer&) = delete;
@@ -84,21 +101,6 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
     bits_received_ += additional_bits_received;
   }
 
-  // Uses a mock resolver to force example.com to resolve to a public IP
-  // address.
-  void AddIPAddressResolution(TestURLRequestContext* context) {
-    mock_host_resolver_.rules()->ClearRules();
-    // example.com resolves to a public IP address.
-    mock_host_resolver_.rules()->AddRule("example.com", "27.0.0.3");
-    // local.com resolves to a private IP address.
-    mock_host_resolver_.rules()->AddRule("local.com", "127.0.0.1");
-    mock_host_resolver_.LoadIntoCache(HostPortPair("example.com", 80),
-                                      NetworkIsolationKey(), absl::nullopt);
-    mock_host_resolver_.LoadIntoCache(HostPortPair("local.com", 80),
-                                      NetworkIsolationKey(), absl::nullopt);
-    context->set_host_resolver(&mock_host_resolver_);
-  }
-
   using internal::ThroughputAnalyzer::CountActiveInFlightRequests;
   using internal::ThroughputAnalyzer::
       disable_throughput_measurements_for_testing;
@@ -106,16 +108,24 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
   using internal::ThroughputAnalyzer::IsHangingWindow;
 
  private:
-  int throughput_observations_received_;
+  int throughput_observations_received_ = 0;
 
-  int64_t bits_received_;
-
-  MockCachingHostResolver mock_host_resolver_;
+  int64_t bits_received_ = 0;
 };
 
 using ThroughputAnalyzerTest = TestWithTaskEnvironment;
 
-#if defined(OS_IOS) || defined(OS_ANDROID)
+TEST_F(ThroughputAnalyzerTest, PrivateHost) {
+  auto host_resolver = CreateMockHostResolver();
+  EXPECT_FALSE(nqe::internal::IsPrivateHostForTesting(
+      host_resolver.get(), HostPortPair("example.com", 80),
+      NetworkIsolationKey()));
+  EXPECT_TRUE(nqe::internal::IsPrivateHostForTesting(
+      host_resolver.get(), HostPortPair("local.com", 80),
+      NetworkIsolationKey()));
+}
+
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
 // Flaky on iOS: crbug.com/672917.
 // Flaky on Android: crbug.com/1223950.
 #define MAYBE_MaximumRequests DISABLED_MaximumRequests
@@ -141,8 +151,9 @@ TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequests) {
                                                &params, tick_clock);
 
     TestDelegate test_delegate;
-    TestURLRequestContext context;
-    throughput_analyzer.AddIPAddressResolution(&context);
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    context_builder->set_host_resolver(CreateMockHostResolver());
+    auto context = context_builder->Build();
 
     ASSERT_FALSE(
         throughput_analyzer.disable_throughput_measurements_for_testing());
@@ -152,12 +163,12 @@ TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequests) {
     // in the memory.
     EXPECT_EQ(test_case.is_local,
               nqe::internal::IsPrivateHostForTesting(
-                  context.host_resolver(), HostPortPair::FromURL(test_case.url),
-                  NetworkIsolationKey()));
+                  context->host_resolver(),
+                  HostPortPair::FromURL(test_case.url), NetworkIsolationKey()));
     for (size_t i = 0; i < 1000; ++i) {
       std::unique_ptr<URLRequest> request(
-          context.CreateRequest(test_case.url, DEFAULT_PRIORITY, &test_delegate,
-                                TRAFFIC_ANNOTATION_FOR_TESTS));
+          context->CreateRequest(test_case.url, DEFAULT_PRIORITY,
+                                 &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
       throughput_analyzer.NotifyStartTransaction(*(request.get()));
       requests.push_back(std::move(request));
     }
@@ -168,7 +179,7 @@ TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequests) {
   }
 }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 // Flaky on iOS: crbug.com/672917.
 #define MAYBE_MaximumRequestsWithNetworkIsolationKey \
   DISABLED_MaximumRequestsWithNetworkIsolationKey
@@ -196,23 +207,24 @@ TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequestsWithNetworkIsolationKey) {
                                                &params, tick_clock);
 
     TestDelegate test_delegate;
-    TestURLRequestContext context;
-    MockCachingHostResolver mock_host_resolver;
-    context.set_host_resolver(&mock_host_resolver);
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    auto mock_host_resolver = std::make_unique<MockCachingHostResolver>();
 
     // Add an entry to the host cache mapping kUrl to non-local IP when using an
     // empty NetworkIsolationKey.
-    mock_host_resolver.rules()->AddRule(kUrl.host(), "1.2.3.4");
-    mock_host_resolver.LoadIntoCache(HostPortPair::FromURL(kUrl),
-                                     NetworkIsolationKey(), absl::nullopt);
+    mock_host_resolver->rules()->AddRule(kUrl.host(), "1.2.3.4");
+    mock_host_resolver->LoadIntoCache(HostPortPair::FromURL(kUrl),
+                                      NetworkIsolationKey(), absl::nullopt);
 
     // Add an entry to the host cache mapping kUrl to local IP when using
     // kNetworkIsolationKey.
-    mock_host_resolver.rules()->ClearRules();
-    mock_host_resolver.rules()->AddRule(kUrl.host(), "127.0.0.1");
-    mock_host_resolver.LoadIntoCache(HostPortPair::FromURL(kUrl),
-                                     kNetworkIsolationKey, absl::nullopt);
+    mock_host_resolver->rules()->ClearRules();
+    mock_host_resolver->rules()->AddRule(kUrl.host(), "127.0.0.1");
+    mock_host_resolver->LoadIntoCache(HostPortPair::FromURL(kUrl),
+                                      kNetworkIsolationKey, absl::nullopt);
 
+    context_builder->set_host_resolver(std::move(mock_host_resolver));
+    auto context = context_builder->Build();
     ASSERT_FALSE(
         throughput_analyzer.disable_throughput_measurements_for_testing());
     base::circular_deque<std::unique_ptr<URLRequest>> requests;
@@ -221,13 +233,13 @@ TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequestsWithNetworkIsolationKey) {
     // in the memory.
     EXPECT_EQ(use_network_isolation_key,
               nqe::internal::IsPrivateHostForTesting(
-                  context.host_resolver(), HostPortPair::FromURL(kUrl),
+                  context->host_resolver(), HostPortPair::FromURL(kUrl),
                   use_network_isolation_key ? kNetworkIsolationKey
                                             : NetworkIsolationKey()));
     for (size_t i = 0; i < 1000; ++i) {
       std::unique_ptr<URLRequest> request(
-          context.CreateRequest(kUrl, DEFAULT_PRIORITY, &test_delegate,
-                                TRAFFIC_ANNOTATION_FOR_TESTS));
+          context->CreateRequest(kUrl, DEFAULT_PRIORITY, &test_delegate,
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
       if (use_network_isolation_key)
         request->set_isolation_info(IsolationInfo::CreatePartial(
             IsolationInfo::RequestType::kOther, kNetworkIsolationKey));
@@ -259,21 +271,21 @@ TEST_F(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
        ++num_requests) {
     TestThroughputAnalyzer throughput_analyzer(&network_quality_estimator,
                                                &params, tick_clock);
-    TestURLRequestContext context;
-    throughput_analyzer.AddIPAddressResolution(&context);
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    context_builder->set_host_resolver(CreateMockHostResolver());
+    auto context = context_builder->Build();
     std::vector<std::unique_ptr<URLRequest>> requests_not_local;
 
     std::vector<TestDelegate> not_local_test_delegates(num_requests);
     for (size_t i = 0; i < num_requests; ++i) {
       // We don't care about completion, except for the first one (see below).
       not_local_test_delegates[i].set_on_complete(base::DoNothing());
-      std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
+      std::unique_ptr<URLRequest> request_not_local(context->CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
           &not_local_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS));
       request_not_local->Start();
       requests_not_local.push_back(std::move(request_not_local));
     }
-
     not_local_test_delegates[0].RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
@@ -379,15 +391,16 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
     const size_t num_requests = params.throughput_min_requests_in_flight();
     TestThroughputAnalyzer throughput_analyzer(&network_quality_estimator,
                                                &params, tick_clock);
-    TestURLRequestContext context;
-    throughput_analyzer.AddIPAddressResolution(&context);
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    context_builder->set_host_resolver(CreateMockHostResolver());
+    auto context = context_builder->Build();
     std::vector<std::unique_ptr<URLRequest>> requests_not_local;
 
     std::vector<TestDelegate> not_local_test_delegates(num_requests);
     for (size_t i = 0; i < num_requests; ++i) {
       // We don't care about completion, except for the first one (see below).
       not_local_test_delegates[i].set_on_complete(base::DoNothing());
-      std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
+      std::unique_ptr<URLRequest> request_not_local(context->CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
           &not_local_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS));
       request_not_local->Start();
@@ -448,19 +461,20 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequestsCheckedOnlyPeriodically) {
                                              &params, &tick_clock);
 
   TestDelegate test_delegate;
-  TestURLRequestContext context;
-  throughput_analyzer.AddIPAddressResolution(&context);
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  context_builder->set_host_resolver(CreateMockHostResolver());
+  auto context = context_builder->Build();
   std::vector<std::unique_ptr<URLRequest>> requests_not_local;
 
   for (size_t i = 0; i < 2; ++i) {
-    std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
+    std::unique_ptr<URLRequest> request_not_local(context->CreateRequest(
         GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     request_not_local->Start();
     requests_not_local.push_back(std::move(request_not_local));
   }
 
-  std::unique_ptr<URLRequest> some_other_request(context.CreateRequest(
+  std::unique_ptr<URLRequest> some_other_request(context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -521,17 +535,18 @@ TEST_F(ThroughputAnalyzerTest, TestLastReceivedTimeIsUpdated) {
                                              &params, &tick_clock);
 
   TestDelegate test_delegate;
-  TestURLRequestContext context;
-  throughput_analyzer.AddIPAddressResolution(&context);
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  context_builder->set_host_resolver(CreateMockHostResolver());
+  auto context = context_builder->Build();
 
-  std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
+  std::unique_ptr<URLRequest> request_not_local(context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   request_not_local->Start();
 
   test_delegate.RunUntilComplete();
 
-  std::unique_ptr<URLRequest> some_other_request(context.CreateRequest(
+  std::unique_ptr<URLRequest> some_other_request(context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -574,10 +589,11 @@ TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
                                              &params, &tick_clock);
 
   TestDelegate test_delegate;
-  TestURLRequestContext context;
-  throughput_analyzer.AddIPAddressResolution(&context);
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  context_builder->set_host_resolver(CreateMockHostResolver());
+  auto context = context_builder->Build();
 
-  std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
+  std::unique_ptr<URLRequest> request_not_local(context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   request_not_local->Start();
@@ -602,7 +618,7 @@ TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
   EXPECT_EQ(0u, throughput_analyzer.CountActiveInFlightRequests());
 }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 // Flaky on iOS: crbug.com/672917.
 #define MAYBE_TestThroughputWithMultipleRequestsOverlap \
   DISABLED_TestThroughputWithMultipleRequestsOverlap
@@ -643,8 +659,9 @@ TEST_F(ThroughputAnalyzerTest,
 
     TestDelegate local_delegate;
     local_delegate.set_on_complete(base::DoNothing());
-    TestURLRequestContext context;
-    throughput_analyzer.AddIPAddressResolution(&context);
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    context_builder->set_host_resolver(CreateMockHostResolver());
+    auto context = context_builder->Build();
     std::unique_ptr<URLRequest> request_local;
 
     std::vector<std::unique_ptr<URLRequest>> requests_not_local;
@@ -653,7 +670,7 @@ TEST_F(ThroughputAnalyzerTest,
     for (size_t i = 0; i < params.throughput_min_requests_in_flight(); ++i) {
       // We don't care about completion, except for the first one (see below).
       not_local_test_delegates[i].set_on_complete(base::DoNothing());
-      std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
+      std::unique_ptr<URLRequest> request_not_local(context->CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
           &not_local_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS));
       request_not_local->Start();
@@ -661,9 +678,9 @@ TEST_F(ThroughputAnalyzerTest,
     }
 
     if (test.start_local_request) {
-      request_local = context.CreateRequest(GURL("http://127.0.0.1/echo.html"),
-                                            DEFAULT_PRIORITY, &local_delegate,
-                                            TRAFFIC_ANNOTATION_FOR_TESTS);
+      request_local = context->CreateRequest(GURL("http://127.0.0.1/echo.html"),
+                                             DEFAULT_PRIORITY, &local_delegate,
+                                             TRAFFIC_ANNOTATION_FOR_TESTS);
       request_local->Start();
     }
 
@@ -754,8 +771,9 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 
     TestThroughputAnalyzer throughput_analyzer(&network_quality_estimator,
                                                &params, tick_clock);
-    TestURLRequestContext context;
-    throughput_analyzer.AddIPAddressResolution(&context);
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    context_builder->set_host_resolver(CreateMockHostResolver());
+    auto context = context_builder->Build();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -765,7 +783,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
     for (size_t i = 0; i < test.number_requests_in_flight; ++i) {
       // We don't care about completion, except for the first one (see below).
       in_flight_test_delegates[i].set_on_complete(base::DoNothing());
-      std::unique_ptr<URLRequest> request_network_1 = context.CreateRequest(
+      std::unique_ptr<URLRequest> request_network_1 = context->CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
           &in_flight_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS);
       requests_in_flight.push_back(std::move(request_network_1));
@@ -822,21 +840,22 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   TestThroughputAnalyzer throughput_analyzer(&network_quality_estimator,
                                              &params, tick_clock);
   TestDelegate test_delegate;
-  TestURLRequestContext context;
-  throughput_analyzer.AddIPAddressResolution(&context);
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  context_builder->set_host_resolver(CreateMockHostResolver());
+  auto context = context_builder->Build();
 
   EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
-  std::unique_ptr<URLRequest> request_1 = context.CreateRequest(
+  std::unique_ptr<URLRequest> request_1 = context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
-  std::unique_ptr<URLRequest> request_2 = context.CreateRequest(
+  std::unique_ptr<URLRequest> request_2 = context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
-  std::unique_ptr<URLRequest> request_3 = context.CreateRequest(
+  std::unique_ptr<URLRequest> request_3 = context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
-  std::unique_ptr<URLRequest> request_4 = context.CreateRequest(
+  std::unique_ptr<URLRequest> request_4 = context->CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
 

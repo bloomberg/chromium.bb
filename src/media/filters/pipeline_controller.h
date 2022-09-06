@@ -137,7 +137,7 @@ class MEDIA_EXPORT PipelineController {
   void SetVolume(float volume);
   void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint);
   void SetPreservesPitch(bool preserves_pitch);
-  void SetAutoplayInitiated(bool autoplay_initiated);
+  void SetWasPlayedWithUserActivation(bool was_played_with_user_activation);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   base::TimeDelta GetMediaDuration() const;
@@ -148,6 +148,7 @@ class MEDIA_EXPORT PipelineController {
       const std::vector<MediaTrack::Id>& enabled_track_ids);
   void OnSelectedVideoTrackChanged(
       absl::optional<MediaTrack::Id> selected_track_id);
+  void OnExternalVideoFrameRequest();
 
   // Used to fire the OnTrackChangeComplete function which is captured in a
   // OnceCallback, and doesn't play nicely with gmock.

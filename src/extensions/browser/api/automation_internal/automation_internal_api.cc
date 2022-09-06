@@ -12,9 +12,11 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -75,7 +77,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
       : content::WebContentsObserver(web_contents),
         request_id_(request_id),
         callback_(std::move(callback)) {
-    content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+    content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
 
     rfh->Send(new ExtensionMsg_AutomationQuerySelector(
         rfh->GetRoutingID(), request_id, acc_obj_id, query));
@@ -262,8 +264,31 @@ class AutomationWebContentsObserver
 
   void ExtensionListenerAdded() override {
     // This call resets accessibility.
-    if (web_contents())
+    if (web_contents()) {
       web_contents()->EnableWebContentsOnlyAccessibilityMode();
+
+      // On ChromeOS Ash, the automation api is the native accessibility api.
+      // For the purposes of tracking web contents accessibility like other
+      // desktop platforms, record the same UMA metric as those platforms.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      UMA_HISTOGRAM_ENUMERATION(
+          "Accessibility.ModeFlag",
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_WEB_CONTENTS,
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_MAX);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Accessibility.ModeFlag",
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_INLINE_TEXT_BOXES,
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_MAX);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Accessibility.ModeFlag",
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_SCREEN_READER,
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_MAX);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Accessibility.ModeFlag",
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_HTML,
+          ui::AXMode::ModeFlagHistogramValue::UMA_AX_MODE_MAX);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    }
   }
 
  private:
@@ -275,7 +300,7 @@ class AutomationWebContentsObserver
             *web_contents),
         browser_context_(web_contents->GetBrowserContext()) {
     if (web_contents->IsCurrentlyAudible()) {
-      content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+      content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
       if (!rfh)
         return;
 
@@ -329,7 +354,7 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
     tab_id = automation_api_delegate->GetTabId(contents);
   }
 
-  content::RenderFrameHost* rfh = contents->GetMainFrame();
+  content::RenderFrameHost* rfh = contents->GetPrimaryMainFrame();
   if (!rfh)
     return RespondNow(Error("Could not enable accessibility for active tab"));
 
@@ -351,9 +376,11 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
   AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
       extension_id(), source_process_id(), GetSenderWebContents(), ax_tree_id);
 
+  api::automation_internal::EnableTabCallbackInfo info;
+  info.tab_id = tab_id;
+  info.tree_id = ax_tree_id.ToString();
   return RespondNow(
-      ArgumentList(api::automation_internal::EnableTab::Results::Create(
-          ax_tree_id.ToString(), tab_id)));
+      ArgumentList(api::automation_internal::EnableTab::Results::Create(info)));
 }
 
 absl::optional<std::string> AutomationInternalEnableTreeFunction::EnableTree(
@@ -754,6 +781,21 @@ AutomationInternalEnableDesktopFunction::Run() {
   return RespondNow(
       ArgumentList(api::automation_internal::EnableDesktop::Results::Create(
           ax_tree_id.ToString())));
+#else
+  return RespondNow(Error("getDesktop is unsupported by this platform"));
+#endif  // defined(USE_AURA)
+}
+
+ExtensionFunction::ResponseAction
+AutomationInternalDisableDesktopFunction::Run() {
+#if defined(USE_AURA)
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
+  if (!automation_info || !automation_info->desktop)
+    return RespondNow(Error("desktop permission must be requested"));
+
+  AutomationEventRouter::GetInstance()->UnregisterListenerWithDesktopPermission(
+      source_process_id());
+  return RespondNow(NoArguments());
 #else
   return RespondNow(Error("getDesktop is unsupported by this platform"));
 #endif  // defined(USE_AURA)

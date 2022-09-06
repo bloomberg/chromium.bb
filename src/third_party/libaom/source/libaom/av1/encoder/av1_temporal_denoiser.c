@@ -487,7 +487,7 @@ static int av1_denoiser_realloc_svc_helper(AV1_COMMON *cm,
         &denoiser->running_avg_y[fb_idx], cm->width, cm->height,
         cm->seq_params->subsampling_x, cm->seq_params->subsampling_y,
         cm->seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
-        cm->features.byte_alignment);
+        cm->features.byte_alignment, 0);
     if (fail) {
       av1_denoiser_free(denoiser);
       return 1;
@@ -574,7 +574,7 @@ int av1_denoiser_alloc(AV1_COMMON *cm, struct SVC *svc, AV1_DENOISER *denoiser,
       fail = aom_alloc_frame_buffer(
           &denoiser->running_avg_y[i + denoiser->num_ref_frames * layer],
           denoise_width, denoise_height, ssx, ssy, use_highbitdepth, border,
-          legacy_byte_alignment);
+          legacy_byte_alignment, 0);
       if (fail) {
         av1_denoiser_free(denoiser);
         return 1;
@@ -586,7 +586,7 @@ int av1_denoiser_alloc(AV1_COMMON *cm, struct SVC *svc, AV1_DENOISER *denoiser,
 
     fail = aom_alloc_frame_buffer(
         &denoiser->mc_running_avg_y[layer], denoise_width, denoise_height, ssx,
-        ssy, use_highbitdepth, border, legacy_byte_alignment);
+        ssy, use_highbitdepth, border, legacy_byte_alignment, 0);
     if (fail) {
       av1_denoiser_free(denoiser);
       return 1;
@@ -595,9 +595,9 @@ int av1_denoiser_alloc(AV1_COMMON *cm, struct SVC *svc, AV1_DENOISER *denoiser,
 
   // denoiser->last_source only used for noise_estimation, so only for top
   // layer.
-  fail =
-      aom_alloc_frame_buffer(&denoiser->last_source, width, height, ssx, ssy,
-                             use_highbitdepth, border, legacy_byte_alignment);
+  fail = aom_alloc_frame_buffer(&denoiser->last_source, width, height, ssx, ssy,
+                                use_highbitdepth, border, legacy_byte_alignment,
+                                0);
   if (fail) {
     av1_denoiser_free(denoiser);
     return 1;
@@ -671,8 +671,10 @@ void av1_denoiser_set_noise_level(AV1_COMP *const cpi, int noise_level) {
 int64_t av1_scale_part_thresh(int64_t threshold, AV1_DENOISER_LEVEL noise_level,
                               CONTENT_STATE_SB content_state,
                               int temporal_layer_id) {
-  if ((content_state.source_sad == kLowSad && content_state.low_sumdiff) ||
-      (content_state.source_sad == kHighSad && content_state.low_sumdiff) ||
+  if ((content_state.source_sad_nonrd == kLowSad &&
+       content_state.low_sumdiff) ||
+      (content_state.source_sad_nonrd == kHighSad &&
+       content_state.low_sumdiff) ||
       (content_state.lighting_change && !content_state.low_sumdiff) ||
       (noise_level == kDenHigh) || (temporal_layer_id != 0)) {
     int64_t scaled_thr =

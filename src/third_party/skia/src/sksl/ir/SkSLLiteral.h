@@ -23,58 +23,60 @@ class Literal : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kLiteral;
 
-    Literal(int line, double value, const Type* type)
-        : INHERITED(line, kExpressionKind, type)
+    Literal(Position pos, double value, const Type* type)
+        : INHERITED(pos, kExpressionKind, type)
         , fValue(value) {}
 
     // Makes a literal of $floatLiteral type.
-    static std::unique_ptr<Literal> MakeFloat(const Context& context, int line, float value) {
-        return std::make_unique<Literal>(line, value, context.fTypes.fFloatLiteral.get());
+    static std::unique_ptr<Literal> MakeFloat(const Context& context, Position pos,
+            float value) {
+        return std::make_unique<Literal>(pos, value, context.fTypes.fFloatLiteral.get());
     }
 
     // Makes a float literal of the specified type.
-    static std::unique_ptr<Literal> MakeFloat(int line, float value, const Type* type) {
+    static std::unique_ptr<Literal> MakeFloat(Position pos, float value, const Type* type) {
         SkASSERT(type->isFloat());
-        return std::make_unique<Literal>(line, value, type);
+        return std::make_unique<Literal>(pos, value, type);
     }
 
     // Makes a literal of $intLiteral type.
-    static std::unique_ptr<Literal> MakeInt(const Context& context, int line, SKSL_INT value) {
-        return std::make_unique<Literal>(line, value, context.fTypes.fIntLiteral.get());
+    static std::unique_ptr<Literal> MakeInt(const Context& context, Position pos,
+            SKSL_INT value) {
+        return std::make_unique<Literal>(pos, value, context.fTypes.fIntLiteral.get());
     }
 
     // Makes an int literal of the specified type.
-    static std::unique_ptr<Literal> MakeInt(int line, SKSL_INT value, const Type* type) {
+    static std::unique_ptr<Literal> MakeInt(Position pos, SKSL_INT value, const Type* type) {
         SkASSERT(type->isInteger());
         SkASSERTF(value >= type->minimumValue(), "Value %" PRId64 " does not fit in type %s",
                                                  value, type->description().c_str());
         SkASSERTF(value <= type->maximumValue(), "Value %" PRId64 " does not fit in type %s",
                                                  value, type->description().c_str());
-        return std::make_unique<Literal>(line, value, type);
+        return std::make_unique<Literal>(pos, value, type);
     }
 
     // Makes a literal of boolean type.
-    static std::unique_ptr<Literal> MakeBool(const Context& context, int line, bool value) {
-        return std::make_unique<Literal>(line, value, context.fTypes.fBool.get());
+    static std::unique_ptr<Literal> MakeBool(const Context& context, Position pos, bool value) {
+        return std::make_unique<Literal>(pos, value, context.fTypes.fBool.get());
     }
 
     // Makes a literal of boolean type. (Functionally identical to the above, but useful if you
     // don't have access to the Context.)
-    static std::unique_ptr<Literal> MakeBool(int line, bool value, const Type* type) {
+    static std::unique_ptr<Literal> MakeBool(Position pos, bool value, const Type* type) {
         SkASSERT(type->isBoolean());
-        return std::make_unique<Literal>(line, value, type);
+        return std::make_unique<Literal>(pos, value, type);
     }
 
     // Makes a literal of the specified type, rounding as needed.
-    static std::unique_ptr<Literal> Make(int line, double value, const Type* type) {
+    static std::unique_ptr<Literal> Make(Position pos, double value, const Type* type) {
         if (type->isFloat()) {
-            return MakeFloat(line, value, type);
+            return MakeFloat(pos, value, type);
         }
         if (type->isInteger()) {
-            return MakeInt(line, value, type);
+            return MakeInt(pos, value, type);
         }
         SkASSERT(type->isBoolean());
-        return MakeBool(line, value, type);
+        return MakeBool(pos, value, type);
     }
 
     float floatValue() const {
@@ -96,12 +98,12 @@ public:
         return fValue;
     }
 
-    String description() const override {
+    std::string description() const override {
         if (this->type().isFloat()) {
-            return to_string(this->floatValue());
+            return skstd::to_string(this->floatValue());
         }
         if (this->type().isInteger()) {
-            return to_string(this->intValue());
+            return std::to_string(this->intValue());
         }
         SkASSERT(this->type().isBoolean());
         return fValue ? "true" : "false";
@@ -124,15 +126,15 @@ public:
                        : ComparisonResult::kNotEqual;
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<Literal>(fLine, this->value(), &this->type());
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<Literal>(pos, this->value(), &this->type());
     }
 
     bool supportsConstantValues() const override {
         return true;
     }
 
-    skstd::optional<double> getConstantValue(int n) const override {
+    std::optional<double> getConstantValue(int n) const override {
         SkASSERT(n == 0);
         return fValue;
     }

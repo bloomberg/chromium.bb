@@ -17,7 +17,6 @@
 #include "ash/style/default_colors.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -58,6 +57,7 @@ constexpr int kNotificationIndicatorRadiusDip = 6;
 constexpr int kNotificationIndicatorPadding = 1;
 
 constexpr SkColor kDefaultIndicatorColor = SK_ColorWHITE;
+constexpr SkAlpha kInactiveIndicatorOpacity = 0x80;
 
 // The time threshold before an item can be dragged.
 constexpr int kDragTimeThresholdMs = 300;
@@ -148,12 +148,16 @@ namespace ash {
 // ShelfAppButton::AppStatusIndicatorView
 
 class ShelfAppButton::AppStatusIndicatorView
-    : public views::View,
+    : public gfx::AnimationDelegate,
+      public views::View,
       public ShelfAppButtonAnimation::Observer {
  public:
-  AppStatusIndicatorView() : show_attention_(false), active_(false) {
+  AppStatusIndicatorView() {
     // Make sure the events reach the parent view for handling.
     SetCanProcessEventsWithinSubtree(false);
+    status_change_animation_ = std::make_unique<gfx::SlideAnimation>(this);
+    status_change_animation_->SetSlideDuration(base::Milliseconds(250));
+    status_change_animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   }
 
   AppStatusIndicatorView(const AppStatusIndicatorView&) = delete;
@@ -164,15 +168,14 @@ class ShelfAppButton::AppStatusIndicatorView
   }
 
   // views::View:
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+    SchedulePaint();
+  }
+
   void OnPaint(gfx::Canvas* canvas) override {
     gfx::ScopedCanvas scoped(canvas);
-    if (show_attention_) {
-      const SkAlpha alpha =
-          ShelfAppButtonAnimation::GetInstance()->HasObserver(this)
-              ? ShelfAppButtonAnimation::GetInstance()->GetAlpha()
-              : SK_AlphaOPAQUE;
-      canvas->SaveLayerAlpha(alpha);
-    }
+    canvas->SaveLayerAlpha(GetAlpha());
 
     const float dsf = canvas->UndoDeviceScaleFactor();
     gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
@@ -185,8 +188,7 @@ class ShelfAppButton::AppStatusIndicatorView
     flags.setStrokeJoin(cc::PaintFlags::Join::kRound_Join);
     flags.setStrokeWidth(kStatusIndicatorThickness);
     flags.setStyle(cc::PaintFlags::kStroke_Style);
-    float stroke_length =
-        active_ ? kStatusIndicatorActiveSize : kStatusIndicatorRunningSize;
+    float stroke_length = GetStrokeLength();
     gfx::PointF start;
     gfx::PointF end;
     if (horizontal_shelf_) {
@@ -204,6 +206,30 @@ class ShelfAppButton::AppStatusIndicatorView
     canvas->DrawPath(path, flags);
   }
 
+  float GetStrokeLength() {
+    if (status_change_animation_->is_animating()) {
+      return status_change_animation_->CurrentValueBetween(
+          kStatusIndicatorRunningSize, kStatusIndicatorActiveSize);
+    }
+
+    return active_ ? kStatusIndicatorActiveSize : kStatusIndicatorRunningSize;
+  }
+
+  SkAlpha GetAlpha() {
+    if (show_attention_) {
+      return ShelfAppButtonAnimation::GetInstance()->HasObserver(this)
+                 ? ShelfAppButtonAnimation::GetInstance()->GetAlpha()
+                 : SK_AlphaOPAQUE;
+    }
+
+    if (status_change_animation_->is_animating()) {
+      return status_change_animation_->CurrentValueBetween(
+          kInactiveIndicatorOpacity, SK_AlphaOPAQUE);
+    }
+
+    return active_ ? SK_AlphaOPAQUE : kInactiveIndicatorOpacity;
+  }
+
   // ShelfAppButtonAnimation::Observer
   void AnimationProgressed() override {
     UpdateAnimating();
@@ -215,6 +241,10 @@ class ShelfAppButton::AppStatusIndicatorView
       return;
 
     show_attention_ = show;
+
+    if (status_change_animation_->is_animating())
+      status_change_animation_->End();
+
     if (show_attention_) {
       animation_end_time_ = base::TimeTicks::Now() + base::Seconds(10);
       ShelfAppButtonAnimation::GetInstance()->AddObserver(this);
@@ -223,11 +253,21 @@ class ShelfAppButton::AppStatusIndicatorView
     }
   }
 
+  // gfx::AnimationDelegate
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    if (animation != status_change_animation_.get())
+      return;
+    SchedulePaint();
+  }
+
   void ShowActiveStatus(bool active) {
     if (active_ == active)
       return;
     active_ = active;
-    SchedulePaint();
+    if (active_)
+      status_change_animation_->Show();
+    else
+      status_change_animation_->Hide();
   }
 
   void SetHorizontalShelf(bool horizontal_shelf) {
@@ -246,6 +286,7 @@ class ShelfAppButton::AppStatusIndicatorView
   bool show_attention_ = false;
   bool active_ = false;
   bool horizontal_shelf_ = true;
+  std::unique_ptr<gfx::SlideAnimation> status_change_animation_;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
 };
 
@@ -276,15 +317,13 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
     : ShelfButton(shelf_view->shelf(), shelf_button_delegate),
       icon_view_(new views::ImageView()),
       shelf_view_(shelf_view),
-      indicator_(new AppStatusIndicatorView()),
-      notification_indicator_(nullptr),
-      state_(STATE_NORMAL) {
+      indicator_(new AppStatusIndicatorView()) {
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
       gfx::ShadowValue(gfx::Vector2d(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
       gfx::ShadowValue(gfx::Vector2d(0, 0), 1, SkColorSetARGB(0x54, 0, 0, 0)),
   };
-  icon_shadows_.assign(kShadows, kShadows + base::size(kShadows));
+  icon_shadows_.assign(kShadows, kShadows + std::size(kShadows));
 
   // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
   // able to submit accessibility checks. This crashes if fetching a11y node
@@ -331,13 +370,11 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   views::InstallEmptyHighlightPathGenerator(this);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
-  views::FocusRing::Get(this)->SetColor(
-      ShelfConfig::Get()->shelf_focus_border_color());
   // The focus ring should have an inset of half the focus border thickness, so
   // the parent view won't clip it.
   views::FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<views::RoundRectHighlightPathGenerator>(
-          gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2, 0), 0));
+          gfx::Insets::VH(views::FocusRing::kDefaultHaloThickness / 2, 0), 0));
 }
 
 ShelfAppButton::~ShelfAppButton() {
@@ -448,13 +485,18 @@ void ShelfAppButton::OnMenuClosed() {
             views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState());
   views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
       views::InkDropState::DEACTIVATED);
+  context_menu_target_visibility_ = false;
 }
 
 void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
                                      ui::MenuSourceType source_type) {
-  if (!context_menu_controller())
+  // Return early if:
+  // 1. the context menu controller is not set; or
+  // 2. `context_menu_target_visibility_` is already true.
+  if (!context_menu_controller() || context_menu_target_visibility_)
     return;
 
+  context_menu_target_visibility_ = true;
   auto weak_this = weak_factory_.GetWeakPtr();
 
   ShelfButton::ShowContextMenu(p, source_type);
@@ -541,6 +583,12 @@ bool ShelfAppButton::IsIconSizeCurrent() {
       GetIconBounds().width() + insets_shadows.left() + insets_shadows.right();
 
   return icon_width == shelf_view_->GetButtonIconSize();
+}
+
+void ShelfAppButton::OnContextMenuModelRequestCanceled() {
+  // The request for the context menu model gets canceled so reset the context
+  // menu target visibility.
+  context_menu_target_visibility_ = false;
 }
 
 bool ShelfAppButton::FireDragTimerForTest() {
@@ -667,7 +715,7 @@ gfx::Rect ShelfAppButton::GetIconViewBounds(const gfx::Rect& button_bounds,
       gfx::RectF(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
                  icon_width, icon_height);
 
-  icon_view_bounds.Inset(insets_shadows);
+  icon_view_bounds.Inset(gfx::InsetsF(insets_shadows));
   // Icon size has been incorrect when running
   // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
   // http://crbug.com/234854.
@@ -753,7 +801,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP:
-      FALLTHROUGH;  // Ensure tapped items are not enlarged for drag.
+      [[fallthrough]];  // Ensure tapped items are not enlarged for drag.
     case ui::ET_GESTURE_END:
       // If the button is being dragged, or there is an active context menu,
       // for this ShelfAppButton, don't deactivate the ink drop.
@@ -769,15 +817,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
         // on a shelf app button, the button's inkdrop could be in the pending
         // state while the button's context menu is hidden. In this case, we
         // have to hide the inkdrop explicitly.
-
-        // Note that the ET_GESTURE_END event may be received during the
-        // building of the context menu by triggering the synthesized gesture
-        // end event. Therefore we have to wait until the context menu is
-        // completely built.
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&ShelfAppButton::MaybeHideInkDropWhenGestureEnds,
-                           weak_factory_.GetWeakPtr()));
+        MaybeHideInkDropWhenGestureEnds();
       }
 
       ClearDragStateOnGestureEnd();
@@ -961,16 +1001,23 @@ void ShelfAppButton::SetNotificationBadgeColor(SkColor color) {
 }
 
 void ShelfAppButton::MaybeHideInkDropWhenGestureEnds() {
-  if (shelf_view_->IsShowingMenuForView(this) ||
+  if (context_menu_target_visibility_ ||
       views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState() ==
           views::InkDropState::HIDDEN) {
-    // Return early if the shelf app button's context menu is showing or
-    // the button's inkdrop has been hidden.
+    // Return early if the shelf app button's context menu should show or
+    // the button's inkdrop has already been hidden.
     return;
   }
 
   views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
       views::InkDropState::HIDDEN);
+}
+
+void ShelfAppButton::OnThemeChanged() {
+  ShelfButton::OnThemeChanged();
+  views::FocusRing::Get(this)->SetColor(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 }  // namespace ash

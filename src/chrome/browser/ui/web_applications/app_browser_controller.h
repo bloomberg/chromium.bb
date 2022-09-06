@@ -20,11 +20,18 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
+#include "url/gurl.h"
 
 class Browser;
 class BrowserThemePack;
 class CustomThemeSupplier;
 class TabMenuModelFactory;
+
+namespace ash {
+class SystemWebAppDelegate;
+}
 
 namespace gfx {
 class Rect;
@@ -36,7 +43,6 @@ class ImageModel;
 
 namespace web_app {
 
-class SystemWebAppDelegate;
 class WebAppBrowserController;
 
 // Returns true if |app_url| and |page_url| are the same origin. To avoid
@@ -46,9 +52,11 @@ class WebAppBrowserController;
 bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url);
 
 // Class to encapsulate logic to control the browser UI for web apps.
-class AppBrowserController : public TabStripModelObserver,
-                             public content::WebContentsObserver,
-                             public BrowserThemeProviderDelegate {
+class AppBrowserController
+    : public ui::ColorProviderManager::InitializerSupplier,
+      public TabStripModelObserver,
+      public content::WebContentsObserver,
+      public BrowserThemeProviderDelegate {
  public:
   AppBrowserController(const AppBrowserController&) = delete;
   AppBrowserController& operator=(const AppBrowserController&) = delete;
@@ -168,7 +176,7 @@ class AppBrowserController : public TabStripModelObserver,
   virtual bool HasReloadButton() const;
 
   // Returns the SystemWebAppDelegate if any for this controller.
-  virtual const SystemWebAppDelegate* system_app() const;
+  virtual const ash::SystemWebAppDelegate* system_app() const;
 
   // Updates the custom tab bar's visibility based on whether it should be
   // currently visible or not. If |animate| is set, the change will be
@@ -199,6 +207,12 @@ class AppBrowserController : public TabStripModelObserver,
 
   // BrowserThemeProviderDelegate:
   CustomThemeSupplier* GetThemeSupplier() const override;
+  bool ShouldUseSystemTheme() const override;
+  bool ShouldUseCustomFrame() const override;
+
+  // ui::ColorProviderManager::InitializerSupplier
+  void AddColorMixers(ui::ColorProvider* provider,
+                      const ui::ColorProviderManager::Key& key) const override;
 
   void UpdateDraggableRegion(const SkRegion& region);
   const absl::optional<SkRegion>& draggable_region() const {

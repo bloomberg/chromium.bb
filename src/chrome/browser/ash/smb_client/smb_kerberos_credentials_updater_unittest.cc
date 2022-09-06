@@ -14,7 +14,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/kerberos/kerberos_client.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_client.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -105,7 +105,7 @@ TEST_F(SmbKerberosCredentialsUpdaterTest, TestActiveAccountChanged) {
 
   callback_called = false;
 
-  // Try to notify the change now without changing/adding user.
+  // Try to notify the change now without changing/adding a user.
   credentials_manager_->SetActiveAccount(kPrincipal);
 
   EXPECT_FALSE(callback_called);

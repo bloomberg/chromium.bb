@@ -32,10 +32,6 @@ class EulaScreen : public BaseScreen {
     BACK,
     // Eula screen is skipped.
     NOT_APPLICABLE,
-    // Eula screen is skipped. EULA and Chrome & Chrome OS terms of service
-    // are added to the consolidated consent screen.
-    NOT_APPLICABLE_CONSOLIDATED_CONSENT_REGULAR,
-    NOT_APPLICABLE_CONSOLIDATED_CONSENT_DEMO,
   };
 
   // This enum is tied directly to a UMA enum defined in
@@ -84,7 +80,7 @@ class EulaScreen : public BaseScreen {
   bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
   bool HandleAccelerator(LoginAcceleratorAction action) override;
 
   // EulaView:

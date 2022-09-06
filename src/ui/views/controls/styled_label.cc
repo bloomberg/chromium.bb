@@ -48,7 +48,6 @@ StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink(
     Link::ClickedCallback callback) {
   RangeStyleInfo result;
   result.callback = std::move(callback);
-  result.disable_line_wrapping = true;
   result.text_style = style::STYLE_LINK;
   return result;
 }
@@ -186,6 +185,18 @@ void StyledLabel::SetAutoColorReadabilityEnabled(bool auto_color_readability) {
 
   auto_color_readability_enabled_ = auto_color_readability;
   OnPropertyChanged(&auto_color_readability_enabled_, kPropertyEffectsPaint);
+}
+
+bool StyledLabel::GetSubpixelRenderingEnabled() const {
+  return subpixel_rendering_enabled_;
+}
+
+void StyledLabel::SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled) {
+  if (subpixel_rendering_enabled_ == subpixel_rendering_enabled)
+    return;
+
+  subpixel_rendering_enabled_ = subpixel_rendering_enabled;
+  OnPropertyChanged(&subpixel_rendering_enabled_, kPropertyEffectsPaint);
 }
 
 const StyledLabel::LayoutSizeInfo& StyledLabel::GetLayoutSizeInfoForWidth(
@@ -448,11 +459,9 @@ void StyledLabel::CalculateLayout(int width) const {
           chunk = substrings[0];
         }
 
-        if (((custom_view &&
-              line_size.width() + custom_view->GetPreferredSize().width() >
-                  content_width) ||
-             (style_info.disable_line_wrapping &&
-              chunk.size() < range.length())) &&
+        if ((custom_view &&
+             line_size.width() + custom_view->GetPreferredSize().width() >
+                 content_width) &&
             position == range.start() && line_size.width() != 0) {
           // If the chunk should not be wrapped, try to fit it entirely on the
           // next line.
@@ -529,6 +538,8 @@ std::unique_ptr<Label> StyledLabel::CreateLabel(
     // Note this ignores |default_text_style_|, in favor of style::STYLE_LINK.
     auto link = std::make_unique<Link>(text, text_context_);
     link->SetCallback(style_info.callback);
+    if (!style_info.accessible_name.empty())
+      link->SetAccessibleName(style_info.accessible_name);
 
     result = std::move(link);
   } else if (style_info.custom_font) {
@@ -544,10 +555,12 @@ std::unique_ptr<Label> StyledLabel::CreateLabel(
     result->SetEnabledColor(style_info.override_color.value());
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
+  if (!style_info.accessible_name.empty())
+    result->SetAccessibleName(style_info.accessible_name);
   if (displayed_on_background_color_)
     result->SetBackgroundColor(displayed_on_background_color_.value());
   result->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
-
+  result->SetSubpixelRenderingEnabled(subpixel_rendering_enabled_);
   return result;
 }
 

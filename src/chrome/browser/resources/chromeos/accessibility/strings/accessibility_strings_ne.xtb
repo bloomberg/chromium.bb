@@ -53,7 +53,7 @@
 <translation id="1268366246392928616">अघिल्लो कुनै पनि गणितीय अभिव्यक्ति छैन</translation>
 <translation id="1273314450961659276">पाठवाचकसम्बन्धी सेटिङहरू</translation>
 <translation id="1275718070701477396">चयन गरिएको</translation>
-<translation id="1284576163386164372">तपाईं जुनसुकै बेला चार औँलाले ट्याप गरी मेनुहरू खोलेर ट्युटोरियलहरू हेर्न सक्नुहुन्छ। त्यसपछि “ChromeVox” खण्डमा रहेको ट्युटोरियल सक्रिय गर्नुहोस्।</translation>
+<translation id="1284576163386164372">तपाईं जुनसुकै बेला चार औँलाले ट्याप गरी मेनुहरू खोलेर ट्युटोरियलहरू हेर्न सक्नुहुन्छ। त्यसपछि “ChromeVox” खण्डमा रहेको ट्युटोरियल अन गर्नुहोस्।</translation>
 <translation id="1291286136605998134">टगल गर्ने बटन</translation>
 <translation id="1299774449519412690">हल्का आकासे निलो</translation>
 <translation id="1303806948938513162">ChromeVox का मेनुहरूमा प्रवेश गर्न ४ औँलाले ट्याप गर्नुहोस्</translation>
@@ -190,7 +190,7 @@
 <translation id="2267538686624070261">गलत हिज्जे छाड्दै</translation>
 <translation id="2267945578749931355">अर्को वर्ण</translation>
 <translation id="2278490101488436824">तीन औँलाले बायाँ स्वाइप गर्नुहोस्</translation>
-<translation id="2303873575703885770">कुनै वस्तु सक्रिय गर्नुहोस्</translation>
+<translation id="2303873575703885770">कुनै वस्तु अन गर्नुहोस्</translation>
 <translation id="2305942658236913680">अर्को कुनै पनि शीर्षक छैन</translation>
 <translation id="2311237334957139798">ग्र्यानुलारिटीमा अघिल्लोमा जानुहोस्</translation>
 <translation id="2314393392395134769">सबस्क्रिप्ट होइन</translation>
@@ -314,7 +314,7 @@
 <translation id="3082249673510793544">पछाडि स्क्रोल गर्नुहोस्</translation>
 <translation id="3084806535845658316">टाइपिङ प्रतिध्वनि छैन</translation>
 <translation id="3086746722712840547">द्रष्टव्य</translation>
-<translation id="308736057934395497">यसले तपाईंको स्क्रिन अरूले देख्न नसकून् भन्नाका खातिर तपाईंको स्क्रिन अफ गरेर तपाईंको गोपनीयताको सुरक्षा अझ सुदृढ बनाउँछ। तपाईं खोज बटनसँगै स्क्रिनको चमक बढाउने बटन थिचेर जुनसुकै बेला स्क्रिन पुनः अन गर्न सक्नुहुन्छ।</translation>
+<translation id="308736057934395497">यसले तपाईंको स्क्रिन अरूले देख्न नसकून् भन्नाका लागि तपाईंको स्क्रिन अफ गरेर तपाईंको गोपनीयताको सुरक्षा अझ सुदृढ बनाउँछ। तपाईं खोज बटनसँगै स्क्रिनको चमक बढाउने बटन थिचेर जुनसुकै बेला स्क्रिन पुनः अन गर्न सक्नुहुन्छ।</translation>
 <translation id="3090227230165225418">डाउनलोडसम्बन्धी सूचना प्रकाशित गर्नुहोस्</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">अर्को ल्याङ्डमार्क</translation>
@@ -332,7 +332,7 @@
 <translation id="3138767756593758860">सीमा चिन्ह सूची देखाउनुहोस्</translation>
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">अर्को पटक</translation>
-<translation id="3153024374267644603">बोली सक्रिय गर्नुहोस्</translation>
+<translation id="3153024374267644603">बोली अन गर्नुहोस्</translation>
 <translation id="3153928844647607688">तालिका <ph name="TABLENAME" />, <ph name="TABLEROWS" /> गुणा <ph name="TABLECOLS" /></translation>
 <translation id="3159493096109238499">बेइज</translation>
 <translation id="316542773973815724">नेभिगेसन</translation>
@@ -362,7 +362,7 @@
 <translation id="3312997241656799641">अर्को भ्रमण गरिएको लिङ्क</translation>
 <translation id="3313245066383501820">ChromeVox परिमार्जक कुञ्जी</translation>
 <translation id="3317212938060708859">एउटा स्लाइडर</translation>
-<translation id="3321460131042519426">शब्द र्याप सक्रिय गर्नुहोस्</translation>
+<translation id="3321460131042519426">शब्द र्याप अन गर्नुहोस्</translation>
 <translation id="3322936298410871309">अघिल्लो चरण 1 शीर्षक</translation>
 <translation id="3323447499041942178">पाठ बक्स</translation>
 <translation id="3324983252691184275">गाढा रातो</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">तालिका <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">अर्को कुञ्जीलाई थिच्दा बरवास्ता गर्ने</translation>
 <translation id="4623097797855662355">कोलोफन</translation>
+<translation id="4624970070706497034">TalkBack ले अब Chromebooks मा कस्टमाइज गर्ने सुविधा प्रदान गर्दैन। तपाईं अझै पनि TalkBack प्रयोग गर्न सक्नुहुन्छ तर तपाईंले TalkBack का डिफल्ट किबोर्ड सर्टकटहरू प्रयोग गर्नु पर्ने हुन्छ। उपलब्ध सर्टकटहरू हेर्न Search+A थिच्नुहोस्, त्यसपछि K थिच्नुहोस्। तपाईं अझै पनि TalkBack प्रयोग गर्न चाहनुहुन्छ भने फेरि कमान्ड की थिच्नुहोस्।</translation>
 <translation id="463135993322337640">यसमा नयाँ के छ भन्ने कुरा थाहा पाउन ChromeVox o, n थिच्नुहोस्</translation>
 <translation id="4649220074413114917">तपाईं दुई औँलाले स्क्रिनमा ट्याप गरेर हाल अन रहेको कुनै वाक् सुविधा बन्द गर्न सक्नुहुन्छ। तपाईं ChromeVox ले कुनै कुरा पढेर नसुनाओस् भन्ने चाहनुहुन्छ भने यसो गर्नु उपयोगी हुन्छ। जारी राख्न दुई औँलाले स्क्रिनमा ट्याप गर्नुहोस्।</translation>
 <translation id="4660783501463101648">क्लासिक हटाइयो। ChromeVox क्लासिकमा फर्कने किबोर्डको टगल हटाइएको छ।</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">ब्रेली लिपिका क्याप्सनहरू सक्षम पारिए</translation>
 <translation id="5183440668879371625">ब्रेल अघिल्लो रेखा</translation>
 <translation id="5189244881767082992">रेखा</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> टाइप गरियोस्</translation>
 <translation id="5263034204789987535">कर्नसिल्क</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">समाप्त</translation>
@@ -666,7 +666,8 @@
 <translation id="5522423213731659107">क्विक ओरियन्टेसन पूरा भयो!</translation>
 <translation id="5534303576632885660">एचडिआर</translation>
 <translation id="5539820223028224601">गेन्स्बोरो</translation>
-<translation id="5549179427201066174">ध्वनि प्रतिक्रिया (earcons) सक्रिय गर्नुहोस् वा निष्क्रिय पार्नुहोस्</translation>
+<translation id="554893713779400387">श्रुतिलेखन सुविधा टगल गर्नुहोस्</translation>
+<translation id="5549179427201066174">ध्वनि प्रतिक्रिया (earcons) अन गर्नुहोस् वा निष्क्रिय पार्नुहोस्</translation>
 <translation id="556042886152191864">बटन</translation>
 <translation id="5561345396546889625">अर्को सूची</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">लग</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">चित्रात्मक प्रतीक</translation>
+<translation id="5648939288050772726">बधाई छ! तपाईंले ChromeVox प्रयोग गर्न चाहिने कुराहरू सिक्नुभएको छ। तपाईं Search+Period थिचेर जुनसुकै बेला ChromeVox को कमान्ड मेनु खोल्न सक्नुहुन्छ भन्ने कुरा याद राख्नुहोस्। तपाईं ChromeVox र ChromeOS का बारेमा थप जान्न चाहनुहुन्छ भने हाम्रा निम्न लेखहरू पढ्नुहोस्।
+    तपाईंले ट्यूटोरियल पढिसक्नुभएको छ भने ChromeVox प्रयोग गरी "बन्द गर्नुहोस्" बटनमा जानुहोस् र त्यसमा क्लिक गर्न प्रयोग गर्नुहोस्।</translation>
 <translation id="5653397561111110475">Chromebook टच स्क्रिनका पहुँच सम्बन्धी सुविधाहरूको प्रयोग गर्नुहोस्</translation>
 <translation id="5655682562155942719">जम्प आदेशहरू</translation>
 <translation id="56637627897541303">पाठ क्षेत्र</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{ कोलोन}other{# कोलोनहरू}}</translation>
 <translation id="6444046323172968959">चेतावनी संवाद</translation>
 <translation id="6452403590345320472">विषय सूची</translation>
+<translation id="6457542714329819968">टाइप गर</translation>
 <translation id="6468049171101508116">अर्को बटन</translation>
 <translation id="646954774886932461">अनुक्रमणिका</translation>
 <translation id="6475604559827479857">शब्द हाइलाइट गर्ने रङ्ग:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">उच्च गुणस्तरको आवाज</translation>
 <translation id="7714340021005120797">अर्को कुनै पनि कम्बो बक्स छैन</translation>
-<translation id="772146615414628379">बधाई छ! तपाईंले ChromeVox प्रयोग गर्न आवश्यक पर्ने कुरा सफलतापूर्वक सिक्नुभएको छ। तपाईं जुनसुकै बेला Search+Period थिचेर ChromeVox को आदेशको मेनु खोल्न सक्नुहुन्छ भन्ने कुरा याद राख्नुहोस्। ChromeVox र Chrome OS का बारेमा थप जान्न हाम्रा निम्न लेखहरू पढ्नुहोस्।
-    तपाईंले ट्यूटोरियल पढिसक्नुभयो भने ChromeVox प्रयोग गरी बन्द गर्ने बटन फेला पार्नुहोस् र त्यसमा क्लिक गर्न प्रयोग गर्नुहोस्।</translation>
 <translation id="7724603315864178912">काट्नुहोस्</translation>
 <translation id="7731785449856576010">अर्को कुनै पनि मिडिया विजेट छैन</translation>
 <translation id="7735498529470878067">तपाईंले छोएर अन्वेषण गर्नुभयो भने तपाईं स्क्रिनमा भएका कुराबारे तुरुन्तै थाहा पाउन सक्नुहुन्छ।</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">गाढा रातो</translation>
 <translation id="923331726185079994">ChromeVox लाई अद्यावधिक गरियो</translation>
 <translation id="93384979447910801">गाढा समुद्री हरियो</translation>
+<translation id="937605981140327129">TalkBack हाल इन्स्टल गरिएको छैन। कृपया Play स्टोरमा गई Android Accessibility Suite इन्स्टल गर्नुहोस् र फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="948171205378458592">बोलीको दर धटाउनुहोस्</translation>
 <translation id="957570623732056069">यो पाठमा यताउता जान एउटा औँलाले बायाँ वा दायाँतिर स्वाइप गर्नुहोस्</translation>
 <translation id="958854023026327378">एक औँलाले तल स्वाइप गर्नुहोस्</translation>

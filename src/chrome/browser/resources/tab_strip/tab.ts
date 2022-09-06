@@ -3,21 +3,19 @@
 // found in the LICENSE file.
 
 import './strings.m.js';
-
 import './alert_indicators.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {getFavicon} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {AlertIndicatorsElement} from './alert_indicators.js';
+import {getTemplate} from './tab.html.js';
 import {Tab, TabNetworkState} from './tab_strip.mojom-webui.js';
 import {TabSwiper} from './tab_swiper.js';
 import {CloseTabAction, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
-
-const DEFAULT_ANIMATION_DURATION: number = 125;
 
 function getAccessibleTitle(tab: Tab): string {
   const tabTitle = tab.title;
@@ -41,8 +39,8 @@ function getPaddingInlineEndProperty(): string {
 }
 
 export class TabElement extends CustomElement {
-  static get template() {
-    return `{__html_template__}`;
+  static override get template() {
+    return getTemplate();
   }
 
   private alertIndicatorsEl_: AlertIndicatorsElement;
@@ -63,29 +61,29 @@ export class TabElement extends CustomElement {
     super();
 
     this.alertIndicatorsEl_ =
-        this.$('tabstrip-alert-indicators') as AlertIndicatorsElement;
-    // Normally, custom elements will get upgraded automatically once added to
-    // the DOM, but TabElement may need to update properties on
+        this.$<AlertIndicatorsElement>('tabstrip-alert-indicators')!;
+    // Normally, custom elements will get upgraded automatically once added
+    // to the DOM, but TabElement may need to update properties on
     // AlertIndicatorElement before this happens, so upgrade it manually.
     customElements.upgrade(this.alertIndicatorsEl_);
 
-    this.closeButtonEl_ = this.$('#close') as HTMLElement;
+    this.closeButtonEl_ = this.$<HTMLElement>('#close')!;
     this.closeButtonEl_.setAttribute(
         'aria-label', loadTimeData.getString('closeTab'));
 
-    this.dragImageEl_ = this.$('#dragImage') as HTMLElement;
+    this.dragImageEl_ = this.$<HTMLElement>('#dragImage')!;
 
-    this.tabEl_ = this.$('#tab') as HTMLElement;
+    this.tabEl_ = this.$<HTMLElement>('#tab')!;
 
-    this.faviconEl_ = this.$('#favicon') as HTMLElement;
+    this.faviconEl_ = this.$<HTMLElement>('#favicon')!;
 
-    this.thumbnailContainer_ = this.$('#thumbnail') as HTMLElement;
+    this.thumbnailContainer_ = this.$<HTMLElement>('#thumbnail')!;
 
-    this.thumbnail_ = this.$('#thumbnailImg') as HTMLImageElement;
+    this.thumbnail_ = this.$<HTMLImageElement>('#thumbnailImg')!;
 
     this.tabsApi_ = TabsApiProxyImpl.getInstance();
 
-    this.titleTextEl_ = this.$('#titleText') as HTMLElement;
+    this.titleTextEl_ = this.$<HTMLElement>('#titleText')!;
 
     /**
      * Flag indicating if this TabElement can accept dragover events. This
@@ -104,7 +102,7 @@ export class TabElement extends CustomElement {
 
     this.tabSwiper_ = new TabSwiper(this);
 
-    this.onTabActivating_ = (tabId: number) => {};
+    this.onTabActivating_ = (_tabId: number) => {};
   }
 
   get tab(): Tab {
@@ -145,7 +143,9 @@ export class TabElement extends CustomElement {
          tab.isDefaultFavicon)) {
       this.faviconEl_.style.backgroundImage = 'none';
     } else if (tab.faviconUrl) {
-      this.faviconEl_.style.backgroundImage = `url(${tab.faviconUrl.url})`;
+      this.faviconEl_.style.backgroundImage = `url(${
+          tab.active && tab.activeFaviconUrl ? tab.activeFaviconUrl.url :
+                                               tab.faviconUrl.url})`;
     } else {
       this.faviconEl_.style.backgroundImage = getFavicon('');
     }
@@ -179,7 +179,7 @@ export class TabElement extends CustomElement {
     this.onTabActivating_ = callback;
   }
 
-  focus() {
+  override focus() {
     this.tabEl_.focus();
   }
 
@@ -206,6 +206,7 @@ export class TabElement extends CustomElement {
     this.onTabActivating_(tabId);
     this.tabsApi_.activateTab(tabId);
 
+    this.setTouchPressed(false);
     this.tabsApi_.closeContainer();
   }
 

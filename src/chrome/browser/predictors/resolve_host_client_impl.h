@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREDICTORS_RESOLVE_HOST_CLIENT_IMPL_H_
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
@@ -54,6 +55,7 @@ class ResolveHostClientImpl : public network::ResolveHostClientBase {
   void OnConnectionError();
 
  private:
+  base::TimeTicks resolve_host_start_time_;
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   ResolveHostCallback callback_;
 };

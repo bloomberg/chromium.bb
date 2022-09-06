@@ -2088,6 +2088,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
     uint16_t* const ma444[3], uint16_t* const ma565[2], uint32_t* const b343[4],
     uint32_t* const b444[3], uint32_t* const b565[2], uint8_t* const dst) {
   __m128i s[2][2], ma3[2][2], ma5[2], sq[2][4], b3[2][3], b5[3];
+  ma5[1] = _mm_setzero_si128();  // Quiets -Wmaybe-unintialized with gcc.
   s[0][0] = LoadUnaligned16Msan(src0, kOverreadInBytesPass1 - width);
   s[1][0] = LoadUnaligned16Msan(src1, kOverreadInBytesPass1 - width);
   sq[0][0] = SquareLo8(s[0][0]);

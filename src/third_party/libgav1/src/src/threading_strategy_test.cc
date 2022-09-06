@@ -99,7 +99,14 @@ TEST_F(ThreadingStrategyTest, MultipleCalls) {
   ASSERT_TRUE(strategy_.Reset(frame_header_, 16));
   EXPECT_NE(strategy_.tile_thread_pool(), nullptr);
   for (int i = 0; i < 8; ++i) {
-    EXPECT_NE(strategy_.row_thread_pool(i), nullptr);
+    // See ThreadingStrategy::Reset().
+#if defined(__ANDROID__)
+    if (i >= 4) {
+      EXPECT_EQ(strategy_.row_thread_pool(i), nullptr) << "i = " << i;
+      continue;
+    }
+#endif
+    EXPECT_NE(strategy_.row_thread_pool(i), nullptr) << "i = " << i;
   }
   EXPECT_NE(strategy_.post_filter_thread_pool(), nullptr);
 
@@ -120,11 +127,18 @@ TEST_F(ThreadingStrategyTest, MultipleCalls) {
   EXPECT_NE(strategy_.tile_thread_pool(), nullptr);
   // First two tiles will get 1 thread each.
   for (int i = 0; i < 2; ++i) {
-    EXPECT_NE(strategy_.row_thread_pool(i), nullptr);
+    // See ThreadingStrategy::Reset().
+#if defined(__ANDROID__)
+    if (i == 1) {
+      EXPECT_EQ(strategy_.row_thread_pool(i), nullptr) << "i = " << i;
+      continue;
+    }
+#endif
+    EXPECT_NE(strategy_.row_thread_pool(i), nullptr) << "i = " << i;
   }
   // All the other row threads must be reset.
   for (int i = 2; i < 8; ++i) {
-    EXPECT_EQ(strategy_.row_thread_pool(i), nullptr);
+    EXPECT_EQ(strategy_.row_thread_pool(i), nullptr) << "i = " << i;
   }
   EXPECT_NE(strategy_.post_filter_thread_pool(), nullptr);
 
@@ -153,6 +167,13 @@ TEST_F(ThreadingStrategyTest, MultipleCalls2) {
   ASSERT_TRUE(strategy_.Reset(frame_header_, 4));
   EXPECT_NE(strategy_.tile_thread_pool(), nullptr);
   for (int i = 0; i < 2; ++i) {
+    // See ThreadingStrategy::Reset().
+#if defined(__ANDROID__)
+    if (i == 1) {
+      EXPECT_EQ(strategy_.row_thread_pool(i), nullptr) << "i = " << i;
+      continue;
+    }
+#endif
     EXPECT_NE(strategy_.row_thread_pool(i), nullptr);
   }
   for (int i = 2; i < 8; ++i) {

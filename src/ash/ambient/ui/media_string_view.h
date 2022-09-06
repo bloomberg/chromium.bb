@@ -7,10 +7,13 @@
 
 #include <memory>
 
+#include "ash/public/cpp/style/color_mode_observer.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/scoped_observation.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
@@ -32,11 +35,20 @@ class FadeoutLayerDelegate;
 class MediaStringView : public views::View,
                         public views::ViewObserver,
                         public media_session::mojom::MediaControllerObserver,
-                        public ui::ImplicitAnimationObserver {
+                        public ui::ImplicitAnimationObserver,
+                        public ColorModeObserver {
  public:
+  struct Settings {
+    SkColor icon_light_mode_color;
+    SkColor icon_dark_mode_color;
+    SkColor text_light_mode_color;
+    SkColor text_dark_mode_color;
+    int text_shadow_elevation;
+  };
+
   METADATA_HEADER(MediaStringView);
 
-  MediaStringView();
+  explicit MediaStringView(Settings settings);
   MediaStringView(const MediaStringView&) = delete;
   MediaStringView& operator=(const MediaStringView&) = delete;
   ~MediaStringView() override;
@@ -63,6 +75,9 @@ class MediaStringView : public views::View,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
+  // ColorModeObserver:
+  void OnColorModeChanged(bool dark_mode_enabled) override;
+
  private:
   friend class AmbientAshTestBase;
 
@@ -85,6 +100,8 @@ class MediaStringView : public views::View,
 
   views::Label* media_text_label_for_testing() { return media_text_; }
 
+  const Settings settings_;
+
   // Music eighth note.
   views::ImageView* icon_ = nullptr;
 
@@ -103,6 +120,9 @@ class MediaStringView : public views::View,
 
   base::ScopedObservation<views::View, views::ViewObserver> observed_view_{
       this};
+
+  base::ScopedObservation<AshColorProvider, ColorModeObserver>
+      color_provider_observer_{this};
 
   base::WeakPtrFactory<MediaStringView> weak_factory_{this};
 };

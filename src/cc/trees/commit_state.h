@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
 #include "cc/cc_export.h"
@@ -104,6 +105,8 @@ struct CC_EXPORT CommitState {
   SkColor background_color = SK_ColorWHITE;
   ViewportPropertyIds viewport_property_ids;
   viz::LocalSurfaceId local_surface_id_from_parent;
+  base::TimeDelta previous_surfaces_visual_update_duration;
+  base::TimeDelta visual_update_duration;
 
   // -------------------------------------------------------------------------
   // Take/reset: these values are reset on the LayerTreeHost between commits.
@@ -120,6 +123,7 @@ struct CC_EXPORT CommitState {
   bool new_local_surface_id_request = false;
   bool next_commit_forces_recalculate_raster_scales = false;
   bool next_commit_forces_redraw = false;
+  uint64_t trace_id = 0;
   EventMetrics::List event_metrics;
   // Latency information for work done in ProxyMain::BeginMainFrame. The
   // unique_ptr is allocated in RequestMainFrameUpdate, and passed to Blink's
@@ -145,23 +149,24 @@ struct CC_EXPORT CommitState {
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;
   std::vector<UIResourceRequest> ui_resource_request_queue;
   base::flat_map<UIResourceId, gfx::Size> ui_resource_sizes;
+  PropertyTreesChangeState property_trees_change_state;
+  base::flat_set<Layer*> layers_that_should_push_properties;
 };
 
 struct CC_EXPORT ThreadUnsafeCommitState {
-  explicit ThreadUnsafeCommitState(MutatorHost* mh);
+  ThreadUnsafeCommitState(MutatorHost* mh,
+                          const ProtectedSequenceSynchronizer& synchronizer);
   ~ThreadUnsafeCommitState();
 
   // TODO(szager/vmpstr): These methods are to support range-based 'for' loops,
   // which is weird because ThreadUnsafeCommitState is not a collection or
   // container. We should do something more sensible and less weird.
-  LayerListIterator begin() const {
-    return LayerListIterator(root_layer.get());
+  LayerListConstIterator begin() const {
+    return LayerListConstIterator(root_layer.get());
   }
-  LayerListIterator end() const { return LayerListIterator(nullptr); }
+  LayerListConstIterator end() const { return LayerListConstIterator(nullptr); }
 
-  // Set of layers that need to push properties.
-  base::flat_set<Layer*> layers_that_should_push_properties;
-  MutatorHost* mutator_host;
+  raw_ptr<MutatorHost> mutator_host;
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;
 };

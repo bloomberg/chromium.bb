@@ -9,8 +9,11 @@
 #define SkJSONWriter_DEFINED
 
 #include "include/core/SkStream.h"
+#include "include/core/SkTypes.h"
 #include "include/private/SkNoncopyable.h"
 #include "include/private/SkTArray.h"
+
+#include <string.h>
 
 /**
  *  Lightweight class for writing properly structured JSON data. No random-access, everything must
@@ -266,7 +269,7 @@ private:
         kArrayValue,
     };
 
-    void appendf(const char* fmt, ...);
+    void appendf(const char* fmt, ...) SK_PRINTF_LIKE(2, 3);
 
     void beginValue(bool structure = false) {
         SkASSERT(State::kObjectName == fState ||

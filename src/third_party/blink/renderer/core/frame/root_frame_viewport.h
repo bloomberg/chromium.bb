@@ -79,6 +79,9 @@ class CORE_EXPORT RootFrameViewport final
   gfx::Rect ScrollCornerRect() const override;
   void UpdateScrollOffset(const ScrollOffset&,
                           mojom::blink::ScrollType) override;
+  gfx::PointF ScrollOffsetToPosition(const ScrollOffset& offset) const override;
+  ScrollOffset ScrollPositionToOffset(
+      const gfx::PointF& position) const override;
   gfx::Vector2d ScrollOffsetInt() const override;
   ScrollOffset GetScrollOffset() const override;
   gfx::Vector2d MinimumScrollOffsetInt() const override;
@@ -91,7 +94,6 @@ class CORE_EXPORT RootFrameViewport final
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override;
-  cc::Layer* LayerForScrolling() const override;
   cc::Layer* LayerForHorizontalScrollbar() const override;
   cc::Layer* LayerForVerticalScrollbar() const override;
   cc::Layer* LayerForScrollCorner() const override;
@@ -99,7 +101,7 @@ class CORE_EXPORT RootFrameViewport final
                                     kIgnoreOverlayScrollbarSize) const override;
   int VerticalScrollbarWidth(OverlayScrollbarClipBehavior =
                                  kIgnoreOverlayScrollbarSize) const override;
-  ScrollResult UserScroll(ScrollGranularity,
+  ScrollResult UserScroll(ui::ScrollGranularity,
                           const ScrollOffset&,
                           ScrollableArea::ScrollCallback on_finish) override;
   CompositorElementId GetScrollElementId() const override;
@@ -115,9 +117,9 @@ class CORE_EXPORT RootFrameViewport final
   mojom::blink::ColorScheme UsedColorScheme() const override;
   void ClearScrollableArea() override;
   LayoutBox* GetLayoutBox() const override;
-  FloatQuad LocalToVisibleContentQuad(const FloatQuad&,
-                                      const LayoutObject*,
-                                      unsigned = 0) const final;
+  gfx::QuadF LocalToVisibleContentQuad(const gfx::QuadF&,
+                                       const LayoutObject*,
+                                       unsigned = 0) const final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 

@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -59,6 +60,9 @@ using extensions::PermissionMessages;
 using extensions::PermissionSet;
 
 namespace {
+
+constexpr char kCloudExtensionRequestMetricsName[] =
+    "Enterprise.CloudExtensionRequestDialogAction";
 
 void CloseAndWait(views::Widget* widget) {
   views::test::WidgetDestroyedWaiter waiter(widget);
@@ -175,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
 // Tests that a scrollbar isn't shown for this regression case.
 // See crbug.com/385570 for details.
 // TODO(http://crbug.com/988934): Flaky on some Mac release bots.
-#if defined(OS_MAC) && defined(NDEBUG)
+#if BUILDFLAG(IS_MAC) && defined(NDEBUG)
 #define MAYBE_ScrollbarRegression DISABLED_ScrollbarRegression
 #else
 #define MAYBE_ScrollbarRegression ScrollbarRegression
@@ -500,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 }
 
 // crbug.com/1166152
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_InvokeUi_ManyPermissions DISABLED_InvokeUi_ManyPermissions
 #else
 #define MAYBE_InvokeUi_ManyPermissions InvokeUi_ManyPermissions
@@ -513,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 }
 
 // TODO(https://crbug.com/1126736): Flaky on Win10.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_InvokeUi_DetailedPermission DISABLED_InvokeUi_DetailedPermission
 #else
 #define MAYBE_InvokeUi_DetailedPermission InvokeUi_DetailedPermission
@@ -549,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 }
 
 // TODO(https://crbug.com/1126741): Flaky on Win10.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_InvokeUi_WithWithholdingOption \
   DISABLED_InvokeUi_WithWithholdingOption
 #else
@@ -809,9 +813,10 @@ class ExtensionInstallDialogViewRequestTest
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest, NotifyDelegate) {
+  base::HistogramTester histogram_tester;
   {
-    // User presses request. Note that we have to wait for the 0ms delay for
-    // the request button to become enabled, hence the RunLoop later.
+    // User presses "Send". Note that we have to wait for the 0ms delay for the
+    // "Send" button to become enabled, hence the RunLoop later.
     ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
     ExtensionInstallPromptTestHelper helper;
     ExtensionInstallDialogView* delegate_view =
@@ -822,6 +827,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest, NotifyDelegate) {
     delegate_view->AcceptDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
     EXPECT_EQ(std::string(), helper.justification());
+    histogram_tester.ExpectTotalCount(kCloudExtensionRequestMetricsName, 1);
+    histogram_tester.ExpectBucketCount(kCloudExtensionRequestMetricsName,
+                                       /*sent*/ 1,
+                                       /*expected_count*/ 1);
   }
   {
     // User presses cancel.
@@ -832,6 +841,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest, NotifyDelegate) {
     delegate_view->CancelDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
     EXPECT_EQ(std::string(), helper.justification());
+    histogram_tester.ExpectTotalCount(kCloudExtensionRequestMetricsName, 2);
+    histogram_tester.ExpectBucketCount(kCloudExtensionRequestMetricsName,
+                                       /*not_sent*/ 0,
+                                       /*expected_count*/ 1);
   }
   {
     // Dialog is closed without the user explicitly choosing to proceed or
@@ -847,11 +860,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest, NotifyDelegate) {
     // TODO(devlin): Should this be ABORTED?
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
     EXPECT_EQ(std::string(), helper.justification());
+    histogram_tester.ExpectTotalCount(kCloudExtensionRequestMetricsName, 3);
+    histogram_tester.ExpectBucketCount(kCloudExtensionRequestMetricsName,
+                                       /*not_sent*/ 0,
+                                       /*expected_count*/ 2);
   }
 }
 
-// Verifies that the "Request" button is disabled initially, but re-enabled
-// after a short time delay.
+// Verifies that the "Send" button is disabled initially, but re-enabled after a
+// short time delay.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest,
                        RequestButtonDelay) {
   ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
@@ -869,6 +886,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest,
 
   // Check OK button state after timeout to verify that it is re-enabled.
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  CloseAndWait(delegate_view->GetWidget());
+}
+
+// Verifies that the "Send" button is disabled when the justification text
+// exceeds the limit.
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest,
+                       SendButtonDisabledWhenJustificationExceedsLimit) {
+  ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
+  ExtensionInstallPromptTestHelper helper;
+  ExtensionInstallDialogView* delegate_view =
+      CreateAndShowRequestPrompt(&helper);
+
+  // Check that dialog and justification textfield are visible.
+  EXPECT_TRUE(delegate_view->GetVisible());
+  ASSERT_TRUE(delegate_view->IsJustificationFieldVisibleForTesting());
+
+  // Check OK button state after timeout to verify that it is re-enabled.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // Add long justification and verify that OK button is disabled.
+  delegate_view->SetJustificationTextForTesting(
+      u"I really, really, really, really, really, really, really, really, "
+      u"really, really, really, really, really, really, really, really, "
+      u"really, really, really, really, really, really, really, really, "
+      u"really, really, really, really, really, really, really, really, "
+      u"really, really, really, really, really need this extension. Pretty "
+      u"please!");
+  EXPECT_FALSE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // Add short justificastion and verify that OK button is enabled.
+  delegate_view->SetJustificationTextForTesting(u"I need it now.");
   EXPECT_TRUE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
   CloseAndWait(delegate_view->GetWidget());

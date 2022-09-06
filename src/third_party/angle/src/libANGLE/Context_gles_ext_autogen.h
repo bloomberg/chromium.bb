@@ -47,6 +47,24 @@
                                                                                                    \
     /* GLES2+ Extensions */                                                                        \
                                                                                                    \
+    /* GL_AMD_performance_monitor */                                                               \
+    void beginPerfMonitor(GLuint monitor);                                                         \
+    void deletePerfMonitors(GLsizei n, GLuint *monitors);                                          \
+    void endPerfMonitor(GLuint monitor);                                                           \
+    void genPerfMonitors(GLsizei n, GLuint *monitors);                                             \
+    void getPerfMonitorCounterData(GLuint monitor, GLenum pname, GLsizei dataSize, GLuint *data,   \
+                                   GLint *bytesWritten);                                           \
+    void getPerfMonitorCounterInfo(GLuint group, GLuint counter, GLenum pname, void *data);        \
+    void getPerfMonitorCounterString(GLuint group, GLuint counter, GLsizei bufSize,                \
+                                     GLsizei *length, GLchar *counterString);                      \
+    void getPerfMonitorCounters(GLuint group, GLint *numCounters, GLint *maxActiveCounters,        \
+                                GLsizei counterSize, GLuint *counters);                            \
+    void getPerfMonitorGroupString(GLuint group, GLsizei bufSize, GLsizei *length,                 \
+                                   GLchar *groupString);                                           \
+    void getPerfMonitorGroups(GLint *numGroups, GLsizei groupsSize, GLuint *groups);               \
+    void selectPerfMonitorCounters(GLuint monitor, GLboolean enable, GLuint group,                 \
+                                   GLint numCounters, GLuint *counterList);                        \
+    /* GL_ANDROID_extension_pack_es31a */                                                          \
     /* GL_ANGLE_depth_texture */                                                                   \
     /* GL_ANGLE_framebuffer_blit */                                                                \
     /* GL_ANGLE_instanced_arrays */                                                                \
@@ -64,6 +82,15 @@
     void eGLImageTargetTextureStorage(GLuint texture, GLeglImageOES image,                         \
                                       const GLint *attrib_list);                                   \
     /* GL_EXT_YUV_target */                                                                        \
+    /* GL_EXT_base_instance */                                                                     \
+    void drawArraysInstancedBaseInstance(PrimitiveMode modePacked, GLint first, GLsizei count,     \
+                                         GLsizei instancecount, GLuint baseinstance);              \
+    void drawElementsInstancedBaseInstance(GLenum mode, GLsizei count, GLenum type,                \
+                                           const void *indices, GLsizei instancecount,             \
+                                           GLuint baseinstance);                                   \
+    void drawElementsInstancedBaseVertexBaseInstance(                                              \
+        PrimitiveMode modePacked, GLsizei count, DrawElementsType typePacked, const void *indices, \
+        GLsizei instancecount, GLint basevertex, GLuint baseinstance);                             \
     /* GL_EXT_blend_func_extended */                                                               \
     void bindFragDataLocation(ShaderProgramID programPacked, GLuint color, const GLchar *name);    \
     void bindFragDataLocationIndexed(ShaderProgramID programPacked, GLuint colorNumber,            \
@@ -142,10 +169,10 @@
     void importMemoryFd(MemoryObjectID memoryPacked, GLuint64 size, HandleType handleTypePacked,   \
                         GLint fd);                                                                 \
     /* GL_EXT_multi_draw_indirect */                                                               \
-    void multiDrawArraysIndirect(GLenum mode, const void *indirect, GLsizei drawcount,             \
-                                 GLsizei stride);                                                  \
-    void multiDrawElementsIndirect(GLenum mode, GLenum type, const void *indirect,                 \
-                                   GLsizei drawcount, GLsizei stride);                             \
+    void multiDrawArraysIndirect(PrimitiveMode modePacked, const void *indirect,                   \
+                                 GLsizei drawcount, GLsizei stride);                               \
+    void multiDrawElementsIndirect(PrimitiveMode modePacked, DrawElementsType typePacked,          \
+                                   const void *indirect, GLsizei drawcount, GLsizei stride);       \
     /* GL_EXT_multisample_compatibility */                                                         \
     /* GL_EXT_multisampled_render_to_texture */                                                    \
     void framebufferTexture2DMultisample(GLenum target, GLenum attachment,                         \
@@ -178,6 +205,7 @@
     /* GL_EXT_semaphore_fd */                                                                      \
     void importSemaphoreFd(SemaphoreID semaphorePacked, HandleType handleTypePacked, GLint fd);    \
     /* GL_EXT_separate_shader_objects */                                                           \
+    /* GL_EXT_shader_framebuffer_fetch */                                                          \
     /* GL_EXT_shader_framebuffer_fetch_non_coherent */                                             \
     void framebufferFetchBarrier();                                                                \
     /* GL_EXT_shader_io_blocks */                                                                  \
@@ -216,6 +244,9 @@
     /* GL_KHR_texture_compression_astc_hdr */                                                      \
     /* GL_KHR_texture_compression_astc_ldr */                                                      \
     /* GL_KHR_texture_compression_astc_sliced_3d */                                                \
+    /* GL_MESA_framebuffer_flip_y */                                                               \
+    void framebufferParameteriMESA(GLenum target, GLenum pname, GLint param);                      \
+    void getFramebufferParameterivMESA(GLenum target, GLenum pname, GLint *params);                \
     /* GL_NV_EGL_stream_consumer_external */                                                       \
     /* GL_NV_depth_buffer_float2 */                                                                \
     /* GL_NV_fence */                                                                              \
@@ -266,6 +297,7 @@
     /* GL_OES_mapbuffer */                                                                         \
     void *mapBuffer(BufferBinding targetPacked, GLenum access);                                    \
     /* GL_OES_packed_depth_stencil */                                                              \
+    /* GL_OES_primitive_bounding_box */                                                            \
     /* GL_OES_rgb8_rgba8 */                                                                        \
     /* GL_OES_sample_shading */                                                                    \
     /* GL_OES_sample_variables */                                                                  \
@@ -295,16 +327,19 @@
     void framebufferTextureMultiview(GLenum target, GLenum attachment, TextureID texturePacked,    \
                                      GLint level, GLint baseViewIndex, GLsizei numViews);          \
     /* GL_OVR_multiview2 */                                                                        \
+    /* GL_QCOM_shading_rate */                                                                     \
+    void shadingRateQCOM(GLenum rate);                                                             \
     /* GL_WEBGL_video_texture */                                                                   \
                                                                                                    \
     /* ANGLE Extensions */                                                                         \
                                                                                                    \
     /* GL_ANGLE_base_vertex_base_instance */                                                       \
-    void drawArraysInstancedBaseInstance(PrimitiveMode modePacked, GLint first, GLsizei count,     \
-                                         GLsizei instanceCount, GLuint baseInstance);              \
-    void drawElementsInstancedBaseVertexBaseInstance(                                              \
+    void drawArraysInstancedBaseInstanceANGLE(PrimitiveMode modePacked, GLint first,               \
+                                              GLsizei count, GLsizei instanceCount,                \
+                                              GLuint baseInstance);                                \
+    void drawElementsInstancedBaseVertexBaseInstanceANGLE(                                         \
         PrimitiveMode modePacked, GLsizei count, DrawElementsType typePacked,                      \
-        const GLvoid *indices, GLsizei instanceCounts, GLint baseVertex, GLuint baseInstance);     \
+        const GLvoid *indices, GLsizei instanceCount, GLint baseVertex, GLuint baseInstance);      \
     void multiDrawArraysInstancedBaseInstance(                                                     \
         PrimitiveMode modePacked, const GLint *firsts, const GLsizei *counts,                      \
         const GLsizei *instanceCounts, const GLuint *baseInstances, GLsizei drawcount);            \
@@ -374,6 +409,7 @@
     /* GL_ANGLE_program_cache_control */                                                           \
     /* GL_ANGLE_provoking_vertex */                                                                \
     void provokingVertex(ProvokingVertexConvention modePacked);                                    \
+    /* GL_ANGLE_read_only_depth_stencil_feedback_loops */                                          \
     /* GL_ANGLE_relaxed_vertex_attribute_type */                                                   \
     /* GL_ANGLE_request_extension */                                                               \
     void requestExtension(const GLchar *name);                                                     \

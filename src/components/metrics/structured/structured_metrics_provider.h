@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/key_data.h"
@@ -65,6 +66,7 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
  private:
   friend class Recorder;
   friend class StructuredMetricsProviderTest;
+  friend class StructuredMetricsProviderHwidTest;
 
   // State machine for step 4 of initialization. These are stored in three files
   // that are asynchronously read from disk at startup. When all files have
@@ -87,6 +89,7 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnRecord(const EventBase& event) override;
   void OnReportingStateChanged(bool enabled) override;
+  void OnHardwareClassInitialized() override;
   absl::optional<int> LastKeyRotation(uint64_t project_name_hash) override;
 
   // metrics::MetricsProvider:
@@ -102,6 +105,16 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   void WriteNowForTest();
   void SetExternalMetricsDirForTest(const base::FilePath& dir);
   void SetDeviceKeyDataPathForTest(const base::FilePath& path);
+
+  // Records events before |init_state_| is kInitialized.
+  void RecordEventBeforeInitialization(const EventBase& event);
+
+  // Hashes data from |event| to be persisted to disk and eventually sent.
+  void RecordEventFromEventBase(const EventBase& event);
+
+  // Hashes events and persists the events to disk. Should be called once |this|
+  // has been initialized.
+  void HashUnhashedEventsAndPersist();
 
   // Beyond this number of logging events between successive calls to
   // ProvideCurrentSessionData, we stop recording events.
@@ -153,6 +166,9 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   // state will be purged upon initialization.
   bool purge_state_on_init_ = false;
 
+  // Tracks whether hardware class has been loaded.
+  bool hardware_class_initialized_ = false;
+
   // The last time we provided independent metrics.
   base::Time last_provided_independent_metrics_;
 
@@ -161,6 +177,9 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
 
   // On-device storage within the user's cryptohome for unsent logs.
   std::unique_ptr<PersistentProto<EventsProto>> events_;
+
+  // Store for events that were recorded before user/device keys are loaded.
+  std::vector<EventBase> unhashed_events_;
 
   // Storage for all event's keys, and hashing logic for values. This stores
   // keys on disk. |profile_key_data_| stores keys for per-profile projects,

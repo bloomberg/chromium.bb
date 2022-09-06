@@ -22,7 +22,7 @@
 #include "src/sksl/ir/SkSLSymbolTable.h"
 
 #ifdef SK_VULKAN
-#include "src/gpu/vk/GrVkCaps.h"
+#include "src/gpu/ganesh/vk/GrVkCaps.h"
 #endif
 
 // name of the uniform used to handle features that are sensitive to whether Y is flipped.
@@ -73,7 +73,7 @@ struct Program {
         bool operator!=(const Inputs& that) const { return !(*this == that); }
     };
 
-    Program(std::unique_ptr<String> source,
+    Program(std::unique_ptr<std::string> source,
             std::unique_ptr<ProgramConfig> config,
             std::shared_ptr<Context> context,
             std::vector<std::unique_ptr<ProgramElement>> elements,
@@ -171,8 +171,9 @@ struct Program {
     // modify anything (as you might be mutating shared data).
     ElementsCollection elements() const { return ElementsCollection(*this); }
 
-    String description() const {
-        String result;
+    std::string description() const {
+        std::string result;
+        result += fConfig->versionDescription();
         for (const ProgramElement* e : this->elements()) {
             result += e->description();
         }
@@ -181,7 +182,7 @@ struct Program {
 
     const ProgramUsage* usage() const { return fUsage.get(); }
 
-    std::unique_ptr<String> fSource;
+    std::unique_ptr<std::string> fSource;
     std::unique_ptr<ProgramConfig> fConfig;
     std::shared_ptr<Context> fContext;
     // it's important to keep fOwnedElements defined after (and thus destroyed before) fSymbols,

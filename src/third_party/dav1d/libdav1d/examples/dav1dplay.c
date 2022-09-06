@@ -114,9 +114,9 @@ static void dp_settings_print_usage(const char *const app,
     fprintf(stderr, "Supported options:\n"
             " --input/-i  $file:    input file\n"
             " --untimed/-u:         ignore PTS, render as fast as possible\n"
-            " --framethreads $num:  number of frame threads (default: 1)\n"
-            " --tilethreads $num:   number of tile threads (default: 1)\n"
-            " --pfthreads $num:     number of postfilter threads(default: 1)\n"
+            " --threads $num:       number of threads (default: 0)\n"
+            " --framedelay $num:    maximum frame delay, capped at $threads (default: 0);\n"
+            "                       set to 1 for low-latency decoding\n"
             " --highquality:        enable high quality rendering\n"
             " --zerocopy/-z:        enable zero copy upload path\n"
             " --gpugrain/-g:        enable GPU grain synthesis\n"
@@ -273,7 +273,7 @@ static Dav1dPlayRenderContext *dp_rd_ctx_create(int argc, char **argv)
     renderer_info = dp_get_renderer(rd_ctx->settings.renderer_name);
 
     if (renderer_info == NULL) {
-        printf("No suitable rendered matching %s found.\n",
+        printf("No suitable renderer matching %s found.\n",
             (rd_ctx->settings.renderer_name) ? rd_ctx->settings.renderer_name : "auto");
     } else {
         printf("Using %s renderer\n", renderer_info->name);

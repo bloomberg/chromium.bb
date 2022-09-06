@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -55,8 +57,8 @@ void WidgetInputHandlerImpl::SetReceiver(
       base::BindOnce(&WidgetInputHandlerImpl::Release, base::Unretained(this)));
 }
 
-void WidgetInputHandlerImpl::SetFocus(bool focused) {
-  RunOnMainThread(base::BindOnce(&WidgetBase::SetFocus, widget_, focused));
+void WidgetInputHandlerImpl::SetFocus(mojom::blink::FocusState focus_state) {
+  RunOnMainThread(base::BindOnce(&WidgetBase::SetFocus, widget_, focus_state));
 }
 
 void WidgetInputHandlerImpl::MouseCaptureLost() {
@@ -174,7 +176,7 @@ void WidgetInputHandlerImpl::InputWasProcessed() {
     std::move(input_processed_ack_).Run();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void WidgetInputHandlerImpl::AttachSynchronousCompositor(
     mojo::PendingRemote<mojom::blink::SynchronousCompositorControlHost>
         control_host,

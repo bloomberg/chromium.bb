@@ -10,6 +10,9 @@
 
 #include "modules/desktop_capture/win/wgc_capturer_win.h"
 
+#include <windows.foundation.metadata.h>
+#include <windows.graphics.capture.h>
+
 #include <utility>
 
 #include "modules/desktop_capture/desktop_capture_metrics_helper.h"
@@ -17,6 +20,9 @@
 #include "modules/desktop_capture/win/wgc_desktop_frame.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/time_utils.h"
+#include "rtc_base/win/get_activation_factory.h"
+#include "rtc_base/win/hstring.h"
+#include "rtc_base/win/windows_version.h"
 #include "system_wrappers/include/metrics.h"
 
 namespace WGC = ABI::Windows::Graphics::Capture;
@@ -25,6 +31,11 @@ using Microsoft::WRL::ComPtr;
 namespace webrtc {
 
 namespace {
+
+const wchar_t kWgcSessionType[] =
+    L"Windows.Graphics.Capture.GraphicsCaptureSession";
+const wchar_t kApiContract[] = L"Windows.Foundation.UniversalApiContract";
+const UINT16 kRequiredApiContractVersion = 8;
 
 enum class WgcCapturerResult {
   kSuccess = 0,
@@ -45,20 +56,88 @@ void RecordWgcCapturerResult(WgcCapturerResult error) {
 
 }  // namespace
 
+bool IsWgcSupported(CaptureType capture_type) {
+  if (capture_type == CaptureType::kScreen) {
+    // A bug in the WGC API `CreateForMonitor` was fixed in 20H1.
+    if (rtc::rtc_win::GetVersion() < rtc::rtc_win::Version::VERSION_WIN10_20H1)
+      return false;
+
+    // There is another bug in `CreateForMonitor` that causes a crash if there
+    // are no active displays.
+    if (!HasActiveDisplay())
+      return false;
+  }
+
+  if (!ResolveCoreWinRTDelayload())
+    return false;
+
+  ComPtr<ABI::Windows::Foundation::Metadata::IApiInformationStatics>
+      api_info_statics;
+  HRESULT hr = GetActivationFactory<
+      ABI::Windows::Foundation::Metadata::IApiInformationStatics,
+      RuntimeClass_Windows_Foundation_Metadata_ApiInformation>(
+      &api_info_statics);
+  if (FAILED(hr))
+    return false;
+
+  HSTRING api_contract;
+  hr = webrtc::CreateHstring(kApiContract, wcslen(kApiContract), &api_contract);
+  if (FAILED(hr))
+    return false;
+
+  boolean is_api_present;
+  hr = api_info_statics->IsApiContractPresentByMajor(
+      api_contract, kRequiredApiContractVersion, &is_api_present);
+  webrtc::DeleteHstring(api_contract);
+  if (FAILED(hr) || !is_api_present)
+    return false;
+
+  HSTRING wgc_session_type;
+  hr = webrtc::CreateHstring(kWgcSessionType, wcslen(kWgcSessionType),
+                             &wgc_session_type);
+  if (FAILED(hr))
+    return false;
+
+  boolean is_type_present;
+  hr = api_info_statics->IsTypePresent(wgc_session_type, &is_type_present);
+  webrtc::DeleteHstring(wgc_session_type);
+  if (FAILED(hr) || !is_type_present)
+    return false;
+
+  ComPtr<WGC::IGraphicsCaptureSessionStatics> capture_session_statics;
+  hr = GetActivationFactory<
+      WGC::IGraphicsCaptureSessionStatics,
+      RuntimeClass_Windows_Graphics_Capture_GraphicsCaptureSession>(
+      &capture_session_statics);
+  if (FAILED(hr))
+    return false;
+
+  boolean is_supported;
+  hr = capture_session_statics->IsSupported(&is_supported);
+  if (FAILED(hr) || !is_supported)
+    return false;
+
+  return true;
+}
+
 WgcCapturerWin::WgcCapturerWin(
     std::unique_ptr<WgcCaptureSourceFactory> source_factory,
-    std::unique_ptr<SourceEnumerator> source_enumerator)
+    std::unique_ptr<SourceEnumerator> source_enumerator,
+    bool allow_delayed_capturable_check)
     : source_factory_(std::move(source_factory)),
-      source_enumerator_(std::move(source_enumerator)) {}
+      source_enumerator_(std::move(source_enumerator)),
+      allow_delayed_capturable_check_(allow_delayed_capturable_check) {}
 WgcCapturerWin::~WgcCapturerWin() = default;
 
 // static
 std::unique_ptr<DesktopCapturer> WgcCapturerWin::CreateRawWindowCapturer(
-    const DesktopCaptureOptions& options) {
+    const DesktopCaptureOptions& options,
+    bool allow_delayed_capturable_check) {
   return std::make_unique<WgcCapturerWin>(
       std::make_unique<WgcWindowSourceFactory>(),
       std::make_unique<WindowEnumerator>(
-          options.enumerate_current_process_windows()));
+          options.enumerate_current_process_windows()),
+      allow_delayed_capturable_check);
 }
 
 // static
@@ -66,7 +145,7 @@ std::unique_ptr<DesktopCapturer> WgcCapturerWin::CreateRawScreenCapturer(
     const DesktopCaptureOptions& options) {
   return std::make_unique<WgcCapturerWin>(
       std::make_unique<WgcScreenSourceFactory>(),
-      std::make_unique<ScreenEnumerator>());
+      std::make_unique<ScreenEnumerator>(), false);
 }
 
 bool WgcCapturerWin::GetSourceList(SourceList* sources) {
@@ -75,6 +154,9 @@ bool WgcCapturerWin::GetSourceList(SourceList* sources) {
 
 bool WgcCapturerWin::SelectSource(DesktopCapturer::SourceId id) {
   capture_source_ = source_factory_->CreateCaptureSource(id);
+  if (allow_delayed_capturable_check_)
+    return true;
+
   return capture_source_->IsCapturable();
 }
 
@@ -135,6 +217,13 @@ void WgcCapturerWin::CaptureFrame() {
     return;
   }
 
+  if (allow_delayed_capturable_check_ && !capture_source_->IsCapturable()) {
+    RTC_LOG(LS_ERROR) << "Source is not capturable.";
+    callback_->OnCaptureResult(DesktopCapturer::Result::ERROR_PERMANENT,
+                               /*frame=*/nullptr);
+    return;
+  }
+
   int64_t capture_start_time_nanos = rtc::TimeNanos();
 
   HRESULT hr;
@@ -156,7 +245,8 @@ void WgcCapturerWin::CaptureFrame() {
         iter_success_pair = ongoing_captures_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(capture_source_->GetSourceId()),
-            std::forward_as_tuple(d3d11_device_, item));
+            std::forward_as_tuple(d3d11_device_, item,
+                                  capture_source_->GetSize()));
     RTC_DCHECK(iter_success_pair.second);
     capture_session = &iter_success_pair.first->second;
   } else {

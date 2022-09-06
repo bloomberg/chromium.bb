@@ -639,7 +639,7 @@ export class CookiesTable extends UI.Widget.VBox {
     if (!this.saveCallback) {
       return;
     }
-    this.saveCallback(newCookie, oldCookie).then(success => {
+    void this.saveCallback(newCookie, oldCookie).then(success => {
       if (success) {
         this.refresh();
       } else {
@@ -677,7 +677,7 @@ export class CookiesTable extends UI.Widget.VBox {
       cookie.addAttribute(
           SDK.Cookie.Attributes.SourcePort, Number.parseInt(data[SDK.Cookie.Attributes.SourcePort], 10) || undefined);
     }
-    if (SDK.Cookie.Attributes.PartitionKey in data) {
+    if (data[SDK.Cookie.Attributes.PartitionKey]) {
       cookie.addAttribute(SDK.Cookie.Attributes.PartitionKey, data[SDK.Cookie.Attributes.PartitionKey]);
     }
     cookie.setSize(data[SDK.Cookie.Attributes.Name].length + data[SDK.Cookie.Attributes.Value].length);
@@ -731,12 +731,12 @@ export class CookiesTable extends UI.Widget.VBox {
           filterValue: cookie.name(),
         },
       ]);
-      Common.Revealer.reveal(requestFilter);
+      void Common.Revealer.reveal(requestFilter);
     });
     if (IssuesManager.RelatedIssue.hasIssues(cookie)) {
       contextMenu.revealSection().appendItem(i18nString(UIStrings.showIssueAssociatedWithThis), () => {
         // TODO(chromium:1077719): Just filter for the cookie instead of revealing one of the associated issues.
-        IssuesManager.RelatedIssue.reveal(cookie);
+        void IssuesManager.RelatedIssue.reveal(cookie);
       });
     }
   }

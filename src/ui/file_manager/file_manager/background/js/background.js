@@ -239,7 +239,8 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
             if (volume) {
               this.navigateToVolumeRoot_(volume, event.filePath);
             } else {
-              console.error('Got view event with invalid volume id.');
+              console.warn(
+                  `Got view event with invalid volume id: ${event.devicePath}`);
             }
           } else if (event.volumeId) {
             if (event.type === VolumeManagerCommon.VOLUME_ALREADY_MOUNTED) {
@@ -249,7 +250,7 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
               this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
             }
           } else {
-            console.error('Got view event with no actionable destination.');
+            console.warn('Got view event with no actionable destination.');
           }
         });
   }
@@ -268,7 +269,7 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
           */
          (volumeManager) => {
            return volumeManager.whenVolumeInfoReady(volumeId).catch((e) => {
-             console.error(
+             console.warn(
                  'Unable to find volume for id: ' + volumeId +
                  '. Error: ' + e.message);
            });
@@ -370,6 +371,7 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
    */
   async onLaunched_(launchData) {
     metrics.startInterval('Load.BackgroundLaunch');
+    console.warn('onLaunched: ' + (launchData ? launchData.source : ''));
     if (!launchData || !launchData.items || launchData.items.length == 0) {
       this.launch_(undefined);
       return;
@@ -461,7 +463,7 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
             launcher.launchFileManager(appState);
           })
           .catch(error => {
-            console.error(error.stack || error);
+            console.warn(error.stack || error);
           });
     }
   }
@@ -522,7 +524,7 @@ class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
           }
         })
         .catch(error => {
-          console.error(error.stack || error);
+          console.warn(error.stack || error);
         });
   }
 

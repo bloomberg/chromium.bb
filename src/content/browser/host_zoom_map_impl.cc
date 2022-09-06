@@ -29,8 +29,9 @@
 #include "net/base/url_util.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/android/content_jni_headers/HostZoomMapImpl_jni.h"
+#include "content/public/browser/android/browser_context_handle.h"
 #endif
 
 namespace content {
@@ -491,7 +492,7 @@ void HostZoomMapImpl::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void JNI_HostZoomMapImpl_SetZoomLevel(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents,
@@ -509,6 +510,33 @@ jdouble JNI_HostZoomMapImpl_GetZoomLevel(
   DCHECK(web_contents);
 
   return HostZoomMap::GetZoomLevel(web_contents);
+}
+
+void JNI_HostZoomMapImpl_SetDefaultZoomLevel(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_context,
+    jdouble new_default_zoom_level) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* context = BrowserContextFromJavaHandle(j_context);
+  if (!context)
+    return;
+
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      HostZoomMap::GetDefaultForBrowserContext(context));
+  host_zoom_map->SetDefaultZoomLevel(new_default_zoom_level);
+}
+
+jdouble JNI_HostZoomMapImpl_GetDefaultZoomLevel(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserContext* context = BrowserContextFromJavaHandle(j_context);
+  if (!context)
+    return 0.0;
+
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      HostZoomMap::GetDefaultForBrowserContext(context));
+  return host_zoom_map->GetDefaultZoomLevel();
 }
 #endif
 

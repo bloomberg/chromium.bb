@@ -27,12 +27,12 @@
 #include "media/base/flinging_controller.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "components/media_router/browser/logger_impl.h"
 #include "components/media_router/common/mojom/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace content {
 class WebContents;
@@ -50,6 +50,11 @@ class MediaSinksObserver;
 class PresentationConnectionStateObserver;
 class RouteRequestResult;
 
+// Commandline flag to disable the default media route providers for tests that
+// are sensitive to the presence of sinks e.g. on the local network.
+constexpr char kDisableMediaRouteProvidersForTestSwitch[] =
+    "disable-media-route-providers-for-test";
+
 // Type of callback used in |CreateRoute()| and |JoinRoute()|.  Callback is
 // invoked when the route request either succeeded or failed.  |connection| is
 // set depending on whether the MRP chooses to setup the PresentationConnections
@@ -66,6 +71,9 @@ using MediaRouteResponseCallback =
 class MediaRouter : public KeyedService {
  public:
   ~MediaRouter() override = default;
+
+  // Must be called before invoking any other method.
+  virtual void Initialize() = 0;
 
   // Creates a media route from |source_id| to |sink_id|.
   // |origin| is the origin of requestor's page.
@@ -124,10 +132,6 @@ class MediaRouter : public KeyedService {
       const MediaRoute::Id& route_id,
       std::unique_ptr<std::vector<uint8_t>> data) = 0;
 
-  // Returns the IssueManager owned by the MediaRouter. Guaranteed to be
-  // non-null.
-  virtual IssueManager* GetIssueManager() = 0;
-
   // Notifies the Media Router that the user has taken an action involving the
   // Media Router. This can be used to perform any initialization that is not
   // approriate to be done at construction.
@@ -142,10 +146,6 @@ class MediaRouter : public KeyedService {
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback) = 0;
 
-  // Called when the incognito profile for this instance is being shut down.
-  // This will terminate all incognito media routes.
-  virtual void OnIncognitoProfileShutdown() = 0;
-
   // Returns the media routes that currently exist. To get notified whenever
   // there is a change to the media routes, subclass MediaRoutesObserver.
   virtual std::vector<MediaRoute> GetCurrentRoutes() const = 0;
@@ -156,7 +156,11 @@ class MediaRouter : public KeyedService {
   virtual std::unique_ptr<media::FlingingController> GetFlingingController(
       const MediaRoute::Id& route_id) = 0;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
+  // Returns the IssueManager owned by the MediaRouter. Guaranteed to be
+  // non-null.
+  virtual IssueManager* GetIssueManager() = 0;
+
   // Binds |controller| for sending media commands to a route. The controller
   // will notify |observer| whenever there is a change to the status of the
   // media. It may invalidate bindings from previous calls to this method.
@@ -165,12 +169,9 @@ class MediaRouter : public KeyedService {
       mojo::PendingReceiver<mojom::MediaController> controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) = 0;
 
-  // Returns a pointer to LoggerImpl that can be used to add logging messages.
-  virtual LoggerImpl* GetLogger() = 0;
-
   // Returns logs collected from Media Router components.
+  // Used by chrome://media-router-internals.
   virtual base::Value GetLogs() const = 0;
-#endif  // !defined(OS_ANDROID)
 
   // Returns media router state as a JSON string represented by base::Value.
   // Includes known sinks and sink compatibility with media sources.
@@ -183,6 +184,10 @@ class MediaRouter : public KeyedService {
   virtual void GetProviderState(
       mojom::MediaRouteProviderId provider_id,
       mojom::MediaRouteProvider::GetStateCallback callback) const = 0;
+
+  // Returns a pointer to LoggerImpl that can be used to add logging messages.
+  virtual LoggerImpl* GetLogger() = 0;
+#endif  // !BUILDFLAG(IS_ANDROID)
 
  private:
   friend class IssuesObserver;

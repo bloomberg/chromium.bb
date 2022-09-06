@@ -62,8 +62,6 @@ source_set("audio") {
     "audio_debug_recording_manager.cc",
     "audio_debug_recording_manager.h",
     "audio_debug_recording_session.h",
-    "audio_debug_recording_session_impl.cc",
-    "audio_debug_recording_session_impl.h",
     "audio_device_description.cc",
     "audio_device_description.h",
     "audio_device_name.cc",
@@ -80,6 +78,7 @@ source_set("audio") {
     "audio_input_ipc.h",
     "audio_input_stream_data_interceptor.cc",
     "audio_input_stream_data_interceptor.h",
+    "audio_io.cc",
     "audio_io.h",
     "audio_manager.cc",
     "audio_manager.h",
@@ -138,6 +137,8 @@ source_set("audio") {
     "scoped_task_runner_observer.h",
     "simple_sources.cc",
     "simple_sources.h",
+    "system_glitch_reporter.cc",
+    "system_glitch_reporter.h",
     "wav_audio_handler.cc",
     "wav_audio_handler.h",
   ]
@@ -150,6 +151,7 @@ source_set("audio") {
     "//url",
   ]
   libs = []
+  defines = []
   configs += [
     ":platform_config",
     "//media:subcomponent_config",
@@ -206,6 +208,8 @@ source_set("audio") {
       "win/waveout_output_win.h",
     ]
 
+    deps += [ "//media/base/win:media_foundation_util" ]
+
     libs += [
       "dxguid.lib",
       "setupapi.lib",
@@ -234,6 +238,13 @@ source_set("audio") {
     deps += [
       ":aaudio_stubs",
       "//media/base/android:media_jni_headers",
+    ]
+
+    defines += [
+      # media/audio includes functions from NDK API levels beyond the one Chromium compiles
+      # with by default.
+      # Therefore relax the verification of functions <=> API level introduced with NDK 23.
+      "__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__",
     ]
   }
 
@@ -315,6 +326,7 @@ source_set("audio") {
     ]
     deps += [
       "//media/fuchsia/audio",
+      "//media/fuchsia/common",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
@@ -387,7 +399,6 @@ source_set("unit_tests") {
     "audio_debug_file_writer_unittest.cc",
     "audio_debug_recording_helper_unittest.cc",
     "audio_debug_recording_manager_unittest.cc",
-    "audio_debug_recording_session_impl_unittest.cc",
     "audio_encoders_unittest.cc",
     "audio_input_device_unittest.cc",
     "audio_input_stream_data_interceptor_unittest.cc",
@@ -406,7 +417,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -469,9 +479,12 @@ source_set("unit_tests") {
       "win/device_enumeration_win_unittest.cc",
       "win/volume_range_util_unittest.cc",
     ]
+
+    deps += [ "//media/gpu:gpu" ]
   }
 
   if (is_fuchsia) {
+    sources += [ "fuchsia/audio_input_stream_fuchsia_test.cc" ]
     deps += [ "//media/fuchsia/audio:test_support" ]
   }
 

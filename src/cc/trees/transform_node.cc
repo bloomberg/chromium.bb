@@ -13,9 +13,9 @@
 namespace cc {
 
 TransformNode::TransformNode()
-    : id(TransformTree::kInvalidNodeId),
-      parent_id(TransformTree::kInvalidNodeId),
-      parent_frame_id(TransformTree::kInvalidNodeId),
+    : id(kInvalidPropertyNodeId),
+      parent_id(kInvalidPropertyNodeId),
+      parent_frame_id(kInvalidPropertyNodeId),
       sticky_position_constraint_id(-1),
       sorting_context_id(0),
       needs_local_transform_update(true),
@@ -28,6 +28,7 @@ TransformNode::TransformNode()
       flattens_inherited_transform(true),
       node_and_ancestors_are_flat(true),
       scrolls(false),
+      is_fixed_to_viewport(false),
       should_be_snapped(false),
       moved_by_outer_viewport_bounds_delta_y(false),
       in_subtree_of_page_scale_layer(false),
@@ -61,6 +62,7 @@ bool TransformNode::operator==(const TransformNode& other) const {
          flattens_inherited_transform == other.flattens_inherited_transform &&
          node_and_ancestors_are_flat == other.node_and_ancestors_are_flat &&
          scrolls == other.scrolls &&
+         is_fixed_to_viewport == other.is_fixed_to_viewport &&
          should_be_snapped == other.should_be_snapped &&
          moved_by_outer_viewport_bounds_delta_y ==
              other.moved_by_outer_viewport_bounds_delta_y &&

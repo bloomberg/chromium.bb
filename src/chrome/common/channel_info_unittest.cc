@@ -116,15 +116,15 @@ TEST_P(ChannelInfoTest, IsExtendedStableChannel) {
   EXPECT_EQ(IsExtendedStableChannel(), GetParam().is_extended_stable);
 }
 
-#if defined(OS_WIN)
-#elif defined(OS_MAC)
+#if BUILDFLAG(IS_WIN)
+#elif BUILDFLAG(IS_MAC)
 
 TEST_P(ChannelInfoTest, GetChannelByName) {
   EXPECT_EQ(GetChannelByName(GetParam().channel_name_with_es),
             GetParam().channel);
 }
 
-#elif defined(OS_POSIX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 TEST_P(ChannelInfoTest, GetChannelSuffixForDataDir) {
   EXPECT_EQ(GetChannelSuffixForDataDir(), GetParam().posix_data_dir_suffix);
@@ -138,8 +138,13 @@ INSTANTIATE_TEST_SUITE_P(
     Stable,
     ChannelInfoTest,
     ::testing::Values(Param(ScopedChannelOverride::Channel::kStable,
+#if defined(DCHECK_IS_CONFIGURABLE)
+                            "-dcheck",
+                            "-dcheck",
+#else
                             "",
                             "",
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
                             version_info::Channel::STABLE,
                             /*is_extended_stable=*/false,
                             /*posix_data_dir_suffix=*/"")));
@@ -147,8 +152,13 @@ INSTANTIATE_TEST_SUITE_P(
     ExtendedStable,
     ChannelInfoTest,
     ::testing::Values(Param(ScopedChannelOverride::Channel::kExtendedStable,
+#if defined(DCHECK_IS_CONFIGURABLE)
+                            "-dcheck",
+                            "extended-dcheck",
+#else
                             "",
                             "extended",
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
                             version_info::Channel::STABLE,
                             /*is_extended_stable=*/true,
                             /*posix_data_dir_suffix=*/"")));
@@ -156,8 +166,13 @@ INSTANTIATE_TEST_SUITE_P(
     Beta,
     ChannelInfoTest,
     ::testing::Values(Param(ScopedChannelOverride::Channel::kBeta,
+#if defined(DCHECK_IS_CONFIGURABLE)
+                            "beta-dcheck",
+                            "beta-dcheck",
+#else
                             "beta",
                             "beta",
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
                             version_info::Channel::BETA,
                             /*is_extended_stable=*/false,
                             /*posix_data_dir_suffix=*/"-beta")));
@@ -165,23 +180,33 @@ INSTANTIATE_TEST_SUITE_P(
     Dev,
     ChannelInfoTest,
     ::testing::Values(Param(ScopedChannelOverride::Channel::kDev,
+#if defined(DCHECK_IS_CONFIGURABLE)
+                            "dev-dcheck",
+                            "dev-dcheck",
+#else
                             "dev",
                             "dev",
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
                             version_info::Channel::DEV,
                             /*is_extended_stable=*/false,
                             /*posix_data_dir_suffix=*/"-unstable")));
-#if defined(OS_MAC) || defined(OS_WIN) || \
-    defined(OS_FUCHSIA)  // No canary channel on Linux.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_FUCHSIA)  // No canary channel on Linux.
 INSTANTIATE_TEST_SUITE_P(
     Canary,
     ChannelInfoTest,
     ::testing::Values(Param(ScopedChannelOverride::Channel::kCanary,
+#if defined(DCHECK_IS_CONFIGURABLE)
+                            "canary-dcheck",
+                            "canary-dcheck",
+#else
                             "canary",
                             "canary",
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
                             version_info::Channel::CANARY,
                             /*is_extended_stable=*/false,
                             /*posix_data_dir_suffix=*/"")));
-#endif  // defined(OS_MAC) || defined(OS_WIN)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 INSTANTIATE_TEST_SUITE_P(
     Chromium,

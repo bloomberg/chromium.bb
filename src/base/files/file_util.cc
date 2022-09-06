@@ -4,7 +4,9 @@
 
 #include "base/files/file_util.h"
 
-#if defined(OS_WIN)
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_WIN)
 #include <io.h>
 #endif
 #include <stdio.h>
@@ -12,34 +14,62 @@
 #include <fstream>
 #include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/check_op.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
 namespace base {
 
-#if !defined(OS_WIN)
-OnceCallback<void(const FilePath&)> GetDeleteFileCallback() {
-  return BindOnce(IgnoreResult(&DeleteFile));
-}
-#endif  // !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 
-OnceCallback<void(const FilePath&)> GetDeletePathRecursivelyCallback() {
-  return BindOnce(IgnoreResult(&DeletePathRecursively));
+namespace {
+
+void RunAndReply(OnceCallback<bool()> action_callback,
+                 OnceCallback<void(bool)> reply_callback) {
+  bool result = std::move(action_callback).Run();
+  if (!reply_callback.is_null())
+    std::move(reply_callback).Run(result);
 }
+
+}  // namespace
+
+OnceClosure GetDeleteFileCallback(const FilePath& path,
+                                  OnceCallback<void(bool)> reply_callback) {
+  return BindOnce(&RunAndReply, BindOnce(&DeleteFile, path),
+                  reply_callback.is_null()
+                      ? std::move(reply_callback)
+                      : BindPostTask(SequencedTaskRunnerHandle::Get(),
+                                     std::move(reply_callback)));
+}
+
+OnceClosure GetDeletePathRecursivelyCallback(
+    const FilePath& path,
+    OnceCallback<void(bool)> reply_callback) {
+  return BindOnce(&RunAndReply, BindOnce(&DeletePathRecursively, path),
+                  reply_callback.is_null()
+                      ? std::move(reply_callback)
+                      : BindPostTask(SequencedTaskRunnerHandle::Get(),
+                                     std::move(reply_callback)));
+}
+
+#endif  // !BUILDFLAG(IS_WIN)
 
 int64_t ComputeDirectorySize(const FilePath& root_path) {
   int64_t running_size = 0;
@@ -56,7 +86,7 @@ bool Move(const FilePath& from_path, const FilePath& to_path) {
 }
 
 bool CopyFileContents(File& infile, File& outfile) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   bool retry_slow = false;
   bool res =
       internal::CopyFileContentsWithSendfile(infile, outfile, retry_slow);
@@ -71,7 +101,8 @@ bool CopyFileContents(File& infile, File& outfile) {
   std::vector<char> buffer(kBufferSize);
 
   for (;;) {
-    int bytes_read = infile.ReadAtCurrentPos(buffer.data(), buffer.size());
+    int bytes_read =
+        infile.ReadAtCurrentPos(buffer.data(), static_cast<int>(buffer.size()));
     if (bytes_read < 0) {
       return false;
     }
@@ -82,7 +113,8 @@ bool CopyFileContents(File& infile, File& outfile) {
     int bytes_written_per_read = 0;
     do {
       int bytes_written_partial = outfile.WriteAtCurrentPos(
-          &buffer[bytes_written_per_read], bytes_read - bytes_written_per_read);
+          &buffer[static_cast<size_t>(bytes_written_per_read)],
+          bytes_read - bytes_written_per_read);
       if (bytes_written_partial < 0) {
         return false;
       }
@@ -99,15 +131,15 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   // We open the file in binary format even if they are text files because
   // we are just comparing that bytes are exactly same in both files and not
   // doing anything smart with text formatting.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::ifstream file1(filename1.value().c_str(),
                       std::ios::in | std::ios::binary);
   std::ifstream file2(filename2.value().c_str(),
                       std::ios::in | std::ios::binary);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   std::ifstream file1(filename1.value(), std::ios::in | std::ios::binary);
   std::ifstream file2(filename2.value(), std::ios::in | std::ios::binary);
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   // Even if both files aren't openable (and thus, in some sense, "equal"),
   // any unusable file yields a result of "false".
@@ -135,13 +167,13 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 }
 
 bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::ifstream file1(filename1.value().c_str(), std::ios::in);
   std::ifstream file2(filename2.value().c_str(), std::ios::in);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   std::ifstream file1(filename1.value(), std::ios::in);
   std::ifstream file2(filename2.value(), std::ios::in);
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   // Even if both files aren't openable (and thus, in some sense, "equal"),
   // any unusable file yields a result of "false".
@@ -198,34 +230,34 @@ bool ReadStreamToStringWithMaxSize(FILE* stream,
   // Many files have incorrect size (proc files etc). Hence, the file is read
   // sequentially as opposed to a one-shot read, using file size as a hint for
   // chunk size if available.
-  constexpr int64_t kDefaultChunkSize = 1 << 16;
-  int64_t chunk_size = kDefaultChunkSize - 1;
+  constexpr size_t kDefaultChunkSize = 1 << 16;
+  size_t chunk_size = kDefaultChunkSize - 1;
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   BY_HANDLE_FILE_INFORMATION file_info = {};
   if (::GetFileInformationByHandle(
           reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(stream))),
           &file_info)) {
     LARGE_INTEGER size;
-    size.HighPart = file_info.nFileSizeHigh;
+    size.HighPart = static_cast<LONG>(file_info.nFileSizeHigh);
     size.LowPart = file_info.nFileSizeLow;
     if (size.QuadPart > 0)
-      chunk_size = size.QuadPart;
+      chunk_size = static_cast<size_t>(size.QuadPart);
   }
-#else   // defined(OS_WIN)
+#else   // BUILDFLAG(IS_WIN)
   // In cases where the reported file size is 0, use a smaller chunk size to
   // minimize memory allocated and cost of string::resize() in case the read
   // size is small (i.e. proc files). If the file is larger than this, the read
   // loop will reset |chunk_size| to kDefaultChunkSize.
-  constexpr int64_t kSmallChunkSize = 4096;
+  constexpr size_t kSmallChunkSize = 4096;
   chunk_size = kSmallChunkSize - 1;
   stat_wrapper_t file_info = {};
   if (!File::Fstat(fileno(stream), &file_info) && file_info.st_size > 0)
-    chunk_size = file_info.st_size;
-#endif  // defined(OS_WIN)
+    chunk_size = static_cast<size_t>(file_info.st_size);
+#endif  // BUILDFLAG(IS_WIN)
   // We need to attempt to read at EOF for feof flag to be set so here we
   // use |chunk_size| + 1.
-  chunk_size = std::min<uint64_t>(chunk_size, max_size) + 1;
+  chunk_size = std::min(chunk_size, max_size) + 1;
   size_t bytes_read_this_pass;
   size_t bytes_read_so_far = 0;
   bool read_status = true;
@@ -315,13 +347,13 @@ bool GetFileSize(const FilePath& file_path, int64_t* file_size) {
 bool TouchFile(const FilePath& path,
                const Time& last_accessed,
                const Time& last_modified) {
-  int flags = File::FLAG_OPEN | File::FLAG_WRITE_ATTRIBUTES;
+  uint32_t flags = File::FLAG_OPEN | File::FLAG_WRITE_ATTRIBUTES;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
   if (DirectoryExists(path))
     flags |= File::FLAG_WIN_BACKUP_SEMANTICS;
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   // On Fuchsia, we need O_RDONLY for directories, or O_WRONLY for files.
   // TODO(https://crbug.com/947802): Find a cleaner workaround for this.
   flags |= (DirectoryExists(path) ? File::FLAG_READ : File::FLAG_WRITE);
@@ -346,7 +378,7 @@ bool TruncateFile(FILE* file) {
   long current_offset = ftell(file);
   if (current_offset == -1)
     return false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   int fd = _fileno(file);
   if (_chsize(fd, current_offset) != 0)
     return false;
@@ -390,7 +422,7 @@ FilePath GetUniquePath(const FilePath& path) {
   const int uniquifier = GetUniquePathNumber(path);
   if (uniquifier > 0)
     return path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
-  return uniquifier == 0 ? path : base::FilePath();
+  return uniquifier == 0 ? path : FilePath();
 }
 
 namespace internal {

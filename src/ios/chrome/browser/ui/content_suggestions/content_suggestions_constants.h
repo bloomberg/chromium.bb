@@ -5,7 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_CONSTANTS_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+// Enum specifying the type of Content Suggestions a module is showing.
+typedef NS_ENUM(int32_t, ContentSuggestionsModuleType) {
+  ContentSuggestionsModuleTypeMostVisited,
+  ContentSuggestionsModuleTypeShortcuts,
+  ContentSuggestionsModuleTypeReturnToRecentTab,
+};
 
 // Represents the content suggestions collection view.
 extern NSString* const kContentSuggestionsCollectionIdentifier;
@@ -13,8 +20,15 @@ extern NSString* const kContentSuggestionsCollectionIdentifier;
 // Represents the Learn More button in the content suggestions.
 extern NSString* const kContentSuggestionsLearnMoreIdentifier;
 
-// Represents the most visited tile of the content suggestions.
+// Represents the most visited tiles of the content suggestions.
 extern NSString* const
     kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix;
+
+// Represents the shortcuts of the content suggestions.
+extern NSString* const
+    kContentSuggestionsShortcutsAccessibilityIdentifierPrefix;
+
+// The bottom margin below the Most Visited section.
+extern const CGFloat kMostVisitedBottomMargin;
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_CONSTANTS_H_

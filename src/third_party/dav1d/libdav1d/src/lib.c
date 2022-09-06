@@ -74,6 +74,9 @@ COLD void dav1d_default_settings(Dav1dSettings *const s) {
     s->operating_point = 0;
     s->all_layers = 1; // just until the tests are adjusted
     s->frame_size_limit = 0;
+    s->strict_std_compliance = 0;
+    s->output_invisible_frames = 0;
+    s->inloop_filters = DAV1D_INLOOPFILTER_ALL;
 }
 
 static void close_internal(Dav1dContext **const c_out, int flush);
@@ -117,7 +120,7 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
 
     pthread_attr_setstacksize(&thread_attr, stack_size);
 
-    Dav1dContext *const c = *c_out = dav1d_alloc_aligned(sizeof(*c), 32);
+    Dav1dContext *const c = *c_out = dav1d_alloc_aligned(sizeof(*c), 64);
     if (!c) goto error;
     memset(c, 0, sizeof(*c));
 
@@ -127,6 +130,11 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
     c->operating_point = s->operating_point;
     c->all_layers = s->all_layers;
     c->frame_size_limit = s->frame_size_limit;
+    c->strict_std_compliance = s->strict_std_compliance;
+    c->output_invisible_frames = s->output_invisible_frames;
+    c->inloop_filters = s->inloop_filters;
+
+    dav1d_data_props_set_defaults(&c->cached_error_props);
 
     if (dav1d_mem_pool_init(&c->seq_hdr_pool) ||
         dav1d_mem_pool_init(&c->frame_hdr_pool) ||
@@ -165,8 +173,18 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
 
     c->n_tc = s->n_threads ? s->n_threads :
         iclip(dav1d_num_logical_processors(c), 1, DAV1D_MAX_THREADS);
+    /* ceil(sqrt(n)) */
+    static const uint8_t fc_lut[49] = {
+        1,                                     /*     1 */
+        2, 2, 2,                               /*  2- 4 */
+        3, 3, 3, 3, 3,                         /*  5- 9 */
+        4, 4, 4, 4, 4, 4, 4,                   /* 10-16 */
+        5, 5, 5, 5, 5, 5, 5, 5, 5,             /* 17-25 */
+        6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,       /* 26-36 */
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, /* 37-49 */
+    };
     c->n_fc = s->max_frame_delay ? umin(s->max_frame_delay, c->n_tc) :
-        umin(c->n_tc, 8);
+              c->n_tc < 50 ? fc_lut[c->n_tc - 1] : 8; // min(8, ceil(sqrt(n)))
 
     c->fc = dav1d_alloc_aligned(sizeof(*c->fc) * c->n_fc, 32);
     if (!c->fc) goto error;
@@ -178,6 +196,11 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
     if (c->n_tc > 1) {
         if (pthread_mutex_init(&c->task_thread.lock, NULL)) goto error;
         if (pthread_cond_init(&c->task_thread.cond, NULL)) {
+            pthread_mutex_destroy(&c->task_thread.lock);
+            goto error;
+        }
+        if (pthread_cond_init(&c->task_thread.delayed_fg.cond, NULL)) {
+            pthread_cond_destroy(&c->task_thread.cond);
             pthread_mutex_destroy(&c->task_thread.lock);
             goto error;
         }
@@ -290,61 +313,53 @@ error:
     return res;
 }
 
-static int output_image(Dav1dContext *const c, Dav1dPicture *const out,
-                        Dav1dPicture *const in)
+static int has_grain(const Dav1dPicture *const pic)
 {
-    const Dav1dFilmGrainData *fgdata = &in->frame_hdr->film_grain.data;
-    int has_grain = fgdata->num_y_points || fgdata->num_uv_points[0] ||
-                    fgdata->num_uv_points[1];
-
-    // If there is nothing to be done, skip the allocation/copy
-    if (!c->apply_grain || !has_grain) {
-        dav1d_picture_move_ref(out, in);
-        return 0;
-    }
-
-    // Apply film grain to a new copy of the image to avoid corrupting refs
-    int res = dav1d_picture_alloc_copy(c, out, in->p.w, in);
-    if (res < 0) {
-        dav1d_picture_unref_internal(in);
-        dav1d_picture_unref_internal(out);
-        return res;
-    }
-
-    switch (out->p.bpc) {
-#if CONFIG_8BPC
-    case 8:
-        dav1d_apply_grain_8bpc(&c->dsp[0].fg, out, in);
-        break;
-#endif
-#if CONFIG_16BPC
-    case 10:
-    case 12:
-        dav1d_apply_grain_16bpc(&c->dsp[(out->p.bpc >> 1) - 4].fg, out, in);
-        break;
-#endif
-    default:
-        assert(0);
-    }
-
-    dav1d_picture_unref_internal(in);
-    return 0;
+    const Dav1dFilmGrainData *fgdata = &pic->frame_hdr->film_grain.data;
+    return fgdata->num_y_points || fgdata->num_uv_points[0] ||
+           fgdata->num_uv_points[1];
 }
 
-static int output_picture_ready(Dav1dContext *const c) {
+static int output_image(Dav1dContext *const c, Dav1dPicture *const out)
+{
+    int res = 0;
 
-    if (!c->out.data[0]) return 0;
+    Dav1dThreadPicture *const in = (c->all_layers || !c->max_spatial_id)
+                                   ? &c->out : &c->cache;
+    if (!c->apply_grain || !has_grain(&in->p)) {
+        dav1d_picture_move_ref(out, &in->p);
+        dav1d_thread_picture_unref(in);
+        goto end;
+    }
 
-    // skip lower spatial layers
-    if (c->operating_point_idc && !c->all_layers) {
-        const int max_spatial_id = ulog2(c->operating_point_idc >> 8);
-        if (max_spatial_id > c->out.frame_hdr->spatial_id) {
-            dav1d_picture_unref_internal(&c->out);
+    res = dav1d_apply_grain(c, out, &in->p);
+    dav1d_thread_picture_unref(in);
+end:
+    if (!c->all_layers && c->max_spatial_id && c->out.p.data[0]) {
+        dav1d_thread_picture_move_ref(in, &c->out);
+    }
+    return res;
+}
+
+static int output_picture_ready(Dav1dContext *const c, const int drain) {
+    if (c->cached_error) return 1;
+    if (!c->all_layers && c->max_spatial_id) {
+        if (c->out.p.data[0] && c->cache.p.data[0]) {
+            if (c->max_spatial_id == c->cache.p.frame_hdr->spatial_id ||
+                c->out.flags & PICTURE_FLAG_NEW_TEMPORAL_UNIT)
+                return 1;
+            dav1d_thread_picture_unref(&c->cache);
+            dav1d_thread_picture_move_ref(&c->cache, &c->out);
+            return 0;
+        } else if (c->cache.p.data[0] && drain) {
+            return 1;
+        } else if (c->out.p.data[0]) {
+            dav1d_thread_picture_move_ref(&c->cache, &c->out);
             return 0;
         }
     }
 
-    return 1;
+    return !!c->out.p.data[0];
 }
 
 static int drain_picture(Dav1dContext *const c, Dav1dPicture *const out) {
@@ -369,19 +384,31 @@ static int drain_picture(Dav1dContext *const c, Dav1dPicture *const out) {
         if (++c->frame_thread.next == c->n_fc)
             c->frame_thread.next = 0;
         pthread_mutex_unlock(&c->task_thread.lock);
+        const int error = f->task_thread.retval;
+        if (error) {
+            f->task_thread.retval = 0;
+            dav1d_data_props_copy(&c->cached_error_props, &out_delayed->p.m);
+            dav1d_thread_picture_unref(out_delayed);
+            return error;
+        }
         if (out_delayed->p.data[0]) {
             const unsigned progress =
                 atomic_load_explicit(&out_delayed->progress[1],
                                      memory_order_relaxed);
-            if (out_delayed->visible && progress != FRAME_ERROR) {
-                dav1d_picture_ref(&c->out, &out_delayed->p);
+            if ((out_delayed->visible || c->output_invisible_frames) &&
+                progress != FRAME_ERROR)
+            {
+                dav1d_thread_picture_ref(&c->out, out_delayed);
                 c->event_flags |= dav1d_picture_get_event_flags(out_delayed);
             }
             dav1d_thread_picture_unref(out_delayed);
-            if (output_picture_ready(c))
-                return output_image(c, out, &c->out);
+            if (output_picture_ready(c, 0))
+                return output_image(c, out);
         }
     } while (++drain_count < c->n_fc);
+
+    if (output_picture_ready(c, 1))
+        return output_image(c, out);
 
     return DAV1D_ERR(EAGAIN);
 }
@@ -391,7 +418,7 @@ static int gen_picture(Dav1dContext *const c)
     int res;
     Dav1dData *const in = &c->in;
 
-    if (output_picture_ready(c))
+    if (output_picture_ready(c, 0))
         return 0;
 
     while (in->sz > 0) {
@@ -404,7 +431,7 @@ static int gen_picture(Dav1dContext *const c)
             in->data += res;
             if (!in->sz) dav1d_data_unref_internal(in);
         }
-        if (output_picture_ready(c))
+        if (output_picture_ready(c, 0))
             break;
         if (res < 0)
             return res;
@@ -444,8 +471,14 @@ int dav1d_get_picture(Dav1dContext *const c, Dav1dPicture *const out)
     if (res < 0)
         return res;
 
-    if (output_picture_ready(c))
-        return output_image(c, out, &c->out);
+    if (c->cached_error) {
+        const int res = c->cached_error;
+        c->cached_error = 0;
+        return res;
+    }
+
+    if (output_picture_ready(c, c->n_fc == 1))
+        return output_image(c, out);
 
     if (c->n_fc > 1 && drain)
         return drain_picture(c, out);
@@ -453,9 +486,56 @@ int dav1d_get_picture(Dav1dContext *const c, Dav1dPicture *const out)
     return DAV1D_ERR(EAGAIN);
 }
 
+int dav1d_apply_grain(Dav1dContext *const c, Dav1dPicture *const out,
+                      const Dav1dPicture *const in)
+{
+    validate_input_or_ret(c != NULL, DAV1D_ERR(EINVAL));
+    validate_input_or_ret(out != NULL, DAV1D_ERR(EINVAL));
+    validate_input_or_ret(in != NULL, DAV1D_ERR(EINVAL));
+
+    if (!has_grain(in)) {
+        dav1d_picture_ref(out, in);
+        return 0;
+    }
+
+    int res = dav1d_picture_alloc_copy(c, out, in->p.w, in);
+    if (res < 0) goto error;
+
+    if (c->n_tc > 1) {
+        dav1d_task_delayed_fg(c, out, in);
+    } else {
+        switch (out->p.bpc) {
+#if CONFIG_8BPC
+        case 8:
+            dav1d_apply_grain_8bpc(&c->dsp[0].fg, out, in);
+            break;
+#endif
+#if CONFIG_16BPC
+        case 10:
+        case 12:
+            dav1d_apply_grain_16bpc(&c->dsp[(out->p.bpc >> 1) - 4].fg, out, in);
+            break;
+#endif
+        default: abort();
+        }
+    }
+
+    return 0;
+
+error:
+    dav1d_picture_unref_internal(out);
+    return res;
+}
+
 void dav1d_flush(Dav1dContext *const c) {
     dav1d_data_unref_internal(&c->in);
+    if (c->out.p.data[0])
+        dav1d_thread_picture_unref(&c->out);
+    if (c->cache.p.data[0])
+        dav1d_thread_picture_unref(&c->cache);
+
     c->drain = 0;
+    c->cached_error = 0;
 
     for (int i = 0; i < 8; i++) {
         if (c->refs[i].p.p.data[0])
@@ -474,6 +554,8 @@ void dav1d_flush(Dav1dContext *const c) {
     dav1d_ref_dec(&c->mastering_display_ref);
     dav1d_ref_dec(&c->content_light_ref);
     dav1d_ref_dec(&c->itut_t35_ref);
+
+    dav1d_data_props_unref_internal(&c->cached_error_props);
 
     if (c->n_fc == 1 && c->n_tc == 1) return;
     atomic_store(c->flush, 1);
@@ -506,6 +588,7 @@ void dav1d_flush(Dav1dContext *const c) {
             Dav1dFrameContext *const f = &c->fc[next];
             dav1d_decode_frame_exit(f, -1);
             f->n_tile_data = 0;
+            f->task_thread.retval = 0;
             Dav1dThreadPicture *out_delayed = &c->frame_thread.out_delayed[next];
             if (out_delayed->p.data[0]) {
                 dav1d_thread_picture_unref(out_delayed);
@@ -542,6 +625,7 @@ static COLD void close_internal(Dav1dContext **const c_out, int flush) {
                 pthread_cond_destroy(&pf->task_thread.td.cond);
                 pthread_mutex_destroy(&pf->task_thread.td.lock);
             }
+            pthread_cond_destroy(&ttd->delayed_fg.cond);
             pthread_cond_destroy(&ttd->cond);
             pthread_mutex_destroy(&ttd->lock);
         }
@@ -560,6 +644,8 @@ static COLD void close_internal(Dav1dContext **const c_out, int flush) {
             freep(&f->frame_thread.tile_start_off);
             dav1d_freep_aligned(&f->frame_thread.pal);
             freep(&f->frame_thread.cbi);
+        }
+        if (c->n_tc > 1) {
             pthread_cond_destroy(&f->task_thread.cond);
         }
         freep(&f->frame_thread.frame_progress);
@@ -579,7 +665,6 @@ static COLD void close_internal(Dav1dContext **const c_out, int flush) {
         dav1d_free_aligned(f->lf.lr_line_buf);
     }
     dav1d_free_aligned(c->fc);
-    dav1d_data_unref_internal(&c->in);
     if (c->n_fc > 1 && c->frame_thread.out_delayed) {
         for (unsigned n = 0; n < c->n_fc; n++)
             if (c->frame_thread.out_delayed[n].p.data[0])
@@ -622,6 +707,17 @@ int dav1d_get_event_flags(Dav1dContext *const c, enum Dav1dEventFlags *const fla
     return 0;
 }
 
+int dav1d_get_decode_error_data_props(Dav1dContext *const c, Dav1dDataProps *const out) {
+    validate_input_or_ret(c != NULL, DAV1D_ERR(EINVAL));
+    validate_input_or_ret(out != NULL, DAV1D_ERR(EINVAL));
+
+    dav1d_data_props_unref_internal(out);
+    *out = c->cached_error_props;
+    dav1d_data_props_set_defaults(&c->cached_error_props);
+
+    return 0;
+}
+
 void dav1d_picture_unref(Dav1dPicture *const p) {
     dav1d_picture_unref_internal(p);
 }
@@ -653,4 +749,8 @@ int dav1d_data_wrap_user_data(Dav1dData *const buf,
 
 void dav1d_data_unref(Dav1dData *const buf) {
     dav1d_data_unref_internal(buf);
+}
+
+void dav1d_data_props_unref(Dav1dDataProps *const props) {
+    dav1d_data_props_unref_internal(props);
 }

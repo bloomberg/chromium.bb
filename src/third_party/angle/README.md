@@ -22,7 +22,7 @@ Metal and MacOS, Chrome OS, and Fuchsia support.
 | Windows      |    complete    |    complete    |   complete    |   complete  |   complete  |             |
 | Linux        |                |                |   complete    |             |   complete  |             |
 | Mac OS X     |                |                |   complete    |             |             | in progress |
-| iOS          |                |                |               |             |             |   planned   |
+| iOS          |                |                |               |             |             | in progress |
 | Chrome OS    |                |                |               |   complete  |   planned   |             |
 | Android      |                |                |               |   complete  |   complete  |             |
 | GGP (Stadia) |                |                |               |             |   complete  |             |
@@ -35,7 +35,7 @@ ANGLE has received the following certifications with the Vulkan backend:
 * OpenGL ES 3.0: ANGLE 2.1.0.f18ff947360d (Feb, 2020)
 * OpenGL ES 3.1: ANGLE 2.1.0.f5dace0f1e57 (Jul, 2020)
 
-ANGLE also provides an implementation of the EGL 1.4 specification.
+ANGLE also provides an implementation of the EGL 1.5 specification.
 
 ANGLE is used as the default WebGL backend for both Google Chrome and Mozilla Firefox on Windows
 platforms. Chrome uses ANGLE for all graphics rendering on Windows, including the accelerated
@@ -65,7 +65,7 @@ View the [Dev setup instructions](doc/DevSetup.md).
 
 * Join our [Google group](https://groups.google.com/group/angleproject) to keep up to date.
 * Join us on [Slack](https://chromium.slack.com) in the #angle channel. You can
-  follow the instructions on the [choromium developer page](https://www.chromium.org/developers/slack)
+  follow the instructions on the [Chromium developer page](https://www.chromium.org/developers/slack)
   for the steps to join the Slack channel. For Googlers, please follow the
   instructions on this [document](https://docs.google.com/document/d/1wWmRm-heDDBIkNJnureDiRO7kqcRouY2lSXlO6N2z6M/edit?usp=sharing)
   to use your google or chromium email to join the Slack channel.

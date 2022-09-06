@@ -70,6 +70,7 @@ class GroupReportTestBase(testing_common.TestCase):
     self.PatchObject(pinpoint_service, 'NewJob', new_job)
     self.PatchObject(alert_group_workflow, 'revision_info_client',
                      self.fake_revision_info)
+    self.PatchObject(alert_group, 'NONOVERLAP_THRESHOLD', 100)
 
   def _AddAnomaly(self, **kargs):
     default = {
@@ -320,7 +321,8 @@ class GroupReportTest(GroupReportTestBase):
         for g in alert_group.AlertGroup.Get(
             'test_suite', alert_group.AlertGroup.Type.test_suite)
     }
-    self.assertItemsEqual(groups.keys(), ['sheriff1', 'sheriff2', 'sheriff3'])
+    self.assertItemsEqual(
+        list(groups.keys()), ['sheriff1', 'sheriff2', 'sheriff3'])
     self.assertItemsEqual(groups['sheriff1'].anomalies, [a1, a2])
     self.assertItemsEqual(groups['sheriff2'].anomalies, [a1, a3])
     self.assertItemsEqual(groups['sheriff3'].anomalies, [a3])
@@ -556,6 +558,39 @@ class GroupReportTest(GroupReportTestBase):
     self.assertRegexpMatches(self.fake_issue_tracker.add_comment_args[1],
                              r'Top 2 affected measurements in bot:')
 
+  def testMultipleAltertsNonoverlapThreshold(self, mock_get_sheriff_client):
+    self._SetUpMocks(mock_get_sheriff_client)
+    self._CallHandler()
+    perf_test = 'ChromiumPerf/bot/test_suite/measurement/test_case'
+
+    # Anomalies without range overlap.
+    a1 = self._AddAnomaly(start_revision=10, end_revision=40, test=perf_test)
+    a2 = self._AddAnomaly(start_revision=50, end_revision=150, test=perf_test)
+    a4 = self._AddAnomaly(start_revision=200, end_revision=300, test=perf_test)
+    self._CallHandler()
+
+    # Anomaly that overlaps with first 2 alert groups.
+    a5 = self._AddAnomaly(start_revision=5, end_revision=100, test=perf_test)
+
+    # Anomaly that exceeds nonoverlap threshold of all existing alert groups.
+    a6 = self._AddAnomaly(start_revision=5, end_revision=305, test=perf_test)
+    self._CallHandler()
+
+    # Anomaly that binds to a6's group.
+    a7 = self._AddAnomaly(start_revision=10, end_revision=300, test=perf_test)
+    self._CallHandler()
+    self._CallHandler()
+
+    groups = alert_group.AlertGroup.Get(
+        'test_suite',
+        alert_group.AlertGroup.Type.test_suite,
+    )
+
+    anomaly_groups = [group.anomalies for group in groups]
+    expected_anomaly_groups = [[a1, a5], [a2, a5], [a4], [a6, a7]]
+
+    self.assertItemsEqual(anomaly_groups, expected_anomaly_groups)
+
 
 @mock.patch.object(utils, 'ServiceAccountEmail',
                    lambda: _SERVICE_ACCOUNT_EMAIL)
@@ -564,9 +599,6 @@ class RecoveredAlertsTests(GroupReportTestBase):
   def __init__(self, *args, **kwargs):
     super(RecoveredAlertsTests, self).__init__(*args, **kwargs)
     self.anomalies = []
-
-  def setUp(self):
-    super(RecoveredAlertsTests, self).setUp()
 
   def InitAfterMocks(self):
     # First create the 'Ungrouped' AlertGroup.

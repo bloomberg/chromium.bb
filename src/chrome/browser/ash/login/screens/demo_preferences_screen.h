@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -27,7 +28,7 @@ class DemoPreferencesScreen
   static std::string GetResultString(Result result);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  DemoPreferencesScreen(DemoPreferencesScreenView* view,
+  DemoPreferencesScreen(base::WeakPtr<DemoPreferencesScreenView> view,
                         const ScreenExitCallback& exit_callback);
 
   DemoPreferencesScreen(const DemoPreferencesScreen&) = delete;
@@ -35,19 +36,15 @@ class DemoPreferencesScreen
 
   ~DemoPreferencesScreen() override;
 
-  void SetLocale(const std::string& locale);
-  void SetInputMethod(const std::string& input_method);
   void SetDemoModeCountry(const std::string& country_id);
-
-  // Called when view is being destroyed. If Screen is destroyed earlier
-  // then it has to call Bind(nullptr).
-  void OnViewDestroyed(DemoPreferencesScreenView* view);
+  void SetDemoModeRetailerAndStoreIdInput(
+      const std::string& retailer_store_id_input);
 
  protected:
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserAction(const base::Value::List& args) override;
 
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
@@ -60,19 +57,11 @@ class DemoPreferencesScreen
   // Passes current input method to the context, so it can be shown in the UI.
   void UpdateInputMethod(input_method::InputMethodManager* input_manager);
 
-  // Initial locale that was set when the screen was shown. It will be restored
-  // if user presses back button.
-  std::string initial_locale_;
-
-  // Initial input method that was set when the screen was shown. It will be
-  // restored if user presses back button.
-  std::string initial_input_method_;
-
   base::ScopedObservation<input_method::InputMethodManager,
                           input_method::InputMethodManager::Observer>
       input_manager_observation_{this};
 
-  DemoPreferencesScreenView* view_;
+  base::WeakPtr<DemoPreferencesScreenView> view_;
   ScreenExitCallback exit_callback_;
 };
 

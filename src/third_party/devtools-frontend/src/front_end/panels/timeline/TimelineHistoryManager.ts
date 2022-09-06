@@ -10,7 +10,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import timelineHistoryManagerStyles from './timelineHistoryManager.css.js';
 
 import type {PerformanceModel} from './PerformanceModel.js';
-import {TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness} from './TimelineEventOverview.js';
+import {
+  TimelineEventOverviewCPUActivity,
+  TimelineEventOverviewNetwork,
+  TimelineEventOverviewResponsiveness,
+} from './TimelineEventOverview.js';
 
 const UIStrings = {
   /**
@@ -81,7 +85,6 @@ export class TimelineHistoryManager {
 
     this.allOverviews = [
       {constructor: TimelineEventOverviewResponsiveness, height: 3},
-      {constructor: TimelineEventOverviewFrames, height: 16},
       {constructor: TimelineEventOverviewCPUActivity, height: 20},
       {constructor: TimelineEventOverviewNetwork, height: 8},
     ];
@@ -271,7 +274,7 @@ export class TimelineHistoryManager {
     if (!lastFrame) {
       return container;
     }
-    lastFrame.imageDataPromise()
+    void lastFrame.imageDataPromise()
         .then(data => UI.UIUtils.loadImageFromData(data))
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

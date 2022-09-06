@@ -320,8 +320,7 @@ class QuicAllowedPolicyIsNotSet : public QuicAllowedPolicyTestBase {
   void GetQuicAllowedPolicy(PolicyMap* values) override {}
 };
 
-// Flaky test on Win7. https://crbug.com/961049
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsNotSet, DISABLED_NoQuicRegulations) {
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsNotSet, NoQuicRegulations) {
   EXPECT_TRUE(IsQuicEnabledForSystem());
   EXPECT_TRUE(IsQuicEnabledForSafeBrowsing(browser()->profile()));
   EXPECT_TRUE(IsQuicEnabled(browser()->profile()));
@@ -340,7 +339,7 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
     // Ensure that QUIC is enabled by default on browser startup.
     command_line->AppendSwitch(switches::kEnableQuic);
@@ -492,8 +491,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest, QuicAllowedFalseThenTrue) {
 
 // QUIC is allowed, then disallowed by policy after the profile has been
 // initialized.
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
-                       DISABLED_QuicAllowedTrueThenFalse) {
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest, QuicAllowedTrueThenFalse) {
   // After browser start, QuicAllowed=true comes in dynamically
   SetQuicAllowedPolicy(policy_for_profile_1(), true);
   EXPECT_TRUE(IsQuicEnabledForSystem());
@@ -545,16 +543,8 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
 // first profile.
 // Then QuicAllowed=false policy is dynamically set for both profiles.
 //
-// Disabled due to flakiness on windows: https://crbug.com/947931.
-#if defined(OS_WIN)
-#define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
-  DISABLED_QuicAllowedFalseAfterTwoProfilesCreated
-#else
-#define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
-  QuicAllowedFalseAfterTwoProfilesCreated
-#endif
 IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
-                       MAYBE_QuicAllowedFalseAfterTwoProfilesCreated) {
+                       QuicAllowedFalseAfterTwoProfilesCreated) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;

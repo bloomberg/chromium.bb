@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SIMPLE_TASK_EXECUTOR_H_
 #define BASE_TASK_SIMPLE_TASK_EXECUTOR_H_
 
+#include "base/base_export.h"
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
 
@@ -33,11 +34,11 @@ class BASE_EXPORT SimpleTaskExecutor : public TaskExecutor {
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
  private:
   const scoped_refptr<SingleThreadTaskRunner> task_queue_;

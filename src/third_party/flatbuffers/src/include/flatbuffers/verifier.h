@@ -35,7 +35,8 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
         num_tables_(0),
         max_tables_(_max_tables),
         upper_bound_(0),
-        check_alignment_(_check_alignment) {
+        check_alignment_(_check_alignment),
+        flex_reuse_tracker_(nullptr) {
     FLATBUFFERS_ASSERT(size_ < FLATBUFFERS_MAX_BUFFER_SIZE);
   }
 
@@ -254,6 +255,14 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
     // clang-format on
   }
 
+  std::vector<uint8_t> *GetFlexReuseTracker() {
+    return flex_reuse_tracker_;
+  }
+
+  void SetFlexReuseTracker(std::vector<uint8_t> *rt) {
+    flex_reuse_tracker_ = rt;
+  }
+
  private:
   const uint8_t *buf_;
   size_t size_;
@@ -263,6 +272,7 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
   uoffset_t max_tables_;
   mutable size_t upper_bound_;
   bool check_alignment_;
+  std::vector<uint8_t> *flex_reuse_tracker_;
 };
 
 }  // namespace flatbuffers

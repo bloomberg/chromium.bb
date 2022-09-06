@@ -30,6 +30,10 @@
 
 namespace grpc_core {
 
+//
+// ExternalCertificateVerifier
+//
+
 bool ExternalCertificateVerifier::Verify(
     grpc_tls_custom_verification_check_request* request,
     std::function<void(absl::Status)> callback, absl::Status* sync_status) {
@@ -79,6 +83,10 @@ void ExternalCertificateVerifier::OnVerifyDone(
     callback(return_status);
   }
 }
+
+//
+// HostNameCertificateVerifier
+//
 
 bool HostNameCertificateVerifier::Verify(
     grpc_tls_custom_verification_check_request* request,
@@ -134,7 +142,8 @@ bool HostNameCertificateVerifier::Verify(
     const char* common_name = request->peer_info.common_name;
     // We are using the target name sent from the client as a matcher to match
     // against identity name on the peer cert.
-    if (VerifySubjectAlternativeName(common_name, std::string(target_host))) {
+    if (common_name != nullptr &&
+        VerifySubjectAlternativeName(common_name, std::string(target_host))) {
       return true;  // synchronous check
     }
   }
@@ -184,6 +193,11 @@ grpc_tls_certificate_verifier* grpc_tls_certificate_verifier_external_create(
     grpc_tls_certificate_verifier_external* external_verifier) {
   grpc_core::ExecCtx exec_ctx;
   return new grpc_core::ExternalCertificateVerifier(external_verifier);
+}
+
+grpc_tls_certificate_verifier* grpc_tls_certificate_verifier_no_op_create() {
+  grpc_core::ExecCtx exec_ctx;
+  return new grpc_core::NoOpCertificateVerifier();
 }
 
 grpc_tls_certificate_verifier*

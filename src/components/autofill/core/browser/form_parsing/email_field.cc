@@ -6,18 +6,20 @@
 
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 
 namespace autofill {
 
 // static
 std::unique_ptr<FormField> EmailField::Parse(AutofillScanner* scanner,
                                              const LanguageCode& page_language,
+                                             PatternSource pattern_source,
                                              LogManager* log_manager) {
   AutofillField* field;
-  const std::vector<MatchingPattern>& email_patterns =
-      PatternProvider::GetInstance().GetMatchPatterns("EMAIL_ADDRESS",
-                                                      page_language);
-  if (ParseFieldSpecifics(scanner, kEmailRe, MATCH_DEFAULT | MATCH_EMAIL,
+  base::span<const MatchPatternRef> email_patterns =
+      GetMatchPatterns("EMAIL_ADDRESS", page_language, pattern_source);
+  if (ParseFieldSpecifics(scanner, kEmailRe,
+                          kDefaultMatchParamsWith<MatchFieldType::kEmail>,
                           email_patterns, &field, {log_manager, "kEmailRe"})) {
     return std::make_unique<EmailField>(field);
   }

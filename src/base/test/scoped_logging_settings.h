@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/base_export.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "build/chromeos_buildflags.h"
@@ -25,7 +26,7 @@ class BASE_EXPORT ScopedLoggingSettings {
   ScopedLoggingSettings(const ScopedLoggingSettings&) = delete;
   ScopedLoggingSettings& operator=(const ScopedLoggingSettings&) = delete;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void SetLogFormat(LogFormat) const;
 #endif
 
@@ -36,9 +37,9 @@ class BASE_EXPORT ScopedLoggingSettings {
   const int min_log_level_;
   const uint32_t logging_destination_;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   const LogFormat log_format_;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   std::unique_ptr<base::FilePath::StringType> log_file_name_;
 

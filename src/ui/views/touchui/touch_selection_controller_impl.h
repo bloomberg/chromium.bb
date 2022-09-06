@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/events/event_observer.h"
@@ -76,7 +77,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   std::u16string GetSelectedText() override;
 
   // WidgetObserver:
-  void OnWidgetClosing(Widget* widget) override;
+  void OnWidgetDestroying(Widget* widget) override;
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;
 

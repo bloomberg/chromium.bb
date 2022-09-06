@@ -79,6 +79,7 @@
 
 #include "internal.h"
 #include "../delocate.h"
+#include "../service_indicator/internal.h"
 #include "../../internal.h"
 
 
@@ -308,6 +309,9 @@ int EC_KEY_check_key(const EC_KEY *eckey) {
   }
 
   // Check the public and private keys match.
+  //
+  // NOTE: this is a FIPS pair-wise consistency check for the ECDH case. See SP
+  // 800-56Ar3, page 36.
   if (eckey->priv_key != NULL) {
     EC_RAW_POINT point;
     if (!ec_point_mul_scalar_base(eckey->group, &point,
@@ -326,32 +330,43 @@ int EC_KEY_check_key(const EC_KEY *eckey) {
 }
 
 int EC_KEY_check_fips(const EC_KEY *key) {
+  int ret = 0;
+  FIPS_service_indicator_lock_state();
+
   if (EC_KEY_is_opaque(key)) {
     // Opaque keys can't be checked.
     OPENSSL_PUT_ERROR(EC, EC_R_PUBLIC_KEY_VALIDATION_FAILED);
-    return 0;
+    goto end;
   }
 
   if (!EC_KEY_check_key(key)) {
-    return 0;
+    goto end;
   }
 
   if (key->priv_key) {
     uint8_t data[16] = {0};
     ECDSA_SIG *sig = ECDSA_do_sign(data, sizeof(data), key);
-#if defined(BORINGSSL_FIPS_BREAK_ECDSA_PWCT)
-    data[0] = ~data[0];
-#endif
+    if (boringssl_fips_break_test("ECDSA_PWCT")) {
+      data[0] = ~data[0];
+    }
     int ok = sig != NULL &&
              ECDSA_do_verify(data, sizeof(data), sig, key);
     ECDSA_SIG_free(sig);
     if (!ok) {
       OPENSSL_PUT_ERROR(EC, EC_R_PUBLIC_KEY_VALIDATION_FAILED);
-      return 0;
+      goto end;
     }
   }
 
-  return 1;
+  ret = 1;
+
+end:
+  FIPS_service_indicator_unlock_state();
+  if (ret) {
+    EC_KEY_keygen_verify_service_indicator(key);
+  }
+
+  return ret;
 }
 
 int EC_KEY_set_public_key_affine_coordinates(EC_KEY *key, const BIGNUM *x,
@@ -439,6 +454,8 @@ int EC_KEY_generate_key(EC_KEY *key) {
 }
 
 int EC_KEY_generate_key_fips(EC_KEY *eckey) {
+  boringssl_ensure_ecc_self_test();
+
   if (EC_KEY_generate_key(eckey) && EC_KEY_check_fips(eckey)) {
     return 1;
   }

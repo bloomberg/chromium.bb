@@ -171,7 +171,7 @@ class RandomSetter
     };
     typedef typename MapTraits<ScalarWrapper>::KeyType KeyType;
     typedef typename MapTraits<ScalarWrapper>::Type HashMapType;
-    static const int OuterPacketMask = (1 << OuterPacketBits) - 1;
+    static constexpr int OuterPacketMask = (1 << OuterPacketBits) - 1;
     enum {
       SwapStorage = 1 - MapTraits<ScalarWrapper>::IsSorted,
       TargetRowMajor = (SparseMatrixType::Flags & RowMajorBit) ? 1 : 0,

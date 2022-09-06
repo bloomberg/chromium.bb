@@ -7,8 +7,15 @@
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/components/phonehub/fake_tether_controller.h"
 #include "ash/components/phonehub/phone_model_test_util.h"
+#include "ash/shell.h"
+#include "ash/system/eche/eche_tray.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
+#include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_ash_web_view_factory.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +29,8 @@ using TetherStatus = phonehub::TetherController::Status;
 
 constexpr char kUser1Email[] = "user1@test.com";
 constexpr char kUser2Email[] = "user2@test.com";
+constexpr char kScreenOnOpenedMetric[] =
+    "PhoneHub.BubbleOpened.Connectable.Page";
 constexpr base::TimeDelta kConnectingViewGracePeriod = base::Seconds(40);
 
 class PhoneHubUiControllerTest : public AshTestBase,
@@ -36,7 +45,11 @@ class PhoneHubUiControllerTest : public AshTestBase,
 
   // AshTestBase:
   void SetUp() override {
+    feature_list_.InitWithFeatures({chromeos::features::kEcheSWA}, {});
+
     AshTestBase::SetUp();
+
+    phone_hub_manager_.set_host_last_seen_timestamp(absl::nullopt);
 
     // Create user 1 session and simulate its login.
     SimulateUserLogin(kUser1Email);
@@ -78,6 +91,11 @@ class PhoneHubUiControllerTest : public AshTestBase,
         phone_status_model);
   }
 
+  std::unique_ptr<PhoneHubContentView> OpenBubbleAndCreateView() {
+    controller_->HandleBubbleOpened();
+    return controller_->CreateContentView(/*delegate=*/nullptr);
+  }
+
   void CallHandleBubbleOpened() { controller_->HandleBubbleOpened(); }
 
   // When first connecting, the connecting view is shown for 30 seconds when
@@ -97,22 +115,34 @@ class PhoneHubUiControllerTest : public AshTestBase,
   std::unique_ptr<PhoneHubUiController> controller_;
   phonehub::FakePhoneHubManager phone_hub_manager_;
   bool ui_state_changed_ = false;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  // Calling the factory constructor is enough to set it up.
+  std::unique_ptr<TestAshWebViewFactory> test_web_view_factory_ =
+      std::make_unique<TestAshWebViewFactory>();
 };
 
 TEST_F(PhoneHubUiControllerTest, NotEligibleForFeature) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kNotEligibleForFeature);
   EXPECT_EQ(PhoneHubUiController::UiState::kHidden, controller_->ui_state());
   EXPECT_TRUE(ui_state_changed_);
-  EXPECT_FALSE(controller_->CreateContentView(/*delegate=*/nullptr).get());
+  EXPECT_FALSE(OpenBubbleAndCreateView().get());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, OnboardingNotEligible) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kDisabled);
   EXPECT_EQ(PhoneHubUiController::UiState::kHidden, controller_->ui_state());
-  EXPECT_FALSE(controller_->CreateContentView(/*delegate=*/nullptr).get());
+  EXPECT_FALSE(OpenBubbleAndCreateView().get());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, ShowOnboardingUi_WithoutPhone) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(
       FeatureStatus::kEligiblePhoneButNotSetUp);
   EXPECT_TRUE(ui_state_changed_);
@@ -123,11 +153,13 @@ TEST_F(PhoneHubUiControllerTest, ShowOnboardingUi_WithoutPhone) {
   EXPECT_EQ(PhoneHubUiController::UiState::kOnboardingWithoutPhone,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kOnboardingView, content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, ShowOnboardingUi_WithPhone) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kDisabled);
   EXPECT_TRUE(ui_state_changed_);
   ui_state_changed_ = false;
@@ -137,38 +169,76 @@ TEST_F(PhoneHubUiControllerTest, ShowOnboardingUi_WithPhone) {
   EXPECT_EQ(PhoneHubUiController::UiState::kOnboardingWithPhone,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kOnboardingView, content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, PhoneSelectedAndPendingSetup) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(
       FeatureStatus::kPhoneSelectedAndPendingSetup);
   EXPECT_EQ(PhoneHubUiController::UiState::kHidden, controller_->ui_state());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, BluetoothOff) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(
       FeatureStatus::kUnavailableBluetoothOff);
   EXPECT_EQ(PhoneHubUiController::UiState::kBluetoothDisabled,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kBluetoothDisabledView, content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
-TEST_F(PhoneHubUiControllerTest, PhoneConnecting) {
+TEST_F(PhoneHubUiControllerTest, PhoneConnecting_DiscoveredRecently) {
+  base::HistogramTester histograms;
+  phone_hub_manager_.set_host_last_seen_timestamp(base::Time::Now());
   GetTetherController()->SetStatus(
       phonehub::TetherController::Status::kConnectionAvailable);
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kEnabledAndConnecting);
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnecting,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kPhoneConnectingView, content_view->GetID());
+  histograms.ExpectBucketCount(kScreenOnOpenedMetric,
+                               phone_hub_metrics::Screen::kPhoneConnecting, 1);
+}
+
+TEST_F(PhoneHubUiControllerTest, PhoneConnecting_DiscoveredHoursAgo) {
+  base::HistogramTester histograms;
+  phone_hub_manager_.set_host_last_seen_timestamp(base::Time::Now() -
+                                                  base::Hours(10));
+  GetTetherController()->SetStatus(
+      phonehub::TetherController::Status::kConnectionAvailable);
+  GetFeatureStatusProvider()->SetStatus(FeatureStatus::kEnabledAndConnecting);
+  EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnecting,
+            controller_->ui_state());
+
+  auto content_view = OpenBubbleAndCreateView();
+  EXPECT_EQ(PhoneHubViewID::kPhoneConnectingView, content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
+}
+
+TEST_F(PhoneHubUiControllerTest, PhoneConnecting_NeverDiscovered) {
+  base::HistogramTester histograms;
+  GetTetherController()->SetStatus(
+      phonehub::TetherController::Status::kConnectionAvailable);
+  GetFeatureStatusProvider()->SetStatus(FeatureStatus::kEnabledAndConnecting);
+  EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnecting,
+            controller_->ui_state());
+
+  auto content_view = OpenBubbleAndCreateView();
+  EXPECT_EQ(PhoneHubViewID::kPhoneConnectingView, content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, TetherConnectionPending) {
+  base::HistogramTester histograms;
   GetTetherController()->SetStatus(
       phonehub::TetherController::Status::kConnecting);
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kEnabledAndConnecting);
@@ -192,34 +262,41 @@ TEST_F(PhoneHubUiControllerTest, TetherConnectionPending) {
   EXPECT_EQ(PhoneHubUiController::UiState::kTetherConnectionPending,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kTetherConnectionPendingView,
             content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, PhoneConnected) {
+  base::HistogramTester histograms;
   SetPhoneStatusModel(phonehub::CreateFakePhoneStatusModel());
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kEnabledAndConnected);
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnected,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(kPhoneConnectedView, content_view->GetID());
+  histograms.ExpectBucketCount(kScreenOnOpenedMetric,
+                               phone_hub_metrics::Screen::kPhoneConnected, 1);
 }
 
 TEST_F(PhoneHubUiControllerTest, UnavailableScreenLocked) {
+  base::HistogramTester histograms;
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kLockOrSuspended);
   EXPECT_EQ(PhoneHubUiController::UiState::kHidden, controller_->ui_state());
-  EXPECT_FALSE(controller_->CreateContentView(/*bubble_view=*/nullptr).get());
+  EXPECT_FALSE(OpenBubbleAndCreateView().get());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, UnavailableSecondaryUser) {
+  base::HistogramTester histograms;
   // Simulate log in to secondary user.
   SetLoggedInUser(false /* is_primary */);
   EXPECT_TRUE(ui_state_changed_);
   ui_state_changed_ = false;
   EXPECT_EQ(PhoneHubUiController::UiState::kHidden, controller_->ui_state());
-  EXPECT_FALSE(controller_->CreateContentView(/*bubble_view=*/nullptr).get());
+  EXPECT_FALSE(OpenBubbleAndCreateView().get());
 
   // Switch back to primary user.
   SetLoggedInUser(true /* is_primary */);
@@ -227,24 +304,29 @@ TEST_F(PhoneHubUiControllerTest, UnavailableSecondaryUser) {
   ui_state_changed_ = false;
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnecting,
             controller_->ui_state());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 }
 
 TEST_F(PhoneHubUiControllerTest, ConnectedViewDelayed) {
+  base::HistogramTester histograms;
   // Since there is no phone model, expect that we stay at the connecting screen
   // even though the feature status is kEnabledAndConnected.
   SetPhoneStatusModel(absl::nullopt);
   GetFeatureStatusProvider()->SetStatus(FeatureStatus::kEnabledAndConnected);
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnecting,
             controller_->ui_state());
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(kPhoneConnectingView, content_view->GetID());
+  histograms.ExpectTotalCount(kScreenOnOpenedMetric, 0);
 
   // Update the phone status model and expect the connected view to show up.
   SetPhoneStatusModel(phonehub::CreateFakePhoneStatusModel());
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneConnected,
             controller_->ui_state());
-  auto content_view2 = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view2 = OpenBubbleAndCreateView();
   EXPECT_EQ(kPhoneConnectedView, content_view2->GetID());
+  histograms.ExpectBucketCount(kScreenOnOpenedMetric,
+                               phone_hub_metrics::Screen::kPhoneConnected, 1);
 }
 
 TEST_F(PhoneHubUiControllerTest, NumScanForAvailableConnectionCalls) {
@@ -277,7 +359,7 @@ TEST_F(PhoneHubUiControllerTest,
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneDisconnected,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kDisconnectedView, content_view->GetID());
 }
 
@@ -288,7 +370,7 @@ TEST_F(PhoneHubUiControllerTest,
   EXPECT_EQ(PhoneHubUiController::UiState::kPhoneDisconnected,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kPhoneConnectingView, content_view->GetID());
 }
 
@@ -302,8 +384,22 @@ TEST_F(PhoneHubUiControllerTest, TimerExpiresBluetoothDisconnectedView) {
   EXPECT_EQ(PhoneHubUiController::UiState::kBluetoothDisabled,
             controller_->ui_state());
 
-  auto content_view = controller_->CreateContentView(/*delegate=*/nullptr);
+  auto content_view = OpenBubbleAndCreateView();
   EXPECT_EQ(PhoneHubViewID::kBluetoothDisabledView, content_view->GetID());
+}
+
+TEST_F(PhoneHubUiControllerTest, HandleBubbleOpenedShouldCloseEcheBubble) {
+  EcheTray* eche_tray =
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->eche_tray();
+  eche_tray->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
+  eche_tray->ShowBubble();
+  EXPECT_TRUE(
+      eche_tray->get_bubble_wrapper_for_test()->bubble_view()->GetVisible());
+
+  controller_->HandleBubbleOpened();
+
+  EXPECT_FALSE(
+      eche_tray->get_bubble_wrapper_for_test()->bubble_view()->GetVisible());
 }
 
 }  // namespace ash

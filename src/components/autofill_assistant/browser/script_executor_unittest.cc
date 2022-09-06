@@ -11,8 +11,10 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/autofill_assistant/browser/actions/action_test_utils.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
+#include "components/autofill_assistant/browser/fake_script_executor_ui_delegate.h"
 #include "components/autofill_assistant/browser/service/mock_service.h"
 #include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/test_util.h"
@@ -74,7 +76,7 @@ class ScriptExecutorTest : public testing::Test,
         /* global_payload= */ "initial global payload",
         /* script_payload= */ "initial payload",
         /* listener= */ this, &ordered_interrupts_,
-        /* delegate= */ &delegate_);
+        /* delegate= */ &delegate_, /* ui_delegate= */ &ui_delegate_);
 
     test_util::MockFindAnyElement(mock_web_controller_);
   }
@@ -115,9 +117,10 @@ class ScriptExecutorTest : public testing::Test,
         ToSelectorProto(element);
     wait_action->set_allow_interrupt(true);
     interruptible.add_actions()->mutable_tell()->set_message(path);
-    EXPECT_CALL(mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
+    EXPECT_CALL(mock_service_, GetActions(StrEq(path), _, _, _, _, _))
         .WillRepeatedly(
-            RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+            RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                               ServiceRequestSender::ResponseInfo{}));
   }
 
   // Creates an interrupt that contains a tell. It will always succeed.
@@ -126,9 +129,10 @@ class ScriptExecutorTest : public testing::Test,
 
     ActionsResponseProto interrupt_actions;
     InitInterruptActions(&interrupt_actions, path);
-    EXPECT_CALL(mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
+    EXPECT_CALL(mock_service_, GetActions(StrEq(path), _, _, _, _, _))
         .WillRepeatedly(
-            RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)));
+            RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions),
+                               ServiceRequestSender::ResponseInfo{}));
   }
 
   void InitInterruptActions(ActionsResponseProto* interrupt_actions,
@@ -156,6 +160,7 @@ class ScriptExecutorTest : public testing::Test,
   // creation run in that environment.
   base::test::TaskEnvironment task_environment_;
   FakeScriptExecutorDelegate delegate_;
+  FakeScriptExecutorUiDelegate ui_delegate_;
   Script script_;
   StrictMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
@@ -174,8 +179,9 @@ class ScriptExecutorTest : public testing::Test,
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, false),
                         Field(&ScriptExecutor::Result::at_end,
@@ -190,12 +196,12 @@ TEST_F(ScriptExecutorTest, ForwardParameters) {
       std::make_unique<ScriptParameters>(
           base::flat_map<std::string, std::string>{{"param", "value"}}),
       options));
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(Invoke([](const std::string& script_path, const GURL& url,
-                          const TriggerContext& trigger_context,
-                          const std::string& global_payload,
-                          const std::string& script_payload,
-                          Service::ResponseCallback& callback) {
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce([](const std::string& script_path, const GURL& url,
+                   const TriggerContext& trigger_context,
+                   const std::string& global_payload,
+                   const std::string& script_payload,
+                   ServiceRequestSender::ResponseCallback callback) {
         // |trigger_context| includes data passed to
         // ScriptExecutor constructor as well as data from the
         // delegate's TriggerContext.
@@ -208,8 +214,9 @@ TEST_F(ScriptExecutorTest, ForwardParameters) {
                 {{"additional_param", "additional_param_value"},
                  {"param", "value"}})));
 
-        std::move(callback).Run(net::HTTP_OK, "");
-      }));
+        std::move(callback).Run(net::HTTP_OK, /* response= */ "",
+                                ServiceRequestSender::ResponseInfo{});
+      });
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -220,13 +227,16 @@ TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_js_click();  // Invalid.
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
@@ -243,20 +253,24 @@ TEST_F(ScriptExecutorTest, RunMultipleActions) {
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
   initial_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(net::HTTP_OK,
-                                   Serialize(initial_actions_response)));
+                                   Serialize(initial_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("3");
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           SaveArg<3>(&processed_actions1_capture),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response))))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(next_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions2_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -280,25 +294,28 @@ TEST_F(ScriptExecutorTest, ShowsSlowConnectionWarningReplace) {
       ClientSettingsProto::SlowWarningSettings::REPLACE;
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           Delay(&task_environment_, 600),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(next_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "2");
 }
 
 TEST_F(ScriptExecutorTest, ShowsSlowConnectionWarningConcatenate) {
@@ -312,26 +329,29 @@ TEST_F(ScriptExecutorTest, ShowsSlowConnectionWarningConcatenate) {
       ClientSettingsProto::SlowWarningSettings::CONCATENATE;
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           Delay(&task_environment_, 600),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(next_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  EXPECT_EQ(delegate_.GetStatusMessage(), "1... slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "1... slow");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "2");
 }
 
 TEST_F(ScriptExecutorTest, SlowConnectionWarningTriggersOnlyOnce) {
@@ -346,24 +366,27 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningTriggersOnlyOnce) {
       ClientSettingsProto::SlowWarningSettings::REPLACE;
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           Delay(&task_environment_, 600),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(next_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow");
   task_environment_.FastForwardBy(base::Milliseconds(100));
-  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "2");
 }
 
 TEST_F(ScriptExecutorTest, SlowConnectionWarningTriggersMultipleTimes) {
@@ -379,26 +402,29 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningTriggersMultipleTimes) {
       ClientSettingsProto::SlowWarningSettings::REPLACE;
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           Delay(&task_environment_, 600),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(next_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow");
   task_environment_.FastForwardBy(base::Milliseconds(100));
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow");
   task_environment_.FastForwardBy(base::Milliseconds(100));
-  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "2");
 }
 
 TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShowingIfNotConsecutive) {
@@ -408,25 +434,29 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShowingIfNotConsecutive) {
   client_settings->max_consecutive_slow_roundtrips = 2;
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(DoAll(RunOnceCallback<6>(net::HTTP_OK,
+                                         Serialize(initial_actions_response),
+                                         ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  EXPECT_NE(delegate_.GetStatusMessage(), "slow");
+  EXPECT_NE(ui_delegate_.GetStatusMessage(), "slow");
 }
 
 TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShowingIfOnCompleted) {
@@ -436,21 +466,25 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShowingIfOnCompleted) {
   client_settings->max_consecutive_slow_roundtrips = 2;
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK,
-                                         Serialize(initial_actions_response))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(DoAll(
+          Delay(&task_environment_, 600),
+          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response),
+                             ServiceRequestSender::ResponseInfo{})));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK,
+                                   Serialize(initial_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}))
       .WillOnce(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(initial_actions_response)))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+          DoAll(Delay(&task_environment_, 600),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  EXPECT_NE(delegate_.GetStatusMessage(), "slow");
+  EXPECT_NE(ui_delegate_.GetStatusMessage(), "slow");
 }
 
 TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShownIfSlowWebsiteFirst) {
@@ -472,10 +506,11 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShownIfSlowWebsiteFirst) {
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(
           DoAll(Delay(&task_environment_, 600),
-                RunOnceCallback<5>(net::HTTP_OK, Serialize(tell1_waitfordom))));
+                RunOnceCallback<5>(net::HTTP_OK, Serialize(tell1_waitfordom),
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // Active check takes longer than warning timeout.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -484,25 +519,28 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShownIfSlowWebsiteFirst) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   ActionsResponseProto tell2;
   tell2.add_actions()->mutable_tell()->set_message("2");
   ActionsResponseProto tell3;
   tell3.add_actions()->mutable_tell()->set_message("3");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, Serialize(tell2))))
+                      RunOnceCallback<6>(net::HTTP_OK, Serialize(tell2),
+                                         ServiceRequestSender::ResponseInfo{})))
       .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, Serialize(tell3))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+                      RunOnceCallback<6>(net::HTTP_OK, Serialize(tell3),
+                                         ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow website");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow website");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "3");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "3");
 }
 
 TEST_F(ScriptExecutorTest, SlowWebsiteWarningReplace) {
@@ -516,15 +554,16 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningReplace) {
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // Active check takes longer than warning timeout.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillOnce(Delay(&task_environment_, 2000));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow");
 }
 
 TEST_F(ScriptExecutorTest, SlowWebsiteWarningConcatenate) {
@@ -539,15 +578,16 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningConcatenate) {
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // Active check takes longer than warning timeout.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillOnce(Delay(&task_environment_, 2000));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  EXPECT_EQ(delegate_.GetStatusMessage(), "1... slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "1... slow");
 }
 
 TEST_F(ScriptExecutorTest, SlowWebsiteWarningTriggersOnlyOnce) {
@@ -569,8 +609,9 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningTriggersOnlyOnce) {
   *second_wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element2");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // Active check takes longer than warning timeout.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -579,21 +620,22 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningTriggersOnlyOnce) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element2"}), _, _))
       .WillOnce(DoAll(Delay(&task_environment_, 2000),
                       RunOnceCallback<2>(
                           ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response)));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK,
+                                   Serialize(next_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "2");
 }
 
 TEST_F(ScriptExecutorTest, SlowWebsiteWarningNotShownIfSlowConnectionFirst) {
@@ -619,9 +661,11 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningNotShownIfSlowConnectionFirst) {
   ActionsResponseProto tell3;
   tell3.add_actions()->mutable_tell()->set_message("3");
 
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, Serialize(tell1))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(
+          DoAll(Delay(&task_environment_, 600),
+                RunOnceCallback<5>(net::HTTP_OK, Serialize(tell1),
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // Active check takes longer than warning timeout.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -630,25 +674,28 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningNotShownIfSlowConnectionFirst) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(
           DoAll(Delay(&task_environment_, 600),
-                RunOnceCallback<5>(net::HTTP_OK, Serialize(tell2_waitfordom))))
+                RunOnceCallback<6>(net::HTTP_OK, Serialize(tell2_waitfordom),
+                                   ServiceRequestSender::ResponseInfo{})))
       .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, Serialize(tell3))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+                      RunOnceCallback<6>(net::HTTP_OK, Serialize(tell3),
+                                         ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow connection");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow connection");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "2");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "3");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "3");
 }
 
 TEST_F(ScriptExecutorTest, SlowWarningsBothShownIfConfigured) {
@@ -675,9 +722,11 @@ TEST_F(ScriptExecutorTest, SlowWarningsBothShownIfConfigured) {
   ActionsResponseProto tell3;
   tell3.add_actions()->mutable_tell()->set_message("3");
 
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, Serialize(tell1))));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(
+          DoAll(Delay(&task_environment_, 600),
+                RunOnceCallback<5>(net::HTTP_OK, Serialize(tell1),
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // Active check takes longer than warning timeout.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -686,40 +735,44 @@ TEST_F(ScriptExecutorTest, SlowWarningsBothShownIfConfigured) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           Delay(&task_environment_, 600),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(tell2_and_waitfordom))))
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(tell2_and_waitfordom),
+                             ServiceRequestSender::ResponseInfo{})))
       .WillOnce(DoAll(Delay(&task_environment_, 600),
-                      RunOnceCallback<5>(net::HTTP_OK, Serialize(tell3))))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+                      RunOnceCallback<6>(net::HTTP_OK, Serialize(tell3),
+                                         ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow connection");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow connection");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "slow website");
-  //  task_environment_.DescribeCurrentTasks();
-  ////  EXPECT_EQ(delegate_.GetStatusMessage(), "2");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "slow website");
   task_environment_.FastForwardBy(
       task_environment_.NextMainThreadPendingTaskDelay());
-  EXPECT_EQ(delegate_.GetStatusMessage(), "3");
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "3");
 }
 
 TEST_F(ScriptExecutorTest, UnsupportedAction) {
   ActionsResponseProto actions_response;
   actions_response.add_actions();  // action definition missing
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -732,16 +785,85 @@ TEST_F(ScriptExecutorTest, StopAfterEnd) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_stop();
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::SHUTDOWN))));
   executor_->Run(&user_data_, executor_callback_.Get());
+}
+
+TEST_F(ScriptExecutorTest, StopClearsUnexecutedActions) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_stop();
+  actions_response.add_actions()->mutable_tell()->set_message("should not run");
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
+  EXPECT_CALL(executor_callback_,
+              Run(AllOf(Field(&ScriptExecutor::Result::success, true),
+                        Field(&ScriptExecutor::Result::at_end,
+                              ScriptExecutor::SHUTDOWN))));
+  executor_->Run(&user_data_, executor_callback_.Get());
+
+  EXPECT_NE(ui_delegate_.GetStatusMessage(), "should not run");
+  ASSERT_EQ(processed_actions_capture.size(), 1u);
+  EXPECT_EQ(processed_actions_capture[0].action(), actions_response.actions(0));
+}
+
+TEST_F(ScriptExecutorTest, StopActionGetsExecutedAfterEmptyResponse) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_stop();
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+
+  ActionsResponseProto second_actions_response;
+  second_actions_response.add_actions()->mutable_tell()->set_message(
+      "tell message");
+  std::vector<ProcessedActionProto> second_response_processed_actions_capture;
+  std::vector<ProcessedActionProto> third_response_processed_actions_capture;
+  EXPECT_CALL(mock_service_, GetNextActions)
+      // Second response.
+      .WillOnce(DoAll(
+          SaveArg<3>(&second_response_processed_actions_capture),
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(second_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      // Third response - empty. We only expect the execution to stop after this
+      // response.
+      .WillOnce(
+          DoAll(SaveArg<3>(&third_response_processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
+  EXPECT_CALL(executor_callback_,
+              Run(AllOf(Field(&ScriptExecutor::Result::success, true),
+                        Field(&ScriptExecutor::Result::at_end,
+                              ScriptExecutor::SHUTDOWN))));
+  executor_->Run(&user_data_, executor_callback_.Get());
+
+  // We expect the actions from the second response to have been executed.
+  EXPECT_EQ(ui_delegate_.GetStatusMessage(), "tell message");
+  ASSERT_EQ(second_response_processed_actions_capture.size(), 1u);
+  EXPECT_EQ(second_response_processed_actions_capture[0].action(),
+            actions_response.actions(0));
+  ASSERT_EQ(third_response_processed_actions_capture.size(), 1u);
+  EXPECT_EQ(third_response_processed_actions_capture[0].action(),
+            second_actions_response.actions(0));
 }
 
 TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
@@ -752,21 +874,25 @@ TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
   initial_actions_response.add_actions()->mutable_tell()->set_message(
       "never run");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetActions)
       .WillOnce(RunOnceCallback<5>(net::HTTP_OK,
-                                   Serialize(initial_actions_response)));
+                                   Serialize(initial_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message(
       "will run after error");
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
           SaveArg<3>(&processed_actions1_capture),
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response))))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+          RunOnceCallback<6>(net::HTTP_OK, Serialize(next_actions_response),
+                             ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions2_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -788,13 +914,16 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
   action->mutable_tell()->set_message("delayed");
   action->set_action_delay_ms(1000);
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // executor_callback_.Run() not expected to be run just yet, as the action is
   // delayed.
@@ -816,17 +945,19 @@ TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
 
   *actions_response.add_actions() = click_with_clean_contextual_ui;
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   // empty, but not null
-  delegate_.SetDetails(std::make_unique<Details>(), base::TimeDelta());
+  ui_delegate_.SetDetails(std::make_unique<Details>(), base::TimeDelta());
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_THAT(delegate_.GetDetails(), IsEmpty());
+  EXPECT_THAT(ui_delegate_.GetDetails(), IsEmpty());
 }
 
 TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
@@ -837,33 +968,37 @@ TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
   *actions_response.add_actions() = click_with_clean_contextual_ui;
   actions_response.add_actions()->mutable_tell()->set_message("Wait no!");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   // empty, but not null
-  delegate_.SetDetails(std::make_unique<Details>(), base::TimeDelta());
+  ui_delegate_.SetDetails(std::make_unique<Details>(), base::TimeDelta());
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_THAT(delegate_.GetDetails(), Not(IsEmpty()));
+  EXPECT_THAT(ui_delegate_.GetDetails(), Not(IsEmpty()));
 }
 
 TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_tell()->set_message("Hello");
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
 
   // empty, but not null
-  delegate_.SetDetails(std::make_unique<Details>(), base::TimeDelta());
+  ui_delegate_.SetDetails(std::make_unique<Details>(), base::TimeDelta());
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_THAT(delegate_.GetDetails(), IsEmpty());
+  EXPECT_THAT(ui_delegate_.GetDetails(), IsEmpty());
 }
 
 TEST_F(ScriptExecutorTest, ForwardLastPayloadOnSuccess) {
@@ -872,17 +1007,19 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnSuccess) {
   actions_response.set_script_payload("actions payload");
   actions_response.add_actions()->mutable_tell()->set_message("ok");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, "initial global payload",
-                                          "initial payload", _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions(_, _, _, "initial global payload",
+                                        "initial payload", _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.set_global_payload("last global payload");
   next_actions_response.set_script_payload("last payload");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, "actions global payload",
-                                              "actions payload", _, _, _))
-      .WillOnce(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response)));
+  EXPECT_CALL(mock_service_, GetNextActions(_, "actions global payload",
+                                            "actions payload", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK,
+                                   Serialize(next_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -897,13 +1034,15 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnError) {
   actions_response.set_script_payload("actions payload");
   actions_response.add_actions()->mutable_tell()->set_message("ok");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, "initial global payload",
-                                          "initial payload", _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions(_, _, _, "initial global payload",
+                                        "initial payload", _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, "actions global payload",
-                                              "actions payload", _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_, GetNextActions(_, "actions global payload",
+                                            "actions payload", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -918,12 +1057,15 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // First check does not find the element, wait for dom waits 1s, then the
   // element is found, and the action succeeds.
@@ -935,7 +1077,7 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(executor_callback_, Run(_));
   task_environment_.FastForwardBy(base::Seconds(1));
@@ -953,24 +1095,27 @@ TEST_F(ScriptExecutorTest, RunInterrupt) {
   // Both scripts end after the first set of actions. Capture the results.
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(SaveArg<3>(&processed_actions1_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+                      RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions2_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  // The first script to call OnGetNextActions is the interrupt, which starts
+  // The first script to call GetNextActions is the interrupt, which starts
   // with a tell.
   ASSERT_THAT(processed_actions1_capture, Not(IsEmpty()));
   EXPECT_EQ(ActionProto::ActionInfoCase::kTell,
             processed_actions1_capture[0].action().action_info_case());
   EXPECT_EQ(ACTION_APPLIED, processed_actions1_capture[0].status());
 
-  // The second script to call OnGetNextActions is the main script, with starts
+  // The second script to call GetNextActions is the main script, with starts
   // with a wait_for_dom
   ASSERT_THAT(processed_actions2_capture, Not(IsEmpty()));
   EXPECT_EQ(ActionProto::ActionInfoCase::kWaitForDom,
@@ -988,14 +1133,17 @@ TEST_F(ScriptExecutorTest, RunMultipleInterruptInOrder) {
   {
     testing::InSequence seq;
     EXPECT_CALL(mock_service_,
-                OnGetNextActions(_, _, "payload for interrupt1", _, _, _))
-        .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+                GetNextActions(_, _, "payload for interrupt1", _, _, _, _))
+        .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                     ServiceRequestSender::ResponseInfo{}));
     EXPECT_CALL(mock_service_,
-                OnGetNextActions(_, _, "payload for interrupt2", _, _, _))
-        .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+                GetNextActions(_, _, "payload for interrupt2", _, _, _, _))
+        .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                     ServiceRequestSender::ResponseInfo{}));
     EXPECT_CALL(mock_service_,
-                OnGetNextActions(_, _, "main script payload", _, _, _))
-        .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+                GetNextActions(_, _, "main script payload", _, _, _, _))
+        .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                     ServiceRequestSender::ResponseInfo{}));
   }
 
   EXPECT_CALL(executor_callback_,
@@ -1012,22 +1160,24 @@ TEST_F(ScriptExecutorTest, RunSameInterruptMultipleTimes) {
         ToSelectorProto("element");
     wait_action->set_allow_interrupt(true);
   }
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq("script_path"), _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("script_path"), _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   // 'interrupt' with matching preconditions runs exactly three times.
   RegisterInterrupt("interrupt", "interrupt_trigger");
   ActionsResponseProto interrupt_actions;
   InitInterruptActions(&interrupt_actions, "interrupt");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetActions(StrEq("interrupt"), _, _, _, _, _))
       .Times(3)
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)));
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK,
+                                         Serialize(interrupt_actions),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   // All scripts succeed with no more actions.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1043,20 +1193,23 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptRuns) {
       "last global payload from interrupt");
   next_interrupt_actions_response.set_script_payload(
       "last payload from interrupt");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, "global payload for interrupt",
-                                              "payload for interrupt", _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK,
-                                   Serialize(next_interrupt_actions_response)));
+  EXPECT_CALL(mock_service_,
+              GetNextActions(_, "global payload for interrupt",
+                             "payload for interrupt", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK,
+                                   Serialize(next_interrupt_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   ActionsResponseProto next_main_actions_response;
   next_main_actions_response.set_global_payload(
       "last global payload from main");
   next_main_actions_response.set_script_payload("last payload from main");
   EXPECT_CALL(mock_service_,
-              OnGetNextActions(_, "last global payload from interrupt",
-                               "main script payload", _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK,
-                                   Serialize(next_main_actions_response)));
+              GetNextActions(_, "last global payload from interrupt",
+                             "main script payload", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK,
+                                   Serialize(next_main_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1070,13 +1223,16 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptFails) {
   SetupInterruptibleScript(kScriptPath, "element");
   SetupInterrupt("interrupt", "interrupt_trigger");
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, "global payload for interrupt",
-                                              "payload for interrupt", _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_,
+              GetNextActions(_, "global payload for interrupt",
+                             "payload for interrupt", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, "global payload for interrupt",
-                                              "main script payload", _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_, GetNextActions(_, "global payload for interrupt",
+                                            "main script payload", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -1094,7 +1250,7 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(mock_web_controller_,
               FindElement(Selector({"interrupt_trigger"}), _, _))
@@ -1104,9 +1260,11 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
   // The script ends after the first set of actions. There is only one call
   // from the main script, running a WaitForDom - none from the interrupt.
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1125,8 +1283,9 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfNotInterruptible) {
   *wait_action->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
   // allow_interrupt is not set
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // The interrupt would trigger, since interrupt_trigger exits, but it's not
   // given an opportunity to.
@@ -1135,9 +1294,11 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfNotInterruptible) {
   // The script ends after the first set of actions. There is only one call
   // from the main script, running a WaitForDom - none from the interrupt.
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1156,23 +1317,26 @@ TEST_F(ScriptExecutorTest, InterruptFailsMainScript) {
 
   // The interrupt fails.
   EXPECT_CALL(mock_service_,
-              OnGetNextActions(_, _, "payload for interrupt", _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+              GetNextActions(_, _, "payload for interrupt", _, _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // The main script gets a report of the failure from the interrupt, and fails
   // in turn.
-  EXPECT_CALL(
-      mock_service_,
-      OnGetNextActions(
-          _, _, "main script payload",
-          ElementsAre(Property(&ProcessedActionProto::status,
-                               ProcessedActionStatusProto::INTERRUPT_FAILED)),
-          _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_,
+              GetNextActions(_, _, "main script payload",
+                             ElementsAre(Property(
+                                 &ProcessedActionProto::status,
+                                 ProcessedActionStatusProto::INTERRUPT_FAILED)),
+                             _, _, _))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
   executor_->Run(&user_data_, executor_callback_.Get());
+  EXPECT_THAT(ui_delegate_.GetInterruptNotificationHistory(),
+              ElementsAre(FakeScriptExecutorUiDelegate::INTERRUPT_STARTED));
 }
 
 TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
@@ -1185,21 +1349,25 @@ TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
   interrupt_actions.add_actions()->mutable_stop();
 
   // Get interrupt actions
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK,
+                                         Serialize(interrupt_actions),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   // We expect to get result of interrupt action, then result of the main script
   // action.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .Times(2)
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::SHUTDOWN))));
   executor_->Run(&user_data_, executor_callback_.Get());
+  EXPECT_THAT(ui_delegate_.GetInterruptNotificationHistory(),
+              ElementsAre(FakeScriptExecutorUiDelegate::INTERRUPT_STARTED));
 }
 
 TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
@@ -1217,9 +1385,10 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
        ->mutable_auto_select_when()
        ->mutable_match() = ToSelectorProto("end_prompt");
 
-  EXPECT_CALL(mock_service_, OnGetActions("interrupt", _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)));
+  EXPECT_CALL(mock_service_, GetActions("interrupt", _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK,
+                                         Serialize(interrupt_actions),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   // Main script has a prompt with an "auto_select" element. This functions very
   // much like a WaitForDom, except for the UI changes triggered by the switches
@@ -1235,15 +1404,15 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
   *prompt_action->add_choices()->mutable_auto_select_when()->mutable_match() =
       ToSelectorProto("end_prompt");
   interruptible.add_actions()->mutable_tell()->set_message("done");
-  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+  EXPECT_CALL(mock_service_, GetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(mock_web_controller_,
               FindElement(Selector({"interrupt_trigger"}), _, _))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }))
       .WillRepeatedly(
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
@@ -1251,11 +1420,12 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"end_prompt"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1289,7 +1459,10 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
       ElementsAre(interruptible_area, interrupt_area,
                   ElementAreaProto::default_instance(), interruptible_area,
                   ElementAreaProto::default_instance()));
-  EXPECT_EQ("done", delegate_.GetStatusMessage());
+  EXPECT_EQ("done", ui_delegate_.GetStatusMessage());
+  EXPECT_THAT(ui_delegate_.GetInterruptNotificationHistory(),
+              ElementsAre(FakeScriptExecutorUiDelegate::INTERRUPT_STARTED,
+                          FakeScriptExecutorUiDelegate::INTERRUPT_FINISHED));
 }
 
 TEST_F(ScriptExecutorTest, RunPromptInBrowseMode) {
@@ -1298,8 +1471,9 @@ TEST_F(ScriptExecutorTest, RunPromptInBrowseMode) {
   prompt->add_choices()->mutable_chip()->set_text("done");
   prompt->set_browse_mode(true);
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ(AutofillAssistantState::BROWSE, delegate_.GetState());
@@ -1310,8 +1484,9 @@ TEST_F(ScriptExecutorTest, RunPromptInPromptMode) {
   auto* prompt = actions_response.add_actions()->mutable_prompt();
   prompt->add_choices()->mutable_chip()->set_text("done");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
@@ -1328,9 +1503,9 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
   prompt_action->set_allow_interrupt(true);
   *prompt_action->add_choices()->mutable_auto_select_when()->mutable_match() =
       ToSelectorProto("end_prompt");
-  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+  EXPECT_CALL(mock_service_, GetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   // interrupt_trigger goes away and come back, which means that the interrupt
   // will be run twice.
@@ -1338,13 +1513,13 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
               FindElement(Selector({"interrupt_trigger"}), _, _))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }))
       .WillOnce(
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }))
       .WillRepeatedly(
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
@@ -1362,11 +1537,12 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1381,6 +1557,11 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
           AutofillAssistantState::PROMPT, AutofillAssistantState::RUNNING,
           AutofillAssistantState::PROMPT, AutofillAssistantState::RUNNING,
           AutofillAssistantState::PROMPT, AutofillAssistantState::RUNNING));
+  EXPECT_THAT(ui_delegate_.GetInterruptNotificationHistory(),
+              ElementsAre(FakeScriptExecutorUiDelegate::INTERRUPT_STARTED,
+                          FakeScriptExecutorUiDelegate::INTERRUPT_FINISHED,
+                          FakeScriptExecutorUiDelegate::INTERRUPT_STARTED,
+                          FakeScriptExecutorUiDelegate::INTERRUPT_FINISHED));
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
@@ -1390,9 +1571,10 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
 
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(net::HTTP_OK,
-                                   Serialize(initial_actions_response)));
+                                   Serialize(initial_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   ActionsResponseProto next_actions_response;
   next_actions_response.add_actions()->mutable_tell()->set_message("2");
@@ -1402,10 +1584,12 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   auto* presentation = script->mutable_presentation();
   presentation->mutable_precondition();
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(next_actions_response)))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK,
+                                   Serialize(next_actions_response),
+                                   ServiceRequestSender::ResponseInfo{}))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1429,13 +1613,16 @@ TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
   auto* presentation = script->mutable_presentation();
   presentation->mutable_precondition();
 
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   script->set_path("path2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}))
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1458,8 +1645,9 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   ActionsResponseProto interrupt_actions;
   interrupt_actions.add_actions()->mutable_tell()->set_message("abc");
 
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   auto* script = interrupt_actions.mutable_update_script_list()->add_scripts();
   script->set_path("path");
@@ -1469,10 +1657,12 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   // We expect a call from the interrupt which will update the script list and a
   // second call from the interrupt to terminate. Then a call from the main
   // script which will finish without running any actions.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .Times(3)
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, Serialize(interrupt_actions),
+                                   ServiceRequestSender::ResponseInfo{}))
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -1492,27 +1682,29 @@ TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
   *wait_action->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
   wait_action->set_allow_interrupt(true);
-  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+  EXPECT_CALL(mock_service_, GetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                                         ServiceRequestSender::ResponseInfo{}));
 
   RegisterInterrupt("interrupt", "interrupt_trigger");
   ActionsResponseProto interrupt_actions;
   interrupt_actions.add_actions()->mutable_tell()->set_message(
       "interrupt status");
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK,
+                                         Serialize(interrupt_actions),
+                                         ServiceRequestSender::ResponseInfo{}));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  delegate_.SetStatusMessage("pre-run status");
+  ui_delegate_.SetStatusMessage("pre-run status");
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
+  EXPECT_EQ("pre-interrupt status", ui_delegate_.GetStatusMessage());
 }
 
 TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
@@ -1523,34 +1715,45 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
   *wait_action->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
   wait_action->set_allow_interrupt(true);
-  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
-      .WillRepeatedly(
-          RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible)));
+  EXPECT_CALL(mock_service_, GetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, Serialize(interruptible),
+                                         ServiceRequestSender::ResponseInfo{}));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  delegate_.SetStatusMessage("pre-run status");
+  ui_delegate_.SetStatusMessage("pre-run status");
   executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
+  EXPECT_EQ("pre-interrupt status", ui_delegate_.GetStatusMessage());
 }
 
-TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
+#if defined(ADDRESS_SANITIZER)
+// This test fails on ASAN: https://crbug.com/1315701
+#define MAYBE_PauseWaitForDomWhileNavigating \
+  DISABLED_PauseWaitForDomWhileNavigating
+#else
+#define MAYBE_PauseWaitForDomWhileNavigating PauseWaitForDomWhileNavigating
+#endif
+TEST_F(ScriptExecutorTest, MAYBE_PauseWaitForDomWhileNavigating) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   wait_for_dom->set_timeout_ms(2000);
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // First check does not find the element, wait for dom waits 1s.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -1570,7 +1773,7 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(executor_callback_, Run(_));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
@@ -1586,12 +1789,15 @@ TEST_F(ScriptExecutorTest, StartWaitForDomWhileNavigating) {
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // Navigation starts before WaitForDom starts. WaitForDom does not wait and
   // completes successfully.
@@ -1618,22 +1824,24 @@ TEST_F(ScriptExecutorTest, NavigateWhileRunningInterrupt) {
   // A load even happens when loading the interrupt scripts, so while the
   // interrupt is being executed. This should not interfere with the WaitForDom
   // action that's running the interrupt.
-  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
-      .WillRepeatedly(
-          DoAll(InvokeWithoutArgs(
-                    [this]() { delegate_.UpdateNavigationState(true, false); }),
-                RunOnceCallback<5>(net::HTTP_OK, Serialize(interrupt_actions)),
-                InvokeWithoutArgs([this]() {
-                  delegate_.UpdateNavigationState(false, false);
-                })));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillRepeatedly(WithArgs<5>([this, interrupt_actions](auto callback) {
+        delegate_.UpdateNavigationState(true, false);
+        std::move(callback).Run(net::HTTP_OK, Serialize(interrupt_actions),
+                                ServiceRequestSender::ResponseInfo{});
+        delegate_.UpdateNavigationState(false, false);
+      }));
 
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(SaveArg<3>(&processed_actions1_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+                      RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{})))
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions2_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(&user_data_, executor_callback_.Get());
@@ -1647,12 +1855,15 @@ TEST_F(ScriptExecutorTest, ReportNavigationErrors) {
   actions_response.add_actions()->mutable_tell()->set_message("a");
   actions_response.add_actions()->mutable_tell()->set_message("b");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
   EXPECT_CALL(executor_callback_, Run(_));
@@ -1671,12 +1882,15 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // WaitForDom does NOT wait for navigation to end, it immediately checks for
   // the element, which fails.
@@ -1694,7 +1908,7 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   task_environment_.FastForwardBy(base::Seconds(1));
 
@@ -1704,18 +1918,28 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   EXPECT_TRUE(processed_actions_capture[0].navigation_info().ended());
 }
 
-TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
+#if defined(ADDRESS_SANITIZER)
+// This test fails on ASAN: https://crbug.com/1315701
+#define MAYBE_ReportUnexpectedNavigationStart \
+  DISABLED_ReportUnexpectedNavigationStart
+#else
+#define MAYBE_ReportUnexpectedNavigationStart ReportUnexpectedNavigationStart
+#endif
+TEST_F(ScriptExecutorTest, MAYBE_ReportUnexpectedNavigationStart) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // As the element doesn't exist, WaitForDom returns and waits for 1s.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -1730,7 +1954,7 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
@@ -1740,19 +1964,29 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   EXPECT_TRUE(processed_actions_capture[0].navigation_info().unexpected());
 }
 
-TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
+#if defined(ADDRESS_SANITIZER)
+// This test fails on ASAN: https://crbug.com/1315701
+#define MAYBE_ReportExpectedNavigationStart \
+  DISABLED_ReportExpectedNavigationStart
+#else
+#define MAYBE_ReportExpectedNavigationStart ReportExpectedNavigationStart
+#endif
+TEST_F(ScriptExecutorTest, MAYBE_ReportExpectedNavigationStart) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_expect_navigation();
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
       ToSelectorProto("element");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // As the element doesn't exist, WaitForDom returns and waits for 1s.
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
@@ -1767,7 +2001,7 @@ TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
@@ -1782,12 +2016,15 @@ TEST_F(ScriptExecutorTest, WaitForNavigationWithoutExpectation) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_wait_for_navigation();
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // WaitForNavigation returns immediately
   EXPECT_CALL(executor_callback_, Run(_));
@@ -1802,12 +2039,15 @@ TEST_F(ScriptExecutorTest, ExpectNavigation) {
   actions_response.add_actions()->mutable_expect_navigation();
   actions_response.add_actions()->mutable_wait_for_navigation();
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // WaitForNavigation waits for navigation to start after expect_navigation
   EXPECT_CALL(executor_callback_, Run(_));
@@ -1827,12 +2067,15 @@ TEST_F(ScriptExecutorTest, MultipleWaitForNavigation) {
   actions_response.add_actions()->mutable_wait_for_navigation();
   actions_response.add_actions()->mutable_wait_for_navigation();
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // The first wait_for_navigation waits for the navigation to happen. After
   // that, the other wait_for_navigation return immediately.
@@ -1853,12 +2096,15 @@ TEST_F(ScriptExecutorTest, ExpectLaterNavigationIgnoringNavigationInProgress) {
   actions_response.add_actions()->mutable_expect_navigation();
   actions_response.add_actions()->mutable_wait_for_navigation();
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
 
@@ -1887,12 +2133,15 @@ TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
   actions_response.add_actions()->mutable_expect_navigation();
   actions_response.add_actions()->mutable_wait_for_navigation();
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   // WaitForNavigation waits for navigation to start after expect_navigation
   EXPECT_CALL(executor_callback_, Run(_));
@@ -1913,108 +2162,21 @@ TEST_F(ScriptExecutorTest, InterceptUserActions) {
       ->mutable_chip()
       ->set_text("done");
 
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
-  ASSERT_NE(nullptr, delegate_.GetUserActions());
-  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+  ASSERT_NE(nullptr, ui_delegate_.GetUserActions());
+  ASSERT_THAT(*ui_delegate_.GetUserActions(), SizeIs(1));
 
   // The prompt action must finish. We don't bother continuing with the script
   // in this test.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _));
+  EXPECT_CALL(mock_service_, GetNextActions);
 
-  (*delegate_.GetUserActions())[0].RunCallback();
+  (*ui_delegate_.GetUserActions())[0].RunCallback();
   EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
-}
-
-TEST_F(ScriptExecutorTest, PauseAndResume) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()->mutable_tell()->set_message("Tell");
-  actions_response.add_actions()
-      ->mutable_prompt()
-      ->add_choices()
-      ->mutable_chip()
-      ->set_text("Chip");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-
-  executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
-
-  executor_->OnPause("Paused", "Button");
-  EXPECT_EQ("Paused", delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::STOPPED, delegate_.GetState());
-  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
-  EXPECT_THAT(
-      *delegate_.GetUserActions(),
-      ElementsAre(Property(&UserAction::chip,
-                           AllOf(Field(&Chip::text, StrEq("Button")),
-                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
-
-  (*delegate_.GetUserActions())[0].RunCallback();
-  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
-  EXPECT_THAT(delegate_.GetStateHistory(),
-              ElementsAre(AutofillAssistantState::PROMPT,
-                          AutofillAssistantState::STOPPED,
-                          AutofillAssistantState::RUNNING,
-                          AutofillAssistantState::PROMPT));
-}
-
-TEST_F(ScriptExecutorTest, PauseAndResumeWithOngoingAction) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()->mutable_tell()->set_message("Tell");
-  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->set_timeout_ms(5000);
-  *wait_for_dom->mutable_wait_condition()->mutable_match() =
-      ToSelectorProto("element");
-  auto* prompt = actions_response.add_actions()->mutable_prompt();
-  prompt->set_message("Prompt");
-  prompt->add_choices()->mutable_chip()->set_text("Chip");
-  actions_response.add_actions()->mutable_tell()->set_message("Finished");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-
-  // At first we don't find the element, to keep the |WaitForDomAction| running.
-  EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
-      .WillOnce(
-          RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
-
-  executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
-  EXPECT_THAT(delegate_.GetState(), Not(Eq(AutofillAssistantState::PROMPT)));
-
-  executor_->OnPause("Paused", "Button");
-  EXPECT_EQ("Paused", delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::STOPPED, delegate_.GetState());
-  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
-  EXPECT_THAT(
-      *delegate_.GetUserActions(),
-      ElementsAre(Property(&UserAction::chip,
-                           AllOf(Field(&Chip::text, StrEq("Button")),
-                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
-
-  // Resume, this should not restart the |WaitForDomAction|, it should also
-  // not advance to the next action (i.e. |PromptAction|), so the status
-  // status message is the one from |TellAction|.
-  EXPECT_CALL(mock_web_controller_, FindElement(_, _, _)).Times(0);
-  (*delegate_.GetUserActions())[0].RunCallback();
-  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
-
-  // We have resumed, the |WaitForDom| should now finish and advance the script.
-  EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
-      .WillOnce(WithArgs<2>([](auto&& callback) {
-        std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
-      }));
-  task_environment_.FastForwardBy(base::Milliseconds(1000));
-  EXPECT_EQ("Prompt", delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
 }
 
 TEST_F(ScriptExecutorTest, RoundtripTimingStats) {
@@ -2022,17 +2184,18 @@ TEST_F(ScriptExecutorTest, RoundtripTimingStats) {
   ActionProto* action = actions_response.add_actions();
   action->mutable_tell()->set_message("1");
   action->set_action_delay_ms(1000);
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+  EXPECT_CALL(mock_service_, GetActions)
       .WillOnce(
           DoAll(Delay(&task_environment_, 200),
-                RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response))));
+                RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{})));
 
-  ActionsResponseProto next_actions_response;
-  next_actions_response.add_actions()->mutable_tell()->set_message("3");
   RoundtripTimingStats timing_stats;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<4>(&timing_stats),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<4>(&timing_stats),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
   executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_TRUE(task_environment_.NextTaskIsDelayed());
 
@@ -2045,22 +2208,188 @@ TEST_F(ScriptExecutorTest, RoundtripTimingStats) {
   EXPECT_EQ(1000, timing_stats.client_time_ms());
 }
 
+TEST_F(ScriptExecutorTest, RoundtripNetworkStats) {
+  ActionsResponseProto actions_response;
+  ActionProto* action = actions_response.add_actions();
+  action->mutable_tell()->set_message("Hello world");
+
+  ServiceRequestSender::ResponseInfo response_info;
+  response_info.encoded_body_length = 12;
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   response_info));
+
+  RoundtripNetworkStats captured_network_stats;
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<5>(&captured_network_stats),
+                RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                   ServiceRequestSender::ResponseInfo{})));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(&user_data_, executor_callback_.Get());
+
+  EXPECT_EQ(captured_network_stats.roundtrip_encoded_body_size_bytes(), 12);
+  EXPECT_EQ(static_cast<size_t>(
+                captured_network_stats.roundtrip_decoded_body_size_bytes()),
+            Serialize(actions_response).size());
+  ASSERT_EQ(captured_network_stats.action_stats().size(), 1);
+  EXPECT_EQ(captured_network_stats.action_stats(0).action_info_case(), 11);
+  EXPECT_EQ(static_cast<size_t>(
+                captured_network_stats.action_stats(0).decoded_size_bytes()),
+            Serialize(*action).size());
+}
+
 TEST_F(ScriptExecutorTest, ClearPersistentUiOnError) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_tell()->set_message("1");
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
 
   // empty, but not null
-  delegate_.SetPersistentGenericUi(
+  ui_delegate_.SetPersistentGenericUi(
       std::make_unique<GenericUserInterfaceProto>(), base::DoNothing());
-  ASSERT_NE(nullptr, delegate_.GetPersistentGenericUi());
+  ASSERT_NE(nullptr, ui_delegate_.GetPersistentGenericUi());
   executor_->Run(&user_data_, executor_callback_.Get());
-  ASSERT_EQ(nullptr, delegate_.GetPersistentGenericUi());
+  ASSERT_EQ(nullptr, ui_delegate_.GetPersistentGenericUi());
+}
+
+TEST_F(ScriptExecutorTest, RequestUserData) {
+  EXPECT_CALL(mock_service_, GetUserData)
+      .WillOnce(RunOnceCallback<3>(net::HTTP_OK, std::string(),
+                                   ServiceRequestSender::ResponseInfo{}));
+
+  base::MockCallback<
+      base::OnceCallback<void(bool, const GetUserDataResponseProto&)>>
+      mock_callback;
+  EXPECT_CALL(mock_callback, Run(true, _));
+
+  executor_->RequestUserData(UserDataEventField::SHIPPING_EVENT,
+                             CollectUserDataOptions(), mock_callback.Get());
+  EXPECT_THAT(delegate_.GetStateHistory(),
+              ElementsAre(AutofillAssistantState::RUNNING));
+  EXPECT_EQ(ui_delegate_.GetCollectUserDataUiLoadingField(),
+            UserDataEventField::SHIPPING_EVENT);
+}
+
+TEST_F(ScriptExecutorTest, CollectUserData) {
+  // Ui has been disabled while loading.
+  ui_delegate_.SetCollectUserDataUiState(/* loading= */ true,
+                                         UserDataEventField::SHIPPING_EVENT);
+  EXPECT_EQ(ui_delegate_.GetCollectUserDataUiLoadingField(),
+            UserDataEventField::SHIPPING_EVENT);
+
+  CollectUserDataOptions options;
+  executor_->CollectUserData(&options);
+
+  EXPECT_TRUE(options.confirm_callback);
+  EXPECT_TRUE(options.additional_actions_callback);
+  EXPECT_TRUE(options.terms_link_callback);
+  EXPECT_EQ(ui_delegate_.GetOptions(), &options);
+  EXPECT_EQ(ui_delegate_.GetCollectUserDataUiLoadingField(),
+            UserDataEventField::NONE);
+}
+
+TEST_F(ScriptExecutorTest, MustUseBackendData) {
+  delegate_.SetMustUseBackendData(true);
+  EXPECT_TRUE(executor_->MustUseBackendData());
+
+  delegate_.SetMustUseBackendData(false);
+  EXPECT_FALSE(executor_->MustUseBackendData());
+}
+
+TEST_F(ScriptExecutorTest, ExternalActionDoesNotApplyTouchableArea) {
+  ActionsResponseProto actions_response;
+  ElementAreaProto area = MakeElementAreaProto("#area");
+  *actions_response.add_actions()
+       ->mutable_set_touchable_area()
+       ->mutable_element_area() = area;
+  actions_response.add_actions()->mutable_external_action()->mutable_info();
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+
+  executor_->Run(&user_data_, executor_callback_.Get());
+  // The touchable area was never applied.
+  EXPECT_THAT(delegate_.GetTouchableElementAreaHistory(), IsEmpty());
+  // The delegate never entered prompt.
+  EXPECT_THAT(delegate_.GetStateHistory(), IsEmpty());
+}
+
+TEST_F(ScriptExecutorTest, ExternalActionDoesNotConsumeTouchableArea) {
+  ActionsResponseProto actions_response;
+  ElementAreaProto area = MakeElementAreaProto("#area");
+  *actions_response.add_actions()
+       ->mutable_set_touchable_area()
+       ->mutable_element_area() = area;
+  actions_response.add_actions()->mutable_external_action()->mutable_info();
+  auto* prompt_action = actions_response.add_actions()->mutable_prompt();
+  *prompt_action->add_choices()->mutable_auto_select_when()->mutable_match() =
+      ToSelectorProto("end_prompt");
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  EXPECT_CALL(mock_web_controller_, FindElement(Selector({"end_prompt"}), _, _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus(),
+                                   std::make_unique<ElementFinderResult>()));
+  executor_->Run(&user_data_, executor_callback_.Get());
+  // Since the ExternalAction did not consume the touchable area, the following
+  // prompt action was able to apply it.
+  EXPECT_THAT(delegate_.GetTouchableElementAreaHistory(),
+              ElementsAre(area, ElementAreaProto::default_instance()));
+}
+
+TEST_F(ScriptExecutorTest, ExternalActionAppliesAndRestoresTouchableArea) {
+  ActionsResponseProto actions_response;
+  ElementAreaProto area = MakeElementAreaProto("#area");
+  *actions_response.add_actions()
+       ->mutable_set_touchable_area()
+       ->mutable_element_area() = area;
+  auto* external_action =
+      actions_response.add_actions()->mutable_external_action();
+  external_action->mutable_info();
+  external_action->set_show_touchable_area(true);
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, /* response= */ "",
+                                         ServiceRequestSender::ResponseInfo{}));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+
+  executor_->Run(&user_data_, executor_callback_.Get());
+  // The touchable area was applied at the start of the ExternalAction and
+  // restored at the end of it.
+  EXPECT_THAT(delegate_.GetTouchableElementAreaHistory(),
+              ElementsAre(area, ElementAreaProto::default_instance()));
+  EXPECT_THAT(delegate_.GetStateHistory(),
+              ElementsAre(AutofillAssistantState::PROMPT,
+                          AutofillAssistantState::RUNNING));
 }
 
 }  // namespace

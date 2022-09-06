@@ -8,15 +8,22 @@
 #ifndef SKSL_VARIABLE
 #define SKSL_VARIABLE
 
+#include "include/core/SkTypes.h"
 #include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLStatement.h"
 #include "include/private/SkSLSymbol.h"
-#include "src/sksl/ir/SkSLExpression.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLType.h"
-#include "src/sksl/ir/SkSLVariableReference.h"
+
+#include <memory>
+#include <string>
+#include <string_view>
 
 namespace SkSL {
 
+class Context;
 class Expression;
+class SymbolTable;
 class VarDeclaration;
 
 namespace dsl {
@@ -42,22 +49,25 @@ public:
 
     inline static constexpr Kind kSymbolKind = Kind::kVariable;
 
-    Variable(int line, const Modifiers* modifiers, skstd::string_view name, const Type* type,
-             bool builtin, Storage storage)
-    : INHERITED(line, kSymbolKind, name, type)
+    Variable(Position pos, Position modifiersPosition, const Modifiers* modifiers,
+            std::string_view name, const Type* type, bool builtin, Storage storage)
+    : INHERITED(pos, kSymbolKind, name, type)
+    , fModifiersPosition(modifiersPosition)
     , fModifiers(modifiers)
     , fStorage(storage)
     , fBuiltin(builtin) {}
 
     ~Variable() override;
 
-    static std::unique_ptr<Variable> Convert(const Context& context, int line,
-            const Modifiers& modifiers, const Type* baseType, skstd::string_view name, bool isArray,
+    static std::unique_ptr<Variable> Convert(const Context& context, Position pos,
+            Position modifiersPos, const Modifiers& modifiers, const Type* baseType,
+            Position namePos, std::string_view name, bool isArray,
             std::unique_ptr<Expression> arraySize, Variable::Storage storage);
 
-    static std::unique_ptr<Variable> Make(const Context& context, int line,
-            const Modifiers& modifiers, const Type* baseType, skstd::string_view name, bool isArray,
-            std::unique_ptr<Expression> arraySize, Variable::Storage storage);
+    static std::unique_ptr<Variable> Make(const Context& context, Position pos,
+            Position modifiersPos, const Modifiers& modifiers, const Type* baseType,
+            std::string_view name, bool isArray, std::unique_ptr<Expression> arraySize,
+            Variable::Storage storage);
 
     /**
      * Creates a local scratch variable and the associated VarDeclaration statement.
@@ -68,7 +78,7 @@ public:
         std::unique_ptr<Statement> fVarDecl;
     };
     static ScratchVariable MakeScratchVariable(const Context& context,
-                                               skstd::string_view baseName,
+                                               std::string_view baseName,
                                                const Type* type,
                                                const Modifiers& modifiers,
                                                SymbolTable* symbolTable,
@@ -79,6 +89,10 @@ public:
 
     void setModifiers(const Modifiers* modifiers) {
         fModifiers = modifiers;
+    }
+
+    Position modifiersPosition() const {
+        return fModifiersPosition;
     }
 
     bool isBuiltin() const {
@@ -102,12 +116,15 @@ public:
         const_cast<Variable*>(this)->fDeclaration = nullptr;
     }
 
-    String description() const override {
-        return this->modifiers().description() + this->type().name() + " " + this->name();
+    std::string description() const override {
+        return this->modifiers().description() + this->type().displayName() + " " +
+               std::string(this->name());
     }
 
 private:
     VarDeclaration* fDeclaration = nullptr;
+    // We don't store the position in the Modifiers object itself because they are pooled
+    Position fModifiersPosition;
     const Modifiers* fModifiers;
     VariableStorage fStorage;
     bool fBuiltin;

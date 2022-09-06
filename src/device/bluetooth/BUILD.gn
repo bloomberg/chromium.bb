@@ -8,11 +8,6 @@ import("//device/bluetooth/cast_bluetooth.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
-if (is_chromeos_ash || is_chromeos_lacros) {
-  import("//chromeos/dbus/config/use_real_dbus_clients.gni")
-} else if (use_bluez) {
-  use_real_dbus_clients = false
-}
 
 config("bluetooth_config") {
   if (is_win) {
@@ -25,7 +20,7 @@ config("bluetooth_config") {
       "/DELAYLOAD:setupapi.dll",
     ]
   }
-  if ((is_linux || is_chromeos) && is_chromecast) {
+  if (is_castos) {
     defines = [ "USE_CAST_BLUETOOTH_ADAPTER" ]
   }
 }
@@ -197,17 +192,10 @@ component("bluetooth") {
       "bluetooth_remote_gatt_service_android.cc",
       "bluetooth_remote_gatt_service_android.h",
     ]
-    deps += [
-      ":jni_headers",
-      "//services/device/public/cpp:device_feature_list",
-    ]
+    deps += [ ":jni_headers" ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
-    deps += [ "//chromeos/constants" ]
-  }
-
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     deps += [ "//chromeos/constants" ]
   }
 
@@ -363,6 +351,8 @@ component("bluetooth") {
         "bluez/bluetooth_service_record_bluez.h",
         "bluez/bluetooth_socket_bluez.cc",
         "bluez/bluetooth_socket_bluez.h",
+        "bluez/metrics_recorder.cc",
+        "bluez/metrics_recorder.h",
         "dbus/bluetooth_adapter_client.cc",
         "dbus/bluetooth_adapter_client.h",
         "dbus/bluetooth_admin_policy_client.cc",
@@ -457,7 +447,8 @@ component("bluetooth") {
         "floss/floss_manager_client.cc",
         "floss/floss_manager_client.h",
       ]
-      if (is_chromeos_ash || is_chromeos_lacros) {
+      if (is_chromeos) {
+        import("//chromeos/dbus/config/use_real_dbus_clients.gni")
         configs += [ "//chromeos/dbus/config:use_real_dbus_clients_config" ]
         sources += [
           "chromeos/bluetooth_connection_logger.cc",
@@ -467,10 +458,16 @@ component("bluetooth") {
         ]
         deps += [ "//services/data_decoder/public/mojom" ]
         if (is_chromeos_lacros) {
-          deps += [ "//chromeos/lacros" ]
+          deps += [
+            "//chromeos/lacros",
+            "//chromeos/startup",
+          ]
         }
+      } else {
+        use_real_dbus_clients = false
       }
       if (!use_real_dbus_clients) {
+        # Use fake D-Bus clients instead of real ones.
         sources += [
           "dbus/fake_bluetooth_adapter_client.cc",
           "dbus/fake_bluetooth_adapter_client.h",
@@ -524,8 +521,10 @@ component("bluetooth") {
           "floss/fake_floss_manager_client.h",
         ]
       }
-      deps += [ "//dbus" ]
-    } else {  # !use_dbus
+      if (use_dbus) {
+        deps += [ "//dbus" ]
+      }
+    } else {  # !use_bluez
       defines += [ "LINUX_WITHOUT_DBUS" ]
       sources += [
         "dbus/dbus_bluez_manager_wrapper_linux.h",
@@ -536,7 +535,7 @@ component("bluetooth") {
     # force_cast_bluetooth is used to compile with both cast & BlueZ, by
     # omitting the stubs that would otherwise be added in.
     if (!use_bluez || force_cast_bluetooth) {
-      if (is_chromecast && (is_linux || is_chromeos)) {
+      if (is_castos) {
         sources += [
           "cast/bluetooth_adapter_cast.cc",
           "cast/bluetooth_adapter_cast.h",
@@ -588,7 +587,7 @@ static_library("mocks") {
     "test/mock_bluetooth_socket.h",
   ]
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     sources += [
       "test/mock_bluetooth_low_energy_scan_session.cc",
       "test/mock_bluetooth_low_energy_scan_session.h",
@@ -626,8 +625,10 @@ if (is_android) {
     sources = java_sources_needing_jni
     deps = [
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//components/location/android:location_java",
-      "//services/device/public/java:device_feature_list_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }

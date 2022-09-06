@@ -71,7 +71,6 @@ class Operand {
       : rm_(no_reg), rmode_(RelocInfo::EXTERNAL_REFERENCE) {
     value_.immediate = static_cast<int32_t>(f.address());
   }
-  V8_INLINE explicit Operand(const char* s);
   explicit Operand(Handle<HeapObject> handle);
   V8_INLINE explicit Operand(Smi value)
       : rm_(no_reg), rmode_(RelocInfo::NO_INFO) {
@@ -1627,7 +1626,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // not have to check for overflow. The same is true for writes of large
   // relocation info entries.
   static constexpr int kGap = 32;
-  STATIC_ASSERT(AssemblerBase::kMinimalBufferSize >= 2 * kGap);
+  static_assert(AssemblerBase::kMinimalBufferSize >= 2 * kGap);
 
   // Repeated checking whether the trampoline pool should be emitted is rather
   // expensive. By default we only check again once a number of instructions
@@ -1903,13 +1902,13 @@ class V8_EXPORT_PRIVATE V8_NODISCARD UseScratchRegisterScope {
   bool hasAvailable() const;
 
   void Include(const RegList& list) { *available_ |= list; }
-  void Exclude(const RegList& list) { *available_ &= ~list; }
+  void Exclude(const RegList& list) { available_->clear(list); }
   void Include(const Register& reg1, const Register& reg2 = no_reg) {
-    RegList list(reg1.bit() | reg2.bit());
+    RegList list({reg1, reg2});
     Include(list);
   }
   void Exclude(const Register& reg1, const Register& reg2 = no_reg) {
-    RegList list(reg1.bit() | reg2.bit());
+    RegList list({reg1, reg2});
     Exclude(list);
   }
 

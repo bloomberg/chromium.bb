@@ -4,11 +4,11 @@
 
 package org.chromium.base.test;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.app.Instrumentation;
+import android.app.job.JobScheduler;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
@@ -35,7 +35,6 @@ import androidx.core.content.ContextCompat;
 import dalvik.system.DexFile;
 
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
@@ -186,9 +185,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                                         + " crbug.com/754015. Arguments: %s",
                                 arguments.toString()));
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                finishAllAppTasks(getTargetContext());
-            }
+            finishAllAppTasks(getTargetContext());
+            getTargetContext().getSystemService(JobScheduler.class).cancelAll();
             checkOrDeleteOnDiskSharedPreferences(false);
             clearDataDirectory(sInMemorySharedPreferencesContext);
             InstrumentationRegistry.getInstrumentation().setInTouchMode(true);
@@ -494,6 +492,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         }
 
         try {
+            getTargetContext().getSystemService(JobScheduler.class).cancelAll();
             checkOrDeleteOnDiskSharedPreferences(true);
             UmaRecorderHolder.resetForTesting();
 
@@ -542,7 +541,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     }
 
     /** Finishes all tasks Chrome has listed in Android's Overview. */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void finishAllAppTasks(final Context context) {
         // Close all of the tasks one by one.
         ActivityManager activityManager =
@@ -571,6 +569,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             super.waitForActivitiesToComplete();
             return;
         }
+        Handler mainHandler = new Handler(Looper.getMainLooper());
         CallbackHelper allDestroyedCalledback = new CallbackHelper();
         ApplicationStatus.ActivityStateListener activityStateListener =
                 new ApplicationStatus.ActivityStateListener() {
@@ -579,7 +578,9 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                         switch (newState) {
                             case ActivityState.DESTROYED:
                                 if (ApplicationStatus.isEveryActivityDestroyed()) {
-                                    allDestroyedCalledback.notifyCalled();
+                                    // Allow onDestroy to finish running before we notify.
+                                    mainHandler.post(
+                                            () -> { allDestroyedCalledback.notifyCalled(); });
                                     ApplicationStatus.unregisterActivityStateListener(this);
                                 }
                                 break;
@@ -587,21 +588,21 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                                 if (!activity.isFinishing()) {
                                     // This is required to ensure we finish any activities created
                                     // after doing the bulk finish operation below.
-                                    ApiCompatibilityUtils.finishAndRemoveTask(activity);
+                                    activity.finishAndRemoveTask();
                                 }
                                 break;
                         }
                     }
                 };
 
-        new Handler(Looper.getMainLooper()).post(() -> {
+        mainHandler.post(() -> {
             if (ApplicationStatus.isEveryActivityDestroyed()) {
                 allDestroyedCalledback.notifyCalled();
             } else {
                 ApplicationStatus.registerStateListenerForAllActivities(activityStateListener);
             }
             for (Activity a : ApplicationStatus.getRunningActivities()) {
-                if (!a.isFinishing()) ApiCompatibilityUtils.finishAndRemoveTask(a);
+                if (!a.isFinishing()) a.finishAndRemoveTask();
             }
         });
         try {

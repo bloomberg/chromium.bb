@@ -12,7 +12,7 @@
 #include "common/debug.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
-#include "platform/FeaturesVk.h"
+#include "platform/FeaturesVk_autogen.h"
 
 namespace rx
 {
@@ -50,9 +50,9 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
         compileOptions |= SH_CLAMP_POINT_SIZE;
     }
 
-    if (contextVk->getFeatures().basicGLLineRasterization.enabled)
+    if (contextVk->getFeatures().emulateAdvancedBlendEquations.enabled)
     {
-        compileOptions |= SH_ADD_BRESENHAM_LINE_RASTER_EMULATION;
+        compileOptions |= SH_ADD_ADVANCED_BLEND_EQUATIONS_EMULATION;
     }
 
     if (contextVk->emulateSeamfulCubeMapSampling())
@@ -70,23 +70,15 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
         compileOptions |= SH_FORCE_SHADER_PRECISION_HIGHP_TO_MEDIUMP;
     }
 
-    // Let compiler detect and emit early fragment test execution mode. We will remove it if
-    // context state does not allow it
-    compileOptions |= SH_EARLY_FRAGMENT_TESTS_OPTIMIZATION;
-
     // Let compiler use specialized constant for pre-rotation.
-    if (!contextVk->getFeatures().forceDriverUniformOverSpecConst.enabled)
+    if (!contextVk->getFeatures().preferDriverUniformOverSpecConst.enabled)
     {
         compileOptions |= SH_USE_SPECIALIZATION_CONSTANT;
     }
 
-    if (contextVk->getFeatures().enablePreRotateSurfaces.enabled ||
-        contextVk->getFeatures().emulatedPrerotation90.enabled ||
-        contextVk->getFeatures().emulatedPrerotation180.enabled ||
-        contextVk->getFeatures().emulatedPrerotation270.enabled)
+    if (!contextVk->getFeatures().supportsDepthClipControl.enabled)
     {
-        // Let compiler insert pre-rotation code.
-        compileOptions |= SH_ADD_PRE_ROTATION;
+        compileOptions |= SH_ADD_VULKAN_DEPTH_CORRECTION;
     }
 
     if (contextVk->getFeatures().supportsTransformFeedbackExtension.enabled)
@@ -102,6 +94,11 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
     if (contextVk->getFeatures().generateSPIRVThroughGlslang.enabled)
     {
         compileOptions |= SH_GENERATE_SPIRV_THROUGH_GLSLANG;
+    }
+
+    if (contextVk->getFeatures().roundOutputAfterDithering.enabled)
+    {
+        compileOptions |= SH_ROUND_OUTPUT_AFTER_DITHERING;
     }
 
     return compileImpl(context, compilerInstance, mState.getSource(), compileOptions | options);

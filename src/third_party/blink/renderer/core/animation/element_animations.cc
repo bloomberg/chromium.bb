@@ -36,7 +36,10 @@
 
 namespace blink {
 
-ElementAnimations::ElementAnimations() : animation_style_change_(false) {}
+ElementAnimations::ElementAnimations()
+    : animation_style_change_(false),
+      composited_background_color_status_(static_cast<unsigned>(
+          CompositedPaintStatus::kNeedsRepaintOrNoAnimation)){};
 
 ElementAnimations::~ElementAnimations() = default;
 
@@ -53,7 +56,7 @@ void ElementAnimations::Trace(Visitor* visitor) const {
 }
 
 bool ElementAnimations::UpdateBoxSizeAndCheckTransformAxisAlignment(
-    const FloatSize& box_size) {
+    const gfx::SizeF& box_size) {
   bool preserves_axis_alignment = true;
   for (auto& entry : animations_) {
     Animation& animation = *entry.key;

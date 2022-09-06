@@ -13,7 +13,7 @@
 #include "include/core/SkSurfaceProps.h"
 
 #if SK_SUPPORT_GPU
-#include "include/private/GrTypesPriv.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
 #endif
 
 class GrBackendFormat;
@@ -62,7 +62,8 @@ public:
      */
     static sk_sp<SkSpecialSurface> MakeRenderTarget(GrRecordingContext*,
                                                     const SkImageInfo&,
-                                                    const SkSurfaceProps&);
+                                                    const SkSurfaceProps&,
+                                                    GrSurfaceOrigin);
 #endif
 
     /**

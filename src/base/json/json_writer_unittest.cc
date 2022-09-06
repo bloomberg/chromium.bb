@@ -64,29 +64,33 @@ TEST(JSONWriterTest, NestedTypes) {
   Value inner_dict(Value::Type::DICTIONARY);
   inner_dict.SetIntKey("inner int", 10);
   list_storage.push_back(std::move(inner_dict));
+  Value empty_dict(Value::Type::DICTIONARY);
+  list_storage.push_back(std::move(empty_dict));
   list_storage.push_back(Value(Value::Type::LIST));
   list_storage.push_back(Value(true));
   root_dict.SetKey("list", Value(std::move(list_storage)));
 
-  // Test the pretty-printer.
-  EXPECT_TRUE(JSONWriter::Write(root_dict, &output_js));
-  EXPECT_EQ("{\"list\":[{\"inner int\":10},[],true]}", output_js);
-  EXPECT_TRUE(JSONWriter::WriteWithOptions(
-      root_dict, JSONWriter::OPTIONS_PRETTY_PRINT, &output_js));
-
   // The pretty-printer uses a different newline style on Windows than on
   // other platforms.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define JSON_NEWLINE "\r\n"
 #else
 #define JSON_NEWLINE "\n"
 #endif
+
+  // Test the pretty-printer.
+  EXPECT_TRUE(JSONWriter::Write(root_dict, &output_js));
+  EXPECT_EQ("{\"list\":[{\"inner int\":10},{},[],true]}", output_js);
+  EXPECT_TRUE(JSONWriter::WriteWithOptions(
+      root_dict, JSONWriter::OPTIONS_PRETTY_PRINT, &output_js));
   EXPECT_EQ("{" JSON_NEWLINE
             "   \"list\": [ {" JSON_NEWLINE
             "      \"inner int\": 10" JSON_NEWLINE
+            "   }, {" JSON_NEWLINE
             "   }, [  ], true ]" JSON_NEWLINE
             "}" JSON_NEWLINE,
             output_js);
+
 #undef JSON_NEWLINE
 }
 
@@ -177,11 +181,11 @@ TEST(JSONWriterTest, StackOverflow) {
   // We cannot just let deep_list tear down since it
   // would cause a stack overflow. Therefore, we tear
   // down the deep list manually.
-  deep_list_storage = std::move(deep_list).TakeList();
+  deep_list_storage = std::move(deep_list).TakeListDeprecated();
   while (!deep_list_storage.empty()) {
     DCHECK_EQ(deep_list_storage.size(), 1u);
     Value inner_list = std::move(deep_list_storage[0]);
-    deep_list_storage = std::move(inner_list).TakeList();
+    deep_list_storage = std::move(inner_list).TakeListDeprecated();
   }
 }
 

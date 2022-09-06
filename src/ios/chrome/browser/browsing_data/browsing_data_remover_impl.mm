@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -43,17 +42,18 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/crash_report/crash_helper.h"
 #include "ios/chrome/browser/external_files/external_file_remover.h"
 #include "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
+#import "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -61,12 +61,13 @@
 #include "ios/chrome/browser/snapshots/snapshots_util.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/components/security_interstitials/https_only_mode/https_upgrade_service.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
 #include "ios/net/http_cache_helper.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/browsing_data/browsing_data_removing_util.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/transport_security_state.h"
@@ -288,10 +289,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     // Remove the screenshots taken by the system when backgrounding the
     // application. Partial removal based on timePeriod is not required.
     ClearIOSSnapshots(CreatePendingTaskCompletionClosure());
+
+    // Remove all HTTPS-Only Mode allowlist decisions.
+    HttpsUpgradeService* https_upgrade_service =
+        HttpsUpgradeServiceFactory::GetForBrowserState(browser_state_);
+    https_upgrade_service->ClearAllowlist(delete_begin, delete_end);
   }
 
-  constexpr base::TaskTraits task_traits = {
-      web::WebThread::IO, base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+  auto io_thread_task_runner = web::GetIOThreadTaskRunner({});
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     if (!browser_state_->IsOffTheRecord()) {
@@ -301,8 +306,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     }
     net::CookieDeletionInfo::TimeRange deletion_time_range =
         net::CookieDeletionInfo::TimeRange(delete_begin, delete_end);
-    base::PostTask(
-        FROM_HERE, task_traits,
+    io_thread_task_runner->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &ClearCookies, context_getter_, deletion_time_range,
             base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
@@ -350,8 +355,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     IOSChromeIOThread* ios_chrome_io_thread =
         GetApplicationContext()->GetIOSChromeIOThread();
     if (ios_chrome_io_thread) {
-      base::PostTaskAndReply(
-          FROM_HERE, task_traits,
+      io_thread_task_runner->PostTaskAndReply(
+          FROM_HERE,
           base::BindOnce(&IOSChromeIOThread::ClearHostCache,
                          base::Unretained(ios_chrome_io_thread)),
           CreatePendingTaskCompletionClosure());
@@ -414,6 +419,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     if (language_histogram) {
       language_histogram->ClearHistory(delete_begin, delete_end);
     }
+
+    crash_helper::ClearReportsBetween(delete_begin, delete_end);
   }
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_PASSWORDS)) {
@@ -465,9 +472,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cache"));
-    ClearHttpCache(context_getter_,
-                   base::CreateSingleThreadTaskRunner(task_traits),
-                   delete_begin, delete_end,
+    ClearHttpCache(context_getter_, io_thread_task_runner, delete_begin,
+                   delete_end,
                    base::BindOnce(&NetCompletionCallbackAdapter,
                                   CreatePendingTaskCompletionClosure()));
   }

@@ -10,7 +10,6 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,8 +17,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -106,26 +104,6 @@ BrowserAccessibility* GetTextFieldInnerEditorElement(
   return nullptr;
 }
 
-int GetBoundaryTextOffsetInsideBaseAnchor(
-    ax::mojom::MoveDirection direction,
-    const BrowserAccessibility::AXPosition& base,
-    const BrowserAccessibility::AXPosition& position) {
-  if (base->GetAnchor() == position->GetAnchor())
-    return position->text_offset();
-
-  // If the position is outside the anchor of the base position, then return
-  // the first or last position in the same direction.
-  switch (direction) {
-    case ax::mojom::MoveDirection::kNone:
-      NOTREACHED();
-      return position->text_offset();
-    case ax::mojom::MoveDirection::kBackward:
-      return base->CreatePositionAtStartOfAnchor()->text_offset();
-    case ax::mojom::MoveDirection::kForward:
-      return base->CreatePositionAtEndOfAnchor()->text_offset();
-  }
-}
-
 }  // namespace
 
 bool BrowserAccessibility::IsValid() const {
@@ -170,11 +148,8 @@ ui::AXPlatformNode* BrowserAccessibility::GetAXPlatformNode() const {
   return nullptr;
 }
 
-uint32_t BrowserAccessibility::PlatformChildCount() const {
-  if (IsLeaf())
-    return 0;
-  return static_cast<uint32_t>(
-      node()->GetUnignoredChildCountCrossingTreeBoundary());
+size_t BrowserAccessibility::PlatformChildCount() const {
+  return IsLeaf() ? 0 : node()->GetUnignoredChildCountCrossingTreeBoundary();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
@@ -185,10 +160,16 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetFirstChild() const {
+  if (PlatformChildCount() == 0)
+    return nullptr;
+
   return PlatformGetChild(0);
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetLastChild() const {
+  if (PlatformChildCount() == 0)
+    return nullptr;
+
   BrowserAccessibility* child_tree_root = PlatformGetRootOfChildTree();
   return child_tree_root ? child_tree_root : InternalGetLastChild();
 }
@@ -232,7 +213,10 @@ bool BrowserAccessibility::IsLineBreakObject() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
-    uint32_t child_index) const {
+    size_t child_index) const {
+  if (PlatformChildCount() == 0)
+    return nullptr;
+
   BrowserAccessibility* child_tree_root = PlatformGetRootOfChildTree();
   if (child_tree_root) {
     // A node with a child tree has only one child.
@@ -349,12 +333,16 @@ BrowserAccessibility* BrowserAccessibility::InternalDeepestLastChild() const {
   return manager()->GetFromAXNode(deepest_child);
 }
 
-uint32_t BrowserAccessibility::InternalChildCount() const {
+void BrowserAccessibility::SetNode(ui::AXNode& node) {
+  node_ = &node;
+}
+
+size_t BrowserAccessibility::InternalChildCount() const {
   return node_->GetUnignoredChildCount();
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetChild(
-    uint32_t child_index) const {
+    size_t child_index) const {
   ui::AXNode* child_node = node_->GetUnignoredChildAtIndex(child_index);
   if (!child_node)
     return nullptr;
@@ -497,14 +485,6 @@ gfx::Rect BrowserAccessibility::GetHypertextRangeBoundsRect(
     // Convert to screen coordinates.
     bounds.Offset(
         manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
-  }
-
-  if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels) {
-    // Convert to physical pixels.
-    if (!IsUseZoomForDSFEnabled()) {
-      bounds =
-          gfx::ScaleToEnclosingRect(bounds, manager()->device_scale_factor());
-    }
   }
 
   return bounds;
@@ -811,9 +791,8 @@ BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
   // most tightly encloses the specified point. Walk backwards so that in
   // the absence of any other information, we assume the object that occurs
   // later in the tree is on top of one that comes before it.
-  for (int i = static_cast<int>(PlatformChildCount()) - 1; i >= 0; --i) {
-    BrowserAccessibility* child = PlatformGetChild(i);
-
+  for (BrowserAccessibility* child = PlatformGetLastChild(); child != nullptr;
+       child = child->PlatformGetPreviousSibling()) {
     // Skip table columns because cells are only contained in rows,
     // not columns.
     if (child->GetRole() == ax::mojom::Role::kColumn)
@@ -915,7 +894,7 @@ BrowserAccessibility::AXPosition BrowserAccessibility::CreatePositionAt(
 // thoroughly tested and convert to tree positions.
 BrowserAccessibility::AXPosition
 BrowserAccessibility::CreatePositionForSelectionAt(int offset) const {
-  return CreateTextPositionAt(offset)->AsTextSelectionPosition();
+  return CreateTextPositionAt(offset)->AsDomSelectionPosition();
 }
 
 const std::string& BrowserAccessibility::GetName() const {
@@ -1000,9 +979,6 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
     }
     bounds.Offset(
         manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
-    if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels &&
-        !IsUseZoomForDSFEnabled())
-      bounds.Scale(manager()->device_scale_factor());
   }
 
   if (offscreen_result) {
@@ -1030,6 +1006,14 @@ bool BrowserAccessibility::IsText() const {
 
 bool BrowserAccessibility::IsWebContent() const {
   return true;
+}
+
+bool BrowserAccessibility::IsReadOnlySupported() const {
+  return node()->IsReadOnlySupported();
+}
+
+bool BrowserAccessibility::IsReadOnlyOrDisabled() const {
+  return node()->IsReadOnlyOrDisabled();
 }
 
 bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
@@ -1156,29 +1140,6 @@ std::string BrowserAccessibility::SubtreeToStringHelper(size_t level) {
   }
 
   return result;
-}
-
-absl::optional<int> BrowserAccessibility::FindTextBoundary(
-    ax::mojom::TextBoundary boundary,
-    int offset,
-    ax::mojom::MoveDirection direction,
-    ax::mojom::TextAffinity affinity) const {
-  const AXPosition position = CreateTextPositionAt(offset, affinity);
-
-  // On Windows and Linux ATK, searching for a text boundary should always stop
-  // at the boundary of the current object.
-  auto boundary_behavior = ui::AXBoundaryBehavior::StopAtAnchorBoundary;
-  // On Windows and Linux ATK, it is standard text navigation behavior to stop
-  // if we are searching in the backwards direction and the current position is
-  // already at the required text boundary.
-  DCHECK_NE(direction, ax::mojom::MoveDirection::kNone);
-  if (direction == ax::mojom::MoveDirection::kBackward)
-    boundary_behavior = ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary;
-
-  return GetBoundaryTextOffsetInsideBaseAnchor(
-      direction, position,
-      position->CreatePositionAtTextBoundary(boundary, direction,
-                                             boundary_behavior));
 }
 
 const std::vector<gfx::NativeViewAccessible>
@@ -1351,6 +1312,10 @@ bool BrowserAccessibility::GetStringListAttribute(
   return node_->GetStringListAttribute(attribute, value);
 }
 
+bool BrowserAccessibility::HasHtmlAttribute(const char* attribute) const {
+  return node_->HasHtmlAttribute(attribute);
+}
+
 const BrowserAccessibility::HtmlAttributes&
 BrowserAccessibility::GetHtmlAttributes() const {
   return node()->GetHtmlAttributes();
@@ -1409,7 +1374,8 @@ const ui::AXTree::Selection BrowserAccessibility::GetUnignoredSelection()
       selection.anchor_offset =
           static_cast<int>(anchor_child->GetUnignoredIndexInParent());
     } else {
-      selection.anchor_offset = anchor_object->GetChildCount();
+      selection.anchor_offset =
+          static_cast<int>(anchor_object->GetChildCount());
     }
   }
 
@@ -1425,7 +1391,7 @@ const ui::AXTree::Selection BrowserAccessibility::GetUnignoredSelection()
       selection.focus_offset =
           static_cast<int>(focus_child->GetUnignoredIndexInParent());
     } else {
-      selection.focus_offset = focus_object->GetChildCount();
+      selection.focus_offset = static_cast<int>(focus_object->GetChildCount());
     }
   }
 
@@ -1457,11 +1423,11 @@ gfx::NativeViewAccessible BrowserAccessibility::GetParent() const {
   return delegate->AccessibilityGetNativeViewAccessible();
 }
 
-int BrowserAccessibility::GetChildCount() const {
-  return static_cast<int>(PlatformChildCount());
+size_t BrowserAccessibility::GetChildCount() const {
+  return PlatformChildCount();
 }
 
-gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
+gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(size_t index) {
   BrowserAccessibility* child = PlatformGetChild(index);
   if (!child)
     return nullptr;
@@ -1546,6 +1512,14 @@ bool BrowserAccessibility::IsDescendantOfAtomicTextField() const {
   return node()->IsDescendantOfAtomicTextField();
 }
 
+bool BrowserAccessibility::IsPlatformDocument() const {
+  return ui::IsPlatformDocument(GetRole());
+}
+
+bool BrowserAccessibility::IsPlatformDocumentWithContent() const {
+  return IsPlatformDocument() && GetChildCount();
+}
+
 gfx::NativeViewAccessible BrowserAccessibility::GetLowestPlatformAncestor()
     const {
   BrowserAccessibility* lowest_platform_ancestor =
@@ -1590,30 +1564,28 @@ BrowserAccessibility::PlatformChildIterator::PlatformChildIterator(
 
 BrowserAccessibility::PlatformChildIterator::~PlatformChildIterator() = default;
 
-bool BrowserAccessibility::PlatformChildIterator::operator==(
-    const ChildIterator& rhs) const {
-  return GetIndexInParent() == rhs.GetIndexInParent();
-}
-
-bool BrowserAccessibility::PlatformChildIterator::operator!=(
-    const ChildIterator& rhs) const {
-  return GetIndexInParent() != rhs.GetIndexInParent();
-}
-
-void BrowserAccessibility::PlatformChildIterator::operator++() {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator++() {
   ++platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator++(int) {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator++(int) {
   ++platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator--() {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator--() {
   --platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator--(int) {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator--(int) {
   --platform_iterator;
+  return *this;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::get() const {
@@ -1625,7 +1597,8 @@ BrowserAccessibility::PlatformChildIterator::GetNativeViewAccessible() const {
   return platform_iterator->GetNativeViewAccessible();
 }
 
-int BrowserAccessibility::PlatformChildIterator::GetIndexInParent() const {
+absl::optional<size_t>
+BrowserAccessibility::PlatformChildIterator::GetIndexInParent() const {
   if (platform_iterator == parent_->PlatformChildrenEnd().platform_iterator)
     return parent_->PlatformChildCount();
 
@@ -1694,12 +1667,12 @@ ui::AXPlatformNode* BrowserAccessibility::GetFromTreeIDAndNodeID(
   return node->GetAXPlatformNode();
 }
 
-int BrowserAccessibility::GetIndexInParent() {
+absl::optional<size_t> BrowserAccessibility::GetIndexInParent() {
   if (manager()->GetRoot() == this && PlatformGetParent() == nullptr) {
     // If it is a root node of WebContent, it doesn't have a parent and a
     // valid index in parent. So it returns -1 in order to compute its
     // index at AXPlatformNodeBase.
-    return -1;
+    return absl::nullopt;
   }
   return node()->GetUnignoredIndexInParent();
 }
@@ -1935,6 +1908,14 @@ bool BrowserAccessibility::AccessibilityPerformAction(
     case ax::mojom::Action::kDecrement:
       manager_->Decrement(*this);
       return true;
+    case ax::mojom::Action::kScrollBackward:
+    case ax::mojom::Action::kScrollForward:
+    case ax::mojom::Action::kScrollUp:
+    case ax::mojom::Action::kScrollDown:
+    case ax::mojom::Action::kScrollLeft:
+    case ax::mojom::Action::kScrollRight:
+      manager_->Scroll(*this, data.action);
+      return true;
     default:
       return false;
   }
@@ -2004,30 +1985,219 @@ std::u16string BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
 
 std::u16string BrowserAccessibility::GetLocalizedStringForRoleDescription()
     const {
+  // Localized role description strings live in ui/strings/ax_strings.grd
   ContentClient* content_client = content::GetContentClient();
 
   switch (GetRole()) {
+    // Things which should never have a role description.
+    case ax::mojom::Role::kNone:
+    case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kIframePresentational:
+    case ax::mojom::Role::kImeCandidate:
+    case ax::mojom::Role::kInlineTextBox:
+    case ax::mojom::Role::kLayoutTable:
+    case ax::mojom::Role::kLayoutTableCell:
+    case ax::mojom::Role::kLayoutTableRow:
+    case ax::mojom::Role::kLineBreak:
+    case ax::mojom::Role::kListMarker:
+    case ax::mojom::Role::kRuby:
+    case ax::mojom::Role::kRubyAnnotation:
+    case ax::mojom::Role::kStaticText:
+    case ax::mojom::Role::kUnknown:
+      return {};
+
+    // TODO(accessibility): Should any of these have a role description?
+    case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kCaption:
+    case ax::mojom::Role::kCanvas:
+    case ax::mojom::Role::kCaret:
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kClient:
+    case ax::mojom::Role::kColumn:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kDesktop:
+    case ax::mojom::Role::kFigcaption:
+    case ax::mojom::Role::kGroup:
+    case ax::mojom::Role::kIframe:
+    case ax::mojom::Role::kLegend:
+    case ax::mojom::Role::kKeyboard:
+    case ax::mojom::Role::kLabelText:
+    case ax::mojom::Role::kList:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kMenuListPopup:
+    case ax::mojom::Role::kPane:
+    case ax::mojom::Role::kParagraph:
+    case ax::mojom::Role::kPdfRoot:
+    case ax::mojom::Role::kPre:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kScrollView:
+    case ax::mojom::Role::kTableHeaderContainer:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTitleBar:
+    case ax::mojom::Role::kWebView:
+    case ax::mojom::Role::kWindow:
+      return {};
+
+    // DPUB-ARIA Roles
+    case ax::mojom::Role::kDocAbstract:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_ABSTRACT);
+    case ax::mojom::Role::kDocAcknowledgments:
+      return content_client->GetLocalizedString(
+          IDS_AX_ROLE_DOC_ACKNOWLEDGMENTS);
+    case ax::mojom::Role::kDocAfterword:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_AFTERWORD);
+    case ax::mojom::Role::kDocAppendix:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_APPENDIX);
+    case ax::mojom::Role::kDocBackLink:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_BACKLINK);
+    case ax::mojom::Role::kDocBiblioEntry:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_BIBLIO_ENTRY);
+    case ax::mojom::Role::kDocBibliography:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_BIBLIOGRAPHY);
+    case ax::mojom::Role::kDocBiblioRef:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_BIBLIO_REF);
+    case ax::mojom::Role::kDocChapter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_CHAPTER);
+    case ax::mojom::Role::kDocColophon:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_COLOPHON);
+    case ax::mojom::Role::kDocConclusion:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_CONCLUSION);
+    case ax::mojom::Role::kDocCover:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_COVER);
+    case ax::mojom::Role::kDocCredit:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_CREDIT);
+    case ax::mojom::Role::kDocCredits:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_CREDITS);
+    case ax::mojom::Role::kDocDedication:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_DEDICATION);
+    case ax::mojom::Role::kDocEndnote:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_ENDNOTE);
+    case ax::mojom::Role::kDocEndnotes:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_ENDNOTES);
+    case ax::mojom::Role::kDocEpigraph:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_EPIGRAPH);
+    case ax::mojom::Role::kDocEpilogue:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_EPILOGUE);
+    case ax::mojom::Role::kDocErrata:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_ERRATA);
+    case ax::mojom::Role::kDocExample:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_EXAMPLE);
+    case ax::mojom::Role::kDocFootnote:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_FOOTNOTE);
+    case ax::mojom::Role::kDocForeword:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_FOREWORD);
+    case ax::mojom::Role::kDocGlossary:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_GLOSSARY);
+    case ax::mojom::Role::kDocGlossRef:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_GLOSS_REF);
+    case ax::mojom::Role::kDocIndex:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_INDEX);
+    case ax::mojom::Role::kDocIntroduction:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_INTRODUCTION);
+    case ax::mojom::Role::kDocNoteRef:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_NOTE_REF);
+    case ax::mojom::Role::kDocNotice:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_NOTICE);
+    case ax::mojom::Role::kDocPageBreak:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PAGE_BREAK);
+    case ax::mojom::Role::kDocPageFooter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PAGE_FOOTER);
+    case ax::mojom::Role::kDocPageHeader:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PAGE_HEADER);
+    case ax::mojom::Role::kDocPageList:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PAGE_LIST);
+    case ax::mojom::Role::kDocPart:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PART);
+    case ax::mojom::Role::kDocPreface:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PREFACE);
+    case ax::mojom::Role::kDocPrologue:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PROLOGUE);
+    case ax::mojom::Role::kDocPullquote:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_PULLQUOTE);
+    case ax::mojom::Role::kDocQna:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_QNA);
+    case ax::mojom::Role::kDocSubtitle:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_SUBTITLE);
+    case ax::mojom::Role::kDocTip:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_TIP);
+    case ax::mojom::Role::kDocToc:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_TOC);
+
+    // Graphics ARIA Roles
+    case ax::mojom::Role::kGraphicsDocument:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_GRAPHICS_DOCUMENT);
+    case ax::mojom::Role::kGraphicsObject:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_GRAPHICS_OBJECT);
+    case ax::mojom::Role::kGraphicsSymbol:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_GRAPHICS_SYMBOL);
+
+    // MathML Roles
+    case ax::mojom::Role::kMathMLMath:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MATH);
+    case ax::mojom::Role::kMathMLFraction:
+    case ax::mojom::Role::kMathMLIdentifier:
+    case ax::mojom::Role::kMathMLMultiscripts:
+    case ax::mojom::Role::kMathMLNoneScript:
+    case ax::mojom::Role::kMathMLNumber:
+    case ax::mojom::Role::kMathMLOperator:
+    case ax::mojom::Role::kMathMLOver:
+    case ax::mojom::Role::kMathMLPrescriptDelimiter:
+    case ax::mojom::Role::kMathMLRoot:
+    case ax::mojom::Role::kMathMLRow:
+    case ax::mojom::Role::kMathMLSquareRoot:
+    case ax::mojom::Role::kMathMLStringLiteral:
+    case ax::mojom::Role::kMathMLSub:
+    case ax::mojom::Role::kMathMLSubSup:
+    case ax::mojom::Role::kMathMLSup:
+    case ax::mojom::Role::kMathMLTable:
+    case ax::mojom::Role::kMathMLTableCell:
+    case ax::mojom::Role::kMathMLTableRow:
+    case ax::mojom::Role::kMathMLText:
+    case ax::mojom::Role::kMathMLUnder:
+    case ax::mojom::Role::kMathMLUnderOver:
+      return {};
+
+    // All Other Roles
+    case ax::mojom::Role::kAlert:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_ALERT);
+    case ax::mojom::Role::kAlertDialog:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_ALERT_DIALOG);
+    case ax::mojom::Role::kApplication:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_APPLICATION);
     case ax::mojom::Role::kArticle:
       return content_client->GetLocalizedString(IDS_AX_ROLE_ARTICLE);
-
     case ax::mojom::Role::kAudio:
+      // Android returns IDS_AX_MEDIA_AUDIO_ELEMENT, but the string is the same.
       return content_client->GetLocalizedString(IDS_AX_ROLE_AUDIO);
-
+    case ax::mojom::Role::kBanner:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_BANNER);
+    case ax::mojom::Role::kBlockquote:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_BLOCKQUOTE);
+    case ax::mojom::Role::kButton:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_BUTTON);
+    case ax::mojom::Role::kCheckBox:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CHECK_BOX);
     case ax::mojom::Role::kCode:
       return content_client->GetLocalizedString(IDS_AX_ROLE_CODE);
-
     case ax::mojom::Role::kColorWell:
       return content_client->GetLocalizedString(IDS_AX_ROLE_COLOR_WELL);
-
+    case ax::mojom::Role::kColumnHeader:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_COLUMN_HEADER);
     case ax::mojom::Role::kComment:
       return content_client->GetLocalizedString(IDS_AX_ROLE_COMMENT);
-
+    case ax::mojom::Role::kComplementary:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_COMPLEMENTARY);
+    case ax::mojom::Role::kContentDeletion:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_DELETION);
     case ax::mojom::Role::kContentInfo:
       return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_INFO);
-
+    case ax::mojom::Role::kContentInsertion:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_INSERTION);
     case ax::mojom::Role::kDate:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DATE);
-
     case ax::mojom::Role::kDateTime: {
       std::string input_type;
       if (GetStringAttribute(ax::mojom::StringAttribute::kInputType,
@@ -2041,53 +2211,147 @@ std::u16string BrowserAccessibility::GetLocalizedStringForRoleDescription()
           return content_client->GetLocalizedString(IDS_AX_ROLE_MONTH);
         }
       }
-      return {};
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DATE_TIME);
     }
-
     case ax::mojom::Role::kDefinition:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DEFINITION);
-
+    case ax::mojom::Role::kDescriptionList:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DESCRIPTION_LIST);
+    case ax::mojom::Role::kDescriptionListDetail:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DEFINITION);
+    case ax::mojom::Role::kDescriptionListTerm:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DESCRIPTION_TERM);
     case ax::mojom::Role::kDetails:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
-
-    case ax::mojom::Role::kDocEndnote:
-      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_ENDNOTE);
-
-    case ax::mojom::Role::kDocFootnote:
-      return content_client->GetLocalizedString(IDS_AX_ROLE_DOC_FOOTNOTE);
-
+    case ax::mojom::Role::kDialog:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DIALOG);
+    case ax::mojom::Role::kDirectory:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DIRECTORY);
+    case ax::mojom::Role::kDisclosureTriangle:
+      return content_client->GetLocalizedString(
+          IDS_AX_ROLE_DISCLOSURE_TRIANGLE);
+    case ax::mojom::Role::kDocument:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DOCUMENT);
+    case ax::mojom::Role::kEmbeddedObject:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_EMBEDDED_OBJECT);
     case ax::mojom::Role::kEmphasis:
       return content_client->GetLocalizedString(IDS_AX_ROLE_EMPHASIS);
-
+    case ax::mojom::Role::kFeed:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_FEED);
     case ax::mojom::Role::kFigure:
       return content_client->GetLocalizedString(IDS_AX_ROLE_FIGURE);
-
     case ax::mojom::Role::kFooter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_FOOTER);
     case ax::mojom::Role::kFooterAsNonLandmark:
       return content_client->GetLocalizedString(IDS_AX_ROLE_FOOTER);
-
+    case ax::mojom::Role::kForm:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_FORM);
+    case ax::mojom::Role::kGrid:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TABLE);
     case ax::mojom::Role::kHeader:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_HEADER);
     case ax::mojom::Role::kHeaderAsNonLandmark:
       return content_client->GetLocalizedString(IDS_AX_ROLE_HEADER);
-
+    case ax::mojom::Role::kHeading:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_HEADING);
+    case ax::mojom::Role::kImage:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_GRAPHIC);
+    case ax::mojom::Role::kInputTime:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_INPUT_TIME);
+    case ax::mojom::Role::kLink:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_LINK);
+    case ax::mojom::Role::kListBox:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_LIST_BOX);
+    case ax::mojom::Role::kListGrid:
+      return {};
+    case ax::mojom::Role::kLog:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_LOG);
+    case ax::mojom::Role::kMain:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MAIN_CONTENT);
     case ax::mojom::Role::kMark:
       return content_client->GetLocalizedString(IDS_AX_ROLE_MARK);
-
+    case ax::mojom::Role::kMarquee:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MARQUEE);
+    case ax::mojom::Role::kMath:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MATH);
+    case ax::mojom::Role::kMenu:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MENU);
+    case ax::mojom::Role::kMenuBar:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MENU_BAR);
+    case ax::mojom::Role::kMenuItem:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MENU_ITEM);
+    case ax::mojom::Role::kMenuItemCheckBox:
+      return {};
+    case ax::mojom::Role::kMenuItemRadio:
+      return {};
     case ax::mojom::Role::kMeter:
       return content_client->GetLocalizedString(IDS_AX_ROLE_METER);
-
+    case ax::mojom::Role::kNavigation:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_NAVIGATIONAL_LINK);
+    case ax::mojom::Role::kNote:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_NOTE);
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_PDF_HIGHLIGHT);
+    case ax::mojom::Role::kPluginObject:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_EMBEDDED_OBJECT);
+    case ax::mojom::Role::kPopUpButton:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_POP_UP_BUTTON);
+    case ax::mojom::Role::kPortal:
+      return {};
+    case ax::mojom::Role::kProgressIndicator:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_PROGRESS_INDICATOR);
+    case ax::mojom::Role::kRadioButton:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_RADIO);
+    case ax::mojom::Role::kRadioGroup:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_RADIO_GROUP);
+    case ax::mojom::Role::kRegion:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_REGION);
+    case ax::mojom::Role::kRootWebArea:
+      // There is IDS_AX_ROLE_WEB_AREA, but only the mac seems to use it.
+      return {};
+    case ax::mojom::Role::kRowGroup:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_ROW_GROUP);
+    case ax::mojom::Role::kRowHeader:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_ROW_HEADER);
+    case ax::mojom::Role::kScrollBar:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SCROLL_BAR);
+    case ax::mojom::Role::kSearch:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH);
     case ax::mojom::Role::kSearchBox:
       return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX);
-
+    case ax::mojom::Role::kSection:
+      // While there is an IDS_AX_ROLE_SECTION, no one seems to be using it.
+      return {};
+    case ax::mojom::Role::kSlider:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SLIDER);
+    case ax::mojom::Role::kSpinButton:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SPIN_BUTTON);
+    case ax::mojom::Role::kSplitter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SPLITTER);
     case ax::mojom::Role::kStatus:
-      return content_client->GetLocalizedString(IDS_AX_ROLE_OUTPUT);
-
+      return content_client->GetLocalizedString(IDS_AX_ROLE_STATUS);
     case ax::mojom::Role::kStrong:
       return content_client->GetLocalizedString(IDS_AX_ROLE_STRONG);
-
+    case ax::mojom::Role::kSubscript:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SUBSCRIPT);
+    case ax::mojom::Role::kSuggestion:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SUGGESTION);
+    case ax::mojom::Role::kSuperscript:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SUPERSCRIPT);
+    case ax::mojom::Role::kSvgRoot:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_GRAPHIC);
     case ax::mojom::Role::kSwitch:
       return content_client->GetLocalizedString(IDS_AX_ROLE_SWITCH);
-
+    case ax::mojom::Role::kTab:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TAB);
+    case ax::mojom::Role::kTabList:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TAB_LIST);
+    case ax::mojom::Role::kTabPanel:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TAB_PANEL);
+    case ax::mojom::Role::kTable:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TABLE);
+    case ax::mojom::Role::kTerm:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DESCRIPTION_TERM);
     case ax::mojom::Role::kTextField: {
       std::string input_type;
       if (GetStringAttribute(ax::mojom::StringAttribute::kInputType,
@@ -2102,11 +2366,24 @@ std::u16string BrowserAccessibility::GetLocalizedStringForRoleDescription()
       }
       return {};
     }
-
     case ax::mojom::Role::kTime:
       return content_client->GetLocalizedString(IDS_AX_ROLE_TIME);
-
-    default:
+    case ax::mojom::Role::kTimer:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TIMER);
+    case ax::mojom::Role::kToggleButton:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TOGGLE_BUTTON);
+    case ax::mojom::Role::kToolbar:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TOOLBAR);
+    case ax::mojom::Role::kTooltip:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TOOLTIP);
+    case ax::mojom::Role::kTree:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TREE);
+    case ax::mojom::Role::kTreeGrid:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TREE_GRID);
+    case ax::mojom::Role::kTreeItem:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TREE_ITEM);
+    case ax::mojom::Role::kVideo:
+      // Android returns IDS_AX_MEDIA_VIDEO_ELEMENT.
       return {};
   }
 }

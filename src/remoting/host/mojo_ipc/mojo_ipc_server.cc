@@ -14,12 +14,13 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "remoting/host/mojo_ipc/mojo_caller_security_checker.h"
 #include "remoting/host/mojo_ipc/mojo_server_endpoint_connector.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/strings/stringprintf.h"
 #include "base/win/win_util.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
 
@@ -34,7 +35,7 @@ mojo::PlatformChannelServerEndpoint CreateServerEndpointOnIoSequence(
   mojo::NamedPlatformChannel::Options options;
   options.server_name = server_name;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   options.enforce_uniqueness = false;
   // Create a named pipe owned by the current user (the LocalService account
   // (SID: S-1-5-19) when running in the network process) which is available to
@@ -47,7 +48,7 @@ mojo::PlatformChannelServerEndpoint CreateServerEndpointOnIoSequence(
   }
   options.security_descriptor = base::StringPrintf(
       L"O:%lsG:%lsD:(A;;GA;;;AU)", user_sid.c_str(), user_sid.c_str());
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   mojo::NamedPlatformChannel channel(options);
   return channel.TakeServerEndpoint();
@@ -57,8 +58,7 @@ mojo::PlatformChannelServerEndpoint CreateServerEndpointOnIoSequence(
 
 MojoIpcServerBase::MojoIpcServerBase(
     const mojo::NamedPlatformChannel::ServerName& server_name)
-    : server_name_(server_name),
-      endpoint_connector_(MojoServerEndpointConnector::Create(this)) {
+    : server_name_(server_name) {
   io_sequence_ =
       base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 }
@@ -73,6 +73,7 @@ void MojoIpcServerBase::StartServer() {
   if (server_started_) {
     return;
   }
+  endpoint_connector_ = MojoServerEndpointConnector::Create(this);
   server_started_ = true;
   SendInvitation();
 }
@@ -84,6 +85,7 @@ void MojoIpcServerBase::StopServer() {
     return;
   }
   server_started_ = false;
+  endpoint_connector_.reset();
   UntrackAllMessagePipes();
   active_connections_.clear();
 }
@@ -115,6 +117,11 @@ void MojoIpcServerBase::OnIpcDisconnected() {
 
 void MojoIpcServerBase::OnServerEndpointCreated(
     mojo::PlatformChannelServerEndpoint endpoint) {
+  if (!server_started_) {
+    // A server endpoint might be created on |io_sequence_| after StopServer()
+    // is called, which should be ignored.
+    return;
+  }
   if (on_invitation_sent_callback_for_testing_) {
     on_invitation_sent_callback_for_testing_.Run();
   }
@@ -129,8 +136,13 @@ void MojoIpcServerBase::OnServerEndpointConnected(
     std::unique_ptr<mojo::IsolatedConnection> connection,
     mojo::ScopedMessagePipeHandle message_pipe,
     base::ProcessId peer_pid) {
-  auto receiver_id = TrackMessagePipe(std::move(message_pipe), peer_pid);
-  active_connections_[receiver_id] = std::move(connection);
+  if (IsTrustedMojoEndpoint(peer_pid)) {
+    auto receiver_id = TrackMessagePipe(std::move(message_pipe), peer_pid);
+    active_connections_[receiver_id] = std::move(connection);
+  } else {
+    LOG(ERROR) << "Process " << peer_pid
+               << " is not a trusted mojo endpoint. Connection refused.";
+  }
 
   SendInvitation();
 }

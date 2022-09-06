@@ -7,8 +7,7 @@
 #include "base/feature_list.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
-#include "base/task/post_task.h"
+#include "base/strings/string_piece.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
@@ -113,7 +112,7 @@ GetFileDataBlocking(const base::FilePath& path, bool detect_mime_type) {
   }
 
   file_data.hash.resize(crypto::kSHA256Length);
-  secure_hash->Finish(base::data(file_data.hash), crypto::kSHA256Length);
+  secure_hash->Finish(std::data(file_data.hash), crypto::kSHA256Length);
   file_data.hash =
       base::HexEncode(base::as_bytes(base::make_span(file_data.hash)));
 
@@ -149,6 +148,7 @@ FileAnalysisRequest::FileAnalysisRequest(
     : Request(std::move(callback), analysis_settings.analysis_url),
       has_cached_result_(false),
       block_unsupported_types_(analysis_settings.block_unsupported_file_types),
+      tag_settings_(analysis_settings.tags),
       path_(std::move(path)),
       file_name_(std::move(file_name)),
       delay_opening_file_(delay_opening_file) {
@@ -195,9 +195,10 @@ void FileAnalysisRequest::OpenFile() {
 bool FileAnalysisRequest::FileSupportedByDlp(
     const std::string& mime_type) const {
   for (const std::string& tag : content_analysis_request().tags()) {
-    if (tag == "dlp") {
-      return FileTypeSupportedForDlp(file_name_) ||
-             MimeTypeSupportedForDlp(mime_type);
+    if (tag == "dlp" && tag_settings_.count("dlp")) {
+      const auto* supported_files = tag_settings_.at("dlp").supported_files;
+      return supported_files->FileExtensionSupported(file_name_) ||
+             supported_files->MimeTypeSupported(mime_type);
     }
   }
 

@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -89,21 +88,33 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, 68},
     {ContentSettingsType::WINDOW_PLACEMENT, 69},
     {ContentSettingsType::INSECURE_PRIVATE_NETWORK, 70},
-    {ContentSettingsType::FONT_ACCESS, 71},
+    {ContentSettingsType::LOCAL_FONTS, 71},
     {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, 72},
     {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, 73},
     {ContentSettingsType::DISPLAY_CAPTURE, 74},
     // Removed FILE_HANDLING in M98.
     {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA, 76},
     {ContentSettingsType::FEDERATED_IDENTITY_SHARING, 77},
-    {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, 78},
+    // Removed FEDERATED_IDENTITY_REQUEST in M103.
     {ContentSettingsType::JAVASCRIPT_JIT, 79},
     {ContentSettingsType::HTTP_ALLOWED, 80},
     {ContentSettingsType::FORMFILL_METADATA, 81},
     {ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, 82},
     {ContentSettingsType::AUTO_DARK_WEB_CONTENT, 83},
     {ContentSettingsType::REQUEST_DESKTOP_SITE, 84},
+    {ContentSettingsType::FEDERATED_IDENTITY_API, 85},
+    {ContentSettingsType::NOTIFICATION_INTERACTIONS, 86},
 };
+
+void FilterRulesForType(ContentSettingsForOneType& settings,
+                        const GURL& primary_url) {
+  base::EraseIf(settings,
+                [&primary_url](const ContentSettingPatternSource& source) {
+                  return !source.primary_pattern.Matches(primary_url);
+                });
+  // We should have at least on rule remaining (the default rule).
+  DCHECK_GE(settings.size(), 1u);
+}
 
 }  // namespace
 
@@ -116,7 +127,7 @@ ContentSetting IntToContentSetting(int content_setting) {
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
                                        size_t* num_values) {
-  *num_values = base::size(kHistogramValue);
+  *num_values = std::size(kHistogramValue);
 
   // Verify the array is sorted by enum type and contains all values.
   DCHECK(std::is_sorted(std::begin(kHistogramValue), std::end(kHistogramValue),
@@ -124,7 +135,7 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
                           return a.type < b.type;
                         }));
   static_assert(
-      kHistogramValue[base::size(kHistogramValue) - 1].type ==
+      kHistogramValue[std::size(kHistogramValue) - 1].type ==
           ContentSettingsType(
               static_cast<int32_t>(ContentSettingsType::NUM_TYPES) - 1),
       "Update content settings histogram lookup");
@@ -175,7 +186,7 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
 ContentSettingPatternSource::~ContentSettingPatternSource() {}
 
 ContentSetting ContentSettingPatternSource::GetContentSetting() const {
-  return content_settings::ValueToContentSetting(&setting_value);
+  return content_settings::ValueToContentSetting(setting_value);
 }
 
 bool ContentSettingPatternSource::IsExpired() const {
@@ -187,12 +198,32 @@ bool RendererContentSettingRules::IsRendererContentSetting(
     ContentSettingsType content_type) {
   return content_type == ContentSettingsType::IMAGES ||
          content_type == ContentSettingsType::JAVASCRIPT ||
-         content_type == ContentSettingsType::CLIENT_HINTS ||
          content_type == ContentSettingsType::POPUPS ||
          content_type == ContentSettingsType::MIXEDSCRIPT ||
          content_type == ContentSettingsType::AUTO_DARK_WEB_CONTENT;
 }
 
-RendererContentSettingRules::RendererContentSettingRules() {}
+void RendererContentSettingRules::FilterRulesByOutermostMainFrameURL(
+    const GURL& outermost_main_frame_url) {
+  FilterRulesForType(image_rules, outermost_main_frame_url);
+  FilterRulesForType(script_rules, outermost_main_frame_url);
+  FilterRulesForType(popup_redirect_rules, outermost_main_frame_url);
+  FilterRulesForType(mixed_content_rules, outermost_main_frame_url);
+  FilterRulesForType(auto_dark_content_rules, outermost_main_frame_url);
+}
 
-RendererContentSettingRules::~RendererContentSettingRules() {}
+RendererContentSettingRules::RendererContentSettingRules() = default;
+
+RendererContentSettingRules::~RendererContentSettingRules() = default;
+
+RendererContentSettingRules::RendererContentSettingRules(
+    const RendererContentSettingRules&) = default;
+
+RendererContentSettingRules::RendererContentSettingRules(
+    RendererContentSettingRules&& rules) = default;
+
+RendererContentSettingRules& RendererContentSettingRules::operator=(
+    const RendererContentSettingRules& rules) = default;
+
+RendererContentSettingRules& RendererContentSettingRules::operator=(
+    RendererContentSettingRules&& rules) = default;

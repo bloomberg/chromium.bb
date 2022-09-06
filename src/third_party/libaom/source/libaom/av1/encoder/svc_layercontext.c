@@ -49,6 +49,7 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
       lrc->decimation_factor = 0;
       lrc->worst_quality = av1_quantizer_to_qindex(lc->max_q);
       lrc->best_quality = av1_quantizer_to_qindex(lc->min_q);
+      lrc->rtc_external_ratectrl = 0;
       for (int i = 0; i < RATE_FACTOR_LEVELS; ++i) {
         lp_rc->rate_correction_factors[i] = 1.0;
       }
@@ -69,8 +70,7 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
         lc->counter_encode_maxq_scene_change = 0;
         if (lc->map) aom_free(lc->map);
         CHECK_MEM_ERROR(cm, lc->map,
-                        aom_malloc(mi_rows * mi_cols * sizeof(*lc->map)));
-        memset(lc->map, 0, mi_rows * mi_cols);
+                        aom_calloc(mi_rows * mi_cols, sizeof(*lc->map)));
       }
     }
     svc->downsample_filter_type[sl] = BILINEAR;
@@ -118,8 +118,10 @@ void av1_update_layer_context_change_config(AV1_COMP *const cpi,
       lp_rc->buffer_level =
           AOMMIN(lp_rc->buffer_level, lp_rc->maximum_buffer_size);
       lc->framerate = cpi->framerate / lc->framerate_factor;
-      lrc->avg_frame_bandwidth = (int)(lc->target_bandwidth / lc->framerate);
+      lrc->avg_frame_bandwidth =
+          (int)round(lc->target_bandwidth / lc->framerate);
       lrc->max_frame_bandwidth = rc->max_frame_bandwidth;
+      lrc->rtc_external_ratectrl = rc->rtc_external_ratectrl;
       lrc->worst_quality = av1_quantizer_to_qindex(lc->max_q);
       lrc->best_quality = av1_quantizer_to_qindex(lc->min_q);
     }
@@ -145,7 +147,7 @@ void av1_update_temporal_layer_framerate(AV1_COMP *const cpi) {
   RATE_CONTROL *const lrc = &lc->rc;
   const int tl = svc->temporal_layer_id;
   lc->framerate = cpi->framerate / lc->framerate_factor;
-  lrc->avg_frame_bandwidth = (int)(lc->target_bandwidth / lc->framerate);
+  lrc->avg_frame_bandwidth = (int)round(lc->target_bandwidth / lc->framerate);
   lrc->max_frame_bandwidth = cpi->rc.max_frame_bandwidth;
   // Update the average layer frame size (non-cumulative per-frame-bw).
   if (tl == 0) {
@@ -158,8 +160,8 @@ void av1_update_temporal_layer_framerate(AV1_COMP *const cpi) {
         cpi->framerate / lcprev->framerate_factor;
     const int64_t prev_layer_target_bandwidth = lcprev->layer_target_bitrate;
     lc->avg_frame_size =
-        (int)((lc->target_bandwidth - prev_layer_target_bandwidth) /
-              (lc->framerate - prev_layer_framerate));
+        (int)round((lc->target_bandwidth - prev_layer_target_bandwidth) /
+                   (lc->framerate - prev_layer_framerate));
   }
 }
 
@@ -262,22 +264,18 @@ void av1_save_layer_context(AV1_COMP *const cpi) {
 int av1_svc_primary_ref_frame(const AV1_COMP *const cpi) {
   const SVC *const svc = &cpi->svc;
   const AV1_COMMON *const cm = &cpi->common;
-  int wanted_fb = -1;
+  int fb_idx = -1;
   int primary_ref_frame = PRIMARY_REF_NONE;
-  for (unsigned int i = 0; i < REF_FRAMES; i++) {
-    if (svc->spatial_layer_fb[i] == svc->spatial_layer_id &&
-        svc->temporal_layer_fb[i] == svc->temporal_layer_id) {
-      wanted_fb = i;
-      break;
-    }
-  }
-  if (wanted_fb != -1) {
-    for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
-      if (get_ref_frame_map_idx(cm, ref_frame) == wanted_fb) {
-        primary_ref_frame = ref_frame - LAST_FRAME;
-        break;
-      }
-    }
+  // Set the primary_ref_frame to LAST_FRAME if that buffer slot for LAST
+  // was last updated on a lower temporal layer (or base TL0) and for the
+  // same spatial layer. For RTC patterns this allows for continued decoding
+  // when set of enhancement layers are dropped (continued decoding starting
+  // at next base TL0), so error_resilience can be off/0 for all layers.
+  fb_idx = get_ref_frame_map_idx(cm, LAST_FRAME);
+  if (svc->spatial_layer_fb[fb_idx] == svc->spatial_layer_id &&
+      (svc->temporal_layer_fb[fb_idx] < svc->temporal_layer_id ||
+       svc->temporal_layer_fb[fb_idx] == 0)) {
+    primary_ref_frame = 0;  // LAST_FRAME
   }
   return primary_ref_frame;
 }

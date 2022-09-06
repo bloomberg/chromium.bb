@@ -8,12 +8,18 @@
 #include <winerror.h>
 #include <wrl/client.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/syslog_logging.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/windows_types.h"
 #include "chrome/install_static/install_util.h"
@@ -38,7 +44,7 @@ void ConfigureProxyBlanket(IUnknown* interface_pointer) {
 
 // The maximum number of string that can appear in `args` when calling
 // RunGoogleUpdateElevatedCommand().
-const int kMaxCommandArgs = 9;
+constexpr int kMaxCommandArgs = 9;
 
 // TODO(rogerta): Should really move this function to a common place where it
 // can be called by any code that needs to run an elevated service.  Right now
@@ -168,6 +174,8 @@ void WinKeyRotationCommand::Trigger(const KeyRotationCommand::Params& params,
              bool waiting_enabled) {
             std::string token_base64;
             base::Base64Encode(params.dm_token, &token_base64);
+            std::string nonce_base64;
+            base::Base64Encode(params.nonce, &nonce_base64);
 
             DWORD return_code = installer::ROTATE_DTKEY_FAILED;
 
@@ -178,7 +186,7 @@ void WinKeyRotationCommand::Trigger(const KeyRotationCommand::Params& params,
             for (int i = 0; i < 10; ++i) {
               hr = run_elevated_command(
                   installer::kCmdRotateDeviceTrustKey,
-                  {token_base64, params.dm_server_url, params.nonce},
+                  {token_base64, params.dm_server_url, nonce_base64},
                   &return_code);
               if (hr != GOOPDATE_E_APP_USING_EXTERNAL_UPDATER)
                 break;

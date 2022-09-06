@@ -297,8 +297,10 @@ bool CFFL_FormField::IsValid() const {
 }
 
 CPWL_Wnd::CreateParams CFFL_FormField::GetCreateParam() {
-  CPWL_Wnd::CreateParams cp;
-  cp.pProvider.Reset(this);
+  CPWL_Wnd::CreateParams cp(
+      m_pFormFiller->GetCallbackIface()->GetTimerHandler(), m_pFormFiller,
+      this);
+
   cp.rcRectWnd = GetPDFAnnotRect();
 
   uint32_t dwCreateFlags = PWS_BORDER | PWS_BACKGROUND | PWS_VISIBLE;
@@ -339,8 +341,6 @@ CPWL_Wnd::CreateParams CFFL_FormField::GetCreateParam() {
     dwCreateFlags |= PWS_AUTOFONTSIZE;
 
   cp.dwFlags = dwCreateFlags;
-  cp.pTimerHandler.Reset(m_pFormFiller->GetCallbackIface()->GetTimerHandler());
-  cp.pSystemHandler = m_pFormFiller->GetCallbackIface()->GetSysHandler();
   return cp;
 }
 
@@ -383,7 +383,7 @@ void CFFL_FormField::DestroyPWLWindow(const CPDFSDK_PageView* pPageView) {
 }
 
 CFX_Matrix CFFL_FormField::GetWindowMatrix(
-    const IPWL_SystemHandler::PerWindowData* pAttached) {
+    const IPWL_FillerNotify::PerWindowData* pAttached) {
   const auto* pPrivateData = static_cast<const CFFL_PerWindowData*>(pAttached);
   if (!pPrivateData)
     return CFX_Matrix();
@@ -393,6 +393,10 @@ CFX_Matrix CFFL_FormField::GetWindowMatrix(
     return CFX_Matrix();
 
   return GetCurMatrix() * pPageView->GetCurrentMatrix();
+}
+
+void CFFL_FormField::OnSetFocusForEdit(CPWL_Edit* pEdit) {
+  // Only sub-classes might have a subordinate edit to focus.
 }
 
 CFX_Matrix CFFL_FormField::GetCurMatrix() {

@@ -30,8 +30,7 @@
   NSParameterAssert(trackId.length);
   std::string nativeId = [NSString stdStringForString:trackId];
   rtc::scoped_refptr<webrtc::VideoTrackInterface> track =
-      factory.nativeFactory->CreateVideoTrack(nativeId,
-                                              source.nativeVideoSource);
+      factory.nativeFactory->CreateVideoTrack(nativeId, source.nativeVideoSource.get());
   if (self = [self initWithFactory:factory nativeTrack:track type:RTCMediaStreamTrackTypeVideo]) {
     _source = source;
   }
@@ -59,11 +58,11 @@
 
 - (RTC_OBJC_TYPE(RTCVideoSource) *)source {
   if (!_source) {
-    rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source =
-        self.nativeVideoTrack->GetSource();
+    rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source(
+        self.nativeVideoTrack->GetSource());
     if (source) {
       _source = [[RTC_OBJC_TYPE(RTCVideoSource) alloc] initWithFactory:self.factory
-                                                     nativeVideoSource:source.get()];
+                                                     nativeVideoSource:source];
     }
   }
   return _source;
@@ -107,7 +106,8 @@
 #pragma mark - Private
 
 - (rtc::scoped_refptr<webrtc::VideoTrackInterface>)nativeVideoTrack {
-  return static_cast<webrtc::VideoTrackInterface *>(self.nativeTrack.get());
+  return rtc::scoped_refptr<webrtc::VideoTrackInterface>(
+      static_cast<webrtc::VideoTrackInterface *>(self.nativeTrack.get()));
 }
 
 @end

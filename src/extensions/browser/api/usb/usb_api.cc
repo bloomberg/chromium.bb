@@ -219,14 +219,14 @@ const char* ConvertTransferStatusToApi(const UsbTransferStatus status) {
   }
 }
 
-std::unique_ptr<base::Value> PopulateConnectionHandle(int handle,
-                                                      int vendor_id,
-                                                      int product_id) {
+base::Value PopulateConnectionHandle(int handle,
+                                     int vendor_id,
+                                     int product_id) {
   ConnectionHandle result;
   result.handle = handle;
   result.vendor_id = vendor_id;
   result.product_id = product_id;
-  return result.ToValue();
+  return base::Value::FromUniquePtrValue(result.ToValue());
 }
 
 TransferType ConvertTransferTypeToApi(const UsbTransferType& input) {
@@ -386,6 +386,14 @@ UsbDeviceManager* UsbExtensionFunction::usb_device_manager() {
   return usb_device_manager_;
 }
 
+bool UsbExtensionFunction::IsUsbDeviceAllowedByPolicy(int vendor_id,
+                                                      int product_id) {
+  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
+  DCHECK(client);
+  return client->IsUsbDeviceAllowedByPolicy(browser_context(), extension_id(),
+                                            vendor_id, product_id);
+}
+
 UsbPermissionCheckingFunction::UsbPermissionCheckingFunction()
     : device_permissions_manager_(nullptr) {}
 
@@ -411,6 +419,10 @@ bool UsbPermissionCheckingFunction::HasDevicePermission(
       UsbDevicePermission::CheckParam::ForUsbDevice(extension(), device);
   if (extension()->permissions_data()->CheckAPIPermissionWithParam(
           mojom::APIPermissionID::kUsbDevice, param.get())) {
+    return true;
+  }
+
+  if (IsUsbDeviceAllowedByPolicy(device.vendor_id, device.product_id)) {
     return true;
   }
 
@@ -479,8 +491,9 @@ void UsbTransferFunction::OnCompleted(
     Respond(
         OneArgument(base::Value::FromUniquePtrValue(std::move(transfer_info))));
   } else {
-    auto error_args = std::make_unique<base::ListValue>();
-    error_args->Append(std::move(transfer_info));
+    std::vector<base::Value> error_args;
+    error_args.emplace_back(
+        base::Value::FromUniquePtrValue(std::move(transfer_info)));
     // Using ErrorWithArguments is discouraged but required to provide the
     // detailed transfer info as the transfer may have partially succeeded.
     Respond(ErrorWithArguments(std::move(error_args),
@@ -501,7 +514,7 @@ void UsbTransferFunction::OnTransferInCompleted(
 
 void UsbTransferFunction::OnTransferOutCompleted(UsbTransferStatus status) {
   auto transfer_info = std::make_unique<base::DictionaryValue>();
-  transfer_info->SetInteger(kResultCodeKey, static_cast<int>(status));
+  transfer_info->SetIntKey(kResultCodeKey, static_cast<int>(status));
   transfer_info->SetKey(kDataKey, base::Value(base::Value::Type::BINARY));
 
   OnCompleted(status, std::move(transfer_info));
@@ -510,7 +523,7 @@ void UsbTransferFunction::OnTransferOutCompleted(UsbTransferStatus status) {
 void UsbTransferFunction::OnDisconnect() {
   const auto status = UsbTransferStatus::DISCONNECT;
   auto transfer_info = std::make_unique<base::DictionaryValue>();
-  transfer_info->SetInteger(kResultCodeKey, static_cast<int>(status));
+  transfer_info->SetIntKey(kResultCodeKey, static_cast<int>(status));
   OnCompleted(status, std::move(transfer_info));
 }
 
@@ -591,7 +604,8 @@ ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
       UsbDevicePermission::CheckParam::ForDeviceWithAnyInterfaceClass(
           extension(), vendor_id_, product_id_, interface_id);
   if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-          mojom::APIPermissionID::kUsbDevice, param.get())) {
+          mojom::APIPermissionID::kUsbDevice, param.get()) &&
+      !IsUsbDeviceAllowedByPolicy(vendor_id_, product_id_)) {
     return RespondNow(Error(kErrorPermissionDenied));
   }
 
@@ -607,7 +621,6 @@ ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
 
 void UsbFindDevicesFunction::OnGetDevicesComplete(
     std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
-  result_ = std::make_unique<base::ListValue>();
   barrier_ = base::BarrierClosure(
       devices.size(),
       base::BindOnce(&UsbFindDevicesFunction::OpenComplete, this));
@@ -630,7 +643,8 @@ void UsbFindDevicesFunction::OnGetDevicesComplete(
         UsbDevicePermission::CheckParam::ForUsbDevice(extension(),
                                                       *device_info);
     if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-            mojom::APIPermissionID::kUsbDevice, param.get())) {
+            mojom::APIPermissionID::kUsbDevice, param.get()) &&
+        !IsUsbDeviceAllowedByPolicy(vendor_id_, product_id_)) {
       barrier_.Run();
     } else {
       mojo::Remote<device::mojom::UsbDevice> device;
@@ -654,8 +668,8 @@ void UsbFindDevicesFunction::OnDeviceOpened(
         ApiResourceManager<UsbDeviceResource>::Get(browser_context());
     UsbDeviceResource* resource =
         new UsbDeviceResource(extension_id(), guid, std::move(device));
-    result_->Append(PopulateConnectionHandle(manager->Add(resource), vendor_id_,
-                                             product_id_));
+    result_.Append(PopulateConnectionHandle(manager->Add(resource), vendor_id_,
+                                            product_id_));
   }
   barrier_.Run();
 }
@@ -665,7 +679,7 @@ void UsbFindDevicesFunction::OnDisconnect() {
 }
 
 void UsbFindDevicesFunction::OpenComplete() {
-  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result_))));
+  Respond(OneArgument(base::Value(std::move(result_))));
 }
 
 UsbGetDevicesFunction::UsbGetDevicesFunction() = default;
@@ -704,17 +718,17 @@ ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
 
 void UsbGetDevicesFunction::OnGetDevicesComplete(
     std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
+  base::Value::List result;
   for (const auto& device : devices) {
     if (device::UsbDeviceFilterMatchesAny(filters_, *device) &&
         HasDevicePermission(*device)) {
       Device api_device;
       usb_device_manager()->GetApiDevice(*device, &api_device);
-      result->Append(api_device.ToValue());
+      result.Append(base::Value::FromUniquePtrValue(api_device.ToValue()));
     }
   }
 
-  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  Respond(OneArgument(base::Value(std::move(result))));
 }
 
 UsbGetUserSelectedDevicesFunction::UsbGetUserSelectedDevicesFunction() =
@@ -764,17 +778,17 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
 
 void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
     std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
+  base::Value::List result;
   auto* device_manager = usb_device_manager();
   DCHECK(device_manager);
 
   for (const auto& device : devices) {
     Device api_device;
     device_manager->GetApiDevice(*device, &api_device);
-    result->Append(api_device.ToValue());
+    result.Append(base::Value::FromUniquePtrValue(api_device.ToValue()));
   }
 
-  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  Respond(OneArgument(base::Value(std::move(result))));
 }
 
 UsbGetConfigurationsFunction::UsbGetConfigurationsFunction() = default;
@@ -806,7 +820,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
     return RespondNow(Error(kErrorNoDevice));
   }
 
-  std::unique_ptr<base::ListValue> configs(new base::ListValue());
+  base::Value::List configs;
   uint8_t active_config_value = device_info->active_configuration;
   for (const auto& config : device_info->configurations) {
     DCHECK(config);
@@ -815,10 +829,9 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
         config->configuration_value == active_config_value) {
       api_config.active = true;
     }
-    configs->Append(api_config.ToValue());
+    configs.Append(base::Value::FromUniquePtrValue(api_config.ToValue()));
   }
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(configs))));
+  return RespondNow(OneArgument(base::Value(std::move(configs))));
 }
 
 UsbRequestAccessFunction::UsbRequestAccessFunction() = default;
@@ -890,9 +903,9 @@ void UsbOpenDeviceFunction::OnDeviceOpened(
   DCHECK(device_info);
   UsbDeviceResource* resource = new UsbDeviceResource(
       extension_id(), device_info->guid, std::move(device));
-  Respond(OneArgument(base::Value::FromUniquePtrValue(
-      PopulateConnectionHandle(manager->Add(resource), device_info->vendor_id,
-                               device_info->product_id))));
+  Respond(OneArgument(PopulateConnectionHandle(manager->Add(resource),
+                                               device_info->vendor_id,
+                                               device_info->product_id)));
 }
 
 void UsbOpenDeviceFunction::OnDisconnect() {
@@ -991,12 +1004,11 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
     DCHECK(config);
     if (config->configuration_value == active_config_value) {
       ConfigDescriptor api_config = ConvertConfigDescriptor(*config);
-      std::unique_ptr<base::ListValue> result(new base::ListValue);
-      for (size_t i = 0; i < api_config.interfaces.size(); ++i) {
-        result->Append(api_config.interfaces[i].ToValue());
+      base::Value::List result;
+      for (const auto& interface : api_config.interfaces) {
+        result.Append(base::Value::FromUniquePtrValue(interface.ToValue()));
       }
-      return RespondNow(
-          OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+      return RespondNow(OneArgument(base::Value(std::move(result))));
     }
   }
   // Respond with an error if the config object can't be found according to
@@ -1341,8 +1353,8 @@ void UsbResetDeviceFunction::OnComplete(bool success) {
   } else {
     ReleaseDeviceResource(parameters_->handle);
 
-    std::unique_ptr<base::ListValue> error_args(new base::ListValue());
-    error_args->Append(false);
+    std::vector<base::Value> error_args;
+    error_args.emplace_back(false);
     // Using ErrorWithArguments is discouraged but required to maintain
     // compatibility with existing applications.
     Respond(ErrorWithArguments(std::move(error_args), kErrorResetDevice));

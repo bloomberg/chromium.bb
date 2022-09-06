@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
 #include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
@@ -61,6 +63,7 @@
 #include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
@@ -404,7 +407,10 @@ void WindowPerformance::RegisterEventTiming(const Event& event,
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
       MonotonicTimeToDOMHighResTimeStamp(processing_end), event.cancelable(),
-      event.target() ? event.target()->ToNode() : nullptr);
+      event.target() ? event.target()->ToNode() : nullptr,
+      PerformanceEntry::GetNavigationId(
+          GetExecutionContext()));  // TODO(haoliuk): Add WPT for Event Timing.
+                                    // See crbug.com/1320878.
   absl::optional<int> key_code;
   if (event.IsKeyboardEvent())
     key_code = DynamicTo<KeyboardEvent>(event)->keyCode();
@@ -473,9 +479,6 @@ void WindowPerformance::ReportEventTimings(
     base::TimeDelta time_to_next_paint =
         base::Milliseconds(end_time - entry->processingEnd());
     entry->SetDuration(duration_in_ms);
-    TRACE_EVENT2("devtools.timeline", "EventTiming", "data",
-                 entry->ToTracedValue(), "frame",
-                 ToTraceValue(DomWindow()->GetFrame()));
     if (entry->name() == "pointerdown") {
       pending_pointer_down_input_delay_ = input_delay;
       pending_pointer_down_processing_time_ = processing_time;
@@ -495,18 +498,7 @@ void WindowPerformance::ReportEventTimings(
           input_delay, processing_time, time_to_next_paint, entry->name());
     }
 
-    if (!first_input_timing_) {
-      if (entry->name() == "pointerdown") {
-        first_pointer_down_event_timing_ =
-            PerformanceEventTiming::CreateFirstInputTiming(entry);
-      } else if (entry->name() == "pointerup") {
-        DispatchFirstInputTiming(first_pointer_down_event_timing_);
-      } else if (entry->name() == "click" || entry->name() == "keydown" ||
-                 entry->name() == "mousedown") {
-        DispatchFirstInputTiming(
-            PerformanceEventTiming::CreateFirstInputTiming(entry));
-      }
-    }
+    // Event Timing
     ResponsivenessMetrics::EventTimestamps event_timestamps = {
         event_timestamp, presentation_timestamp};
     // The page visibility was changed. In this case, we don't care about
@@ -515,12 +507,31 @@ void WindowPerformance::ReportEventTimings(
         last_visibility_change_timestamp_ <= presentation_timestamp) {
       event_timestamps.end_time -= time_to_next_paint;
     }
-    if (!SetInteractionIdAndRecordLatency(entry, key_code, pointer_id,
-                                          event_timestamps)) {
-      continue;
-    }
+    if (SetInteractionIdAndRecordLatency(entry, key_code, pointer_id,
+                                         event_timestamps)) {
+      NotifyAndAddEventTimingBuffer(entry);
+    };
 
-    NotifyAndAddEventTimingBuffer(entry);
+    // First Input
+    if (!first_input_timing_) {
+      if (entry->name() == event_type_names::kPointerdown) {
+        first_pointer_down_event_timing_ =
+            PerformanceEventTiming::CreateFirstInputTiming(entry);
+      } else if (entry->name() == event_type_names::kPointerup &&
+                 first_pointer_down_event_timing_) {
+        first_pointer_down_event_timing_->SetInteractionId(
+            entry->interactionId());
+        DispatchFirstInputTiming(first_pointer_down_event_timing_);
+      } else if (entry->name() == event_type_names::kPointercancel) {
+        first_pointer_down_event_timing_.Clear();
+      } else if ((entry->name() == event_type_names::kMousedown ||
+                  entry->name() == event_type_names::kClick ||
+                  entry->name() == event_type_names::kKeydown) &&
+                 !first_pointer_down_event_timing_) {
+        DispatchFirstInputTiming(
+            PerformanceEventTiming::CreateFirstInputTiming(entry));
+      }
+    }
   }
 
   if (RuntimeEnabledFeatures::InteractionIdEnabled(GetExecutionContext())) {
@@ -541,6 +552,26 @@ void WindowPerformance::NotifyAndAddEventTimingBuffer(
   if (entry->duration() >= PerformanceObserver::kDefaultDurationThreshold &&
       !IsEventTimingBufferFull()) {
     AddEventTimingBuffer(*entry);
+  }
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("devtools.timeline", &tracing_enabled);
+  if (tracing_enabled) {
+    base::TimeTicks unsafe_start_time =
+        GetTimeOriginInternal() + base::Milliseconds(entry->startTime());
+    // At this point in the code, the duration has been rounded. Estimate the
+    // end time as the maximum of the processing end + 4ms or the render time.
+    base::TimeTicks unsafe_end_time = std::max(
+        unsafe_start_time + base::Milliseconds(entry->duration()),
+        GetTimeOriginInternal() + base::Milliseconds(entry->processingEnd()) +
+            base::Milliseconds(4));
+    unsigned hash = WTF::StringHash::GetHash(entry->name());
+    WTF::AddFloatToHash(hash, entry->startTime());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "devtools.timeline", "EventTiming", hash, unsafe_start_time, "data",
+        entry->ToTracedValue(DomWindow()->GetFrame()));
+
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "devtools.timeline", "EventTiming", hash, unsafe_end_time);
   }
 }
 
@@ -587,7 +618,8 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
-      intrinsic_size.width(), intrinsic_size.height(), id, element);
+      intrinsic_size.width(), intrinsic_size.height(), id, element,
+      PerformanceEntry::GetNavigationId(GetExecutionContext()));
   TRACE_EVENT2("loading", "PerformanceElementTiming", "data",
                entry->ToTracedValue(), "frame",
                ToTraceValue(DomWindow()->GetFrame()));
@@ -625,7 +657,11 @@ void WindowPerformance::AddVisibilityStateEntry(bool is_visible,
   DCHECK(RuntimeEnabledFeatures::VisibilityStateEntryEnabled());
   VisibilityStateEntry* entry = MakeGarbageCollected<VisibilityStateEntry>(
       PageHiddenStateString(!is_visible),
-      MonotonicTimeToDOMHighResTimeStamp(timestamp));
+      MonotonicTimeToDOMHighResTimeStamp(timestamp),
+      PerformanceEntry::GetNavigationId(
+          GetExecutionContext()));  // Todo(haoliuk): Add WPT for
+                                    // VisibilityStateEntry. See
+                                    // crbug.com/1320878.
   if (HasObserverFor(PerformanceEntry::kVisibilityState))
     NotifyObserversOfEntry(*entry);
 
@@ -665,10 +701,14 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
       render_timestamp.is_zero() ? load_timestamp : render_timestamp;
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
       start_timestamp.InMillisecondsF(), render_timestamp, paint_size,
-      load_timestamp, first_animated_frame_timestamp, id, url, element);
+      load_timestamp, first_animated_frame_timestamp, id, url, element,
+      PerformanceEntry::GetNavigationId(GetExecutionContext()));
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);
+  if (HTMLImageElement* image_element = DynamicTo<HTMLImageElement>(element)) {
+    image_element->SetIsLCPElement();
+  }
 }
 
 void WindowPerformance::OnPaintFinished() {

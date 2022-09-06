@@ -199,32 +199,31 @@
     pref="{{prefs.settings.a11y.dictation}}"
     label="$i18n{dictationLabel}"
     sub-label="[[dictationSubtitle_]]"
-    deep-link-focus-id$="[[Setting.kDictation]]">
+    deep-link-focus-id$="[[Setting.kDictation]]"
+    learn-more-url="[[dictationLearnMoreUrl_]]">
 </settings-toggle-button>
-<template is="dom-if" if="[[areDictationLocalePrefsAllowed_]]">
-  <template is="dom-if" if="[[prefs.settings.a11y.dictation.value]]">
-    <div class="settings-box continuation indented">
-      <div class="flex start settings-box-text" id="labelWrapper">
-        <div class="label" aria-hidden="true" id="dictationLocaleMenuLabel">
-            $i18n{dictationLocaleMenuLabel}
-        </div>
-        <div class="secondary label" id="dictationLocaleMenuSubtitle">
-            [[dictationLocaleMenuSubtitle_]]
-        </div>
+<template is="dom-if" if="[[prefs.settings.a11y.dictation.value]]">
+  <div class="settings-box continuation indented">
+    <div class="flex start settings-box-text" id="labelWrapper">
+      <div class="label" aria-hidden="true" id="dictationLocaleMenuLabel">
+          $i18n{dictationLocaleMenuLabel}
       </div>
-      <cr-button on-click="onChangeDictationLocaleButtonClicked_">
-        $i18n{dictationChangeLanguageButton}
-      </cr-button>
-      <template is="dom-if" if="[[showDictationLocaleMenu_]]" restamp>
-        <os-settings-change-dictation-locale-dialog
-          id="changeDictationLocaleDialog"
-          pref="{{prefs.settings.a11y.dictation_locale}}"
-          on-close="onChangeDictationLocalesDialogClosed_"
-          options="[[dictationLocaleOptions_]]">
-        </os-settings-change-dictation-locale-dialog>
-      </template>
+      <div class="secondary label" id="dictationLocaleMenuSubtitle">
+          [[dictationLocaleMenuSubtitle_]]
+      </div>
     </div>
-  </template>
+    <cr-button on-click="onChangeDictationLocaleButtonClicked_">
+      $i18n{dictationChangeLanguageButton}
+    </cr-button>
+    <template is="dom-if" if="[[showDictationLocaleMenu_]]" restamp>
+      <os-settings-change-dictation-locale-dialog
+        id="changeDictationLocaleDialog"
+        pref="{{prefs.settings.a11y.dictation_locale}}"
+        on-close="onChangeDictationLocalesDialogClosed_"
+        options="[[dictationLocaleOptions_]]">
+      </os-settings-change-dictation-locale-dialog>
+    </template>
+  </div>
 </template>
 <settings-toggle-button
     class="hr"
@@ -391,13 +390,16 @@
     label="$i18n{monoAudioLabel}"
     deep-link-focus-id$="[[Setting.kMonoAudio]]">
 </settings-toggle-button>
-<settings-toggle-button id="startupSoundEnabled"
-    class="hr"
-    pref=" "
-    on-change="toggleStartupSoundEnabled_"
-    label="$i18n{startupSoundLabel}"
-    deep-link-focus-id$="[[Setting.kStartupSound]]">
-</settings-toggle-button>
+<div class="settings-box">
+  <div class="start settings-box-text" id="startupSoundEnabledLabel">
+    $i18n{startupSoundLabel}
+  </div>
+  <cr-toggle id="startupSoundEnabled"
+      aria-labelledby="startupSoundEnabledLabel"
+      deep-link-focus-id$="[[Setting.kStartupSound]]"
+      on-change="toggleStartupSoundEnabled_">
+  </cr-toggle>
+</div>
 
 <template is="dom-if"
     if="[[shouldShowAdditionalFeaturesLink_(isGuest_, isKioskModeActive_)]]">

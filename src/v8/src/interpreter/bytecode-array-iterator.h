@@ -77,11 +77,14 @@ class V8_EXPORT_PRIVATE BytecodeArrayIterator {
   BytecodeArrayIterator& operator=(const BytecodeArrayIterator&) = delete;
 
   inline void Advance() {
-    cursor_ += Bytecodes::Size(current_bytecode(), current_operand_scale());
+    cursor_ += current_bytecode_size_without_prefix();
     UpdateOperandScale();
   }
   void SetOffset(int offset);
   void Reset() { SetOffset(0); }
+
+  // Whether the given offset is reachable in this bytecode array.
+  static bool IsValidOffset(Handle<BytecodeArray> bytecode_array, int offset);
 
   void ApplyDebugBreak();
 
@@ -92,10 +95,24 @@ class V8_EXPORT_PRIVATE BytecodeArrayIterator {
     DCHECK(!Bytecodes::IsPrefixScalingBytecode(current_bytecode));
     return current_bytecode;
   }
-  int current_bytecode_size() const;
-  int current_bytecode_size_without_prefix() const;
+  int current_bytecode_size() const {
+    return prefix_size_ + current_bytecode_size_without_prefix();
+  }
+  int current_bytecode_size_without_prefix() const {
+    return Bytecodes::Size(current_bytecode(), current_operand_scale());
+  }
   int current_offset() const {
     return static_cast<int>(cursor_ - start_ - prefix_size_);
+  }
+  int next_offset() const { return current_offset() + current_bytecode_size(); }
+  Bytecode next_bytecode() const {
+    uint8_t* next_cursor = cursor_ + current_bytecode_size_without_prefix();
+    if (next_cursor == end_) return Bytecode::kIllegal;
+    Bytecode next_bytecode = Bytecodes::FromByte(*next_cursor);
+    if (Bytecodes::IsPrefixScalingBytecode(next_bytecode)) {
+      next_bytecode = Bytecodes::FromByte(*(next_cursor + 1));
+    }
+    return next_bytecode;
   }
   OperandScale current_operand_scale() const { return operand_scale_; }
   Handle<BytecodeArray> bytecode_array() const { return bytecode_array_; }

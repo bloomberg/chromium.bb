@@ -11,18 +11,17 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
-namespace performance_manager {
-namespace features {
+namespace performance_manager::features {
 
 const base::Feature kRunOnMainThread{"RunOnMainThread",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 const base::Feature kUrgentDiscardingFromPerformanceManager {
   "UrgentDiscardingFromPerformanceManager",
 // Ash Chrome uses memory pressure evaluator instead of performance manager to
 // discard tabs.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_LINUX)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -50,28 +49,18 @@ const base::Feature kBackgroundTabLoadingFromPerformanceManager{
 
 const base::Feature kHighPMFDiscardPolicy{"HighPMFDiscardPolicy",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHighEfficiencyModeAvailable{
+    "HighEfficiencyModeAvailable", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBatterySaverModeAvailable{
+    "BatterySaverModeAvailable", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<base::TimeDelta> kHighEfficiencyModeTimeBeforeDiscard{
+    &kHighEfficiencyModeAvailable, "time_before_discard", base::Minutes(5)};
 #endif
 
 const base::Feature kBFCachePerformanceManagerPolicy{
     "BFCachePerformanceManagerPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
-constexpr base::FeatureParam<bool>
-    BFCachePerformanceManagerPolicyParams::kFlushOnModeratePressure;
-
-constexpr base::FeatureParam<int>
-    BFCachePerformanceManagerPolicyParams::kDelayToFlushBackgroundTabInSeconds;
-
-// static
-BFCachePerformanceManagerPolicyParams
-BFCachePerformanceManagerPolicyParams::GetParams() {
-  BFCachePerformanceManagerPolicyParams params;
-  params.flush_on_moderate_pressure_ =
-      BFCachePerformanceManagerPolicyParams::kFlushOnModeratePressure.Get();
-  params.delay_to_flush_background_tab_ = base::Seconds(
-      BFCachePerformanceManagerPolicyParams::kDelayToFlushBackgroundTabInSeconds
-          .Get());
-  return params;
-}
-
-}  // namespace features
-}  // namespace performance_manager
+}  // namespace performance_manager::features

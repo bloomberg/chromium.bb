@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/fetch/headers.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
@@ -169,29 +168,7 @@ void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
   Client().FailedToFetchModuleScript();
 }
 
-void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
-    size_t script_size,
-    size_t cached_metadata_size) {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::EvaluateTopLevelScript",
-      TRACE_ID_LOCAL(this));
-  // TODO(https://crbug.com/1253218): Merge WillEvaluateClassicScript and
-  // WillEvaluateModuleScript for cleanup.
-  ScriptState::Scope scope(
-      WorkerGlobalScope()->ScriptController()->GetScriptState());
-  Client().WillEvaluateScript(
-      WorkerGlobalScope()->ScriptController()->GetContext());
-}
-
-void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
-    size_t script_size,
-    size_t cached_metadata_size) {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  // TODO(https://crbug.com/1253218): Remove this empty function.
-}
-
-void ServiceWorkerGlobalScopeProxy::WillEvaluateModuleScript() {
+void ServiceWorkerGlobalScopeProxy::WillEvaluateScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "ServiceWorker", "ServiceWorkerGlobalScopeProxy::EvaluateTopLevelScript",

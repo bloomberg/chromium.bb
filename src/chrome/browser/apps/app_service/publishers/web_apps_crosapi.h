@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/icon_key_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom-forward.h"
@@ -60,6 +62,10 @@ class WebAppsCrosapi : public KeyedService,
 
  private:
   friend class StandaloneBrowserPublisherTest;
+  FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
+                           WebAppsCrosapiNotUpdated);
+  FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
+                           WebAppsCrosapiUpdated);
 
   // apps::AppPublisher overrides.
   void LoadIcon(const std::string& app_id,
@@ -70,6 +76,9 @@ class WebAppsCrosapi : public KeyedService,
                 apps::LoadIconCallback callback) override;
   void LaunchAppWithParams(AppLaunchParams&& params,
                            LaunchCallback callback) override;
+  void LaunchShortcut(const std::string& app_id,
+                      const std::string& shortcut_id,
+                      int64_t display_id) override;
 
   // apps::PublisherBase overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -116,7 +125,7 @@ class WebAppsCrosapi : public KeyedService,
                      apps::mojom::PermissionPtr permission) override;
 
   // crosapi::mojom::AppPublisher overrides.
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
+  void OnApps(std::vector<AppPtr> deltas) override;
   void RegisterAppController(
       mojo::PendingRemote<crosapi::mojom::AppController> controller) override;
   void OnCapabilityAccesses(
@@ -134,10 +143,20 @@ class WebAppsCrosapi : public KeyedService,
       GetMenuModelCallback callback,
       crosapi::mojom::MenuItemsPtr crosapi_menu_items);
 
-  void OnLoadIcon(uint32_t icon_effects,
+  void OnLoadIcon(IconType icon_type,
                   int size_hint_in_dip,
+                  apps::IconEffects icon_effects,
                   apps::LoadIconCallback callback,
                   IconValuePtr icon_value);
+  void OnApplyIconEffects(IconType icon_type,
+                          apps::LoadIconCallback callback,
+                          IconValuePtr icon_value);
+
+  // Stores a copy of the app deltas, which haven't been published to
+  // AppRegistryCache yet. When the crosapi is bound or changed from disconnect
+  // to bound, we need to publish all app deltas in this cache to
+  // AppRegistryCache.
+  std::vector<AppPtr> delta_cache_;
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
   mojo::Receiver<crosapi::mojom::AppPublisher> receiver_{this};

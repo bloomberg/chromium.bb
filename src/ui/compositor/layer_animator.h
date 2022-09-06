@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -23,6 +22,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_threaded_animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/geometry/linear_gradient.h"
 
 namespace cc {
 class Animation;
@@ -116,6 +116,11 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // Sets the rounded corners on the delegate. May cause an implicit animation.
   virtual void SetRoundedCorners(const gfx::RoundedCornersF& rounded_corners);
   gfx::RoundedCornersF GetTargetRoundedCorners() const;
+
+  // Sets the linear gradient mask on the delegate. Requires that the bounds are
+  // set by SetRoundedCorners. May cause an implicit animation.
+  virtual void SetGradientMask(const gfx::LinearGradient& linear_gradient);
+  gfx::LinearGradient GetTargetGradientMask() const;
 
   // Returns the default length of animations, including adjustment for slow
   // animation mode if set.
@@ -228,8 +233,8 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // Caller must retain the result for as long as the callback needs to remain
   // active. Clearing the result (add_sequence_subscription.reset()) will also
   // remove the subscription.
-  base::CallbackListSubscription AddSequenceScheduledCallback(
-      SequenceScheduledCallback callback) WARN_UNUSED_RESULT;
+  [[nodiscard]] base::CallbackListSubscription AddSequenceScheduledCallback(
+      SequenceScheduledCallback callback);
 
   // Called when a threaded animation is actually started.
   void OnThreadedAnimationStarted(base::TimeTicks monotonic_time,
@@ -310,8 +315,8 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // Removes the sequences from both the running animations and the queue.
   // Returns a pointer to the removed animation, if any. NOTE: the caller is
   // responsible for deleting the returned pointer.
-  LayerAnimationSequence* RemoveAnimation(
-      LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
+  [[nodiscard]] LayerAnimationSequence* RemoveAnimation(
+      LayerAnimationSequence* sequence);
 
   // Progresses to the end of the sequence before removing it.
   void FinishAnimation(LayerAnimationSequence* sequence, bool abort);

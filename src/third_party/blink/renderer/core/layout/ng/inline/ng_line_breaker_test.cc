@@ -70,7 +70,8 @@ class NGLineBreakerTest : public NGLayoutTest {
       NGLineInfo line_info;
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
                                  line_opportunity, leading_floats, 0u,
-                                 break_token, &exclusion_space);
+                                 break_token, /* column_spanner_path */ nullptr,
+                                 &exclusion_space);
       line_breaker.NextLine(&line_info);
       if (callback)
         callback(line_breaker, line_info);
@@ -84,7 +85,7 @@ class NGLineBreakerTest : public NGLayoutTest {
       if (fill_first_space_ && lines.IsEmpty()) {
         first_should_hang_trailing_space_ =
             line_info.ShouldHangTrailingSpaces();
-        first_hang_width_ = line_info.HangWidth();
+        first_hang_width_ = line_info.HangWidthForAlignment();
       }
       lines.push_back(std::make_pair(ToString(line_info.Results(), node),
                                      line_info.Results().back().item_index));
@@ -167,7 +168,7 @@ TEST_F(NGLineBreakerTest, SingleNode) {
 
 // For "text-combine-upright-break-inside-001a.html"
 TEST_F(NGLineBreakerTest, TextCombineCloseTag) {
-  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -194,7 +195,7 @@ TEST_F(NGLineBreakerTest, TextCombineCloseTag) {
 }
 
 TEST_F(NGLineBreakerTest, TextCombineBreak) {
-  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -213,7 +214,7 @@ TEST_F(NGLineBreakerTest, TextCombineBreak) {
 }
 
 TEST_F(NGLineBreakerTest, TextCombineNoBreak) {
-  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -232,7 +233,7 @@ TEST_F(NGLineBreakerTest, TextCombineNoBreak) {
 }
 
 TEST_F(NGLineBreakerTest, TextCombineNoBreakWithSpace) {
-  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"

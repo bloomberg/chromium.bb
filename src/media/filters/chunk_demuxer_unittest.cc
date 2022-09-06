@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -717,7 +717,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                              std::vector<uint8_t>(
                                  kEncryptedMediaInitData,
                                  kEncryptedMediaInitData +
-                                     base::size(kEncryptedMediaInitData))))
+                                     std::size(kEncryptedMediaInitData))))
           .Times(Exactly(need_key_count));
     }
 
@@ -1494,7 +1494,8 @@ TEST_F(ChunkDemuxerTest, ErrorWhileParsingClusterAfterInit) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  EXPECT_CALL(host_,
+              OnDemuxerError(HasStatusCode(CHUNK_DEMUXER_ERROR_APPEND_FAILED)));
   AppendGarbage();
 }
 
@@ -1612,7 +1613,8 @@ TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
 
   EXPECT_MEDIA_LOG(WebMOutOfOrderTimecode());
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  EXPECT_CALL(host_,
+              OnDemuxerError(HasStatusCode(CHUNK_DEMUXER_ERROR_APPEND_FAILED)));
   ASSERT_FALSE(AppendCluster(cb.Finish()));
 
   // Verify that AppendData() ignores data after the error.
@@ -1664,7 +1666,8 @@ TEST_F(ChunkDemuxerTest, NonMonotonicButBeforeClusterTimecode) {
 
   EXPECT_MEDIA_LOG(WebMOutOfOrderTimecode());
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  EXPECT_CALL(host_,
+              OnDemuxerError(HasStatusCode(CHUNK_DEMUXER_ERROR_APPEND_FAILED)));
   ASSERT_FALSE(AppendCluster(cb.Finish()));
 
   // Verify that AppendData() ignores data after the error.
@@ -1691,7 +1694,8 @@ TEST_F(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
 
   EXPECT_MEDIA_LOG(WebMOutOfOrderTimecode());
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  EXPECT_CALL(host_,
+              OnDemuxerError(HasStatusCode(CHUNK_DEMUXER_ERROR_APPEND_FAILED)));
   ASSERT_FALSE(AppendCluster(cb.Finish()));
 }
 
@@ -1750,8 +1754,8 @@ TEST_F(ChunkDemuxerTest, DecodeErrorEndOfStream) {
   ASSERT_TRUE(AppendCluster(kDefaultFirstCluster()));
   CheckExpectedRanges(kDefaultFirstClusterRange);
 
-  EXPECT_CALL(host_,
-              OnDemuxerError(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR));
+  EXPECT_CALL(host_, OnDemuxerError(HasStatusCode(
+                         CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR)));
   MarkEndOfStream(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR);
   CheckExpectedRanges(kDefaultFirstClusterRange);
 }
@@ -1762,8 +1766,8 @@ TEST_F(ChunkDemuxerTest, NetworkErrorEndOfStream) {
   ASSERT_TRUE(AppendCluster(kDefaultFirstCluster()));
   CheckExpectedRanges(kDefaultFirstClusterRange);
 
-  EXPECT_CALL(host_,
-              OnDemuxerError(CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR));
+  EXPECT_CALL(host_, OnDemuxerError(HasStatusCode(
+                         CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR)));
   MarkEndOfStream(CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR);
 }
 
@@ -2009,9 +2013,9 @@ TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
                             kInfiniteDuration));
 
   DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
-  EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, audio->liveness());
+  EXPECT_EQ(StreamLiveness::kLive, audio->liveness());
   DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
-  EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, video->liveness());
+  EXPECT_EQ(StreamLiveness::kLive, video->liveness());
   EXPECT_EQ(212949, demuxer_->GetMemoryUsage());
 }
 
@@ -2861,7 +2865,7 @@ TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
                        base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
                                       base::Unretained(this)));
 
-  for (size_t i = 0; i < base::size(codec_ids); ++i) {
+  for (size_t i = 0; i < std::size(codec_ids); ++i) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     expected = ChunkDemuxer::kOk;
 #else
@@ -3363,9 +3367,9 @@ TEST_F(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
       true, true, true, true, false,
   };
 
-  static_assert(base::size(kBuffer) == base::size(kExpectedReturnValues),
+  static_assert(std::size(kBuffer) == std::size(kExpectedReturnValues),
                 "test arrays out of sync");
-  static_assert(base::size(kBuffer) == sizeof(kBuffer),
+  static_assert(std::size(kBuffer) == sizeof(kBuffer),
                 "there should be one byte per index");
 
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
@@ -3967,7 +3971,8 @@ TEST_F(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
 TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  EXPECT_CALL(host_,
+              OnDemuxerError(HasStatusCode(CHUNK_DEMUXER_ERROR_APPEND_FAILED)));
   AppendGarbage();
   base::TimeDelta seek_time = base::Seconds(50);
   demuxer_->StartWaitingForSeek(seek_time);
@@ -4594,7 +4599,8 @@ TEST_F(ChunkDemuxerTest, UnmarkEOSRetainsParseErrorState_AfterInit) {
   // Trigger a (fatal) parse error after successfully reaching source init.
   InitDemuxer(HAS_AUDIO | HAS_VIDEO);
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  EXPECT_CALL(host_,
+              OnDemuxerError(HasStatusCode(CHUNK_DEMUXER_ERROR_APPEND_FAILED)));
   AppendGarbage();
 
   // Simulate SourceBuffer Append Error algorithm.

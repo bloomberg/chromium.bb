@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "media/base/status_codes.h"
-#include "media/base/win/hresult_status_helper.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
 #include "ui/gl/hdr_metadata_helper_win.h"
 
@@ -51,11 +49,8 @@ D3D11Status CopyingTexture2DWrapper::ProcessTexture(
   ComD3D11VideoProcessorOutputView output_view;
   HRESULT hr = video_processor_->CreateVideoProcessorOutputView(
       output_texture_.Get(), &output_view_desc, &output_view);
-  if (!SUCCEEDED(hr)) {
-    return D3D11Status(
-               D3D11Status::Codes::kCreateVideoProcessorOutputViewFailed)
-        .AddCause(HresultToStatus(hr));
-  }
+  if (!SUCCEEDED(hr))
+    return {D3D11Status::Codes::kCreateVideoProcessorOutputViewFailed, hr};
 
   D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC input_view_desc = {0};
   input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
@@ -64,10 +59,8 @@ D3D11Status CopyingTexture2DWrapper::ProcessTexture(
   ComD3D11VideoProcessorInputView input_view;
   hr = video_processor_->CreateVideoProcessorInputView(
       texture_.Get(), &input_view_desc, &input_view);
-  if (!SUCCEEDED(hr)) {
-    return D3D11Status(D3D11Status::Codes::kCreateVideoProcessorInputViewFailed)
-        .AddCause(HresultToStatus(hr));
-  }
+  if (!SUCCEEDED(hr))
+    return {D3D11Status::Codes::kCreateVideoProcessorInputViewFailed};
 
   D3D11_VIDEO_PROCESSOR_STREAM streams = {0};
   streams.Enable = TRUE;
@@ -88,8 +81,7 @@ D3D11Status CopyingTexture2DWrapper::ProcessTexture(
     // treat it as gamma 2.2 since HLG is designed to look okay that way.
     auto adjusted_color_space = input_color_space;
     if (!video_processor_->supports_tone_mapping() &&
-        input_color_space.GetTransferID() ==
-            gfx::ColorSpace::TransferID::ARIB_STD_B67 &&
+        input_color_space.GetTransferID() == gfx::ColorSpace::TransferID::HLG &&
         !copy_color_space.IsHDR()) {
       adjusted_color_space = gfx::ColorSpace(
           input_color_space.GetPrimaryID(),
@@ -105,10 +97,8 @@ D3D11Status CopyingTexture2DWrapper::ProcessTexture(
                                            0,  // output_frameno
                                            1,  // stream_count
                                            &streams);
-  if (!SUCCEEDED(hr)) {
-    return D3D11Status(D3D11Status::Codes::kVideoProcessorBltFailed)
-        .AddCause(HresultToStatus(hr));
-  }
+  if (!SUCCEEDED(hr))
+    return {D3D11Status::Codes::kVideoProcessorBltFailed, hr};
 
   return output_texture_wrapper_->ProcessTexture(copy_color_space, mailbox_dest,
                                                  output_color_space);

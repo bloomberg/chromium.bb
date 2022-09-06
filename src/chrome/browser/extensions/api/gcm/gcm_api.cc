@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -12,7 +13,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -72,10 +72,10 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
 bool IsMessageKeyValid(const std::string& key) {
   std::string lower = base::ToLowerASCII(key);
   return !key.empty() &&
-         key.compare(0, base::size(kCollapseKey) - 1, kCollapseKey) != 0 &&
-         lower.compare(0, base::size(kGoogleRestrictedPrefix) - 1,
+         key.compare(0, std::size(kCollapseKey) - 1, kCollapseKey) != 0 &&
+         lower.compare(0, std::size(kGoogleRestrictedPrefix) - 1,
                        kGoogleRestrictedPrefix) != 0 &&
-         lower.compare(0, base::size(kGoogDotRestrictedPrefix),
+         lower.compare(0, std::size(kGoogDotRestrictedPrefix),
                        kGoogDotRestrictedPrefix) != 0;
 }
 
@@ -124,8 +124,8 @@ ExtensionFunction::ResponseAction GcmRegisterFunction::Run() {
 void GcmRegisterFunction::CompleteFunctionWithResult(
     const std::string& registration_id,
     gcm::GCMClient::Result gcm_result) {
-  auto result = std::make_unique<base::ListValue>();
-  result->Append(registration_id);
+  std::vector<base::Value> result;
+  result.emplace_back(registration_id);
 
   const bool succeeded = gcm::GCMClient::SUCCESS == gcm_result;
   Respond(succeeded
@@ -182,8 +182,8 @@ ExtensionFunction::ResponseAction GcmSendFunction::Run() {
 void GcmSendFunction::CompleteFunctionWithResult(
     const std::string& message_id,
     gcm::GCMClient::Result gcm_result) {
-  auto result = std::make_unique<base::ListValue>();
-  result->Append(message_id);
+  std::vector<base::Value> result;
+  result.emplace_back(message_id);
 
   const bool succeeded = gcm::GCMClient::SUCCESS == gcm_result;
   Respond(succeeded

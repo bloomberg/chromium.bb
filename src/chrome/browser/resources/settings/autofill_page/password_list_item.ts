@@ -13,12 +13,16 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import '../settings_shared_css.js';
 import '../site_favicon.js';
-import './passwords_shared_css.js';
+import './passwords_shared.css.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Router} from '../router.js';
 
+import {getTemplate} from './password_list_item.html.js';
+import {PasswordViewPageInteractions, PasswordViewPageUrlParams, recordPasswordViewInteraction} from './password_view.js';
 import {ShowPasswordMixin, ShowPasswordMixinInterface} from './show_password_mixin.js';
 
 export type PasswordMoreActionsClickedEvent = CustomEvent<{
@@ -29,6 +33,9 @@ export type PasswordMoreActionsClickedEvent = CustomEvent<{
 export interface PasswordListItemElement {
   $: {
     moreActionsButton: HTMLElement,
+    originUrl: HTMLAnchorElement,
+    seePasswordDetails: HTMLElement,
+    username: HTMLInputElement,
   };
 }
 
@@ -41,19 +48,50 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
+      isPasswordViewPageEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enablePasswordViewPage');
+        },
+      },
+
       /**
-       * Whether to hide the 3 dot button that open the more actions menu.
+       * Whether subpage button is visible or not. Subpage button should be
+       * visible only if password notes is enabled and |shouldHideActionButton|
+       * is false.
        */
-      shouldHideMoreActionsButton: {
+      shouldShowSubpageButton_: {
+        type: Boolean,
+        computed: 'computeShouldShowSubpageButton_(' +
+            'isPasswordViewPageEnabled_, shouldHideActionButtons)',
+        reflectToAttribute: true,
+      },
+
+      /**
+       * Whether to hide buttons that open the subpage or the more actions menu.
+       */
+      shouldHideActionButtons: {
         type: Boolean,
         value: false,
       },
     };
+  }
+
+  private isPasswordViewPageEnabled_: boolean;
+  private shouldShowSubpageButton_: boolean;
+  shouldHideActionButtons: boolean;
+
+  private computeShouldShowSubpageButton_(): boolean {
+    return !this.shouldHideActionButtons && this.isPasswordViewPageEnabled_;
+  }
+
+  private shouldHideMoreActionsButton_(): boolean {
+    return this.isPasswordViewPageEnabled_ || this.shouldHideActionButtons;
   }
 
   /**
@@ -64,6 +102,30 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
       (this.shadowRoot!.querySelector('#password') as HTMLInputElement)
           .select();
     }
+  }
+
+  private onRowClick_() {
+    if (!this.shouldShowSubpageButton_) {
+      return;
+    }
+    const params = new URLSearchParams();
+    params.set(PasswordViewPageUrlParams.SITE, this.entry.urls.shown);
+    params.set(PasswordViewPageUrlParams.USERNAME, this.entry.username);
+    // For sync'ing and signed-out users, there is strictly only one password
+    // store, and hence no need to specify store information.
+    // For account store users, a credential can exist in one or both of the
+    // device and account stores, in which case, store information is required.
+    // For consistency with the sync'ing and signed-out case, store information
+    // isn't provided when the credentials exist only in the device store.
+    if (this.entry.isPresentInAccount()) {
+      params.set(PasswordViewPageUrlParams.IN_ACCOUNT, 'true');
+      if (this.entry.isPresentOnDevice()) {
+        params.set(PasswordViewPageUrlParams.ON_DEVICE, 'true');
+      }
+    }
+    recordPasswordViewInteraction(
+        PasswordViewPageInteractions.CREDENTIAL_ROW_CLICKED);
+    Router.getInstance().navigateTo(routes.PASSWORD_VIEW, params);
   }
 
   private onPasswordMoreActionsButtonTap_() {
@@ -88,6 +150,15 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
         (this.entry.federationText) ? 'passwordRowFederatedMoreActionsButton' :
                                       'passwordRowMoreActionsButton',
         this.entry.username, this.entry.urls.shown);
+  }
+
+  /**
+   * Get the aria label for the password details subpage.
+   */
+  private getSubpageLabel_(): string {
+    return loadTimeData.getStringF(
+        'passwordRowPasswordDetailPageButton', this.entry.username,
+        this.entry.urls.shown);
   }
 }
 

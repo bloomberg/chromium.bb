@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info_internal.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 
 namespace {
 
@@ -75,8 +74,7 @@ int64_t SysInfo::AmountOfAvailablePhysicalMemory(
 
 // static
 std::string SysInfo::CPUModelName() {
-#if (BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-    defined(ARCH_CPU_ARMEL)
+#if BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   const char kCpuModelPrefix[] = "Hardware";
 #else
   const char kCpuModelPrefix[] = "model name";
@@ -129,7 +127,7 @@ std::string SysInfo::CPUModelName() {
   return std::string();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 // static
 SysInfo::HardwareInfo SysInfo::GetHardwareInfoSync() {
   static const size_t kMaxStringSize = 100u;

@@ -52,6 +52,7 @@
 <translation id="2445449901874883781">Gunakan kepadatan tinggi</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
 <translation id="2497284189126895209">Semua Jenis File</translation>
+<translation id="2498950423397131220">Float</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibrasi selesai</translation>
 <translation id="252373100621549798">Tampilan yang Tidak Diketahui</translation>
@@ -62,7 +63,6 @@
 <translation id="2666092431469916601">Atas</translation>
 <translation id="2701330563083355633">Dibagikan dari <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Baru</translation>
-<translation id="2743387203779672305">Salin ke papan klip</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 tahun yang lalu}other{# tahun yang lalu}}</translation>
 <translation id="2878511608894704031">Hapus Semua</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{dalam 1 h}other{dalam # h}}</translation>
@@ -94,12 +94,14 @@
 <translation id="3889424535448813030">Panah Kanan</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Po&amp;tong</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Tepi Kanan</translation>
 <translation id="3994749195054421561">Kolom <ph name="COLUMN_NAME" /> diurutkan dari atas ke bawah.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Notifikasi yang Belum Dibaca}other{# Notifikasi yang Belum Dibaca}}</translation>
-<translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 bulan yang lalu}other{# bulan yang lalu}}</translation>
 <translation id="4289300219472526559">Mulai Berbicara</translation>
+<translation id="4289540628985791613">Ikhtisar</translation>
 <translation id="4306392492252714209">Hapus dari papan klip.</translation>
 <translation id="4491109536499578614">Gambar</translation>
 <translation id="4565377596337484307">Sembunyikan sandi</translation>
@@ -146,7 +148,7 @@
 <translation id="6430678249303439055">Blokir semua notifikasi dari aplikasi ini</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 detik yang lalu}other{# detik yang lalu}}</translation>
 <translation id="6503257047630241175">Konten RTF</translation>
-<translation id="6539092367496845964">Terjadi masalah. Coba lagi nanti.</translation>
+<translation id="6539092367496845964">Terjadi error. Coba lagi nanti.</translation>
 <translation id="654149438358937226">Blokir semua notifikasi</translation>
 <translation id="6612467943526193239">Untuk keluar dari kalibrasi, tekan Esc.</translation>
 <translation id="6620110761915583480">Simpan File</translation>
@@ -203,7 +205,6 @@
 <translation id="8730621377337864115">Selesai</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1j}other{#j}}</translation>
 <translation id="8798099450830957504">Default</translation>
-<translation id="883911313571074303">Gambar anotasi</translation>
 <translation id="8841375032071747811">Tombol kembali</translation>
 <translation id="8867568208303837180">Mengirim...</translation>
 <translation id="8876215549894133151">Format:</translation>

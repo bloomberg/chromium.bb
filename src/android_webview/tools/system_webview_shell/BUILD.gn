@@ -43,6 +43,7 @@ android_library("system_webview_shell_apk_java") {
   testonly = true
   sources = [
     "apk/src/org/chromium/webview_shell/JankActivity.java",
+    "apk/src/org/chromium/webview_shell/MultiFileSelector.java",
     "apk/src/org/chromium/webview_shell/PageCyclerTestActivity.java",
     "apk/src/org/chromium/webview_shell/StartupTimeActivity.java",
     "apk/src/org/chromium/webview_shell/TelemetryActivity.java",
@@ -61,10 +62,10 @@ android_library("system_webview_shell_apk_java") {
   deps = [
     ":system_webview_shell_apk_resources",
     "//base:base_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_savedstate_savedstate_java",
     "//third_party/androidx:androidx_webkit_webkit_java",
   ]
@@ -108,7 +109,6 @@ android_resources("system_webview_shell_apk_resources") {
     "apk/res/values/styles.xml",
     "apk/res/xml/network_security_config.xml",
   ]
-  deps = [ "//third_party/android_deps:android_support_v7_appcompat_java" ]
 }
 
 instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
@@ -119,7 +119,6 @@ instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
   sources = [ "page_cycler/src/org/chromium/webview_shell/page_cycler/PageCyclerTest.java" ]
   deps = [
     ":system_webview_shell_apk_java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
@@ -128,6 +127,12 @@ instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
   ]
+}
+
+copy("copy_webview_js_test_script_to_blink") {
+  sources = [ "test/data/resources/js-test.js" ]
+  outputs =
+      [ "$root_build_dir/third_party/blink/web_tests/resources/js-test.js" ]
 }
 
 instrumentation_test_apk("system_webview_shell_layout_test_apk") {
@@ -141,6 +146,7 @@ instrumentation_test_apk("system_webview_shell_layout_test_apk") {
     "layout_tests/src/org/chromium/webview_shell/test/WebViewThreadTest.java",
   ]
   deps = [
+    ":copy_webview_js_test_script_to_blink",
     ":system_webview_shell_apk_java",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -152,13 +158,20 @@ instrumentation_test_apk("system_webview_shell_layout_test_apk") {
   ]
   data = [
     "test/data/",
+    "//third_party/blink/web_tests/platform/generic/virtual/stable/webexposed/",
     "//third_party/blink/web_tests/platform/linux/virtual/stable/webexposed/",
     "//third_party/blink/web_tests/platform/mac/virtual/stable/webexposed/",
     "//third_party/blink/web_tests/platform/win/virtual/stable/webexposed/",
     "//third_party/blink/web_tests/resources/global-interface-listing.js",
     "//third_party/blink/web_tests/virtual/stable/webexposed/",
     "//third_party/blink/web_tests/webexposed/global-interface-listing.html",
-    "//third_party/blink/web_tests/webexposed/global-interface-listing-expected.txt",
+    "//third_party/blink/web_tests/platform/generic/webexposed/global-interface-listing-expected.txt",
+    "//third_party/blink/web_tests/platform/generic/webexposed/global-interface-listing-platform-specific-expected.txt",
+    "$root_build_dir/third_party/blink/web_tests/resources/js-test.js",
   ]
+
+  # Tell GN to ignore 'incremental_install' even if the user has it in their GN
+  # args because it's incompatible with 'use_webview_provider'.
+  never_incremental = true
   use_webview_provider = system_webview_apk_target
 }

@@ -8,10 +8,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <string>
+
 #include "base/base_paths.h"
 #include "base/big_endian.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -33,7 +34,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/display/win/dpi.h"
 #endif
 
@@ -64,25 +65,24 @@ constexpr char kLottieData[] = "LOTTIEtest";
 
 // Mock of |lottie::ParseLottieAsStillImage|. Checks that |kLottieData| is
 // properly stripped of the "LOTTIE" prefix.
-gfx::ImageSkiaRep ParseLottieAsStillImageForTesting(
-    const base::RefCountedString& bytes_string) {
-  auto expected_bytes_string = base::MakeRefCounted<base::RefCountedString>();
-  expected_bytes_string->data() = "test";
-  CHECK(bytes_string.Equals(expected_bytes_string));
+gfx::ImageSkia ParseLottieAsStillImageForTesting(
+    const std::string& bytes_string) {
+  CHECK_EQ("test", bytes_string);
 
-  const int kDimension = 16;
-  return gfx::ImageSkiaRep(gfx::Size(kDimension, kDimension), 0.f);
+  constexpr int kDimension = 16;
+  return gfx::ImageSkia(
+      gfx::ImageSkiaRep(gfx::Size(kDimension, kDimension), 0.f));
 }
 #endif
 
 // Returns |bitmap_data| with |custom_chunk| inserted after the IHDR chunk.
 void AddCustomChunk(const base::StringPiece& custom_chunk,
                     std::vector<unsigned char>* bitmap_data) {
-  EXPECT_LT(base::size(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
+  EXPECT_LT(std::size(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
   EXPECT_TRUE(std::equal(bitmap_data->begin(),
-                         bitmap_data->begin() + base::size(kPngMagic),
+                         bitmap_data->begin() + std::size(kPngMagic),
                          kPngMagic));
-  auto ihdr_start = bitmap_data->begin() + base::size(kPngMagic);
+  auto ihdr_start = bitmap_data->begin() + std::size(kPngMagic);
   uint8_t ihdr_length_data[sizeof(uint32_t)];
   for (size_t i = 0; i < sizeof(uint32_t); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);
@@ -414,7 +414,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   // Returns the number of DataPacks managed by |resource_bundle|.
   size_t NumDataPacksInResourceBundle(ResourceBundle* resource_bundle) {
     DCHECK(resource_bundle);
-    return resource_bundle->data_packs_.size();
+    return resource_bundle->resource_handles_.size();
   }
 
  private:
@@ -566,7 +566,7 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   display::win::SetDefaultDeviceScaleFactor(2.0);
 #endif
   std::vector<ResourceScaleFactor> supported_factors;
@@ -590,7 +590,7 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
 
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
   // ChromeOS/Windows load highest scale factor first.
   EXPECT_EQ(ui::k200Percent, GetSupportedResourceScaleFactor(
                                  image_skia->image_reps()[0].scale()));
@@ -641,7 +641,7 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   CreateDataPackWithSingleBitmap(
       data_2x_path, 10,
       base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
-                        base::size(kPngScaleChunk)));
+                        std::size(kPngScaleChunk)));
 
   // Load the regular and 2x pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -689,8 +689,9 @@ TEST_F(ResourceBundleImageTest, FallbackToNone) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ResourceBundleImageTest, Lottie) {
-  ui::ResourceBundle::SetParseLottieAsStillImage(
-      &ParseLottieAsStillImageForTesting);
+  ui::ResourceBundle::SetLottieParsingFunctions(
+      &ParseLottieAsStillImageForTesting,
+      /*parse_lottie_as_themed_still_image=*/nullptr);
   test::ScopedSetSupportedResourceScaleFactors scoped_supported(
       {k100Percent, k200Percent});
   base::FilePath data_unscaled_path = dir_path().AppendASCII("sample.pak");

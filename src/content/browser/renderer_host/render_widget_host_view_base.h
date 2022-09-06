@@ -128,6 +128,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   display::ScreenInfo GetScreenInfo() const override;
   display::ScreenInfos GetScreenInfos() const override;
 
+  // For HiDPI capture mode, allow applying a render scale multiplier
+  // which modifies the effective device scale factor. Use a scale
+  // of 1.0f (exactly) to disable the feature after it was used.
+  void SetScaleOverrideForCapture(float scale);
+  float GetScaleOverrideForCapture() const;
+
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
@@ -239,6 +245,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
 
+  // This method will clear any cached fallback surface. For use in response to
+  // a CommitPending where there is no content for TakeFallbackContentFrom.
+  virtual void ClearFallbackSurfaceForCommitPending() {}
   // This method will reset the fallback to the first surface after navigation.
   virtual void ResetFallbackToFirstNavigationSurface() = 0;
 
@@ -343,15 +352,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   // Returns true if this view's size have been initialized.
   virtual bool HasSize() const;
-
-  // Informs the view that the assocaited InterstitialPage was attached.
-  virtual void OnInterstitialPageAttached() {}
-
-  // Tells the view that the assocaited InterstitialPage will going away (but is
-  // not yet destroyed, as InterstitialPage destruction is asynchronous). The
-  // view may use this notification to clean up associated resources. This
-  // should be called before the WebContents is fully destroyed.
-  virtual void OnInterstitialPageGoingAway() {}
 
   // Returns true if the visual properties should be sent to the renderer at
   // this time. This function is intended for subclasses to suppress
@@ -586,6 +586,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // instead.
   void OnShowWithPageVisibility(PageVisibilityState page_visibility);
 
+  void UpdateSystemCursorSize(const gfx::Size& cursor_size);
+
+  // Updates the active state by replicating it to the renderer.
+  void UpdateActiveState(bool active);
+
   // Each platform should override this to call RenderWidgetHostImpl::WasShown
   // and DelegatedFrameHost::WasShown, and do any platform-specific bookkeeping
   // needed.  The given `visible_time_request`, if any, should be passed to
@@ -620,6 +625,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // Cached information about the renderer's display environment.
   display::ScreenInfos screen_infos_;
 
+  float scale_override_for_capture_ = 1.0f;
+
   // Indicates whether keyboard lock is active for this view.
   bool keyboard_locked_ = false;
 
@@ -644,6 +651,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   raw_ptr<TooltipObserver> tooltip_observer_for_testing_ = nullptr;
 
+  // Cursor size in logical pixels, obtained from the OS. This value is general
+  // to all displays.
+  gfx::Size system_cursor_size_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(
       BrowserSideFlingBrowserTest,
@@ -660,6 +671,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
                            MojoInterfaceReboundOnDisconnect);
   FRIEND_TEST_ALL_PREFIXES(NoCompositingRenderWidgetHostViewBrowserTest,
                            NoFallbackAfterHiddenNavigationFails);
+  FRIEND_TEST_ALL_PREFIXES(NoCompositingRenderWidgetHostViewBrowserTest,
+                           NoFallbackIfSwapFailedBeforeNavigation);
 
   void SynchronizeVisualProperties();
 

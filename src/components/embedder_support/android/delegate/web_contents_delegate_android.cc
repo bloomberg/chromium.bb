@@ -272,7 +272,7 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
   if (obj.is_null())
     return;
   Java_WebContentsDelegateAndroid_onUpdateUrl(
-      env, obj, url::GURLAndroid::FromNativeGURL(env, source->GetURL()));
+      env, obj, url::GURLAndroid::FromNativeGURL(env, source->GetVisibleURL()));
 }
 
 bool WebContentsDelegateAndroid::HandleKeyboardEvent(
@@ -325,7 +325,7 @@ void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
   if (obj.is_null())
     return;
   Java_WebContentsDelegateAndroid_enterFullscreenModeForTab(
-      env, obj, options.prefers_navigation_bar);
+      env, obj, options.prefers_navigation_bar, options.prefers_status_bar);
 }
 
 void WebContentsDelegateAndroid::FullscreenStateChangedForTab(
@@ -336,7 +336,7 @@ void WebContentsDelegateAndroid::FullscreenStateChangedForTab(
   if (obj.is_null())
     return;
   Java_WebContentsDelegateAndroid_fullscreenStateChangedForTab(
-      env, obj, options.prefers_navigation_bar);
+      env, obj, options.prefers_navigation_bar, options.prefers_status_bar);
 }
 
 void WebContentsDelegateAndroid::ExitFullscreenModeForTab(

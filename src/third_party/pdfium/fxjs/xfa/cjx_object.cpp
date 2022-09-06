@@ -24,7 +24,6 @@
 #include "fxjs/xfa/cjx_instancemanager.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/containers/contains.h"
 #include "v8/include/v8-forward.h"
 #include "v8/include/v8-object.h"
@@ -293,7 +292,7 @@ absl::optional<WideString> CJX_Object::TryAttribute(XFA_Attribute eAttr,
       absl::optional<int32_t> iValue = TryInteger(eAttr, bUseDefault);
       if (!iValue.has_value())
         return absl::nullopt;
-      return WideString::Format(L"%d", iValue.value());
+      return WideString::FormatInteger(iValue.value());
     }
     case XFA_AttributeType::Measure: {
       absl::optional<CXFA_Measurement> value = TryMeasure(eAttr, bUseDefault);
@@ -338,7 +337,7 @@ void CJX_Object::SetInteger(XFA_Attribute eAttr, int32_t iValue, bool bNotify) {
   CFX_XMLElement* elem = SetValue(eAttr, iValue, bNotify);
   if (elem) {
     elem->SetAttribute(WideString::FromASCII(XFA_AttributeToName(eAttr)),
-                       WideString::Format(L"%d", iValue));
+                       WideString::FormatInteger(iValue));
   }
 }
 
@@ -603,9 +602,10 @@ void CJX_Object::SetContent(const WideString& wsContent,
           break;
 
         CXFA_Node* pChildValue = pValue->GetFirstChild();
-        DCHECK(pChildValue);
-        pChildValue->JSObject()->SetContent(wsContent, wsContent, bNotify,
-                                            bScriptModify, false);
+        if (pChildValue) {
+          pChildValue->JSObject()->SetContent(wsContent, wsContent, bNotify,
+                                              bScriptModify, false);
+        }
       }
       pBindNode = GetXFANode()->GetBindData();
       if (pBindNode && bSyncData) {
@@ -737,7 +737,7 @@ absl::optional<WideString> CJX_Object::TryContent(bool bScriptModify,
     case XFA_ObjectType::NodeV:
     case XFA_ObjectType::TextNode:
       pNode = GetXFANode();
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       if (GetXFANode()->GetElementType() == XFA_Element::DataValue)
         pNode = GetXFANode();
@@ -1031,7 +1031,7 @@ void CJX_Object::ScriptAttributeString(v8::Isolate* pIsolate,
   } else if (!wsID.IsEmpty()) {
     pProtoNode = GetDocument()->GetNodeByID(pProtoRoot, wsID.AsStringView());
   }
-  if (!pProtoNode)
+  if (!pProtoNode || pProtoNode->GetPacketType() != XFA_PacketType::Template)
     return;
 
   CXFA_Node* pHeadChild = GetXFANode()->GetFirstChild();
@@ -1184,7 +1184,7 @@ void CJX_Object::ScriptSomBorderWidth(v8::Isolate* pIsolate,
     return;
 
   WideString wsThickness = fxv8::ReentrantToWideStringHelper(pIsolate, *pValue);
-  for (int32_t i = 0; i < border->CountEdges(); ++i) {
+  for (size_t i = 0; i < border->CountEdges(); ++i) {
     CXFA_Edge* edge = border->GetEdgeIfExists(i);
     if (edge)
       edge->SetMSThickness(CXFA_Measurement(wsThickness.AsStringView()));
@@ -1425,16 +1425,15 @@ void CJX_Object::ScriptSomInstanceIndex(v8::Isolate* pIsolate,
   if (!pNotify)
     return;
 
-  CXFA_Node* pToInstance = pManagerNode->GetItemIfExists(iTo);
-  if (pToInstance && pToInstance->GetElementType() == XFA_Element::Subform) {
+  auto* pToInstance =
+      CXFA_Subform::FromNode(pManagerNode->GetItemIfExists(iTo));
+  if (pToInstance)
     pNotify->RunSubformIndexChange(pToInstance);
-  }
 
-  CXFA_Node* pFromInstance = pManagerNode->GetItemIfExists(iFrom);
-  if (pFromInstance &&
-      pFromInstance->GetElementType() == XFA_Element::Subform) {
+  auto* pFromInstance =
+      CXFA_Subform::FromNode(pManagerNode->GetItemIfExists(iFrom));
+  if (pFromInstance)
     pNotify->RunSubformIndexChange(pFromInstance);
-  }
 }
 
 void CJX_Object::ScriptSubmitFormatMode(v8::Isolate* pIsolate,

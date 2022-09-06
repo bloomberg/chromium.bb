@@ -10,7 +10,9 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +24,7 @@
 #include "base/test/test_suite.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
@@ -30,10 +33,12 @@
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/updater_scope.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/updater/win/win_util.h"
 #endif
 
 namespace updater {
@@ -51,6 +56,12 @@ using ::testing::UnitTest;
 constexpr int kSuccess = 0;
 constexpr int kUnknownSwitch = 101;
 constexpr int kBadCommand = 102;
+
+base::Value ValueFromString(const std::string& values) {
+  absl::optional<base::Value> results_value = base::JSONReader::Read(values);
+  EXPECT_TRUE(results_value);
+  return results_value->Clone();
+}
 
 template <typename... Args>
 base::RepeatingCallback<bool(Args...)> WithSwitch(
@@ -136,6 +147,32 @@ base::RepeatingCallback<bool(Args...)> WithSwitch(
       }));
 }
 
+// Overload for base::Value::Dict switches.
+template <typename... Args>
+base::RepeatingCallback<bool(Args...)> WithSwitch(
+    const std::string& flag,
+    base::RepeatingCallback<bool(const base::Value::Dict&, Args...)> callback) {
+  return WithSwitch(
+      flag,
+      base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
+        return callback.Run(std::move(ValueFromString(flag).GetDict()),
+                            std::move(args)...);
+      }));
+}
+
+// Overload for base::Value::List switches.
+template <typename... Args>
+base::RepeatingCallback<bool(Args...)> WithSwitch(
+    const std::string& flag,
+    base::RepeatingCallback<bool(const base::Value::List&, Args...)> callback) {
+  return WithSwitch(
+      flag,
+      base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
+        return callback.Run(std::move(ValueFromString(flag).GetList()),
+                            std::move(args)...);
+      }));
+}
+
 template <typename Arg, typename... RemainingArgs>
 base::RepeatingCallback<bool(RemainingArgs...)> WithArg(
     Arg arg,
@@ -196,10 +233,12 @@ void AppTestHelper::FirstTaskRun() {
     // then use the With* helper functions to provide its arguments.
     {"clean", WithSystemScope(Wrap(&Clean))},
     {"enter_test_mode", WithSwitch("url", Wrap(&EnterTestMode))},
+    {"set_group_policies", WithSwitch("values", Wrap(&SetGroupPolicies))},
     {"expect_active_updater", WithSystemScope(Wrap(&ExpectActiveUpdater))},
-    {"expect_app_unregistered_existence_checker_path",
-     WithSwitch("app_id", WithSystemScope(Wrap(
-                              &ExpectAppUnregisteredExistenceCheckerPath)))},
+    {"expect_registered",
+     WithSwitch("app_id", WithSystemScope(Wrap(&ExpectRegistered)))},
+    {"expect_not_registered",
+     WithSwitch("app_id", WithSystemScope(Wrap(&ExpectNotRegistered)))},
     {"expect_app_version",
      WithSwitch("version", WithSwitch("app_id", WithSystemScope(
                                                     Wrap(&ExpectAppVersion))))},
@@ -207,7 +246,7 @@ void AppTestHelper::FirstTaskRun() {
      WithSystemScope(Wrap(&ExpectCandidateUninstalled))},
     {"expect_clean", WithSystemScope(Wrap(&ExpectClean))},
     {"expect_installed", WithSystemScope(Wrap(&ExpectInstalled))},
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     {"expect_interfaces_registered",
      WithSystemScope(Wrap(&ExpectInterfacesRegistered))},
     {"expect_legacy_update3web_succeeds",
@@ -218,8 +257,18 @@ void AppTestHelper::FirstTaskRun() {
                                           &ExpectLegacyUpdate3WebSucceeds)))))},
     {"expect_legacy_process_launcher_succeeds",
      WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
+    {"expect_legacy_app_command_web_succeeds",
+     WithSwitch(
+         "expected_exit_code",
+         WithSwitch(
+             "parameters",
+             WithSwitch(
+                 "command_id",
+                 WithSwitch("app_id",
+                            WithSystemScope(
+                                Wrap(&ExpectLegacyAppCommandWebSucceeds))))))},
     {"run_uninstall_cmd_line", WithSystemScope(Wrap(&RunUninstallCmdLine))},
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
     {"expect_version_active",
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},
     {"expect_version_not_active",
@@ -227,9 +276,15 @@ void AppTestHelper::FirstTaskRun() {
     {"install", WithSystemScope(Wrap(&Install))},
     {"print_log", WithSystemScope(Wrap(&PrintLog))},
     {"run_wake", WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
-    {"update", WithSwitch("app_id", WithSystemScope(Wrap(&Update)))},
+    {"run_wake_active",
+     WithSwitch("exit_code", WithSystemScope(Wrap(&RunWakeActive)))},
+    {"update",
+     WithSwitch("install_data_index",
+                (WithSwitch("app_id", WithSystemScope(Wrap(&Update)))))},
     {"update_all", WithSystemScope(Wrap(&UpdateAll))},
-    {"register_app", WithSwitch("app_id", WithSystemScope(Wrap(&RegisterApp)))},
+    {"install_app", WithSwitch("app_id", WithSystemScope(Wrap(&InstallApp)))},
+    {"uninstall_app",
+     WithSwitch("app_id", WithSystemScope(Wrap(&UninstallApp)))},
     {"set_existence_checker_path",
      WithSwitch("path",
                 (WithSwitch("app_id",
@@ -238,14 +293,27 @@ void AppTestHelper::FirstTaskRun() {
      WithSystemScope(Wrap(&SetupFakeUpdaterHigherVersion))},
     {"setup_fake_updater_lower_version",
      WithSystemScope(Wrap(&SetupFakeUpdaterLowerVersion))},
+    {"setup_real_updater_lower_version",
+     WithSystemScope(Wrap(&SetupRealUpdaterLowerVersion))},
     {"set_first_registration_counter",
      WithSwitch("value", WithSystemScope(Wrap(&SetServerStarts)))},
     {"stress_update_service", WithSystemScope(Wrap(&StressUpdateService))},
     {"uninstall", WithSystemScope(Wrap(&Uninstall))},
     {"call_service_update",
-     WithSwitch(
-         "same_version_update_allowed",
-         WithSwitch("app_id", WithSystemScope(Wrap(&CallServiceUpdate))))},
+     WithSwitch("same_version_update_allowed",
+                WithSwitch("install_data_index",
+                           WithSwitch("app_id", WithSystemScope(Wrap(
+                                                    &CallServiceUpdate)))))},
+    {"setup_fake_legacy_updater_data",
+     WithSystemScope(Wrap(&SetupFakeLegacyUpdaterData))},
+    {"expect_legacy_updater_data_migrated",
+     WithSystemScope(Wrap(&ExpectLegacyUpdaterDataMigrated))},
+    {"run_recovery_component",
+     WithSwitch("version", WithSwitch("app_id", WithSystemScope(Wrap(
+                                                    &RunRecoveryComponent))))},
+    {"expect_last_checked", WithSystemScope(Wrap(&ExpectLastChecked))},
+    {"expect_last_started", WithSystemScope(Wrap(&ExpectLastStarted))},
+    {"run_offline_install", WithSystemScope(Wrap(&RunOfflineInstall))},
   };
 
   const base::CommandLine* command_line =
@@ -313,10 +381,14 @@ int IntegrationTestsHelperMain(int argc, char** argv) {
                        /*enable_thread_id=*/true,
                        /*enable_timestamp=*/true,
                        /*enable_tickcount=*/false);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);
+  if (FAILED(DisableCOMExceptionHandling())) {
+    // Failing to disable COM exception handling is a critical error.
+    CHECK(false) << "Failed to disable COM exception handling.";
+  }
 #endif
   chrome::RegisterPathProvider();
   TestEventListeners& listeners = UnitTest::GetInstance()->listeners();

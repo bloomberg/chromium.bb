@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const originalConsole = console;
-const originalAssert = console.assert;
+import * as Platform from '../platform/platform.js';
 
 const queryParamsObject = new URLSearchParams(location.search);
 
@@ -48,42 +47,12 @@ export class Runtime {
     runtimeInstance = undefined;
   }
 
-  /**
-   * http://tools.ietf.org/html/rfc3986#section-5.2.4
-   */
-  static normalizePath(path: string): string {
-    if (path.indexOf('..') === -1 && path.indexOf('.') === -1) {
-      return path;
-    }
-
-    const normalizedSegments = [];
-    const segments = path.split('/');
-    for (const segment of segments) {
-      if (segment === '.') {
-        continue;
-      } else if (segment === '..') {
-        normalizedSegments.pop();
-      } else if (segment) {
-        normalizedSegments.push(segment);
-      }
-    }
-    let normalizedPath = normalizedSegments.join('/');
-    if (normalizedPath[normalizedPath.length - 1] === '/') {
-      return normalizedPath;
-    }
-    if (path[0] === '/' && normalizedPath) {
-      normalizedPath = '/' + normalizedPath;
-    }
-    if ((path[path.length - 1] === '/') || (segments[segments.length - 1] === '.') ||
-        (segments[segments.length - 1] === '..')) {
-      normalizedPath = normalizedPath + '/';
-    }
-
-    return normalizedPath;
-  }
-
   static queryParam(name: string): string|null {
     return queryParamsObject.get(name);
+  }
+
+  static setQueryParamForTesting(name: string, value: string): void {
+    queryParamsObject.set(name, value);
   }
 
   static experimentsSetting(): {
@@ -98,13 +67,6 @@ export class Runtime {
       console.error('Failed to parse localStorage[\'experiments\']');
       return {};
     }
-  }
-
-  static assert(value: boolean|undefined, message: string): void {
-    if (value) {
-      return;
-    }
-    originalAssert.call(originalConsole, value, message + ' ' + new Error().stack);
   }
 
   static setPlatform(platform: string): void {
@@ -138,15 +100,6 @@ export class Runtime {
       return false;
     }
     return true;
-  }
-
-  static resolveSourceURL(path: string): string {
-    let sourceURL: string = self.location.href;
-    if (self.location.search) {
-      sourceURL = sourceURL.replace(self.location.search, '');
-    }
-    sourceURL = sourceURL.substring(0, sourceURL.lastIndexOf('/') + 1) + path;
-    return '\n/*# sourceURL=' + sourceURL + ' */';
   }
 
   loadLegacyModule(modulePath: string): Promise<void> {
@@ -197,10 +150,12 @@ export class ExperimentsSupport {
   }
 
   register(experimentName: string, experimentTitle: string, unstable?: boolean, docLink?: string): void {
-    Runtime.assert(
-        !this.#experimentNames.has(experimentName), 'Duplicate registration of experiment ' + experimentName);
+    Platform.DCHECK(
+        () => !this.#experimentNames.has(experimentName), 'Duplicate registration of experiment ' + experimentName);
     this.#experimentNames.add(experimentName);
-    this.#experiments.push(new Experiment(this, experimentName, experimentTitle, Boolean(unstable), docLink ?? ''));
+    this.#experiments.push(new Experiment(
+        this, experimentName, experimentTitle, Boolean(unstable),
+        docLink as Platform.DevToolsPath.UrlString ?? Platform.DevToolsPath.EmptyUrlString));
   }
 
   isEnabled(experimentName: string): boolean {
@@ -253,6 +208,11 @@ export class ExperimentsSupport {
     this.#enabledTransiently.add(experimentName);
   }
 
+  disableForTest(experimentName: string): void {
+    this.checkExperiment(experimentName);
+    this.#enabledTransiently.delete(experimentName);
+  }
+
   clearForTest(): void {
     this.#experiments = [];
     this.#experimentNames.clear();
@@ -278,7 +238,7 @@ export class ExperimentsSupport {
   }
 
   private checkExperiment(experimentName: string): void {
-    Runtime.assert(this.#experimentNames.has(experimentName), 'Unknown experiment ' + experimentName);
+    Platform.DCHECK(() => this.#experimentNames.has(experimentName), 'Unknown experiment ' + experimentName);
   }
 }
 
@@ -286,9 +246,11 @@ export class Experiment {
   name: string;
   title: string;
   unstable: boolean;
-  docLink?: string;
+  docLink?: Platform.DevToolsPath.UrlString;
   readonly #experiments: ExperimentsSupport;
-  constructor(experiments: ExperimentsSupport, name: string, title: string, unstable: boolean, docLink: string) {
+  constructor(
+      experiments: ExperimentsSupport, name: string, title: string, unstable: boolean,
+      docLink: Platform.DevToolsPath.UrlString) {
     this.name = name;
     this.title = title;
     this.unstable = unstable;
@@ -302,35 +264,6 @@ export class Experiment {
 
   setEnabled(enabled: boolean): void {
     this.#experiments.setEnabled(this.name, enabled);
-  }
-}
-
-export function loadResourcePromise(url: string): Promise<string> {
-  return new Promise<string>(load);
-
-  function load(fulfill: (arg0: string) => void, reject: (arg0: Error) => void): void {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = onreadystatechange;
-
-    function onreadystatechange(this: XMLHttpRequest, _e: Event): void {
-      if (xhr.readyState !== XMLHttpRequest.DONE) {
-        return;
-      }
-
-      const response: string = this.response;
-
-      // DevTools Proxy server can mask 404s as 200s, check the body to be sure
-      const status = /^HTTP\/1.1 404/.test(response) ? 404 : xhr.status;
-
-      if ([0, 200, 304].indexOf(status) === -1)  // Testing harness file:/// results in 0.
-      {
-        reject(new Error('While loading from url ' + url + ' server responded with a status of ' + status));
-      } else {
-        fulfill(response);
-      }
-    }
-    xhr.send(null);
   }
 }
 
@@ -352,6 +285,14 @@ export enum ExperimentName {
   WEBAUTHN_PANE = 'webauthnPane',
   SYNC_SETTINGS = 'syncSettings',
   FULL_ACCESSIBILITY_TREE = 'fullAccessibilityTree',
+  PRECISE_CHANGES = 'preciseChanges',
+  STYLES_PANE_CSS_CHANGES = 'stylesPaneCSSChanges',
+  HEADER_OVERRIDES = 'headerOverrides',
+  CSS_LAYERS = 'cssLayers',
+  EYEDROPPER_COLOR_PICKER = 'eyedropperColorPicker',
+  INSTRUMENTATION_BREAKPOINTS = 'instrumentationBreakpoints',
+  CSS_AUTHORING_HINTS = 'cssAuthoringHints',
+  AUTHORED_DEPLOYED_GROUPING = 'authoredDeployedGrouping',
 }
 
 // TODO(crbug.com/1167717): Make this a const enum again

@@ -13,9 +13,9 @@
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/frame.mojom.h"
@@ -23,10 +23,10 @@
 #include "content/public/common/resource_usage_reporter.mojom.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/worker/shared_worker_factory_impl.h"
+#include "content/services/auction_worklet/auction_worklet_service_impl.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -150,11 +150,10 @@ void CreateEmbeddedWorker(
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
         receiver) {
   initiator_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
-                     initiator_task_runner,
-                     render_thread->cors_exempt_header_list(),
-                     std::move(receiver)));
+      FROM_HERE, base::BindOnce(&EmbeddedWorkerInstanceClientImpl::Create,
+                                initiator_task_runner,
+                                render_thread->cors_exempt_header_list(),
+                                std::move(receiver)));
 }
 
 }  // namespace
@@ -168,6 +167,12 @@ void ExposeRendererInterfacesToBrowser(
                base::ThreadTaskRunnerHandle::Get());
   binders->Add(base::BindRepeating(&CreateResourceUsageReporter, render_thread),
                base::ThreadTaskRunnerHandle::Get());
+#if BUILDFLAG(IS_ANDROID)
+  binders->Add(
+      base::BindRepeating(
+          &auction_worklet::AuctionWorkletServiceImpl::CreateForRenderer),
+      base::ThreadTaskRunnerHandle::Get());
+#endif
 
   auto task_runner_for_service_worker_startup =
       base::ThreadPool::CreateSingleThreadTaskRunner(

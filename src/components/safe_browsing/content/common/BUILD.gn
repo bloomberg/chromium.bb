@@ -26,15 +26,23 @@ if (safe_browsing_mode != 0) {
     sources = [
       "file_type_policies.cc",
       "file_type_policies.h",
+      "file_type_policies_policy_util.cc",
+      "file_type_policies_policy_util.h",
+      "file_type_policies_prefs.cc",
+      "file_type_policies_prefs.h",
     ]
 
     public_deps = [
       "//base",
       "//components/safe_browsing/content/common/proto:download_file_types_proto",
+      "//url:url",
     ]
 
     deps = [
+      "//components/policy/core/browser",
+      "//components/prefs",
       "//components/resources:components_resources",
+      "//components/url_matcher:url_matcher",
       "//ui/base",
     ]
   }
@@ -49,6 +57,20 @@ if (safe_browsing_mode != 0) {
     deps = [ ":file_type_policies" ]
   }
 
+  source_set("file_type_policies_policy_util_unittest") {
+    testonly = true
+    sources = [ "file_type_policies_policy_util_unittest.cc" ]
+
+    deps = [
+      ":file_type_policies",
+      "//base:base",
+      "//components/policy/core/browser:test_support",
+      "//components/prefs:test_support",
+      "//testing/gmock:gmock",
+      "//testing/gtest:gtest",
+    ]
+  }
+
   source_set("file_type_policies_unittest") {
     testonly = true
     sources = [ "file_type_policies_unittest.cc" ]
@@ -59,6 +81,35 @@ if (safe_browsing_mode != 0) {
       "//build:chromeos_buildflags",
       "//testing/gmock:gmock",
       "//testing/gtest:gtest",
+    ]
+  }
+
+  source_set("visual_utils") {
+    sources = [
+      "visual_utils.cc",
+      "visual_utils.h",
+    ]
+
+    deps = [
+      "//components/safe_browsing:buildflags",
+      "//components/safe_browsing/core/common:common",
+      "//components/safe_browsing/core/common/proto:client_model_proto",
+      "//components/safe_browsing/core/common/proto:csd_proto",
+      "//ui/gfx:color_utils",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [ "visual_utils_unittest.cc" ]
+
+    deps = [
+      ":visual_utils",
+      "//base/test:test_support",
+      "//components/safe_browsing/core/common",
+      "//testing/gmock:gmock",
+      "//testing/gtest:gtest",
+      "//ui/gfx:color_utils",
     ]
   }
 }

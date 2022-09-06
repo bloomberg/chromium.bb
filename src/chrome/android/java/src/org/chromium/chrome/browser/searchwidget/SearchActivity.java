@@ -24,12 +24,15 @@ import org.chromium.base.Log;
 import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.blink.mojom.DisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.app.omnibox.OmniboxPedalDelegateImpl;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorFactory;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
@@ -197,7 +200,10 @@ public class SearchActivity extends AsyncInitializationActivity
                 TabWindowManagerSingleton::getInstance, /*bookmarkState=*/(url) -> false,
                 VoiceToolbarButtonController::isToolbarMicEnabled, new DummyJankTracker(),
                 /*ExploreIconState*/(pixelSize, callback) ->{},
-                /*userEducationHelper=*/null, /*merchantTrustSignalsCoordinatorSupplier=*/null);
+                /*merchantTrustSignalsCoordinatorSupplier=*/null,
+                new OmniboxPedalDelegateImpl(this, new OneshotSupplierImpl<>(),
+                        getModalDialogManagerSupplier()), null,
+                ChromePureJavaExceptionReporter::postReportJavaException);
         // clang-format on
         mLocationBarCoordinator.setUrlBarFocusable(true);
         mLocationBarCoordinator.setShouldShowMicButtonWhenUnfocused(true);

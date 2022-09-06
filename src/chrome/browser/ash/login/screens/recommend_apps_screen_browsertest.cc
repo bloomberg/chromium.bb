@@ -18,8 +18,8 @@
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
+#include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
-#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
@@ -41,9 +41,11 @@
 namespace ash {
 namespace {
 
-const test::UIPath webview_ui_path = {"recommend-apps", "appView"};
-const test::UIPath install_button = {"recommend-apps", "installButton"};
-const test::UIPath skip_button = {"recommend-apps", "skipButton"};
+constexpr char kRecommendAppsId[] = "recommend-apps";
+
+const test::UIPath webview_ui_path = {kRecommendAppsId, "appView"};
+const test::UIPath install_button = {kRecommendAppsId, "installButton"};
+const test::UIPath skip_button = {kRecommendAppsId, "skipButton"};
 
 struct FakeAppInfo {
  public:
@@ -77,7 +79,7 @@ class StubRecommendAppsFetcher : public RecommendAppsFetcher {
     for (const auto& app : apps) {
       app_list.Append(app.ToValue());
     }
-    delegate_->OnLoadSuccess(app_list);
+    delegate_->OnLoadSuccess(std::move(app_list));
   }
 
   void SimulateParseError() {
@@ -150,17 +152,17 @@ class RecommendAppsScreenTest : public OobeBaseTest {
   void ExpectLoadingStep() {
     // Wait for loading screen.
     test::OobeJS()
-        .CreateVisibilityWaiter(true, {"recommend-apps", "loadingDialog"})
+        .CreateVisibilityWaiter(true, {kRecommendAppsId, "loadingDialog"})
         ->Wait();
 
-    test::OobeJS().ExpectHiddenPath({"recommend-apps", "appsDialog"});
+    test::OobeJS().ExpectHiddenPath({kRecommendAppsId, "appsDialog"});
   }
 
   void ExpectAppSelectionStep() {
     test::OobeJS()
-        .CreateVisibilityWaiter(true, {"recommend-apps", "appsDialog"})
+        .CreateVisibilityWaiter(true, {kRecommendAppsId, "appsDialog"})
         ->Wait();
-    test::OobeJS().ExpectHiddenPath({"recommend-apps", "loadingDialog"});
+    test::OobeJS().ExpectHiddenPath({kRecommendAppsId, "loadingDialog"});
   }
 
   bool WaitForAppListSize(const std::string& webview_path, int app_count) {
@@ -249,6 +251,10 @@ class RecommendAppsScreenTest : public OobeBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
@@ -300,6 +306,10 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
 }
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
@@ -352,6 +362,10 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
 }
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
@@ -398,6 +412,10 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
 }
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
@@ -448,7 +466,12 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
 }
 
-IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest,
+                       InstallWithNoAppsSelectedDisabled) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
@@ -466,24 +489,18 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
 
   ASSERT_TRUE(WaitForAppListSize(webview_path, test_apps.size()));
 
-  // The install button is expected to be disabled at this point. Send empty app
-  // list directly to test handler behavior when install is triggered with no
-  // apps selected.
-  test::OobeJS().Evaluate("chrome.send('recommendAppsInstall', []);");
-
-  WaitForScreenExit();
-  EXPECT_EQ(RecommendAppsScreen::Result::SKIPPED, screen_result_.value());
-
-  EXPECT_EQ(0, recommend_apps_fetcher_->retries());
-
-  const base::Value* fast_reinstall_packages =
-      ProfileManager::GetActiveUserProfile()->GetPrefs()->Get(
-          arc::prefs::kArcFastAppReinstallPackages);
-  ASSERT_TRUE(fast_reinstall_packages);
-  EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
+  // The install button is expected to be disabled at this point. Check that
+  // on install button click does nothing.
+  test::OobeJS().ExpectDisabledPath(install_button);
+  test::OobeJS().TapOnPath(install_button);
+  ASSERT_FALSE(screen_result_.has_value());
 }
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
@@ -513,6 +530,10 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
 }
 
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
+  LoginDisplayHost::default_host()
+      ->GetWizardContext()
+      ->defer_oobe_flow_finished_for_tests = true;
+
   ShowRecommendAppsScreen();
 
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();

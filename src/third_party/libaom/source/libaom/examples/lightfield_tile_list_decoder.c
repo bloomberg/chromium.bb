@@ -37,6 +37,12 @@
 #include "common/tools_common.h"
 #include "common/video_reader.h"
 
+enum {
+  YUV1D,  // 1D tile output for conformance test.
+  YUV,    // Tile output in YUV format.
+  NV12,   // Tile output in NV12 format.
+} UENUM1BYTE(OUTPUT_FORMAT);
+
 static const char *exec_name;
 
 void usage_exit(void) {

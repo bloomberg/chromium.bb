@@ -6,7 +6,6 @@
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_TEST_MODEL_EXECUTOR_H_
 
 #include "components/optimization_guide/core/model_executor.h"
-#include "third_party/abseil-cpp/absl/status/status.h"
 
 namespace optimization_guide {
 
@@ -16,7 +15,8 @@ class TestModelExecutor
   TestModelExecutor() = default;
   ~TestModelExecutor() override = default;
 
-  void InitializeAndMoveToBackgroundThread(
+  void InitializeAndMoveToExecutionThread(
+      absl::optional<base::TimeDelta>,
       proto::OptimizationTarget,
       scoped_refptr<base::SequencedTaskRunner>,
       scoped_refptr<base::SequencedTaskRunner>) override {}
@@ -29,7 +29,7 @@ class TestModelExecutor
 
   using ExecutionCallback =
       base::OnceCallback<void(const absl::optional<std::vector<float>>&)>;
-  void SendForExecution(ExecutionCallback ui_callback_on_complete,
+  void SendForExecution(ExecutionCallback callback_on_complete,
                         base::TimeTicks start_time,
                         const std::vector<float>& args) override;
 };

@@ -17,11 +17,12 @@ import '../settings_shared_css.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PrefsMixin} from '../prefs/prefs_mixin.js';
 
 import {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_browser_proxy.js';
+import {getTemplate} from './downloads_page.html.js';
 
 type AccountInfo = {
   linked: boolean,
@@ -39,7 +40,7 @@ export class SettingsDownloadsPageElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -83,7 +84,7 @@ export class SettingsDownloadsPageElement extends
         value: false,
       },
 
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       /**
        * The download location string that is suitable to display in the UI.
        */
@@ -92,7 +93,7 @@ export class SettingsDownloadsPageElement extends
     };
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   static get observers() {
     return [
       'handleDownloadLocationChanged_(prefs.download.default_directory.value)'
@@ -107,14 +108,14 @@ export class SettingsDownloadsPageElement extends
   private connectionSetupInProgress_: boolean;
   private autoOpenDownloads_: boolean;
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   private downloadLocation_: string;
   // </if>
 
   private browserProxy_: DownloadsBrowserProxy =
       DownloadsBrowserProxyImpl.getInstance();
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener(
@@ -161,7 +162,7 @@ export class SettingsDownloadsPageElement extends
     });
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   private handleDownloadLocationChanged_() {
     this.browserProxy_
         .getDownloadLocationText(

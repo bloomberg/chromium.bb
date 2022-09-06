@@ -84,13 +84,6 @@ class TestComboboxModel : public ui::ComboboxModel {
     return 0;
   }
 
-  void AddObserver(ui::ComboboxModelObserver* observer) override {
-    observers_.AddObserver(observer);
-  }
-  void RemoveObserver(ui::ComboboxModelObserver* observer) override {
-    observers_.RemoveObserver(observer);
-  }
-
   void SetSeparators(const std::set<int>& separators) {
     separators_ = separators;
     OnModelChanged();
@@ -103,11 +96,10 @@ class TestComboboxModel : public ui::ComboboxModel {
 
  private:
   void OnModelChanged() {
-    for (auto& observer : observers_)
+    for (auto& observer : observers())
       observer.OnComboboxModelChanged(this);
   }
 
-  base::ObserverList<ui::ComboboxModelObserver> observers_;
   std::set<int> separators_;
   int item_count_ = kItemCount;
 };
@@ -134,20 +126,13 @@ class VectorComboboxModel : public ui::ComboboxModel {
   }
   bool IsItemSeparatorAt(int index) const override { return false; }
   int GetDefaultIndex() const override { return default_index_; }
-  void AddObserver(ui::ComboboxModelObserver* observer) override {
-    observers_.AddObserver(observer);
-  }
-  void RemoveObserver(ui::ComboboxModelObserver* observer) override {
-    observers_.RemoveObserver(observer);
-  }
 
   void ValuesChanged() {
-    for (auto& observer : observers_)
+    for (auto& observer : observers())
       observer.OnComboboxModelChanged(this);
   }
 
  private:
-  base::ObserverList<ui::ComboboxModelObserver> observers_;
   int default_index_ = 0;
   const raw_ptr<std::vector<std::string>> values_;
 };
@@ -292,7 +277,7 @@ class ComboboxTest : public ViewsTestBase {
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 };
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Tests whether the various Mac specific keyboard shortcuts invoke the dropdown
 // menu or not.
 TEST_F(ComboboxTest, KeyTestMac) {
@@ -366,7 +351,7 @@ TEST_F(ComboboxTest, DisabilityTest) {
 
 // On Mac, key events can't change the currently selected index directly for a
 // combobox.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 
 // Tests the behavior of various keyboard shortcuts on the currently selected
 // index.
@@ -511,7 +496,7 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
   PressKey(ui::VKEY_END);
   EXPECT_EQ(6, combobox_->GetSelectedIndex());
 }
-#endif  // !OS_MAC
+#endif  // !BUILDFLAG(IS_MAC)
 
 TEST_F(ComboboxTest, GetTextForRowTest) {
   std::set<int> separators;
@@ -846,7 +831,7 @@ TEST_F(ComboboxTest, MenuModel) {
   EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
             menu_model->GetTypeAt(kSeparatorIndex));
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Comboboxes on Mac should have checkmarks, with the selected item checked,
   EXPECT_EQ(ui::MenuModel::TYPE_CHECK, menu_model->GetTypeAt(0));
   EXPECT_EQ(ui::MenuModel::TYPE_CHECK, menu_model->GetTypeAt(1));
@@ -882,6 +867,15 @@ TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
   const std::string& name =
       data.GetStringAttribute(ax::mojom::StringAttribute::kName);
   EXPECT_EQ(test_tooltip_text, ASCIIToUTF16(name));
+}
+
+// Regression test for crbug.com/1264288.
+// Should fail in ASan build before the fix.
+TEST_F(ComboboxTest, NoCrashWhenComboboxOutlivesModel) {
+  auto model = std::make_unique<TestComboboxModel>();
+  auto combobox = std::make_unique<TestCombobox>(model.get());
+  model.reset();
+  combobox.reset();
 }
 
 namespace {

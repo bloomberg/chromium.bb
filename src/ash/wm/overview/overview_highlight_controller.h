@@ -15,32 +15,20 @@ namespace ash {
 class OverviewHighlightableView;
 class OverviewItem;
 class OverviewSession;
+class ScopedA11yOverrideWindowSetter;
 
 // Manages highlighting items while in overview. Responsible for telling
 // overview items to show or hide their focus ring borders, when tabbing through
 // overview items with arrow keys and trackpad swipes, or when tab dragging.
 class ASH_EXPORT OverviewHighlightController {
  public:
-  // TestApi is used for tests to get internal implementation details.
-  // TODO(dandersson): Move this class out.
-  class ASH_EXPORT TestApi {
-   public:
-    explicit TestApi(OverviewHighlightController* highlight_controller);
-    ~TestApi();
-
-    OverviewHighlightableView* GetHighlightView() const;
-
-   private:
-    OverviewHighlightController* const highlight_controller_;
-  };
-
   explicit OverviewHighlightController(OverviewSession* overview_session);
-
   OverviewHighlightController(const OverviewHighlightController&) = delete;
   OverviewHighlightController& operator=(const OverviewHighlightController&) =
       delete;
-
   ~OverviewHighlightController();
+
+  OverviewHighlightableView* highlighted_view() { return highlighted_view_; }
 
   // Moves the focus ring to the next traversable view.
   void MoveHighlight(bool reverse);
@@ -67,7 +55,7 @@ class ASH_EXPORT OverviewHighlightController {
   // Activates or closes the currently highlighted view (if any) if it supports
   // the activation or closing operations respectively.
   bool MaybeActivateHighlightedView();
-  bool MaybeCloseHighlightedView();
+  bool MaybeCloseHighlightedView(bool primary_action);
 
   // Swaps the currently highlighted view with its neighbor views.
   bool MaybeSwapHighlightedView(bool right);
@@ -78,6 +66,12 @@ class ASH_EXPORT OverviewHighlightController {
   // Tries to get the item that is currently highlighted. Returns null if there
   // is no highlight, or if the highlight is on a desk view.
   OverviewItem* GetHighlightedItem() const;
+
+  // If `highlighted_view_` is not null, remove the highlight. The next tab will
+  // start at the beginning of the tab order. This can be used when a lot of
+  // views are getting removed or hidden, such as when the desks bar goes from
+  // expanded to zero state.
+  void ResetHighlightedView();
 
   // Hides or shows the tab dragging highlight.
   void HideTabDragHighlight();
@@ -109,6 +103,11 @@ class ASH_EXPORT OverviewHighlightController {
 
   // The current view that is being tab dragged, if any.
   OverviewHighlightableView* tab_dragged_view_ = nullptr;
+
+  // Helps to update the current a11y override window. And accessibility
+  // features will focus on the window that is being set. Once `this` goes out
+  // of scope, the a11y override window is set to nullptr.
+  std::unique_ptr<ScopedA11yOverrideWindowSetter> scoped_a11y_overrider_;
 };
 
 }  // namespace ash

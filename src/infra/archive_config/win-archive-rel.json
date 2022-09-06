@@ -23,8 +23,6 @@
                 "nacl_irt_x86_64.nexe",
                 "notification_helper.exe",
                 "resources.pak",
-                "swiftshader\\libEGL.dll",
-                "swiftshader\\libGLESv2.dll",
                 "v8_context_snapshot.bin",
                 "vk_swiftshader.dll",
                 "vk_swiftshader_icd.json",
@@ -66,8 +64,6 @@
                 "mojo_core.dll.pdb",
                 "notification_helper.exe.pdb",
                 "setup.exe.pdb",
-                "swiftshader\\libEGL.dll.pdb",
-                "swiftshader\\libGLESv2.dll.pdb",
                 "vk_swiftshader.dll.pdb",
                 "vulkan-1.dll.pdb"
             ],
@@ -176,6 +172,15 @@
             "gcs_bucket": "chromium-browser-snapshots",
             "gcs_path": "Win_x64/{%position%}",
             "archive_type": "ARCHIVE_TYPE_FILES"
+        },
+        {
+            "files": [
+                "updater.exe.pdb",
+                "UpdaterSetup.exe.pdb"
+            ],
+            "gcs_bucket": "chromium-browser-snapshots",
+            "gcs_path": "Win_x64/{%position%}/updater-syms.zip",
+            "archive_type":"ARCHIVE_TYPE_ZIP"
         }
     ]
 }

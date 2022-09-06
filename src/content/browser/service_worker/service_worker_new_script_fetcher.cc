@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_new_script_fetcher.h"
 
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
@@ -103,6 +104,12 @@ void ServiceWorkerNewScriptFetcher::StartScriptLoadingWithNewResourceID(
   // service worker.
   uint32_t options = network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
 
+  // Notify to DevTools that the request for fetching the service worker script
+  // is about to start. It fires `Network.onRequestWillBeSent` event.
+  devtools_instrumentation::OnServiceWorkerMainScriptRequestWillBeSent(
+      requesting_frame_id_, context_.wrapper(), version_->version_id(),
+      request);
+
   mojo::MakeSelfOwnedReceiver(
       ServiceWorkerNewScriptLoader::CreateAndStart(
           request_id_, options, request,
@@ -118,18 +125,15 @@ void ServiceWorkerNewScriptFetcher::OnReceiveEarlyHints(
     network::mojom::EarlyHintsPtr early_hints) {}
 
 void ServiceWorkerNewScriptFetcher::OnReceiveResponse(
-    network::mojom::URLResponseHeadPtr response_head) {
-  response_head_ = std::move(response_head);
-}
-
-void ServiceWorkerNewScriptFetcher::OnStartLoadingResponseBody(
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body) {
-  DCHECK(response_head_);
+  if (!response_body)
+    return;
 
   blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params =
       blink::mojom::WorkerMainScriptLoadParams::New();
   main_script_load_params->request_id = request_id_;
-  main_script_load_params->response_head = std::move(response_head_);
+  main_script_load_params->response_head = std::move(response_head);
   main_script_load_params->response_body = std::move(response_body);
   main_script_load_params->url_loader_client_endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
@@ -164,6 +168,9 @@ void ServiceWorkerNewScriptFetcher::OnComplete(
   // header and the body.
   if (status.error_code == net::OK) {
     mojo::ReportBadMessage("SWNSF_BAD_OK");
+    // Do not continue with further script processing, but let the |callback_|
+    // hang. This renderer process would be killed soon anyways.
+    return;
   }
   std::move(callback_).Run(/*main_script_load_params=*/nullptr);
 }

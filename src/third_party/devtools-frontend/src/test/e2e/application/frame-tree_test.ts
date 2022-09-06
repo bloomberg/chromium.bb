@@ -4,9 +4,23 @@
 
 import {assert} from 'chai';
 
-import {$$, click, getBrowserAndPages, getTestServerPort, goToResource, pressKey, waitFor, waitForFunction} from '../../shared/helper.js';
+import {
+  $$,
+  click,
+  getBrowserAndPages,
+  getTestServerPort,
+  goToResource,
+  pressKey,
+  waitFor,
+  waitForFunction,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {doubleClickSourceTreeItem, getFrameTreeTitles, getTrimmedTextContent, navigateToApplicationTab} from '../helpers/application-helpers.js';
+import {
+  doubleClickSourceTreeItem,
+  getFrameTreeTitles,
+  getTrimmedTextContent,
+  navigateToApplicationTab,
+} from '../helpers/application-helpers.js';
 
 const TOP_FRAME_SELECTOR = '[aria-label="top"]';
 const WEB_WORKERS_SELECTOR = '[aria-label="Web Workers"]';
@@ -38,14 +52,12 @@ declare global {
     iFrameWindow: Window|null|undefined;
   }
 }
-describe('[crbug.com/12]: The Application Tab', async () => {
+describe('The Application Tab', async () => {
   afterEach(async () => {
     const {target} = getBrowserAndPages();
     await target.evaluate(async () => {
       const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        registration.unregister();
-      }
+      await Promise.all(registrations.map(registration => registration.unregister()));
     });
   });
 
@@ -126,7 +138,7 @@ describe('[crbug.com/12]: The Application Tab', async () => {
 
     await doubleClickSourceTreeItem(OPENED_WINDOWS_SELECTOR);
     await waitFor(`${OPENED_WINDOWS_SELECTOR} + ol li:first-child`);
-    pressKey('ArrowDown');
+    void pressKey('ArrowDown');
 
     const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('.report-field-value');
@@ -157,7 +169,7 @@ describe('[crbug.com/12]: The Application Tab', async () => {
     await target.reload();
     await doubleClickSourceTreeItem(WEB_WORKERS_SELECTOR);
     await waitFor(`${WEB_WORKERS_SELECTOR} + ol li:first-child`);
-    pressKey('ArrowDown');
+    void pressKey('ArrowDown');
 
     const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('.report-field-value');
@@ -175,14 +187,13 @@ describe('[crbug.com/12]: The Application Tab', async () => {
     assert.deepEqual(fieldValuesTextContent, expected);
   });
 
-  // Flaky test
-  it.skipOnPlatforms(['win32'], '[crbug.com/1231056]: shows service workers in the frame tree', async () => {
+  it('shows service workers in the frame tree', async () => {
     await goToResource('application/service-worker-network.html');
     await click('#tab-resources');
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
     await doubleClickSourceTreeItem(SERVICE_WORKERS_SELECTOR);
     await waitFor(`${SERVICE_WORKERS_SELECTOR} + ol li:first-child`);
-    pressKey('ArrowDown');
+    void pressKey('ArrowDown');
 
     const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('.report-field-value');

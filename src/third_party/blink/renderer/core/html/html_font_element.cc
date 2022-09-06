@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
@@ -87,10 +88,11 @@ static bool ParseFontSize(const CharacterType* characters,
                               WTF::NumberParsingOptions::kNone, nullptr);
 
   // Step 9
-  if (mode == kRelativePlus)
-    value += 3;
-  else if (mode == kRelativeMinus)
-    value = 3 - value;
+  if (mode == kRelativePlus) {
+    value = base::CheckAdd(value, 3).ValueOrDefault(value);
+  } else if (mode == kRelativeMinus) {
+    value = base::CheckSub(3, value).ValueOrDefault(value);
+  }
 
   // Step 10
   if (value > 7)

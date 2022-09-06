@@ -43,6 +43,8 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsWarningBubbleShown();
   static bool IsUserAddingScreenIndicatorShown();
   static bool IsSystemInfoShown();
+  static bool IsKioskDefaultMessageShown();
+  static bool IsKioskInstructionBubbleShown();
   static bool IsPasswordFieldShown(const AccountId& account_id);
   static bool IsDisplayPasswordButtonShown(const AccountId& account_id);
   static bool IsManagedIconShown(const AccountId& account_id);
@@ -56,12 +58,14 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static void ClickChallengeResponseButton(const AccountId& account_id);
   static int64_t GetUiUpdateCount();
   static bool LaunchApp(const std::string& app_id);
+  static bool ClickAppsButton();
   static bool ClickAddUserButton();
   static bool ClickCancelButton();
   static bool ClickGuestButton();
   static bool ClickEnterpriseEnrollmentButton();
   static bool ClickOsInstallButton();
   static bool PressAccelerator(const ui::Accelerator& accelerator);
+  static bool SendAcceleratorNatively(const ui::Accelerator& accelerator);
   static bool WaitForUiUpdate(int64_t previous_update_count);
   static int GetUsersCount();
   static bool FocusUser(const AccountId& account_id);

@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
+#include "chrome/browser/ui/webui/metrics_reporter/mock_metrics_reporter.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -108,7 +110,8 @@ class TestTabSearchPageHandler : public TabSearchPageHandler {
             mojo::PendingReceiver<tab_search::mojom::PageHandler>(),
             std::move(page),
             web_ui,
-            webui_controller) {
+            webui_controller,
+            &metrics_reporter_) {
     mock_debounce_timer_ = new base::MockRetainingOneShotTimer();
     SetTimerForTesting(base::WrapUnique(mock_debounce_timer_.get()));
   }
@@ -118,6 +121,7 @@ class TestTabSearchPageHandler : public TabSearchPageHandler {
 
  private:
   raw_ptr<base::MockRetainingOneShotTimer> mock_debounce_timer_;
+  testing::NiceMock<MockMetricsReporter> metrics_reporter_;
 };
 
 class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
@@ -128,7 +132,7 @@ class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
         content::WebContents::CreateParams(profile()));
     web_ui_.set_web_contents(web_contents_.get());
     profile2_ = profile_manager()->CreateTestingProfile(
-        "testing_profile2", nullptr, std::u16string(), 0, std::string(),
+        "testing_profile2", nullptr, std::u16string(), 0,
         GetTestingFactories());
     browser2_ = CreateTestBrowser(profile1(), false);
     browser3_ = CreateTestBrowser(
@@ -303,6 +307,8 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
 }
 
 TEST_F(TabSearchPageHandlerTest, TabsAndGroups) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
@@ -399,6 +405,8 @@ TEST_F(TabSearchPageHandlerTest, MediaTabsTest) {
 }
 
 TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabGroup) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
@@ -456,6 +464,8 @@ TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabGroup) {
 }
 
 TEST_F(TabSearchPageHandlerTest, RecentlyClosedWindowWithGroupTabs) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
@@ -705,6 +715,8 @@ TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabsHaveNoRepeatedURLEntry) {
 
 TEST_F(TabSearchPageHandlerTest,
        RecentlyClosedTabGroupsHaveNoRepeatedURLEntries) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));

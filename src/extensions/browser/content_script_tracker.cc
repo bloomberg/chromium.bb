@@ -149,7 +149,11 @@ class RenderFrameHostAdapter
 
   std::unique_ptr<FrameAdapter> GetLocalParentOrOpener() const override {
     content::RenderFrameHost* parent_or_opener = frame_->GetParent();
-    if (!parent_or_opener) {
+    // Non primary pages(e.g. fenced frame, prerendered page, bfcache, and
+    // portals) can't look at the opener, and WebContents::GetOpener returns the
+    // opener on the primary frame tree. Thus, GetOpener should be called when
+    // |frame_| is a primary main frame.
+    if (!parent_or_opener && frame_->IsInPrimaryMainFrame()) {
       parent_or_opener =
           content::WebContents::FromRenderFrameHost(frame_)->GetOpener();
     }
@@ -328,8 +332,10 @@ bool DoContentScriptsMatch(const Extension& extension,
         owner_site_url.host_piece() == extension.id()) {
       WebViewContentScriptManager* script_manager =
           WebViewContentScriptManager::Get(frame->GetBrowserContext());
-      int embedder_process_id =
-          guest->owner_web_contents()->GetMainFrame()->GetProcess()->GetID();
+      int embedder_process_id = guest->owner_web_contents()
+                                    ->GetPrimaryMainFrame()
+                                    ->GetProcess()
+                                    ->GetID();
       std::set<std::string> script_ids = script_manager->GetContentScriptIDSet(
           embedder_process_id, guest->view_instance_id());
 
@@ -343,7 +349,7 @@ bool DoContentScriptsMatch(const Extension& extension,
       if (!script_ids.empty()) {
         TRACE_EVENT_INSTANT(
             "extensions",
-            "ContentScriptTracker/DoesContentScriptMatch=true(guest)",
+            "ContentScriptTracker/DoContentScriptsMatch=true(guest)",
             ChromeTrackEvent::kRenderProcessHost, process,
             ChromeTrackEvent::kChromeExtensionId,
             ExtensionIdForTracing(extension.id()));
@@ -360,7 +366,7 @@ bool DoContentScriptsMatch(const Extension& extension,
     if (DoContentScriptsMatch(manifest_scripts, frame, url)) {
       TRACE_EVENT_INSTANT(
           "extensions",
-          "ContentScriptTracker/DoesContentScriptMatch=true(manifest)",
+          "ContentScriptTracker/DoContentScriptsMatch=true(manifest)",
           ChromeTrackEvent::kRenderProcessHost, process,
           ChromeTrackEvent::kChromeExtensionId,
           ExtensionIdForTracing(extension.id()));
@@ -379,7 +385,7 @@ bool DoContentScriptsMatch(const Extension& extension,
       if (DoContentScriptsMatch(dynamic_scripts, frame, url)) {
         TRACE_EVENT_INSTANT(
             "extensions",
-            "ContentScriptTracker/DoesContentScriptMatch=true(dynamic)",
+            "ContentScriptTracker/DoContentScriptsMatch=true(dynamic)",
             ChromeTrackEvent::kRenderProcessHost, process,
             ChromeTrackEvent::kChromeExtensionId,
             ExtensionIdForTracing(extension.id()));
@@ -390,7 +396,7 @@ bool DoContentScriptsMatch(const Extension& extension,
 
   // Otherwise, no content script from `extension` can run in `frame` at `url`.
   TRACE_EVENT_INSTANT("extensions",
-                      "ContentScriptTracker/DoesContentScriptMatch=false",
+                      "ContentScriptTracker/DoContentScriptsMatch=false",
                       ChromeTrackEvent::kRenderProcessHost, process,
                       ChromeTrackEvent::kChromeExtensionId,
                       ExtensionIdForTracing(extension.id()));
@@ -439,6 +445,20 @@ const Extension* FindExtensionByHostId(content::BrowserContext* browser_context,
   return extension;
 }
 
+void StoreExtensionsInjectingContentScripts(
+    const std::vector<const Extension*>& extensions_injecting_content_scripts,
+    content::RenderProcessHost& process) {
+  // Store `extensions_injecting_content_scripts` in `process_data`.
+  // ContentScriptTracker never removes entries from this set - once a renderer
+  // process gains an ability to talk on behalf of a content script, it retains
+  // this ability forever.  Note that the `process_data` will be destroyed
+  // together with the RenderProcessHost (see also a comment inside
+  // RenderProcessHostUserData::GetOrCreate).
+  auto& process_data = RenderProcessHostUserData::GetOrCreate(process);
+  for (const Extension* extension : extensions_injecting_content_scripts)
+    process_data.AddContentScript(extension->id());
+}
+
 }  // namespace
 
 // static
@@ -463,27 +483,58 @@ void ContentScriptTracker::ReadyToCommitNavigation(
     content::NavigationHandle* navigation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  content::RenderProcessHost* process =
-      navigation->GetRenderFrameHost()->GetProcess();
+  content::RenderProcessHost& process =
+      *navigation->GetRenderFrameHost()->GetProcess();
   TRACE_EVENT("extensions", "ContentScriptTracker::ReadyToCommitNavigation",
-              ChromeTrackEvent::kRenderProcessHost, *process);
+              ChromeTrackEvent::kRenderProcessHost, process);
 
-  // Store `extensions_injecting_content_scripts` in
-  // `process_data`.  ContentScriptTracker never removes entries
-  // from this set - once a renderer process gains an ability to talk on behalf
-  // of a content script, it retains this ability forever.  Note that the
-  // `process_data`
-  // will be destroyed together with the RenderProcessHost (see also a comment
-  // inside RenderProcessHostUserData::GetOrCreate).
+  // Need to call StoreExtensionsInjectingContentScripts at
+  // ReadyToCommitNavigation time to deal with a (hypothetical, not confirmed by
+  // tests) race condition where Browser process sends Commit IPC and then
+  // immediately disables the extension.  In this scenario, the renderer may run
+  // some content scripts, even though at DidCommit time the Browser will see
+  // that the extension has been disabled.
   std::vector<const Extension*> extensions_injecting_content_scripts =
       GetExtensionsInjectingContentScripts(navigation);
-  auto& process_data = RenderProcessHostUserData::GetOrCreate(*process);
-  for (const Extension* extension : extensions_injecting_content_scripts)
-    process_data.AddContentScript(extension->id());
+  StoreExtensionsInjectingContentScripts(extensions_injecting_content_scripts,
+                                         process);
 
+  // Notify URLLoaderFactoryManager - this needs to happen at
+  // ReadyToCommitNavigation time (i.e. before constructing a URLLoaderFactory
+  // that will be sent to the Renderer in a Commit IPC).
   URLLoaderFactoryManager::WillInjectContentScriptsWhenNavigationCommits(
       base::PassKey<ContentScriptTracker>(), navigation,
       extensions_injecting_content_scripts);
+}
+
+// static
+void ContentScriptTracker::DidFinishNavigation(
+    base::PassKey<ExtensionWebContentsObserver> pass_key,
+    content::NavigationHandle* navigation) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Only consider cross-document navigations that actually commit.  (Documents
+  // associated with same-document navigations should have already been
+  // processed by an earlier DidFinishNavigation.  Navigations that don't
+  // commit/load won't inject content scripts.  Content script injections are
+  // primarily driven by URL matching and therefore failed navigations may still
+  // end up injecting content scripts into the error page.)
+  if (!navigation->HasCommitted() || navigation->IsSameDocument()) {
+    return;
+  }
+
+  content::RenderProcessHost& process =
+      *navigation->GetRenderFrameHost()->GetProcess();
+  TRACE_EVENT("extensions", "ContentScriptTracker::DidFinishNavigation",
+              ChromeTrackEvent::kRenderProcessHost, process);
+
+  // Calling StoreExtensionsInjectingContentScripts in response to DidCommit IPC
+  // is required for correct handling of the race condition from
+  // https://crbug.com/1312125.
+  std::vector<const Extension*> extensions_injecting_content_scripts =
+      GetExtensionsInjectingContentScripts(navigation);
+  StoreExtensionsInjectingContentScripts(extensions_injecting_content_scripts,
+                                         process);
 }
 
 // static

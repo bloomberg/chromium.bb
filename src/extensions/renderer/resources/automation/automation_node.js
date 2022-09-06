@@ -699,7 +699,7 @@ AutomationNodeImpl.prototype = {
     }
 
     if (data.length !== 4) {
-      throw 'Internal encoding error for caret bounds.';
+      throw Error('Internal encoding error for caret bounds.');
     }
 
     return {left: data[0], top: data[1], width: data[2], height: data[3]};
@@ -1087,7 +1087,7 @@ AutomationNodeImpl.prototype = {
     const standardActions = GetStandardActions(this.treeID, this.id);
     if (!standardActions ||
         !standardActions.find(item => action == item)) {
-      throw 'Inapplicable action for node: ' + action;
+      throw Error('Inapplicable action for node: ' + action);
     }
     this.performAction_(action);
   },
@@ -1763,6 +1763,10 @@ utils.defineProperty(AutomationRootNodeImpl, 'destroy', function(treeID) {
   delete AutomationTreeCache.idToAutomationRootNode[treeID];
 });
 
+utils.defineProperty(AutomationRootNodeImpl, 'destroyAll', function() {
+  AutomationTreeCache.idToAutomationRootNode = {};
+});
+
 /**
  * A counter keeping track of IDs to use for mapping action requests to
  * their callback function.
@@ -2163,6 +2167,9 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'indexInParent',
         'invalidState',
         'isButton',
+        'isCheckBox',
+        'isComboBox',
+        'isImage',
         'isRootNode',
         'italic',
         'lastChild',
@@ -2235,6 +2242,10 @@ utils.defineProperty(AutomationRootNode, 'getOrCreate', function(treeID) {
 
 utils.defineProperty(AutomationRootNode, 'destroy', function(treeID) {
   AutomationRootNodeImpl.destroy(treeID);
+});
+
+utils.defineProperty(AutomationRootNode, 'destroyAll', function() {
+  AutomationRootNodeImpl.destroyAll();
 });
 
 exports.$set('AutomationNode', AutomationNode);

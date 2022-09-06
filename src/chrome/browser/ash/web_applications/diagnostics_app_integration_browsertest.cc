@@ -6,11 +6,11 @@
 #include "ash/webui/diagnostics_ui/url_constants.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -34,11 +34,8 @@ const size_t kUsedWithSuccess = 2;
 class DiagnosticsAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   DiagnosticsAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kDiagnosticsApp,
-         ash::features::kDiagnosticsAppNavigation,
-         ash::features::kEnableNetworkingInDiagnosticsApp},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        ash::features::kEnableNetworkingInDiagnosticsApp);
   }
 
  protected:
@@ -54,7 +51,7 @@ class DiagnosticsAppIntegrationTest : public SystemWebAppIntegrationTest {
 
   apps::AppLaunchParams GetAppLaunchParams(
       const std::string override_url = "") {
-    auto params = LaunchParamsForApp(web_app::SystemAppType::DIAGNOSTICS);
+    auto params = LaunchParamsForApp(ash::SystemWebAppType::DIAGNOSTICS);
 
     // Override starting URL when provided.
     if (override_url != "") {
@@ -74,13 +71,14 @@ IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest,
                        DiagnosticsAppInLauncher) {
   const GURL url(ash::kChromeUIDiagnosticsAppUrl);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
-      web_app::SystemAppType::DIAGNOSTICS, url, "Diagnostics"));
+      ash::SystemWebAppType::DIAGNOSTICS, url, "Diagnostics"));
 }
 
 IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest, LaunchMetricsTest) {
   WaitForTestSystemAppInstall();
 
-  LaunchSystemWebAppAsync(profile(), web_app::SystemAppType::DIAGNOSTICS);
+  web_app::LaunchSystemWebAppAsync(profile(),
+                                   ash::SystemWebAppType::DIAGNOSTICS);
   web_app::FlushSystemWebAppLaunchesForTesting(profile());
 
   histogram_tester_.ExpectUniqueSample(kFromChromeLaunch, kDiagnosticsApp, 1);
@@ -91,7 +89,7 @@ IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest, UsageMetricsTest) {
 
   Browser* system_app_browser;
   // Launch app and allow UI to load.
-  LaunchApp(web_app::SystemAppType::DIAGNOSTICS, &system_app_browser);
+  LaunchApp(ash::SystemWebAppType::DIAGNOSTICS, &system_app_browser);
 
   // Find system browser for diagnostics and close it to trigger usage metrics.
   EXPECT_TRUE(web_app::IsSystemWebApp(system_app_browser));
@@ -161,6 +159,35 @@ IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest,
       "ChromeOS.DiagnosticsUi.System.OpenDuration", 1);
   histogram_tester_.ExpectTotalCount(
       "ChromeOS.DiagnosticsUi.Connectivity.OpenDuration", 1);
+}
+
+IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest,
+                       DiagnosticsAppIgnoresInvalidRecordNavigationCall) {
+  content::WebContents* web_contents = LaunchDiagnosticsApp();
+
+  histogram_tester_.ExpectUniqueSample("ChromeOS.DiagnosticsUi.InitialScreen",
+                                       0, 1);
+
+  // Simulate sending invalid navigation view value.
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents, "chrome.send('recordNavigation', [1000, -550]);"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents, "chrome.send('recordNavigation', ['1000', '-550']);"));
+  EXPECT_TRUE(
+      content::ExecuteScript(web_contents, "chrome.send('recordNavigation');"));
+  EXPECT_TRUE(content::ExecuteScript(web_contents,
+                                     "chrome.send('recordNavigation', []);"));
+  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+
+  chrome::CloseAllBrowsers();
+  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.DiagnosticsUi.System.OpenDuration", 1);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.DiagnosticsUi.Connectivity.OpenDuration", 0);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.DiagnosticsUi.Input.OpenDuration", 0);
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(

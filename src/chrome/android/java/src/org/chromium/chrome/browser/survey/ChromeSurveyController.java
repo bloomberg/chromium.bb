@@ -25,7 +25,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -50,7 +50,7 @@ import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
-import org.chromium.components.messages.MessageScopeType;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
@@ -80,6 +80,7 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
     @VisibleForTesting
     static final String SITE_ID_PARAM_NAME = "site-id";
     private static boolean sForceUmaEnabledForTesting;
+    private static boolean sMessageShown;
 
     /**
      * Reasons that the user was rejected from being selected for a survey
@@ -239,6 +240,18 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.MESSAGES_FOR_ANDROID_CHROME_SURVEY)
                 && mMessageDispatcher != null) {
+            // Return early if the message is already shown once.
+            if (sMessageShown) {
+                String logMessage = String.format(
+                        "The survey prompt for survey with ID %s has already been shown.", siteId);
+                Log.w(TAG, logMessage);
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        ()
+                                -> ChromePureJavaExceptionReporter.reportJavaException(
+                                        new Throwable(logMessage)));
+                return;
+            }
+
             // Return early without displaying the message prompt if the survey has expired.
             if (SurveyController.getInstance().isSurveyExpired(siteId)) {
                 String logMessage =
@@ -248,7 +261,7 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                 Log.w(TAG, logMessage);
                 PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
                         ()
-                                -> PureJavaExceptionReporter.reportJavaException(
+                                -> ChromePureJavaExceptionReporter.reportJavaException(
                                         new Throwable(logMessage)));
                 return;
             }
@@ -267,7 +280,10 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                             .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
                                     resources.getString(R.string.chrome_survey_message_button))
                             .with(MessageBannerProperties.ON_PRIMARY_ACTION,
-                                    () -> showSurvey(siteId))
+                                    () -> {
+                                        showSurvey(siteId);
+                                        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
+                                    })
                             .with(MessageBannerProperties.ON_DISMISSED,
                                     this::recordSurveyPromptMetrics)
                             .build();
@@ -313,7 +329,7 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                             Log.w(TAG, logMessage);
                             PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
                                     ()
-                                            -> PureJavaExceptionReporter.reportJavaException(
+                                            -> ChromePureJavaExceptionReporter.reportJavaException(
                                                     new Throwable(logMessage)));
                             mMessageDispatcher.dismissMessage(
                                     message, DismissReason.DISMISSED_BY_FEATURE);
@@ -326,8 +342,8 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                 mLifecycleDispatcher.register(mLifecycleObserver);
             }
 
-            mMessageDispatcher.enqueueMessage(
-                    message, mSurveyPromptTab.getWebContents(), MessageScopeType.NAVIGATION, false);
+            mMessageDispatcher.enqueueWindowScopedMessage(message, false);
+            sMessageShown = true;
         } else {
             InfoBarContainer.get(tab).addAnimationListener(this);
 
@@ -688,11 +704,10 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID);
     }
 
-    /** @return Whether the user has consented to reporting usage metrics and crash dumps. */
+    /** @return Whether metrics and crash dumps are enabled. */
     private static boolean isUMAEnabled() {
         return sForceUmaEnabledForTesting
-                || PrivacyPreferencesManagerImpl.getInstance()
-                           .isUsageAndCrashReportingPermittedByUser();
+                || PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted();
     }
 
     /** @return Whether survey is enabled by command line flag. */
@@ -715,5 +730,17 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
     @VisibleForTesting
     public static Long getRequiredVisibilityDurationMs() {
         return REQUIRED_VISIBILITY_DURATION_MS;
+    }
+
+    /** @return Whether the message has been previously shown to the client. */
+    @VisibleForTesting
+    public static boolean isMessageShown() {
+        return sMessageShown;
+    }
+
+    // Reset sMessageShown for testing.
+    @VisibleForTesting
+    public static void resetMessageShownForTesting() {
+        sMessageShown = false;
     }
 }

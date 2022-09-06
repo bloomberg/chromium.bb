@@ -34,9 +34,6 @@ bool AreLatencyInfosEqual(const ui::LatencyInfo& a, const ui::LatencyInfo& b) {
   return a.began() == b.began() && a.terminated() == b.terminated() &&
          a.coalesced() == b.coalesced() && a.trace_id() == b.trace_id() &&
          a.ukm_source_id() == b.ukm_source_id() &&
-         std::abs(a.scroll_update_delta() - b.scroll_update_delta()) < 1e-6 &&
-         std::abs(a.predicted_scroll_update_delta() -
-                  b.predicted_scroll_update_delta()) < 1e-6 &&
          a.gesture_scroll_id() == b.gesture_scroll_id();
 }
 
@@ -51,7 +48,8 @@ bool AreDelegatedInkMetadataEqual(const gfx::DelegatedInkMetadata& a,
 bool AreTransitionDirectivesEqual(const CompositorFrameTransitionDirective& a,
                                   const CompositorFrameTransitionDirective& b) {
   return a.sequence_id() == b.sequence_id() && a.type() == b.type() &&
-         a.effect() == b.effect();
+         a.effect() == b.effect() &&
+         a.is_renderer_driven_animation() == b.is_renderer_driven_animation();
 }
 
 TEST(CompositorFrameMetadata, Clone) {
@@ -86,7 +84,7 @@ TEST(CompositorFrameMetadata, Clone) {
       gfx::PointF(88.8, 44.4), 1.f, SK_ColorRED,
       base::TimeTicks() + base::Seconds(125), gfx::RectF(1, 2, 3, 4), true);
   metadata.transition_directives.emplace_back(
-      4u, CompositorFrameTransitionDirective::Type::kSave,
+      4u, CompositorFrameTransitionDirective::Type::kSave, true,
       CompositorFrameTransitionDirective::Effect::kCoverUp);
 
   CompositorFrameMetadata clone = metadata.Clone();

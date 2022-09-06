@@ -151,6 +151,11 @@ class Encoder {
   }
 #endif
 
+  void SetOption(const char *name, const char *value) {
+    const aom_codec_err_t res = aom_codec_set_option(&encoder_, name, value);
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
+  }
+
   void Config(const aom_codec_enc_cfg_t *cfg) {
     const aom_codec_err_t res = aom_codec_enc_config_set(&encoder_, cfg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
@@ -216,6 +221,8 @@ class EncoderTest {
   virtual void PreEncodeFrameHook(VideoSource * /*video*/) {}
   virtual void PreEncodeFrameHook(VideoSource * /*video*/,
                                   Encoder * /*encoder*/) {}
+
+  virtual void PostEncodeFrameHook(Encoder * /*encoder*/) {}
 
   // Hook to be called on every compressed data packet.
   virtual void FramePktHook(const aom_codec_cx_pkt_t * /*pkt*/) {}

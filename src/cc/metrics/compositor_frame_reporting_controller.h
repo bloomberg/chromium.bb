@@ -24,6 +24,7 @@ struct FrameTimingDetails;
 
 namespace cc {
 class DroppedFrameCounter;
+class EventLatencyTracker;
 class UkmManager;
 struct BeginMainFrameMetrics;
 struct FrameInfo;
@@ -45,7 +46,8 @@ class CC_EXPORT CompositorFrameReportingController {
     kNumPipelineStages
   };
 
-  CompositorFrameReportingController(bool should_report_metrics,
+  CompositorFrameReportingController(bool should_report_histograms,
+                                     bool should_report_ukm,
                                      int layer_tree_host_id);
   virtual ~CompositorFrameReportingController();
 
@@ -66,6 +68,7 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidActivate();
   virtual void DidSubmitCompositorFrame(
       uint32_t frame_token,
+      base::TimeTicks submit_time,
       const viz::BeginFrameId& current_frame_id,
       const viz::BeginFrameId& last_activated_frame_id,
       EventMetricsSet events_metrics,
@@ -105,6 +108,10 @@ class CC_EXPORT CompositorFrameReportingController {
   void SetFrameSequenceTrackerCollection(
       FrameSequenceTrackerCollection* frame_sequence_trackers) {
     global_trackers_.frame_sequence_trackers = frame_sequence_trackers;
+  }
+
+  void set_event_latency_tracker(EventLatencyTracker* event_latency_tracker) {
+    global_trackers_.event_latency_tracker = event_latency_tracker;
   }
 
   void BeginMainFrameStarted(base::TimeTicks begin_main_frame_start_time) {
@@ -165,7 +172,7 @@ class CC_EXPORT CompositorFrameReportingController {
   void AddSortedFrame(const viz::BeginFrameArgs& args,
                       const FrameInfo& frame_info);
 
-  const bool should_report_metrics_;
+  const bool should_report_histograms_;
   const int layer_tree_host_id_;
 
   viz::BeginFrameId last_submitted_frame_id_;

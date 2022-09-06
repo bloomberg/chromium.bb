@@ -64,7 +64,7 @@ using InsecureCredentialsView =
     return;
   _consumer = consumer;
 
-  [self fetchPasswordWith:_manager->GetCompromisedCredentials()];
+  [self fetchPasswordWith:_manager->GetUnmutedCompromisedCredentials()];
 }
 
 - (void)disconnect {
@@ -85,7 +85,7 @@ using InsecureCredentialsView =
       return;
     }
   }
-  [self fetchPasswordWith:_manager->GetCompromisedCredentials()];
+  [self fetchPasswordWith:_manager->GetUnmutedCompromisedCredentials()];
 }
 
 - (void)passwordDetailsViewController:
@@ -121,7 +121,7 @@ using InsecureCredentialsView =
 
 - (BOOL)isUsernameReused:(NSString*)newUsername {
   // It is more efficient to check set of the usernames for the same origin
-  // instead of delegating this to the |_manager|.
+  // instead of delegating this to the `_manager`.
   return [self.usernamesWithSameDomain containsObject:newUsername];
 }
 

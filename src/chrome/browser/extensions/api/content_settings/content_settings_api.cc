@@ -13,12 +13,9 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +31,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/api/content_settings/content_settings_helpers.h"
+#include "extensions/browser/api/content_settings/content_settings_service.h"
+#include "extensions/browser/api/content_settings/content_settings_store.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
@@ -171,14 +170,13 @@ ContentSettingsContentSettingGetFunction::Run() {
                                               nullptr)
           : map->GetContentSetting(primary_url, secondary_url, content_type);
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  base::Value result(base::Value::Type::DICTIONARY);
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
   DCHECK(!setting_string.empty());
-  result->SetString(ContentSettingsStore::kContentSettingKey, setting_string);
+  result.SetStringKey(ContentSettingsStore::kContentSettingKey, setting_string);
 
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 ExtensionFunction::ResponseAction

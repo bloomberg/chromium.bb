@@ -10,6 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/task_runner_util.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/version_info/version_info.h"
 #include "components/webapk/webapk.pb.h"
@@ -18,7 +20,6 @@
 #include "components/webapps/browser/android/webapk/webapk_types.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/color_utils_android.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -87,19 +88,13 @@ std::string getCurrentAbi() {
 #endif
 }
 
-void SetImageData(webapk::Image* image, const SkBitmap& icon) {
-  std::vector<unsigned char> png_bytes;
-  gfx::PNGCodec::EncodeBGRASkBitmap(icon, false, &png_bytes);
-  image->set_image_data(png_bytes.data(), png_bytes.size());
-}
-
 }  // namespace
 
 std::unique_ptr<std::string> BuildProtoInBackground(
     const webapps::ShortcutInfo& shortcut_info,
-    const SkBitmap& primary_icon,
+    const std::string& primary_icon_data,
     bool is_primary_icon_maskable,
-    const SkBitmap& splash_icon,
+    const std::string& splash_icon_data,
     const std::string& package_name,
     const std::string& version,
     std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -173,7 +168,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   if (shortcut_info.best_primary_icon_url.is_empty()) {
     // Update when web manifest is no longer available.
     webapk::Image* best_primary_icon_image = web_app_manifest->add_icons();
-    SetImageData(best_primary_icon_image, primary_icon);
+    best_primary_icon_image->set_image_data(primary_icon_data);
     best_primary_icon_image->add_usages(webapk::Image::PRIMARY_ICON);
     if (is_primary_icon_maskable) {
       best_primary_icon_image->add_purposes(webapk::Image::MASKABLE);
@@ -181,9 +176,9 @@ std::unique_ptr<std::string> BuildProtoInBackground(
       best_primary_icon_image->add_purposes(webapk::Image::ANY);
     }
 
-    if (!splash_icon.drawsNothing()) {
+    if (!splash_icon_data.empty()) {
       webapk::Image* splash_icon_image = web_app_manifest->add_icons();
-      SetImageData(splash_icon_image, splash_icon);
+      splash_icon_image->set_image_data(splash_icon_data);
       splash_icon_image->add_usages(webapk::Image::SPLASH_ICON);
       if (shortcut_info.is_splash_image_maskable) {
         splash_icon_image->add_purposes(webapk::Image::MASKABLE);
@@ -201,7 +196,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
       image->set_hash(it->second.hash);
 
     if (icon_url == shortcut_info.best_primary_icon_url.spec()) {
-      SetImageData(image, primary_icon);
+      if (!primary_icon_data.empty()) {
+        image->set_image_data(primary_icon_data);
+      } else {
+        image->set_image_data(it->second.unsafe_data);
+      }
       image->add_usages(webapk::Image::PRIMARY_ICON);
       if (is_primary_icon_maskable) {
         image->add_purposes(webapk::Image::MASKABLE);
@@ -214,8 +213,8 @@ std::unique_ptr<std::string> BuildProtoInBackground(
           shortcut_info.best_primary_icon_url) {
         // WebAPK updates uses the image data from fetched bitmap; installs use
         // the image data from icon_url_to_murmur2_hash.
-        if (!splash_icon.drawsNothing()) {
-          SetImageData(image, splash_icon);
+        if (!splash_icon_data.empty()) {
+          image->set_image_data(splash_icon_data);
         } else {
           image->set_image_data(it->second.unsafe_data);
         }
@@ -261,15 +260,45 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   return serialized_proto;
 }
 
+// Returns task runner for running background tasks.
+scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
+  return base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+}
+
+void BuildProto(
+    const webapps::ShortcutInfo& shortcut_info,
+    const std::string& primary_icon_data,
+    bool is_primary_icon_maskable,
+    const std::string& splash_icon_data,
+    const std::string& package_name,
+    const std::string& version,
+    std::map<std::string, webapps::WebApkIconHasher::Icon>
+        icon_url_to_murmur2_hash,
+    bool is_manifest_stale,
+    bool is_app_identity_update_supported,
+    base::OnceCallback<void(std::unique_ptr<std::string>)> callback) {
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&webapps::BuildProtoInBackground, shortcut_info,
+                     primary_icon_data, is_primary_icon_maskable,
+                     splash_icon_data, package_name, version,
+                     std::move(icon_url_to_murmur2_hash), is_manifest_stale,
+                     is_app_identity_update_supported,
+                     std::vector<webapps::WebApkUpdateReason>()),
+      std::move(callback));
+}
+
 // Builds the WebAPK proto for an update request and stores it to
 // |update_request_path|. Returns whether the proto was successfully written to
 // disk.
 bool StoreUpdateRequestToFileInBackground(
     const base::FilePath& update_request_path,
     const webapps::ShortcutInfo& shortcut_info,
-    const SkBitmap& primary_icon,
+    const std::string& primary_icon_data,
     bool is_primary_icon_maskable,
-    const SkBitmap& splash_icon,
+    const std::string& splash_icon_data,
     const std::string& package_name,
     const std::string& version,
     std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -280,10 +309,10 @@ bool StoreUpdateRequestToFileInBackground(
                                                 base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<std::string> proto = BuildProtoInBackground(
-      shortcut_info, primary_icon, is_primary_icon_maskable, splash_icon,
-      package_name, version, std::move(icon_url_to_murmur2_hash),
-      is_manifest_stale, is_app_identity_update_supported,
-      std::move(update_reasons));
+      shortcut_info, primary_icon_data, is_primary_icon_maskable,
+      splash_icon_data, package_name, version,
+      std::move(icon_url_to_murmur2_hash), is_manifest_stale,
+      is_app_identity_update_supported, std::move(update_reasons));
 
   // Create directory if it does not exist.
   base::CreateDirectory(update_request_path.DirName());

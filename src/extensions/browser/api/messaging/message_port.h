@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
@@ -66,7 +67,7 @@ class MessagePort {
   virtual void DispatchOnConnect(
       const std::string& channel_name,
       std::unique_ptr<base::DictionaryValue> source_tab,
-      int source_frame_id,
+      const ExtensionApiFrameIdMap::FrameData& source_frame,
       int guest_process_id,
       int guest_render_frame_routing_id,
       const MessagingEndpoint& source_endpoint,
@@ -89,8 +90,12 @@ class MessagePort {
 
   // MessagePorts that target extensions will need to adjust their keepalive
   // counts for their lazy background page.
-  virtual void IncrementLazyKeepaliveCount();
+  virtual void IncrementLazyKeepaliveCount(bool is_for_native_message_connect);
   virtual void DecrementLazyKeepaliveCount();
+
+  // Notifies the message port that one of the receivers intents to respond
+  // later.
+  virtual void NotifyResponsePending();
 
  protected:
   MessagePort();

@@ -63,6 +63,44 @@ namespace ui {
 
 namespace {
 
+EGLDeviceEXT GetPreferredEGLDevice() {
+  std::vector<EGLDeviceEXT> devices(DRM_MAX_MINOR, EGL_NO_DEVICE_EXT);
+  EGLint num_devices = 0;
+
+  eglQueryDevicesEXT(DRM_MAX_MINOR, devices.data(), &num_devices);
+  devices.resize(num_devices);
+
+  std::map<EGLDeviceEXT, std::string> device_drivers;
+  for (EGLDeviceEXT device : devices) {
+    const char* filename =
+        eglQueryDeviceStringEXT(device, EGL_DRM_DEVICE_FILE_EXT);
+    if (!filename)  // Not a DRM device.
+      continue;
+
+    const auto driver_name = GetDrmDriverNameFromPath(filename);
+    if (driver_name)
+      device_drivers.insert({device, driver_name.value()});
+  }
+
+  // Find the device with the most preferred driver.
+  const auto preferred_drivers = GetPreferredDrmDrivers();
+  for (const auto* preferred_driver : preferred_drivers) {
+    for (EGLDeviceEXT device : devices) {
+      const auto driver = device_drivers.find(device);
+      if (driver != device_drivers.end() &&
+          driver->second == preferred_driver) {
+        return device;
+      }
+    }
+  }
+
+  // Fall back to the first device.
+  if (!devices.empty())
+    return devices[0];
+
+  return EGL_NO_DEVICE_EXT;
+}
+
 class GLOzoneEGLGbm : public GLOzoneEGL {
  public:
   GLOzoneEGLGbm(GbmSurfaceFactory* surface_factory,
@@ -91,7 +129,8 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
       const gfx::Size& size) override {
     DCHECK_EQ(size.width(), 0);
     DCHECK_EQ(size.height(), 0);
-    return gl::InitializeGLSurface(new gl::SurfacelessEGL(size));
+    return gl::InitializeGLSurface(
+        new gl::SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(), size));
   }
 
  protected:
@@ -102,65 +141,23 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
     // Default to null platform
     native_display_ = gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 
-    gl::g_driver_egl.InitializeClientExtensionBindings();
-
-    const char* client_extensions_string =
-        eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-
-    gfx::ExtensionSet client_extensions =
-        client_extensions_string
-            ? gfx::MakeExtensionSet(client_extensions_string)
-            : gfx::ExtensionSet();
-
-    if (gfx::HasExtension(client_extensions, "EGL_MESA_platform_surfaceless")) {
+    gl::g_driver_egl.ext.InitializeClientExtensionSettings();
+    if (gl::g_driver_egl.ext.b_EGL_MESA_platform_surfaceless) {
       native_display_ = gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY,
                                                EGL_PLATFORM_SURFACELESS_MESA);
     }
 
-    if (!(gfx::HasExtension(client_extensions, "EGL_EXT_device_query") &&
-          gfx::HasExtension(client_extensions, "EGL_EXT_platform_device") &&
-          gfx::HasExtension(client_extensions, "EGL_EXT_device_enumeration"))) {
+    if (!(gl::g_driver_egl.ext.b_EGL_EXT_device_query &&
+          gl::g_driver_egl.ext.b_EGL_EXT_platform_device &&
+          gl::g_driver_egl.ext.b_EGL_EXT_device_enumeration)) {
       LOG(WARNING) << "Platform device extensions not found.";
       return native_display_;
     }
 
-    std::vector<EGLDeviceEXT> devices(DRM_MAX_MINOR, EGL_NO_DEVICE_EXT);
-    EGLDeviceEXT virgl_device = EGL_NO_DEVICE_EXT;
-    EGLDeviceEXT amdgpu_device = EGL_NO_DEVICE_EXT;
-    EGLDeviceEXT i915_device = EGL_NO_DEVICE_EXT;
-    EGLint num_devices = 0;
-
-    eglQueryDevicesEXT(DRM_MAX_MINOR, devices.data(), &num_devices);
-    devices.resize(num_devices);
-    for (EGLDeviceEXT device : devices) {
-      const char* filename =
-          eglQueryDeviceStringEXT(device, EGL_DRM_DEVICE_FILE_EXT);
-      if (!filename)  // Not a DRM device.
-        continue;
-      if (IsDriverName(filename, "virtio_gpu"))
-        virgl_device = device;
-      if (IsDriverName(filename, "amdgpu"))
-        amdgpu_device = device;
-      if (IsDriverName(filename, "i915"))
-        i915_device = device;
-    }
-
-    if (virgl_device != EGL_NO_DEVICE_EXT) {
+    const EGLDeviceEXT preferred_device = GetPreferredEGLDevice();
+    if (preferred_device != EGL_NO_DEVICE_EXT) {
       native_display_ = gl::EGLDisplayPlatform(
-          reinterpret_cast<EGLNativeDisplayType>(virgl_device),
-          EGL_PLATFORM_DEVICE_EXT);
-    }
-
-    if (amdgpu_device != EGL_NO_DEVICE_EXT) {
-      native_display_ = gl::EGLDisplayPlatform(
-          reinterpret_cast<EGLNativeDisplayType>(amdgpu_device),
-          EGL_PLATFORM_DEVICE_EXT);
-    }
-
-    // If we also have Intel integrated, use it instead.
-    if (i915_device != EGL_NO_DEVICE_EXT) {
-      native_display_ = gl::EGLDisplayPlatform(
-          reinterpret_cast<EGLNativeDisplayType>(i915_device),
+          reinterpret_cast<EGLNativeDisplayType>(preferred_device),
           EGL_PLATFORM_DEVICE_EXT);
     }
 
@@ -193,7 +190,7 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
 
     // Skip the virtual graphics memory manager device.
     ScopedDrmVersionPtr version(drmGetVersion(dev_path_file.GetPlatformFile()));
-    if (!version || base::LowerCaseEqualsASCII(version->name, "vgem")) {
+    if (!version || base::EqualsCaseInsensitiveASCII(version->name, "vgem")) {
       continue;
     }
 
@@ -265,14 +262,13 @@ GbmSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementationParts>{
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
       gl::GLImplementationParts(gl::kGLImplementationEGLANGLE),
-      gl::GLImplementationParts(gl::kGLImplementationSwiftShaderGL)};
+      gl::GLImplementationParts(gl::ANGLEImplementation::kSwiftShader)};
 }
 
 GLOzone* GbmSurfaceFactory::GetGLOzone(
     const gl::GLImplementationParts& implementation) {
   switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
-    case gl::kGLImplementationSwiftShaderGL:
     case gl::kGLImplementationEGLANGLE:
       return egl_implementation_.get();
     default:

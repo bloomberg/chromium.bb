@@ -9,14 +9,16 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "base/files/file_path.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-forward.h"
 #include "services/device/public/mojom/fingerprint.mojom-forward.h"
 #include "services/media_session/public/cpp/media_session_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 namespace aura {
 class Window;
@@ -64,6 +66,11 @@ class ASH_EXPORT ShellDelegate {
   virtual std::unique_ptr<DesksTemplatesDelegate> CreateDesksTemplatesDelegate()
       const = 0;
 
+  // Returns the geolocation loader factory used to initialize geolocation
+  // provider.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetGeolocationUrlLoaderFactory() const = 0;
+
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
 
@@ -97,8 +104,8 @@ class ASH_EXPORT ShellDelegate {
 
   // Binds a MultiDeviceSetup receiver for the primary profile.
   virtual void BindMultiDeviceSetup(
-      mojo::PendingReceiver<
-          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver) = 0;
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+          receiver) = 0;
 
   // Returns an interface to the Media Session service, or null if not
   // available.
@@ -129,6 +136,10 @@ class ASH_EXPORT ShellDelegate {
   // persistent desks bar. Note, this will be removed once the feature is fully
   // launched or removed.
   virtual void OpenFeedbackPageForPersistentDesksBar() = 0;
+
+  // Returns the last committed URL from the web contents if the given |window|
+  // contains a browser frame, otherwise returns GURL::EmptyURL().
+  virtual const GURL& GetLastCommittedURLForWindowIfAny(aura::Window* window);
 };
 
 }  // namespace ash

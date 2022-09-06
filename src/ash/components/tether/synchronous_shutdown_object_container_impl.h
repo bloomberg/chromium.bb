@@ -8,6 +8,14 @@
 #include <memory>
 
 #include "ash/components/tether/synchronous_shutdown_object_container.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_connect.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_state_handler.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_connection_handler.h"
 
 class PrefService;
 
@@ -15,19 +23,11 @@ namespace session_manager {
 class SessionManager;
 }  // namespace session_manager
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 class DeviceSyncClient;
-}  // namespace device_sync
-
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
-
-class NetworkStateHandler;
-class NetworkConnect;
-class NetworkConnectionHandler;
+}
 
 namespace tether {
 
@@ -157,6 +157,6 @@ class SynchronousShutdownObjectContainerImpl
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_SYNCHRONOUS_SHUTDOWN_OBJECT_CONTAINER_IMPL_H_

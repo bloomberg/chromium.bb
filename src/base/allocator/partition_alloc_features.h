@@ -17,6 +17,7 @@ struct Feature;
 
 namespace features {
 
+extern const BASE_EXPORT Feature kPartitionAllocDanglingPtrRecord;
 #if defined(PA_ALLOW_PCSCAN)
 extern const BASE_EXPORT Feature kPartitionAllocPCScan;
 #endif  // defined(PA_ALLOW_PCSCAN)
@@ -25,6 +26,8 @@ extern const BASE_EXPORT Feature kPartitionAllocPCScanBrowserOnly;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanRendererOnly;
 extern const BASE_EXPORT Feature kPartitionAllocBackupRefPtrControl;
 extern const BASE_EXPORT Feature kPartitionAllocLargeThreadCacheSize;
+extern const BASE_EXPORT Feature kPartitionAllocLargeEmptySlotSpanRing;
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 enum class BackupRefPtrEnabledProcesses {
   // BRP enabled only in the browser process.
@@ -61,15 +64,20 @@ extern const BASE_EXPORT base::FeatureParam<BackupRefPtrEnabledProcesses>
     kBackupRefPtrEnabledProcessesParam;
 extern const BASE_EXPORT base::FeatureParam<BackupRefPtrMode>
     kBackupRefPtrModeParam;
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+extern const BASE_EXPORT base::FeatureParam<bool>
+    kBackupRefPtrAsanEnableDereferenceCheckParam;
+extern const BASE_EXPORT base::FeatureParam<bool>
+    kBackupRefPtrAsanEnableExtractionCheckParam;
+extern const BASE_EXPORT base::FeatureParam<bool>
+    kBackupRefPtrAsanEnableInstantiationCheckParam;
 
 extern const BASE_EXPORT Feature kPartitionAllocPCScanMUAwareScheduler;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanStackScanning;
 extern const BASE_EXPORT Feature kPartitionAllocDCScan;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanImmediateFreeing;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanEagerClearing;
-
-extern const BASE_EXPORT Feature kPartitionAllocLazyCommit;
+extern const BASE_EXPORT Feature kPartitionAllocUseAlternateDistribution;
+extern const BASE_EXPORT Feature kPartitionAllocSortActiveSlotSpans;
 
 }  // namespace features
 }  // namespace base

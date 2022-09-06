@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "pdf/document_layout.h"
-#include "pdf/ppapi_migration/callback.h"
 #include "printing/mojom/print.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -27,21 +26,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
-#if defined(OS_WIN)
-typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
-                                                      const wchar_t* text,
-                                                      size_t text_length);
-#endif
-
 class SkBitmap;
-
-namespace base {
-class Location;
-}  // namespace base
 
 namespace blink {
 class WebInputEvent;
@@ -77,9 +66,6 @@ enum class FontMappingMode {
   kNoMapping,
   // Perform font mapping in renderer processes using Blink/content APIs.
   kBlink,
-  // Perform font mapping in plugin processes using PPAPI.
-  // TODO(crbug.com/702993): Remove when PPAPI is gone.
-  kPepper,
 };
 
 enum class DocumentPermission {
@@ -253,10 +239,6 @@ class PDFEngine {
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() {}
 
-    // Asks the client to set the last plugin instance when applicable.
-    // TODO(crbug.com/702993): Remove after migrating away from PPAPI.
-    virtual void SetLastPluginInstance() {}
-
     // Notifies that an unsupported feature in the PDF was encountered.
     virtual void DocumentHasUnsupportedFeature(const std::string& feature) {}
 
@@ -270,7 +252,7 @@ class PDFEngine {
     virtual bool IsPrintPreview() const = 0;
 
     // Get the background color of the PDF.
-    virtual SkColor GetBackgroundColor() = 0;
+    virtual SkColor GetBackgroundColor() const = 0;
 
     // Sets selection status.
     virtual void SetIsSelecting(bool is_selecting) {}
@@ -298,17 +280,6 @@ class PDFEngine {
     // viewers.
     // See https://crbug.com/312882 for an example.
     virtual bool IsValidLink(const std::string& url) = 0;
-
-    // Schedules work to be executed on a main thread after a specific delay.
-    // The `result` parameter will be passed as the argument to the `callback`.
-    // `result` is needed sometimes to emulate calls of some callbacks, but it's
-    // not always needed. `delay` should be no longer than `INT32_MAX`
-    // milliseconds for the Pepper plugin implementation to prevent integer
-    // overflow.
-    virtual void ScheduleTaskOnMainThread(const base::Location& from_here,
-                                          ResultCallback callback,
-                                          int32_t result,
-                                          base::TimeDelta delay) = 0;
   };
 
   virtual ~PDFEngine() = default;
@@ -420,7 +391,10 @@ class PDFEngine {
       int page_index,
       const std::vector<AccessibilityTextRunInfo>& text_runs) = 0;
   // For all the images in page `page_index`, get their alt texts and bounding
-  // boxes.
+  // boxes. If the alt text is empty or unavailable, and if the user has
+  // requested that the OCR service tag the PDF so that it is made accessible,
+  // transfer the raw image pixels in the `image_data` field. Otherwise do not
+  // populate the `image_data` field.
   virtual std::vector<AccessibilityImageInfo> GetImageInfo(
       int page_index,
       uint32_t text_run_count) = 0;
@@ -452,7 +426,7 @@ class PDFEngine {
   // - "page" - an int Value.
   // - "children" - a list of Values, with each entry containing
   //   a dictionary Value of the same structure.
-  virtual base::Value GetBookmarks() = 0;
+  virtual base::Value::List GetBookmarks() = 0;
 
   // Append blank pages to make a 1-page document to a `num_pages` document.
   // Always retain the first page data.
@@ -522,24 +496,21 @@ class PDFEngineExports {
 
   static PDFEngineExports* Get();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // See the definition of CreateFlattenedPdf in pdf.cc for details.
   virtual std::vector<uint8_t> CreateFlattenedPdf(
       base::span<const uint8_t> input_buffer) = 0;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // See the definition of RenderPDFPageToDC in pdf.cc for details.
   virtual bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                                  int page_number,
                                  const RenderingSettings& settings,
                                  HDC dc) = 0;
 
-  virtual void SetPDFEnsureTypefaceCharactersAccessible(
-      PDFEnsureTypefaceCharactersAccessible func) = 0;
-
   virtual void SetPDFUsePrintMode(int mode) = 0;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // See the definition of RenderPDFPageToBitmap in pdf.cc for details.
   virtual bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,

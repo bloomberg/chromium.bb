@@ -22,9 +22,8 @@
 #include "base/task/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/watchdog.h"
-#include "jingle/glue/thread_wrapper.h"
-#include "jingle/glue/utils.h"
+#include "components/webrtc/net_address_utils.h"
+#include "components/webrtc/thread_wrapper.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/port_allocator_factory.h"
@@ -81,10 +80,6 @@ constexpr base::TimeDelta kDefaultDataChannelStatePollingInterval =
 // The maximum amount of time we will wait for the data channels to close before
 // closing the PeerConnection.
 constexpr base::TimeDelta kWaitForDataChannelsClosedTimeout = base::Seconds(5);
-
-// The maximum amount of time we will wait for a thread join before we crash the
-// host.
-constexpr base::TimeDelta kWaitForThreadJoinTimeout = base::Seconds(30);
 
 base::TimeDelta data_channel_state_polling_interval =
     kDefaultDataChannelStatePollingInterval;
@@ -264,26 +259,6 @@ class RtcEventLogOutput : public webrtc::RtcEventLogOutput {
   WebrtcEventLogData& event_log_data_;
 };
 
-// Helper class to monitor the thread join process (on a temporary thread) when
-// tearing down the peer connection, which has been observed to occasionally
-// block the network thread and zombify the host. This class crashes the ME2ME
-// host if the thread join process takes too long, so that the ME2ME daemon
-// process can respawn the host.
-// See: crbug.com/1130090
-class ThreadJoinWatchdog : public base::Watchdog {
- public:
-  ThreadJoinWatchdog()
-      : base::Watchdog(kWaitForThreadJoinTimeout,
-                       "WebRTC Thread Join Watchdog",
-                       /* enabled= */ true) {}
-  ~ThreadJoinWatchdog() override = default;
-
-  void Alarm() override {
-    // Crash the host if thread join takes too long.
-    CHECK(false) << "WebRTC thread join process timed out.";
-  }
-};
-
 }  // namespace
 
 class WebrtcTransport::PeerConnectionWrapper
@@ -343,15 +318,12 @@ class WebrtcTransport::PeerConnectionWrapper
       return;
     }
     peer_connection_ = result.MoveValue();
-    thread_join_watchdog_ = std::make_unique<ThreadJoinWatchdog>();
   }
 
   PeerConnectionWrapper(const PeerConnectionWrapper&) = delete;
   PeerConnectionWrapper& operator=(const PeerConnectionWrapper&) = delete;
 
   ~PeerConnectionWrapper() override {
-    thread_join_watchdog_->Arm();
-
     {
       // |peer_connection_| creates threads internally, which are joined when
       // the connection is closed. See crbug.com/660081.
@@ -362,18 +334,6 @@ class WebrtcTransport::PeerConnectionWrapper
     }
 
     audio_module_ = nullptr;
-
-    if (before_disarm_thread_join_watchdog_callback_) {
-      std::move(before_disarm_thread_join_watchdog_callback_).Run();
-    }
-    thread_join_watchdog_->Disarm();
-
-    {
-      // |thread_join_watchdog_| uses a lock internally so we need to allow sync
-      // primitives when destroying the watchdog.
-      ScopedAllowSyncPrimitivesForWebRtcTransport allow_sync_primitives;
-      thread_join_watchdog_.reset();
-    }
   }
 
   WebrtcAudioModule* audio_module() {
@@ -386,14 +346,6 @@ class WebrtcTransport::PeerConnectionWrapper
 
   webrtc::PeerConnectionFactoryInterface* peer_connection_factory() {
     return peer_connection_factory_.get();
-  }
-
-  void SetThreadJoinWatchdogForTests(std::unique_ptr<base::Watchdog> watchdog) {
-    thread_join_watchdog_ = std::move(watchdog);
-  }
-
-  void SetBeforeDisarmThreadJoinWatchdogCallbackForTests(base::OnceClosure cb) {
-    before_disarm_thread_join_watchdog_callback_ = std::move(cb);
   }
 
   // webrtc::PeerConnectionObserver interface.
@@ -443,11 +395,9 @@ class WebrtcTransport::PeerConnectionWrapper
 
  private:
   rtc::scoped_refptr<WebrtcAudioModule> audio_module_;
-  scoped_refptr<webrtc::PeerConnectionFactoryInterface>
+  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
-  scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
-  std::unique_ptr<base::Watchdog> thread_join_watchdog_;
-  base::OnceClosure before_disarm_thread_join_watchdog_callback_;
+  rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
   base::WeakPtr<WebrtcTransport> transport_;
 };
@@ -520,10 +470,10 @@ void WebrtcTransport::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(send_transport_info_callback_.is_null());
 
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+  webrtc::ThreadWrapper::EnsureForCurrentMessageLoop();
 
   // TODO(sergeyu): Investigate if it's possible to avoid Send().
-  jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
+  webrtc::ThreadWrapper::current()->set_send_allowed(true);
 
   send_transport_info_callback_ = std::move(send_transport_info_callback);
 
@@ -611,8 +561,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     // so (re)apply them here. This might happen if ICE state were already
     // connected and OnIceSelectedCandidatePairChanged() had already set the
     // caps.
-    int min_bitrate_bps, max_bitrate_bps;
-    std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
+    auto [min_bitrate_bps, max_bitrate_bps] = BitratesForConnection();
     SetPeerConnectionBitrates(min_bitrate_bps, max_bitrate_bps);
   }
 
@@ -668,11 +617,18 @@ void WebrtcTransport::SetPreferredBitrates(
   preferred_min_bitrate_bps_ = min_bitrate_bps;
   preferred_max_bitrate_bps_ = max_bitrate_bps;
   if (connected_) {
-    int actual_min_bitrate_bps, actual_max_bitrate_bps;
-    std::tie(actual_min_bitrate_bps, actual_max_bitrate_bps) =
+    auto [actual_min_bitrate_bps, actual_max_bitrate_bps] =
         BitratesForConnection();
     SetPeerConnectionBitrates(actual_min_bitrate_bps, actual_max_bitrate_bps);
-    SetSenderBitrates(actual_min_bitrate_bps, actual_max_bitrate_bps);
+    auto senders = peer_connection()->GetSenders();
+    for (auto& sender : senders) {
+      // Only set the cap on the VideoSenders, because the AudioSender (via the
+      // Opus codec) is already configured with a lower bitrate.
+      if (sender->media_type() == cricket::MEDIA_TYPE_VIDEO) {
+        SetSenderBitrates(sender, actual_min_bitrate_bps,
+                          actual_max_bitrate_bps);
+      }
+    }
   }
 }
 
@@ -796,14 +752,11 @@ void WebrtcTransport::OnAudioTransceiverCreated(
 
 void WebrtcTransport::OnVideoTransceiverCreated(
     rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
-  video_transceiver_ = transceiver;
-  int min_bitrate_bps, max_bitrate_bps;
-  std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
-  SetSenderBitrates(min_bitrate_bps, max_bitrate_bps);
-
   // Sender is always present, regardless of the direction of media
   // (see rtp_transceiver_interface.h).
   auto sender = transceiver->sender();
+  auto [min_bitrate_bps, max_bitrate_bps] = BitratesForConnection();
+  SetSenderBitrates(sender, min_bitrate_bps, max_bitrate_bps);
   SetDefaultSenderParameters(sender);
 }
 
@@ -931,13 +884,13 @@ void WebrtcTransport::OnSignalingChange(
 void WebrtcTransport::OnAddStream(
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnWebrtcTransportMediaStreamAdded(stream.get());
+  event_handler_->OnWebrtcTransportMediaStreamAdded(stream);
 }
 
 void WebrtcTransport::OnRemoveStream(
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnWebrtcTransportMediaStreamRemoved(stream.get());
+  event_handler_->OnWebrtcTransportMediaStreamRemoved(stream);
 }
 
 void WebrtcTransport::OnDataChannel(
@@ -1043,10 +996,14 @@ void WebrtcTransport::OnIceSelectedCandidatePairChanged(
     // default value (~600kbps).
     // Set the global bitrate caps in addition to the VideoSender bitrates. The
     // global caps affect the probing configuration used by b/w estimator.
-    int min_bitrate_bps, max_bitrate_bps;
-    std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
+    auto [min_bitrate_bps, max_bitrate_bps] = BitratesForConnection();
     SetPeerConnectionBitrates(min_bitrate_bps, max_bitrate_bps);
-    SetSenderBitrates(min_bitrate_bps, max_bitrate_bps);
+    auto senders = peer_connection()->GetSenders();
+    for (auto& sender : senders) {
+      if (sender->media_type() == cricket::MEDIA_TYPE_VIDEO) {
+        SetSenderBitrates(sender, min_bitrate_bps, max_bitrate_bps);
+      }
+    }
   }
 
   const cricket::Candidate& local_candidate =
@@ -1074,12 +1031,12 @@ void WebrtcTransport::OnIceSelectedCandidatePairChanged(
   // for example, a "relay" or "prflx" candidate from a relay connection
   // might have the IP address stripped away by WebRTC - see
   // http://crbug.com/1128667.
-  if (!jingle_glue::SocketAddressToIPEndPoint(remote_candidate.address(),
-                                              &route.remote_address)) {
+  if (!webrtc::SocketAddressToIPEndPoint(remote_candidate.address(),
+                                         &route.remote_address)) {
     VLOG(0) << "Peer IP address is invalid.";
   }
-  if (!jingle_glue::SocketAddressToIPEndPoint(local_candidate.address(),
-                                              &route.local_address)) {
+  if (!webrtc::SocketAddressToIPEndPoint(local_candidate.address(),
+                                         &route.local_address)) {
     VLOG(0) << "Local IP address is invalid.";
   }
 
@@ -1144,17 +1101,11 @@ void WebrtcTransport::SetPeerConnectionBitrates(int min_bitrate_bps,
   peer_connection()->SetBitrate(bitrate);
 }
 
-void WebrtcTransport::SetSenderBitrates(int min_bitrate_bps,
-                                        int max_bitrate_bps) {
+void WebrtcTransport::SetSenderBitrates(
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+    int min_bitrate_bps,
+    int max_bitrate_bps) {
   DCHECK_LE(min_bitrate_bps, max_bitrate_bps);
-  // Only set the cap on the VideoSender, because the AudioSender (via the
-  // Opus codec) is already configured with a lower bitrate.
-  rtc::scoped_refptr<webrtc::RtpSenderInterface> sender = GetVideoSender();
-  if (!sender) {
-    LOG(ERROR) << "Video sender not found.";
-    return;
-  }
-
   webrtc::RtpParameters parameters = sender->GetParameters();
   if (parameters.encodings.empty()) {
     LOG(ERROR) << "No encodings found for sender " << sender->id();
@@ -1248,11 +1199,6 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
   }
 }
 
-rtc::scoped_refptr<webrtc::RtpSenderInterface>
-WebrtcTransport::GetVideoSender() {
-  return video_transceiver_ ? video_transceiver_->sender() : nullptr;
-}
-
 void WebrtcTransport::StartRtcEventLogging() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!peer_connection())
@@ -1271,19 +1217,6 @@ void WebrtcTransport::StopRtcEventLogging() {
     ScopedAllowThreadJoinForWebRtcTransport allow_wait;
     peer_connection()->StopRtcEventLog();
   }
-}
-
-void WebrtcTransport::SetThreadJoinWatchdogForTests(
-    std::unique_ptr<base::Watchdog> watchdog) {
-  peer_connection_wrapper_->SetThreadJoinWatchdogForTests(  // IN-TEST
-      std::move(watchdog));
-}
-
-void WebrtcTransport::SetBeforeDisarmThreadJoinWatchdogCallbackForTests(
-    base::OnceClosure cb) {
-  peer_connection_wrapper_
-      ->SetBeforeDisarmThreadJoinWatchdogCallbackForTests(  // IN-TEST
-          std::move(cb));
 }
 
 }  // namespace protocol

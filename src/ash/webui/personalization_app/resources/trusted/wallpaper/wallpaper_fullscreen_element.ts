@@ -9,26 +9,24 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
-import '/common/icons.js';
+import '../../common/icons.html.js';
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {setFullscreenEnabledAction} from '../personalization_actions.js';
-import {CurrentWallpaper, WallpaperImage, WallpaperLayout, WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
+import {DisplayableImage} from '../../common/constants.js';
+import {CurrentWallpaper, WallpaperLayout, WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {getWallpaperLayoutEnum} from '../utils.js';
-import {isFilePath} from '../utils.js';
+import {getWallpaperLayoutEnum, isFilePath, isGooglePhotosPhoto} from '../utils.js';
 
+import {setFullscreenEnabledAction} from './wallpaper_actions.js';
 import {cancelPreviewWallpaper, confirmPreviewWallpaper, selectWallpaper} from './wallpaper_controller.js';
+import {getTemplate} from './wallpaper_fullscreen_element.html.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
 const fullscreenClass = 'fullscreen-preview';
 
 export interface WallpaperFullscreen {
-  $: {container: HTMLDivElement; exit: HTMLElement;};
+  $: {container: HTMLDivElement, exit: HTMLElement};
 }
 
 export class WallpaperFullscreen extends WithPersonalizationStore {
@@ -37,7 +35,7 @@ export class WallpaperFullscreen extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -67,7 +65,7 @@ export class WallpaperFullscreen extends WithPersonalizationStore {
   private visible_: boolean = false;
   private showLayoutOptions_: boolean = false;
   private currentSelected_: CurrentWallpaper|null = null;
-  private pendingSelected_: FilePath|WallpaperImage|null = null;
+  private pendingSelected_: DisplayableImage|null = null;
   private selectedLayout_: WallpaperLayout|null = null;
 
   private wallpaperProvider_: WallpaperProviderInterface;
@@ -78,20 +76,22 @@ export class WallpaperFullscreen extends WithPersonalizationStore {
   }
 
   /** Add override when tsc is updated to 4.3+. */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.$.container.addEventListener(
         'fullscreenchange', this.onFullscreenChange_.bind(this));
 
     this.watch<WallpaperFullscreen['visible_']>(
-        'visible_', state => state.fullscreen);
+        'visible_', state => state.wallpaper.fullscreen);
     this.watch<WallpaperFullscreen['showLayoutOptions_']>(
         'showLayoutOptions_',
-        state => !!(state.pendingSelected?.hasOwnProperty('path')));
+        state => !!state.wallpaper.pendingSelected &&
+            (isFilePath(state.wallpaper.pendingSelected) ||
+             isGooglePhotosPhoto(state.wallpaper.pendingSelected)));
     this.watch<WallpaperFullscreen['currentSelected_']>(
-        'currentSelected_', state => state.currentSelected);
+        'currentSelected_', state => state.wallpaper.currentSelected);
     this.watch<WallpaperFullscreen['pendingSelected_']>(
-        'pendingSelected_', state => state.pendingSelected);
+        'pendingSelected_', state => state.wallpaper.pendingSelected);
 
     // Visibility change will fire in case of alt+tab, closing the window, or
     // anything else that exits out of full screen mode.
@@ -134,9 +134,8 @@ export class WallpaperFullscreen extends WithPersonalizationStore {
     if (hidden) {
       // SWA also supports exiting fullscreen when users press ESC. In this
       // case, the preview mode may be still on so we have to call cancel
-      // preview.
-      // This call is no-op when the user clicks on exit button or set as
-      // wallpaper button.
+      // preview. This call is no-op when the user clicks on set as wallpaper
+      // button.
       cancelPreviewWallpaper(this.wallpaperProvider_);
       this.dispatch(setFullscreenEnabledAction(/*enabled=*/ false));
       document.body.classList.remove(fullscreenClass);
@@ -146,21 +145,22 @@ export class WallpaperFullscreen extends WithPersonalizationStore {
   }
 
   private async onClickExit_() {
+    await this.exitFullscreen();
     await cancelPreviewWallpaper(this.wallpaperProvider_);
-    this.exitFullscreen();
   }
 
   private async onClickConfirm_() {
-    // Wait for wallpaper to be confirmed before exiting full screen mode.
+    // Begin to exit fullscreen mode before confirming preview wallpaper. This
+    // makes local images and online images execute updates in the same order.
+    await this.exitFullscreen();
     await confirmPreviewWallpaper(this.wallpaperProvider_);
-    this.exitFullscreen();
   }
 
   private async onClickLayout_(event: MouseEvent) {
-    if (!isFilePath(this.pendingSelected_)) {
-      assertNotReached('pendingSelected must be a local image to set layout');
-      return;
-    }
+    assert(
+        isFilePath(this.pendingSelected_) ||
+            isGooglePhotosPhoto(this.pendingSelected_),
+        'pendingSelected must be a local image or a Google Photos image to set layout');
     const layout = getWallpaperLayoutEnum(
         (event.currentTarget as HTMLButtonElement).dataset['layout']!);
     await selectWallpaper(

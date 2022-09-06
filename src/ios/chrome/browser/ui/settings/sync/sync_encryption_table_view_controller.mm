@@ -12,20 +12,20 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_create_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -34,6 +34,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -117,7 +118,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Returns an account item.
 - (TableViewItem*)accountItem {
-  DCHECK(switches::IsSyncAllowedByFlag());
+  DCHECK(syncer::IsSyncAllowedByFlag());
   NSString* text = l10n_util::GetNSString(IDS_SYNC_BASIC_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypeAccount
                        text:text
@@ -127,7 +128,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Returns a passphrase item.
 - (TableViewItem*)passphraseItem {
-  DCHECK(switches::IsSyncAllowedByFlag());
+  DCHECK(syncer::IsSyncAllowedByFlag());
   NSString* text = l10n_util::GetNSString(IDS_SYNC_FULL_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypePassphrase
                        text:text
@@ -141,9 +142,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeFooter];
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_HINT);
-  footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-      GURL(kSyncGoogleDashboardURL),
-      GetApplicationContext()->GetApplicationLocale())};
+  footerItem.urls = @[ [[CrURL alloc]
+      initWithGURL:google_util::AppendGoogleLocaleParam(
+                       GURL(kSyncGoogleDashboardURL),
+                       GetApplicationContext()->GetApplicationLocale())] ];
   return footerItem;
 }
 
@@ -154,8 +156,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIView* footerView = [super tableView:tableView
                  viewForFooterInSection:section];
   if (SectionIdentifierEncryption ==
-          [self.tableViewModel sectionIdentifierForSection:section] &&
-      [self.tableViewModel footerForSection:section]) {
+          [self.tableViewModel sectionIdentifierForSectionIndex:section] &&
+      [self.tableViewModel footerForSectionIndex:section]) {
     TableViewLinkHeaderFooterView* footer =
         base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(footerView);
     footer.delegate = self;
@@ -174,7 +176,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypePassphrase: {
-      DCHECK(switches::IsSyncAllowedByFlag());
+      DCHECK(syncer::IsSyncAllowedByFlag());
       ChromeBrowserState* browserState = self.browser->GetBrowserState();
       syncer::SyncService* service =
           SyncServiceFactory::GetForBrowserState(browserState);

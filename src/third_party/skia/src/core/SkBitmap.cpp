@@ -7,6 +7,7 @@
 
 #include "include/core/SkBitmap.h"
 
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkData.h"
 #include "include/core/SkMallocPixelRef.h"
 #include "include/core/SkMath.h"
@@ -101,6 +102,10 @@ void SkBitmap::getBounds(SkIRect* bounds) const {
     SkASSERT(bounds);
     *bounds = fPixmap.bounds();
 }
+
+SkColorSpace* SkBitmap::colorSpace() const { return fPixmap.colorSpace(); }
+
+sk_sp<SkColorSpace> SkBitmap::refColorSpace() const { return fPixmap.info().refColorSpace(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -398,7 +403,7 @@ void* SkBitmap::getAddr(int x, int y) const {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void SkBitmap::erase(SkColor c, const SkIRect& area) const {
+void SkBitmap::erase(SkColor4f c, SkColorSpace* colorSpace, const SkIRect& area) const {
     SkDEBUGCODE(this->validate();)
 
     if (kUnknown_SkColorType == this->colorType()) {
@@ -411,13 +416,21 @@ void SkBitmap::erase(SkColor c, const SkIRect& area) const {
         return;
     }
 
-    if (result.erase(c, area)) {
+    if (result.erase(c, colorSpace, &area)) {
         this->notifyPixelsChanged();
     }
 }
 
+void SkBitmap::erase(SkColor c, const SkIRect& area) const {
+    this->erase(SkColor4f::FromColor(c), nullptr, area);
+}
+
+void SkBitmap::eraseColor(SkColor4f c, SkColorSpace* colorSpace) const {
+    this->erase(c, colorSpace, SkIRect::MakeWH(this->width(), this->height()));
+}
+
 void SkBitmap::eraseColor(SkColor c) const {
-    this->erase(c, SkIRect::MakeWH(this->width(), this->height()));
+    this->erase(SkColor4f::FromColor(c), nullptr, SkIRect::MakeWH(this->width(), this->height()));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

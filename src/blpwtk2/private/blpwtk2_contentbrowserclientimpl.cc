@@ -49,6 +49,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include <net/url_request/url_request_job_factory.h>
 #include <services/service_manager/public/cpp/connector.h>
+#include <third_party/blink/public/common/associated_interfaces/associated_interface_registry.h>
 #include <ui/base/resource/resource_bundle.h>
 #include "chrome/browser/printing/print_view_manager.h"
 
@@ -72,7 +73,7 @@ ContentBrowserClientImpl::~ContentBrowserClientImpl()
 
 std::unique_ptr<content::BrowserMainParts>
 ContentBrowserClientImpl::CreateBrowserMainParts(
-    content::MainFunctionParams parameters)
+    bool is_integration_test)
 {
     auto main_parts = std::make_unique<BrowserMainParts>();
     return main_parts;
@@ -107,10 +108,10 @@ bool ContentBrowserClientImpl::SupportsInProcessRenderer()
     return Statics::isInProcessRendererEnabled;
 }
 
-content::WebContentsViewDelegate*
+std::unique_ptr<content::WebContentsViewDelegate>
 ContentBrowserClientImpl::GetWebContentsViewDelegate(content::WebContents* webContents)
 {
-    return new WebContentsViewDelegateImpl(webContents);
+    return std::make_unique<WebContentsViewDelegateImpl>(webContents);
 }
 
 bool ContentBrowserClientImpl::IsHandledURL(const GURL& url)
@@ -128,7 +129,7 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url)
         url::kDataScheme,
         url::kFileScheme,
     };
-    for (size_t i = 0; i < base::size(kProtocolList); ++i) {
+    for (size_t i = 0; i < std::size(kProtocolList); ++i) {
         if (url.scheme() == kProtocolList[i])
             return true;
     }
@@ -149,19 +150,20 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
     ProcessHostImpl::registerMojoInterfaces(registry);
 }
 
-bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedInterfaceEndpointHandle* handle) {
-
-  if (interface_name == printing::mojom::PrintManagerHost::Name_) {
-    mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver(
-        std::move(*handle));
-      printing::PrintViewManager::BindPrintManagerHost(std::move(receiver),
-                                                       render_frame_host);
-    return true;
-  }
-  return false;
+void ContentBrowserClientImpl::RegisterAssociatedInterfaceBindersForRenderFrameHost(
+    content::RenderFrameHost& render_frame_host,
+    blink::AssociatedInterfaceRegistry& associated_registry) {
+  // TODO: move this to the ext/docprinter branch
+#ifdef BLPWTK2_FEATURE_DOCPRINTER
+  associated_registry.AddInterface(base::BindRepeating(
+      [](content::RenderFrameHost* render_frame_host,
+         mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost>
+             receiver) {
+        printing::PrintViewManager::BindPrintManagerHost(
+            std::move(receiver), render_frame_host);
+      },
+      &render_frame_host));
+#endif
 }
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
@@ -204,6 +206,7 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
 void ContentBrowserClientImpl::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
+    const absl::optional<url::Origin>& request_initiator_origin,
     content::ContentBrowserClient::NonNetworkURLLoaderFactoryMap* factories)
 {
   if (factories->count(url::kFileScheme)) {

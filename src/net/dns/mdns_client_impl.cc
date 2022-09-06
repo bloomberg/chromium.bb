@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,8 +62,7 @@ MDnsConnection::SocketHandler::SocketHandler(
     MDnsConnection* connection)
     : socket_(std::move(socket)),
       connection_(connection),
-      response_(dns_protocol::kMaxMulticastSize),
-      send_in_progress_(false) {}
+      response_(dns_protocol::kMaxMulticastSize) {}
 
 MDnsConnection::SocketHandler::~SocketHandler() = default;
 
@@ -495,9 +495,7 @@ MDnsListenerImpl::MDnsListenerImpl(uint16_t rrtype,
       name_(name),
       clock_(clock),
       client_(client),
-      delegate_(delegate),
-      started_(false),
-      active_refresh_(false) {}
+      delegate_(delegate) {}
 
 MDnsListenerImpl::~MDnsListenerImpl() {
   if (started_) {
@@ -627,7 +625,6 @@ MDnsTransactionImpl::MDnsTransactionImpl(
       name_(name),
       callback_(callback),
       client_(client),
-      started_(false),
       flags_(flags) {
   DCHECK((flags_ & MDnsTransaction::FLAG_MASK) == flags_);
   DCHECK(flags_ & MDnsTransaction::QUERY_CACHE ||

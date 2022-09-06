@@ -11,7 +11,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/canvas.h"
-#include "ui/lottie/animation.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -49,15 +48,25 @@ void AnimatedImageView::SetAnimatedImage(
   SchedulePaint();
 }
 
-void AnimatedImageView::Play() {
+void AnimatedImageView::Play(lottie::Animation::Style style) {
   DCHECK(animated_image_);
-  DCHECK_EQ(state_, State::kStopped);
+  Play(base::TimeDelta(), animated_image_->GetAnimationDuration(), style);
+}
+
+void AnimatedImageView::Play(base::TimeDelta start_offset,
+                             base::TimeDelta duration,
+                             lottie::Animation::Style style) {
+  DCHECK(animated_image_);
+  if (state_ == State::kPlaying)
+    return;
 
   state_ = State::kPlaying;
 
+  set_check_active_duration(style != lottie::Animation::Style::kLoop);
+
   SetCompositorFromWidget();
 
-  animated_image_->Start();
+  animated_image_->StartSubsection(start_offset, duration, style);
 }
 
 void AnimatedImageView::Stop() {
@@ -81,7 +90,10 @@ void AnimatedImageView::OnPaint(gfx::Canvas* canvas) {
   if (!animated_image_)
     return;
   canvas->Save();
-  canvas->Translate(GetImageBounds().origin().OffsetFromOrigin());
+
+  gfx::Vector2d translation = GetImageBounds().origin().OffsetFromOrigin();
+  translation.Add(additional_translation_);
+  canvas->Translate(std::move(translation));
 
   if (!previous_timestamp_.is_null() && state_ != State::kStopped) {
     animated_image_->Paint(canvas, previous_timestamp_, GetImageSize());

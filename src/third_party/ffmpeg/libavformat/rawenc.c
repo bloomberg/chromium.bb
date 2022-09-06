@@ -20,11 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include "libavutil/intreadwrite.h"
 
 #include "avformat.h"
 #include "rawenc.h"
-#include "internal.h"
+#include "mux.h"
 
 int ff_raw_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
@@ -79,7 +81,7 @@ static int adx_write_trailer(AVFormatContext *s)
 
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         int64_t file_size = avio_tell(pb);
-        uint64_t sample_count = (file_size - 36) / par->channels / 18 * 32;
+        uint64_t sample_count = (file_size - 36) / par->ch_layout.nb_channels / 18 * 32;
         if (sample_count <= UINT32_MAX) {
             avio_seek(pb, 12, SEEK_SET);
             avio_wb32(pb, sample_count);
@@ -186,6 +188,19 @@ const AVOutputFormat ff_codec2raw_muxer = {
 const AVOutputFormat ff_data_muxer = {
     .name              = "data",
     .long_name         = NULL_IF_CONFIG_SMALL("raw data"),
+    .init              = force_one_stream,
+    .write_packet      = ff_raw_write_packet,
+    .flags             = AVFMT_NOTIMESTAMPS,
+};
+#endif
+
+#if CONFIG_DFPWM_MUXER
+const AVOutputFormat ff_dfpwm_muxer = {
+    .name              = "dfpwm",
+    .long_name         = NULL_IF_CONFIG_SMALL("raw DFPWM1a"),
+    .extensions        = "dfpwm",
+    .audio_codec       = AV_CODEC_ID_DFPWM,
+    .video_codec       = AV_CODEC_ID_NONE,
     .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
@@ -341,9 +356,9 @@ const AVOutputFormat ff_h263_muxer = {
 #endif
 
 #if CONFIG_H264_MUXER
-static int h264_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
+static int h264_check_bitstream(AVFormatContext *s, AVStream *st,
+                                const AVPacket *pkt)
 {
-    AVStream *st = s->streams[0];
     if (pkt->size >= 5 && AV_RB32(pkt->data) != 0x0000001 &&
                           AV_RB24(pkt->data) != 0x000001)
         return ff_stream_add_bitstream_filter(st, "h264_mp4toannexb", NULL);
@@ -364,9 +379,9 @@ const AVOutputFormat ff_h264_muxer = {
 #endif
 
 #if CONFIG_HEVC_MUXER
-static int hevc_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
+static int hevc_check_bitstream(AVFormatContext *s, AVStream *st,
+                                const AVPacket *pkt)
 {
-    AVStream *st = s->streams[0];
     if (pkt->size >= 5 && AV_RB32(pkt->data) != 0x0000001 &&
                           AV_RB24(pkt->data) != 0x000001)
         return ff_stream_add_bitstream_filter(st, "hevc_mp4toannexb", NULL);
@@ -468,9 +483,9 @@ const AVOutputFormat ff_mpeg2video_muxer = {
 #endif
 
 #if CONFIG_OBU_MUXER
-static int obu_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
+static int obu_check_bitstream(AVFormatContext *s, AVStream *st,
+                               const AVPacket *pkt)
 {
-    AVStream *st = s->streams[0];
     return ff_stream_add_bitstream_filter(st, "av1_metadata", "td=insert");
 }
 

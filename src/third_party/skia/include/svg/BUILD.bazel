@@ -1,8 +1,13 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy")
 
-generated_cc_atom(
-    name = "SkSVGCanvas_hdr",
-    hdrs = ["SkSVGCanvas.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//include/core:SkCanvas_hdr"],
+licenses(["notice"])
+
+exports_files_legacy()
+
+filegroup(
+    name = "public_hdrs",
+    srcs = [
+        "SkSVGCanvas.h",
+    ],
+    visibility = ["//include:__pkg__"],
 )

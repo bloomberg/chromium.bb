@@ -35,7 +35,7 @@ class Point;
 class Rect;
 class Size;
 class Transform;
-}
+}  // namespace gfx
 
 namespace ui {
 class Compositor;
@@ -44,7 +44,7 @@ class EventSink;
 class InputMethod;
 class ViewProp;
 struct PlatformWindowInitProperties;
-}
+}  // namespace ui
 
 namespace viz {
 class FrameSinkId;
@@ -131,13 +131,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Transform GetInverseRootTransformForLocalEventCoordinates()
       const;
 
-  // Updates the root window's size using |host_size_in_pixels|, current
-  // transform and outsets.
-  // TODO(ccameron): Make this function no longer public. The interaction
-  // between this call, GetBounds, and OnHostResizedInPixels is ambiguous and
-  // allows for inconsistencies.
-  void UpdateRootWindowSizeInPixels();
-
   // Updates the compositor's size and scale from |new_size_in_pixels|,
   // |device_scale_factor_| and the compositor's transform hint.
   void UpdateCompositorScaleAndSize(const gfx::Size& new_size_in_pixels);
@@ -151,11 +144,13 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Converts |point| from the root window's coordinate system to the
   // host window's.
-  virtual void ConvertDIPToPixels(gfx::Point* point) const;
+  void ConvertDIPToPixels(gfx::Point* point) const;
+  virtual void ConvertDIPToPixels(gfx::PointF* point) const;
 
   // Converts |point| from the host window's coordinate system to the
   // root window's.
-  virtual void ConvertPixelsToDIP(gfx::Point* point) const;
+  void ConvertPixelsToDIP(gfx::Point* point) const;
+  virtual void ConvertPixelsToDIP(gfx::PointF* point) const;
 
   // Sets the currently-displayed cursor. If the cursor was previously hidden
   // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
@@ -182,10 +177,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // InputMethod shared between multiple WindowTreeHost instances.
   //
   // This is used for Ash only. There are 2 reasons:
-  // 1) ChromeOS virtual keyboard needs to receive ShowVirtualKeyboardIfEnabled
-  // notification from InputMethod. Multiple InputMethod instances makes it hard
-  // to register/unregister the observer for that notification. 2) For Ozone,
-  // there is no native focus state for the root window and WindowTreeHost. See
+  // 1) ChromeOS virtual keyboard needs to receive
+  // SetVirtualKeyboardVisibilityIfEnabled() notification from InputMethod.
+  // Multiple InputMethod instances makes it hard to register/unregister the
+  // observer for that notification. 2) For Ozone, there is no native focus
+  // state for the root window and WindowTreeHost. See
   // DrmWindowHost::CanDispatchEvent, the key events always goes to the primary
   // WindowTreeHost. And after InputMethod processed the key event and continue
   // dispatching it, WindowTargeter::FindTargetForEvent may re-dispatch it to a
@@ -228,6 +224,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // if) the new size is confirmed (potentially asynchronously) by the platform.
   virtual void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
+
+  // Gets the bounds in DIP.
+  virtual gfx::Rect GetBoundsInDIP() const;
 
   // Returns the bounds relative to the accelerated widget. In the typical case,
   // the origin is 0,0 and the size is the same as the pixel-bounds. On some
@@ -296,15 +295,25 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   bool holding_pointer_moves() const { return holding_pointer_moves_; }
 
+#if BUILDFLAG(IS_WIN)
+  // Returns whether a host's window is on the current workspace or not,
+  // absl::nullopt if the state is not known.
+  absl::optional<bool> on_current_workspace() const {
+    return on_current_workspace_;
+  };
+
+  // Determining if a host's window is on the current workspace can be very
+  // expensive COM call on Windows, so this caches that information.
+  void set_on_current_workspace(absl::optional<bool> on_current_workspace) {
+    on_current_workspace_ = on_current_workspace;
+  }
+#endif  // BUILDFLAG_(IS_WIN)
+
  protected:
   friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 
   explicit WindowTreeHost(std::unique_ptr<Window> window = nullptr);
-
-  // Set the cached display device scale factor. This should only be called
-  // during subclass initialization, when the value is needed before InitHost().
-  void IntializeDeviceScaleFactor(float device_scale_factor);
 
   // All calls to changing the visibility of the Compositor funnel into this.
   // In addition to changing the visibility this may also evict the root frame.
@@ -322,10 +331,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // this.
   void OnAcceleratedWidgetMadeVisible(bool value);
 
-  void CreateCompositor(
-      bool force_software_compositor = false,
-      bool use_external_begin_frame_control = false,
-      bool enable_compositing_based_throttling = false);
+  void CreateCompositor(bool force_software_compositor = false,
+                        bool use_external_begin_frame_control = false,
+                        bool enable_compositing_based_throttling = false,
+                        size_t memory_limit_when_visible_mb = 0);
 
   void InitCompositor();
   void OnAcceleratedWidgetAvailable();
@@ -370,7 +379,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // True if |dom_code| is reserved for an active KeyboardLock request.
   virtual bool IsKeyLocked(ui::DomCode dom_code) = 0;
 
-  virtual gfx::Rect GetTransformedRootWindowBoundsInPixels(
+  // Return root window size computed from given pixel size.
+  virtual gfx::Rect GetTransformedRootWindowBoundsFromPixelSize(
       const gfx::Size& size_in_pixels) const;
 
   const base::ObserverList<WindowTreeHostObserver>::Unchecked& observers()
@@ -380,6 +390,12 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Called to enabled/disable native window occlusion calculation.
   void SetNativeWindowOcclusionEnabled(bool enable);
+
+  // Updates the root window's size after WindowTreeHost's property changed.
+  void UpdateRootWindowSize();
+
+  // Calculates the root window bounds to be used by UpdateRootwindowSize().
+  virtual gfx::Rect CalculateRootWindowBounds() const;
 
  private:
   class HideHelper;
@@ -433,6 +449,12 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Keeps track of the occlusion state of the host, and used to send
   // notifications to observers when it changes.
   Window::OcclusionState occlusion_state_ = Window::OcclusionState::UNKNOWN;
+
+  // This is set if we know whether the window is on the current workspace.
+  // This is useful on Windows, where a COM call is required to determine this,
+  // which can block the UI. The native window occlusion tracking code already
+  // figures this out, so it's cheaper to store the fact here.
+  absl::optional<bool> on_current_workspace_;
   SkRegion occluded_region_;
 
   base::ObserverList<WindowTreeHostObserver>::Unchecked observers_;

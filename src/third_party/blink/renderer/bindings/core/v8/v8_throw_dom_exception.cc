@@ -37,10 +37,9 @@ void DomExceptionStackGetter(v8::Local<v8::Name> name,
 void DomExceptionStackSetter(v8::Local<v8::Name> name,
                              v8::Local<v8::Value> value,
                              const v8::PropertyCallbackInfo<void>& info) {
-  v8::Maybe<bool> unused = info.Data().As<v8::Object>()->Set(
+  [[maybe_unused]] v8::Maybe<bool> unused = info.Data().As<v8::Object>()->Set(
       info.GetIsolate()->GetCurrentContext(),
       V8AtomicString(info.GetIsolate(), "stack"), value);
-  ALLOW_UNUSED_LOCAL(unused);
 }
 
 }  // namespace
@@ -60,6 +59,17 @@ v8::Local<v8::Value> V8ThrowDOMException::CreateOrEmpty(
   auto* dom_exception = MakeGarbageCollected<DOMException>(
       exception_code, sanitized_message, unsanitized_message);
   return AttachStackProperty(isolate, dom_exception);
+}
+
+v8::Local<v8::Value> V8ThrowDOMException::CreateOrDie(
+    v8::Isolate* isolate,
+    DOMExceptionCode exception_code,
+    const String& sanitized_message,
+    const String& unsanitized_message) {
+  v8::Local<v8::Value> v8_value = CreateOrEmpty(
+      isolate, exception_code, sanitized_message, unsanitized_message);
+  CHECK(!v8_value.IsEmpty());
+  return v8_value;
 }
 
 v8::Local<v8::Value> V8ThrowDOMException::AttachStackProperty(

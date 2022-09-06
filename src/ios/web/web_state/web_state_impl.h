@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 #define IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 
+#import <Foundation/Foundation.h>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
@@ -30,8 +33,6 @@
 @class CRWSessionStorage;
 @class CRWWebController;
 @protocol CRWWebViewProxy;
-@class NSURLRequest;
-@class NSURLResponse;
 @protocol CRWWebViewNavigationProxy;
 @class UIViewController;
 
@@ -41,6 +42,8 @@ class BrowserState;
 struct FaviconURL;
 class NavigationContextImpl;
 class NavigationManager;
+enum Permission : NSUInteger;
+enum PermissionState : NSUInteger;
 class SessionCertificatePolicyCacheImpl;
 class WebFrame;
 
@@ -115,6 +118,11 @@ class WebStateImpl final : public WebState {
 
   // Called when new FaviconURL candidates are received.
   void OnFaviconUrlUpdated(const std::vector<FaviconURL>& candidates);
+
+  // Notifies web state observers when any of the web state's permission has
+  // changed.
+  void OnStateChangedForPermission(Permission permission)
+      API_AVAILABLE(ios(15.0));
 
   // Returns the NavigationManager for this WebState.
   NavigationManagerImpl& GetNavigationManagerImpl();
@@ -244,8 +252,6 @@ class WebStateImpl final : public WebState {
   void RemoveAllWebFrames();
 
   // WebState:
-  Getter CreateDefaultGetter() final;
-  OnceGetter CreateDefaultOnceGetter() final;
   WebStateDelegate* GetDelegate() final;
   void SetDelegate(WebStateDelegate* delegate) final;
   bool IsRealized() const final;
@@ -255,11 +261,19 @@ class WebStateImpl final : public WebState {
   UIView* GetView() final;
   void DidCoverWebContent() final;
   void DidRevealWebContent() final;
+  base::Time GetLastActiveTime() const final;
   void WasShown() final;
   void WasHidden() final;
   void SetKeepRenderProcessAlive(bool keep_alive) final;
   BrowserState* GetBrowserState() const final;
+  base::WeakPtr<WebState> GetWeakPtr() final;
   void OpenURL(const WebState::OpenURLParams& params) final;
+  void LoadSimulatedRequest(const GURL& url,
+                            NSString* response_html_string) final
+      API_AVAILABLE(ios(15.0));
+  void LoadSimulatedRequest(const GURL& url,
+                            NSData* response_data,
+                            NSString* mime_type) final API_AVAILABLE(ios(15.0));
   void Stop() final;
   const NavigationManager* GetNavigationManager() const final;
   NavigationManager* GetNavigationManager() final;
@@ -275,6 +289,7 @@ class WebStateImpl final : public WebState {
   void ExecuteJavaScript(const std::u16string& javascript,
                          JavaScriptResultCallback callback) final;
   void ExecuteUserJavaScript(NSString* javaScript) final;
+  NSString* GetStableIdentifier() const final;
   const std::string& GetContentsMimeType() const final;
   bool ContentIsHTML() const final;
   const std::u16string& GetTitle() const final;
@@ -284,6 +299,9 @@ class WebStateImpl final : public WebState {
   bool IsCrashed() const final;
   bool IsEvicted() const final;
   bool IsBeingDestroyed() const final;
+  const FaviconStatus& GetFaviconStatus() const final;
+  void SetFaviconStatus(const FaviconStatus& favicon_status) final;
+  int GetNavigationItemCount() const final;
   const GURL& GetVisibleURL() const final;
   const GURL& GetLastCommittedURL() const final;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const final;
@@ -298,11 +316,18 @@ class WebStateImpl final : public WebState {
   bool CanTakeSnapshot() const final;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) final;
   void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) final;
+  void CloseMediaPresentations() final;
   void AddObserver(WebStateObserver* observer) final;
   void RemoveObserver(WebStateObserver* observer) final;
   void CloseWebState() final;
   bool SetSessionStateData(NSData* data) final;
   NSData* SessionStateData() final;
+  PermissionState GetStateForPermission(Permission permission) const final
+      API_AVAILABLE(ios(15.0));
+  void SetStateForPermission(PermissionState state, Permission permission) final
+      API_AVAILABLE(ios(15.0));
+  NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const final
+      API_AVAILABLE(ios(15.0));
 
  protected:
   // WebState:
@@ -318,11 +343,10 @@ class WebStateImpl final : public WebState {
 
   // Type aliases for the various ObserverList or ScriptCommandCallback map
   // used by WebStateImpl (those are reused by the RealizedWebState class).
-  using WebStateObserverList =
-      base::ObserverList<WebStateObserver, true>::Unchecked;
+  using WebStateObserverList = base::ObserverList<WebStateObserver, true>;
 
   using WebStatePolicyDeciderList =
-      base::ObserverList<WebStatePolicyDecider, true>::Unchecked;
+      base::ObserverList<WebStatePolicyDecider, true>;
 
   using ScriptCommandCallbackMap =
       std::map<std::string,

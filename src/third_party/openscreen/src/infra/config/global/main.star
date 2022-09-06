@@ -5,13 +5,11 @@ Open Screen's LUCI configuration for post-submit and pre-submit builders.
 
 REPO_URL = "https://chromium.googlesource.com/openscreen"
 CHROMIUM_REPO_URL = "https://chromium.googlesource.com/chromium/src"
-MAC_VERSION = "Mac-10.15"
+MAC_VERSION = "Mac-11"
 REF = "refs/heads/main"
 
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
-luci.builder.defaults.experiments.set({"luci.use_realms": 100})
-
+# Use LUCI Scheduler BBv2 names and add Scheduler realms configs.
+lucicfg.enable_experiment("crbug.com/1182002")
 
 luci.project(
     name = "openscreen",
@@ -58,7 +56,7 @@ luci.logdog(gs_bucket = "chromium-luci-logdog")
 
 # Gitiles pollers are used for triggering CI builders.
 luci.gitiles_poller(
-    name = "master-gitiles-trigger",
+    name = "main-gitiles-trigger",
     bucket = "ci",
     repo = REPO_URL,
 )
@@ -178,6 +176,7 @@ def builder(builder_type, name, properties, os, cpu):
         cpu: the target central processing unit.
     """
     recipe_id = "openscreen"
+    use_python3 = True
     if properties:
         if "builder_group" in properties:
             recipe_id = "chromium"
@@ -190,7 +189,7 @@ def builder(builder_type, name, properties, os, cpu):
 
     triggers = None
     if builder_type == "ci":
-        triggers = ["chromium-trigger" if recipe_id == "chromium" else "master-gitiles-trigger"]
+        triggers = ["chromium-trigger" if recipe_id == "chromium" else "main-gitiles-trigger"]
 
     luci.builder(
         name = name,
@@ -200,7 +199,9 @@ def builder(builder_type, name, properties, os, cpu):
             recipe = recipe_id,
             cipd_package =
                 "infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build",
-            cipd_version = "refs/heads/master",
+            cipd_version = "refs/heads/main",
+            use_bbagent = True,
+            use_python3 = use_python3,
         ),
         dimensions = {
             "pool": "luci.flex." + builder_type,

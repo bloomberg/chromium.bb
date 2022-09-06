@@ -11,8 +11,8 @@
 
 #include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_pref_names.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,9 +20,6 @@
 
 namespace proximity_auth {
 namespace {
-
-using chromeos::multidevice_setup::mojom::Feature;
-using chromeos::multidevice_setup::mojom::FeatureState;
 
 const char kUserEmail[] = "testuser@example.com";
 
@@ -42,22 +39,15 @@ class ProximityAuthProfilePrefManagerTest : public testing::Test {
   ProximityAuthProfilePrefManagerTest() = default;
 
   void SetUp() override {
-    fake_multidevice_setup_client_ = std::make_unique<
-        chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
+    fake_multidevice_setup_client_ =
+        std::make_unique<ash::multidevice_setup::FakeMultiDeviceSetupClient>();
     ProximityAuthProfilePrefManager::RegisterPrefs(pref_service_.registry());
-    chromeos::multidevice_setup::RegisterFeaturePrefs(pref_service_.registry());
+    ash::multidevice_setup::RegisterFeaturePrefs(pref_service_.registry());
     pref_manager_ = std::make_unique<ProximityAuthProfilePrefManager>(
         &pref_service_, fake_multidevice_setup_client_.get());
   }
 
-  void TestFeatureState(FeatureState feature_state,
-                        bool expected_eligible_value) {
-    fake_multidevice_setup_client_->SetFeatureState(Feature::kSmartLock,
-                                                    feature_state);
-    EXPECT_EQ(expected_eligible_value, pref_manager_->IsSmartLockEligible());
-  }
-
-  std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
+  std::unique_ptr<ash::multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<ProximityAuthProfilePrefManager> pref_manager_;
@@ -69,22 +59,9 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockAllowed) {
   EXPECT_TRUE(pref_manager_->IsEasyUnlockAllowed());
 
   // Simulating setting kEasyUnlockAllowed pref through enterprise policy.
-  pref_service_.SetBoolean(
-      chromeos::multidevice_setup::kSmartLockAllowedPrefName, false);
+  pref_service_.SetBoolean(ash::multidevice_setup::kSmartLockAllowedPrefName,
+                           false);
   EXPECT_FALSE(pref_manager_->IsEasyUnlockAllowed());
-}
-
-TEST_F(ProximityAuthProfilePrefManagerTest, IsSmartLockEligible) {
-  TestFeatureState(FeatureState::kNotSupportedByChromebook, false);
-  TestFeatureState(FeatureState::kNotSupportedByPhone, false);
-  TestFeatureState(FeatureState::kUnavailableNoVerifiedHost, false);
-  TestFeatureState(FeatureState::kProhibitedByPolicy, true);
-  TestFeatureState(FeatureState::kDisabledByUser, true);
-  TestFeatureState(FeatureState::kEnabledByUser, true);
-  TestFeatureState(FeatureState::kUnavailableInsufficientSecurity, true);
-  TestFeatureState(FeatureState::kUnavailableSuiteDisabled, true);
-  TestFeatureState(FeatureState::kFurtherSetupRequired, true);
-  TestFeatureState(FeatureState::kUnavailableTopLevelFeatureDisabled, true);
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, LastPromotionCheckTimestamp) {
@@ -142,22 +119,10 @@ TEST_F(ProximityAuthProfilePrefManagerTest, SyncsToLocalPrefOnChange) {
   // Test changing the kEasyUnlockAllowed pref value directly (e.g. through
   // enterprise policy).
   EXPECT_TRUE(local_pref_manager.IsEasyUnlockAllowed());
-  pref_service_.SetBoolean(
-      chromeos::multidevice_setup::kSmartLockAllowedPrefName, false);
+  pref_service_.SetBoolean(ash::multidevice_setup::kSmartLockAllowedPrefName,
+                           false);
   EXPECT_FALSE(profile_pref_manager.IsEasyUnlockAllowed());
   EXPECT_FALSE(local_pref_manager.IsEasyUnlockAllowed());
-
-  // Test changing the kSmartLockEligible pref value directly (e.g. through
-  // feature states tested above in IsSmartLockEligible test).
-  fake_multidevice_setup_client_->SetFeatureState(
-      Feature::kSmartLock, FeatureState::kNotSupportedByChromebook);
-  EXPECT_FALSE(profile_pref_manager.IsSmartLockEligible());
-  EXPECT_FALSE(local_pref_manager.IsSmartLockEligible());
-
-  fake_multidevice_setup_client_->SetFeatureState(
-      Feature::kSmartLock, FeatureState::kProhibitedByPolicy);
-  EXPECT_TRUE(profile_pref_manager.IsSmartLockEligible());
-  EXPECT_TRUE(local_pref_manager.IsSmartLockEligible());
 }
 
 }  // namespace proximity_auth

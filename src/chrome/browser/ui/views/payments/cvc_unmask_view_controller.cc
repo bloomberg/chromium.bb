@@ -8,6 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -81,20 +82,21 @@ CvcUnmaskViewController::CvcUnmaskViewController(
     const autofill::CreditCard& credit_card,
     base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
         result_delegate,
-    content::WebContents* web_contents)
+    content::RenderFrameHost* render_frame_host)
     : PaymentRequestSheetController(spec, state, dialog),
       year_combobox_model_(credit_card.expiration_year()),
       credit_card_(credit_card),
-      frame_routing_id_(web_contents->GetMainFrame()->GetGlobalId()),
+      frame_routing_id_(render_frame_host->GetGlobalId()),
       payments_client_(
-          web_contents->GetBrowserContext()
+          render_frame_host->GetBrowserContext()
               ->GetDefaultStoragePartition()
               ->GetURLLoaderFactoryForBrowserProcess(),
           IdentityManagerFactory::GetForProfile(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              Profile::FromBrowserContext(
+                  render_frame_host->GetBrowserContext())
                   ->GetOriginalProfile()),
           state->GetPersonalDataManager(),
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          Profile::FromBrowserContext(render_frame_host->GetBrowserContext())
               ->IsOffTheRecord()),
       full_card_request_(this,
                          &payments_client_,
@@ -136,7 +138,7 @@ void CvcUnmaskViewController::OnUnmaskVerificationResult(
   switch (result) {
     case autofill::AutofillClient::PaymentsRpcResult::kNone:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case autofill::AutofillClient::PaymentsRpcResult::kSuccess:
       // In the success case, don't show any error and don't hide the spinner
       // because the dialog is about to close when the merchant completes the
@@ -176,7 +178,7 @@ std::u16string CvcUnmaskViewController::GetSheetTitle() {
 void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   const int vertical_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
-  const gfx::Insets content_insets = gfx::Insets(
+  const gfx::Insets content_insets = gfx::Insets::VH(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets);
   content_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, content_insets,

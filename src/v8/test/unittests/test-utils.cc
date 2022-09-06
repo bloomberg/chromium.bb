@@ -22,7 +22,9 @@ namespace {
 CounterMap* kCurrentCounterMap = nullptr;
 }  // namespace
 
-IsolateWrapper::IsolateWrapper(CountersMode counters_mode)
+IsolateWrapper::IsolateWrapper(CountersMode counters_mode,
+                               IsolateSharedMode shared_mode,
+                               v8::Isolate* shared_isolate_if_client)
     : array_buffer_allocator_(
           v8::ArrayBuffer::Allocator::NewDefaultAllocator()) {
   CHECK_NULL(kCurrentCounterMap);
@@ -46,7 +48,17 @@ IsolateWrapper::IsolateWrapper(CountersMode counters_mode)
     };
   }
 
-  isolate_ = v8::Isolate::New(create_params);
+  if (shared_mode == kSharedIsolate) {
+    isolate_ = reinterpret_cast<v8::Isolate*>(
+        internal::Isolate::NewShared(create_params));
+  } else {
+    if (shared_mode == kClientIsolate) {
+      CHECK_NOT_NULL(shared_isolate_if_client);
+      create_params.experimental_attach_to_shared_isolate =
+          shared_isolate_if_client;
+    }
+    isolate_ = v8::Isolate::New(create_params);
+  }
   CHECK_NOT_NULL(isolate());
 }
 
@@ -67,7 +79,8 @@ namespace internal {
 
 SaveFlags::SaveFlags() {
   // For each flag, save the current flag value.
-#define FLAG_MODE_APPLY(ftype, ctype, nam, def, cmt) SAVED_##nam = FLAG_##nam;
+#define FLAG_MODE_APPLY(ftype, ctype, nam, def, cmt) \
+  SAVED_##nam = FLAG_##nam.value();
 #include "src/flags/flag-definitions.h"
 #undef FLAG_MODE_APPLY
 }
@@ -76,11 +89,29 @@ SaveFlags::~SaveFlags() {
   // For each flag, set back the old flag value if it changed (don't write the
   // flag if it didn't change, to keep TSAN happy).
 #define FLAG_MODE_APPLY(ftype, ctype, nam, def, cmt) \
-  if (SAVED_##nam != FLAG_##nam) {                   \
+  if (SAVED_##nam != FLAG_##nam.value()) {           \
     FLAG_##nam = SAVED_##nam;                        \
   }
 #include "src/flags/flag-definitions.h"  // NOLINT
 #undef FLAG_MODE_APPLY
+}
+
+ManualGCScope::ManualGCScope(i::Isolate* isolate) {
+  // Some tests run threaded (back-to-back) and thus the GC may already be
+  // running by the time a ManualGCScope is created. Finalizing existing marking
+  // prevents any undefined/unexpected behavior.
+  if (isolate && isolate->heap()->incremental_marking()->IsMarking()) {
+    isolate->heap()->CollectGarbage(i::OLD_SPACE,
+                                    i::GarbageCollectionReason::kTesting);
+  }
+
+  i::FLAG_concurrent_marking = false;
+  i::FLAG_concurrent_sweeping = false;
+  i::FLAG_stress_incremental_marking = false;
+  i::FLAG_stress_concurrent_allocation = false;
+  // Parallel marking has a dependency on concurrent marking.
+  i::FLAG_parallel_marking = false;
+  i::FLAG_detect_ineffective_gcs_near_heap_limit = false;
 }
 
 }  // namespace internal

@@ -115,11 +115,15 @@ class CC_EXPORT RenderFrameMetadata {
   viz::VerticalScrollDirection new_vertical_scroll_direction =
       viz::VerticalScrollDirection::kNull;
 
-  // Measures the amount of time that Blink spends updating in response to a new
-  // set of VisualProperties arriving. See WidgetBase::UpdateVisualProperties.
-  base::TimeDelta visual_properties_update_duration;
+  // The cumulative time spent performing visual updates for all
+  // `local_surface_id` before this one.
+  base::TimeDelta previous_surfaces_visual_update_duration;
 
-#if defined(OS_ANDROID)
+  // The cumulative time spent performing visual updates for the current
+  // `local_surface_id`.
+  base::TimeDelta current_surface_visual_update_duration;
+
+#if BUILDFLAG(IS_ANDROID)
   // Used to position Android bottom bar, whose position is computed by the
   // renderer compositor.
   float bottom_controls_height = 0.f;

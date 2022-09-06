@@ -7,21 +7,16 @@
  * the background context (background page or options page).
  *
  */
-
-goog.provide('ChromeVoxPrefs');
-goog.provide('RichTextSpeechStyle');
-
-goog.require('ConsoleTts');
-goog.require('EventStreamLogger');
-goog.require('ChromeVox');
-goog.require('ExtensionBridge');
+import {ConsoleTts} from '/chromevox/background/console_tts.js';
+import {EventStreamLogger} from '/chromevox/background/logging/event_stream_logger.js';
+import {LogUrlWatcher} from '/chromevox/background/logging/log_url_watcher.js';
 
 /**
  * This object has default values of preferences and contains the common
  * code for working with preferences shared by the Options and Background
  * pages.
  */
-ChromeVoxPrefs = class {
+export class ChromeVoxPrefs {
   constructor() {
     let lastRunVersion = localStorage['lastRunVersion'];
     if (!lastRunVersion) {
@@ -61,11 +56,13 @@ ChromeVoxPrefs = class {
         localStorage[pref] = ChromeVoxPrefs.DEFAULT_PREFS[pref];
       }
     }
+    this.enableOrDisableLogUrlWatcher_();
   }
 
   /**
    * Get the prefs (not including keys).
-   * @return {Object} A map of all prefs except the key map from localStorage.
+   * @return {Object<string, string>} A map of all prefs except the key map from
+   *     localStorage.
    */
   getPrefs() {
     const prefs = {};
@@ -79,7 +76,7 @@ ChromeVoxPrefs = class {
   /**
    * Set the value of a pref.
    * @param {string} key The pref key.
-   * @param {Object|string|boolean} value The new value of the pref.
+   * @param {Object|string|number|boolean} value The new value of the pref.
    */
   setPref(key, value) {
     if (localStorage[key] !== value) {
@@ -99,8 +96,19 @@ ChromeVoxPrefs = class {
     } else if (key === 'enableEventStreamLogging') {
       EventStreamLogger.instance.notifyEventStreamFilterChangedAll(value);
     }
+    this.enableOrDisableLogUrlWatcher_();
   }
-};
+
+  enableOrDisableLogUrlWatcher_() {
+    for (const pref of Object.values(ChromeVoxPrefs.loggingPrefs)) {
+      if (localStorage[pref]) {
+        LogUrlWatcher.create();
+        return;
+      }
+    }
+    LogUrlWatcher.destroy();
+  }
+}
 
 
 /**
@@ -205,3 +213,16 @@ ChromeVoxPrefs.loggingPrefs = {
 
 /** @type {!ChromeVoxPrefs} */
 ChromeVoxPrefs.instance = new ChromeVoxPrefs();
+
+BridgeHelper.registerHandler(
+    BridgeConstants.ChromeVoxPrefs.TARGET,
+    BridgeConstants.ChromeVoxPrefs.Action.GET_PREFS,
+    () => ChromeVoxPrefs.instance.getPrefs());
+BridgeHelper.registerHandler(
+    BridgeConstants.ChromeVoxPrefs.TARGET,
+    BridgeConstants.ChromeVoxPrefs.Action.SET_LOGGING_PREFS,
+    ({key, value}) => ChromeVoxPrefs.instance.setLoggingPrefs(key, value));
+BridgeHelper.registerHandler(
+    BridgeConstants.ChromeVoxPrefs.TARGET,
+    BridgeConstants.ChromeVoxPrefs.Action.SET_PREF,
+    ({key, value}) => ChromeVoxPrefs.instance.setPref(key, value));

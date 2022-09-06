@@ -50,20 +50,22 @@ VideoTestEnvironment::VideoTestEnvironment(
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
   // Perform all static initialization that is required when running video
-  // decoders in a test environment.
-#if BUILDFLAG(USE_VAAPI)
-  media::VaapiWrapper::PreSandboxInitialization();
-#endif
-
+  // codecs in a test environment.
 #if defined(USE_OZONE)
   // Initialize Ozone. This is necessary to gain access to the GPU for hardware
-  // video decode acceleration.
+  // video acceleration.
+  // TODO(b/230370976): we may no longer need to initialize Ozone since we don't
+  // use it for buffer allocation.
   LOG(WARNING) << "Initializing Ozone Platform...\n"
                   "If this hangs indefinitely please call 'stop ui' first!";
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
+#if BUILDFLAG(USE_VAAPI)
+  media::VaapiWrapper::PreSandboxInitialization();
 #endif
 }
 
@@ -82,7 +84,7 @@ base::FilePath VideoTestEnvironment::GetTestOutputFilePath() const {
       ::testing::UnitTest::GetInstance()->current_test_info();
   base::FilePath::StringType test_name;
   base::FilePath::StringType test_suite_name;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows the default file path string type is UTF16. Since the test name
   // is always returned in UTF8 we need to do a conversion here.
   test_name = base::UTF8ToUTF16(test_info->name());

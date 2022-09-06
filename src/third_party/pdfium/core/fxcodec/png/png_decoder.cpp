@@ -58,10 +58,10 @@ void _png_load_bmp_attribute(png_structp png_ptr,
     png_get_pHYs(png_ptr, info_ptr, &res_x, &res_y, &unit_type);
     switch (unit_type) {
       case PNG_RESOLUTION_METER:
-        pAttribute->m_wDPIUnit = FXCODEC_RESUNIT_METER;
+        pAttribute->m_wDPIUnit = CFX_DIBAttribute::kResUnitMeter;
         break;
       default:
-        pAttribute->m_wDPIUnit = FXCODEC_RESUNIT_NONE;
+        pAttribute->m_wDPIUnit = CFX_DIBAttribute::kResUnitNone;
     }
 #endif
 #if defined(PNG_iCCP_SUPPORTED)
@@ -129,7 +129,7 @@ void _png_get_header_func(png_structp png_ptr, png_infop info_ptr) {
       if (color_type1 != PNG_COLOR_TYPE_PALETTE) {
         png_error(pContext->m_pPng, "Not Support Output Palette Now");
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case PNG_COLOR_TYPE_RGB:
     case PNG_COLOR_TYPE_RGB_ALPHA:
       if (!(color_type1 & PNG_COLOR_MASK_COLOR)) {

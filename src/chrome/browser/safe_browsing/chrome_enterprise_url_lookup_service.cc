@@ -5,7 +5,6 @@
 #include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"
 
 #include "base/callback.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,11 +53,6 @@ bool ChromeEnterpriseRealTimeUrlLookupService::
     CanPerformFullURLLookupWithToken() const {
   // URL lookup with token is disabled for enterprise users.
   return false;
-}
-
-bool ChromeEnterpriseRealTimeUrlLookupService::CanAttachReferrerChain() const {
-  return base::FeatureList::IsEnabled(
-      kRealTimeUrlLookupReferrerChainForEnterprise);
 }
 
 int ChromeEnterpriseRealTimeUrlLookupService::GetReferrerUserGestureLimit()
@@ -153,6 +147,11 @@ double ChromeEnterpriseRealTimeUrlLookupService::
   // Enterprise URL lookup is enabled at startup and managed by the admin, so
   // all referrer URLs should be included in the referrer chain.
   return 0;
+}
+
+bool ChromeEnterpriseRealTimeUrlLookupService::CanSendRTSampleRequest() const {
+  // Do not send sampled pings for enterprise users.
+  return false;
 }
 
 }  // namespace safe_browsing

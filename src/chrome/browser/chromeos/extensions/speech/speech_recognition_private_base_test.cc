@@ -4,13 +4,16 @@
 
 #include "chrome/browser/chromeos/extensions/speech/speech_recognition_private_base_test.h"
 
-#include "components/version_info/channel.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+
+namespace {
+const char kBasePath[] = "speech/speech_recognition_private/";
+}  // namespace
 
 namespace extensions {
 
 SpeechRecognitionPrivateBaseTest::SpeechRecognitionPrivateBaseTest()
-    : test_helper_(GetParam()), current_channel_(version_info::Channel::DEV) {}
+    : test_helper_(GetParam()) {}
 
 SpeechRecognitionPrivateBaseTest::~SpeechRecognitionPrivateBaseTest() = default;
 
@@ -37,6 +40,19 @@ void SpeechRecognitionPrivateBaseTest::TearDownOnMainThread() {
   ExtensionApiTest::TearDownOnMainThread();
 }
 
+bool SpeechRecognitionPrivateBaseTest::RunSpeechRecognitionPrivateTest(
+    const std::string& dir_name) {
+  const std::string path = kBasePath + dir_name;
+  return RunExtensionTest(path.c_str(), {}, {.load_as_component = true});
+}
+
+const Extension* SpeechRecognitionPrivateBaseTest::LoadExtensionAsComponent(
+    const std::string& dir_name) {
+  const std::string path = kBasePath + dir_name;
+  return LoadExtension(test_data_dir_.AppendASCII(path.c_str()),
+                       {.load_as_component = true});
+}
+
 void SpeechRecognitionPrivateBaseTest::WaitForRecognitionStarted() {
   test_helper_.WaitForRecognitionStarted();
 }
@@ -45,19 +61,18 @@ void SpeechRecognitionPrivateBaseTest::WaitForRecognitionStopped() {
   test_helper_.WaitForRecognitionStopped();
 }
 
-void SpeechRecognitionPrivateBaseTest::SendFakeSpeechResultAndWait(
-    const std::string& transcript,
-    bool is_final) {
-  test_helper_.SendFakeSpeechResultAndWait(transcript, is_final);
-}
-
-void SpeechRecognitionPrivateBaseTest::SendFinalFakeSpeechResultAndWait(
+void SpeechRecognitionPrivateBaseTest::SendInterimResultAndWait(
     const std::string& transcript) {
-  test_helper_.SendFinalFakeSpeechResultAndWait(transcript);
+  test_helper_.SendInterimResultAndWait(transcript);
 }
 
-void SpeechRecognitionPrivateBaseTest::SendFakeSpeechRecognitionErrorAndWait() {
-  test_helper_.SendFakeSpeechRecognitionErrorAndWait();
+void SpeechRecognitionPrivateBaseTest::SendFinalResultAndWait(
+    const std::string& transcript) {
+  test_helper_.SendFinalResultAndWait(transcript);
+}
+
+void SpeechRecognitionPrivateBaseTest::SendErrorAndWait() {
+  test_helper_.SendErrorAndWait();
 }
 
 }  // namespace extensions

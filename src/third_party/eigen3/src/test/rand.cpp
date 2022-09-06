@@ -57,14 +57,15 @@ template<typename Scalar> void check_histogram(Scalar x, Scalar y, int bins)
 EIGEN_DECLARE_TEST(rand)
 {
   long long_ref = NumTraits<long>::highest()/10;
-  signed char char_offset = (std::min)(g_repeat,64);
-  signed char short_offset = (std::min)(g_repeat,16000);
+  // the minimum guarantees that these conversions are safe
+  auto char_offset = static_cast<signed char>((std::min)(g_repeat, 64));
+  auto short_offset = static_cast<signed short>((std::min)(g_repeat, 8000));
 
   for(int i = 0; i < g_repeat*10000; i++) {
     CALL_SUBTEST(check_in_range<float>(10,11));
-    CALL_SUBTEST(check_in_range<float>(1.24234523,1.24234523));
+    CALL_SUBTEST(check_in_range<float>(1.24234523f,1.24234523f));
     CALL_SUBTEST(check_in_range<float>(-1,1));
-    CALL_SUBTEST(check_in_range<float>(-1432.2352,-1432.2352));
+    CALL_SUBTEST(check_in_range<float>(-1432.2352f,-1432.2352f));
 
     CALL_SUBTEST(check_in_range<double>(10,11));
     CALL_SUBTEST(check_in_range<double>(1.24234523,1.24234523));

@@ -7,10 +7,14 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
+#include "chrome/browser/ash/borealis/borealis_features.h"
+#include "chrome/browser/ash/borealis/borealis_launch_options.h"
 #include "chrome/browser/ash/borealis/borealis_launch_watcher.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
 namespace borealis {
@@ -44,6 +48,33 @@ class BorealisTask {
   CompletionResultCallback callback_;
 };
 
+// Double-checks that borealis is allowed.
+class CheckAllowed : public BorealisTask {
+ public:
+  CheckAllowed();
+  ~CheckAllowed() override;
+  void RunInternal(BorealisContext* context) override;
+
+ private:
+  void OnAllowednessChecked(BorealisContext* context,
+                            BorealisFeatures::AllowStatus allow_status);
+  base::WeakPtrFactory<CheckAllowed> weak_factory_{this};
+};
+
+// Finds the options used for the current borealis launch.
+class GetLaunchOptions : public BorealisTask {
+ public:
+  GetLaunchOptions();
+  ~GetLaunchOptions() override;
+  void RunInternal(BorealisContext* context) override;
+
+ private:
+  void HandleOptions(BorealisContext* context,
+                     BorealisLaunchOptions::Options options);
+
+  base::WeakPtrFactory<GetLaunchOptions> weak_factory_{this};
+};
+
 // Mounts the Borealis DLC.
 class MountDlc : public BorealisTask {
  public:
@@ -70,6 +101,21 @@ class CreateDiskImage : public BorealisTask {
       BorealisContext* context,
       absl::optional<vm_tools::concierge::CreateDiskImageResponse> response);
   base::WeakPtrFactory<CreateDiskImage> weak_factory_{this};
+};
+
+// Requests a wayland server from Exo for use by the borealis VM.
+class RequestWaylandServer : public BorealisTask {
+ public:
+  RequestWaylandServer();
+  ~RequestWaylandServer() override;
+
+  // BorealisTask overrides:
+  void RunInternal(BorealisContext* context) override;
+
+ private:
+  void OnServerRequested(BorealisContext* context,
+                         guest_os::GuestOsWaylandServer::Result result);
+  base::WeakPtrFactory<RequestWaylandServer> weak_factory_{this};
 };
 
 // Instructs Concierge to start the Borealis VM.

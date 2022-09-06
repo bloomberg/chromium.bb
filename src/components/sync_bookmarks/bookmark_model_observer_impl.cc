@@ -13,8 +13,10 @@
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker_entity.h"
 
 namespace sync_bookmarks {
 
@@ -55,7 +57,7 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
   if (!model->client()->CanSyncNode(node)) {
     return;
   }
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   DCHECK(entity);
 
@@ -73,6 +75,7 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(entity);
   nudge_for_commit_closure_.Run();
+  bookmark_tracker_->CheckAllNodesTracked(model);
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeAdded(
@@ -84,11 +87,9 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
     return;
   }
 
-  const SyncedBookmarkTracker::Entity* parent_entity =
+  const SyncedBookmarkTrackerEntity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
-  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-  // Should be removed after figuring out the reason for the crash.
-  CHECK(parent_entity);
+  DCHECK(parent_entity);
 
   const syncer::UniquePosition unique_position =
       ComputePosition(*parent, index, node->guid().AsLowercaseString());
@@ -99,16 +100,14 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // It is possible that a created bookmark was restored after deletion and
   // the tombstone was not committed yet. In that case the existing entity
   // should be updated.
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker_->GetEntityForGUID(node->guid());
   const base::Time creation_time = base::Time::Now();
   if (entity) {
     // If there is a tracked entity with the same client tag hash (effectively
     // the same bookmark GUID), it must be a tombstone. Otherwise it means
     // the bookmark model contains to bookmarks with the same GUID.
-    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-    // Should be removed after figuring out the reason for the crash.
-    CHECK(!entity->bookmark_node()) << "Added bookmark with duplicate GUID";
+    DCHECK(!entity->bookmark_node()) << "Added bookmark with duplicate GUID";
     bookmark_tracker_->UndeleteTombstoneForBookmarkNode(entity, node);
     bookmark_tracker_->Update(entity, entity->metadata()->server_version(),
                               creation_time, specifics);
@@ -121,6 +120,10 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(entity);
   nudge_for_commit_closure_.Run();
+
+  // Do not check if all nodes are tracked because it's still possible that some
+  // nodes are untracked, e.g. if current node has been just restored and its
+  // children will be added soon.
 }
 
 void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
@@ -132,7 +135,7 @@ void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
     return;
   }
   bookmark_tracker_->CheckAllNodesTracked(model);
-  ProcessDelete(parent, node);
+  ProcessDelete(node);
   nudge_for_commit_closure_.Run();
 }
 
@@ -149,11 +152,13 @@ void BookmarkModelObserverImpl::BookmarkNodeRemoved(
 
 void BookmarkModelObserverImpl::OnWillRemoveAllUserBookmarks(
     bookmarks::BookmarkModel* model) {
+  bookmark_tracker_->CheckAllNodesTracked(model);
   const bookmarks::BookmarkNode* root_node = model->root_node();
   for (const auto& permanent_node : root_node->children()) {
     for (const auto& child : permanent_node->children()) {
-      if (model->client()->CanSyncNode(child.get()))
-        ProcessDelete(permanent_node.get(), child.get());
+      if (model->client()->CanSyncNode(child.get())) {
+        ProcessDelete(child.get());
+      }
     }
   }
   nudge_for_commit_closure_.Run();
@@ -163,6 +168,7 @@ void BookmarkModelObserverImpl::BookmarkAllUserNodesRemoved(
     bookmarks::BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   // All the work should have already been done in OnWillRemoveAllUserBookmarks.
+  bookmark_tracker_->CheckAllNodesTracked(model);
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeChanged(
@@ -175,7 +181,7 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
   // We shouldn't see changes to the top-level nodes.
   DCHECK(!model->is_permanent_node(node));
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   if (!entity) {
     // If the node hasn't been added to the tracker yet, we do nothing. It will
@@ -224,7 +230,7 @@ void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
     return;
   }
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   if (!entity) {
     // This should be practically unreachable but in theory it's possible that a
@@ -263,18 +269,17 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
 
   // The given node's children got reordered. We need to reorder all the
   // corresponding sync node.
-
-  // TODO(crbug/com/516866): Make sure that single-move case doesn't produce
-  // unnecessary updates. One approach would be something like:
+  // TODO(crbug.com/1321519): children reordering is used to move one bookmark
+  // on Android, it should be either taken into account here or another bridge
+  // interface should be provided. One approach would be something like:
   // 1. Find a subsequence of elements in the beginning of the vector that is
   //    already sorted.
   // 2. The same for the end.
   // 3. If the two overlap, adjust so they don't.
   // 4. Sort the middle, using Between (e.g. recursive implementation).
-
   syncer::UniquePosition position;
   for (const auto& child : node->children()) {
-    const SyncedBookmarkTracker::Entity* entity =
+    const SyncedBookmarkTrackerEntity* entity =
         bookmark_tracker_->GetEntityForBookmarkNode(child.get());
     DCHECK(entity);
 
@@ -305,8 +310,8 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
       bookmark_tracker_->model_type_state().cache_guid(), sync_id);
   DCHECK(!parent.children().empty());
-  const SyncedBookmarkTracker::Entity* predecessor_entity = nullptr;
-  const SyncedBookmarkTracker::Entity* successor_entity = nullptr;
+  const SyncedBookmarkTrackerEntity* predecessor_entity = nullptr;
+  const SyncedBookmarkTrackerEntity* successor_entity = nullptr;
 
   // Look for the first tracked predecessor.
   for (auto i = parent.children().crend() - index;
@@ -361,7 +366,7 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
 }
 
 void BookmarkModelObserverImpl::ProcessUpdate(
-    const SyncedBookmarkTracker::Entity* entity,
+    const SyncedBookmarkTrackerEntity* entity,
     const sync_pb::EntitySpecifics& specifics) {
   DCHECK(entity);
 
@@ -388,13 +393,13 @@ void BookmarkModelObserverImpl::ProcessUpdate(
 }
 
 void BookmarkModelObserverImpl::ProcessDelete(
-    const bookmarks::BookmarkNode* parent,
     const bookmarks::BookmarkNode* node) {
   // If not a leaf node, process all children first.
-  for (const auto& child : node->children())
-    ProcessDelete(node, child.get());
+  for (const auto& child : node->children()) {
+    ProcessDelete(child.get());
+  }
   // Process the current node.
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   // Shouldn't try to delete untracked entities.
   DCHECK(entity);

@@ -65,7 +65,7 @@ void LensRegionSearchInstructionsView::Init() {
       .SetCollapseMargins(true);
 
   ChromeLayoutProvider* const layout_provider = ChromeLayoutProvider::Get();
-  set_margins(gfx::Insets(
+  set_margins(gfx::Insets::TLBR(
       layout_provider->GetInsetsMetric(views::InsetsMetric::INSETS_LABEL_BUTTON)
           .top(),
       layout_provider->GetDistanceMetric(
@@ -94,8 +94,8 @@ void LensRegionSearchInstructionsView::Init() {
   AddChildView(std::move(label));
 
   close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
-  close_button_->SetProperty(views::kMarginsKey,
-                             gfx::Insets(0, kCloseButtonExtraMargin, 0, 0));
+  close_button_->SetProperty(
+      views::kMarginsKey, gfx::Insets::TLBR(0, kCloseButtonExtraMargin, 0, 0));
   AddChildView(std::move(close_button_));
 }
 
@@ -103,15 +103,18 @@ gfx::Rect LensRegionSearchInstructionsView::GetBubbleBounds() {
   // Adjust the anchor_rect height to provide a margin between the anchor view
   // and the instruction view.
   gfx::Rect anchor_rect = GetAnchorRect();
-  anchor_rect.set_height(anchor_rect.height() +
-                         ChromeLayoutProvider::Get()->GetDistanceMetric(
-                             DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
-
   bool has_anchor = GetAnchorView() || anchor_rect != gfx::Rect();
   bool anchor_minimized = anchor_widget() && anchor_widget()->IsMinimized();
-  return GetBubbleFrameView()->GetUpdatedWindowBounds(
+  gfx::Rect bubble_rect = GetBubbleFrameView()->GetUpdatedWindowBounds(
       anchor_rect, arrow(), GetWidget()->client_view()->GetPreferredSize(),
       !anchor_minimized && has_anchor);
+  // Since we should be centered and positioned above the viewport, adjust the
+  // bubble position to be within the viewport while also maintaining a margin
+  // to the top of the viewport.
+  bubble_rect.set_y(bubble_rect.y() + bubble_rect.height() +
+                    ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
+  return bubble_rect;
 }
 
 }  // namespace lens

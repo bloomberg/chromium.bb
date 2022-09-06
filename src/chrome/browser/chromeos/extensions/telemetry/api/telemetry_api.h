@@ -30,17 +30,57 @@ class TelemetryApiFunctionBase : public BaseTelemetryExtensionApiGuardFunction {
   ash::ProbeService probe_service_;
 };
 
-class OsTelemetryGetVpdInfoFunction : public TelemetryApiFunctionBase {
+class OsTelemetryGetBatteryInfoFunction : public TelemetryApiFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION("os.telemetry.getVpdInfo", OS_TELEMETRY_GETVPDINFO)
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getBatteryInfo",
+                             OS_TELEMETRY_GETBATTERYINFO)
 
-  OsTelemetryGetVpdInfoFunction();
-  OsTelemetryGetVpdInfoFunction(const OsTelemetryGetVpdInfoFunction&) = delete;
-  OsTelemetryGetVpdInfoFunction& operator=(
-      const OsTelemetryGetVpdInfoFunction&) = delete;
+  OsTelemetryGetBatteryInfoFunction();
+  OsTelemetryGetBatteryInfoFunction(const OsTelemetryGetBatteryInfoFunction&) =
+      delete;
+  OsTelemetryGetBatteryInfoFunction& operator=(
+      const OsTelemetryGetBatteryInfoFunction&) = delete;
 
  private:
-  ~OsTelemetryGetVpdInfoFunction() override;
+  ~OsTelemetryGetBatteryInfoFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+
+  void OnResult(ash::health::mojom::TelemetryInfoPtr ptr);
+};
+
+class OsTelemetryGetCpuInfoFunction : public TelemetryApiFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getCpuInfo", OS_TELEMETRY_GETCPUINFO)
+
+  OsTelemetryGetCpuInfoFunction();
+  OsTelemetryGetCpuInfoFunction(const OsTelemetryGetCpuInfoFunction&) = delete;
+  OsTelemetryGetCpuInfoFunction& operator=(
+      const OsTelemetryGetCpuInfoFunction&) = delete;
+
+ private:
+  ~OsTelemetryGetCpuInfoFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+
+  void OnResult(ash::health::mojom::TelemetryInfoPtr ptr);
+};
+
+class OsTelemetryGetMemoryInfoFunction : public TelemetryApiFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getMemoryInfo",
+                             OS_TELEMETRY_GETMEMORYINFO)
+
+  OsTelemetryGetMemoryInfoFunction();
+  OsTelemetryGetMemoryInfoFunction(const OsTelemetryGetMemoryInfoFunction&) =
+      delete;
+  OsTelemetryGetMemoryInfoFunction& operator=(
+      const OsTelemetryGetMemoryInfoFunction&) = delete;
+
+ private:
+  ~OsTelemetryGetMemoryInfoFunction() override;
 
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;
@@ -64,6 +104,24 @@ class OsTelemetryGetOemDataFunction : public TelemetryApiFunctionBase {
   void RunIfAllowed() override;
 
   void OnResult(ash::health::mojom::OemDataPtr ptr);
+};
+
+class OsTelemetryGetVpdInfoFunction : public TelemetryApiFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.telemetry.getVpdInfo", OS_TELEMETRY_GETVPDINFO)
+
+  OsTelemetryGetVpdInfoFunction();
+  OsTelemetryGetVpdInfoFunction(const OsTelemetryGetVpdInfoFunction&) = delete;
+  OsTelemetryGetVpdInfoFunction& operator=(
+      const OsTelemetryGetVpdInfoFunction&) = delete;
+
+ private:
+  ~OsTelemetryGetVpdInfoFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+
+  void OnResult(ash::health::mojom::TelemetryInfoPtr ptr);
 };
 
 }  // namespace chromeos

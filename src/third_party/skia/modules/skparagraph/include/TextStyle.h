@@ -2,6 +2,7 @@
 #ifndef TextStyle_DEFINED
 #define TextStyle_DEFINED
 
+#include <optional>
 #include <vector>
 #include "include/core/SkColor.h"
 #include "include/core/SkFont.h"
@@ -10,6 +11,7 @@
 #include "include/core/SkPaint.h"
 #include "include/core/SkScalar.h"
 #include "modules/skparagraph/include/DartTypes.h"
+#include "modules/skparagraph/include/FontArguments.h"
 #include "modules/skparagraph/include/TextShadow.h"
 
 // TODO: Make it external so the other platforms (Android) could use it
@@ -148,7 +150,10 @@ struct PlaceholderStyle {
 class TextStyle {
 public:
     TextStyle() = default;
-    TextStyle(const TextStyle& other, bool placeholder);
+    TextStyle(const TextStyle& other) = default;
+    TextStyle& operator=(const TextStyle& other) = default;
+
+    TextStyle cloneForPlaceholder();
 
     bool equals(const TextStyle& other) const;
     bool equalsByFonts(const TextStyle& that) const;
@@ -206,6 +211,12 @@ public:
     void addFontFeature(const SkString& fontFeature, int value)
         { fFontFeatures.emplace_back(fontFeature, value); }
     void resetFontFeatures() { fFontFeatures.clear(); }
+
+    // Font arguments
+    const std::optional<FontArguments>& getFontArguments() const { return fFontArguments; }
+    // The contents of the SkFontArguments will be copied into the TextStyle,
+    // and the SkFontArguments can be safely deleted after setFontArguments returns.
+    void setFontArguments(const std::optional<SkFontArguments>& args);
 
     SkScalar getFontSize() const { return fFontSize; }
     void setFontSize(SkScalar size) { fFontSize = size; }
@@ -290,6 +301,8 @@ private:
     bool fIsPlaceholder = false;
 
     std::vector<FontFeature> fFontFeatures;
+
+    std::optional<FontArguments> fFontArguments;
 };
 
 typedef size_t TextIndex;

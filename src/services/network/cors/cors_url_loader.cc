@@ -4,6 +4,9 @@
 
 #include "services/network/cors/cors_url_loader.h"
 
+#include <sstream>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
@@ -37,8 +40,6 @@ namespace cors {
 namespace {
 
 enum class PreflightRequiredReason {
-  // TODO(https://crbug.com/1263483): Remove this.
-  kExternalRequest,
   kPrivateNetworkAccess,
   kCorsWithForcedPreflightMode,
   kDisallowedMethod,
@@ -59,10 +60,6 @@ absl::optional<PreflightRequiredReason> NeedsPreflight(
 
   if (!IsCorsEnabledRequestMode(request.mode))
     return absl::nullopt;
-
-  // TODO(https://crbug.com/1263483): Remove this.
-  if (request.is_external_request)
-    return PreflightRequiredReason::kExternalRequest;
 
   if (request.mode == mojom::RequestMode::kCorsWithForcedPreflight) {
     return PreflightRequiredReason::kCorsWithForcedPreflightMode;
@@ -89,7 +86,6 @@ base::Value NetLogCorsURLLoaderStartParams(const ResourceRequest& request) {
   dict.SetStringKey("url", request.url.possibly_invalid_spec());
   dict.SetStringKey("method", request.method);
   dict.SetStringKey("headers", request.headers.ToString());
-  dict.SetBoolKey("is_external_request", request.is_external_request);
   dict.SetBoolKey("is_revalidating", request.is_revalidating);
   std::string cors_preflight_policy;
   switch (request.cors_preflight_policy) {
@@ -111,10 +107,6 @@ base::Value NetLogPreflightRequiredParams(
   if (preflight_required_reason) {
     std::string preflight_required_reason_param;
     switch (preflight_required_reason.value()) {
-      // TODO(https://crbug.com/1263483): Remove this.
-      case PreflightRequiredReason::kExternalRequest:
-        preflight_required_reason_param = "external_request";
-        break;
       case PreflightRequiredReason::kPrivateNetworkAccess:
         preflight_required_reason_param = "private_network_access";
         break;
@@ -131,6 +123,23 @@ base::Value NetLogPreflightRequiredParams(
     dict.SetStringKey("preflight_required_reason",
                       preflight_required_reason_param);
   }
+  return dict;
+}
+
+// Returns net log params for the `CORS_PREFLIGHT_ERROR` event type.
+base::Value::Dict NetLogPreflightErrorParams(
+    int net_error,
+    const absl::optional<CorsErrorStatus>& status) {
+  base::Value::Dict dict;
+
+  dict.Set("error", net::ErrorToShortString(net_error));
+  if (status) {
+    dict.Set("cors-error", static_cast<int>(status->cors_error));
+    if (!status->failed_parameter.empty()) {
+      dict.Set("failed-parameter", status->failed_parameter);
+    }
+  }
+
   return dict;
 }
 
@@ -180,7 +189,7 @@ mojom::FetchResponseType CalculateResponseTainting(
 
   if (request_mode == mojom::RequestMode::kNoCors) {
     if (tainted_origin ||
-        (!origin->IsSameOriginWith(url::Origin::Create(url)) &&
+        (!origin->IsSameOriginWith(url) &&
          origin_access_list.CheckAccessState(source_origin, url) !=
              OriginAccessList::AccessState::kAllowed)) {
       return mojom::FetchResponseType::kOpaque;
@@ -212,7 +221,7 @@ absl::optional<CorsErrorStatus> CheckRedirectLocation(
   // URL’s origin, then return a network error.
   DCHECK(!IsCorsEnabledRequestMode(request_mode) || origin);
   if (IsCorsEnabledRequestMode(request_mode) && url_has_credentials &&
-      (tainted || !origin->IsSameOriginWith(url::Origin::Create(url)))) {
+      (tainted || !origin->IsSameOriginWith(url))) {
     return CorsErrorStatus(mojom::CorsError::kRedirectContainsCredentials);
   }
 
@@ -459,7 +468,8 @@ void CorsURLLoader::OnReceiveEarlyHints(mojom::EarlyHintsPtr early_hints) {
     forwarding_client_->OnReceiveEarlyHints(std::move(early_hints));
 }
 
-void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
+void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head,
+                                      mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
@@ -483,13 +493,15 @@ void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
     }
   }
 
+  has_forwarded_response_ = true;
   timing_allow_failed_flag_ = !PassesTimingAllowOriginCheck(*response_head);
 
   response_head->response_type = response_tainting_;
   response_head->timing_allow_passed = !timing_allow_failed_flag_;
   response_head->has_authorization_covered_by_wildcard_on_preflight =
       has_authorization_covered_by_wildcard_;
-  forwarding_client_->OnReceiveResponse(std::move(response_head));
+  forwarding_client_->OnReceiveResponse(std::move(response_head),
+                                        std::move(body));
 }
 
 void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -567,10 +579,8 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   // with `request`’s current url’s origin, then set `request`’s tainted origin
   // flag.
   if (request_.request_initiator &&
-      (!url::Origin::Create(redirect_info.new_url)
-            .IsSameOriginWith(url::Origin::Create(request_.url)) &&
-       !request_.request_initiator->IsSameOriginWith(
-           url::Origin::Create(request_.url)))) {
+      (!url::IsSameOriginWith(redirect_info.new_url, request_.url) &&
+       !request_.request_initiator->IsSameOriginWith(request_.url))) {
     tainted_ = true;
   }
 
@@ -624,14 +634,6 @@ void CorsURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
-}
-
-void CorsURLLoader::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  DCHECK(network_loader_);
-  DCHECK(forwarding_client_);
-  DCHECK(!deferred_redirect_url_);
-  forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
 void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
@@ -731,9 +733,8 @@ void CorsURLLoader::StartRequest() {
       PreflightController::WithTrustedHeaderClient(
           options_ & mojom::kURLLoadOptionUseHeaderClient),
       non_wildcard_request_headers_support_,
-      PreflightController::EnforcePrivateNetworkAccessHeader(
-          !ShouldIgnorePrivateNetworkAccessErrors()),
-      tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
+      GetPrivateNetworkAccessPreflightBehavior(), tainted_,
+      net::NetworkTrafficAnnotationTag(traffic_annotation_),
       network_loader_factory_, isolation_info_, CloneClientSecurityState(),
       std::move(devtools_observer), net_log_);
 }
@@ -755,15 +756,24 @@ absl::optional<URLLoaderCompletionStatus> CorsURLLoader::ConvertPreflightResult(
     return absl::nullopt;
   }
 
+  net_log_.AddEvent(net::NetLogEventType::CORS_PREFLIGHT_ERROR, [&] {
+    return base::Value(NetLogPreflightErrorParams(net_error, status));
+  });
+
   // `kInvalidResponse` is never returned by the preflight controller, so we use
   // it to record the case where there was a net error and no CORS error.
   auto histogram_error = mojom::CorsError::kInvalidResponse;
   if (status) {
     DCHECK(status->cors_error != mojom::CorsError::kInvalidResponse);
     histogram_error = status->cors_error;
+
+    // Report the target IP address space unconditionally as part of the error
+    // if there was one. This allows higher layers to understand that a PNA
+    // preflight request was attempted.
+    status->target_address_space = request_.target_ip_address_space;
   }
 
-  if (should_ignore_preflight_errors_) {
+  if (sending_pna_only_warning_preflight_) {
     // Even if we ignore the error, record the warning in metrics and DevTools.
     base::UmaHistogramEnumeration(kPreflightWarningHistogramName,
                                   histogram_error);
@@ -868,21 +878,29 @@ void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
     DCHECK(status.cors_error_status->resource_address_space !=
            mojom::IPAddressSpace::kUnknown);
 
-    // If we only send a preflight because of Private Network Access, and we are
-    // configured to ignore errors caused by Private Network Access, then we
-    // should ignore any preflight error, as if we had never sent the preflight.
-    // Otherwise, if we had sent a preflight before we noticed the private
-    // network access, then we rely on `PreflightController` to ignore
-    // PNA-specific preflight errors during this second preflight request.
-    should_ignore_preflight_errors_ =
-        ShouldIgnorePrivateNetworkAccessErrors() &&
-        !NeedsPreflight(request_).has_value();
+    // We should never send a preflight request for PNA after having already
+    // forwarded response headers to our client. See https://crbug.com/1279376.
+    if (!has_forwarded_response_) {
+      // If we only send a preflight because of Private Network Access, and we
+      // are configured to ignore errors caused by Private Network Access, then
+      // we should ignore any preflight error, as if we had never sent the
+      // preflight. Otherwise, if we had sent a preflight before we noticed the
+      // private network access, then we rely on `PreflightController` to ignore
+      // PNA-specific preflight errors during this second preflight request.
+      sending_pna_only_warning_preflight_ =
+          ShouldIgnorePrivateNetworkAccessErrors() &&
+          !(NeedsPreflight(request_).has_value() && fetch_cors_flag_);
 
-    network_client_receiver_.reset();
-    request_.target_ip_address_space =
-        status.cors_error_status->resource_address_space;
-    StartRequest();
-    return;
+      network_client_receiver_.reset();
+      request_.target_ip_address_space =
+          status.cors_error_status->resource_address_space;
+      StartRequest();
+      return;
+    }
+
+    // DCHECK that we never run into this scenario, but fail the request for
+    // safety if this ever happens in production.
+    NOTREACHED();
   }
 
   net_log_.EndEvent(net::NetLogEventType::CORS_REQUEST);
@@ -1007,6 +1025,17 @@ bool CorsURLLoader::ShouldIgnorePrivateNetworkAccessErrors() const {
   const mojom::ClientSecurityState* state = GetClientSecurityState();
   return state && state->private_network_request_policy ==
                       mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+}
+
+PrivateNetworkAccessPreflightBehavior
+CorsURLLoader::GetPrivateNetworkAccessPreflightBehavior() const {
+  if (!ShouldIgnorePrivateNetworkAccessErrors()) {
+    return PrivateNetworkAccessPreflightBehavior::kEnforce;
+  }
+  if (sending_pna_only_warning_preflight_) {
+    return PrivateNetworkAccessPreflightBehavior::kWarnWithTimeout;
+  }
+  return PrivateNetworkAccessPreflightBehavior::kWarn;
 }
 
 // static

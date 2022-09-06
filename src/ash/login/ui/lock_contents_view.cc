@@ -18,10 +18,12 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/bottom_status_indicator.h"
+#include "ash/login/ui/kiosk_app_default_message.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_screen_media_controls_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
+#include "ash/login/ui/login_camera_timeout_view.h"
 #include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_public_account_user_view.h"
@@ -32,10 +34,14 @@
 #include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_accelerators.h"
+#include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/smartlock_state.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -57,6 +63,7 @@
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_type.h"
+#include "lock_contents_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -323,7 +330,7 @@ class UserAddingScreenIndicator : public views::View {
     layout_manager->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
 
-    info_icon_ = AddChildView(new views::ImageView());
+    info_icon_ = AddChildView(std::make_unique<views::ImageView>());
     info_icon_->SetPreferredSize(gfx::Size(kInfoIconSizeDp, kInfoIconSizeDp));
 
     std::u16string message =
@@ -429,6 +436,11 @@ class LockContentsView::AutoLoginUserActivityHandler
 LockContentsView::TestApi::TestApi(LockContentsView* view) : view_(view) {}
 
 LockContentsView::TestApi::~TestApi() = default;
+
+KioskAppDefaultMessage* LockContentsView::TestApi::kiosk_default_message()
+    const {
+  return view_->kiosk_default_message_;
+}
 
 LoginBigUserView* LockContentsView::TestApi::primary_big_view() const {
   return view_->primary_big_view_;
@@ -567,6 +579,7 @@ FingerprintState LockContentsView::TestApi::GetFingerPrintState(
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
+  smart_lock_state = user_info.smart_lock_state;
   if (user_info.auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
     force_online_sign_in = true;
   show_pin_pad_for_password = user_info.show_pin_pad_for_password;
@@ -598,6 +611,8 @@ LockContentsView::LockContentsView(
   data_dispatcher_->AddObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
+  enterprise_domain_model_observation_.Observe(
+      Shell::Get()->system_tray_model()->enterprise_domain());
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
@@ -620,7 +635,7 @@ LockContentsView::LockContentsView(
   system_info_ = top_header_->AddChildView(std::make_unique<views::View>());
   auto* system_info_layout =
       system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, gfx::Insets(6, 8)));
+          views::BoxLayout::Orientation::kVertical, gfx::Insets::VH(6, 8)));
   system_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kEnd);
   system_info_->SetVisible(false);
@@ -666,12 +681,11 @@ LockContentsView::LockContentsView(
   tooltip_bubble_->SetPadding(kHorizontalPaddingLoginTooltipViewDp,
                               kVerticalPaddingLoginTooltipViewDp);
 
-  management_bubble_ = new ManagementBubble(
+  management_bubble_ = AddChildView(std::make_unique<ManagementBubble>(
       l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_ENTERPRISE_MANAGED_POP_UP,
                                  ui::GetChromeOSDeviceName(),
                                  base::UTF8ToUTF16(enterprise_domain_manager)),
-      bottom_status_indicator_);
-  AddChildView(management_bubble_);
+      bottom_status_indicator_));
 
   warning_banner_bubble_ = AddChildView(std::make_unique<LoginErrorBubble>());
   warning_banner_bubble_->set_persistent(true);
@@ -683,10 +697,19 @@ LockContentsView::LockContentsView(
     user_adding_screen_indicator_ =
         AddChildView(std::make_unique<UserAddingScreenIndicator>());
   }
-
   OnLockScreenNoteStateChanged(initial_note_action_state);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
   RegisterAccelerators();
+
+  // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
+  // it's false by default.
+  if (features::IsKioskLoginScreenEnabled()) {
+    kiosk_license_mode_ =
+        Shell::Get()
+            ->system_tray_model()
+            ->enterprise_domain()
+            ->management_device_mode() == ManagementDeviceMode::kKioskSku;
+  }
 }
 
 LockContentsView::~LockContentsView() {
@@ -828,6 +851,12 @@ void LockContentsView::ShowParentAccessDialog() {
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
 }
 
+void LockContentsView::SetHasKioskApp(bool has_kiosk_apps) {
+  has_kiosk_apps_ = has_kiosk_apps;
+
+  UpdateKioskDefaultMessageVisibility();
+}
+
 void LockContentsView::Layout() {
   View::Layout();
   LayoutTopHeader();
@@ -924,13 +953,6 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
 
   users_ = std::move(new_users);
 
-  // If there are no users, show gaia signin if login.
-  if (users.empty() && screen_type_ == LockScreen::ScreenType::kLogin) {
-    Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-        EmptyAccountId() /*prefilled_account*/);
-    return;
-  }
-
   // Allocate layout which is common between all densities.
   auto* main_layout =
       main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -939,6 +961,25 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
       views::BoxLayout::MainAxisAlignment::kCenter);
   main_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
+
+  if (kiosk_license_mode_)
+    return;
+
+  // If there are no users, show GAIA signin if login.
+  if (users.empty() && screen_type_ == LockScreen::ScreenType::kLogin) {
+    // Create a UI that will be shown on camera usage timeout after the
+    // third-party SAML dialog has been dismissed. For more info check
+    // discussion under privacy review in FLB crbug.com/1221337.
+    if (features::IsRedirectToDefaultIdPEnabled()) {
+      login_camera_timeout_view_ =
+          main_view_->AddChildView(std::make_unique<LoginCameraTimeoutView>(
+              base::BindRepeating(&LockContentsView::OnBackToSigninButtonTapped,
+                                  weak_ptr_factory_.GetWeakPtr())));
+    }
+    Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+        /*prefilled_account=*/EmptyAccountId());
+    return;
+  }
 
   if (!users.empty()) {
     auto primary_big_view =
@@ -1004,7 +1045,8 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
 
   state->show_pin = enabled;
   state->autosubmit_pin_length =
-      user_manager::known_user::GetUserPinLength(user);
+      user_manager::KnownUser(Shell::Get()->local_state())
+          .GetUserPinLength(user);
 
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
@@ -1043,18 +1085,8 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
   if (!big_view || !big_view->auth_user())
     return;
 
-  // TODO(crbug.com/893298): Re-enable animation once the error bubble supports
-  // being displayed on the left. This also requires that we dynamically
-  // track/update the position of the bubble, or alternatively we set the bubble
-  // location to the target animation position and not the current position.
-  bool animate = true;
-  if (user_state->fingerprint_state ==
-      FingerprintState::DISABLED_FROM_TIMEOUT) {
-    animate = false;
-  }
-
   big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
-  LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
+  LayoutAuth(big_view, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
 void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
@@ -1078,12 +1110,18 @@ void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
 
 void LockContentsView::OnSmartLockStateChanged(const AccountId& account_id,
                                                SmartLockState state) {
+  UserState* user_state = FindStateForUser(account_id);
+  if (!user_state)
+    return;
+
+  user_state->smart_lock_state = state;
   LoginBigUserView* big_view =
       TryToFindBigUser(account_id, true /*require_auth_active*/);
   if (!big_view || !big_view->auth_user())
     return;
 
   big_view->auth_user()->SetSmartLockState(state);
+  LayoutAuth(big_view, /*opt_to_hide=*/nullptr, /*animate=*/true);
 }
 
 void LockContentsView::OnSmartLockAuthResult(const AccountId& account_id,
@@ -1094,6 +1132,24 @@ void LockContentsView::OnSmartLockAuthResult(const AccountId& account_id,
     return;
 
   big_view->auth_user()->NotifySmartLockAuthResult(success);
+  LayoutAuth(big_view, /*opt_to_hide=*/nullptr, /*animate=*/true);
+}
+
+void LockContentsView::OnAuthFactorIsHidingPasswordChanged(
+    const AccountId& account_id,
+    bool auth_factor_is_hiding_password) {
+  UserState* user_state = FindStateForUser(account_id);
+  if (!user_state)
+    return;
+
+  user_state->auth_factor_is_hiding_password = auth_factor_is_hiding_password;
+
+  if (auth_factor_is_hiding_password)
+    HideAuthErrorMessage();
+
+  // Do not call LayoutAuth() here. This event is triggered by
+  // OnSmartLockStateChanged, which calls LayoutAuth(). Calling LayoutAuth() a
+  // second time will prevent animations from running properly.
 }
 
 void LockContentsView::OnAuthEnabledForUser(const AccountId& user) {
@@ -1161,6 +1217,9 @@ void LockContentsView::OnSetTpmLockedState(const AccountId& user,
 
 void LockContentsView::OnTapToUnlockEnabledForUserChanged(const AccountId& user,
                                                           bool enabled) {
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+    return;
+
   LockContentsView::UserState* state = FindStateForUser(user);
   if (!state) {
     LOG(ERROR) << "Unable to find user enabling click to auth";
@@ -1387,8 +1446,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
     return;
   }
 
-  if (auth_error_bubble_->GetVisible())
-    auth_error_bubble_->Hide();
+  HideAuthErrorMessage();
 
   std::u16string error_text =
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED);
@@ -1412,6 +1470,7 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
 }
 
 void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
+  bool oobe_dialog_was_visible = oobe_dialog_visible_;
   oobe_dialog_visible_ = state != OobeDialogState::HIDDEN;
   extension_ui_visible_ = state == OobeDialogState::EXTENSION_LOGIN;
 
@@ -1422,8 +1481,20 @@ void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
 
   UpdateBottomStatusIndicatorVisibility();
 
-  if (!oobe_dialog_visible_ && CurrentBigUserView())
+  if (!oobe_dialog_visible_ && CurrentBigUserView()) {
     CurrentBigUserView()->RequestFocus();
+  } else if (features::IsRedirectToDefaultIdPEnabled() &&
+             !oobe_dialog_visible_ && login_camera_timeout_view_) {
+    login_camera_timeout_view_->RequestFocus();
+  }
+  // If OOBE dialog visibility changes we need to force an update of the a11y
+  // tree to fix linear navigation from `StatusAreaWidget` to `LockScreen`.
+  if (oobe_dialog_visible_ != oobe_dialog_was_visible) {
+    Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+    shelf->GetStatusAreaWidget()
+        ->status_area_widget_delegate()
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
+  }
 }
 
 void LockContentsView::MaybeUpdateExpandedView(const AccountId& account_id,
@@ -1486,6 +1557,23 @@ void LockContentsView::SuspendImminent(
   if (big_user && big_user->auth_user())
     big_user->auth_user()->password_view()->Reset();
 }
+
+void LockContentsView::OnDeviceEnterpriseInfoChanged() {
+  // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
+  // it's false by default.
+  if (!features::IsKioskLoginScreenEnabled())
+    return;
+
+  kiosk_license_mode_ =
+      Shell::Get()
+          ->system_tray_model()
+          ->enterprise_domain()
+          ->management_device_mode() == ManagementDeviceMode::kKioskSku;
+
+  UpdateKioskDefaultMessageVisibility();
+}
+
+void LockContentsView::OnEnterpriseAccountDomainChanged() {}
 
 void LockContentsView::ShowAuthErrorMessageForDebug(int unlock_attempt) {
   unlock_attempt_ = unlock_attempt;
@@ -1890,7 +1978,11 @@ void LockContentsView::LayoutUserAddingScreenIndicator() {
 
 void LockContentsView::LayoutPublicSessionView() {
   gfx::Rect bounds = GetContentsBounds();
-  bounds.ClampToCenteredSize(expanded_view_->GetPreferredSize());
+  bounds.set_height(bounds.height() - ShelfConfig::Get()->shelf_size());
+  gfx::Size pref_size = bounds.width() >= bounds.height()
+                            ? expanded_view_->GetPreferredSizeLandscape()
+                            : expanded_view_->GetPreferredSizePortrait();
+  bounds.ClampToCenteredSize(pref_size);
   expanded_view_->SetBoundsRect(bounds);
 }
 
@@ -1926,8 +2018,7 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
 void LockContentsView::OnAuthenticate(bool auth_success,
                                       bool display_error_messages) {
   if (auth_success) {
-    if (auth_error_bubble_->GetVisible())
-      auth_error_bubble_->Hide();
+    HideAuthErrorMessage();
 
     if (detachable_base_error_bubble_->GetVisible())
       detachable_base_error_bubble_->Hide();
@@ -2011,6 +2102,14 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
         if (state->fingerprint_state != FingerprintState::UNAVAILABLE)
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
+        if (state->smart_lock_state != SmartLockState::kDisabled &&
+            state->smart_lock_state != SmartLockState::kInactive) {
+          to_update_auth |= LoginAuthUserView::AUTH_SMART_LOCK;
+        }
+        if (state->auth_factor_is_hiding_password) {
+          to_update_auth |=
+              LoginAuthUserView::AUTH_AUTH_FACTOR_IS_HIDING_PASSWORD;
+        }
       }
       view->auth_user()->SetAuthMethods(to_update_auth, auth_metadata);
     } else if (view->public_account()) {
@@ -2090,7 +2189,10 @@ void LockContentsView::OnBigUserChanged() {
   CurrentBigUserView()->RequestFocus();
 
   Shell::Get()->login_screen_controller()->OnFocusPod(big_user_account_id);
-  UpdateEasyUnlockIconForUser(big_user_account_id);
+
+  if (!base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+    UpdateEasyUnlockIconForUser(big_user_account_id);
+  }
 
   // The new auth user might have different last used detachable base - make
   // sure the detachable base pairing error is updated if needed.
@@ -2209,6 +2311,11 @@ void LockContentsView::ShowAuthErrorMessage() {
   auth_error_bubble_->Show();
 }
 
+void LockContentsView::HideAuthErrorMessage() {
+  if (auth_error_bubble_->GetVisible())
+    auth_error_bubble_->Hide();
+}
+
 void LockContentsView::OnEasyUnlockIconHovered() {
   LoginBigUserView* big_view = CurrentBigUserView();
   if (!big_view->auth_user())
@@ -2290,7 +2397,7 @@ void LockContentsView::OnPublicAccountTapped(bool is_primary) {
 void LockContentsView::LearnMoreButtonPressed() {
   Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp(
       GetWidget()->GetNativeWindow());
-  auth_error_bubble_->Hide();
+  HideAuthErrorMessage();
 }
 
 std::unique_ptr<LoginBigUserView> LockContentsView::AllocateLoginBigUserView(
@@ -2311,6 +2418,10 @@ std::unique_ptr<LoginBigUserView> LockContentsView::AllocateLoginBigUserView(
       &LockContentsView::OnEasyUnlockIconHovered, base::Unretained(this));
   auth_user_callbacks.on_easy_unlock_icon_tapped = base::BindRepeating(
       &LockContentsView::OnEasyUnlockIconTapped, base::Unretained(this));
+  auth_user_callbacks.on_auth_factor_is_hiding_password_changed =
+      base::BindRepeating(
+          &LockContentsView::OnAuthFactorIsHidingPasswordChanged,
+          base::Unretained(this), user.basic_user_info.account_id);
 
   LoginPublicAccountUserView::Callbacks public_account_callbacks;
   public_account_callbacks.on_tap = auth_user_callbacks.on_tap;
@@ -2351,7 +2462,10 @@ LoginUserView* LockContentsView::TryToFindUserView(const AccountId& user) {
     return big_view->GetUserView();
 
   // Try to find |user| in users_list_.
-  return users_list_->GetUserView(user);
+  if (users_list_)
+    return users_list_->GetUserView(user);
+
+  return nullptr;
 }
 
 void LockContentsView::SetDisplayStyle(DisplayStyle style) {
@@ -2385,7 +2499,8 @@ void LockContentsView::RegisterAccelerators() {
     // accelerator is pressed. So we register WebUI acceleratos here
     // and then start WebUI when needed and pass the accelerator.
     if (!kLoginAcceleratorData[i].global &&
-        MapToWebUIAccelerator(kLoginAcceleratorData[i].action).empty()) {
+        kLoginAcceleratorData[i].action !=
+            LoginAcceleratorAction::kCancelScreenAction) {
       continue;
     }
     if ((screen_type_ == LockScreen::ScreenType::kLogin) &&
@@ -2483,6 +2598,37 @@ void LockContentsView::OnBottomStatusIndicatorTapped() {
   if (bottom_status_indicator_state_ != BottomIndicatorState::kManagedDevice)
     return;
   management_bubble_->Show();
+}
+
+void LockContentsView::OnBackToSigninButtonTapped() {
+  Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+      /*prefilled_account=*/EmptyAccountId());
+}
+
+void LockContentsView::UpdateKioskDefaultMessageVisibility() {
+  if (!kiosk_license_mode_)
+    return;
+
+  if (!kiosk_default_message_) {
+    // KioskAppDefaultMessage is owned by itself and would be destroyed when
+    // its widget got destroyed, which happened when the widget's window got
+    // destroyed.
+    kiosk_default_message_ = new KioskAppDefaultMessage();
+  }
+  if (has_kiosk_apps_)
+    kiosk_default_message_->GetWidget()->Hide();
+  else
+    kiosk_default_message_->GetWidget()->Show();
+}
+
+void LockContentsView::SetKioskLicenseModeForTesting(
+    bool is_kiosk_license_mode) {
+  kiosk_license_mode_ = is_kiosk_license_mode;
+
+  // Normally when management device mode is updated, via
+  // OnDeviceEnterpriseInfoChanged, it updates the visibility of Kiosk default
+  // meesage too.
+  UpdateKioskDefaultMessageVisibility();
 }
 
 BEGIN_METADATA(LockContentsView, NonAccessibleView)

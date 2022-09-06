@@ -142,15 +142,15 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
     }
   }
 
-  requestForURL(url: string): SDK.NetworkRequest.NetworkRequest|null {
+  requestForURL(url: Platform.DevToolsPath.UrlString): SDK.NetworkRequest.NetworkRequest|null {
     return this.requestsInternal.find(request => request.url() === url) || null;
   }
 
-  originalRequestForURL(url: string): Protocol.Network.Request|null {
+  originalRequestForURL(url: Platform.DevToolsPath.UrlString): Protocol.Network.Request|null {
     return this.sentNetworkRequests.find(request => request.url === url) || null;
   }
 
-  originalResponseForURL(url: string): Protocol.Network.Response|null {
+  originalResponseForURL(url: Platform.DevToolsPath.UrlString): Protocol.Network.Response|null {
     return this.receivedNetworkResponses.find(response => response.url === url) || null;
   }
 
@@ -171,8 +171,9 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
     return null;
   }
 
-  private requestByManagerAndURL(networkManager: SDK.NetworkManager.NetworkManager, url: string):
-      SDK.NetworkRequest.NetworkRequest|null {
+  private requestByManagerAndURL(
+      networkManager: SDK.NetworkManager.NetworkManager,
+      url: Platform.DevToolsPath.UrlString): SDK.NetworkRequest.NetworkRequest|null {
     for (const request of this.requestsInternal) {
       if (url === request.url() && networkManager === SDK.NetworkManager.NetworkManager.forRequest(request)) {
         return request;
@@ -195,14 +196,16 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
     return initiatorInfo;
   }
 
-  initiatorInfoForRequest(request: SDK.NetworkRequest.NetworkRequest): InitiatorInfo {
-    const initiatorInfo = this.initializeInitiatorSymbolIfNeeded(request);
-    if (initiatorInfo.info) {
-      return initiatorInfo.info;
-    }
+  static initiatorInfoForRequest(request: SDK.NetworkRequest.NetworkRequest, existingInitiatorData?: InitiatorData):
+      InitiatorInfo {
+    const initiatorInfo: InitiatorData = existingInitiatorData || {
+      info: null,
+      chain: null,
+      request: undefined,
+    };
 
     let type = SDK.NetworkRequest.InitiatorType.Other;
-    let url = '';
+    let url = Platform.DevToolsPath.EmptyUrlString;
     let lineNumber: number = -Infinity;
     let columnNumber: number = -Infinity;
     let scriptId: Protocol.Runtime.ScriptId|null = null;
@@ -217,7 +220,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
     } else if (initiator) {
       if (initiator.type === Protocol.Network.InitiatorType.Parser) {
         type = SDK.NetworkRequest.InitiatorType.Parser;
-        url = initiator.url ? initiator.url : url;
+        url = initiator.url ? initiator.url as Platform.DevToolsPath.UrlString : url;
         lineNumber = typeof initiator.lineNumber === 'number' ? initiator.lineNumber : lineNumber;
         columnNumber = typeof initiator.columnNumber === 'number' ? initiator.columnNumber : columnNumber;
       } else if (initiator.type === Protocol.Network.InitiatorType.Script) {
@@ -228,7 +231,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
             continue;
           }
           type = SDK.NetworkRequest.InitiatorType.Script;
-          url = topFrame.url || i18nString(UIStrings.anonymous);
+          url = (topFrame.url || i18nString(UIStrings.anonymous) as string) as Platform.DevToolsPath.UrlString;
           lineNumber = topFrame.lineNumber;
           columnNumber = topFrame.columnNumber;
           scriptId = topFrame.scriptId;
@@ -236,7 +239,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
         }
         if (!initiator.stack && initiator.url) {
           type = SDK.NetworkRequest.InitiatorType.Script;
-          url = initiator.url;
+          url = initiator.url as Platform.DevToolsPath.UrlString;
           lineNumber = initiator.lineNumber || 0;
         }
         if (initiator.stack && initiator.stack.callFrames && initiator.stack.callFrames.length) {
@@ -249,12 +252,20 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
         initiatorRequest = request.preflightInitiatorRequest();
       } else if (initiator.type === Protocol.Network.InitiatorType.SignedExchange) {
         type = SDK.NetworkRequest.InitiatorType.SignedExchange;
-        url = initiator.url || '';
+        url = initiator.url as Platform.DevToolsPath.UrlString || Platform.DevToolsPath.EmptyUrlString;
       }
     }
-
     initiatorInfo.info = {type, url, lineNumber, columnNumber, scriptId, stack: initiatorStack, initiatorRequest};
     return initiatorInfo.info;
+  }
+
+  initiatorInfoForRequest(request: SDK.NetworkRequest.NetworkRequest): InitiatorInfo {
+    const initiatorInfo = this.initializeInitiatorSymbolIfNeeded(request);
+    if (initiatorInfo.info) {
+      return initiatorInfo.info;
+    }
+
+    return NetworkLog.initiatorInfoForRequest(request, initiatorInfo);
   }
 
   initiatorGraphForRequest(request: SDK.NetworkRequest.NetworkRequest): InitiatorGraph {
@@ -547,7 +558,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper<EventTypes> i
     if (initiator) {
       consoleMessage.stackTrace = initiator.stack || undefined;
       if (initiator.url) {
-        consoleMessage.url = initiator.url;
+        consoleMessage.url = initiator.url as Platform.DevToolsPath.UrlString;
         consoleMessage.line = initiator.lineNumber || 0;
       }
     }
@@ -583,7 +594,7 @@ export type EventTypes = {
   [Events.RequestUpdated]: SDK.NetworkRequest.NetworkRequest,
 };
 
-interface InitiatorData {
+export interface InitiatorData {
   info: InitiatorInfo|null;
   chain: Set<SDK.NetworkRequest.NetworkRequest>|null;
   request?: SDK.NetworkRequest.NetworkRequest|null;
@@ -594,9 +605,10 @@ export interface InitiatorGraph {
   initiated: Map<SDK.NetworkRequest.NetworkRequest, SDK.NetworkRequest.NetworkRequest>;
 }
 
-interface InitiatorInfo {
+export interface InitiatorInfo {
   type: SDK.NetworkRequest.InitiatorType;
-  url: string;
+  // generally this is a url but can also contain "<anonymous>"
+  url: Platform.DevToolsPath.UrlString;
   lineNumber: number;
   columnNumber: number;
   scriptId: Protocol.Runtime.ScriptId|null;

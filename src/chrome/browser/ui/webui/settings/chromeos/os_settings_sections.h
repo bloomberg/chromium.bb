@@ -10,12 +10,16 @@
 
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "ash/components/phonehub/phone_hub_manager.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/android_sms/android_sms_service.h"
 // TODO(https://crbug.com/1164001): forward declare when moved ash
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
+// TODO(https://crbug.com/1164001): forward declare when moved ash
+#include "chrome/browser/ash/printing/cups_printers_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 
@@ -32,13 +36,6 @@ class SyncService;
 }  // namespace syncer
 
 namespace chromeos {
-
-class CupsPrintersManager;
-
-namespace multidevice_setup {
-class MultiDeviceSetupClient;
-}  // namespace multidevice_setup
-
 namespace settings {
 
 // Collection of all OsSettingsSection implementations.

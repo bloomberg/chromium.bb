@@ -30,6 +30,8 @@ class StateChangeTest : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
+        setConfigDepthBits(24);
+        setConfigStencilBits(8);
 
         // Enable the no error extension to avoid syncing the FBO state on validation.
         setNoErrorEnabled(true);
@@ -550,8 +552,6 @@ TEST_P(StateChangeTestES3, CopyTexSubImage3DSync)
 // Ensure that BlitFramebuffer syncs framebuffer changes.
 TEST_P(StateChangeTestES3, BlitFramebufferSync)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsVulkan());
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
 
     // Init first texture to red
@@ -621,8 +621,6 @@ TEST_P(StateChangeTestES3, ReadBufferAndDrawBuffersSync)
 // Adapted partially from WebGL 2 test "renderbuffers/invalidate-framebuffer"
 TEST_P(StateChangeTestES3, IncompleteRenderbufferAttachmentInvalidateSync)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsVulkan());
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, mRenderbuffer);
     GLint samples = 0;
@@ -1217,8 +1215,6 @@ TEST_P(StateChangeTestES3, SamplerMetadataUpdateOnSetProgram)
 // Tests that redefining Buffer storage syncs with the Transform Feedback object.
 TEST_P(StateChangeTestES3, RedefineTransformFeedbackBuffer)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsVulkan());
     // Create the most simple program possible - simple a passthrough for a float attribute.
     constexpr char kVertexShader[] = R"(#version 300 es
 in float valueIn;
@@ -1300,6 +1296,141 @@ void main()
     std::vector<GLfloat> actualData2(asFloat2, asFloat2 + data2.size());
     EXPECT_EQ(data2, actualData2);
     glUnmapBuffer(GL_TRANSFORM_FEEDBACK_BUFFER);
+}
+
+// Variations:
+//
+// - bool: whether to use WebGL compatibility mode.
+using StateChangeTestWebGL2Params = std::tuple<angle::PlatformParameters, bool>;
+
+std::string StateChangeTestWebGL2Print(
+    const ::testing::TestParamInfo<StateChangeTestWebGL2Params> &paramsInfo)
+{
+    const StateChangeTestWebGL2Params &params = paramsInfo.param;
+    std::ostringstream out;
+
+    out << std::get<0>(params);
+
+    if (std::get<1>(params))
+    {
+        out << "__WebGLCompatibility";
+    }
+
+    return out.str();
+}
+
+// State change test verifying both ES3 and WebGL2 specific behaviors.
+// Test is parameterized to allow execution with and without WebGL validation.
+// Note that this can not inherit from StateChangeTest due to the need to use ANGLETestWithParam.
+class StateChangeTestWebGL2 : public ANGLETestWithParam<StateChangeTestWebGL2Params>
+{
+  protected:
+    StateChangeTestWebGL2()
+    {
+        setWindowWidth(kWidth);
+        setWindowHeight(kHeight);
+        setConfigRedBits(8);
+        setConfigGreenBits(8);
+        setConfigBlueBits(8);
+        setConfigAlphaBits(8);
+        if (testing::get<1>(GetParam()))
+            setWebGLCompatibilityEnabled(true);
+    }
+
+    struct TestResources
+    {
+        GLTexture colorTexture;
+        GLFramebuffer framebuffer;
+    };
+
+    void setupResources(TestResources &resources)
+    {
+        glBindTexture(GL_TEXTURE_2D, resources.colorTexture);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kWidth, kHeight);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        EXPECT_GL_NO_ERROR();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, resources.framebuffer);
+        EXPECT_GL_NO_ERROR();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               resources.colorTexture, 0);
+        EXPECT_GL_NO_ERROR();
+    }
+
+    // Use a larger window/framebuffer size than 1x1 (though not much larger) to
+    // increase the chances that random garbage will appear.
+    static constexpr GLsizei kWidth  = 4;
+    static constexpr GLsizei kHeight = 4;
+};
+
+// Note: tested multiple other combinations:
+//
+// - Clearing/drawing to the framebuffer after invalidating, without using a
+//   secondary FBO
+// - Clearing the framebuffer after invalidating, using a secondary FBO
+// - Invalidating after clearing/drawing to the FBO, to verify WebGL's behavior
+//   that after invalidation, the framebuffer is either unmodified, or cleared
+//   to transparent black
+//
+// This combination, drawing after invalidating plus copying from the drawn-to
+// texture, was the only one which provoked the original bug in the Metal
+// backend with the following command line arguments:
+//
+// MTL_DEBUG_LAYER=1 MTL_DEBUG_LAYER_VALIDATE_LOAD_ACTIONS=1 \
+//    MTL_DEBUG_LAYER_VALIDATE_STORE_ACTIONS=1 \
+//    MTL_DEBUG_LAYER_VALIDATE_UNRETAINED_RESOURCES=4 \
+//    angle_end2end_tests ...
+//
+// See anglebug.com/6923.
+
+TEST_P(StateChangeTestWebGL2, InvalidateThenDrawFBO)
+{
+    GLint origFramebuffer = 0;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &origFramebuffer);
+
+    TestResources resources;
+    setupResources(resources);
+
+    ANGLE_GL_PROGRAM(drawGreen, essl3_shaders::vs::Simple(), essl3_shaders::fs::Green());
+
+    const GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, resources.framebuffer);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Clear to red to start.
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Invalidate framebuffer.
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+    EXPECT_GL_NO_ERROR();
+
+    // Draw green.
+    // Important to use a vertex buffer because WebGL doesn't support client-side arrays.
+    constexpr bool useVertexBuffer = true;
+    drawQuad(drawGreen.get(), essl3_shaders::PositionAttrib(), 0.5f, 1.0f, useVertexBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    // Bind original framebuffer.
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, origFramebuffer);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, resources.framebuffer);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_DRAW_FRAMEBUFFER);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_READ_FRAMEBUFFER);
+    EXPECT_GL_NO_ERROR();
+
+    // Blit from user's framebuffer to the window.
+    //
+    // This step is crucial to catch bugs in the Metal backend's use of no-op load/store actions.
+    glBlitFramebuffer(0, 0, kWidth, kHeight, 0, 0, kWidth, kHeight, GL_COLOR_BUFFER_BIT,
+                      GL_NEAREST);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify results.
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, origFramebuffer);
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_RECT_EQ(0, 0, kWidth, kHeight, GLColor::green);
 }
 
 // Simple state change tests for line loop drawing. There is some very specific handling of line
@@ -3150,6 +3281,83 @@ TEST_P(SimpleStateChangeTestES3, DepthInvalidateThenClear)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
 }
 
+// Invalidate an RGB framebuffer and verify that the alpha channel is not destroyed and remains
+// valid after a draw call.
+TEST_P(SimpleStateChangeTestES3, InvalidateRGBThenDraw)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    // Verify that clearing alpha is ineffective on an RGB format.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Invalidate the framebuffer contents.
+    const GLenum discards[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
+
+    // Without an explicit clear, draw blue and make sure alpha is unaffected.  If RGB is emulated
+    // with RGBA, the previous invalidate shouldn't affect the alpha value.
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+}
+
+// Invalidate an RGB framebuffer and verify that the alpha channel is not destroyed, even if the
+// color channels may be garbage.
+TEST_P(SimpleStateChangeTestES3, DrawAndInvalidateRGBThenVerifyAlpha)
+{
+    ANGLE_GL_PROGRAM(drawColor, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(drawColor);
+    GLint uniformLocation = glGetUniformLocation(drawColor, essl1_shaders::ColorUniform());
+    ASSERT_NE(uniformLocation, -1);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUniform4f(uniformLocation, 0.1f, 0.2f, 0.3f, 0.4f);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 0.5f);
+
+    // Invalidate the framebuffer contents.
+    const GLenum discards[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
+
+    // Read back the contents of the framebuffer.  The color channels are invalid, but as an RGB
+    // format, readback should always return 1 in alpha.
+    std::vector<GLColor> readback(w * h);
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, readback.data());
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            EXPECT_EQ(readback[y * w + x].A, 255) << x << " " << y;
+        }
+    }
+}
+
 // Tests deleting a Framebuffer that is in use.
 TEST_P(SimpleStateChangeTest, DeleteFramebufferInUse)
 {
@@ -4354,9 +4562,6 @@ void main()
 // call works correctly.  This requires a barrier in between the draw calls.
 TEST_P(SimpleStateChangeTestES31, DrawWithUBOThenDrawWithSSBO)
 {
-    // http://anglebug.com/5593
-    ANGLE_SKIP_TEST_IF(IsD3D11());
-
     GLint maxFragmentShaderStorageBlocks;
     glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &maxFragmentShaderStorageBlocks);
 
@@ -4454,6 +4659,223 @@ void main()
     EXPECT_NEAR(ptr[1], 0.6f, 0.001);
     EXPECT_NEAR(ptr[2], 0.4f, 0.001);
     EXPECT_NEAR(ptr[3], 0.3f, 0.001);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Tests that writing to an SSBO in the fragment shader before and after a change to the drawbuffers
+// still works
+TEST_P(SimpleStateChangeTestES31, FragWriteSSBOThenChangeDrawbuffersThenWriteSSBO)
+{
+    GLint maxFragmentShaderStorageBlocks;
+    glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &maxFragmentShaderStorageBlocks);
+
+    ANGLE_SKIP_TEST_IF(maxFragmentShaderStorageBlocks < 1);
+
+    constexpr GLsizei kSize = 1;
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+    EXPECT_GL_NO_ERROR();
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr std::array<float, 4> kBufferInitValue = {0.125f, 0.25f, 0.5f, 1.0f};
+    GLBuffer buffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(kBufferInitValue), kBufferInitValue.data(),
+                 GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
+
+    // Create a program that writes to the SSBO in the fragment shader.
+    constexpr char kFS[] = R"(#version 310 es
+precision mediump float;
+layout(binding = 0, std430) buffer Output {
+    vec4 value;
+} b;
+out vec4 colorOut;
+uniform vec4 value;
+void main()
+{
+    b.value = value;
+    colorOut = vec4(1, 1, 1, 0);
+})";
+
+    GLuint vs = CompileShader(GL_VERTEX_SHADER, essl31_shaders::vs::Simple());
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFS);
+
+    const GLuint program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    CheckLinkStatusAndReturnProgram(program, true);
+
+    // Detach the shaders, so any draw-time shader rewriting won't be able to use them.
+    glDetachShader(program, vs);
+    glDetachShader(program, fs);
+
+    glUseProgram(program);
+    GLint positionLoc = glGetAttribLocation(program, essl31_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+    GLint valueLoc = glGetUniformLocation(program, "value");
+    ASSERT_NE(-1, valueLoc);
+
+    const std::array<Vector3, 6> &quadVertices = GetQuadVertices();
+    const size_t posBufferSize                 = quadVertices.size() * sizeof(Vector3);
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, posBufferSize, quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    glUseProgram(program);
+    constexpr float kValue1[4] = {0.1f, 0.2f, 0.3f, 0.4f};
+
+    glUniform4fv(valueLoc, 1, kValue1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that the program wrote the SSBO correctly.
+    const float *ptr = reinterpret_cast<const float *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kBufferInitValue), GL_MAP_READ_BIT));
+
+    for (int i = 0; i < 4; ++i)
+    {
+        EXPECT_NEAR(ptr[i], kValue1[i], 0.001);
+    }
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    GLenum drawBuffers[] = {GL_NONE};
+    glDrawBuffers(1, drawBuffers);
+
+    constexpr float kValue2[4] = {0.5f, 0.6f, 0.7f, 0.9f};
+    glUniform4fv(valueLoc, 1, kValue2);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+    // Verify that the program wrote the SSBO correctly.
+    ptr = reinterpret_cast<const float *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kBufferInitValue), GL_MAP_READ_BIT));
+
+    for (int i = 0; i < 4; ++i)
+    {
+        EXPECT_NEAR(ptr[i], kValue2[i], 0.001);
+    }
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Tests that writing to an SSBO in the vertex shader before and after a change to the drawbuffers
+// still works
+TEST_P(SimpleStateChangeTestES31, VertWriteSSBOThenChangeDrawbuffersThenWriteSSBO)
+{
+    GLint maxVertexShaderStorageBlocks;
+    glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &maxVertexShaderStorageBlocks);
+
+    ANGLE_SKIP_TEST_IF(maxVertexShaderStorageBlocks < 1);
+
+    constexpr GLsizei kSize = 1;
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+    EXPECT_GL_NO_ERROR();
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr std::array<float, 4> kBufferInitValue = {0.125f, 0.25f, 0.5f, 1.0f};
+    GLBuffer buffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(kBufferInitValue), kBufferInitValue.data(),
+                 GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
+
+    // Create a program that writes to the SSBO in the vertex shader.
+    constexpr char kVS[] = R"(#version 310 es
+in vec4 a_position;
+uniform vec4 value;
+layout(binding = 0, std430) buffer Output {
+    vec4 value;
+} b;
+void main()
+{
+    b.value = value;
+    gl_Position = a_position;
+})";
+
+    GLuint vs = CompileShader(GL_VERTEX_SHADER, kVS);
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, essl31_shaders::fs::Green());
+
+    const GLuint program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    CheckLinkStatusAndReturnProgram(program, true);
+
+    // Detach the shaders, so any draw-time shader rewriting won't be able to use them.
+    glDetachShader(program, vs);
+    glDetachShader(program, fs);
+
+    glUseProgram(program);
+    GLint positionLoc = glGetAttribLocation(program, essl31_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+    GLint valueLoc = glGetUniformLocation(program, "value");
+    ASSERT_NE(-1, valueLoc);
+
+    const std::array<Vector3, 6> &quadVertices = GetQuadVertices();
+    const size_t posBufferSize                 = quadVertices.size() * sizeof(Vector3);
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, posBufferSize, quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    glUseProgram(program);
+    constexpr float kValue1[4] = {0.1f, 0.2f, 0.3f, 0.4f};
+
+    glUniform4fv(valueLoc, 1, kValue1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that the program wrote the SSBO correctly.
+    const float *ptr = reinterpret_cast<const float *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kBufferInitValue), GL_MAP_READ_BIT));
+
+    for (int i = 0; i < 4; ++i)
+    {
+        EXPECT_NEAR(ptr[i], kValue1[i], 0.001);
+    }
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    GLenum drawBuffers[] = {GL_NONE};
+    glDrawBuffers(1, drawBuffers);
+
+    constexpr float kValue2[4] = {0.5f, 0.6f, 0.7f, 0.9f};
+    glUniform4fv(valueLoc, 1, kValue2);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+    // Verify that the program wrote the SSBO correctly.
+    ptr = reinterpret_cast<const float *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kBufferInitValue), GL_MAP_READ_BIT));
+
+    for (int i = 0; i < 4; ++i)
+    {
+        EXPECT_NEAR(ptr[i], kValue2[i], 0.001);
+    }
 
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
@@ -6097,7 +6519,7 @@ void SimpleStateChangeTest::drawToFboWithCulling(const GLenum frontFace, bool ea
 
     // Clear the surface FBO to initialize it to a known value
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(GLColor::red.R, GLColor::red.G, GLColor::red.B, GLColor::red.A);
+    glClearColor(kFloatRed.R, kFloatRed.G, kFloatRed.B, kFloatRed.A);
     glClear(GL_COLOR_BUFFER_BIT);
     ASSERT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
@@ -6327,7 +6749,7 @@ TEST_P(SimpleStateChangeTest, DrawArraysWithZeroSizedElementArrayBuffer)
 // Validates GL_RASTERIZER_DISCARD state is tracked correctly
 TEST_P(SimpleStateChangeTestES3, RasterizerDiscardState)
 {
-    glClearColor(GLColor::red.R, GLColor::red.G, GLColor::red.B, GLColor::red.A);
+    glClearColor(kFloatRed.R, kFloatRed.G, kFloatRed.B, kFloatRed.A);
     glClear(GL_COLOR_BUFFER_BIT);
     ASSERT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
@@ -6355,6 +6777,162 @@ TEST_P(SimpleStateChangeTestES3, RasterizerDiscardState)
     drawQuad(blueProgram.get(), std::string(essl1_shaders::PositionAttrib()), 0.0f);
     ASSERT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Test that early return on binding the same texture is functional
+TEST_P(SimpleStateChangeTestES3, BindingSameTexture)
+{
+    // Create two 1x1 textures
+    constexpr GLsizei kSize           = 2;
+    std::array<GLColor, kSize> colors = {GLColor::yellow, GLColor::cyan};
+
+    GLTexture tex[kSize];
+    // Bind texture 0 and 1 to active textures 0 and 1 and set data
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors[0].data());
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, tex[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors[1].data());
+
+    // Create simple program and query sampler location
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Texture2D(), essl1_shaders::fs::Texture2D());
+    ASSERT(program.valid());
+    glUseProgram(program);
+    GLint textureLocation = glGetUniformLocation(program, essl1_shaders::Texture2DUniform());
+    ASSERT_NE(-1, textureLocation);
+
+    // Draw using active texture 0.
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(textureLocation, 0);
+    glBindTexture(GL_TEXTURE_2D, tex[0]);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, colors[0]);
+
+    // Draw using active texture 1.
+    glActiveTexture(GL_TEXTURE1);
+    glUniform1i(textureLocation, 1);
+    glBindTexture(GL_TEXTURE_2D, tex[1]);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, colors[1]);
+
+    // Rebind the same texture to texture unit 1 and expect same color
+    glBindTexture(GL_TEXTURE_2D, tex[1]);
+    glUniform1i(textureLocation, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, colors[1]);
+
+    // Rebind the same texture to texture unit 0 and expect same color
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(textureLocation, 0);
+    glBindTexture(GL_TEXTURE_2D, tex[0]);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, colors[0]);
+}
+
+// Test that early return on binding the same sampler is functional
+TEST_P(SimpleStateChangeTestES3, BindingSameSampler)
+{
+    // Create 2 samplers with different filtering.
+    constexpr GLsizei kNumSamplers = 2;
+    GLSampler samplers[kNumSamplers];
+
+    // Init sampler0
+    glBindSampler(0, samplers[0]);
+    glSamplerParameteri(samplers[0], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glSamplerParameteri(samplers[0], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    ASSERT_GL_NO_ERROR();
+
+    // Init sampler1
+    glBindSampler(1, samplers[1]);
+    glSamplerParameteri(samplers[1], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glSamplerParameteri(samplers[1], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    ASSERT_GL_NO_ERROR();
+
+    // Create a simple 2x1 texture with black and white colors
+    std::array<GLColor, 2> colors = {{GLColor::black, GLColor::white}};
+
+    GLTexture tex;
+    // Bind the same texture to texture units 0 and 1
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+
+    // Create a program that uses 2 samplers.
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 v_texCoord;
+uniform sampler2D baseSampler;
+uniform sampler2D overrideSampler;
+void main()
+{
+    gl_FragColor = texture2D(baseSampler, v_texCoord);
+    gl_FragColor = texture2D(overrideSampler, v_texCoord);
+})";
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Texture2D(), kFS);
+    glUseProgram(program);
+    GLint baseSamplerLoc     = glGetUniformLocation(program, "baseSampler");
+    GLint overrideSamplerLoc = glGetUniformLocation(program, "overrideSampler");
+
+    // Bind samplers to texture units 0 and 1
+    glBindSampler(0, samplers[0]);
+    glBindSampler(1, samplers[1]);
+    glUniform1i(baseSamplerLoc, 0);
+    glUniform1i(overrideSamplerLoc, 1);
+    drawQuad(program, std::string(essl1_shaders::PositionAttrib()), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    // A gradient should have been rendered since "overrideSampler" has linear filter,
+    // we should not expect a solid black or white color.
+    EXPECT_NE(angle::ReadColor(getWindowWidth() / 2, getWindowHeight() / 2), GLColor::black);
+    EXPECT_NE(angle::ReadColor(getWindowWidth() / 2, getWindowHeight() / 2), GLColor::white);
+
+    // Switch sampler bindings
+    glBindSampler(1, samplers[0]);
+    glBindSampler(0, samplers[1]);
+    drawQuad(program, std::string(essl1_shaders::PositionAttrib()), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    // Now that "overrideSampler" has nearest filter expect solid colors.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, 0, GLColor::white);
+
+    // Rebind the same samplers again and expect same output
+    glBindSampler(1, samplers[0]);
+    glBindSampler(0, samplers[1]);
+    drawQuad(program, std::string(essl1_shaders::PositionAttrib()), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, 0, GLColor::white);
+}
+
+// Test that early return on binding the same buffer is functional
+TEST_P(SimpleStateChangeTestES3, BindingSameBuffer)
+{
+    GLushort indexData[] = {0, 1, 2, 3};
+
+    GLBuffer elementArrayBuffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementArrayBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Zero(), essl1_shaders::fs::Red());
+    glUseProgram(program);
+
+    glDrawElements(GL_POINTS, 4, GL_UNSIGNED_SHORT, 0);
+
+    std::vector<GLColor> colors0(kWindowSize * kWindowSize);
+    glReadPixels(0, 0, kWindowSize, kWindowSize, GL_RGBA, GL_UNSIGNED_BYTE, colors0.data());
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementArrayBuffer);
+    glDrawElements(GL_POINTS, 4, GL_UNSIGNED_SHORT, 0);
+    std::vector<GLColor> colors1(kWindowSize * kWindowSize);
+    glReadPixels(0, 0, kWindowSize, kWindowSize, GL_RGBA, GL_UNSIGNED_BYTE, colors1.data());
+
+    EXPECT_EQ(colors0, colors1);
 }
 
 class ImageRespecificationTest : public ANGLETest
@@ -6558,9 +7136,9 @@ TEST_P(ImageRespecificationTest, ImageTarget2DOESSwitch)
 
     EGLWindow *window = getEGLWindow();
     EGLint attribs[]  = {
-        EGL_IMAGE_PRESERVED,
-        EGL_TRUE,
-        EGL_NONE,
+         EGL_IMAGE_PRESERVED,
+         EGL_TRUE,
+         EGL_NONE,
     };
     EGLImageKHR firstEGLImage = eglCreateImageKHR(
         window->getDisplay(), window->getContext(), EGL_GL_TEXTURE_2D_KHR,
@@ -7023,7 +7601,7 @@ void main()
 }
 
 // Negative test for EXT_primitive_bounding_box
-TEST_P(SimpleStateChangeTestES31, PrimitiveBoundingBoxNegativeTest)
+TEST_P(SimpleStateChangeTestES31, PrimitiveBoundingBoxEXTNegativeTest)
 {
     ANGLE_SKIP_TEST_IF(IsGLExtensionEnabled("GL_EXT_primitive_bounding_box"));
 
@@ -7032,6 +7610,19 @@ TEST_P(SimpleStateChangeTestES31, PrimitiveBoundingBoxNegativeTest)
 
     GLfloat boundingBox[8] = {0};
     glGetFloatv(GL_PRIMITIVE_BOUNDING_BOX_EXT, boundingBox);
+    EXPECT_GL_ERROR(GL_INVALID_ENUM);
+}
+
+// Negative test for OES_primitive_bounding_box
+TEST_P(SimpleStateChangeTestES31, PrimitiveBoundingBoxOESNegativeTest)
+{
+    ANGLE_SKIP_TEST_IF(IsGLExtensionEnabled("GL_OES_primitive_bounding_box"));
+
+    glPrimitiveBoundingBoxEXT(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    GLfloat boundingBox[8] = {0};
+    glGetFloatv(GL_PRIMITIVE_BOUNDING_BOX_OES, boundingBox);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 }
 
@@ -7353,6 +7944,37 @@ TEST_P(SimpleStateChangeTestES3, RespecifyBufferAfterBeginTransformFeedback)
     glBeginTransformFeedback(GL_TRIANGLES);
     glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, sizeof(float) * 3 * 4 * 6, nullptr, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEndTransformFeedback();
+}
+
+// Test a bug angleproject:6998 in TransformFeedback code path by allocating paddingBuffer first and
+// then allocate another buffer and then deallocate paddingBuffer and then allocate buffer again.
+// This new buffer will be allocated in the space where paddingBuffer was allocated which causing
+// XFB generate VVL error.
+TEST_P(SimpleStateChangeTestES3, RespecifyBufferAfterBeginTransformFeedbackInDeletedPaddingBuffer)
+{
+    std::vector<std::string> tfVaryings = {"gl_Position"};
+    ANGLE_GL_PROGRAM_TRANSFORM_FEEDBACK(testProgram, essl3_shaders::vs::Simple(),
+                                        essl3_shaders::fs::Green(), tfVaryings,
+                                        GL_INTERLEAVED_ATTRIBS);
+    glUseProgram(testProgram);
+
+    GLuint paddingBuffer;
+    glGenBuffers(1, &paddingBuffer);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, paddingBuffer);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, 256, nullptr, GL_STREAM_DRAW);
+
+    GLBuffer buffer;
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, buffer);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, sizeof(float) * 3 * 2 * 7, nullptr, GL_STREAM_DRAW);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer);
+    // Delete padding buffer, expecting the next bufferData call will reuse the space of
+    // paddingBuffer whose offset is smaller than buffer's offset, which triggers the bug.
+    glDeleteBuffers(1, &paddingBuffer);
+    glBeginTransformFeedback(GL_TRIANGLES);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, sizeof(float) * 3 * 4 * 6, nullptr, GL_STREAM_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEndTransformFeedback();
 }
 
 // Regression test for a bug in the Vulkan backend where a draw-based copy after a deferred flush
@@ -7410,6 +8032,1600 @@ TEST_P(SimpleStateChangeTestES3, DrawFlushThenBlit)
     glFlush();
     ASSERT_GL_NO_ERROR();
 }
+
+class VertexAttribArrayStateChangeTest : public ANGLETest
+{
+  protected:
+    VertexAttribArrayStateChangeTest()
+    {
+        setWindowWidth(128);
+        setWindowHeight(128);
+        setConfigRedBits(8);
+        setConfigGreenBits(8);
+        setConfigBlueBits(8);
+        setConfigAlphaBits(8);
+        setConfigDepthBits(24);
+    }
+
+    void testSetUp() override
+    {
+        constexpr char kVS[] = R"(precision highp float;
+attribute vec4 position;
+attribute vec4 color;
+varying vec4 colorOut;
+
+void main()
+{
+    gl_Position = position;
+    colorOut = color;
+})";
+
+        constexpr char kFS[] = R"(precision highp float;
+varying vec4 colorOut;
+
+void main()
+{
+    gl_FragColor = colorOut;
+})";
+
+        mProgram = CompileProgram(kVS, kFS);
+        ASSERT_NE(0u, mProgram);
+
+        mPosAttribLocation = glGetAttribLocation(mProgram, "position");
+        ASSERT_NE(-1, mPosAttribLocation);
+        mColorAttribLocation = glGetAttribLocation(mProgram, "color");
+        ASSERT_NE(-1, mColorAttribLocation);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        ASSERT_GL_NO_ERROR();
+
+        glGenBuffers(1, &mVertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+
+        const float posAttribData[] = {
+            -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,
+        };
+        glBufferData(GL_ARRAY_BUFFER, sizeof(posAttribData), posAttribData, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    void testTearDown() override
+    {
+        if (mVertexBuffer != 0)
+        {
+            glDeleteBuffers(1, &mVertexBuffer);
+        }
+
+        if (mProgram != 0)
+        {
+            glDeleteProgram(mProgram);
+        }
+    }
+
+    GLuint mProgram;
+    GLint mPosAttribLocation;
+    GLint mColorAttribLocation;
+    GLuint mVertexBuffer;
+};
+
+TEST_P(VertexAttribArrayStateChangeTest, Basic)
+{
+    glUseProgram(mProgram);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+    glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+
+    glVertexAttribPointer(mPosAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(mPosAttribLocation);
+    glDisableVertexAttribArray(mColorAttribLocation);
+    glVertexAttrib4f(mColorAttribLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+    // Don't try to verify the color of this draw as red here because it might
+    // hide the bug
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glVertexAttrib4f(mColorAttribLocation, 0.0f, 1.0f, 0.0f, 1.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+TEST_P(SimpleStateChangeTestES3, DepthOnlyToColorAttachmentPreservesBlendState)
+{
+
+    constexpr char kVS[] = R"(precision highp float;
+attribute vec4 position;
+attribute vec4 color;
+varying vec4 colorOut;
+
+void main()
+{
+    gl_Position = position;
+    colorOut = color;
+})";
+
+    constexpr char kFS[] = R"(precision highp float;
+varying vec4 colorOut;
+
+void main()
+{
+    gl_FragColor = colorOut;
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+
+    GLint posAttribLocation = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, posAttribLocation);
+    GLint colorAttribLocation = glGetAttribLocation(program, "color");
+    ASSERT_NE(-1, colorAttribLocation);
+
+    GLBuffer vertexBuffer;
+    GLTexture texture;
+    GLFramebuffer framebuffer;
+    GLRenderbuffer depthRenderbuffer;
+    GLFramebuffer depthFramebuffer;
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+    const float posAttribData[] = {
+        -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(posAttribData), posAttribData, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    constexpr int kWidth  = 1;
+    constexpr int kHeight = 1;
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, kWidth, kHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                              depthRenderbuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glDisable(GL_DEPTH_TEST);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glVertexAttribPointer(posAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(posAttribLocation);
+    glDisableVertexAttribArray(colorAttribLocation);
+    glVertexAttrib4f(colorAttribLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+
+    glUseProgram(program);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+    glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glUseProgram(0);
+}
+
+// Tests a bug where we wouldn't update our cached base/max levels in Vulkan.
+TEST_P(SimpleStateChangeTestES3, MaxLevelChange)
+{
+    // Initialize an immutable texture with 2 levels.
+    std::vector<GLColor> bluePixels(4, GLColor::blue);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage2D(GL_TEXTURE_2D, 2, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, bluePixels.data());
+    glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &GLColor::yellow);
+
+    // Set up draw resources.
+    ANGLE_GL_PROGRAM(testProgram, essl1_shaders::vs::Texture2D(), essl1_shaders::fs::Texture2D());
+    glUseProgram(testProgram);
+
+    GLint posLoc = glGetAttribLocation(testProgram, essl1_shaders::PositionAttrib());
+    ASSERT_NE(-1, posLoc);
+
+    std::array<Vector3, 6> quadVerts = GetQuadVertices();
+
+    GLBuffer vao;
+    glBindBuffer(GL_ARRAY_BUFFER, vao);
+    glBufferData(GL_ARRAY_BUFFER, quadVerts.size() * sizeof(quadVerts[0]), quadVerts.data(),
+                 GL_STATIC_DRAW);
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posLoc);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Draw with the 2x2 mip / max level 1.
+    glViewport(0, 0, 2, 2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Draw with the 1x1 mip / max level 2.
+    glViewport(2, 0, 1, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Draw with the 2x2 mip / max level 1.
+    glViewport(0, 2, 2, 2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Draw with the 1x1 mip / max level 2.
+    glViewport(2, 2, 1, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+    EXPECT_PIXEL_COLOR_EQ(2, 0, GLColor::yellow);
+    EXPECT_PIXEL_COLOR_EQ(0, 2, GLColor::blue);
+    EXPECT_PIXEL_COLOR_EQ(2, 2, GLColor::yellow);
+}
+
+// Tests a bug when removing an element array buffer bound to two vertex arrays.
+TEST_P(SimpleStateChangeTestES3, DeleteDoubleBoundBufferAndVertexArray)
+{
+    std::vector<uint8_t> bufData(100, 0);
+    GLBuffer buffer;
+    GLVertexArray vao;
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+    buffer.reset();
+    vao.reset();
+
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufData.size(), bufData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufData.size(), bufData.data(), GL_STATIC_DRAW);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for glLineWidth.
+TEST_P(StateChangeTestES3, LineWidth)
+{
+    GLfloat range[2] = {1};
+    glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, range);
+    EXPECT_GL_NO_ERROR();
+
+    ANGLE_SKIP_TEST_IF(range[1] < 5.0);
+
+    constexpr char kVS[] = R"(#version 300 es
+precision highp float;
+uniform float height;
+void main()
+{
+    gl_Position = vec4(gl_VertexID == 0 ? -1 : 1, height * 2. - 1., 0, 1);
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 colorOut;
+uniform vec4 color;
+void main()
+{
+    colorOut = color;
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    GLint heightLoc = glGetUniformLocation(program, "height");
+    GLint colorLoc  = glGetUniformLocation(program, "color");
+    ASSERT_NE(-1, heightLoc);
+    ASSERT_NE(-1, colorLoc);
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    const int w                 = getWindowWidth();
+    const int h                 = getWindowHeight();
+    const float halfPixelHeight = 0.5 / h;
+
+    glUniform1f(heightLoc, 0.25f + halfPixelHeight);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    glLineWidth(3);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glUniform1f(heightLoc, 0.5f + halfPixelHeight);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    glLineWidth(5);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glUniform1f(heightLoc, 0.75f + halfPixelHeight);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    glLineWidth(1);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    EXPECT_PIXEL_RECT_EQ(0, h / 4 - 2, w, 1, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(0, h / 4 - 1, w, 3, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(0, h / 4 + 2, w, 1, GLColor::black);
+
+    EXPECT_PIXEL_RECT_EQ(0, h / 2 - 3, w, 1, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2 - 2, w, 5, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2 + 3, w, 1, GLColor::black);
+
+    EXPECT_PIXEL_RECT_EQ(0, 3 * h / 4 - 1, w, 1, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(0, 3 * h / 4, w, 1, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(0, 3 * h / 4 + 1, w, 1, GLColor::black);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for out-of-range value for glLineWidth. The expectation
+// here is primarily that rendering backends do not crash with invalid line
+// width values.
+TEST_P(StateChangeTestES3, LineWidthOutOfRangeDoesntCrash)
+{
+    GLfloat range[2] = {1};
+    glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, range);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr char kVS[] = R"(#version 300 es
+precision highp float;
+void main()
+{
+    gl_Position = vec4(gl_VertexID == 0 ? -1.0 : 1.0, -1.0, 0.0, 1.0);
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 colorOut;
+void main()
+{
+    colorOut = vec4(1.0);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glLineWidth(range[1] + 1.0f);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glFinish();
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for glPolygonOffset.
+TEST_P(StateChangeTestES3, PolygonOffset)
+{
+    constexpr char kVS[] = R"(#version 300 es
+precision highp float;
+uniform float height;
+void main()
+{
+    // gl_VertexID    x    y
+    //      0        -1   -1
+    //      1         1   -1
+    //      2        -1    1
+    //      3         1    1
+    int bit0 = gl_VertexID & 1;
+    int bit1 = gl_VertexID >> 1;
+    gl_Position = vec4(bit0 * 2 - 1, bit1 * 2 - 1, gl_VertexID % 2 == 0 ? -1 : 1, 1);
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 colorOut;
+uniform vec4 color;
+void main()
+{
+    colorOut = color;
+})";
+
+    glEnable(GL_POLYGON_OFFSET_FILL);
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    glClearColor(0, 0, 0, 1);
+    glClearDepthf(0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
+
+    // The shader creates a depth slope from left (0) to right (1).
+    //
+    // This test issues three draw calls:
+    //
+    //           Draw 2 (green): factor width/2, offset 0, depth test: Greater
+    //          ^     |       __________________
+    //          |     |    __/__/   __/
+    //          |     V __/__/   __/  <--- Draw 1 (red): factor width/4, offset 0
+    //          |    __/__/ ^ __/
+    //          | __/__/   _|/
+    //          |/__/   __/ |
+    //          |/   __/    |
+    //          | __/    Draw 3 (blue): factor width/2, offset -1, depth test: Less
+    //          |/
+    //          |
+    //          |
+    //          +------------------------------->
+    //
+    // Result:  <----blue-----><-green-><--red-->
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    glPolygonOffset(getWindowWidth() / 4, 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    glPolygonOffset(getWindowWidth() / 2, 0);
+    glDepthFunc(GL_GREATER);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    glPolygonOffset(getWindowWidth() / 2, -2);
+    glDepthFunc(GL_LESS);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2 - 1, h, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(w / 2 + 1, 0, w / 4 - 1, h, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(3 * w / 4 + 1, 0, w / 4 - 1, h, GLColor::red);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for glBlendColor.
+TEST_P(StateChangeTestES3, BlendColor)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_CONSTANT_COLOR, GL_ZERO);
+    glBlendColor(0.498, 0.498, 0, 1);
+    glUniform4f(colorLoc, 1, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h);
+    glBlendColor(0, 1, 0.498, 1);
+    glUniform4f(colorLoc, 1, 0.247, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h, GLColor(0, 63, 127, 255));
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h, GLColor(127, 127, 0, 255));
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for ref and mask in glStencilFuncSeparate.
+TEST_P(StateChangeTestES3, StencilReferenceAndCompareMask)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    glClearColor(0, 0, 0, 1);
+    glClearStencil(0x3A);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    glEnable(GL_STENCIL_TEST);
+
+    glStencilMaskSeparate(GL_FRONT, 0xF0);
+    glStencilMaskSeparate(GL_BACK, 0x0F);
+
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0xB9, 0x7C);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_REPLACE);
+
+    glStencilFuncSeparate(GL_BACK, GL_EQUAL, 0x99, 0xAC);
+    glStencilOpSeparate(GL_BACK, GL_REPLACE, GL_KEEP, GL_KEEP);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    // Draw front-facing.  Front stencil test should pass, replacing the top bits with 0xB:
+    //
+    // Current value of stencil buffer: 0x3A, mask: 0x7C, writing 0xB9
+    //
+    //     B9 & 7C == 38 == 3A & 7C
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw back-facing.  Back stencil test should fail, replacing the bottom bits with 0x9:
+    //
+    // Current value of stencil buffer: 0xBA, mask: 0xAC, writing 0x99
+    //
+    //     99 & AC == 88 != A8 == BA & AC
+    glFrontFace(GL_CW);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // The left half of image should now have a value of B9, the right half should have BA
+    //
+    // Change the masks such that if the old masks are used, stencil test would fail, but if the new
+    // mask is used it would pass.
+    //
+    //    Left:  B9 & 7C == 38 != 3C == 3D & 7C
+    //           B9 & 33 == 31 == 3D & 33
+    //
+    //    Right: BA & AC == A8 != 28 == 3A & AC
+    //           BA & 59 == 18 == 3A & 59
+    //
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0x3D, 0x33);
+    glStencilFuncSeparate(GL_BACK, GL_EQUAL, 0x3A, 0x59);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
+
+    glScissor(0, 0, w, h / 2);
+
+    // Draw front-facing, coloring the top-left
+    glUniform4f(colorLoc, 1, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+    glFrontFace(GL_CCW);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::yellow);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::red);
+
+    // Verify stencil exactly
+    glDisable(GL_SCISSOR_TEST);
+    glStencilFunc(GL_EQUAL, 0xB9, 0xFF);
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    glStencilFunc(GL_EQUAL, 0xBA, 0xFF);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h, GLColor::cyan);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h, GLColor::magenta);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for mask in glStencilMaskSeparate.
+TEST_P(StateChangeTestES3, StencilWriteMask)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    glClearColor(0, 0, 0, 1);
+    glClearStencil(0x00);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    glEnable(GL_STENCIL_TEST);
+
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_REPLACE);
+    glStencilOpSeparate(GL_BACK, GL_REPLACE, GL_KEEP, GL_REPLACE);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    // Draw front-facing to the left half, replacing the top four bits, and back-facing to the right
+    // half, replacing the bottom four bits.
+    glStencilMaskSeparate(GL_FRONT, 0xF0);
+    glStencilFuncSeparate(GL_FRONT, GL_ALWAYS, 0x39, 0xFF);
+    glStencilMaskSeparate(GL_BACK, 0x0F);
+    glStencilFuncSeparate(GL_BACK, GL_ALWAYS, 0x2A, 0xFF);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    glDisable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+    glScissor(w / 2, 0, w / 2, h);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw back-facing to the top-left quarter, replacing the top two bits, and front-facing to the
+    // top-right quarter, replacing the bottom two bits.
+    glStencilMaskSeparate(GL_FRONT, 0xC0);
+    glStencilFuncSeparate(GL_FRONT, GL_ALWAYS, 0x81, 0xFF);
+    glStencilMaskSeparate(GL_BACK, 0x03);
+    glStencilFuncSeparate(GL_BACK, GL_ALWAYS, 0x53, 0xFF);
+
+    glScissor(0, 0, w / 2, h / 2);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    glFrontFace(GL_CCW);
+    glScissor(w / 2, 0, w / 2, h / 2);
+    glUniform4f(colorLoc, 1, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::yellow);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::green);
+
+    // Verify stencil exactly.  Stencil has the following values:
+    //
+    //    +------+------+
+    //    |      |      |
+    //    |  33  |  8A  |
+    //    |      |      |
+    //    +------+------+
+    //    |      |      |
+    //    |  30  |  0A  |
+    //    |      |      |
+    //    +------+------+
+    //
+    glDisable(GL_SCISSOR_TEST);
+    glStencilFunc(GL_EQUAL, 0x33, 0xFF);
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    glStencilFunc(GL_EQUAL, 0x8A, 0xFF);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    glStencilFunc(GL_EQUAL, 0x30, 0xFF);
+    glUniform4f(colorLoc, 1, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    glStencilFunc(GL_EQUAL, 0x0A, 0xFF);
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::cyan);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::white);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::black);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for glCullFace and glEnable(GL_CULL_FACE) as well as glFrontFace
+TEST_P(StateChangeTestES3, CullFaceAndFrontFace)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    // Draw red back-facing.  Face culling is initially disabled
+    glFrontFace(GL_CW);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw green back-facing, but enable face culling.  Default cull face is back.
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h / 2);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw blue front-facing.
+    glFrontFace(GL_CCW);
+    glScissor(w / 2, 0, w / 2, h / 2);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw magenta front-facing, but change cull face to front
+    glCullFace(GL_FRONT);
+    glScissor(0, h / 2, w / 2, h / 2);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw cyan front-facing, with face culling disabled
+    glDisable(GL_CULL_FACE);
+    glScissor(w / 2, h / 2, w / 2, h / 2);
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Draw yellow front-facing, with cull face set to front and back
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT_AND_BACK);
+    glDisable(GL_SCISSOR_TEST);
+    glUniform4f(colorLoc, 1, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::cyan);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for draw primitive mode
+TEST_P(StateChangeTestES3, PrimitiveMode)
+{
+    constexpr char kVS[] = R"(#version 300 es
+precision highp float;
+uniform float height;
+
+// Hardcoded positions for a number of draw modes, using different vertex offsets.
+const vec2 kVertices[35] = vec2[35](
+    // Two triangle
+    vec2(-1, -1), vec2(1, -1), vec2(-1, 1),
+    vec2(-1,  1), vec2(1, -1), vec2( 1, 1),
+    // A triangle strip with 8 triangles
+    vec2(   -1, -0.5), vec2(   -1,  0.5),
+    vec2(-0.75, -0.5), vec2(-0.75,  0.5),
+    vec2( -0.5, -0.5), vec2( -0.5,  0.5),
+    vec2(-0.25, -0.5), vec2(-0.25,  0.5),
+    vec2(    0, -0.5), vec2(    0,  0.5),
+    // A triangle fan with 4 triangles
+    vec2(0.5, 0), vec2(1, -0.5), vec2(1, 0.5), vec2(0, 0.5), vec2(0, -0.5), vec2(1, -0.5),
+    // One line
+    vec2(-1, -0.49), vec2(1, -0.49),
+    // One line strip
+    vec2(-1, 0.51), vec2(0, 0.51), vec2(1, 0.51),
+    // One line loop
+    vec2(-.99, -.99), vec2(0.99, -.99), vec2(0.99, 0.99), vec2(-.99, 0.99),
+    // Four points
+    vec2(-.99, -.99), vec2(0.99, -.99), vec2(0.99, 0.99), vec2(-.99, 0.99)
+);
+
+void main()
+{
+    gl_Position = vec4(kVertices[gl_VertexID], 0, 1);
+    gl_PointSize = 1.;
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 colorOut;
+uniform vec4 color;
+void main()
+{
+    colorOut = color;
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, "color");
+    ASSERT_NE(colorLoc, -1);
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Draw the following:
+    //
+    // 1. Red with two triangles
+    // 2. Green with a triangle strip
+    // 3. Blue with a triangle fan
+    // 4. Yellow with a line
+    // 5. Cyan with a line strip
+    // 6. Magenta with a line loop
+    // 7. White with four points
+    //
+    //
+    //     +---------------------------+  <-- 7: corners
+    //     |                           |
+    //     |             1             |
+    //     |                           |
+    //     +-------------+-------------+  <-- 5: horizontal line
+    //     |             |             |
+    //     |             |             |
+    //     |             |             |
+    //     |      2      |      3      |  <-- 6: border around image
+    //     |             |             |
+    //     |             |             |
+    //     |             |             |
+    //     +-------------+-------------+  <-- 4: horizontal line
+    //     |                           |
+    //     |             1             |
+    //     |                           |
+    //     +---------------------------+
+
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    glDrawArrays(GL_TRIANGLE_STRIP, 6, 10);
+
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 16, 6);
+
+    glUniform4f(colorLoc, 1, 1, 0, 1);
+    glDrawArrays(GL_LINES, 22, 2);
+
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    glDrawArrays(GL_LINE_STRIP, 24, 3);
+
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    glDrawArrays(GL_LINE_LOOP, 27, 4);
+
+    glUniform4f(colorLoc, 1, 1, 1, 1);
+    glDrawArrays(GL_POINTS, 31, 4);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(1, 1, w - 2, h / 4 - 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(1, 3 * h / 4 + 1, w - 2, h / 4 - 2, GLColor::red);
+
+    EXPECT_PIXEL_RECT_EQ(1, h / 4 + 1, w / 2 - 2, h / 2 - 2, GLColor::green);
+
+    EXPECT_PIXEL_RECT_EQ(w / 2 + 1, h / 4 + 1, w / 2 - 2, h / 2 - 2, GLColor::blue);
+
+    EXPECT_PIXEL_RECT_EQ(1, h / 4, w / 2 - 2, 1, GLColor::yellow);
+
+    EXPECT_PIXEL_RECT_EQ(1, 3 * h / 4, w / 2 - 2, 1, GLColor::cyan);
+
+    EXPECT_PIXEL_RECT_EQ(1, 0, w - 2, 1, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(0, 1, 1, h - 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(w - 1, 1, 1, h - 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(1, h - 1, w - 2, 1, GLColor::magenta);
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+    EXPECT_PIXEL_COLOR_EQ(w - 1, 0, GLColor::white);
+    EXPECT_PIXEL_COLOR_EQ(0, h - 1, GLColor::white);
+    EXPECT_PIXEL_COLOR_EQ(w - 1, h - 1, GLColor::white);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests that vertex attributes are correctly bound after a masked clear.  In the Vulkan backend,
+// the masked clear is done with an internal shader that doesn't use vertex attributes.
+TEST_P(StateChangeTestES3, DrawMaskedClearDraw)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    GLint posAttrib = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_EQ(0, posAttrib);
+
+    std::array<GLfloat, 3 * 4> positionData = {
+        -1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0,
+    };
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positionData), positionData.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posAttrib);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    // Draw to red and alpha channels, with garbage in green and blue
+    glUniform4f(colorLoc, 1, 0.123f, 0.456f, 0.5f);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // Clear the green and blue channels
+    glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_FALSE);
+    glClearColor(0.333f, 0.5, 0, 0.888f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Blend in to saturate green and alpha
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glUniform4f(colorLoc, 0, 0.6f, 0, 0.6f);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w, h, GLColor::yellow);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for vertex attribute stride
+TEST_P(StateChangeTestES3, VertexStride)
+{
+    constexpr char kVS[] =
+        R"(#version 300 es
+precision mediump float;
+in vec4 position;
+layout(location = 1) in vec4 test;
+layout(location = 5) in vec4 expected;
+out vec4 result;
+void main(void)
+{
+    gl_Position = position;
+    if (any(equal(test, vec4(0))) || any(equal(expected, vec4(0))))
+    {
+        result = vec4(0);
+    }
+    else
+    {
+        vec4 threshold = max(abs(expected) * 0.01, 1.0 / 64.0);
+        result = vec4(lessThanEqual(abs(test - expected), threshold));
+    }
+})";
+
+    constexpr char kFS[] =
+        R"(#version 300 es
+precision mediump float;
+in vec4 result;
+out vec4 colorOut;
+void main()
+{
+    colorOut = vec4(greaterThanEqual(result, vec4(0.999)));
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    // Every draw call consists of 4 vertices.  The vertex attributes are laid out as follows:
+    //
+    // Position: No gaps
+    // test: 4 unorm vertices with stride 20, simultaneously 4 vertices with stride 16
+    // expected: 4 float vertices with stride 80, simultaneously 4 vertices with stride 48
+
+    const std::array<GLubyte, 7 * 4> kData = {{1,   2,   3,   4,   5,   6,   7,  8,  125, 126,
+                                               127, 128, 129, 250, 251, 252, 78, 79, 80,  81,
+                                               155, 156, 157, 158, 20,  21,  22, 23}};
+
+    constexpr size_t kTestStride1     = 20;
+    constexpr size_t kTestStride2     = 16;
+    constexpr size_t kExpectedStride1 = 20;
+    constexpr size_t kExpectedStride2 = 12;
+
+    std::array<GLubyte, kTestStride1 * 3 + 4> testInitData         = {};
+    std::array<GLfloat, kExpectedStride1 * 3 + 4> expectedInitData = {};
+
+    for (uint32_t vertex = 0; vertex < 7; ++vertex)
+    {
+        size_t testOffset     = vertex * kTestStride1;
+        size_t expectedOffset = vertex * kExpectedStride1;
+        if (vertex >= 4)
+        {
+            testOffset     = (vertex - 3) * kTestStride2;
+            expectedOffset = (vertex - 3) * kExpectedStride2;
+        }
+
+        for (uint32_t channel = 0; channel < 4; ++channel)
+        {
+            // The strides are chosen such that the two streams don't collide
+            ASSERT_EQ(testInitData[testOffset + channel], 0);
+            ASSERT_EQ(expectedInitData[expectedOffset + channel], 0);
+
+            GLubyte data                               = kData[vertex * 4 + channel];
+            testInitData[testOffset + channel]         = data;
+            expectedInitData[expectedOffset + channel] = data;
+        }
+
+        // For the first 4 vertices, expect perfect match (i.e. get white).  For the last 3
+        // vertices, expect the green channel test to fail (i.e. get magenta).
+        if (vertex >= 4)
+        {
+            expectedInitData[expectedOffset + 1] += 2;
+        }
+    }
+
+    std::array<GLfloat, 3 * 4> positionData = {
+        -1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0,
+    };
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positionData), positionData.data(), GL_STATIC_DRAW);
+
+    GLBuffer testBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, testBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(testInitData), testInitData.data(), GL_STATIC_DRAW);
+
+    GLBuffer expectedBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, expectedBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(expectedInitData), expectedInitData.data(),
+                 GL_STATIC_DRAW);
+
+    GLint posAttrib = glGetAttribLocation(program, "position");
+    ASSERT_EQ(0, posAttrib);
+    GLint testAttrib = glGetAttribLocation(program, "test");
+    ASSERT_EQ(1, testAttrib);
+    GLint expectedAttrib = glGetAttribLocation(program, "expected");
+    ASSERT_EQ(5, expectedAttrib);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glEnableVertexAttribArray(posAttrib);
+    glEnableVertexAttribArray(testAttrib);
+    glEnableVertexAttribArray(expectedAttrib);
+
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindBuffer(GL_ARRAY_BUFFER, testBuffer);
+    glVertexAttribPointer(testAttrib, 4, GL_UNSIGNED_BYTE, GL_FALSE, kTestStride1 * sizeof(GLubyte),
+                          nullptr);
+    glBindBuffer(GL_ARRAY_BUFFER, expectedBuffer);
+    glVertexAttribPointer(expectedAttrib, 4, GL_FLOAT, GL_FALSE, kExpectedStride1 * sizeof(GLfloat),
+                          nullptr);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glBindBuffer(GL_ARRAY_BUFFER, testBuffer);
+    glVertexAttribPointer(testAttrib, 4, GL_UNSIGNED_BYTE, GL_FALSE, kTestStride2 * sizeof(GLubyte),
+                          nullptr);
+    glBindBuffer(GL_ARRAY_BUFFER, expectedBuffer);
+    glVertexAttribPointer(expectedAttrib, 4, GL_FLOAT, GL_FALSE, kExpectedStride2 * sizeof(GLfloat),
+                          nullptr);
+
+    glScissor(w / 2, 0, w / 2, h);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h, GLColor::white);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h, GLColor::magenta);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for depth test, write and function
+TEST_P(StateChangeTestES3, DepthTestWriteAndFunc)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glClearColor(0, 0, 0, 1);
+    glClearDepthf(0.5);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Initialize the depth buffer:
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_ALWAYS);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h / 2);
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.8f);
+    glScissor(w / 2, 0, w / 2, h / 2);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.2f);
+    glScissor(0, h / 2, w / 2, h / 2);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.4f);
+    glScissor(w / 2, h / 2, w / 2, h / 2);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.6f);
+
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w, h, GLColor::red);
+
+    // Make draw calls that test depth or not, write depth or not, and use different functions
+
+    // Write green to one half
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.35f);
+
+    // Write blue to another half
+    glDepthFunc(GL_GREATER);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.15f);
+
+    // Write yellow to a corner, overriding depth
+    glDepthMask(GL_TRUE);
+    glUniform4f(colorLoc, 1, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.6f);
+
+    // Write magenta to another corner, overriding depth
+    glDepthFunc(GL_LESS);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.5f);
+
+    // No-op write
+    glDepthFunc(GL_NEVER);
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::yellow);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::magenta);
+
+    // Verify the depth buffer
+    glDepthMask(GL_FALSE);
+    glDepthFunc(GL_LESS);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.61f);
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.59f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::black);
+
+    glDepthFunc(GL_GREATER);
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.51f);
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.49f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::cyan);
+
+    glDepthFunc(GL_LESS);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.21f);
+    glUniform4f(colorLoc, 1, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.19f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::black);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::white);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::white);
+
+    glDepthFunc(GL_GREATER);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.41f);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.39f);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::white);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for stencil test and function
+TEST_P(StateChangeTestES3, StencilTestAndFunc)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glClearColor(0, 0, 0, 1);
+    glClearDepthf(0.5);
+    glClearStencil(0x55);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // Initialize the depth and stencil buffers
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_ALWAYS);
+
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, w / 2, h / 2);
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    glStencilFunc(GL_ALWAYS, 0x3E, 0xFF);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.8f);
+    glScissor(w / 2, 0, w / 2, h / 2);
+    glStencilFunc(GL_ALWAYS, 0xA7, 0xFF);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.2f);
+    glScissor(0, h / 2, w / 2, h / 2);
+    glStencilFunc(GL_ALWAYS, 0x6C, 0xFF);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.4f);
+    glScissor(w / 2, h / 2, w / 2, h / 2);
+    glStencilFunc(GL_ALWAYS, 0x5B, 0xFF);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.6f);
+
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDepthMask(GL_FALSE);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w, h, GLColor::red);
+
+    // Make draw calls that manipulate stencil and use different functions and ops.
+
+    // Current color/depth/stencil in the four sections of the image:
+    //
+    //     red/-0.8/3E    red/-0.2/A7
+    //     red/ 0.4/6C    red/0.6/5B
+    //
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0x2C, 0x2C);
+    glStencilOpSeparate(GL_FRONT, GL_INCR, GL_DECR, GL_INVERT);
+    glStencilFuncSeparate(GL_BACK, GL_GREATER, 0x7B, 0xFF);
+    glStencilOpSeparate(GL_BACK, GL_INCR, GL_ZERO, GL_REPLACE);
+
+    // Draw green front-facing to get:
+    //
+    //       red/-0.8/3D    red/-0.2/A8
+    //     green/ 0.4/93    red/ 0.6/5C
+    //
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    // Draw blue back-facing to get:
+    //
+    //       red/-0.8/00    red/-0.2/A9
+    //     green/ 0.4/94   blue/ 0.6/7B
+    //
+    glFrontFace(GL_CW);
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    glStencilFuncSeparate(GL_FRONT, GL_LEQUAL, 0x42, 0x42);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_INCR_WRAP);
+    glStencilFuncSeparate(GL_BACK, GL_ALWAYS, 0x00, 0x00);
+    glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_INVERT);
+
+    // Draw yellow back-facing to get:
+    //
+    //    yellow/-0.8/FF yellow/-0.2/56
+    //     green/ 0.4/95   blue/ 0.6/7C
+    //
+    glDepthFunc(GL_GREATER);
+    glUniform4f(colorLoc, 1, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    // Draw cyan front-facing to get:
+    //
+    //      cyan/-0.8/00 yellow/-0.2/55
+    //     green/ 0.4/95   blue/ 0.6/7C
+    //
+    glFrontFace(GL_CCW);
+    glUniform4f(colorLoc, 0, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), -0.5);
+
+    // No-op draw
+    glStencilFuncSeparate(GL_FRONT, GL_NEVER, 0x00, 0x00);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INVERT, GL_INVERT);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::cyan);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::yellow);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::blue);
+
+    // Verify the stencil buffer
+    glDisable(GL_DEPTH_TEST);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0x00, 0xFF);
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::yellow);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::blue);
+
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0x55, 0xFF);
+    glUniform4f(colorLoc, 1, 0, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::blue);
+
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0x95, 0xFF);
+    glUniform4f(colorLoc, 1, 1, 1, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::white);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::blue);
+
+    glStencilFuncSeparate(GL_FRONT, GL_EQUAL, 0x7C, 0xFF);
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2, h / 2, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(w / 2, 0, w / 2, h / 2, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(0, h / 2, w / 2, h / 2, GLColor::white);
+    EXPECT_PIXEL_RECT_EQ(w / 2, h / 2, w / 2, h / 2, GLColor::black);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for rasterizer discard
+TEST_P(StateChangeTestES3, RasterizerDiscard)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    // Start a render pass and issue three draw calls with the middle one having rasterizer discard
+    // enabled.
+    glUniform4f(colorLoc, 1, 0, 0, 0);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    glEnable(GL_RASTERIZER_DISCARD);
+
+    glUniform4f(colorLoc, 0, 1, 1, 0);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    glDisable(GL_RASTERIZER_DISCARD);
+
+    glUniform4f(colorLoc, 0, 0, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w, h, GLColor::red);
+
+    // Enable rasterizer discard and make sure the state is effective.
+    glEnable(GL_RASTERIZER_DISCARD);
+
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w, h, GLColor::red);
+
+    // Start a render pass and issue three draw calls with the first and last ones having rasterizer
+    // discard enabled.
+    glUniform4f(colorLoc, 0, 1, 0, 0);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    glDisable(GL_RASTERIZER_DISCARD);
+
+    glUniform4f(colorLoc, 0, 0, 1, 0);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    glEnable(GL_RASTERIZER_DISCARD);
+
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, w, h, GLColor::magenta);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for GL_POLYGON_OFFSET_FILL.
+TEST_P(StateChangeTestES3, PolygonOffsetFill)
+{
+    constexpr char kVS[] = R"(#version 300 es
+precision highp float;
+uniform float height;
+void main()
+{
+    // gl_VertexID    x    y
+    //      0        -1   -1
+    //      1         1   -1
+    //      2        -1    1
+    //      3         1    1
+    int bit0 = gl_VertexID & 1;
+    int bit1 = gl_VertexID >> 1;
+    gl_Position = vec4(bit0 * 2 - 1, bit1 * 2 - 1, gl_VertexID % 2 == 0 ? -1 : 1, 1);
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 colorOut;
+uniform vec4 color;
+void main()
+{
+    colorOut = color;
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    glClearColor(0, 0, 0, 1);
+    glClearDepthf(0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // The shader creates a depth slope from left (0) to right (1).
+    //
+    // This test issues three draw calls:
+    //
+    //
+    //           Draw 3 (blue): factor width/2, enabled, depth test: Greater
+    //          ^     |       __________________
+    //          |     |    __/      __/      __/
+    //          |     V __/      __/      __/
+    //          |    __/      __/      __/
+    //          | __/      __/      __/
+    //          |/      __/^     __/
+    //          |    __/   |  __/   <--- Draw 2: factor width/2, disabled, depth test: Greater
+    //          | __/      _\/
+    //          |/      __/  \
+    //          |    __/      Draw 1 (red): factor width/4, enabled
+    //          | __/
+    //          +/------------------------------>
+    //
+    // Result:  <-------magenta-------><--red-->
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
+
+    glEnable(GL_POLYGON_OFFSET_FILL);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glUniform4f(colorLoc, 1, 0, 0, 1);
+    glPolygonOffset(getWindowWidth() / 4, 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    glPolygonOffset(getWindowWidth() / 2, 0);
+    glDepthFunc(GL_GREATER);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glUniform4f(colorLoc, 0, 0, 1, 1);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, 3 * w / 4 - 1, h, GLColor::magenta);
+    EXPECT_PIXEL_RECT_EQ(3 * w / 4 + 1, 0, w / 4 - 1, h, GLColor::red);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests state change for GL_PRIMITIVE_RESTART.
+TEST_P(StateChangeTestES3, PrimitiveRestart)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(program);
+
+    GLint colorLoc = glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorLoc, -1);
+
+    GLint posAttrib = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_EQ(0, posAttrib);
+
+    // Arrange the vertices as such:
+    //
+    //     1      3      4
+    //      +-----+-----+
+    //      |     |     |
+    //      |     |     |
+    //      |     |     |
+    //      |     |     |
+    //      |     |     |
+    //      |     |     |
+    //      +-----+-----+
+    //     0      2     FF
+    //
+    // Drawing a triangle strip, without primitive restart, the whole framebuffer is rendered, while
+    // with primitive restart only the left half is.
+    std::vector<Vector3> positionData(256, {0, 0, 0});
+
+    positionData[0]    = Vector3(-1, -1, 0);
+    positionData[1]    = Vector3(-1, 1, 0);
+    positionData[2]    = Vector3(0, -1, 0);
+    positionData[3]    = Vector3(0, 1, 0);
+    positionData[0xFF] = Vector3(1, -1, 0);
+    positionData[4]    = Vector3(1, 1, 0);
+
+    constexpr std::array<GLubyte, 6> indices = {0, 1, 2, 3, 0xFF, 4};
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, positionData.size() * sizeof(positionData[0]),
+                 positionData.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posAttrib);
+
+    GLBuffer indexBuffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    // Draw red with primitive restart enabled
+    glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    glUniform4f(colorLoc, 1, 0, 0, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 6, GL_UNSIGNED_BYTE, nullptr);
+
+    // Draw green with primitive restart disabled
+    glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    glUniform4f(colorLoc, 0, 1, 0, 1);
+    glDrawElements(GL_TRIANGLE_STRIP, 6, GL_UNSIGNED_BYTE, nullptr);
+
+    // Draw blue with primitive restart enabled again
+    glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    glUniform4f(colorLoc, 0, 0, 1, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 6, GL_UNSIGNED_BYTE, nullptr);
+
+    // Verify results
+    EXPECT_PIXEL_RECT_EQ(0, 0, w / 2 - 1, h, GLColor::white);
+    EXPECT_PIXEL_RECT_EQ(w / 2 + 1, 0, w / 2 - 1, h, GLColor::green);
+
+    ASSERT_GL_NO_ERROR();
+}
 }  // anonymous namespace
 
 ANGLE_INSTANTIATE_TEST_ES2(StateChangeTest);
@@ -7417,7 +9633,18 @@ ANGLE_INSTANTIATE_TEST_ES2(LineLoopStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES2(StateChangeRenderTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(StateChangeTestES3);
-ANGLE_INSTANTIATE_TEST_ES3(StateChangeTestES3);
+ANGLE_INSTANTIATE_TEST_ES3_AND(StateChangeTestES3,
+                               ES3_VULKAN().disable(Feature::SupportsIndexTypeUint8),
+                               ES3_VULKAN()
+                                   .disable(Feature::SupportsExtendedDynamicState)
+                                   .disable(Feature::SupportsExtendedDynamicState2),
+                               ES3_VULKAN().disable(Feature::SupportsExtendedDynamicState2));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(StateChangeTestWebGL2);
+ANGLE_INSTANTIATE_TEST_COMBINE_1(StateChangeTestWebGL2,
+                                 StateChangeTestWebGL2Print,
+                                 testing::Bool(),
+                                 ANGLE_ALL_TEST_PLATFORMS_ES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(StateChangeRenderTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(StateChangeRenderTestES3);
@@ -7425,7 +9652,8 @@ ANGLE_INSTANTIATE_TEST_ES3(StateChangeRenderTestES3);
 ANGLE_INSTANTIATE_TEST_ES2(SimpleStateChangeTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SimpleStateChangeTestES3);
-ANGLE_INSTANTIATE_TEST_ES3(SimpleStateChangeTestES3);
+ANGLE_INSTANTIATE_TEST_ES3_AND(SimpleStateChangeTestES3,
+                               ES3_VULKAN().enable(Feature::AllocateNonZeroMemory));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ImageRespecificationTest);
 ANGLE_INSTANTIATE_TEST_ES3(ImageRespecificationTest);
@@ -7453,3 +9681,6 @@ ANGLE_INSTANTIATE_TEST_ES31(ValidationStateChangeTestES31);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WebGLComputeValidationStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES31(WebGLComputeValidationStateChangeTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VertexAttribArrayStateChangeTest);
+ANGLE_INSTANTIATE_TEST_ES3(VertexAttribArrayStateChangeTest);

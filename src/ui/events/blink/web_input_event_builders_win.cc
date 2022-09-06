@@ -21,7 +21,6 @@ namespace ui {
 
 static const unsigned long kDefaultScrollLinesPerWheelDelta = 3;
 static const unsigned long kDefaultScrollCharsPerWheelDelta = 1;
-static const unsigned long kScrollPercentPerLineOrChar = 5;
 
 // WebMouseEvent --------------------------------------------------------------
 
@@ -308,12 +307,12 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   }
 
   if (result.delta_units != ui::ScrollGranularity::kScrollByPage) {
-    if (base::FeatureList::IsEnabled(features::kPercentBasedScrolling)) {
+    if (features::IsPercentBasedScrollingEnabled()) {
       // If percent-based scrolling is enabled, the scroll_delta represents
       // the percentage amount (out of 1, i.e. 1 == 100%) the targeted scroller
       // should scroll. This percentage will be resolved against the size of
       // the scroller in the renderer process.
-      scroll_delta *= kScrollPercentPerLineOrChar / 100.f;
+      scroll_delta *= kScrollPercentPerLineOrChar;
       result.delta_units = ui::ScrollGranularity::kScrollByPercentage;
     } else {
       // Convert wheel delta amount to a number of pixels to scroll.

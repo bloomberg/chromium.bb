@@ -116,7 +116,7 @@ WebGraphicsContext3DProviderImpl::GetWebglPreferences() const {
     }
 
     // Set default context limits for WebGL.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     prefs.max_active_webgl_contexts = 8u;
 #else
     prefs.max_active_webgl_contexts = 16u;
@@ -183,7 +183,7 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
       std::make_unique<cc::GpuImageDecodeCache>(
           provider_.get(), use_transfer_cache, color_type, kMaxWorkingSetBytes,
           provider_->ContextCapabilities().max_texture_size,
-          cc::PaintImage::kDefaultGeneratorClientId, nullptr));
+          cc::PaintImage::GetNextGeneratorClientId(), nullptr));
   DCHECK(insertion_result.second);
   cache_iterator = insertion_result.first;
   return cache_iterator->second.get();

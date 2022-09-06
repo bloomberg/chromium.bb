@@ -18,7 +18,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log_with_source.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/proof_verifier.h"
 
 namespace net {
 
@@ -47,11 +47,11 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
   std::string pinning_failure_log;
 
   // True if PKP was bypassed due to a local trust anchor.
-  bool pkp_bypassed;
+  bool pkp_bypassed = false;
 
   // True if there was a certificate error which should be treated as fatal,
   // and false otherwise.
-  bool is_fatal_cert_error;
+  bool is_fatal_cert_error = false;
 };
 
 // ProofVerifyContextChromium is the implementation-specific information that a

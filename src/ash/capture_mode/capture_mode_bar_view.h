@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/public/cpp/view_shadow.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -62,8 +63,10 @@ class ASH_EXPORT CaptureModeBarView : public views::View {
   CaptureModeButton* close_button() const { return close_button_; }
 
   // Gets the ideal bounds in screen coordinates of the bar of widget on the
-  // given |root| window.
-  static gfx::Rect GetBounds(aura::Window* root);
+  // given `root` window. The `image_toggle_button` will not be shown in the bar
+  // if `is_in_projector_mode` is true, which means the width of the bar will be
+  // different.
+  static gfx::Rect GetBounds(aura::Window* root, bool is_in_projector_mode);
 
   // Called when either the capture mode source or type changes.
   void OnCaptureSourceChanged(CaptureModeSource new_source);
@@ -83,6 +86,7 @@ class ASH_EXPORT CaptureModeBarView : public views::View {
   views::Separator* separator_2_;
   CaptureModeToggleButton* settings_button_;
   CaptureModeButton* close_button_;
+  ViewShadow shadow_;
 };
 
 }  // namespace ash

@@ -153,9 +153,15 @@ class TranslateUIDelegate {
   // Records a high level UI interaction.
   void ReportUIInteraction(UIInteraction ui_interaction);
 
+  // Updates TranslateMetricsLogger state of whether Translate UI is currently
+  // shown.
+  void ReportUIChange(bool is_ui_shown);
+
   // If kContentLanguagesinLanguagePicker is on, build a vector of content
   // languages data.
   void MaybeSetContentLanguages();
+
+  static std::u16string GetUnknownLanguageDisplayName();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateUIDelegateTest, GetPageHost);

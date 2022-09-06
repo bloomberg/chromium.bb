@@ -22,13 +22,11 @@
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/accuracy_tips/accuracy_service.h"
+#include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -44,12 +42,14 @@
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class GURL;
-class KeywordHintView;
+class IntentChipButton;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
+class OmniboxViewViews;
 class PageActionIconController;
 class PageActionIconContainerView;
+class PermissionChip;
 class Profile;
 class SelectedKeywordView;
 
@@ -120,10 +120,6 @@ class LocationBarView : public LocationBar,
   // Helper to get the color for |part| using the current ThemeProvider.
   SkColor GetColor(OmniboxPart part) const;
 
-  // Returns the location bar border color blended with the toolbar color.
-  // It's guaranteed to be opaque.
-  SkColor GetOpaqueBorderColor() const;
-
   // Returns a background that paints an (optionally stroked) rounded rect with
   // the given color.
   std::unique_ptr<views::Background> CreateRoundRectBackground(
@@ -181,6 +177,12 @@ class LocationBarView : public LocationBar,
 
   PermissionChip* chip() { return chip_; }
 
+  // Returns true if the permission chip exists, fully initialized and visible.
+  bool IsChipActive();
+
+  // Adds chip into the LocationBarView in the first position.
+  void CreateChip();
+
   // Creates and displays an instance of PermissionRequestChip.
   // If `should_bubble_start_open` is true, a permission prompt bubble will be
   // displayed automatically after PermissionRequestChip is created.
@@ -197,6 +199,8 @@ class LocationBarView : public LocationBar,
 
   // Removes previously displayed PermissionChip.
   void FinalizeChip();
+
+  IntentChipButton* intent_chip() { return intent_chip_; }
 
   // LocationBar:
   void FocusLocation(bool is_user_initiated) override;
@@ -274,7 +278,7 @@ class LocationBarView : public LocationBar,
                            IMEInlineAutocompletePosition);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Manage a subscription to GeolocationManager, which may
   // outlive this object.
   base::ScopedObservation<device::GeolocationManager,
@@ -282,17 +286,11 @@ class LocationBarView : public LocationBar,
       geolocation_permission_observation_{this};
 #endif
 
-  // Adds `chip` as the first child view.
-  PermissionChip* AddChip(std::unique_ptr<PermissionChip> chip);
-
   // Returns the amount of space required to the left of the omnibox text.
   int GetMinimumLeadingWidth() const;
 
   // Returns the amount of space required to the right of the omnibox text.
   int GetMinimumTrailingWidth() const;
-
-  // The border color, drawn on top of the toolbar.
-  SkColor GetBorderColor() const;
 
   // The LocationBarView bounds, without the ends which have a border radius.
   // E.g., if the LocationBarView was 50dip long, and the border radius was 2,
@@ -319,8 +317,6 @@ class LocationBarView : public LocationBar,
 
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
-
-  void KeywordHintViewPressed(const ui::Event& event);
 
   // Called when the page info bubble is closed.
   void OnPageInfoBubbleClosed(views::Widget::ClosedReason closed_reason,
@@ -460,8 +456,7 @@ class LocationBarView : public LocationBar,
   // Shown if the user has selected a keyword.
   raw_ptr<SelectedKeywordView> selected_keyword_view_ = nullptr;
 
-  // Shown if the selected url has a corresponding keyword.
-  raw_ptr<KeywordHintView> keyword_hint_view_ = nullptr;
+  raw_ptr<IntentChipButton> intent_chip_ = nullptr;
 
   // The content setting views.
   ContentSettingViews content_setting_views_;

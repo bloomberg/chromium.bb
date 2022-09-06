@@ -17,8 +17,8 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "lib/analysis/trace_numbering.h"
-#include "lib/quic_trace.pb.h"
+#include "quic_trace/analysis/trace_numbering.h"
+#include "quic_trace/quic_trace.pb.h"
 #include "tools/render/table.h"
 #include "tools/render/trace_renderer.h"
 

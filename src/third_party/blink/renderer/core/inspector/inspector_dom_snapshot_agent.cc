@@ -102,11 +102,7 @@ String GetOriginUrl(const Node* node) {
   if (!isolate || !isolate->InContext() || !debugger)
     return String();
   v8::HandleScope handleScope(isolate);
-  // Try not getting the entire stack first.
-  String url = GetCurrentScriptUrl(/* maxStackSize=*/5);
-  if (!url.IsEmpty())
-    return url;
-  url = GetCurrentScriptUrl(/* maxStackSize=*/200);
+  String url = GetCurrentScriptUrl();
   if (!url.IsEmpty())
     return url;
   // If we did not get anything from the sync stack, let's try the slow
@@ -178,8 +174,8 @@ class DOMTreeIterator {
 // static
 PhysicalRect InspectorDOMSnapshotAgent::RectInDocument(
     const LayoutObject* layout_object) {
-  PhysicalRect rect_in_absolute = PhysicalRect::EnclosingRect(
-      layout_object->AbsoluteBoundingBoxFloatRect());
+  PhysicalRect rect_in_absolute =
+      PhysicalRect::EnclosingRect(layout_object->AbsoluteBoundingBoxRectF());
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
   // Don't do frame to document coordinate transformation for layout view,
   // whose bounding box is not affected by scroll offset.
@@ -207,7 +203,9 @@ InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
     InspectorDOMDebuggerAgent* dom_debugger_agent)
     : inspected_frames_(inspected_frames),
       dom_debugger_agent_(dom_debugger_agent),
-      enabled_(&agent_state_, /*default_value=*/false) {}
+      enabled_(&agent_state_, /*default_value=*/false) {
+  DCHECK(dom_debugger_agent);
+}
 
 InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
 
@@ -410,6 +408,7 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
                   .setOptionSelected(BooleanData())
                   .setContentDocumentIndex(IntegerData())
                   .setPseudoType(StringData())
+                  .setPseudoIdentifier(StringData())
                   .setIsClickable(BooleanData())
                   .setCurrentSourceURL(StringData())
                   .setOriginURL(StringData())
@@ -544,14 +543,14 @@ void InspectorDOMSnapshotAgent::VisitNode(Node* node,
     }
 
     if (auto* textarea_element = DynamicTo<HTMLTextAreaElement>(*element)) {
-      SetRare(nodes->getTextValue(nullptr), index, textarea_element->value());
+      SetRare(nodes->getTextValue(nullptr), index, textarea_element->Value());
     }
 
     if (auto* input_element = DynamicTo<HTMLInputElement>(*element)) {
-      SetRare(nodes->getInputValue(nullptr), index, input_element->value());
+      SetRare(nodes->getInputValue(nullptr), index, input_element->Value());
       if ((input_element->type() == input_type_names::kRadio) ||
           (input_element->type() == input_type_names::kCheckbox)) {
-        if (input_element->checked()) {
+        if (input_element->Checked()) {
           SetRare(nodes->getInputChecked(nullptr), index);
         }
       }
@@ -567,6 +566,9 @@ void InspectorDOMSnapshotAgent::VisitNode(Node* node,
       SetRare(
           nodes->getPseudoType(nullptr), index,
           InspectorDOMAgent::ProtocolPseudoElementType(element->GetPseudoId()));
+      if (auto tag = To<PseudoElement>(element)->document_transition_tag()) {
+        SetRare(nodes->getPseudoIdentifier(nullptr), index, tag);
+      }
     }
     VisitPseudoElements(element, index, contrast);
 

@@ -12,14 +12,14 @@ import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 class TestAppearanceBrowserProxy extends TestBrowserProxy implements
     AppearanceBrowserProxy {
   private defaultZoom_: number = 1;
-  private isSupervised_: boolean = false;
+  private isChildAccount_: boolean = false;
   private isHomeUrlValid_: boolean = true;
 
   constructor() {
     super([
       'getDefaultZoom',
       'getThemeInfo',
-      'isSupervised',
+      'isChildAccount',
       'useDefaultTheme',
       'useSystemTheme',
       'validateStartupPage',
@@ -49,9 +49,9 @@ class TestAppearanceBrowserProxy extends TestBrowserProxy implements
     });
   }
 
-  isSupervised() {
-    this.methodCalled('isSupervised');
-    return this.isSupervised_;
+  isChildAccount() {
+    this.methodCalled('isChildAccount');
+    return this.isChildAccount_;
   }
 
   useDefaultTheme() {
@@ -66,8 +66,8 @@ class TestAppearanceBrowserProxy extends TestBrowserProxy implements
     this.defaultZoom_ = defaultZoom;
   }
 
-  setIsSupervised(isSupervised: boolean) {
-    this.isSupervised_ = isSupervised;
+  setIsChildAccount(isChildAccount: boolean) {
+    this.isChildAccount_ = isChildAccount;
   }
 
   validateStartupPage(url: string) {
@@ -131,7 +131,7 @@ suite('AppearanceHandler', function() {
 
   const THEME_ID_PREF = 'prefs.extensions.theme.id.value';
 
-  // <if expr="is_linux and not chromeos and not lacros">
+  // <if expr="is_linux">
   const USE_SYSTEM_PREF = 'prefs.extensions.theme.use_system.value';
 
   test('useDefaultThemeLinux', function() {
@@ -165,10 +165,10 @@ suite('AppearanceHandler', function() {
     // The "USE GTK+" button shouldn't be showing if it's already in use.
     assertFalse(!!appearancePage.shadowRoot!.querySelector('#useSystem'));
 
-    appearanceBrowserProxy.setIsSupervised(true);
+    appearanceBrowserProxy.setIsChildAccount(true);
     appearancePage.set(USE_SYSTEM_PREF, false);
     flush();
-    // Supervised users have their own theme and can't use GTK+ theme.
+    // Child account users have their own theme and can't use GTK+ theme.
     assertFalse(!!appearancePage.shadowRoot!.querySelector('#useDefault'));
     assertFalse(!!appearancePage.shadowRoot!.querySelector('#useSystem'));
     // If there's no "USE" buttons, the container should be hidden.
@@ -176,7 +176,7 @@ suite('AppearanceHandler', function() {
         appearancePage.shadowRoot!
             .querySelector<HTMLElement>('#themesSecondaryActions')!.hidden);
 
-    appearanceBrowserProxy.setIsSupervised(false);
+    appearanceBrowserProxy.setIsChildAccount(false);
     appearancePage.set(THEME_ID_PREF, 'fake theme id');
     flush();
     // If there's "USE" buttons again, the container should be visible.
@@ -194,7 +194,7 @@ suite('AppearanceHandler', function() {
   });
   // </if>
 
-  // <if expr="not is_linux or chromeos or lacros">
+  // <if expr="not is_linux">
   test('useDefaultTheme', function() {
     assertFalse(!!appearancePage.get(THEME_ID_PREF));
     assertFalse(!!appearancePage.shadowRoot!.querySelector('#useDefault'));
@@ -249,37 +249,33 @@ suite('AppearanceHandler', function() {
   });
   // </if>
 
-  test('default zoom handling', function() {
+  test('default zoom handling', async function() {
     function getDefaultZoomText() {
       const zoomLevel = appearancePage.$.zoomLevel;
       return zoomLevel.options[zoomLevel.selectedIndex]!.textContent!.trim();
     }
 
-    return appearanceBrowserProxy.whenCalled('getDefaultZoom')
-        .then(function() {
-          assertEquals('100%', getDefaultZoomText());
+    await appearanceBrowserProxy.whenCalled('getDefaultZoom');
 
-          appearanceBrowserProxy.setDefaultZoom(2 / 3);
-          createAppearancePage();
-          return appearanceBrowserProxy.whenCalled('getDefaultZoom');
-        })
-        .then(function() {
-          assertEquals('67%', getDefaultZoomText());
+    assertEquals('100%', getDefaultZoomText());
 
-          appearanceBrowserProxy.setDefaultZoom(11 / 10);
-          createAppearancePage();
-          return appearanceBrowserProxy.whenCalled('getDefaultZoom');
-        })
-        .then(function() {
-          assertEquals('110%', getDefaultZoomText());
+    appearanceBrowserProxy.setDefaultZoom(2 / 3);
+    createAppearancePage();
+    await appearanceBrowserProxy.whenCalled('getDefaultZoom');
 
-          appearanceBrowserProxy.setDefaultZoom(1.7499999999999);
-          createAppearancePage();
-          return appearanceBrowserProxy.whenCalled('getDefaultZoom');
-        })
-        .then(function() {
-          assertEquals('175%', getDefaultZoomText());
-        });
+    assertEquals('67%', getDefaultZoomText());
+
+    appearanceBrowserProxy.setDefaultZoom(11 / 10);
+    createAppearancePage();
+    await appearanceBrowserProxy.whenCalled('getDefaultZoom');
+
+    assertEquals('110%', getDefaultZoomText());
+
+    appearanceBrowserProxy.setDefaultZoom(1.7499999999999);
+    createAppearancePage();
+    await appearanceBrowserProxy.whenCalled('getDefaultZoom');
+
+    assertEquals('175%', getDefaultZoomText());
   });
 
   test('show home button toggling', function() {
@@ -311,7 +307,7 @@ suite('HomeUrlInput', function() {
     flush();
   });
 
-  test('home button urls', function() {
+  test('home button urls', async function() {
     assertFalse(homeUrlInput.invalid);
     assertEquals(homeUrlInput.value, 'test');
 
@@ -319,17 +315,16 @@ suite('HomeUrlInput', function() {
     appearanceBrowserProxy.setValidStartupPageResponse(false);
     homeUrlInput.$.input.fire('input');
 
-    return appearanceBrowserProxy.whenCalled('validateStartupPage')
-        .then(function(url) {
-          assertEquals(homeUrlInput.value, url);
-          flush();
-          assertEquals(homeUrlInput.value, '@@@');  // Value hasn't changed.
-          assertTrue(homeUrlInput.invalid);
+    const url = await appearanceBrowserProxy.whenCalled('validateStartupPage');
 
-          // Should reset to default value on change event.
-          homeUrlInput.$.input.fire('change');
-          flush();
-          assertEquals(homeUrlInput.value, 'test');
-        });
+    assertEquals(homeUrlInput.value, url);
+    flush();
+    assertEquals(homeUrlInput.value, '@@@');  // Value hasn't changed.
+    assertTrue(homeUrlInput.invalid);
+
+    // Should reset to default value on change event.
+    homeUrlInput.$.input.fire('change');
+    flush();
+    assertEquals(homeUrlInput.value, 'test');
   });
 });

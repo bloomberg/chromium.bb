@@ -14,6 +14,7 @@ import androidx.annotation.StringRes;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -24,12 +25,12 @@ import org.chromium.components.permissions.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
-import org.chromium.ui.base.AndroidPermissionDelegate;
-import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.permissions.AndroidPermissionDelegate;
+import org.chromium.ui.permissions.PermissionCallback;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -188,8 +189,9 @@ public class RuntimePermissionTestUtils {
             final View dialogText = manager.getCurrentDialogForTest()
                                             .get(ModalDialogProperties.CUSTOM_VIEW)
                                             .findViewById(R.id.text);
+            String appName = BuildInfo.getInstance().hostPackageLabel;
             Assert.assertEquals(((TextView) dialogText).getText(),
-                    activity.getResources().getString(missingPermissionPromptTextId));
+                    activity.getResources().getString(missingPermissionPromptTextId, appName));
 
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 manager.getCurrentPresenterForTest().dismissCurrentDialog(

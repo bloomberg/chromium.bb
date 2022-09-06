@@ -105,9 +105,9 @@ export class UISourceCodeFrame extends
 
     this.initializeUISourceCode();
 
-    function workingCopy(): Promise<TextUtils.ContentProvider.DeferredContent> {
+    async function workingCopy(): Promise<TextUtils.ContentProvider.DeferredContent> {
       if (uiSourceCode.isDirty()) {
-        return Promise.resolve({content: uiSourceCode.workingCopy(), isEncoded: false});
+        return {content: uiSourceCode.workingCopy(), isEncoded: false};
       }
       return uiSourceCode.requestContent();
     }
@@ -172,7 +172,7 @@ export class UISourceCodeFrame extends
       this.unloadUISourceCode();
       this.uiSourceCodeInternal = uiSourceCode;
       if (uiSourceCode.workingCopy() !== this.textEditor.state.doc.toString()) {
-        this.setContent(uiSourceCode.workingCopy());
+        void this.setContent(uiSourceCode.workingCopy());
       } else {
         this.reloadPlugins();
       }
@@ -364,7 +364,14 @@ export class UISourceCodeFrame extends
     this.unloadUISourceCode();
     this.persistenceBinding = binding;
     this.initializeUISourceCode();
+    this.reloadMessages();
     this.reloadPlugins();
+  }
+
+  private reloadMessages(): void {
+    const messages = [...this.allMessages()];
+    const {editor} = this.textEditor;
+    editor.dispatch({effects: setRowMessages.of(RowMessages.create(messages))});
   }
 
   private updateStyle(): void {
@@ -373,7 +380,7 @@ export class UISourceCodeFrame extends
 
   private maybeSetContent(content: string): void {
     if (this.textEditor.state.doc.toString() !== content) {
-      this.setContent(content);
+      void this.setContent(content);
     }
   }
 
@@ -487,9 +494,9 @@ export class UISourceCodeFrame extends
     return {
       box: anchor,
       hide(): void{},
-      show: (popover: UI.GlassPane.GlassPane): Promise<true> => {
+      show: async(popover: UI.GlassPane.GlassPane): Promise<true> => {
         popover.contentElement.append(element);
-        return Promise.resolve(true);
+        return true;
       },
     };
   }

@@ -4,9 +4,12 @@
 
 #include "ash/webui/shimless_rma/mojom/shimless_rma_mojom_traits.h"
 
+#include <string>
+
 #include "base/notreached.h"
-#include "chromeos/dbus/rmad/rmad.pb.h"
+#include "chromeos/ash/components/dbus/rmad/rmad.pb.h"
 #include "chromeos/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace mojo {
@@ -20,6 +23,9 @@ using ProtoRmadErrorCode = rmad::RmadErrorCode;
 
 using MojomOsUpdateOperation = ash::shimless_rma::mojom::OsUpdateOperation;
 using ProtoOsUpdateOperation = update_engine::Operation;
+
+using MojomUpdateErrorCode = ash::shimless_rma::mojom::UpdateErrorCode;
+using ProtoOsUpdateErrorCode = update_engine::ErrorCode;
 
 using MojomComponentType = ash::shimless_rma::mojom::ComponentType;
 using ProtoComponentType = rmad::RmadComponent;
@@ -36,6 +42,9 @@ using ProtoWpDisableAction = rmad::WriteProtectDisableCompleteState::Action;
 using MojomProvisioningStatus = ash::shimless_rma::mojom::ProvisioningStatus;
 using ProtoProvisioningStatus = rmad::ProvisionStatus::Status;
 
+using MojomProvisioningError = ash::shimless_rma::mojom::ProvisioningError;
+using ProtoProvisioningError = rmad::ProvisionStatus::Error;
+
 using MojomCalibrationInstruction =
     ash::shimless_rma::mojom::CalibrationSetupInstruction;
 using ProtoCalibrationInstruction = rmad::CalibrationSetupInstruction;
@@ -51,9 +60,16 @@ using ProtoCalibrationStatus =
 using MojomFinalizationStatus = ash::shimless_rma::mojom::FinalizationStatus;
 using ProtoFinalizationStatus = rmad::FinalizeStatus_Status;
 
+using MojomFinalizationError = ash::shimless_rma::mojom::FinalizationError;
+using ProtoFinalizationError = rmad::FinalizeStatus::Error;
+
 using MojomUpdateRoFirmwareStatus =
     ash::shimless_rma::mojom::UpdateRoFirmwareStatus;
 using ProtoUpdateRoFirmwaretatus = rmad::UpdateRoFirmwareStatus;
+
+using MojomShutdownMethod = ash::shimless_rma::mojom::ShutdownMethod;
+using ProtoShutdownMethod = rmad::RepairCompleteState::ShutdownMethod;
+
 }  // namespace
 
 // The rmad state does not map 1:1 with UI app state, the UI handles more states
@@ -71,6 +87,8 @@ MojomRmaState EnumTraits<MojomRmaState, ProtoRmadState>::ToMojom(
       return MojomRmaState::kSelectComponents;
     case ProtoRmadState::kDeviceDestination:
       return MojomRmaState::kChooseDestination;
+    case ProtoRmadState::kWipeSelection:
+      return MojomRmaState::kChooseWipeDevice;
     case ProtoRmadState::kWpDisableMethod:
       return MojomRmaState::kChooseWriteProtectDisableMethod;
     case ProtoRmadState::kWpDisableRsu:
@@ -193,6 +211,12 @@ MojomRmadErrorCode EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::ToMojom(
       return MojomRmadErrorCode::kDaemonInitializationFailed;
     case ProtoRmadErrorCode::RMAD_ERROR_UPDATE_RO_FIRMWARE_FAILED:
       return MojomRmadErrorCode::kUpdateRoFirmwareFailed;
+    case ProtoRmadErrorCode::RMAD_ERROR_WP_ENABLED:
+      return MojomRmadErrorCode::kWpEnabled;
+    case ProtoRmadErrorCode::RMAD_ERROR_CANNOT_WRITE:
+      return MojomRmadErrorCode::kCannotWrite;
+    case ProtoRmadErrorCode::RMAD_ERROR_CANNOT_SAVE_LOG:
+      return MojomRmadErrorCode::kCannotSaveLog;
 
     case ProtoRmadErrorCode::RMAD_ERROR_NOT_SET:
     default:
@@ -335,6 +359,15 @@ bool EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::FromMojom(
     case MojomRmadErrorCode::kUpdateRoFirmwareFailed:
       *out = ProtoRmadErrorCode::RMAD_ERROR_UPDATE_RO_FIRMWARE_FAILED;
       return true;
+    case MojomRmadErrorCode::kWpEnabled:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_WP_ENABLED;
+      return true;
+    case MojomRmadErrorCode::kCannotWrite:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_CANNOT_WRITE;
+      return true;
+    case MojomRmadErrorCode::kCannotSaveLog:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_CANNOT_SAVE_LOG;
+      return true;
 
     case MojomRmadErrorCode::kNotSet:
       NOTREACHED();
@@ -421,6 +454,39 @@ bool EnumTraits<MojomOsUpdateOperation, ProtoOsUpdateOperation>::FromMojom(
   }
   NOTREACHED();
   return false;
+}
+
+MojomUpdateErrorCode
+EnumTraits<MojomUpdateErrorCode, ProtoOsUpdateErrorCode>::ToMojom(
+    ProtoOsUpdateErrorCode operation) {
+  switch (operation) {
+    case ProtoOsUpdateErrorCode::kSuccess:
+      return MojomUpdateErrorCode::kSuccess;
+    case ProtoOsUpdateErrorCode::kDownloadTransferError:
+    case ProtoOsUpdateErrorCode::kOmahaErrorInHTTPResponse:
+      return MojomUpdateErrorCode::kDownloadError;
+    case ProtoOsUpdateErrorCode::kError:
+    case ProtoOsUpdateErrorCode::kOmahaUpdateIgnoredPerPolicy:
+    case ProtoOsUpdateErrorCode::kNoUpdate:
+      return MojomUpdateErrorCode::kOtherError;
+  }
+}
+
+// static
+bool EnumTraits<MojomUpdateErrorCode, ProtoOsUpdateErrorCode>::FromMojom(
+    MojomUpdateErrorCode input,
+    ProtoOsUpdateErrorCode* out) {
+  switch (input) {
+    case MojomUpdateErrorCode::kSuccess:
+      *out = ProtoOsUpdateErrorCode::kSuccess;
+      return true;
+    case MojomUpdateErrorCode::kDownloadError:
+      *out = ProtoOsUpdateErrorCode::kDownloadTransferError;
+      return true;
+    case MojomUpdateErrorCode::kOtherError:
+      *out = ProtoOsUpdateErrorCode::kError;
+      return true;
+  }
 }
 
 // static
@@ -618,6 +684,15 @@ bool EnumTraits<MojomComponentRepairState, ProtoComponentRepairState>::
 }
 
 // static
+const std::string&
+StructTraits<ash::shimless_rma::mojom::ComponentDataView,
+             rmad::ComponentsRepairState_ComponentRepairStatus>::
+    identifier(
+        const rmad::ComponentsRepairState_ComponentRepairStatus& component) {
+  return component.identifier();
+}
+
+// static
 MojomWpDisableAction
 EnumTraits<MojomWpDisableAction, ProtoWpDisableAction>::ToMojom(
     ProtoWpDisableAction action) {
@@ -631,6 +706,8 @@ EnumTraits<MojomWpDisableAction, ProtoWpDisableAction>::ToMojom(
     case rmad::WriteProtectDisableCompleteState::
         RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN:
       return MojomWpDisableAction::kCompleteKeepDeviceOpen;
+    case rmad::WriteProtectDisableCompleteState::RMAD_WP_DISABLE_COMPLETE_NO_OP:
+      return MojomWpDisableAction::kCompleteNoOp;
     case rmad::WriteProtectDisableCompleteState::RMAD_WP_DISABLE_UNKNOWN:
       return MojomWpDisableAction::kUnknown;
 
@@ -658,6 +735,10 @@ bool EnumTraits<MojomWpDisableAction, ProtoWpDisableAction>::FromMojom(
     case MojomWpDisableAction::kCompleteKeepDeviceOpen:
       *out = rmad::WriteProtectDisableCompleteState::
           RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN;
+      return true;
+    case MojomWpDisableAction::kCompleteNoOp:
+      *out = rmad::WriteProtectDisableCompleteState::
+          RMAD_WP_DISABLE_COMPLETE_NO_OP;
       return true;
 
     case MojomWpDisableAction::kUnknown:
@@ -713,15 +794,72 @@ bool EnumTraits<MojomProvisioningStatus, ProtoProvisioningStatus>::FromMojom(
   return false;
 }
 
+// static
+MojomProvisioningError
+EnumTraits<MojomProvisioningError, ProtoProvisioningError>::ToMojom(
+    ProtoProvisioningError error) {
+  switch (error) {
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_UNKNOWN:
+      return MojomProvisioningError::kUnknown;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_INTERNAL:
+      return MojomProvisioningError::kInternal;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_WP_ENABLED:
+      return MojomProvisioningError::kWpEnabled;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_READ:
+      return MojomProvisioningError::kCannotRead;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_WRITE:
+      return MojomProvisioningError::kCannotWrite;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET:
+      return MojomProvisioningError::kGenerateSecret;
+
+    default:
+      NOTREACHED();
+      return MojomProvisioningError::kUnknown;
+  }
+  NOTREACHED();
+  return MojomProvisioningError::kUnknown;
+}
+
+// static
+bool EnumTraits<MojomProvisioningError, ProtoProvisioningError>::FromMojom(
+    MojomProvisioningError error,
+    ProtoProvisioningError* out) {
+  switch (error) {
+    case MojomProvisioningError::kUnknown:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_UNKNOWN;
+      return true;
+    case MojomProvisioningError::kInternal:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_INTERNAL;
+      return true;
+    case MojomProvisioningError::kWpEnabled:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_WP_ENABLED;
+      return true;
+    case MojomProvisioningError::kCannotRead:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_READ;
+      return true;
+    case MojomProvisioningError::kCannotWrite:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_WRITE;
+      return true;
+    case MojomProvisioningError::kGenerateSecret:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool StructTraits<ash::shimless_rma::mojom::ComponentDataView,
                   rmad::ComponentsRepairState_ComponentRepairStatus>::
     Read(ash::shimless_rma::mojom::ComponentDataView data,
          rmad::ComponentsRepairState_ComponentRepairStatus* out) {
   rmad::RmadComponent component;
   rmad::ComponentsRepairState_ComponentRepairStatus_RepairStatus repair_status;
-  if (data.ReadComponent(&component) && data.ReadState(&repair_status)) {
+  std::string identifier;
+  if (data.ReadComponent(&component) && data.ReadState(&repair_status) &&
+      data.ReadIdentifier(&identifier)) {
     out->set_component(component);
     out->set_repair_status(repair_status);
+    out->set_identifier(identifier);
     return true;
   }
   return false;
@@ -925,6 +1063,60 @@ bool EnumTraits<MojomFinalizationStatus, ProtoFinalizationStatus>::FromMojom(
   return false;
 }
 
+// static
+MojomFinalizationError
+EnumTraits<MojomFinalizationError, ProtoFinalizationError>::ToMojom(
+    ProtoFinalizationError error) {
+  switch (error) {
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_UNKNOWN:
+      return MojomFinalizationError::kUnknown;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_INTERNAL:
+      return MojomFinalizationError::kInternal;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_HWWP:
+      return MojomFinalizationError::kCannotEnableHardwareWp;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_SWWP:
+      return MojomFinalizationError::kCannotEnableSoftwareWp;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CR50:
+      return MojomFinalizationError::kCr50;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_GBB:
+      return MojomFinalizationError::kGbb;
+
+    default:
+      NOTREACHED();
+      return MojomFinalizationError::kUnknown;
+  }
+  NOTREACHED();
+  return MojomFinalizationError::kUnknown;
+}
+
+// static
+bool EnumTraits<MojomFinalizationError, ProtoFinalizationError>::FromMojom(
+    MojomFinalizationError error,
+    ProtoFinalizationError* out) {
+  switch (error) {
+    case MojomFinalizationError::kUnknown:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_UNKNOWN;
+      return true;
+    case MojomFinalizationError::kInternal:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_INTERNAL;
+      return true;
+    case MojomFinalizationError::kCannotEnableHardwareWp:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_HWWP;
+      return true;
+    case MojomFinalizationError::kCannotEnableSoftwareWp:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_SWWP;
+      return true;
+    case MojomFinalizationError::kCr50:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CR50;
+      return true;
+    case MojomFinalizationError::kGbb:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_GBB;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool StructTraits<ash::shimless_rma::mojom::CalibrationComponentStatusDataView,
                   rmad::CalibrationComponentStatus>::
     Read(ash::shimless_rma::mojom::CalibrationComponentStatusDataView data,
@@ -996,4 +1188,49 @@ bool EnumTraits<MojomUpdateRoFirmwareStatus, ProtoUpdateRoFirmwaretatus>::
   NOTREACHED();
   return false;
 }
+
+// static
+MojomShutdownMethod
+EnumTraits<MojomShutdownMethod, ProtoShutdownMethod>::ToMojom(
+    ProtoShutdownMethod shutdown_method) {
+  switch (shutdown_method) {
+    case rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_UNKNOWN:
+      return MojomShutdownMethod::kUnknown;
+    case rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_REBOOT:
+      return MojomShutdownMethod::kReboot;
+    case rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_SHUTDOWN:
+      return MojomShutdownMethod::kShutdown;
+    case rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_BATTERY_CUTOFF:
+      return MojomShutdownMethod::kBatteryCutoff;
+
+    default:
+      NOTREACHED();
+      return MojomShutdownMethod::kUnknown;
+  }
+  NOTREACHED();
+  return MojomShutdownMethod::kUnknown;
+}
+
+// static
+bool EnumTraits<MojomShutdownMethod, ProtoShutdownMethod>::FromMojom(
+    MojomShutdownMethod shutdown_method,
+    ProtoShutdownMethod* out) {
+  switch (shutdown_method) {
+    case MojomShutdownMethod::kUnknown:
+      *out = rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_UNKNOWN;
+      return true;
+    case MojomShutdownMethod::kReboot:
+      *out = rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_REBOOT;
+      return true;
+    case MojomShutdownMethod::kShutdown:
+      *out = rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_SHUTDOWN;
+      return true;
+    case MojomShutdownMethod::kBatteryCutoff:
+      *out = rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_BATTERY_CUTOFF;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace mojo

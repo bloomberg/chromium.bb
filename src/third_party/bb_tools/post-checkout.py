@@ -201,7 +201,7 @@ def handle_catfile_output(stdout, path, metadata):
         os.chmod(dest_path, mode)
         return False
       rm_force(dest_path)
-    shutil.move(temp_path, dest_path)
+    shutil.copy2(temp_path, dest_path)
     os.chmod(dest_path, mode)
     return True
 

@@ -16,9 +16,9 @@
 
 #include "src/trace_processor/importers/proto/heap_graph_tracker.h"
 
-#include "src/trace_processor/importers/proto/profiler_util.h"
-
 #include "perfetto/base/logging.h"
+#include "src/trace_processor/importers/common/process_tracker.h"
+#include "src/trace_processor/importers/proto/profiler_util.h"
 #include "test/gtest_and_gmock.h"
 
 namespace perfetto {
@@ -29,21 +29,30 @@ using ::testing::UnorderedElementsAre;
 
 TEST(HeapGraphTrackerTest, PackageFromLocationApp) {
   std::unique_ptr<TraceStorage> storage(new TraceStorage());
-  EXPECT_EQ(
-      PackageFromLocation(storage.get(),
-                          "/data/app/~~ASDFGH1234QWerT==/"
-                          "com.twitter.android-MNBVCX7890SDTst6==/test.apk"),
-      "com.twitter.android");
-  EXPECT_EQ(PackageFromLocation(
-                storage.get(),
-                "/data/app/com.google.android.webview-6XfQhnaSkFwGK0sYL9is0G==/"
-                "base.apk"),
-            "com.google.android.webview");
-  EXPECT_EQ(PackageFromLocation(storage.get(),
-                                "/data/app/"
-                                "com.google.android.apps.wellbeing-"
-                                "qfQCaB4uJ7P0OPpZQqOu0Q==/oat/arm64/base.odex"),
+
+  const char data_app_path[] =
+      "/data/app/org.perfetto.test-6XfQhnaSkFwGK0sYL9is0G==/base.apk";
+  EXPECT_EQ(PackageFromLocation(storage.get(), data_app_path),
+            "org.perfetto.test");
+
+  const char with_extra_dir[] =
+      "/data/app/~~ASDFGH1234QWerT==/"
+      "com.perfetto.test-MNBVCX7890SDTst6==/test.apk";
+  EXPECT_EQ(PackageFromLocation(storage.get(), with_extra_dir),
+            "com.perfetto.test");
+
+  const char odex[] =
+      "/data/app/com.google.android.apps.wellbeing-"
+      "qfQCaB4uJ7P0OPpZQqOu0Q==/oat/arm64/base.odex";
+  EXPECT_EQ(PackageFromLocation(storage.get(), odex),
             "com.google.android.apps.wellbeing");
+
+  const char inmem_dex[] =
+      "[anon:dalvik-classes.dex extracted in memory from "
+      "/data/app/~~uUgHYtbjPNr2VFa3byIF4Q==/"
+      "com.perfetto.example-aC94wTfXRC60l2HJU5YvjQ==/base.apk]";
+  EXPECT_EQ(PackageFromLocation(storage.get(), inmem_dex),
+            "com.perfetto.example");
 }
 
 TEST(HeapGraphTrackerTest, PopulateNativeSize) {
@@ -53,6 +62,8 @@ TEST(HeapGraphTrackerTest, PopulateNativeSize) {
 
   TraceProcessorContext context;
   context.storage.reset(new TraceStorage());
+  context.process_tracker.reset(new ProcessTracker(&context));
+  context.process_tracker->GetOrCreateProcess(kPid);
 
   HeapGraphTracker tracker(&context);
 
@@ -62,7 +73,7 @@ TEST(HeapGraphTrackerTest, PopulateNativeSize) {
   tracker.AddInternedLocationName(kSeqId, kLocation,
                                   context.storage->InternString("location"));
 
-  enum Fields : uint64_t { kReferent = 1, kThunk, kThis0 };
+  enum Fields : uint64_t { kReferent = 1, kThunk, kThis0, kNext };
 
   tracker.AddInternedFieldName(kSeqId, kReferent,
                                "java.lang.ref.Reference.referent");
@@ -70,6 +81,7 @@ TEST(HeapGraphTrackerTest, PopulateNativeSize) {
   tracker.AddInternedFieldName(
       kSeqId, kThis0,
       "libcore.util.NativeAllocationRegistry$CleanerThunk.this$0");
+  tracker.AddInternedFieldName(kSeqId, kNext, "sun.misc.Cleaner.next");
 
   enum Types : uint64_t {
     kTypeBitmap = 1,
@@ -89,7 +101,8 @@ TEST(HeapGraphTrackerTest, PopulateNativeSize) {
   tracker.AddInternedType(
       kSeqId, kTypeCleaner, context.storage->InternString("sun.misc.Cleaner"),
       kLocation, /*object_size=*/0,
-      /*reference_field_name_ids=*/{kReferent, kThunk}, /*superclass_id=*/0,
+      /*reference_field_name_ids=*/{kReferent, kThunk, kNext},
+      /*superclass_id=*/0,
       /*classloader_id=*/0, /*no_reference_fields=*/false,
       /*kind=*/normal_kind);
 
@@ -129,7 +142,7 @@ TEST(HeapGraphTrackerTest, PopulateNativeSize) {
     HeapGraphTracker::SourceObject obj;
     obj.object_id = kObjCleaner;
     obj.type_id = kTypeCleaner;
-    obj.referred_objects = {kObjBitmap, kObjThunk};
+    obj.referred_objects = {kObjBitmap, kObjThunk, 0};
 
     tracker.AddObject(kSeqId, kPid, kTimestamp, std::move(obj));
   }
@@ -153,13 +166,6 @@ TEST(HeapGraphTrackerTest, PopulateNativeSize) {
     obj.native_allocation_registry_size = 24242 | 1;
 
     tracker.AddObject(kSeqId, kPid, kTimestamp, std::move(obj));
-  }
-
-  {
-    HeapGraphTracker::SourceRoot root;
-    root.root_type = context.storage->InternString("ROOT");
-    root.object_ids.emplace_back(kObjCleaner);
-    tracker.AddRoot(kSeqId, kPid, kTimestamp, std::move(root));
   }
 
   tracker.FinalizeProfile(kSeqId);
@@ -199,6 +205,8 @@ TEST(HeapGraphTrackerTest, BuildFlamegraph) {
 
   TraceProcessorContext context;
   context.storage.reset(new TraceStorage());
+  context.process_tracker.reset(new ProcessTracker(&context));
+  context.process_tracker->GetOrCreateProcess(kPid);
 
   HeapGraphTracker tracker(&context);
 

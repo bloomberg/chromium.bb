@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -131,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, AcceptPermissions) {
   ASSERT_TRUE(GetExtensionDisabledGlobalError());
   const size_t size_before = extension_registry()->enabled_extensions().size();
 
-  ExtensionTestMessageListener listener("v2.onInstalled", false);
+  ExtensionTestMessageListener listener("v2.onInstalled");
   listener.set_failure_message("FAILED");
   extension_service()->GrantPermissionsAndEnableExtension(extension);
   EXPECT_EQ(size_before + 1, extension_registry()->enabled_extensions().size());

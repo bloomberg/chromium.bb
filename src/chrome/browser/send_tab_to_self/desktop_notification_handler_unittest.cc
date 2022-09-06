@@ -147,12 +147,12 @@ TEST_F(DesktopNotificationHandlerTest, DisplayNewEntries) {
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kDesktopNotificationGuid,
       kDesktopNotificationTitle16, kDesktopNotificationDeviceInfoWithPrefix,
-      gfx::Image(), base::UTF8ToUTF16(url.host()), url,
+      ui::ImageModel(), base::UTF8ToUTF16(url.host()), url,
       message_center::NotifierId(url), optional_fields, /*delegate=*/nullptr);
 
   SendTabToSelfEntry entry(kDesktopNotificationGuid, url,
                            kDesktopNotificationTitle, base::Time::Now(),
-                           base::Time::Now(), kDesktopNotificationDeviceInfo,
+                           kDesktopNotificationDeviceInfo,
                            kDesktopNotificationTargetDeviceSyncCacheGuid);
   std::vector<const SendTabToSelfEntry*> entries;
   entries.push_back(&entry);
@@ -185,13 +185,13 @@ TEST_F(DesktopNotificationHandlerTest, CloseHandler) {
       .WillOnce(::testing::Return());
 
   handler.OnClose(profile(), GURL(kDesktopNotificationOrigin),
-                  kDesktopNotificationId, /*by_user=*/0, base::DoNothing());
+                  kDesktopNotificationId, /*by_user=*/false, base::DoNothing());
 
   EXPECT_CALL(*model_mock_, DismissEntry(kDesktopNotificationId))
       .WillOnce(::testing::Return());
 
   handler.OnClose(profile(), GURL(kDesktopNotificationOrigin),
-                  kDesktopNotificationId, /*by_user=*/1, base::DoNothing());
+                  kDesktopNotificationId, /*by_user=*/true, base::DoNothing());
 }
 
 TEST_F(DesktopNotificationHandlerTest, ClickHandler) {

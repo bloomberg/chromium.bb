@@ -11,12 +11,19 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/serialized_track_params.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_file_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_attachment_supplement.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_handle_attachment.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_handle_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/crop_target.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame.h"
@@ -89,6 +96,12 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       return ReadEncodedAudioChunk();
     case kEncodedVideoChunkTag:
       return ReadEncodedVideoChunk();
+    case kMediaStreamTrack:
+      return ReadMediaStreamTrack();
+    case kCropTargetTag:
+      return ReadCropTarget();
+    case kMediaSourceHandleTag:
+      return ReadMediaSourceHandle();
     default:
       break;
   }
@@ -520,6 +533,81 @@ V8ScriptValueDeserializerForModules::ReadEncodedVideoChunk() {
     return nullptr;
 
   return MakeGarbageCollected<EncodedVideoChunk>(buffers[index]);
+}
+
+MediaStreamTrack* V8ScriptValueDeserializerForModules::ReadMediaStreamTrack() {
+  if (!RuntimeEnabledFeatures::MediaStreamTrackTransferEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  base::UnguessableToken session_id;
+  String kind, id, label;
+  uint8_t enabled, muted;
+  SerializedContentHintType contentHint;
+  SerializedReadyState readyState;
+
+  if (!ReadUnguessableToken(&session_id) || !ReadUTF8String(&kind) ||
+      (kind != "audio" && kind != "video") || !ReadUTF8String(&id) ||
+      !ReadUTF8String(&label) || !ReadOneByte(&enabled) || enabled > 1 ||
+      !ReadOneByte(&muted) || muted > 1 || !ReadUint32Enum(&contentHint) ||
+      !ReadUint32Enum(&readyState)) {
+    return nullptr;
+  }
+
+  return MediaStreamTrack::FromTransferredState(
+      GetScriptState(),
+      TransferredValues{.session_id = session_id,
+                        .kind = kind,
+                        .id = id,
+                        .label = label,
+                        .enabled = static_cast<bool>(enabled),
+                        .muted = static_cast<bool>(muted),
+                        .content_hint = DeserializeContentHint(contentHint),
+                        .ready_state = DeserializeReadyState(readyState)});
+}
+
+CropTarget* V8ScriptValueDeserializerForModules::ReadCropTarget() {
+  if (!RuntimeEnabledFeatures::RegionCaptureEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  String crop_id;
+  if (!ReadUTF8String(&crop_id)) {
+    return nullptr;
+  }
+
+  return MakeGarbageCollected<CropTarget>(crop_id);
+}
+
+MediaSourceHandleImpl*
+V8ScriptValueDeserializerForModules::ReadMediaSourceHandle() {
+  if (!RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
+          ExecutionContext::From(GetScriptState())) ||
+      !RuntimeEnabledFeatures::MediaSourceInWorkersUsingHandleEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  uint32_t index;
+  if (!ReadUint32(&index))
+    return nullptr;
+
+  const auto* attachment =
+      GetSerializedScriptValue()
+          ->GetAttachmentIfExists<MediaSourceHandleAttachment>();
+  if (!attachment)
+    return nullptr;
+
+  const auto& attachments = attachment->Attachments();
+  if (index >= attachment->size())
+    return nullptr;
+
+  auto& handle_internals = attachments[index];
+  return MakeGarbageCollected<MediaSourceHandleImpl>(
+      std::move(handle_internals.attachment_provider),
+      std::move(handle_internals.internal_blob_url));
 }
 
 }  // namespace blink

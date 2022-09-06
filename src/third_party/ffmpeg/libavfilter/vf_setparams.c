@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include "libavutil/pixfmt.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
@@ -165,6 +167,7 @@ const AVFilter ff_vf_setparams = {
     .description = NULL_IF_CONFIG_SMALL("Force field, or color property for the output video frame."),
     .priv_size   = sizeof(SetParamsContext),
     .priv_class  = &setparams_class,
+    .flags       = AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
 };
@@ -204,6 +207,7 @@ const AVFilter ff_vf_setrange = {
     .priv_size   = sizeof(SetParamsContext),
     .init        = init_setrange,
     .priv_class  = &setrange_class,
+    .flags       = AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
 };
@@ -238,6 +242,7 @@ const AVFilter ff_vf_setfield = {
     .priv_size   = sizeof(SetParamsContext),
     .init        = init_setfield,
     .priv_class  = &setfield_class,
+    .flags       = AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
 };

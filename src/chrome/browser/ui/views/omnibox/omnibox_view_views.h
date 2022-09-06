@@ -14,10 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/share/share_submenu_model.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/template_url_service.h"
@@ -223,7 +222,7 @@ class OmniboxViewViews
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void AnnounceFriendlySuggestionText();
 #endif
 
@@ -320,8 +319,7 @@ class OmniboxViewViews
   void PerformDrop(const ui::DropTargetEvent& event,
                    ui::mojom::DragOperation& output_drag_op);
 
-  // Helper methods to construct parts of the context menu.
-  void MaybeAddShareSubmenu(ui::SimpleMenuModel* menu_contents);
+  // Helper method to construct part of the context menu.
   void MaybeAddSendTabToSelfItem(ui::SimpleMenuModel* menu_contents);
 
   // When true, the location bar view is read only and also is has a slightly
@@ -412,13 +410,6 @@ class OmniboxViewViews
       scoped_compositor_observation_{this};
   base::ScopedObservation<TemplateURLService, TemplateURLServiceObserver>
       scoped_template_url_service_observation_{this};
-
-  // Send tab to self submenu & share submenu - only one of these is populated
-  // at a time. These are tied to a WebContents, they are created when the user
-  // opens the menu and destroyed when the tab changes.
-  std::unique_ptr<share::ShareSubmenuModel> share_submenu_model_;
-  std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
-      send_tab_to_self_sub_menu_model_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

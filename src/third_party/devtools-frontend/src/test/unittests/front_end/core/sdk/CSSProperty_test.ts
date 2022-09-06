@@ -1,53 +1,42 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 const {assert} = chai;
-
 import * as SDK from '../../../../../front_end/core/sdk/sdk.js';
-import * as TextUtils from '../../../../../front_end/models/text_utils/text_utils.js';
+import {describeWithEnvironment} from '../../helpers/EnvironmentHelpers.js';
 
-describe('CSSProperty', () => {
+describeWithEnvironment('CSSProperty', () => {
   describe('formatStyle', () => {
-    const tokenizerFactory = TextUtils.CodeMirrorUtils.TokenizerFactory.instance();
-    const formatStyle = (styleText: string) =>
-        SDK.CSSProperty.CSSProperty.formatStyle(styleText, ' ', '', tokenizerFactory);
-
-    it('formats a style declaration with a single trailing semicolon correctly', () => {
-      assert.strictEqual(formatStyle('color: red;'), '\n color: red;\n');
+    const formatStyle = (styleText: string) => SDK.CSSProperty.CSSProperty.formatStyle(styleText, ' ', '');
+    it('formats a style declaration with a single trailing semicolon correctly', async () => {
+      assert.strictEqual(await formatStyle('color: red;'), '\n color: red;\n');
     });
-
-    it('formats a style declaration with multiple trailing semicolons correctly', () => {
-      assert.strictEqual(formatStyle('color: red;;;'), '\n color: red;\n');
+    it('formats a style declaration with multiple trailing semicolons correctly', async () => {
+      assert.strictEqual(await formatStyle('color: red;;;'), '\n color: red;\n');
     });
-
-    it('formats two style declarations correctly', () => {
-      assert.strictEqual(formatStyle('color: red;;;color: blue'), '\n color: red;\n color: blue;\n');
+    it('formats two style declarations correctly', async () => {
+      assert.strictEqual(await formatStyle('color: red;;;color: blue'), '\n color: red;\n color: blue\n');
     });
-
-    it('formats multiple style declarations correctly', () => {
-      assert.strictEqual(formatStyle('color: var(-);margin: 0;padding:0'), '\n color: var(-);margin: 0;padding:0\n');
-    });
-
-    it('formats style declarations with comments correctly', () => {
+    it('formats multiple style declarations correctly', async () => {
       assert.strictEqual(
-          formatStyle('color: red;/* a comment */;color: blue'), '\n color: red;/* a comment */\n color: blue;\n');
+          await formatStyle('color: var(-);margin: 0;padding:0'), '\n color: var(-);margin: 0;padding:0\n');
     });
-
-    it('formats an empty decalaration correctly', () => {
-      assert.strictEqual(formatStyle(':; color: red; color: blue'), ':;\n color: red;\n color: blue;\n');
-    });
-
-    it('formats an empty decalaration correctly and doesn\'t format comments', () => {
+    it('formats style declarations with comments correctly', async () => {
       assert.strictEqual(
-          formatStyle('color: red;/* a comment;;; */ :; color: blue;'),
+          await formatStyle('color: red;/* a comment */;color: blue'), '\n color: red;/* a comment */\n color: blue\n');
+    });
+    it('formats an empty decalaration correctly', async () => {
+      assert.strictEqual(await formatStyle(':; color: red; color: blue'), ':;\n color: red;\n color: blue\n');
+    });
+    it('formats an empty decalaration correctly and doesn\'t format comments', async () => {
+      assert.strictEqual(
+          await formatStyle('color: red;/* a comment;;; */ :; color: blue;'),
           '\n color: red;/* a comment;;; */ :;\n color: blue;\n');
     });
-
-    it('formats a decalaration with line names correctly', () => {
+    it('formats a decalaration with line names correctly', async () => {
       assert.strictEqual(
-          formatStyle('grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px'),
-          '\n grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px;\n');
+          await formatStyle('grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px'),
+          '\n grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px\n');
     });
   });
 });

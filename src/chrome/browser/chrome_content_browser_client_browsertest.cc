@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
-#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/custom_handlers/protocol_handler.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -65,7 +65,7 @@
 #include "url/url_constants.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/test/base/launchservices_utils_mac.h"
 #endif
 
@@ -173,16 +173,16 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNTPBrowserTest,
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   EXPECT_TRUE(instant_service->IsInstantProcess(
-      contents->GetMainFrame()->GetProcess()->GetID()));
-  EXPECT_EQ(contents->GetMainFrame()->GetSiteInstance()->GetSiteURL(),
+      contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
+  EXPECT_EQ(contents->GetPrimaryMainFrame()->GetSiteInstance()->GetSiteURL(),
             ntp_site_instance->GetSiteURL());
 
   // Navigating to a non-NTP URL on ntp.com should not result in an Instant
   // process.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), isolated_url));
   EXPECT_FALSE(instant_service->IsInstantProcess(
-      contents->GetMainFrame()->GetProcess()->GetID()));
-  EXPECT_EQ(contents->GetMainFrame()->GetSiteInstance()->GetSiteURL(),
+      contents->GetPrimaryMainFrame()->GetProcess()->GetID()));
+  EXPECT_EQ(contents->GetPrimaryMainFrame()->GetSiteInstance()->GetSiteURL(),
             site_instance->GetSiteURL());
 }
 
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   EXPECT_TRUE(instant_service->IsInstantProcess(
-      ntp_tab->GetMainFrame()->GetProcess()->GetID()));
+      ntp_tab->GetPrimaryMainFrame()->GetProcess()->GetID()));
 
   // Execute script that creates new window from ntp tab with
   // ntp.com/title1.html as target url. Host is same as remote-ntp host, yet
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
   EXPECT_EQ(generic_url, opened_tab->GetLastCommittedURL());
   // New created tab should not reside in an Instant process.
   EXPECT_FALSE(instant_service->IsInstantProcess(
-      opened_tab->GetMainFrame()->GetProcess()->GetID()));
+      opened_tab->GetPrimaryMainFrame()->GetProcess()->GetID()));
 }
 
 class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
@@ -459,8 +459,8 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
   void AddProtocolHandler(const std::string& scheme,
                           const std::string& redirect_template) {
     protocol_handler_registry()->OnAcceptRegisterProtocolHandler(
-        ProtocolHandler::CreateProtocolHandler(scheme,
-                                               GURL(redirect_template)));
+        custom_handlers::ProtocolHandler::CreateProtocolHandler(
+            scheme, GURL(redirect_template)));
   }
 
   custom_handlers::ProtocolHandlerRegistry* protocol_handler_registry() {
@@ -470,7 +470,7 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   ASSERT_TRUE(test::RegisterAppWithLaunchServices());
 #endif
   AddProtocolHandler("news", "https://abc.xyz/?url=%s");
@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, ExternalProgramNotLaunched) {
 }
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 class KeepaliveDurationOnShutdownTest : public InProcessBrowserTest,
                                         public InstantTestBase {
  public:
@@ -534,22 +534,19 @@ class KeepaliveDurationOnShutdownTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DefaultValue) {
-  Profile* profile =
-      g_browser_process->profile_manager()->GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::TimeDelta());
 }
 
 IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, PolicySettings) {
-  Profile* profile =
-      g_browser_process->profile_manager()->GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   profile->GetPrefs()->SetInteger(prefs::kFetchKeepaliveDurationOnShutdown, 2);
 
   EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::Seconds(2));
 }
 
 IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DynamicUpdate) {
-  Profile* profile =
-      g_browser_process->profile_manager()->GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   profile->GetPrefs()->SetInteger(prefs::kFetchKeepaliveDurationOnShutdown, 2);
 
   EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::Seconds(2));
@@ -559,6 +556,6 @@ IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DynamicUpdate) {
   EXPECT_EQ(client_->GetKeepaliveTimerTimeout(profile), base::Seconds(3));
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace

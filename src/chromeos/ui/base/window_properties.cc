@@ -25,8 +25,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDeferredTabDraggingTargetWindowKey, false)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kEscHoldToExitFullscreen, false)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kEscHoldExitFullscreenToMinimized, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUseOverviewToExitFullscreen, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUseOverviewToExitPointerLock, false)
 
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTrackDefaultFrameColors, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor)
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
@@ -52,5 +54,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::u16string,
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kWindowStateTypeKey,
                              WindowStateType::kDefault)
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowToggleFloatKey, false)
 
 }  // namespace chromeos

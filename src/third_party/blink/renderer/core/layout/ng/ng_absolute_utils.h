@@ -27,6 +27,11 @@ struct CORE_EXPORT NGLogicalOutOfFlowDimensions {
   NGBoxStrut margins;
 };
 
+CORE_EXPORT LogicalSize
+ComputeOutOfFlowAvailableSize(const NGBlockNode&,
+                              const NGConstraintSpace&,
+                              const NGLogicalStaticPosition&);
+
 // The following routines implement the absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
 //
@@ -46,17 +51,19 @@ CORE_EXPORT bool ComputeOutOfFlowInlineDimensions(
     const NGConstraintSpace&,
     const NGBoxStrut& border_padding,
     const NGLogicalStaticPosition&,
+    const LogicalSize computed_available_size,
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
     NGLogicalOutOfFlowDimensions* dimensions);
 
 // If layout was performed to determine the position, this will be returned
 // otherwise it will return nullptr.
-CORE_EXPORT scoped_refptr<const NGLayoutResult> ComputeOutOfFlowBlockDimensions(
+CORE_EXPORT const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
     const NGBlockNode&,
     const NGConstraintSpace&,
     const NGBoxStrut& border_padding,
     const NGLogicalStaticPosition&,
+    const LogicalSize computed_available_size,
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
     NGLogicalOutOfFlowDimensions* dimensions);

@@ -438,8 +438,8 @@ class CircularStructureMessageBuilder {
  private:
   void AppendConstructorName(Handle<Object> object) {
     builder_.AppendCharacter('\'');
-    Handle<String> constructor_name =
-        JSReceiver::GetConstructorName(Handle<JSReceiver>::cast(object));
+    Handle<String> constructor_name = JSReceiver::GetConstructorName(
+        builder_.isolate(), Handle<JSReceiver>::cast(object));
     builder_.AppendString(constructor_name);
     builder_.AppendCharacter('\'');
   }
@@ -677,7 +677,7 @@ JsonStringifier::Result JsonStringifier::SerializeJSArray(
     uint32_t limit = std::min(length, kInterruptLength);
     const uint32_t kMaxAllowedFastPackedLength =
         std::numeric_limits<uint32_t>::max() - kInterruptLength;
-    STATIC_ASSERT(FixedArray::kMaxLength < kMaxAllowedFastPackedLength);
+    static_assert(FixedArray::kMaxLength < kMaxAllowedFastPackedLength);
     switch (object->GetElementsKind(cage_base)) {
       case PACKED_SMI_ELEMENTS: {
         Handle<FixedArray> elements(
@@ -845,8 +845,8 @@ JsonStringifier::Result JsonStringifier::SerializeJSObject(
         *map == object->map(cage_base)) {
       DCHECK_EQ(PropertyKind::kData, details.kind());
       FieldIndex field_index = FieldIndex::ForDescriptor(*map, i);
-      property = JSObject::FastPropertyAt(object, details.representation(),
-                                          field_index);
+      property = JSObject::FastPropertyAt(
+          isolate_, object, details.representation(), field_index);
     } else {
       ASSIGN_RETURN_ON_EXCEPTION_VALUE(
           isolate_, property,
@@ -869,7 +869,7 @@ JsonStringifier::Result JsonStringifier::SerializeJSReceiverSlow(
   if (contents.is_null()) {
     ASSIGN_RETURN_ON_EXCEPTION_VALUE(
         isolate_, contents,
-        KeyAccumulator::GetKeys(object, KeyCollectionMode::kOwnOnly,
+        KeyAccumulator::GetKeys(isolate_, object, KeyCollectionMode::kOwnOnly,
                                 ENUMERABLE_STRINGS,
                                 GetKeysConversion::kConvertToString),
         EXCEPTION);

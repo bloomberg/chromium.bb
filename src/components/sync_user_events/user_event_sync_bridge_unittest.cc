@@ -26,7 +26,6 @@ namespace {
 using sync_pb::UserEventSpecifics;
 using testing::_;
 using testing::ElementsAre;
-using testing::Eq;
 using testing::InvokeWithoutArgs;
 using testing::IsEmpty;
 using testing::IsNull;
@@ -152,8 +151,8 @@ class UserEventSyncBridgeTest : public testing::Test {
     std::map<std::string, sync_pb::EntitySpecifics> storage_key_to_specifics;
     if (batch != nullptr) {
       while (batch->HasNext()) {
-        const syncer::KeyAndData& pair = batch->Next();
-        storage_key_to_specifics[pair.first] = pair.second->specifics;
+        auto [key, data] = batch->Next();
+        storage_key_to_specifics[key] = data->specifics;
       }
     }
     return storage_key_to_specifics;
@@ -177,9 +176,8 @@ class UserEventSyncBridgeTest : public testing::Test {
 
     std::unique_ptr<sync_pb::EntitySpecifics> specifics;
     if (batch != nullptr && batch->HasNext()) {
-      const syncer::KeyAndData& pair = batch->Next();
-      specifics =
-          std::make_unique<sync_pb::EntitySpecifics>(pair.second->specifics);
+      auto [key, data] = batch->Next();
+      specifics = std::make_unique<sync_pb::EntitySpecifics>(data->specifics);
       EXPECT_FALSE(batch->HasNext());
     }
     return specifics;

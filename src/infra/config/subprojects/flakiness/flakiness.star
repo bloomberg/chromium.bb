@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//lib/builders.star", "os")
+load("//lib/builders.star", "builders", "os")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
@@ -15,6 +15,7 @@ ci.defaults.set(
     # TODO(jeffyoon): replace with smaller scoped service account, and update
     # below for bucket ACL
     service_account = "chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
+    free_space = builders.free_space.standard,
 )
 
 luci.bucket(
@@ -51,5 +52,5 @@ ci.builder(
         short_name = "model",
     ),
     executable = "recipe:flakiness/generate_builder_test_data",
-    schedule = "0 8 * * *",
+    schedule = "0 */1 * * *",
 )

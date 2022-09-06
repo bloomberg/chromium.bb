@@ -5,7 +5,6 @@
 #ifndef UI_GFX_NATIVE_PIXMAP_H_
 #define UI_GFX_NATIVE_PIXMAP_H_
 
-#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -32,6 +31,7 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   virtual size_t GetDmaBufPlaneSize(size_t plane) const = 0;
   // Return the number of non-interleaved "color" planes.
   virtual size_t GetNumberOfPlanes() const = 0;
+  virtual bool SupportsZeroCopyWebGPUImport() const = 0;
 
   // The following methods return format, modifier and size of the buffer,
   // respectively.

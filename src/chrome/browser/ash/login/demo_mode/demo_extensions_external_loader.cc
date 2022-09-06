@@ -11,7 +11,6 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
@@ -108,7 +107,7 @@ void DemoExtensionsExternalLoader::LoadApp(const std::string& app_id) {
 }
 
 void DemoExtensionsExternalLoader::StartLoading() {
-  DemoSession::Get()->EnsureOfflineResourcesLoaded(base::BindOnce(
+  DemoSession::Get()->EnsureResourcesLoaded(base::BindOnce(
       &DemoExtensionsExternalLoader::StartLoadingFromOfflineDemoResources,
       weak_ptr_factory_.GetWeakPtr()));
 }

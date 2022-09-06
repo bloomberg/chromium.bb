@@ -10,6 +10,7 @@
 #include "include/v8config.h"
 #include "src/common/globals.h"
 #include "src/execution/isolate.h"
+#include "src/heap/gc-tracer-inl.h"
 #include "src/heap/gc-tracer.h"
 #include "src/heap/heap-inl.h"
 #include "src/heap/heap.h"
@@ -45,7 +46,8 @@ class ConcurrentMarkingState final
                          MemoryChunkDataMap* memory_chunk_data)
       : MarkingStateBase(cage_base), memory_chunk_data_(memory_chunk_data) {}
 
-  ConcurrentBitmap<AccessMode::ATOMIC>* bitmap(const BasicMemoryChunk* chunk) {
+  ConcurrentBitmap<AccessMode::ATOMIC>* bitmap(
+      const BasicMemoryChunk* chunk) const {
     return chunk->marking_bitmap<AccessMode::ATOMIC>();
   }
 
@@ -114,6 +116,10 @@ class ConcurrentMarkingVisitor final
 
   int VisitJSObjectFast(Map map, JSObject object) {
     return VisitJSObjectSubclassFast(map, object);
+  }
+
+  int VisitJSExternalObject(Map map, JSExternalObject object) {
+    return VisitJSObjectSubclass(map, object);
   }
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -318,15 +324,17 @@ class ConcurrentMarkingVisitor final
   }
 
   void RecordRelocSlot(Code host, RelocInfo* rinfo, HeapObject target) {
+    if (!MarkCompactCollector::ShouldRecordRelocSlot(host, rinfo, target))
+      return;
+
     MarkCompactCollector::RecordRelocSlotInfo info =
-        MarkCompactCollector::PrepareRecordRelocSlot(host, rinfo, target);
-    if (info.should_record) {
-      MemoryChunkData& data = (*memory_chunk_data_)[info.memory_chunk];
-      if (!data.typed_slots) {
-        data.typed_slots.reset(new TypedSlots());
-      }
-      data.typed_slots->Insert(info.slot_type, info.offset);
+        MarkCompactCollector::ProcessRelocInfo(host, rinfo, target);
+
+    MemoryChunkData& data = (*memory_chunk_data_)[info.memory_chunk];
+    if (!data.typed_slots) {
+      data.typed_slots.reset(new TypedSlots());
     }
+    data.typed_slots->Insert(info.slot_type, info.offset);
   }
 
   void SynchronizePageAccess(HeapObject heap_object) {
@@ -448,10 +456,14 @@ void ConcurrentMarking::Run(JobDelegate* delegate,
                             unsigned mark_compact_epoch,
                             bool should_keep_ages_unchanged) {
   size_t kBytesUntilInterruptCheck = 64 * KB;
-  int kObjectsUntilInterrupCheck = 1000;
+  int kObjectsUntilInterruptCheck = 1000;
   uint8_t task_id = delegate->GetTaskId() + 1;
   TaskState* task_state = &task_state_[task_id];
-  MarkingWorklists::Local local_marking_worklists(marking_worklists_);
+  auto* cpp_heap = CppHeap::From(heap_->cpp_heap());
+  MarkingWorklists::Local local_marking_worklists(
+      marking_worklists_, cpp_heap
+                              ? cpp_heap->CreateCppMarkingState()
+                              : MarkingWorklists::Local::kNoCppMarkingState);
   WeakObjects::Local local_weak_objects(weak_objects_);
   ConcurrentMarkingVisitor visitor(
       task_id, &local_marking_worklists, &local_weak_objects, heap_,
@@ -483,11 +495,13 @@ void ConcurrentMarking::Run(JobDelegate* delegate,
     }
     bool is_per_context_mode = local_marking_worklists.IsPerContextMode();
     bool done = false;
+    CodePageHeaderModificationScope rwx_write_scope(
+        "Marking a Code object requires write access to the Code page header");
     while (!done) {
       size_t current_marked_bytes = 0;
       int objects_processed = 0;
       while (current_marked_bytes < kBytesUntilInterruptCheck &&
-             objects_processed < kObjectsUntilInterrupCheck) {
+             objects_processed < kObjectsUntilInterruptCheck) {
         HeapObject object;
         if (!local_marking_worklists.Pop(&object)) {
           done = true;

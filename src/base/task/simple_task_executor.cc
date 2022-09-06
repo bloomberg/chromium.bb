@@ -4,6 +4,10 @@
 
 #include "base/task/simple_task_executor.h"
 
+#include "base/notreached.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
+
 namespace base {
 
 SimpleTaskExecutor::SimpleTaskExecutor(
@@ -48,7 +52,7 @@ SimpleTaskExecutor::CreateSingleThreadTaskRunner(
   return task_queue_;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
 SimpleTaskExecutor::CreateCOMSTATaskRunner(
     const TaskTraits& traits,
@@ -57,6 +61,6 @@ SimpleTaskExecutor::CreateCOMSTATaskRunner(
   NOTREACHED();
   return task_queue_;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace base

@@ -10,6 +10,7 @@
 
 #include "pc/peer_connection_message_handler.h"
 
+#include <list>
 #include <utility>
 
 #include "api/jsep.h"
@@ -116,7 +117,7 @@ void PeerConnectionMessageHandler::OnMessage(rtc::Message* msg) {
     case MSG_GETSTATS: {
       GetStatsMsg* param = static_cast<GetStatsMsg*>(msg->pdata);
       StatsReports reports;
-      param->stats->GetStats(param->track, &reports);
+      param->stats->GetStats(param->track.get(), &reports);
       param->observer->OnComplete(reports);
       delete param;
       break;

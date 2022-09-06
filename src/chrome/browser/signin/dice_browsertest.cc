@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -73,6 +74,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -463,7 +465,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
     InProcessBrowserTest::SetUpOnMainThread();
     https_server_.StartAcceptingConnections();
 
-    GetIdentityManager()->AddObserver(this);
+    identity_manager_observation_.Observe(GetIdentityManager());
     // Wait for the token service to be ready.
     if (!GetIdentityManager()->AreRefreshTokensLoaded()) {
       WaitForClosure(&tokens_loaded_quit_closure_);
@@ -479,13 +481,12 @@ class DiceBrowserTest : public InProcessBrowserTest,
     reconcilor->AbortReconcile();
     reconcilor->SetState(
         signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
-    reconcilor->AddObserver(this);
+    account_reconcilor_observation_.Observe(reconcilor);
   }
 
   void TearDownOnMainThread() override {
-    GetIdentityManager()->RemoveObserver(this);
-    AccountReconcilorFactory::GetForProfile(browser()->profile())
-        ->RemoveObserver(this);
+    identity_manager_observation_.Reset();
+    account_reconcilor_observation_.Reset();
   }
 
   // Calls |closure| if it is not null and resets it after.
@@ -641,6 +642,12 @@ class DiceBrowserTest : public InProcessBrowserTest,
     return DiceResponseHandler::GetForProfile(browser()->profile());
   }
 
+  void CloseBrowser() {
+    identity_manager_observation_.Reset();
+    account_reconcilor_observation_.Reset();
+    CloseBrowserSynchronously(browser());
+  }
+
   const std::string main_email_;
   net::EmbeddedTestServer https_server_;
   bool enable_sync_requested_;
@@ -653,6 +660,12 @@ class DiceBrowserTest : public InProcessBrowserTest,
   int reconcilor_started_count_;
   std::string dice_request_header_;
   base::test::ScopedFeatureList feature_list_;
+
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
+  base::ScopedObservation<AccountReconcilor, AccountReconcilor::Observer>
+      account_reconcilor_observation_{this};
 
   // Unblocks the server responses.
   base::OnceClosure unblock_token_exchange_response_closure_;
@@ -838,9 +851,37 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   WaitForReconcilorUnblockedCount(1);
 }
 
+// Checks that the Dice signout flow works and deletes all tokens.
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, RevokeSyncAccountInAuthErrorState) {
+  // Start from a signed-in state.
+  SetupSignedInAccounts(signin::ConsentLevel::kSync);
+
+  // Signout from main account.
+  SignOutWithDice(kMainAccount);
+
+  // Check that the user is in error state.
+  ASSERT_TRUE(
+      GetIdentityManager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
+  ASSERT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
+  ASSERT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          GetMainAccountID()));
+
+  // Revoking the sync consent should clear the primary account as it is in
+  // an permanent auth error state.
+  RevokeSyncConsent(GetIdentityManager());
+
+  // Updating the primary is done asynchronously. Wait for the update to happen.
+  WaitForPrimaryAccount(GetIdentityManager(), signin::ConsentLevel::kSignin,
+                        CoreAccountId());
+  EXPECT_FALSE(
+      GetIdentityManager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+}
+
 // Checks that Dice request header is not set from request from WebUI.
 // See https://crbug.com/428396
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_NoDiceFromWebUI DISABLED_NoDiceFromWebUI
 #else
 #define MAYBE_NoDiceFromWebUI NoDiceFromWebUI
@@ -981,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
 // refresh token.
 
 // https://crbug.com/1082858
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && !defined(NDEBUG)
 #define MAYBE_EnableSyncBeforeToken DISABLED_EnableSyncBeforeToken
 #else
 #define MAYBE_EnableSyncBeforeToken EnableSyncBeforeToken
@@ -1036,6 +1077,38 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_EnableSyncBeforeToken) {
 
   // Dismiss the Sync confirmation UI.
   EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(browser()));
+}
+
+// Verifies that Chrome doesn't crash on browser window close when the sync
+// confirmation dialog is waiting for its size.
+// Regression test for https://crbug.com/1304055.
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest,
+                       CloseBrowserWhileInitializingSyncConfirmation) {
+  // Signin using the Chrome Sync endpoint.
+  browser()->signin_view_controller()->ShowSignin(
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+      signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+
+  content::TestNavigationObserver sync_confirmation_url_observer(
+      GURL("chrome://sync-confirmation"));
+  sync_confirmation_url_observer.StartWatchingNewWebContents();
+
+  // Receive token.
+  SendRefreshTokenResponse();
+  // Receive ENABLE_SYNC.
+  SendEnableSyncResponse();
+
+  WaitForSigninSucceeded();
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId(
+                                    signin::ConsentLevel::kSync));
+
+  // Wait until the sync confirmation webUI is created but not fully loaded
+  // yet. The native dialog is not displayed yet since it waits until the webUI
+  // passes the dialog height back to native.
+  sync_confirmation_url_observer.WaitForNavigationFinished();
+
+  // This should not crash.
+  CloseBrowser();
 }
 
 // Tests that turning off Dice via preferences works when singed out.
@@ -1181,7 +1254,7 @@ class DiceManageAccountBrowserTest : public DiceBrowserTest {
             true) {}
 
   void SetUp() override {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
     // See crbug.com/1073451.
     AppShortcutManager::SuppressShortcutsForTesting();
@@ -1202,10 +1275,10 @@ IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
   // Ensure that there are not deleted profiles before running this test.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  const base::ListValue* deleted_profiles =
+  const base::Value* deleted_profiles =
       local_state->GetList(prefs::kProfilesDeleted);
   ASSERT_TRUE(deleted_profiles);
-  ASSERT_TRUE(deleted_profiles->GetList().empty());
+  ASSERT_TRUE(deleted_profiles->GetListDeprecated().empty());
 
   // Sign the profile in.
   SetupSignedInAccounts(signin::ConsentLevel::kSync);
@@ -1221,10 +1294,10 @@ IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
   // longer allowed.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  const base::ListValue* deleted_profiles =
+  const base::Value* deleted_profiles =
       local_state->GetList(prefs::kProfilesDeleted);
   EXPECT_TRUE(deleted_profiles);
-  EXPECT_EQ(1U, deleted_profiles->GetList().size());
+  EXPECT_EQ(1U, deleted_profiles->GetListDeprecated().size());
 
   content::RunAllTasksUntilIdle();
 

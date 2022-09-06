@@ -35,15 +35,17 @@ enum ChangeType {
 class NetworkChangeNotifierDelegateAndroidObserver
     : public NetworkChangeNotifierDelegateAndroid::Observer {
  public:
+  typedef NetworkChangeNotifier::ConnectionCost ConnectionCost;
   typedef NetworkChangeNotifier::ConnectionType ConnectionType;
   typedef NetworkChangeNotifier::NetworkHandle NetworkHandle;
   typedef NetworkChangeNotifier::NetworkList NetworkList;
 
-  NetworkChangeNotifierDelegateAndroidObserver()
-      : type_notifications_count_(0), max_bandwidth_notifications_count_(0) {}
+  NetworkChangeNotifierDelegateAndroidObserver() = default;
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
   void OnConnectionTypeChanged() override { type_notifications_count_++; }
+
+  void OnConnectionCostChanged() override { cost_notifications_count_++; }
 
   void OnMaxBandwidthChanged(
       double max_bandwidth_mbps,
@@ -59,20 +61,30 @@ class NetworkChangeNotifierDelegateAndroidObserver
 
   void OnNetworkMadeDefault(NetworkHandle network) override {}
 
+  void OnDefaultNetworkActive() override {
+    default_network_active_notifications_count_++;
+  }
+
   int type_notifications_count() const { return type_notifications_count_; }
+  int cost_notifications_count() const { return cost_notifications_count_; }
   int bandwidth_notifications_count() const {
     return max_bandwidth_notifications_count_;
   }
+  int default_network_active_notifications_count() const {
+    return default_network_active_notifications_count_;
+  }
 
  private:
-  int type_notifications_count_;
-  int max_bandwidth_notifications_count_;
+  int type_notifications_count_ = 0;
+  int cost_notifications_count_ = 0;
+  int max_bandwidth_notifications_count_ = 0;
+  int default_network_active_notifications_count_ = 0;
 };
 
 class NetworkChangeNotifierObserver
     : public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
-  NetworkChangeNotifierObserver() : notifications_count_(0) {}
+  NetworkChangeNotifierObserver() = default;
 
   // NetworkChangeNotifier::ConnectionTypeObserver:
   void OnConnectionTypeChanged(
@@ -85,7 +97,22 @@ class NetworkChangeNotifierObserver
   }
 
  private:
-  int notifications_count_;
+  int notifications_count_ = 0;
+};
+
+class NetworkChangeNotifierConnectionCostObserver
+    : public NetworkChangeNotifier::ConnectionCostObserver {
+ public:
+  // NetworkChangeNotifier::ConnectionCostObserver:
+  void OnConnectionCostChanged(
+      NetworkChangeNotifier::ConnectionCost cost) override {
+    notifications_count_++;
+  }
+
+  int notifications_count() const { return notifications_count_; }
+
+ private:
+  int notifications_count_ = 0;
 };
 
 class NetworkChangeNotifierMaxBandwidthObserver
@@ -158,6 +185,7 @@ class TestNetworkObserver : public NetworkChangeNotifier::NetworkObserver {
 class BaseNetworkChangeNotifierAndroidTest : public TestWithTaskEnvironment {
  protected:
   typedef NetworkChangeNotifier::ConnectionType ConnectionType;
+  typedef NetworkChangeNotifier::ConnectionCost ConnectionCost;
   typedef NetworkChangeNotifier::ConnectionSubtype ConnectionSubtype;
 
   ~BaseNetworkChangeNotifierAndroidTest() override {}
@@ -207,6 +235,11 @@ class BaseNetworkChangeNotifierAndroidTest : public TestWithTaskEnvironment {
     }
   }
 
+  void FakeConnectionCostChange(ConnectionCost cost) {
+    delegate_.FakeConnectionCostChanged(cost);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void FakeConnectionSubtypeChange(ConnectionSubtype subtype) {
     delegate_.FakeConnectionSubtypeChanged(subtype);
     base::RunLoop().RunUntilIdle();
@@ -236,10 +269,20 @@ class BaseNetworkChangeNotifierAndroidTest : public TestWithTaskEnvironment {
     base::RunLoop().RunUntilIdle();
   }
 
+  void FakeDefaultNetworkActive() {
+    delegate_.FakeDefaultNetworkActive();
+    // See comment above.
+    base::RunLoop().RunUntilIdle();
+  }
+
   void FakePurgeActiveNetworkList(NetworkChangeNotifier::NetworkList networks) {
     delegate_.FakePurgeActiveNetworkList(networks);
     // See comment above.
     base::RunLoop().RunUntilIdle();
+  }
+
+  bool is_default_network_active_api_supported() const {
+    return delegate_.is_default_network_active_api_supported_;
   }
 
   NetworkChangeNotifierDelegateAndroid delegate_;
@@ -281,6 +324,8 @@ class NetworkChangeNotifierAndroidTest
         &connection_type_observer_);
     NetworkChangeNotifier::AddConnectionTypeObserver(
         &other_connection_type_observer_);
+    NetworkChangeNotifier::AddConnectionCostObserver(
+        &connection_cost_observer_);
     NetworkChangeNotifier::AddMaxBandwidthObserver(&max_bandwidth_observer_);
   }
 
@@ -289,6 +334,7 @@ class NetworkChangeNotifierAndroidTest
   }
 
   NetworkChangeNotifierObserver connection_type_observer_;
+  NetworkChangeNotifierConnectionCostObserver connection_cost_observer_;
   NetworkChangeNotifierMaxBandwidthObserver max_bandwidth_observer_;
   NetworkChangeNotifierObserver other_connection_type_observer_;
   NetworkChangeNotifier::DisableForTest disable_for_test_;
@@ -346,6 +392,34 @@ TEST_F(NetworkChangeNotifierAndroidTest,
   // Check that *all* the observers are notified.
   EXPECT_EQ(connection_type_observer_.notifications_count(),
             other_connection_type_observer_.notifications_count());
+}
+
+TEST_F(NetworkChangeNotifierAndroidTest, ConnectionCost) {
+  FakeConnectionCostChange(ConnectionCost::CONNECTION_COST_UNMETERED);
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_COST_UNMETERED,
+            notifier_.GetConnectionCost());
+  FakeConnectionCostChange(ConnectionCost::CONNECTION_COST_METERED);
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_COST_METERED,
+            notifier_.GetConnectionCost());
+}
+
+TEST_F(NetworkChangeNotifierAndroidTest, ConnectionCostCallbackNotifier) {
+  FakeConnectionCostChange(ConnectionCost::CONNECTION_COST_UNMETERED);
+  EXPECT_EQ(1, connection_cost_observer_.notifications_count());
+
+  FakeConnectionCostChange(ConnectionCost::CONNECTION_COST_METERED);
+  EXPECT_EQ(2, connection_cost_observer_.notifications_count());
+}
+
+TEST_F(NetworkChangeNotifierDelegateAndroidTest,
+       ConnectionCostCallbackNotifier) {
+  EXPECT_EQ(0, delegate_observer_.cost_notifications_count());
+
+  FakeConnectionCostChange(ConnectionCost::CONNECTION_COST_UNMETERED);
+  EXPECT_EQ(1, delegate_observer_.cost_notifications_count());
+
+  FakeConnectionCostChange(ConnectionCost::CONNECTION_COST_METERED);
+  EXPECT_EQ(2, delegate_observer_.cost_notifications_count());
 }
 
 TEST_F(NetworkChangeNotifierAndroidTest, MaxBandwidth) {
@@ -494,6 +568,59 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest, TypeChangeIsSynchronous) {
   // Note that there's no call to |base::RunLoop::RunUntilIdle| here. The
   // update must happen synchronously.
   EXPECT_EQ(initial_value + 1, delegate_observer_.type_notifications_count());
+}
+
+TEST_F(NetworkChangeNotifierDelegateAndroidTest, DefaultNetworkActive) {
+  // No notifications should be received when there are no observers.
+  EXPECT_EQ(0, delegate_observer_.default_network_active_notifications_count());
+  FakeDefaultNetworkActive();
+  EXPECT_EQ(0, delegate_observer_.default_network_active_notifications_count());
+
+  if (is_default_network_active_api_supported()) {
+    // Simulate calls to NetworkChangeNotifier::AddDefaultNetworkObserver().
+    // Notifications should be received now.
+    delegate_.DefaultNetworkActiveObserverAdded();
+    FakeDefaultNetworkActive();
+    EXPECT_EQ(1,
+              delegate_observer_.default_network_active_notifications_count());
+    delegate_.DefaultNetworkActiveObserverAdded();
+    FakeDefaultNetworkActive();
+    EXPECT_EQ(2,
+              delegate_observer_.default_network_active_notifications_count());
+
+    // Simulate call to NetworkChangeNotifier::AddDefaultNetworkObserver().
+    // Notifications should be received until the last observer has been
+    // removed.
+    delegate_.DefaultNetworkActiveObserverRemoved();
+    FakeDefaultNetworkActive();
+    EXPECT_EQ(3,
+              delegate_observer_.default_network_active_notifications_count());
+    delegate_.DefaultNetworkActiveObserverRemoved();
+    FakeDefaultNetworkActive();
+    EXPECT_EQ(3,
+              delegate_observer_.default_network_active_notifications_count());
+
+    // Double check that things keep working as expected after re-adding an
+    // observer.
+    delegate_.DefaultNetworkActiveObserverAdded();
+    FakeDefaultNetworkActive();
+    EXPECT_EQ(4,
+              delegate_observer_.default_network_active_notifications_count());
+
+    // Cleanup: delegate destructor DCHECKS that all observers have been
+    // removed.
+    delegate_.DefaultNetworkActiveObserverRemoved();
+  } else {
+    // When the API is not supported no notification should be delivered.
+    delegate_.DefaultNetworkActiveObserverAdded();
+    FakeDefaultNetworkActive();
+    EXPECT_EQ(0,
+              delegate_observer_.default_network_active_notifications_count());
+
+    // Cleanup: delegate destructor DCHECKS that all observers have been
+    // removed.
+    delegate_.DefaultNetworkActiveObserverRemoved();
+  }
 }
 
 }  // namespace net

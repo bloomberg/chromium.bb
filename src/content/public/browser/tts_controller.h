@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
@@ -179,6 +180,10 @@ class CONTENT_EXPORT TtsController {
   // Get the delegate that processes TTS requests with engines in a content
   // embedder.
   virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
+
+  // Triggers the TtsPlatform to update its list of voices and relay that update
+  // through VoicesChanged.
+  virtual void RefreshVoices() = 0;
 
   // Visible for testing.
   virtual void SetTtsPlatform(TtsPlatform* tts_platform) = 0;

@@ -167,12 +167,12 @@ class TensorExecutor<Expression, DefaultDevice, Vectorizable,
                      /*Tiling=*/TiledEvaluation::On> {
  public:
   typedef typename traits<Expression>::Scalar Scalar;
-  typedef typename remove_const<Scalar>::type ScalarNoConst;
+  typedef std::remove_const_t<Scalar> ScalarNoConst;
 
   typedef TensorEvaluator<Expression, DefaultDevice> Evaluator;
   typedef typename traits<Expression>::Index StorageIndex;
 
-  static const int NumDims = traits<Expression>::NumDimensions;
+  static constexpr int NumDims = traits<Expression>::NumDimensions;
 
   EIGEN_DEVICE_FUNC
   static EIGEN_STRONG_INLINE void run(const Expression& expr,
@@ -284,7 +284,7 @@ struct EvalRange {
 
 template <typename Evaluator, typename StorageIndex>
 struct EvalRange<Evaluator, StorageIndex, /*Vectorizable*/ true> {
-  static const int PacketSize =
+  static constexpr int PacketSize =
       unpacket_traits<typename Evaluator::PacketReturnType>::size;
 
   static void run(Evaluator* evaluator_in, const StorageIndex firstIdx,
@@ -353,9 +353,9 @@ class TensorExecutor<Expression, ThreadPoolDevice, Vectorizable,
  public:
   typedef typename traits<Expression>::Index IndexType;
   typedef typename traits<Expression>::Scalar Scalar;
-  typedef typename remove_const<Scalar>::type ScalarNoConst;
+  typedef std::remove_const_t<Scalar> ScalarNoConst;
 
-  static const int NumDims = traits<Expression>::NumDimensions;
+  static constexpr int NumDims = traits<Expression>::NumDimensions;
 
   typedef TensorEvaluator<Expression, ThreadPoolDevice> Evaluator;
   typedef TensorBlockMapper<NumDims, Evaluator::Layout, IndexType> BlockMapper;
@@ -461,9 +461,9 @@ class TensorAsyncExecutor<Expression, ThreadPoolDevice, DoneCallback,
  public:
   typedef typename traits<Expression>::Index IndexType;
   typedef typename traits<Expression>::Scalar Scalar;
-  typedef typename remove_const<Scalar>::type ScalarNoConst;
+  typedef std::remove_const_t<Scalar> ScalarNoConst;
 
-  static const int NumDims = traits<Expression>::NumDimensions;
+  static constexpr int NumDims = traits<Expression>::NumDimensions;
 
   typedef TensorEvaluator<Expression, ThreadPoolDevice> Evaluator;
   typedef TensorBlockMapper<NumDims, Evaluator::Layout, IndexType> BlockMapper;
@@ -553,11 +553,59 @@ class TensorExecutor<Expression, GpuDevice, Vectorizable, Tiling> {
 };
 
 #if defined(EIGEN_GPUCC)
+// Returns 1 if lhs + rhs would overflow, -1 if it would underflow, otherwise 0.
+template <typename Index>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE int sum_will_overflow(Index lhs,
+                                                            Index rhs) {
+  const Index highest = NumTraits<Index>::highest();
+  const Index lowest = NumTraits<Index>::lowest();
+  if (lhs > 0 && rhs > 0) {
+    return lhs > highest - rhs ? 1 : 0;
+  } else if (lhs < 0 && rhs < 0) {
+    return lhs < lowest - rhs ? -1 : 0;
+  } else {
+    return 0;
+  }
+}
+
+// Returns lhs + rhs, saturating to the highest/lowest representable value on
+// overflow/underflow respectively.
+template <typename Index>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE Index saturate_add(Index lhs, Index rhs) {
+  const Index highest = NumTraits<Index>::highest();
+  const Index lowest = NumTraits<Index>::lowest();
+  int overflow = sum_will_overflow(lhs, rhs);
+  return overflow == 1 ? highest : overflow == -1 ? lowest : lhs + rhs;
+}
+
+// A functor that adds step_size to a given index, saturating to avoid
+// overflow/underflow. If overflow/underflow is not possible, regular addition
+// is used (for efficiency).
+template <typename Index>
+struct SafeStep {
+  // lastIdx is one past the end of the possible indexes.
+  // step_size is the value that will be added to the given index when the
+  // functor is called.
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE SafeStep(Index lastIdx, Index step_size)
+      : can_overflow_(sum_will_overflow(lastIdx, step_size)),
+        step_size_(step_size) {}
+
+  // Adds step_size to index, saturating on overflow (if overflow is possible).
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE Index operator()(Index index) const {
+    return can_overflow_ ? saturate_add(index, step_size_) : index + step_size_;
+  }
+
+ private:
+  const bool can_overflow_;
+  const Index step_size_;
+};
+
 template <typename Evaluator, typename StorageIndex, bool Vectorizable>
 struct EigenMetaKernelEval {
   static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
   void run(Evaluator& eval, StorageIndex firstIdx, StorageIndex lastIdx, StorageIndex step_size) {
-    for (StorageIndex i = firstIdx; i < lastIdx; i += step_size) {
+    SafeStep<StorageIndex> safe_step(lastIdx, step_size);
+    for (StorageIndex i = firstIdx; i < lastIdx; i = safe_step(i)) {
       eval.evalScalar(i);
     }
   }
@@ -571,12 +619,16 @@ struct EigenMetaKernelEval<Evaluator, StorageIndex, true> {
     const StorageIndex vectorized_size = (lastIdx / PacketSize) * PacketSize;
     const StorageIndex vectorized_step_size = step_size * PacketSize;
 
+    SafeStep<StorageIndex> safe_vectorized_step(vectorized_size,
+                                                vectorized_step_size);
     // Use the vector path
     for (StorageIndex i = firstIdx * PacketSize; i < vectorized_size;
-         i += vectorized_step_size) {
+         i = safe_vectorized_step(i)) {
       eval.evalPacket(i);
     }
-    for (StorageIndex i = vectorized_size + firstIdx; i < lastIdx; i += step_size) {
+    SafeStep<StorageIndex> safe_step(lastIdx, step_size);
+    for (StorageIndex i = saturate_add(vectorized_size, firstIdx); i < lastIdx;
+         i = safe_step(i)) {
       eval.evalScalar(i);
     }
   }
@@ -603,8 +655,11 @@ EIGEN_STRONG_INLINE void TensorExecutor<Expression, GpuDevice, Vectorizable, Til
   if (needs_assign) {
 
     const int block_size = device.maxGpuThreadsPerBlock();
-    const int max_blocks = device.getNumGpuMultiProcessors() *
-                           device.maxGpuThreadsPerMultiProcessor() / block_size;
+    const int max_blocks =
+        numext::mini<int64_t>(device.getNumGpuMultiProcessors() *
+                              device.maxGpuThreadsPerMultiProcessor(),
+                          NumTraits<StorageIndex>::highest()) /
+        block_size;
     const StorageIndex size = array_prod(evaluator.dimensions());
     // Create a least one block to ensure we won't crash when tensorflow calls with tensors of size 0.
     const int num_blocks = numext::maxi<int>(numext::mini<int>(max_blocks, divup<int>(size, block_size)), 1);
@@ -637,7 +692,7 @@ struct ExecExprFunctorKernel {
     compute(itemID);
   }
   template <bool is_vec = Evaluator::PacketAccess>
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE typename std::enable_if<!is_vec>::type
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE std::enable_if_t<!is_vec>
   compute(const cl::sycl::nd_item<1>& itemID) {
     Index gId = static_cast<Index>(itemID.get_global_linear_id());
     Index total_threads = itemID.get_global_range(0);
@@ -647,7 +702,7 @@ struct ExecExprFunctorKernel {
     }
   }
   template <bool is_vec = Evaluator::PacketAccess>
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE typename std::enable_if<is_vec>::type
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE std::enable_if_t<is_vec>
   compute(const cl::sycl::nd_item<1>& itemID) {
     const Index vectorizedRange =
         (range / Evaluator::PacketSize) * Evaluator::PacketSize;

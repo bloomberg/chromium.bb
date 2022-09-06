@@ -9,7 +9,7 @@
 
 #include "base/timer/timer.h"
 #include "net/log/net_log_with_source.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/quic_spdy_session.h"
 
 namespace net {
 
@@ -35,7 +35,6 @@ class NET_EXPORT_PRIVATE QuicHttp3Logger : public quic::Http3DebugVisitor {
   void OnSettingsFrameReceived(const quic::SettingsFrame& frame) override;
   void OnSettingsFrameResumed(const quic::SettingsFrame& frame) override;
   void OnGoAwayFrameReceived(const quic::GoAwayFrame& frame) override;
-  void OnMaxPushIdFrameReceived(const quic::MaxPushIdFrame& frame) override;
   void OnPriorityUpdateFrameReceived(
       const quic::PriorityUpdateFrame& frame) override;
 
@@ -53,7 +52,6 @@ class NET_EXPORT_PRIVATE QuicHttp3Logger : public quic::Http3DebugVisitor {
 
   void OnSettingsFrameSent(const quic::SettingsFrame& frame) override;
   void OnGoAwayFrameSent(quic::QuicStreamId stream_id) override;
-  void OnMaxPushIdFrameSent(const quic::MaxPushIdFrame& frame) override;
   void OnPriorityUpdateFrameSent(
       const quic::PriorityUpdateFrame& frame) override;
 

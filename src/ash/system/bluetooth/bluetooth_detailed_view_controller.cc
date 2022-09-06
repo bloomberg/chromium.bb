@@ -21,6 +21,7 @@
 namespace ash {
 namespace {
 using chromeos::bluetooth_config::IsBluetoothEnabledOrEnabling;
+using chromeos::bluetooth_config::mojom::AudioOutputCapability;
 using chromeos::bluetooth_config::mojom::DeviceConnectionState;
 }  // namespace
 
@@ -40,10 +41,9 @@ BluetoothDetailedViewController::~BluetoothDetailedViewController() = default;
 
 views::View* BluetoothDetailedViewController::CreateView() {
   DCHECK(!view_);
-  std::unique_ptr<tray::BluetoothDetailedView> bluetooth_detailed_view =
-      tray::BluetoothDetailedView::Factory::Create(
-          detailed_view_delegate_.get(),
-          /*delegate=*/this);
+  std::unique_ptr<BluetoothDetailedView> bluetooth_detailed_view =
+      BluetoothDetailedView::Factory::Create(detailed_view_delegate_.get(),
+                                             /*delegate=*/this);
   view_ = bluetooth_detailed_view.get();
   device_list_controller_ = BluetoothDeviceListController::Factory::Create(
       bluetooth_detailed_view.get());
@@ -107,6 +107,18 @@ void BluetoothDetailedViewController::OnDeviceListItemSelected(
   // When CloseBubble() is called |device| will be deleted so we need to make a
   // copy of the device ID that was selected.
   const std::string device_id = device->device_properties->id;
+
+  // Non-HID devices can be explicitly connected to, so we detect when this is
+  // the case and attempt to connect to the device instead of navigating to the
+  // Bluetooth Settings.
+  if (device->device_properties->audio_capability ==
+          AudioOutputCapability::kCapableOfAudioOutput &&
+      device->device_properties->connection_state ==
+          DeviceConnectionState::kNotConnected) {
+    remote_cros_bluetooth_config_->Connect(device_id,
+                                           /*callback=*/base::DoNothing());
+    return;
+  }
   tray_controller_->CloseBubble();  // Deletes |this|.
   Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings(device_id);
 }

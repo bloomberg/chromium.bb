@@ -23,11 +23,16 @@ typedef NS_ENUM(NSUInteger, InitStage) {
   // at the InitStageSafeMode stage if safe mode is needed, or will move to the
   // next stage otherwise.
   InitStageSafeMode,
+  // The app is initializing the browser objects for the background handlers.
+  // In particular this creates ChromeMain instances which initialises many
+  // low-level objects (such as PostTask, ChromeBrowserStateManager, named
+  // threads, ApplicationContext, ...). Using the corresponding features when
+  // the InitStage is below this stage is unsupported. Most likely, you want
+  // all new stages to be >= InitStageBrowserObjectsForBackgroundHandlers.
+  InitStageBrowserObjectsForBackgroundHandlers,
   // The app is fetching any enterprise policies. The initialization is blocked
   // on this because the policies might have an effect on later init stages.
   InitStageEnterprise,
-  // The app is initializing the browser objects for the background handlers.
-  InitStageBrowserObjectsForBackgroundHandlers,
   // The app is initializing the browser objects for the browser UI (e.g., the
   // browser state).
   InitStageBrowserObjectsForUI,
@@ -61,17 +66,17 @@ typedef NS_ENUM(NSUInteger, InitStage) {
 - (void)appState:(AppState*)appState
     firstSceneHasInitializedUI:(SceneState*)sceneState;
 
-// Called when |AppState.lastTappedWindow| changes.
+// Called when `AppState.lastTappedWindow` changes.
 - (void)appState:(AppState*)appState lastTappedWindowChanged:(UIWindow*)window;
 
-// Called when the app is about to transition to |nextInitStage|. The init stage
-// of the app at that moment is still |nextInitStage| - 1.
+// Called when the app is about to transition to `nextInitStage`. The init stage
+// of the app at that moment is still `nextInitStage` - 1.
 - (void)appState:(AppState*)appState
     willTransitionToInitStage:(InitStage)nextInitStage;
 
 // Called right after the app is transitioned out of to the
-// |previousInitStage|. he init stage of the app at that
-// moment is |previousInitStage| + 1.
+// `previousInitStage`. he init stage of the app at that
+// moment is `previousInitStage` + 1.
 - (void)appState:(AppState*)appState
     didTransitionFromInitStage:(InitStage)previousInitStage;
 

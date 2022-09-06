@@ -10,10 +10,12 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/bluetooth_config/bluetooth_power_controller_impl.h"
 #include "chromeos/services/bluetooth_config/device_name_manager_impl.h"
 #include "chromeos/services/bluetooth_config/fake_bluetooth_device_status_observer.h"
 #include "chromeos/services/bluetooth_config/fake_bluetooth_discovery_delegate.h"
+#include "chromeos/services/bluetooth_config/fake_discovery_session_status_observer.h"
 #include "chromeos/services/bluetooth_config/fake_fast_pair_delegate.h"
 #include "chromeos/services/bluetooth_config/fake_system_properties_observer.h"
 #include "chromeos/services/bluetooth_config/initializer_impl.h"
@@ -54,6 +56,8 @@ class CrosBluetoothConfigTest : public testing::Test {
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
 
+    PowerManagerClient::InitializeFake();
+
     mock_adapter_ =
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
     fake_fast_pair_delegate_ = std::make_unique<FakeFastPairDelegate>();
@@ -66,6 +70,13 @@ class CrosBluetoothConfigTest : public testing::Test {
     // CrosBluetoothConfig ctor should set the device name manager for the
     // delegate.
     EXPECT_TRUE(fake_fast_pair_delegate_->device_name_manager() != nullptr);
+  }
+
+  void TearDown() override {
+    // Destroy |cros_bluetooth_config_| before the fake power manager client in
+    // order to remove observers correctly.
+    cros_bluetooth_config_.reset();
+    PowerManagerClient::Shutdown();
   }
 
   mojo::Remote<mojom::CrosBluetoothConfig> BindToInterface() {
@@ -149,6 +160,14 @@ TEST_F(CrosBluetoothConfigTest, CallBluetoothDeviceStatusApiFunction) {
   mojo::Remote<mojom::CrosBluetoothConfig> remote = BindToInterface();
   FakeBluetoothDeviceStatusObserver fake_observer;
   remote->ObserveDeviceStatusChanges(fake_observer.GeneratePendingRemote());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrosBluetoothConfigTest, CallDiscoverySessionStatusApiFunction) {
+  mojo::Remote<mojom::CrosBluetoothConfig> remote = BindToInterface();
+  FakeDiscoverySessionStatusObserver fake_observer;
+  remote->ObserveDiscoverySessionStatusChanges(
+      fake_observer.GeneratePendingRemote());
   base::RunLoop().RunUntilIdle();
 }
 

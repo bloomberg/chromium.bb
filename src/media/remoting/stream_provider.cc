@@ -69,9 +69,9 @@ StreamProvider::MediaStream::MediaStream(
       media_task_runner_,
       BindRepeating(&MediaStream::OnReceivedRpc, media_weak_this_));
   rpc_messenger_->RegisterMessageReceiverCallback(
-      rpc_handle_, [receive_callback](
+      rpc_handle_, [cb = std::move(receive_callback)](
                        std::unique_ptr<openscreen::cast::RpcMessage> message) {
-        receive_callback.Run(std::move(message));
+        cb.Run(std::move(message));
       });
 }
 
@@ -390,8 +390,8 @@ DemuxerStream::Type StreamProvider::MediaStream::type() const {
   return type_;
 }
 
-DemuxerStream::Liveness StreamProvider::MediaStream::liveness() const {
-  return DemuxerStream::LIVENESS_LIVE;
+StreamLiveness StreamProvider::MediaStream::liveness() const {
+  return StreamLiveness::kLive;
 }
 
 bool StreamProvider::MediaStream::SupportsConfigChanges() {
@@ -441,8 +441,9 @@ StreamProvider::StreamProvider(
       base::BindRepeating(&StreamProvider::OnReceivedRpc, media_weak_this_));
   rpc_messenger_->RegisterMessageReceiverCallback(
       RpcMessenger::kAcquireDemuxerHandle,
-      [callback](std::unique_ptr<openscreen::cast::RpcMessage> message) {
-        callback.Run(std::move(message));
+      [cb = std::move(callback)](
+          std::unique_ptr<openscreen::cast::RpcMessage> message) {
+        cb.Run(std::move(message));
       });
 }
 
@@ -471,9 +472,8 @@ void StreamProvider::CancelPendingSeek(base::TimeDelta seek_time) {}
 
 void StreamProvider::Seek(base::TimeDelta time,
                           PipelineStatusCallback seek_cb) {
-  media_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(seek_cb), PipelineStatus::PIPELINE_OK));
+  media_task_runner_->PostTask(FROM_HERE,
+                               base::BindOnce(std::move(seek_cb), PIPELINE_OK));
 }
 
 void StreamProvider::Stop() {}
@@ -628,7 +628,7 @@ void StreamProvider::CompleteInitialize() {
     return;
 
   // |init_done_callback_| should be called on |media_task_runner_|.
-  std::move(init_done_callback_).Run(PipelineStatus::PIPELINE_OK);
+  std::move(init_done_callback_).Run(PIPELINE_OK);
 }
 
 std::vector<DemuxerStream*> StreamProvider::GetAllStreams() {

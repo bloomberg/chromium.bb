@@ -16,21 +16,17 @@
 
 #include "CPUID.hpp"
 #include "Debug.hpp"
-#include "EmulatedIntrinsics.hpp"
 #include "LLVMReactorDebugInfo.hpp"
+#include "PragmaInternals.hpp"
 #include "Print.hpp"
 #include "Reactor.hpp"
 #include "x86.hpp"
 
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IntrinsicsX86.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/Verifier.h"
 #include "llvm/Support/Alignment.h"
+#include "llvm/Support/Error.h"
 #include "llvm/Support/ManagedStatic.h"
-#include "llvm/Transforms/Coroutines.h"
-#include "llvm/Transforms/IPO.h"
-#include "llvm/Transforms/Scalar.h"
 
 #include <fstream>
 #include <iostream>
@@ -71,19 +67,6 @@ llvm::llvm_shutdown_obj llvmShutdownObj;
 // for destructing objects at exit. See crbug.com/1074222
 thread_local rr::JITBuilder *jit = nullptr;
 
-// Default configuration settings. Must be accessed under mutex lock.
-std::mutex defaultConfigLock;
-rr::Config &defaultConfig()
-{
-	// This uses a static in a function to avoid the cost of a global static
-	// initializer. See http://neugierig.org/software/chromium/notes/2011/08/static-initializers.html
-	static rr::Config config = rr::Config::Edit()
-	                               .add(rr::Optimization::Pass::ScalarReplAggregates)
-	                               .add(rr::Optimization::Pass::InstructionCombining)
-	                               .apply({});
-	return config;
-}
-
 llvm::Value *lowerPAVG(llvm::Value *x, llvm::Value *y)
 {
 	llvm::VectorType *ty = llvm::cast<llvm::VectorType>(x->getType());
@@ -113,82 +96,57 @@ llvm::Value *lowerPCMP(llvm::ICmpInst::Predicate pred, llvm::Value *x,
 	return jit->builder->CreateSExt(jit->builder->CreateICmp(pred, x, y), dstTy, "");
 }
 
-#if defined(__i386__) || defined(__x86_64__)
-llvm::Value *lowerPMOV(llvm::Value *op, llvm::Type *dstType, bool sext)
-{
-	llvm::VectorType *srcTy = llvm::cast<llvm::VectorType>(op->getType());
-	llvm::FixedVectorType *dstTy = llvm::cast<llvm::FixedVectorType>(dstType);
-
-	llvm::Value *undef = llvm::UndefValue::get(srcTy);
-	llvm::SmallVector<uint32_t, 16> mask(dstTy->getNumElements());
-	std::iota(mask.begin(), mask.end(), 0);
-	llvm::Value *v = jit->builder->CreateShuffleVector(op, undef, mask);
-
-	return sext ? jit->builder->CreateSExt(v, dstTy)
-	            : jit->builder->CreateZExt(v, dstTy);
-}
-
-llvm::Value *lowerPABS(llvm::Value *v)
-{
-	llvm::Value *zero = llvm::Constant::getNullValue(v->getType());
-	llvm::Value *cmp = jit->builder->CreateICmp(llvm::ICmpInst::ICMP_SGT, v, zero);
-	llvm::Value *neg = jit->builder->CreateNeg(v);
-	return jit->builder->CreateSelect(cmp, v, neg);
-}
-#endif  // defined(__i386__) || defined(__x86_64__)
-
-#if !defined(__i386__) && !defined(__x86_64__)
-llvm::Value *lowerPFMINMAX(llvm::Value *x, llvm::Value *y,
-                           llvm::FCmpInst::Predicate pred)
+[[maybe_unused]] llvm::Value *lowerPFMINMAX(llvm::Value *x, llvm::Value *y,
+                                            llvm::FCmpInst::Predicate pred)
 {
 	return jit->builder->CreateSelect(jit->builder->CreateFCmp(pred, x, y), x, y);
 }
 
-llvm::Value *lowerRound(llvm::Value *x)
+[[maybe_unused]] llvm::Value *lowerRound(llvm::Value *x)
 {
 	llvm::Function *nearbyint = llvm::Intrinsic::getDeclaration(
 	    jit->module.get(), llvm::Intrinsic::nearbyint, { x->getType() });
 	return jit->builder->CreateCall(nearbyint, { x });
 }
 
-llvm::Value *lowerRoundInt(llvm::Value *x, llvm::Type *ty)
+[[maybe_unused]] llvm::Value *lowerRoundInt(llvm::Value *x, llvm::Type *ty)
 {
 	return jit->builder->CreateFPToSI(lowerRound(x), ty);
 }
 
-llvm::Value *lowerFloor(llvm::Value *x)
+[[maybe_unused]] llvm::Value *lowerFloor(llvm::Value *x)
 {
 	llvm::Function *floor = llvm::Intrinsic::getDeclaration(
 	    jit->module.get(), llvm::Intrinsic::floor, { x->getType() });
 	return jit->builder->CreateCall(floor, { x });
 }
 
-llvm::Value *lowerTrunc(llvm::Value *x)
+[[maybe_unused]] llvm::Value *lowerTrunc(llvm::Value *x)
 {
 	llvm::Function *trunc = llvm::Intrinsic::getDeclaration(
 	    jit->module.get(), llvm::Intrinsic::trunc, { x->getType() });
 	return jit->builder->CreateCall(trunc, { x });
 }
 
-llvm::Value *lowerSQRT(llvm::Value *x)
+[[maybe_unused]] llvm::Value *lowerSQRT(llvm::Value *x)
 {
 	llvm::Function *sqrt = llvm::Intrinsic::getDeclaration(
 	    jit->module.get(), llvm::Intrinsic::sqrt, { x->getType() });
 	return jit->builder->CreateCall(sqrt, { x });
 }
 
-llvm::Value *lowerRCP(llvm::Value *x)
+[[maybe_unused]] llvm::Value *lowerRCP(llvm::Value *x)
 {
 	llvm::Type *ty = x->getType();
 	llvm::Constant *one;
 	if(llvm::FixedVectorType *vectorTy = llvm::dyn_cast<llvm::FixedVectorType>(ty))
 	{
 		one = llvm::ConstantVector::getSplat(
-#	if LLVM_VERSION_MAJOR >= 11
+#if LLVM_VERSION_MAJOR >= 11
 		    vectorTy->getElementCount(),
-#	else
+#else
 		    vectorTy->getNumElements(),
-#	endif
+#endif
 		    llvm::ConstantFP::get(vectorTy->getElementType(), 1));
 	}
 	else
@@ -198,51 +156,68 @@ llvm::Value *lowerRCP(llvm::Value *x)
 	return jit->builder->CreateFDiv(one, x);
 }
 
-llvm::Value *lowerRSQRT(llvm::Value *x)
+[[maybe_unused]] llvm::Value *lowerRSQRT(llvm::Value *x)
 {
 	return lowerRCP(lowerSQRT(x));
 }
 
-llvm::Value *lowerVectorShl(llvm::Value *x, uint64_t scalarY)
+[[maybe_unused]] llvm::Value *lowerVectorShl(llvm::Value *x, uint64_t scalarY)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Value *y = llvm::ConstantVector::getSplat(
-#	if LLVM_VERSION_MAJOR >= 11
+#if LLVM_VERSION_MAJOR >= 11
 	    ty->getElementCount(),
-#	else
+#else
 	    ty->getNumElements(),
-#	endif
+#endif
 	    llvm::ConstantInt::get(ty->getElementType(), scalarY));
 	return jit->builder->CreateShl(x, y);
 }
 
-llvm::Value *lowerVectorAShr(llvm::Value *x, uint64_t scalarY)
+[[maybe_unused]] llvm::Value *lowerVectorAShr(llvm::Value *x, uint64_t scalarY)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Value *y = llvm::ConstantVector::getSplat(
-#	if LLVM_VERSION_MAJOR >= 11
+#if LLVM_VERSION_MAJOR >= 11
 	    ty->getElementCount(),
-#	else
+#else
 	    ty->getNumElements(),
-#	endif
+#endif
 	    llvm::ConstantInt::get(ty->getElementType(), scalarY));
 	return jit->builder->CreateAShr(x, y);
 }
 
-llvm::Value *lowerVectorLShr(llvm::Value *x, uint64_t scalarY)
+[[maybe_unused]] llvm::Value *lowerVectorLShr(llvm::Value *x, uint64_t scalarY)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Value *y = llvm::ConstantVector::getSplat(
-#	if LLVM_VERSION_MAJOR >= 11
+#if LLVM_VERSION_MAJOR >= 11
 	    ty->getElementCount(),
-#	else
+#else
 	    ty->getNumElements(),
-#	endif
+#endif
 	    llvm::ConstantInt::get(ty->getElementType(), scalarY));
 	return jit->builder->CreateLShr(x, y);
 }
 
-llvm::Value *lowerMulAdd(llvm::Value *x, llvm::Value *y)
+llvm::Value *lowerShuffleVector(llvm::Value *v1, llvm::Value *v2, llvm::ArrayRef<int> select)
+{
+	int size = select.size();
+	const int maxSize = 16;
+	llvm::Constant *swizzle[maxSize];
+	ASSERT(size <= maxSize);
+
+	for(int i = 0; i < size; i++)
+	{
+		swizzle[i] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(*jit->context), select[i]);
+	}
+
+	llvm::Value *shuffle = llvm::ConstantVector::get(llvm::ArrayRef<llvm::Constant *>(swizzle, size));
+
+	return jit->builder->CreateShuffleVector(v1, v2, shuffle);
+}
+
+[[maybe_unused]] llvm::Value *lowerMulAdd(llvm::Value *x, llvm::Value *y)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::VectorType *extTy = llvm::VectorType::getExtendedElementVectorType(ty);
@@ -253,20 +228,20 @@ llvm::Value *lowerMulAdd(llvm::Value *x, llvm::Value *y)
 
 	llvm::Value *undef = llvm::UndefValue::get(extTy);
 
-	llvm::SmallVector<uint32_t, 16> evenIdx;
-	llvm::SmallVector<uint32_t, 16> oddIdx;
+	llvm::SmallVector<int, 16> evenIdx;
+	llvm::SmallVector<int, 16> oddIdx;
 	for(uint64_t i = 0, n = ty->getNumElements(); i < n; i += 2)
 	{
 		evenIdx.push_back(i);
 		oddIdx.push_back(i + 1);
 	}
 
-	llvm::Value *lhs = jit->builder->CreateShuffleVector(mult, undef, evenIdx);
-	llvm::Value *rhs = jit->builder->CreateShuffleVector(mult, undef, oddIdx);
+	llvm::Value *lhs = lowerShuffleVector(mult, undef, evenIdx);
+	llvm::Value *rhs = lowerShuffleVector(mult, undef, oddIdx);
 	return jit->builder->CreateAdd(lhs, rhs);
 }
 
-llvm::Value *lowerPack(llvm::Value *x, llvm::Value *y, bool isSigned)
+[[maybe_unused]] llvm::Value *lowerPack(llvm::Value *x, llvm::Value *y, bool isSigned)
 {
 	llvm::FixedVectorType *srcTy = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::VectorType *dstTy = llvm::VectorType::getTruncatedElementVectorType(srcTy);
@@ -296,13 +271,13 @@ llvm::Value *lowerPack(llvm::Value *x, llvm::Value *y, bool isSigned)
 	x = jit->builder->CreateTrunc(x, dstTy);
 	y = jit->builder->CreateTrunc(y, dstTy);
 
-	llvm::SmallVector<uint32_t, 16> index(srcTy->getNumElements() * 2);
+	llvm::SmallVector<int, 16> index(srcTy->getNumElements() * 2);
 	std::iota(index.begin(), index.end(), 0);
 
-	return jit->builder->CreateShuffleVector(x, y, index);
+	return lowerShuffleVector(x, y, index);
 }
 
-llvm::Value *lowerSignMask(llvm::Value *x, llvm::Type *retTy)
+[[maybe_unused]] llvm::Value *lowerSignMask(llvm::Value *x, llvm::Type *retTy)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Constant *zero = llvm::ConstantInt::get(ty, 0);
@@ -319,7 +294,7 @@ llvm::Value *lowerSignMask(llvm::Value *x, llvm::Type *retTy)
 	return ret;
 }
 
-llvm::Value *lowerFPSignMask(llvm::Value *x, llvm::Type *retTy)
+[[maybe_unused]] llvm::Value *lowerFPSignMask(llvm::Value *x, llvm::Type *retTy)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Constant *zero = llvm::ConstantFP::get(ty, 0);
@@ -335,7 +310,6 @@ llvm::Value *lowerFPSignMask(llvm::Value *x, llvm::Type *retTy)
 	}
 	return ret;
 }
-#endif  // !defined(__i386__) && !defined(__x86_64__)
 
 llvm::Value *lowerPUADDSAT(llvm::Value *x, llvm::Value *y)
 {
@@ -385,14 +359,23 @@ llvm::Value *lowerMulHigh(llvm::Value *x, llvm::Value *y, bool sext)
 
 namespace rr {
 
-std::string BackendName()
+std::string Caps::backendName()
 {
 	return std::string("LLVM ") + LLVM_VERSION_STRING;
 }
 
-const Capabilities Caps = {
-	true,  // CoroutinesSupported
-};
+bool Caps::coroutinesSupported()
+{
+	return true;
+}
+
+bool Caps::fmaIsFast()
+{
+	static bool AVX2 = CPUID::supportsAVX2();  // Also checks for FMA support
+
+	// If x86 FMA instructions are supported, assume LLVM will emit them instead of making calls to std::fma().
+	return AVX2;
+}
 
 // The abstract Type* types are implemented as LLVM types, except that
 // 64-bit vectors are emulated using 128-bit ones to avoid use of MMX in x86
@@ -522,7 +505,19 @@ static llvm::Function *createFunction(const char *name, llvm::Type *retTy, const
 	if(__has_feature(memory_sanitizer))
 	{
 		func->addFnAttr(llvm::Attribute::SanitizeMemory);
+
+		// Assume that when using recent versions of LLVM, MemorySanitizer enabled builds
+		// use -fsanitize-memory-param-retval, which makes the caller not update the shadow
+		// of function parameters. NoUndef skips generating checks for uninitialized values.
+#if LLVM_VERSION_MAJOR >= 13
+		for(unsigned int i = 0; i < params.size(); i++)
+		{
+			func->addParamAttr(i, llvm::Attribute::NoUndef);
+		}
+#endif
 	}
+
+	func->addFnAttr("warn-stack-size", "524288");  // Warn when a function uses more than 512 KiB of stack memory
 
 	return func;
 }
@@ -537,7 +532,7 @@ Nucleus::Nucleus()
 	ASSERT(Variable::unmaterializedVariables == nullptr);
 #endif
 
-	jit = new JITBuilder(Nucleus::getDefaultConfig());
+	jit = new JITBuilder();
 	Variable::unmaterializedVariables = new Variable::UnmaterializedVariables();
 }
 
@@ -550,26 +545,7 @@ Nucleus::~Nucleus()
 	jit = nullptr;
 }
 
-void Nucleus::setDefaultConfig(const Config &cfg)
-{
-	std::unique_lock<std::mutex> lock(::defaultConfigLock);
-	::defaultConfig() = cfg;
-}
-
-void Nucleus::adjustDefaultConfig(const Config::Edit &cfgEdit)
-{
-	std::unique_lock<std::mutex> lock(::defaultConfigLock);
-	auto &config = ::defaultConfig();
-	config = cfgEdit.apply(config);
-}
-
-Config Nucleus::getDefaultConfig()
-{
-	std::unique_lock<std::mutex> lock(::defaultConfigLock);
-	return ::defaultConfig();
-}
-
-std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit *cfgEdit /* = nullptr */)
+std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name)
 {
 	if(jit->builder->GetInsertBlock()->empty() || !jit->builder->GetInsertBlock()->back().isTerminator())
 	{
@@ -588,14 +564,8 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config:
 	std::shared_ptr<Routine> routine;
 
 	auto acquire = [&](rr::JITBuilder *jit) {
-		// ::jit is thread-local, so when this is executed on a separate thread (see JIT_IN_SEPARATE_THREAD)
-		// it needs to only use the jit variable passed in as an argument.
-
-		Config cfg = jit->config;
-		if(cfgEdit)
-		{
-			cfg = cfgEdit->apply(jit->config);
-		}
+	// ::jit is thread-local, so when this is executed on a separate thread (see JIT_IN_SEPARATE_THREAD)
+	// it needs to only use the jit variable passed in as an argument.
 
 #ifdef ENABLE_RR_DEBUG_INFO
 		if(jit->debugInfo != nullptr)
@@ -611,15 +581,7 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config:
 			jit->module->print(file, 0);
 		}
 
-#if defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-		{
-			llvm::legacy::PassManager pm;
-			pm.add(llvm::createVerifierPass());
-			pm.run(*jit->module);
-		}
-#endif  // defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-
-		jit->optimize(cfg);
+		jit->runPasses();
 
 		if(false)
 		{
@@ -628,7 +590,7 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config:
 			jit->module->print(file, 0);
 		}
 
-		routine = jit->acquireRoutine(name, &jit->function, 1, cfg);
+		routine = jit->acquireRoutine(name, &jit->function, 1);
 	};
 
 #ifdef JIT_IN_SEPARATE_THREAD
@@ -669,6 +631,18 @@ Value *Nucleus::allocateStackVariable(Type *type, int arraySize)
 	}
 
 	entryBlock.getInstList().push_front(declaration);
+
+	if(getPragmaState(InitializeLocalVariables))
+	{
+		llvm::Type *i8PtrTy = llvm::Type::getInt8Ty(*jit->context)->getPointerTo();
+		llvm::Type *i32Ty = llvm::Type::getInt32Ty(*jit->context);
+		llvm::Function *memset = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::memset, { i8PtrTy, i32Ty });
+
+		jit->builder->CreateCall(memset, { jit->builder->CreatePointerCast(declaration, i8PtrTy),
+		                                   V(Nucleus::createConstantByte((unsigned char)0)),
+		                                   V(Nucleus::createConstantInt((int)typeSize(type) * (arraySize ? arraySize : 1))),
+		                                   V(Nucleus::createConstantBool(false)) });
+	}
 
 	return V(declaration);
 }
@@ -917,7 +891,6 @@ Value *Nucleus::createLoad(Value *ptr, Type *type, bool isVolatile, unsigned int
 	case Type_LLVM:
 		{
 			auto elTy = T(type);
-			ASSERT(V(ptr)->getType()->getContainedType(0) == elTy);
 
 			if(!atomic)
 			{
@@ -1001,7 +974,6 @@ Value *Nucleus::createStore(Value *value, Value *ptr, Type *type, bool isVolatil
 	case Type_LLVM:
 		{
 			auto elTy = T(type);
-			ASSERT(V(ptr)->getType()->getContainedType(0) == elTy);
 
 			if(__has_feature(memory_sanitizer) && !jit->msanInstrumentation)
 			{
@@ -1277,7 +1249,7 @@ void Nucleus::createFence(std::memory_order memoryOrder)
 Value *Nucleus::createGEP(Value *ptr, Type *type, Value *index, bool unsignedIndex)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-	ASSERT(V(ptr)->getType()->getContainedType(0) == T(type));
+
 	if(sizeof(void *) == 8)
 	{
 		// LLVM manual: "When indexing into an array, pointer or vector,
@@ -1662,18 +1634,13 @@ Value *Nucleus::createShuffleVector(Value *v1, Value *v2, const int *select)
 	RR_DEBUG_INFO_UPDATE_LOC();
 
 	int size = llvm::cast<llvm::FixedVectorType>(V(v1)->getType())->getNumElements();
-	const int maxSize = 16;
-	llvm::Constant *swizzle[maxSize];
-	ASSERT(size <= maxSize);
-
+	llvm::SmallVector<int, 16> mask;
 	for(int i = 0; i < size; i++)
 	{
-		swizzle[i] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(*jit->context), select[i]);
+		mask.push_back(select[i]);
 	}
 
-	llvm::Value *shuffle = llvm::ConstantVector::get(llvm::ArrayRef<llvm::Constant *>(swizzle, size));
-
-	return V(jit->builder->CreateShuffleVector(V(v1), V(v2), shuffle));
+	return V(lowerShuffleVector(V(v1), V(v2), mask));
 }
 
 Value *Nucleus::createSelect(Value *c, Value *ifTrue, Value *ifFalse)
@@ -2556,84 +2523,48 @@ Int4::Int4(RValue<Byte4> cast)
     : XYZW(this)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(CPUID::supportsSSE4_1())
-	{
-		*this = x86::pmovzxbd(As<Byte16>(cast));
-	}
-	else
-#endif
-	{
-		int swizzle[16] = { 0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23 };
-		Value *a = Nucleus::createBitCast(cast.value(), Byte16::type());
-		Value *b = Nucleus::createShuffleVector(a, Nucleus::createNullValue(Byte16::type()), swizzle);
+	int swizzle[16] = { 0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23 };
+	Value *a = Nucleus::createBitCast(cast.value(), Byte16::type());
+	Value *b = Nucleus::createShuffleVector(a, Nucleus::createNullValue(Byte16::type()), swizzle);
 
-		int swizzle2[8] = { 0, 8, 1, 9, 2, 10, 3, 11 };
-		Value *c = Nucleus::createBitCast(b, Short8::type());
-		Value *d = Nucleus::createShuffleVector(c, Nucleus::createNullValue(Short8::type()), swizzle2);
+	int swizzle2[8] = { 0, 8, 1, 9, 2, 10, 3, 11 };
+	Value *c = Nucleus::createBitCast(b, Short8::type());
+	Value *d = Nucleus::createShuffleVector(c, Nucleus::createNullValue(Short8::type()), swizzle2);
 
-		*this = As<Int4>(d);
-	}
+	*this = As<Int4>(d);
 }
 
 Int4::Int4(RValue<SByte4> cast)
     : XYZW(this)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(CPUID::supportsSSE4_1())
-	{
-		*this = x86::pmovsxbd(As<SByte16>(cast));
-	}
-	else
-#endif
-	{
-		int swizzle[16] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 };
-		Value *a = Nucleus::createBitCast(cast.value(), Byte16::type());
-		Value *b = Nucleus::createShuffleVector(a, a, swizzle);
+	int swizzle[16] = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 };
+	Value *a = Nucleus::createBitCast(cast.value(), Byte16::type());
+	Value *b = Nucleus::createShuffleVector(a, a, swizzle);
 
-		int swizzle2[8] = { 0, 0, 1, 1, 2, 2, 3, 3 };
-		Value *c = Nucleus::createBitCast(b, Short8::type());
-		Value *d = Nucleus::createShuffleVector(c, c, swizzle2);
+	int swizzle2[8] = { 0, 0, 1, 1, 2, 2, 3, 3 };
+	Value *c = Nucleus::createBitCast(b, Short8::type());
+	Value *d = Nucleus::createShuffleVector(c, c, swizzle2);
 
-		*this = As<Int4>(d) >> 24;
-	}
+	*this = As<Int4>(d) >> 24;
 }
 
 Int4::Int4(RValue<Short4> cast)
     : XYZW(this)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(CPUID::supportsSSE4_1())
-	{
-		*this = x86::pmovsxwd(As<Short8>(cast));
-	}
-	else
-#endif
-	{
-		int swizzle[8] = { 0, 0, 1, 1, 2, 2, 3, 3 };
-		Value *c = Nucleus::createShuffleVector(cast.value(), cast.value(), swizzle);
-		*this = As<Int4>(c) >> 16;
-	}
+	int swizzle[8] = { 0, 0, 1, 1, 2, 2, 3, 3 };
+	Value *c = Nucleus::createShuffleVector(cast.value(), cast.value(), swizzle);
+	*this = As<Int4>(c) >> 16;
 }
 
 Int4::Int4(RValue<UShort4> cast)
     : XYZW(this)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(CPUID::supportsSSE4_1())
-	{
-		*this = x86::pmovzxwd(As<UShort8>(cast));
-	}
-	else
-#endif
-	{
-		int swizzle[8] = { 0, 8, 1, 9, 2, 10, 3, 11 };
-		Value *c = Nucleus::createShuffleVector(cast.value(), Short8(0, 0, 0, 0, 0, 0, 0, 0).loadValue(), swizzle);
-		*this = As<Int4>(c);
-	}
+	int swizzle[8] = { 0, 8, 1, 9, 2, 10, 3, 11 };
+	Value *c = Nucleus::createShuffleVector(cast.value(), Short8(0, 0, 0, 0, 0, 0, 0, 0).loadValue(), swizzle);
+	*this = As<Int4>(c);
 }
 
 Int4::Int4(RValue<Int> rhs)
@@ -2705,6 +2636,17 @@ RValue<Int4> CmpNLE(RValue<Int4> x, RValue<Int4> y)
 	return RValue<Int4>(Nucleus::createSExt(Nucleus::createICmpSGT(x.value(), y.value()), Int4::type()));
 }
 
+RValue<Int4> Abs(RValue<Int4> x)
+{
+#if LLVM_VERSION_MAJOR >= 12
+	auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::abs, { V(x.value())->getType() });
+	return RValue<Int4>(V(jit->builder->CreateCall(func, { V(x.value()), llvm::ConstantInt::getFalse(*jit->context) })));
+#else
+	auto negative = x >> 31;
+	return (x ^ negative) - negative;
+#endif
+}
+
 RValue<Int4> Max(RValue<Int4> x, RValue<Int4> y)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
@@ -2740,7 +2682,7 @@ RValue<Int4> Min(RValue<Int4> x, RValue<Int4> y)
 RValue<Int4> RoundInt(RValue<Float4> cast)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	return x86::cvtps2dq(cast);
 #else
 	return As<Int4>(V(lowerRoundInt(V(cast.value()), T(Int4::type()))));
@@ -2750,15 +2692,25 @@ RValue<Int4> RoundInt(RValue<Float4> cast)
 RValue<Int4> RoundIntClamped(RValue<Float4> cast)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+
+// TODO(b/165000222): Check if fptosi_sat produces optimal code for x86 and ARM.
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	// cvtps2dq produces 0x80000000, a negative value, for input larger than
 	// 2147483520.0, so clamp to 2147483520. Values less than -2147483520.0
 	// saturate to 0x80000000.
 	return x86::cvtps2dq(Min(cast, Float4(0x7FFFFF80)));
-#else
+#elif defined(__arm__) || defined(__aarch64__)
 	// ARM saturates to the largest positive or negative integer. Unit tests
 	// verify that lowerRoundInt() behaves as desired.
 	return As<Int4>(V(lowerRoundInt(V(cast.value()), T(Int4::type()))));
+#elif LLVM_VERSION_MAJOR >= 14
+	llvm::Value *rounded = lowerRound(V(cast.value()));
+	llvm::Function *fptosi_sat = llvm::Intrinsic::getDeclaration(
+	    jit->module.get(), llvm::Intrinsic::fptosi_sat, { T(Int4::type()), T(Float4::type()) });
+	return RValue<Int4>(V(jit->builder->CreateCall(fptosi_sat, { rounded })));
+#else
+	RValue<Float4> clamped = Max(Min(cast, Float4(0x7FFFFF80)), Float4(static_cast<int>(0x80000000)));
+	return As<Int4>(V(lowerRoundInt(V(clamped.value()), T(Int4::type()))));
 #endif
 }
 
@@ -2928,32 +2880,6 @@ Type *UInt4::type()
 Type *Half::type()
 {
 	return T(llvm::Type::getInt16Ty(*jit->context));
-}
-
-RValue<Float> Rcp_pp(RValue<Float> x, bool exactAtPow2)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(exactAtPow2)
-	{
-		// rcpss uses a piecewise-linear approximation which minimizes the relative error
-		// but is not exact at power-of-two values. Rectify by multiplying by the inverse.
-		return x86::rcpss(x) * Float(1.0f / _mm_cvtss_f32(_mm_rcp_ss(_mm_set_ps1(1.0f))));
-	}
-	return x86::rcpss(x);
-#else
-	return As<Float>(V(lowerRCP(V(x.value()))));
-#endif
-}
-
-RValue<Float> RcpSqrt_pp(RValue<Float> x)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	return x86::rsqrtss(x);
-#else
-	return As<Float>(V(lowerRSQRT(V(x.value()))));
-#endif
 }
 
 bool HasRcpApprox()
@@ -3156,6 +3082,24 @@ Float4::Float4(RValue<Float> rhs)
 	storeValue(replicate);
 }
 
+RValue<Float4> MulAdd(RValue<Float4> x, RValue<Float4> y, RValue<Float4> z)
+{
+	auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::fmuladd, { T(Float4::type()) });
+	return RValue<Float4>(V(jit->builder->CreateCall(func, { V(x.value()), V(y.value()), V(z.value()) })));
+}
+
+RValue<Float4> FMA(RValue<Float4> x, RValue<Float4> y, RValue<Float4> z)
+{
+	auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::fma, { T(Float4::type()) });
+	return RValue<Float4>(V(jit->builder->CreateCall(func, { V(x.value()), V(y.value()), V(z.value()) })));
+}
+
+RValue<Float4> Abs(RValue<Float4> x)
+{
+	auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::fabs, { V(x.value())->getType() });
+	return RValue<Float4>(V(jit->builder->CreateCall(func, V(x.value()))));
+}
+
 RValue<Float4> Max(RValue<Float4> x, RValue<Float4> y)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
@@ -3173,32 +3117,6 @@ RValue<Float4> Min(RValue<Float4> x, RValue<Float4> y)
 	return x86::minps(x, y);
 #else
 	return As<Float4>(V(lowerPFMINMAX(V(x.value()), V(y.value()), llvm::FCmpInst::FCMP_OLT)));
-#endif
-}
-
-RValue<Float4> Rcp_pp(RValue<Float4> x, bool exactAtPow2)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(exactAtPow2)
-	{
-		// rcpps uses a piecewise-linear approximation which minimizes the relative error
-		// but is not exact at power-of-two values. Rectify by multiplying by the inverse.
-		return x86::rcpps(x) * Float4(1.0f / _mm_cvtss_f32(_mm_rcp_ss(_mm_set_ps1(1.0f))));
-	}
-	return x86::rcpps(x);
-#else
-	return As<Float4>(V(lowerRCP(V(x.value()))));
-#endif
-}
-
-RValue<Float4> RcpSqrt_pp(RValue<Float4> x)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	return x86::rsqrtps(x);
-#else
-	return As<Float4>(V(lowerRSQRT(V(x.value()))));
 #endif
 }
 
@@ -3303,7 +3221,7 @@ RValue<Int4> CmpUNLE(RValue<Float4> x, RValue<Float4> y)
 RValue<Float4> Round(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::roundps(x, 0);
@@ -3320,7 +3238,7 @@ RValue<Float4> Round(RValue<Float4> x)
 RValue<Float4> Trunc(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::roundps(x, 3);
@@ -3339,7 +3257,7 @@ RValue<Float4> Frac(RValue<Float4> x)
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Float4 frc;
 
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		frc = x - x86::floorps(x);
@@ -3362,7 +3280,7 @@ RValue<Float4> Frac(RValue<Float4> x)
 RValue<Float4> Floor(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::floorps(x);
@@ -3379,7 +3297,7 @@ RValue<Float4> Floor(RValue<Float4> x)
 RValue<Float4> Ceil(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::ceilps(x);
@@ -3424,13 +3342,13 @@ static RValue<Float4> TransformFloat4PerElement(RValue<Float4> v, const char *na
 	return RValue<Float4>(V(out));
 }
 
-RValue<Float4> Asin(RValue<Float4> v, Precision p)
+RValue<Float4> Asin(RValue<Float4> v)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	return TransformFloat4PerElement(v, "asinf");
 }
 
-RValue<Float4> Acos(RValue<Float4> v, Precision p)
+RValue<Float4> Acos(RValue<Float4> v)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	return TransformFloat4PerElement(v, "acosf");
@@ -3445,13 +3363,13 @@ RValue<Float4> Atan(RValue<Float4> v)
 RValue<Float4> Sinh(RValue<Float4> v)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-	return emulated::Sinh(v);
+	return TransformFloat4PerElement(v, "sinhf");
 }
 
 RValue<Float4> Cosh(RValue<Float4> v)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-	return emulated::Cosh(v);
+	return TransformFloat4PerElement(v, "coshf");
 }
 
 RValue<Float4> Tanh(RValue<Float4> v)
@@ -3684,22 +3602,14 @@ RValue<Int> cvtss2si(RValue<Float> val)
 
 RValue<Int4> cvtps2dq(RValue<Float4> val)
 {
+	ASSERT(!__has_feature(memory_sanitizer));  // TODO(b/172238865): Not correctly instrumented by MemorySanitizer.
+
 	return RValue<Int4>(createInstruction(llvm::Intrinsic::x86_sse2_cvtps2dq, val.value()));
 }
 
 RValue<Float> rcpss(RValue<Float> val)
 {
-	Value *undef = V(llvm::UndefValue::get(T(Float4::type())));
-
-	// TODO(b/172238865): MemorySanitizer does not support the rcpss instruction,
-	// which makes it look at the entire 128-bit input operand for undefined bits.
-	// Use zero-initialized values instead.
-	if(__has_feature(memory_sanitizer))
-	{
-		undef = Float4(0).loadValue();
-	}
-
-	Value *vector = Nucleus::createInsertElement(undef, val.value(), 0);
+	Value *vector = Nucleus::createInsertElement(V(llvm::UndefValue::get(T(Float4::type()))), val.value(), 0);
 
 	return RValue<Float>(Nucleus::createExtractElement(createInstruction(llvm::Intrinsic::x86_sse_rcp_ss, vector), Float::type(), 0));
 }
@@ -3711,17 +3621,7 @@ RValue<Float> sqrtss(RValue<Float> val)
 
 RValue<Float> rsqrtss(RValue<Float> val)
 {
-	Value *undef = V(llvm::UndefValue::get(T(Float4::type())));
-
-	// TODO(b/172238865): MemorySanitizer does not support the rsqrtss instruction,
-	// which makes it look at the entire 128-bit input operand for undefined bits.
-	// Use zero-initialized values instead.
-	if(__has_feature(memory_sanitizer))
-	{
-		undef = Float4(0).loadValue();
-	}
-
-	Value *vector = Nucleus::createInsertElement(undef, val.value(), 0);
+	Value *vector = Nucleus::createInsertElement(V(llvm::UndefValue::get(T(Float4::type()))), val.value(), 0);
 
 	return RValue<Float>(Nucleus::createExtractElement(createInstruction(llvm::Intrinsic::x86_sse_rsqrt_ss, vector), Float::type(), 0));
 }
@@ -3756,15 +3656,6 @@ RValue<Float> roundss(RValue<Float> val, unsigned char imm)
 	llvm::Function *roundss = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse41_round_ss);
 
 	Value *undef = V(llvm::UndefValue::get(T(Float4::type())));
-
-	// TODO(b/172238865): MemorySanitizer does not support the roundss instruction,
-	// which makes it look at the entire 128-bit input operands for undefined bits.
-	// Use zero-initialized values instead.
-	if(__has_feature(memory_sanitizer))
-	{
-		undef = Float4(0).loadValue();
-	}
-
 	Value *vector = Nucleus::createInsertElement(undef, val.value(), 0);
 
 	return RValue<Float>(Nucleus::createExtractElement(V(jit->builder->CreateCall(roundss, { V(undef), V(vector), V(Nucleus::createConstantInt(imm)) })), Float::type(), 0));
@@ -3782,6 +3673,8 @@ RValue<Float> ceilss(RValue<Float> val)
 
 RValue<Float4> roundps(RValue<Float4> val, unsigned char imm)
 {
+	ASSERT(!__has_feature(memory_sanitizer));  // TODO(b/172238865): Not correctly instrumented by MemorySanitizer.
+
 	return RValue<Float4>(createInstruction(llvm::Intrinsic::x86_sse41_round_ps, val.value(), Nucleus::createConstantInt(imm)));
 }
 
@@ -3793,11 +3686,6 @@ RValue<Float4> floorps(RValue<Float4> val)
 RValue<Float4> ceilps(RValue<Float4> val)
 {
 	return roundps(val, 2);
-}
-
-RValue<Int4> pabsd(RValue<Int4> x)
-{
-	return RValue<Int4>(V(lowerPABS(V(x.value()))));
 }
 
 RValue<Short4> paddsw(RValue<Short4> x, RValue<Short4> y)
@@ -4050,26 +3938,6 @@ RValue<Int> pmovmskb(RValue<Byte8> x)
 	return RValue<Int>(createInstruction(llvm::Intrinsic::x86_sse2_pmovmskb_128, v)) & 0xFF;
 }
 
-RValue<Int4> pmovzxbd(RValue<Byte16> x)
-{
-	return RValue<Int4>(V(lowerPMOV(V(x.value()), T(Int4::type()), false)));
-}
-
-RValue<Int4> pmovsxbd(RValue<SByte16> x)
-{
-	return RValue<Int4>(V(lowerPMOV(V(x.value()), T(Int4::type()), true)));
-}
-
-RValue<Int4> pmovzxwd(RValue<UShort8> x)
-{
-	return RValue<Int4>(V(lowerPMOV(V(x.value()), T(Int4::type()), false)));
-}
-
-RValue<Int4> pmovsxwd(RValue<Short8> x)
-{
-	return RValue<Int4>(V(lowerPMOV(V(x.value()), T(Int4::type()), true)));
-}
-
 }  // namespace x86
 #endif  // defined(__i386__) || defined(__x86_64__)
 
@@ -4318,6 +4186,7 @@ void Nucleus::createCoroutine(Type *YieldType, const std::vector<Type *> &Params
 	auto promisePtrTy = promiseTy->getPointerTo();
 
 	jit->function = rr::createFunction("coroutine_begin", handleTy, T(Params));
+	jit->function->addFnAttr("coroutine.presplit", "0");
 	jit->coroutine.await = rr::createFunction("coroutine_await", boolTy, { handleTy, promisePtrTy });
 	jit->coroutine.destroy = rr::createFunction("coroutine_destroy", voidTy, { handleTy });
 	jit->coroutine.yieldType = promiseTy;
@@ -4378,10 +4247,9 @@ void Nucleus::yield(Value *val)
 	jit->builder->SetInsertPoint(resumeBlock);
 }
 
-std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit *cfgEdit /* = nullptr */)
+std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name)
 {
-	bool isCoroutine = jit->coroutine.id != nullptr;
-	if(isCoroutine)
+	if(jit->coroutine.id)
 	{
 		jit->builder->CreateBr(jit->coroutine.endBlock);
 	}
@@ -4413,34 +4281,7 @@ std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Confi
 		jit->module->print(file, 0);
 	}
 
-	if(isCoroutine)
-	{
-		// Run manadory coroutine transforms.
-		llvm::legacy::PassManager pm;
-
-		pm.add(llvm::createCoroEarlyLegacyPass());
-		pm.add(llvm::createCoroSplitLegacyPass());
-		pm.add(llvm::createCoroElideLegacyPass());
-		pm.add(llvm::createBarrierNoopPass());
-		pm.add(llvm::createCoroCleanupLegacyPass());
-
-		pm.run(*jit->module);
-	}
-
-#if defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-	{
-		llvm::legacy::PassManager pm;
-		pm.add(llvm::createVerifierPass());
-		pm.run(*jit->module);
-	}
-#endif  // defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-
-	Config cfg = jit->config;
-	if(cfgEdit)
-	{
-		cfg = cfgEdit->apply(jit->config);
-	}
-	jit->optimize(cfg);
+	jit->runPasses();
 
 	if(false)
 	{
@@ -4454,7 +4295,7 @@ std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Confi
 	funcs[Nucleus::CoroutineEntryAwait] = jit->coroutine.await;
 	funcs[Nucleus::CoroutineEntryDestroy] = jit->coroutine.destroy;
 
-	auto routine = jit->acquireRoutine(name, funcs, Nucleus::CoroutineEntryCount, cfg);
+	auto routine = jit->acquireRoutine(name, funcs, Nucleus::CoroutineEntryCount);
 
 	delete jit;
 	jit = nullptr;

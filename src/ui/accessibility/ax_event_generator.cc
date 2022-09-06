@@ -270,7 +270,16 @@ void AXEventGenerator::AddEvent(AXNode* node, AXEventGenerator::Event event) {
   if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
     return;
 
-  DCHECK(tree_->event_data());
+  // Extra Mac node creation and deletion in `AXTableInfo` directly call AXTree
+  // observer methods, which skips all unserialization logic found in
+  // `AXTree::Unserialize`.
+  //
+  // It only makes sense to generate events when we are called here within
+  // `AXTree::Unserialize`. The below condition also guards against any future
+  // callers of this type, whether Mac or not.
+  if (!tree_->event_data())
+    return;
+
   std::set<EventParams>& node_events = tree_events_[node->id()];
   node_events.emplace(event, tree_->event_data()->event_from,
                       tree_->event_data()->event_from_action,
@@ -305,6 +314,12 @@ void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
   // and line layout. We don't expose those to platform APIs, though, so
   // suppress CHILDREN_CHANGED events on static text nodes.
   if (new_node_data.child_ids != old_node_data.child_ids && !node->IsText()) {
+    if (node->IsIgnored()) {
+      AXNode* unignored_parent = node->GetUnignoredParent();
+      if (unignored_parent)
+        AddEvent(unignored_parent, Event::CHILDREN_CHANGED);
+      return;
+    }
     AddEvent(node, Event::CHILDREN_CHANGED);
   }
 }
@@ -474,13 +489,7 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
         FireLiveRegionEvents(node);
       }
 
-      // If it's a change to static text, and it's in an editable text field,
-      // fire an event on the editable root.
-      if (node->IsText()) {
-        AXNode* text_field = node->GetTextFieldAncestor();
-        if (text_field)
-          AddEvent(text_field, Event::EDITABLE_TEXT_CHANGED);
-      }
+      FireValueInTextFieldChangedEventIfNecessary(tree, node);
       break;
     case ax::mojom::StringAttribute::kPlaceholder:
       AddEvent(node, Event::PLACEHOLDER_CHANGED);
@@ -772,10 +781,9 @@ void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
 }
 
 void AXEventGenerator::OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {
-  live_region_tracker_->OnNodeWillBeDeleted(*node);
-
   DCHECK_EQ(tree_, tree);
-  tree_events_.erase(node->id());
+  live_region_tracker_->OnNodeWillBeDeleted(*node);
+  FireValueInTextFieldChangedEventIfNecessary(tree, node);
 }
 
 void AXEventGenerator::OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) {
@@ -791,9 +799,19 @@ void AXEventGenerator::OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) {
   DCHECK_EQ(tree_, tree);
 }
 
+void AXEventGenerator::OnNodeDeleted(AXTree* tree, AXNodeID node_id) {
+  DCHECK_EQ(tree_, tree);
+  tree_events_.erase(node_id);
+}
+
 void AXEventGenerator::OnNodeReparented(AXTree* tree, AXNode* node) {
   DCHECK_EQ(tree_, tree);
   AddEvent(node, Event::PARENT_CHANGED);
+}
+
+void AXEventGenerator::OnNodeCreated(AXTree* tree, AXNode* node) {
+  DCHECK_EQ(tree_, tree);
+  FireValueInTextFieldChangedEventIfNecessary(tree, node);
 }
 
 void AXEventGenerator::OnAtomicUpdateFinished(
@@ -801,16 +819,6 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     bool root_changed,
     const std::vector<Change>& changes) {
   DCHECK_EQ(tree_, tree);
-
-  // Extra Mac nodes directly call AXTreeObserver::OnAtomicUpdateFinished, which
-  // skips all unserialization logic, including those used in AXEventGenerator.
-  //
-  // It only makes sense to generate events when we are called here within
-  // AXTree::Unserialize. The below condition also guards against any future
-  // callers of this type, whether Mac or not.
-  if (!tree_->event_data())
-    return;
-
   DCHECK(tree->root());
 
   if (root_changed && ShouldFireLoadEvents(tree->root())) {
@@ -834,7 +842,6 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     if (change.type == SUBTREE_CREATED) {
       AddEvent(change.node, Event::SUBTREE_CREATED);
     } else if (change.type != NODE_CREATED) {
-      FireValueInTextFieldChangedEvent(tree, change.node);
       FireRelationSourceEvents(tree, change.node);
       continue;
     }
@@ -912,13 +919,19 @@ void AXEventGenerator::FireActiveDescendantEvents() {
   active_descendant_changed_.clear();
 }
 
-void AXEventGenerator::FireValueInTextFieldChangedEvent(AXTree* tree,
-                                                        AXNode* target_node) {
-  if (!target_node->IsText())
+void AXEventGenerator::FireValueInTextFieldChangedEventIfNecessary(
+    AXTree* tree,
+    AXNode* target_node) {
+  // Text is only found on leaf nodes, so the text in a text field would change
+  // if any of the leaf nodes in it have changed their names.
+  if (!target_node->IsLeaf())
     return;
+
   AXNode* text_field_ancestor = target_node->GetTextFieldAncestor();
-  if (!text_field_ancestor)
+  if (!text_field_ancestor || text_field_ancestor == target_node)
     return;
+
+  AddEvent(text_field_ancestor, Event::EDITABLE_TEXT_CHANGED);
   AddEvent(text_field_ancestor, Event::VALUE_IN_TEXT_FIELD_CHANGED);
 }
 

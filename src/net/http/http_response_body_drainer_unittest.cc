@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <cstring>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -31,6 +32,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
+#include "net/socket/socket_test_util.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,10 +48,7 @@ static_assert((HttpResponseBodyDrainer::kDrainBodyBufferSize %
 
 class CloseResultWaiter {
  public:
-  CloseResultWaiter()
-      : result_(false),
-        have_result_(false),
-        waiting_for_result_(false) {}
+  CloseResultWaiter() = default;
 
   CloseResultWaiter(const CloseResultWaiter&) = delete;
   CloseResultWaiter& operator=(const CloseResultWaiter&) = delete;
@@ -72,23 +71,15 @@ class CloseResultWaiter {
   }
 
  private:
-  int result_;
-  bool have_result_;
-  bool waiting_for_result_;
+  int result_ = false;
+  bool have_result_ = false;
+  bool waiting_for_result_ = false;
 };
 
 class MockHttpStream : public HttpStream {
  public:
-  MockHttpStream(CloseResultWaiter* result_waiter)
-      : result_waiter_(result_waiter),
-        buf_len_(0),
-        closed_(false),
-        stall_reads_forever_(false),
-        num_chunks_(0),
-        is_sync_(false),
-        is_last_chunk_zero_size_(false),
-        is_complete_(false),
-        can_reuse_connection_(true) {}
+  explicit MockHttpStream(CloseResultWaiter* result_waiter)
+      : result_waiter_(result_waiter) {}
 
   MockHttpStream(const MockHttpStream&) = delete;
   MockHttpStream& operator=(const MockHttpStream&) = delete;
@@ -96,8 +87,8 @@ class MockHttpStream : public HttpStream {
   ~MockHttpStream() override = default;
 
   // HttpStream implementation.
-  int InitializeStream(const HttpRequestInfo* request_info,
-                       bool can_send_early,
+  void RegisterRequest(const HttpRequestInfo* request_info) override {}
+  int InitializeStream(bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
                        CompletionOnceCallback callback) override {
@@ -123,7 +114,9 @@ class MockHttpStream : public HttpStream {
   }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
+  int GetRemoteEndpoint(IPEndPoint* endpoint) override {
+    return ERR_UNEXPECTED;
+  }
 
   // Mocked API
   int ReadResponseBody(IOBuffer* buf,
@@ -149,9 +142,9 @@ class MockHttpStream : public HttpStream {
 
   void SetPriority(RequestPriority priority) override {}
 
-  const std::vector<std::string>& GetDnsAliases() const override {
-    static const base::NoDestructor<std::vector<std::string>> nullvector_result;
-    return *nullvector_result;
+  const std::set<std::string>& GetDnsAliases() const override {
+    static const base::NoDestructor<std::set<std::string>> nullset_result;
+    return *nullset_result;
   }
 
   base::StringPiece GetAcceptChViaAlps() const override { return {}; }
@@ -181,14 +174,14 @@ class MockHttpStream : public HttpStream {
   const raw_ptr<CloseResultWaiter> result_waiter_;
   scoped_refptr<IOBuffer> user_buf_;
   CompletionOnceCallback callback_;
-  int buf_len_;
-  bool closed_;
-  bool stall_reads_forever_;
-  int num_chunks_;
-  bool is_sync_;
-  bool is_last_chunk_zero_size_;
-  bool is_complete_;
-  bool can_reuse_connection_;
+  int buf_len_ = 0;
+  bool closed_ = false;
+  bool stall_reads_forever_ = false;
+  int num_chunks_ = 0;
+  bool is_sync_ = false;
+  bool is_last_chunk_zero_size_ = false;
+  bool is_complete_ = false;
+  bool can_reuse_connection_ = true;
 
   base::WeakPtrFactory<MockHttpStream> weak_factory_{this};
 };
@@ -255,6 +248,7 @@ class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
 
   HttpNetworkSession* CreateNetworkSession() {
     HttpNetworkSessionContext context;
+    context.client_socket_factory = &socket_factory_;
     context.proxy_resolution_service = proxy_resolution_service_.get();
     context.ssl_config_service = ssl_config_service_.get();
     context.http_server_properties = http_server_properties_.get();
@@ -272,6 +266,7 @@ class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
   TransportSecurityState transport_security_state_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   QuicContext quic_context_;
+  MockClientSocketFactory socket_factory_;
   const std::unique_ptr<HttpNetworkSession> session_;
   CloseResultWaiter result_waiter_;
   const raw_ptr<MockHttpStream> mock_stream_;       // Owned by |drainer_|.

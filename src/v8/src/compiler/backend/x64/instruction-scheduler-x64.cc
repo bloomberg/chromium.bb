@@ -159,8 +159,6 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kX64F32x4ReplaceLane:
     case kX64F32x4SConvertI32x4:
     case kX64F32x4UConvertI32x4:
-    case kX64F32x4RecipApprox:
-    case kX64F32x4RecipSqrtApprox:
     case kX64F32x4Abs:
     case kX64F32x4Neg:
     case kX64F32x4Sqrt:
@@ -239,6 +237,7 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kX64I32x4ExtAddPairwiseI16x8U:
     case kX64I32x4TruncSatF64x2SZero:
     case kX64I32x4TruncSatF64x2UZero:
+    case kX64I32X4ShiftZeroExtendI8x16:
     case kX64I16x8Splat:
     case kX64I16x8ExtractLaneS:
     case kX64I16x8SConvertI8x16Low:
@@ -396,8 +395,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kX64MovqDecompressTaggedPointer:
     case kX64MovqDecompressAnyTagged:
     case kX64MovqCompressTagged:
-    case kX64MovqDecodeCagedPointer:
-    case kX64MovqEncodeCagedPointer:
+    case kX64MovqDecodeSandboxedPointer:
+    case kX64MovqEncodeSandboxedPointer:
     case kX64Movq:
     case kX64Movsd:
     case kX64Movss:

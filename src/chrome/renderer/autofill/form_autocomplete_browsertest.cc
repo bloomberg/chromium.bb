@@ -96,11 +96,17 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
     select_control_changed_ = std::make_unique<FormFieldData>(field);
   }
 
-  void AskForValuesToFill(int32_t id,
+  void JavaScriptChangedAutofilledValue(
+      const FormData& form,
+      const FormFieldData& field,
+      const std::u16string& old_value) override {}
+
+  void AskForValuesToFill(int32_t query_id,
                           const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,
-                          bool autoselect_first_field) override {}
+                          bool autoselect_first_field,
+                          TouchToFillEligible touch_to_fill_eliible) override {}
 
   void HidePopup() override {}
 
@@ -466,7 +472,7 @@ TEST_F(FormAutocompleteTest,
 // compare field data within the forms.
 // TODO(kolos) Re-enable when the implementation of IsFormVisible is on-par
 // for these platforms.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_NoLongerVisibleBothNoActions DISABLED_NoLongerVisibleBothNoActions
 #else
 #define MAYBE_NoLongerVisibleBothNoActions NoLongerVisibleBothNoActions
@@ -872,14 +878,13 @@ TEST_F(FormAutocompleteTest, AcceptDataListSuggestion) {
   for (const auto& c : cases) {
     WebElement element = document.GetElementById(WebString::FromUTF8(c.id));
     ASSERT_FALSE(element.IsNull());
-    WebInputElement* input_element = blink::ToWebInputElement(&element);
-    ASSERT_TRUE(input_element);
-    FieldRendererId field_id(input_element->UniqueRendererFormControlId());
+    WebInputElement input_element = element.To<WebInputElement>();
+    FieldRendererId field_id(input_element.UniqueRendererFormControlId());
     // Select this element in |autofill_agent_|.
-    autofill_agent_->FormControlElementClicked(element.To<WebInputElement>());
+    autofill_agent_->FormControlElementClicked(input_element);
 
     autofill_agent_->AcceptDataListSuggestion(field_id, kSuggestion);
-    EXPECT_EQ(c.expected, input_element->Value().Utf8()) << "Case id: " << c.id;
+    EXPECT_EQ(c.expected, input_element.Value().Utf8()) << "Case id: " << c.id;
   }
 }
 

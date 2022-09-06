@@ -55,17 +55,20 @@ class MockVideoFramePool : public DmabufVideoFramePool {
   ~MockVideoFramePool() override = default;
 
   // DmabufVideoFramePool implementation.
-  MOCK_METHOD6(Initialize,
+  MOCK_METHOD7(Initialize,
                CroStatus::Or<GpuBufferLayout>(const Fourcc&,
                                               const gfx::Size&,
                                               const gfx::Rect&,
                                               const gfx::Size&,
                                               size_t,
+                                              bool,
                                               bool));
   MOCK_METHOD0(GetFrame, scoped_refptr<VideoFrame>());
   MOCK_METHOD0(IsExhausted, bool());
   MOCK_METHOD1(NotifyWhenFrameAvailable, void(base::OnceClosure));
   MOCK_METHOD0(ReleaseAllFrames, void());
+
+  bool IsFakeVideoFramePool() override { return true; }
 };
 
 constexpr gfx::Size kCodedSize(48, 36);
@@ -144,7 +147,7 @@ struct DecoderPipelineTestParams {
   using RepeatingCreateDecoderFunctionCB = base::RepeatingCallback<
       VideoDecoderPipeline::CreateDecoderFunctionCB::RunType>;
   RepeatingCreateDecoderFunctionCB create_decoder_function_cb;
-  StatusCode status_code;
+  DecoderStatus::Codes status_code;
 };
 
 class VideoDecoderPipelineTest
@@ -176,10 +179,10 @@ class VideoDecoderPipelineTest
     VideoDecoderPipeline::DestroyAsync(std::move(decoder_));
     task_environment_.RunUntilIdle();
   }
-  MOCK_METHOD1(OnInit, void(Status));
+  MOCK_METHOD1(OnInit, void(DecoderStatus));
   MOCK_METHOD1(OnOutput, void(scoped_refptr<VideoFrame>));
   MOCK_METHOD0(OnResetDone, void());
-  MOCK_METHOD1(OnDecodeDone, void(Status));
+  MOCK_METHOD1(OnDecodeDone, void(DecoderStatus));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
   void SetCreateDecoderFunctionCB(VideoDecoderPipeline::CreateDecoderFunctionCB
@@ -197,7 +200,7 @@ class VideoDecoderPipelineTest
   // verifying |status_code| is received back in OnInit().
   void InitializeDecoder(
       VideoDecoderPipeline::CreateDecoderFunctionCB create_decoder_function_cb,
-      StatusCode status_code,
+      DecoderStatus::Codes status_code,
       CdmContext* cdm_context = nullptr) {
     SetCreateDecoderFunctionCB(std::move(create_decoder_function_cb));
 
@@ -234,16 +237,16 @@ class VideoDecoderPipelineTest
     InitializeDecoder(
         base::BindOnce(
             &VideoDecoderPipelineTest::CreateGoodMockTranscryptDecoder),
-        StatusCode::kOk, &cdm_context_);
+        DecoderStatus::Codes::kOk, &cdm_context_);
     testing::Mock::VerifyAndClearExpectations(&chromeos_cdm_context_);
     testing::Mock::VerifyAndClearExpectations(&cdm_context_);
     // GetDecryptor() will be called again, so set that expectation.
     EXPECT_CALL(cdm_context_, GetDecryptor())
         .WillRepeatedly(Return(&decryptor_));
     encrypted_buffer_ =
-        DecoderBuffer::CopyFrom(kEncryptedData, base::size(kEncryptedData));
+        DecoderBuffer::CopyFrom(kEncryptedData, std::size(kEncryptedData));
     transcrypted_buffer_ = DecoderBuffer::CopyFrom(
-        kTranscryptedData, base::size(kTranscryptedData));
+        kTranscryptedData, std::size(kTranscryptedData));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -262,7 +265,7 @@ class VideoDecoderPipelineTest
     std::unique_ptr<MockDecoder> decoder(new MockDecoder());
     EXPECT_CALL(*decoder, Initialize(_, _, _, _, _, _))
         .WillOnce(::testing::WithArgs<3>([](VideoDecoder::InitCB init_cb) {
-          std::move(init_cb).Run(OkStatus());
+          std::move(init_cb).Run(DecoderStatus::Codes::kOk);
         }));
     EXPECT_CALL(*decoder, NeedsTranscryption()).WillRepeatedly(Return(false));
     return std::move(decoder);
@@ -277,7 +280,7 @@ class VideoDecoderPipelineTest
     std::unique_ptr<MockDecoder> decoder(new MockDecoder());
     EXPECT_CALL(*decoder, Initialize(_, _, _, _, _, _))
         .WillOnce(::testing::WithArgs<3>([](VideoDecoder::InitCB init_cb) {
-          std::move(init_cb).Run(OkStatus());
+          std::move(init_cb).Run(DecoderStatus::Codes::kOk);
         }));
     EXPECT_CALL(*decoder, NeedsTranscryption()).WillRepeatedly(Return(true));
     return std::move(decoder);
@@ -291,7 +294,7 @@ class VideoDecoderPipelineTest
     std::unique_ptr<MockDecoder> decoder(new MockDecoder());
     EXPECT_CALL(*decoder, Initialize(_, _, _, _, _, _))
         .WillOnce(::testing::WithArgs<3>([](VideoDecoder::InitCB init_cb) {
-          std::move(init_cb).Run(StatusCode::kDecoderInitializationFailed);
+          std::move(init_cb).Run(DecoderStatus::Codes::kFailed);
         }));
     EXPECT_CALL(*decoder, NeedsTranscryption()).WillRepeatedly(Return(false));
     return std::move(decoder);
@@ -355,7 +358,7 @@ TEST_P(VideoDecoderPipelineTest, Initialize) {
   InitializeDecoder(base::BindOnce(GetParam().create_decoder_function_cb),
                     GetParam().status_code);
 
-  EXPECT_EQ(GetParam().status_code == StatusCode::kOk,
+  EXPECT_EQ(GetParam().status_code == DecoderStatus::Codes::kOk,
             !!GetUnderlyingDecoder());
 }
 
@@ -363,25 +366,27 @@ const struct DecoderPipelineTestParams kDecoderPipelineTestParams[] = {
     // A CreateDecoderFunctionCB that fails to Create() (i.e. returns a
     // null Decoder)
     {base::BindRepeating(&VideoDecoderPipelineTest::CreateNullMockDecoder),
-     StatusCode::kDecoderFailedCreation},
+     DecoderStatus::Codes::kFailedToCreateDecoder},
 
     // A CreateDecoderFunctionCB that works fine, i.e. Create()s and
     // Initialize()s correctly.
     {base::BindRepeating(&VideoDecoderPipelineTest::CreateGoodMockDecoder),
-     StatusCode::kOk},
+     DecoderStatus::Codes::kOk},
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // A CreateDecoderFunctionCB for transcryption, where Create() is ok, and
     // the decoder will Initialize OK, but then the pipeline will not create the
     // transcryptor due to a missing CdmContext. This will succeed if called
     // through InitializeForTranscrypt where a CdmContext is set.
     {base::BindRepeating(
          &VideoDecoderPipelineTest::CreateGoodMockTranscryptDecoder),
-     StatusCode::kDecoderMissingCdmForEncryptedContent},
+     DecoderStatus::Codes::kUnsupportedEncryptionMode},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // A CreateDecoderFunctionCB that Create()s ok but fails to Initialize()
     // correctly.
     {base::BindRepeating(&VideoDecoderPipelineTest::CreateBadMockDecoder),
-     StatusCode::kDecoderInitializationFailed},
+     DecoderStatus::Codes::kFailed},
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -392,7 +397,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_F(VideoDecoderPipelineTest, Reset) {
   InitializeDecoder(
       base::BindOnce(&VideoDecoderPipelineTest::CreateGoodMockDecoder),
-      StatusCode::kOk);
+      DecoderStatus::Codes::kOk);
 
   // When we call Reset(), we expect GetUnderlyingDecoder()'s Reset() method to
   // be called, and when that method Run()s its argument closure, then
@@ -427,9 +432,10 @@ TEST_F(VideoDecoderPipelineTest, TranscryptThenEos) {
                 Decode(transcrypted_buffer_, _))
         .WillOnce([](scoped_refptr<DecoderBuffer> transcrypted,
                      VideoDecoderMixin::DecodeCB decode_cb) {
-          std::move(decode_cb).Run(OkStatus());
+          std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
         });
-    EXPECT_CALL(*this, OnDecodeDone(MatchesStatusCode(StatusCode::kOk)));
+    EXPECT_CALL(*this,
+                OnDecodeDone(MatchesStatusCode(DecoderStatus::Codes::kOk)));
   }
   decoder_->Decode(encrypted_buffer_,
                    base::BindOnce(&VideoDecoderPipelineTest::OnDecodeDone,
@@ -449,9 +455,10 @@ TEST_F(VideoDecoderPipelineTest, TranscryptThenEos) {
                 Decode(eos_buffer, _))
         .WillOnce([](scoped_refptr<DecoderBuffer> transcrypted,
                      VideoDecoderMixin::DecodeCB decode_cb) {
-          std::move(decode_cb).Run(OkStatus());
+          std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
         });
-    EXPECT_CALL(*this, OnDecodeDone(MatchesStatusCode(StatusCode::kOk)));
+    EXPECT_CALL(*this,
+                OnDecodeDone(MatchesStatusCode(DecoderStatus::Codes::kOk)));
   }
   decoder_->Decode(eos_buffer,
                    base::BindOnce(&VideoDecoderPipelineTest::OnDecodeDone,
@@ -462,7 +469,7 @@ TEST_F(VideoDecoderPipelineTest, TranscryptThenEos) {
 TEST_F(VideoDecoderPipelineTest, TranscryptReset) {
   InitializeForTranscrypt();
   scoped_refptr<DecoderBuffer> encrypted_buffer2 = DecoderBuffer::CopyFrom(
-      &kEncryptedData[1], base::size(kEncryptedData) - 1);
+      &kEncryptedData[1], std::size(kEncryptedData) - 1);
   // Send in a buffer, but don't invoke the Decrypt callback so it stays as
   // pending. Then send in 2 more buffers so they are in the queue.
   EXPECT_CALL(decryptor_, Decrypt(Decryptor::kVideo, encrypted_buffer_, _))
@@ -486,7 +493,8 @@ TEST_F(VideoDecoderPipelineTest, TranscryptReset) {
     EXPECT_CALL(*reinterpret_cast<MockDecoder*>(GetUnderlyingDecoder()),
                 Reset(_))
         .WillOnce([](base::OnceClosure closure) { std::move(closure).Run(); });
-    EXPECT_CALL(*this, OnDecodeDone(MatchesStatusCode(DecodeStatus::ABORTED)))
+    EXPECT_CALL(*this,
+                OnDecodeDone(MatchesStatusCode(DecoderStatus::Codes::kAborted)))
         .Times(3);
     EXPECT_CALL(*this, OnResetDone()).Times(1);
   }
@@ -533,9 +541,10 @@ TEST_F(VideoDecoderPipelineTest, TranscryptKeyAddedDuringTranscrypt) {
                 Decode(transcrypted_buffer_, _))
         .WillOnce([](scoped_refptr<DecoderBuffer> transcrypted,
                      VideoDecoderMixin::DecodeCB decode_cb) {
-          std::move(decode_cb).Run(OkStatus());
+          std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
         });
-    EXPECT_CALL(*this, OnDecodeDone(MatchesStatusCode(StatusCode::kOk)));
+    EXPECT_CALL(*this,
+                OnDecodeDone(MatchesStatusCode(DecoderStatus::Codes::kOk)));
   }
   EXPECT_CALL(*this, OnWaiting(_)).Times(0);
   std::move(saved_decrypt_cb).Run(Decryptor::kNoKey, nullptr);
@@ -580,9 +589,10 @@ TEST_F(VideoDecoderPipelineTest, TranscryptNoKeyWaitRetry) {
                 Decode(transcrypted_buffer_, _))
         .WillOnce([](scoped_refptr<DecoderBuffer> transcrypted,
                      VideoDecoderMixin::DecodeCB decode_cb) {
-          std::move(decode_cb).Run(OkStatus());
+          std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
         });
-    EXPECT_CALL(*this, OnDecodeDone(MatchesStatusCode(StatusCode::kOk)));
+    EXPECT_CALL(*this,
+                OnDecodeDone(MatchesStatusCode(DecoderStatus::Codes::kOk)));
   }
   event_callbacks_.Notify(CdmContext::Event::kHasAdditionalUsableKey);
   task_environment_.RunUntilIdle();
@@ -599,7 +609,7 @@ TEST_F(VideoDecoderPipelineTest, TranscryptError) {
           std::move(decrypt_cb).Run(Decryptor::kError, nullptr);
         });
     EXPECT_CALL(*this,
-                OnDecodeDone(MatchesStatusCode(StatusCode::DECODE_ERROR)));
+                OnDecodeDone(MatchesStatusCode(DecoderStatus::Codes::kFailed)));
   }
   decoder_->Decode(encrypted_buffer_,
                    base::BindOnce(&VideoDecoderPipelineTest::OnDecodeDone,
@@ -658,7 +668,8 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormat) {
     EXPECT_CALL(*pool_,
                 Initialize(expected_fourcc, expected_coded_size, kVisibleRect,
                            /*natural_size=*/kVisibleRect.size(),
-                           kMaxNumOfFrames, /*use_protected=*/false))
+                           kMaxNumOfFrames, /*use_protected=*/false,
+                           /*use_linear_buffers=*/false))
         .WillOnce(Return(*GpuBufferLayout::Create(
             expected_fourcc, expected_coded_size, std::move(planes),
             /*modifier=*/kModifier)));
@@ -680,9 +691,10 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormat) {
   DetachDecoderSequenceChecker();
 }
 
-// These tests only work on non-linux vaapi systems, since on linux, there is no
-// support for different modifiers.
-#if BUILDFLAG(USE_VAAPI) && !defined(OS_LINUX)
+// These tests only work on non-linux and non-lacros vaapi systems, since on
+// linux and lacros there is no support for different modifiers.
+#if BUILDFLAG(USE_VAAPI) && !BUILDFLAG(IS_LINUX) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Verifies the algorithm for choosing formats in PickDecoderOutputFormat works
 // as expected when the pool returns linear buffers. It should allocate an image
@@ -714,7 +726,7 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatLinearModifier) {
       std::vector<ColorPlaneLayout>(
           VideoFrame::NumPlanes(kFourcc.ToVideoPixelFormat())),
       /*modifier=*/DRM_FORMAT_MOD_LINEAR);
-  EXPECT_CALL(*pool_, Initialize(_, _, _, _, _, _))
+  EXPECT_CALL(*pool_, Initialize(_, _, _, _, _, _, _))
       .WillRepeatedly(Return(gpu_buffer_layout));
 
   PixelLayoutCandidate candidate{Fourcc(Fourcc::NV12), kSize,
@@ -746,7 +758,7 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatUnsupportedModifier) {
       std::vector<ColorPlaneLayout>(
           VideoFrame::NumPlanes(kFourcc.ToVideoPixelFormat())),
       /*modifier=*/~DRM_FORMAT_MOD_LINEAR);
-  EXPECT_CALL(*pool_, Initialize(_, _, _, _, _, _))
+  EXPECT_CALL(*pool_, Initialize(_, _, _, _, _, _, _))
       .WillRepeatedly(Return(gpu_buffer_layout));
 
   // Make sure the modifier mismatches the |gpu_buffer_layout|'s
@@ -763,7 +775,8 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatUnsupportedModifier) {
   DetachDecoderSequenceChecker();
 }
 
-#endif  // BUILDFLAG(USE_VAAPI) && !defined(OS_LINUX)
+#endif  // BUILDFLAG(USE_VAAPI) && !BUILDFLAG(IS_LINUX) &&
+        // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Verifies that ReleaseAllFrames is called on the frame pool when we receive
 // the kDecoderStateLost event through the waiting callback. This can occur
@@ -771,7 +784,7 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatUnsupportedModifier) {
 TEST_F(VideoDecoderPipelineTest, RebuildFramePoolsOnStateLost) {
   InitializeDecoder(
       base::BindOnce(&VideoDecoderPipelineTest::CreateGoodMockDecoder),
-      StatusCode::kOk);
+      DecoderStatus::Codes::kOk);
 
   // Simulate the waiting callback from the decoder for kDecoderStateLost.
   EXPECT_CALL(*this, OnWaiting(media::WaitingReason::kDecoderStateLost));

@@ -5,7 +5,7 @@
 #include "ui/base/test/skia_gold_pixel_diff.h"
 
 #include "build/build_config.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -37,10 +37,14 @@ namespace test {
 
 const char* kSkiaGoldInstance = "chrome";
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const wchar_t* kSkiaGoldCtl = L"tools/skia_goldctl/win/goldctl.exe";
-#elif defined(OS_APPLE)
-const char* kSkiaGoldCtl = "tools/skia_goldctl/mac/goldctl";
+#elif BUILDFLAG(IS_APPLE)
+#if defined(ARCH_CPU_ARM64)
+const char* kSkiaGoldCtl = "tools/skia_goldctl/mac_arm64/goldctl";
+#else
+const char* kSkiaGoldCtl = "tools/skia_goldctl/mac_amd64/goldctl";
+#endif  // defined(ARCH_CPU_ARM64)
 #else
 const char* kSkiaGoldCtl = "tools/skia_goldctl/linux/goldctl";
 #endif
@@ -79,7 +83,7 @@ void AppendArgsJustAfterProgram(base::CommandLine& cmd,
   argv.insert(argv.begin() + 1, args.begin(), args.end());
 }
 
-void FillInSystemEnvironment(base::Value::DictStorage& ds) {
+void FillInSystemEnvironment(base::Value::Dict& ds) {
   std::string processor = "unknown";
 #if defined(ARCH_CPU_X86)
   processor = "x86";
@@ -89,8 +93,8 @@ void FillInSystemEnvironment(base::Value::DictStorage& ds) {
   LOG(WARNING) << "Unknown Processor.";
 #endif
 
-  ds["system"] = base::Value(SkiaGoldPixelDiff::GetPlatform());
-  ds["processor"] = base::Value(processor);
+  ds.Set("system", SkiaGoldPixelDiff::GetPlatform());
+  ds.Set("processor", processor);
 }
 
 // Fill in test environment to the keys_file. The format is json.
@@ -99,7 +103,7 @@ void FillInSystemEnvironment(base::Value::DictStorage& ds) {
 // should be filled in. Eg: operating system, graphics card, processor
 // architecture, screen resolution, etc.
 bool FillInTestEnvironment(const base::FilePath& keys_file) {
-  base::Value::DictStorage ds;
+  base::Value::Dict ds;
   FillInSystemEnvironment(ds);
   base::Value root(std::move(ds));
   std::string content;
@@ -140,14 +144,18 @@ SkiaGoldPixelDiff::~SkiaGoldPixelDiff() = default;
 
 // static
 std::string SkiaGoldPixelDiff::GetPlatform() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return "windows";
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   return "macOS";
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_LINUX)
   return "linux";
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  return "lacros";
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+  return "ash";
 #endif
 }
 

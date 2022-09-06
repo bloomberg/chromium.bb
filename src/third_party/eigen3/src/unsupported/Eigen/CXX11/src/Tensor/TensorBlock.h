@@ -244,7 +244,7 @@ class TensorBlockDescriptor {
     const DestinationBufferKind& kind() const { return m_kind; }
 
    private:
-    friend class TensorBlockDescriptor;
+    friend class TensorBlockDescriptor<NumDims, IndexType>;
 
     DestinationBuffer() : m_data(NULL), m_data_type_size(0), m_kind(kEmpty) {}
 
@@ -708,7 +708,7 @@ class TensorMaterializedBlock {
     }
 
    private:
-    friend class TensorMaterializedBlock;
+    friend class TensorMaterializedBlock<Scalar, NumDims, Layout, IndexType>;
 
     Storage(Scalar* data, const Dimensions& dimensions,
             const Dimensions& strides, bool materialized_in_output,
@@ -835,14 +835,14 @@ class TensorMaterializedBlock {
 
 template <typename UnaryOp, typename ArgTensorBlock>
 class TensorCwiseUnaryBlock {
-  static const bool NoArgBlockAccess =
+  static constexpr bool NoArgBlockAccess =
       internal::is_void<typename ArgTensorBlock::XprType>::value;
 
  public:
-  typedef typename conditional<
+  typedef std::conditional_t<
       NoArgBlockAccess, void,
-      TensorCwiseUnaryOp<UnaryOp, const typename ArgTensorBlock::XprType> >::
-      type XprType;
+      TensorCwiseUnaryOp<UnaryOp, const typename ArgTensorBlock::XprType> >
+      XprType;
 
   typedef typename XprScalar<XprType>::type Scalar;
 
@@ -866,15 +866,15 @@ class TensorCwiseUnaryBlock {
 
 template <typename BinaryOp, typename LhsTensorBlock, typename RhsTensorBlock>
 class TensorCwiseBinaryBlock {
-  static const bool NoArgBlockAccess =
+  static constexpr bool NoArgBlockAccess =
       internal::is_void<typename LhsTensorBlock::XprType>::value ||
       internal::is_void<typename RhsTensorBlock::XprType>::value;
 
  public:
-  typedef typename conditional<
+  typedef std::conditional_t<
       NoArgBlockAccess, void,
       TensorCwiseBinaryOp<BinaryOp, const typename LhsTensorBlock::XprType,
-                          const typename RhsTensorBlock::XprType> >::type
+                          const typename RhsTensorBlock::XprType> >
       XprType;
 
   typedef typename XprScalar<XprType>::type Scalar;
@@ -913,12 +913,12 @@ class TensorCwiseBinaryBlock {
 template <typename BlockFactory, typename ArgTensorBlock>
 class TensorUnaryExprBlock {
   typedef typename ArgTensorBlock::XprType ArgXprType;
-  static const bool NoArgBlockAccess = internal::is_void<ArgXprType>::value;
+  static constexpr bool NoArgBlockAccess = internal::is_void<ArgXprType>::value;
 
  public:
-  typedef typename conditional<
+  typedef std::conditional_t<
       NoArgBlockAccess, void,
-      typename BlockFactory::template XprType<ArgXprType>::type>::type XprType;
+      typename BlockFactory::template XprType<ArgXprType>::type> XprType;
 
   typedef typename XprScalar<XprType>::type Scalar;
 
@@ -947,15 +947,15 @@ class TensorTernaryExprBlock {
   typedef typename Arg2TensorBlock::XprType Arg2XprType;
   typedef typename Arg3TensorBlock::XprType Arg3XprType;
 
-  static const bool NoArgBlockAccess = internal::is_void<Arg1XprType>::value ||
-                                       internal::is_void<Arg2XprType>::value ||
-                                       internal::is_void<Arg3XprType>::value;
+  static constexpr bool NoArgBlockAccess = internal::is_void<Arg1XprType>::value ||
+                                           internal::is_void<Arg2XprType>::value ||
+                                           internal::is_void<Arg3XprType>::value;
 
  public:
-  typedef typename conditional<
+  typedef std::conditional_t<
       NoArgBlockAccess, void,
       typename BlockFactory::template XprType<Arg1XprType, Arg2XprType,
-                                              Arg3XprType>::type>::type XprType;
+                                              Arg3XprType>::type> XprType;
 
   typedef typename XprScalar<XprType>::type Scalar;
 
@@ -1143,7 +1143,7 @@ class StridedLinearBufferCopy {
 
 template <typename Scalar, typename IndexType, int NumDims, int Layout>
 class TensorBlockIO {
-  static const bool IsColMajor = (Layout == ColMajor);
+  static constexpr bool IsColMajor = (Layout == ColMajor);
 
   typedef StridedLinearBufferCopy<Scalar, IndexType> LinCopy;
 

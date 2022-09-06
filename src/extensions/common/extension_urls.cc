@@ -4,12 +4,12 @@
 
 #include "extensions/common/extension_urls.h"
 
+#include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
-#include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -78,10 +78,10 @@ bool IsWebstoreUpdateUrl(const GURL& update_url) {
           update_url.path_piece() == store_url.path_piece());
 }
 
-bool IsBlacklistUpdateUrl(const GURL& url) {
+bool IsBlocklistUpdateUrl(const GURL& url) {
   extensions::ExtensionsClient* client = extensions::ExtensionsClient::Get();
   if (client)
-    return client->IsBlacklistUpdateURL(url);
+    return client->IsBlocklistUpdateURL(url);
   return false;
 }
 

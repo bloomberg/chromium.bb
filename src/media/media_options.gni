@@ -9,6 +9,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libaom/options.gni")
 import("//third_party/libgav1/options.gni")
 
 declare_args() {
@@ -56,10 +57,6 @@ declare_args() {
   enable_mse_mpeg2ts_stream_parser =
       proprietary_codecs && (is_chromecast || is_fuchsia || use_fuzzing_engine)
 
-  enable_platform_encrypted_hevc =
-      proprietary_codecs &&
-      (use_chromeos_protected_media || (is_win && is_chrome_branded))
-
   # Enable Dolby Vision demuxing. Enable by default for Chromecast. Actual
   # decoding must be provided by the platform. Note some Dolby Vision profiles
   # which are encoded using HEVC require |enable_platform_hevc| to be enabled.
@@ -81,24 +78,26 @@ declare_args() {
 
   # Enable HLS manifest parser and demuxer.
   enable_hls_demuxer = false
+
+  # Enable inclusion of the HEVC/H265 parser and also enable HEVC/H265 decoding
+  # with hardware acceleration assist. Enabled by default for fuzzer builds,
+  # ChromeOS builds with protected content support, Windows, Mac, and Android.
+  enable_hevc_parser_and_hw_decoder =
+      proprietary_codecs &&
+      (use_fuzzing_engine || use_chromeos_protected_media || is_win || is_mac ||
+       is_android)
 }
 
+# Use another declare_args() to allow dependence on
+# |enable_hevc_parser_and_hw_decoder|.
 declare_args() {
   enable_av1_decoder = enable_dav1d_decoder || enable_libgav1_decoder
 
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
-  # platform. Enabled by default for Chromecast, fuzzer builds and protected
-  # video on ChromeOS and Windows.
+  # platform.
+  # TODO(b/194429120): Enable this for Lacros builds.
   enable_platform_hevc =
-      proprietary_codecs &&
-      (is_chromecast || use_fuzzing_engine || enable_platform_encrypted_hevc)
-
-  # Enable HEVC/H265 decoding with hardware acceleration assist. Enabled by
-  # default for fuzzer builds and protected video on ChromeOS. It is also
-  # enabled for Chromecast by default so the unit tests get run in Chrome CQ.
-  enable_platform_hevc_decoding =
-      proprietary_codecs &&
-      (is_chromecast || use_fuzzing_engine || use_chromeos_protected_media)
+      proprietary_codecs && (is_chromecast || enable_hevc_parser_and_hw_decoder)
 }
 
 assert(
@@ -113,10 +112,10 @@ assert(!enable_platform_hevc || proprietary_codecs,
        "proprietary_codecs=true is required for enable_platform_hevc=true.")
 
 assert(
-    !enable_platform_encrypted_hevc || enable_platform_hevc,
-    "enable_platform_hevc=true is required for enable_platform_encrypted_hevc=true.")
+    !enable_hevc_parser_and_hw_decoder || enable_platform_hevc,
+    "enable_platform_hevc=true is required for enable_hevc_parser_and_hw_decoder=true.")
 
-# Use a second declare_args() to pick up possible overrides of |use_cras|.
+# Use another declare_args() to pick up possible overrides of |use_cras|.
 declare_args() {
   # Enables runtime selection of PulseAudio library.
   use_pulseaudio = false
@@ -124,10 +123,10 @@ declare_args() {
   # Enables runtime selection of ALSA library for audio.
   use_alsa = false
 
-  # Alsa should be used on non-Android, non-Mac POSIX systems.
-  # Alsa should be used on desktop Chromecast and audio-only Chromecast builds.
+  # Alsa should be used on non-Android, non-Mac POSIX systems (excluding CastOS
+  # video builds).
   if (is_posix && !is_android && !is_mac &&
-      (!is_chromecast || is_cast_desktop_build || is_cast_audio_only)) {
+      (!is_castos || is_cast_audio_only)) {
     use_alsa = true
 
     # Pulse is not supported on Chromecast platforms.
@@ -163,14 +162,6 @@ declare_args() {
 }
 
 declare_args() {
-  # When enabled, this feature allows developers to use a runtime flag to
-  # choose the implementation of the renderer that is used. On a build which
-  # enables the mojo renderer, if --disable-mojo-renderer is passed at start-up,
-  # the "default" renderer will be used instead. Both renderer implementations
-  # will be linked if this feature is enabled, increasing the binary size. This
-  # feature does not make sense if the mojo renderer is not enabled.
-  enable_runtime_media_renderer_selection = is_cast_desktop_build
-
   # Enables host verification for CDMs.
   # Windows and Mac.
   enable_cdm_host_verification =
@@ -207,8 +198,21 @@ if (is_chromecast) {
     "video_decoder",
   ]
   _default_mojo_media_host = "gpu"
-} else if (is_chromeos_ash || is_mac || is_win ||
-           ((is_linux || is_chromeos_lacros) && use_vaapi)) {
+} else if (is_mac || (is_win && enable_platform_dts_audio)) {
+  _default_mojo_media_services = [
+    "audio_decoder",
+    "audio_encoder",
+    "video_decoder",
+  ]
+  _default_mojo_media_host = "gpu"
+} else if (is_win) {
+  _default_mojo_media_services = [
+    "audio_encoder",
+    "video_decoder",
+  ]
+  _default_mojo_media_host = "gpu"
+} else if (is_chromeos_ash || ((is_linux || is_chromeos_lacros) &&
+                               (use_vaapi || use_v4l2_codec))) {
   _default_mojo_media_services = [ "video_decoder" ]
   _default_mojo_media_host = "gpu"
 }
@@ -258,13 +262,10 @@ declare_args() {
 }
 
 declare_args() {
-  # Enable use of libcast (//third_party/openscreen/src/cast) for cast mirroring
-  # and linked into the resulting binary.
-  enable_cast_streaming_renderer = false
+  # The audio service must be sandboxed for us to do audio processing there.
+  # Currently it is so only on Win and Mac.
+  chrome_wide_echo_cancellation_supported = is_win || is_mac || is_linux
 }
-
-assert(!enable_cast_streaming_renderer || is_chromecast,
-       "Currently, libcast mirroring is only supported for chromecast.")
 
 # Do not expand this list without double-checking with OWNERS, this is a list of
 # all targets which roll up into the //media component. It controls visibility

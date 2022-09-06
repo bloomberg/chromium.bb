@@ -30,6 +30,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import editFileSystemViewStyles from './editFileSystemView.css.js';
@@ -73,13 +74,13 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('models/persistence/EditFileSystemView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EditFileSystemView extends UI.Widget.VBox implements UI.ListWidget.Delegate<string> {
-  private readonly fileSystemPath: string;
-  private excludedFolders: string[];
+  private readonly fileSystemPath: Platform.DevToolsPath.UrlString;
+  private excludedFolders: Platform.DevToolsPath.EncodedPathString[];
   private readonly eventListeners: Common.EventTarget.EventDescriptor[];
   private readonly excludedFoldersList: UI.ListWidget.ListWidget<string>;
   private muteUpdate?: boolean;
   private excludedFolderEditor?: UI.ListWidget.Editor<string>;
-  constructor(fileSystemPath: string) {
+  constructor(fileSystemPath: Platform.DevToolsPath.UrlString) {
     super(true);
 
     this.fileSystemPath = fileSystemPath;
@@ -147,12 +148,14 @@ export class EditFileSystemView extends UI.Widget.VBox implements UI.ListWidget.
     this.getFileSystem().removeExcludedFolder(this.excludedFolders[index]);
   }
 
-  commitEdit(item: string, editor: UI.ListWidget.Editor<string>, isNew: boolean): void {
+  commitEdit(item: Platform.DevToolsPath.EncodedPathString, editor: UI.ListWidget.Editor<string>, isNew: boolean):
+      void {
     this.muteUpdate = true;
     if (!isNew) {
       this.getFileSystem().removeExcludedFolder(item);
     }
-    this.getFileSystem().addExcludedFolder(this.normalizePrefix(editor.control('pathPrefix').value));
+    this.getFileSystem().addExcludedFolder(
+        this.normalizePrefix(editor.control('pathPrefix').value) as Platform.DevToolsPath.EncodedPathString);
     this.muteUpdate = false;
     this.update();
   }

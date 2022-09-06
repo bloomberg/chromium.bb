@@ -19,7 +19,7 @@
 #include "libavutil/internal.h"
 
 #include "avcodec.h"
-#include "internal.h"
+#include "codec_internal.h"
 
 #include "nvenc.h"
 
@@ -188,6 +188,8 @@ static const AVOption options[] = {
 #endif
     { "extra_sei",    "Pass on extra SEI data (e.g. a53 cc) to be included in the bitstream",
                                                             OFFSET(extra_sei),    AV_OPT_TYPE_BOOL,  { .i64 = 1 }, 0, 1, VE },
+    { "udu_sei",      "Pass on user data unregistered SEI if available",
+                                                            OFFSET(udu_sei),      AV_OPT_TYPE_BOOL,  { .i64 = 0 }, 0, 1, VE },
     { "intra-refresh","Use Periodic Intra Refresh instead of IDR frames",
                                                             OFFSET(intra_refresh),AV_OPT_TYPE_BOOL,  { .i64 = 0 }, 0, 1, VE },
     { "single-slice-intra-refresh", "Use single slice intra refresh",
@@ -197,7 +199,7 @@ static const AVOption options[] = {
     { NULL }
 };
 
-static const AVCodecDefault defaults[] = {
+static const FFCodecDefault defaults[] = {
     { "b", "2M" },
     { "qmin", "-1" },
     { "qmax", "-1" },
@@ -217,22 +219,22 @@ static const AVClass h264_nvenc_class = {
     .version = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_h264_nvenc_encoder = {
-    .name           = "h264_nvenc",
-    .long_name      = NULL_IF_CONFIG_SMALL("NVIDIA NVENC H.264 encoder"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_H264,
+const FFCodec ff_h264_nvenc_encoder = {
+    .p.name         = "h264_nvenc",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("NVIDIA NVENC H.264 encoder"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_H264,
     .init           = ff_nvenc_encode_init,
-    .receive_packet = ff_nvenc_receive_packet,
+    FF_CODEC_RECEIVE_PACKET_CB(ff_nvenc_receive_packet),
     .close          = ff_nvenc_encode_close,
     .flush          = ff_nvenc_encode_flush,
     .priv_data_size = sizeof(NvencContext),
-    .priv_class     = &h264_nvenc_class,
+    .p.priv_class   = &h264_nvenc_class,
     .defaults       = defaults,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
+    .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
                       AV_CODEC_CAP_ENCODER_FLUSH | AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
-    .pix_fmts       = ff_nvenc_pix_fmts,
-    .wrapper_name   = "nvenc",
+    .p.pix_fmts     = ff_nvenc_pix_fmts,
+    .p.wrapper_name = "nvenc",
     .hw_configs     = ff_nvenc_hw_configs,
 };

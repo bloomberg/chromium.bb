@@ -167,6 +167,7 @@ class MockFrameHost : public mojom::FrameHost {
 
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>,
+      blink::mojom::FencedFrameMode,
       CreateFencedFrameCallback) override {
     NOTREACHED() << "At the moment, content::FencedFrame is not used in any "
                     "unit tests, so this path should not be hit";
@@ -189,7 +190,7 @@ class MockFrameHost : public mojom::FrameHost {
       mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>)
       override {}
 
-  void SubresourceResponseStarted(const GURL& url,
+  void SubresourceResponseStarted(const url::SchemeHostPort& final_response_url,
                                   net::CertStatus cert_status) override {}
 
   void ResourceLoadComplete(
@@ -212,7 +213,7 @@ class MockFrameHost : public mojom::FrameHost {
 
   void DidStopLoading() override {}
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
 
@@ -242,7 +243,7 @@ TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
       static_cast<MockRenderThread*>(RenderThread::Get());
   mock_frame_host_->SetInitialBrowserInterfaceBrokerReceiver(
       mock_render_thread->TakeInitialBrowserInterfaceBrokerReceiverForFrame(
-          params.routing_id));
+          GetRoutingID()));
 }
 
 TestRenderFrame::~TestRenderFrame() {}
@@ -302,9 +303,10 @@ void TestRenderFrame::NavigateWithError(
           network::NotImplementedURLLoaderFactory::Create());
   mock_navigation_client_->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
-      false /* has_stale_copy_in_cache */, error_code,
-      0 /* extended_error_code */, resolve_error_info, error_page_content,
+      /*has_stale_copy_in_cache=*/false, error_code,
+      /*extended_error_code=*/0, resolve_error_info, error_page_content,
       std::move(pending_factory_bundle), CreateStubPolicyContainer(),
+      /*alternative_error_page_info=*/nullptr,
       base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                      base::Unretained(mock_frame_host_.get())));
 }

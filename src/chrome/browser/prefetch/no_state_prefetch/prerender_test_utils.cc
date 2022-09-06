@@ -32,12 +32,10 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/ppapi_test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -457,6 +455,7 @@ PrerenderInProcessBrowserTest::GetFakeSafeBrowsingDatabaseManager() {
 
 void PrerenderInProcessBrowserTest::CreatedBrowserMainParts(
     content::BrowserMainParts* browser_main_parts) {
+  InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
   safe_browsing_factory_->SetTestDatabaseManager(
       new safe_browsing::FakeSafeBrowsingDatabaseManager(
           content::GetUIThreadTaskRunner({}),
@@ -520,7 +519,7 @@ std::u16string PrerenderInProcessBrowserTest::MatchTaskManagerTab(
 
 std::u16string PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
     const char* page_title) {
-  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NO_STATE_PREFETCH_PREFIX,
                                     base::ASCIIToUTF16(page_title));
 }
 

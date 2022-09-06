@@ -26,7 +26,7 @@ class NativeCertificatesHandler : public SettingsPageUIHandler {
 
   // Callback for the "showManageSSLCertificates" message. This will invoke
   // an appropriate certificate management action based on the platform.
-  void HandleShowManageSSLCertificates(const base::ListValue* args);
+  void HandleShowManageSSLCertificates(const base::Value::List& args);
 };
 
 }  // namespace settings

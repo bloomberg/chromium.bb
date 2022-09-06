@@ -24,4 +24,4 @@ infra/3pp/tools/cpython/${platform} version:2@2.7.18.chromium.39
 infra/3pp/tools/cpython3/${platform} version:2@3.8.10.chromium.23
 
 @Subdir git
-infra/3pp/tools/git/${platform} version:2@2.33.0.chromium.6
+infra/3pp/tools/git/${platform} version:2@2.35.1.chromium.8

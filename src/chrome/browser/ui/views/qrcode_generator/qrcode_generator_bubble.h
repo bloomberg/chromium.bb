@@ -55,6 +55,7 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
 
   // QRCodeGeneratorBubbleView:
   void Hide() override;
+  void OnThemeChanged() override;
 
   // Returns a suggested download filename for a given URL.
   // e.g.: www.foo.com may suggest qrcode_foo.png.
@@ -65,7 +66,8 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // pixels or dips. Both |image| and |size| must be square, and the resulting
   // image is also square.
   static gfx::ImageSkia AddQRCodeQuietZone(const gfx::ImageSkia& image,
-                                           const gfx::Size& size);
+                                           const gfx::Size& size,
+                                           SkColor background_color);
 
   views::ImageView* image_for_testing() { return qr_code_image_; }
   views::Textfield* textfield_for_testing() { return textfield_url_; }

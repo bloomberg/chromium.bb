@@ -43,10 +43,10 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -54,9 +54,10 @@
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/gfx/geometry/quad_f.h"
 
-namespace skia {
-class Matrix44;
+namespace gfx {
+class Transform;
 }
 
 namespace ui {
@@ -262,6 +263,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
 #if defined(AX_FAIL_FAST_BUILD)
   bool is_adding_children_ = false;
+  mutable bool is_computing_text_from_descendants_ = false;
 #endif
 
  public:
@@ -641,6 +643,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
     *text_underline_style = ax::mojom::blink::TextDecorationStyle::kNone;
   }
 
+  virtual AXObject* GetChildFigcaption() const;
+
   virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();
   }
@@ -847,11 +851,11 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // If the object clips its children, for example by having overflow:hidden,
   // set |clips_children| to true.
   virtual void GetRelativeBounds(AXObject** out_container,
-                                 FloatRect& out_bounds_in_container,
-                                 skia::Matrix44& out_container_transform,
+                                 gfx::RectF& out_bounds_in_container,
+                                 gfx::Transform& out_container_transform,
                                  bool* clips_children = nullptr) const;
 
-  FloatRect LocalBoundingBoxRectForAccessibility();
+  gfx::RectF LocalBoundingBoxRectForAccessibility();
 
   // Get the bounds in frame-relative coordinates as a LayoutRect.
   LayoutRect GetBoundsInFrameCoordinates() const;
@@ -1062,6 +1066,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // the parent. It calls ComputeParentImpl() for the actual work.
   AXObject* ComputeParent() const;
 
+  // Same as ComputeParent, but does not assert if there is no parent to compute
+  // (i.e. because the parent does not belong to the tree anymore).
+  AXObject* ComputeParentOrNull() const;
+
   // Can this node be used to compute the natural parent of an object?
   // These are objects that can have some children, but the children are
   // only of a certain type or from another part of the tree, and therefore
@@ -1271,6 +1279,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // TODO(accessibility) Move these to a static helper util class.
   static bool IsARIAControl(ax::mojom::blink::Role);
   static bool IsARIAInput(ax::mojom::blink::Role);
+  static bool IsFrame(const Node*);
   static bool HasARIAOwns(Element* element);
   // Is this a widget that requires container widget.
   bool IsSubWidget() const;
@@ -1367,11 +1376,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   static bool IsNameFromAriaAttribute(Element* element);
   // Return true if the name is from @aria-label / @aria-labelledby / @title.
   bool IsNameFromAuthorAttribute() const;
-  String TextFromAriaLabelledby(AXObjectSet& visited,
-                                AXRelatedObjectVector* related_objects,
-                                Vector<String>& ids) const;
-  String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
-                                 Vector<String>& ids) const;
 
   ax::mojom::blink::Role ButtonRoleType() const;
 
@@ -1390,6 +1394,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Helpers for serialization.
   void SerializeActionAttributes(ui::AXNodeData* node_data);
+  void SerializeChildTreeID(ui::AXNodeData* node_data);
   void SerializeChooserPopupAttributes(ui::AXNodeData* node_data);
   void SerializeColorAttributes(ui::AXNodeData* node_data);
   void SerializeElementAttributes(ui::AXNodeData* node_data);
@@ -1446,7 +1451,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   mutable Member<AXObject> cached_live_region_root_;
   mutable int cached_aria_column_index_;
   mutable int cached_aria_row_index_;
-  mutable FloatRect cached_local_bounding_box_rect_for_accessibility_;
+  mutable gfx::RectF cached_local_bounding_box_rect_for_accessibility_;
 
   Member<AXObjectCacheImpl> ax_object_cache_;
 
@@ -1459,7 +1464,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   ax::mojom::blink::Role RemapAriaRoleDueToParent(ax::mojom::blink::Role) const;
   unsigned ComputeAriaColumnIndex() const;
   unsigned ComputeAriaRowIndex() const;
-  bool ComputeIsHiddenViaStyle() const;
+  const ComputedStyle* GetComputedStyle() const;
+  bool ComputeIsHiddenViaStyle(const ComputedStyle*) const;
+  bool ComputeIsInertViaStyle(const ComputedStyle*,
+                              IgnoredReasons* = nullptr) const;
 
   // This returns true if the element associated with this AXObject is has
   // focusable style, meaning that it is visible. Note that we prefer to rely on

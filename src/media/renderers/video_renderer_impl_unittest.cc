@@ -23,6 +23,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
@@ -65,11 +66,11 @@ class VideoRendererImplTest : public testing::Test {
     std::vector<std::unique_ptr<VideoDecoder>> decoders;
     decoders.push_back(base::WrapUnique(decoder_.get()));
     ON_CALL(*decoder_, Initialize_(_, _, _, _, _, _))
-        .WillByDefault(DoAll(
-            SaveArg<4>(&output_cb_),
-            RunOnceCallback<3>(expect_init_success_
-                                   ? OkStatus()
-                                   : Status(StatusCode::kCodeOnlyForTesting))));
+        .WillByDefault(
+            DoAll(SaveArg<4>(&output_cb_),
+                  RunOnceCallback<3>(expect_init_success_
+                                         ? DecoderStatus::Codes::kOk
+                                         : DecoderStatus::Codes::kFailed)));
     // Monitor decodes from the decoder.
     ON_CALL(*decoder_, Decode_(_, _))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::DecodeRequested));
@@ -142,7 +143,7 @@ class VideoRendererImplTest : public testing::Test {
                       bool low_delay,
                       bool expect_success) {
     if (low_delay)
-      demuxer_stream->set_liveness(DemuxerStream::LIVENESS_LIVE);
+      demuxer_stream->set_liveness(StreamLiveness::kLive);
     EXPECT_CALL(mock_cb_, OnWaiting(_)).Times(0);
     EXPECT_CALL(mock_cb_, OnAudioConfigChange(_)).Times(0);
     EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
@@ -220,13 +221,13 @@ class VideoRendererImplTest : public testing::Test {
                            base::SPLIT_WANT_ALL)) {
       if (token == "abort") {
         scoped_refptr<VideoFrame> null_frame;
-        QueueFrame(DecodeStatus::ABORTED, null_frame);
+        QueueFrame(DecoderStatus::Codes::kAborted, null_frame);
         continue;
       }
 
       if (token == "error") {
         scoped_refptr<VideoFrame> null_frame;
-        QueueFrame(DecodeStatus::DECODE_ERROR, null_frame);
+        QueueFrame(DecoderStatus::Codes::kFailed, null_frame);
         continue;
       }
 
@@ -236,7 +237,7 @@ class VideoRendererImplTest : public testing::Test {
         scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
             PIXEL_FORMAT_I420, natural_size, gfx::Rect(natural_size),
             natural_size, base::Milliseconds(timestamp_in_ms));
-        QueueFrame(DecodeStatus::OK, frame);
+        QueueFrame(DecoderStatus::Codes::kOk, frame);
         continue;
       }
 
@@ -245,14 +246,14 @@ class VideoRendererImplTest : public testing::Test {
   }
 
   // Queues video frames to be served by the decoder during rendering.
-  void QueueFrame(DecodeStatus status, scoped_refptr<VideoFrame> frame) {
+  void QueueFrame(DecoderStatus status, scoped_refptr<VideoFrame> frame) {
     decode_results_.push_back(std::make_pair(status, frame));
   }
 
   bool IsDecodePending() { return !!decode_cb_; }
 
   void WaitForError(PipelineStatus expected) {
-    SCOPED_TRACE(base::StringPrintf("WaitForError(%d)", expected));
+    SCOPED_TRACE(base::StringPrintf("WaitForError(%d)", expected.code()));
 
     WaitableMessageLoopEvent event;
     PipelineStatusCallback error_cb = event.GetPipelineStatusCB();
@@ -312,12 +313,14 @@ class VideoRendererImplTest : public testing::Test {
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb_), DecoderStatus::Codes::kOk));
 
     WaitForPendingDecode();
 
     task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb_), DecoderStatus::Codes::kOk));
   }
 
   bool HasQueuedFrames() const { return decode_results_.size() > 0; }
@@ -419,7 +422,7 @@ class VideoRendererImplTest : public testing::Test {
   // Run during DecodeRequested() to unblock WaitForPendingDecode().
   base::OnceClosure wait_for_pending_decode_cb_;
 
-  base::circular_deque<std::pair<DecodeStatus, scoped_refptr<VideoFrame>>>
+  base::circular_deque<std::pair<DecoderStatus, scoped_refptr<VideoFrame>>>
       decode_results_;
 };
 
@@ -476,7 +479,7 @@ TEST_F(VideoRendererImplTest, InitializeAndEndOfStreamOneStaleFrame) {
   Initialize();
   StartPlayingFrom(10000);
   QueueFrames("0");
-  QueueFrame(DecodeStatus::OK, VideoFrame::CreateEOSFrame());
+  QueueFrame(DecoderStatus::Codes::kOk, VideoFrame::CreateEOSFrame());
   WaitForPendingDecode();
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
@@ -607,7 +610,8 @@ TEST_F(VideoRendererImplTest, DecodeError_Playing) {
 TEST_F(VideoRendererImplTest, DecodeError_DuringStartPlayingFrom) {
   Initialize();
   QueueFrames("error");
-  EXPECT_CALL(mock_cb_, OnError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(mock_cb_, OnError(HasStatusCode(PIPELINE_ERROR_DECODE)));
+  EXPECT_CALL(mock_cb_, OnFallback(HasStatusCode(PIPELINE_ERROR_DECODE)));
   StartPlayingFrom(0);
   Destroy();
 }
@@ -1015,19 +1019,19 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
   gfx::Size initial_size(8, 8);
   gfx::Size larger_size(16, 16);
 
-  QueueFrame(DecodeStatus::OK,
+  QueueFrame(DecoderStatus::Codes::kOk,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, initial_size,
                                      gfx::Rect(initial_size), initial_size,
                                      base::Milliseconds(0)));
-  QueueFrame(DecodeStatus::OK,
+  QueueFrame(DecoderStatus::Codes::kOk,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, larger_size,
                                      gfx::Rect(larger_size), larger_size,
                                      base::Milliseconds(10)));
-  QueueFrame(DecodeStatus::OK,
+  QueueFrame(DecoderStatus::Codes::kOk,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, larger_size,
                                      gfx::Rect(larger_size), larger_size,
                                      base::Milliseconds(20)));
-  QueueFrame(DecodeStatus::OK,
+  QueueFrame(DecoderStatus::Codes::kOk,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, initial_size,
                                      gfx::Rect(initial_size), initial_size,
                                      base::Milliseconds(30)));
@@ -1081,20 +1085,20 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
   VideoPixelFormat opaque_format = PIXEL_FORMAT_I420;
   VideoPixelFormat non_opaque_format = PIXEL_FORMAT_I420A;
 
-  QueueFrame(DecodeStatus::OK,
+  QueueFrame(DecoderStatus::Codes::kOk,
              VideoFrame::CreateFrame(non_opaque_format, frame_size,
                                      gfx::Rect(frame_size), frame_size,
                                      base::Milliseconds(0)));
-  QueueFrame(DecodeStatus::OK,
+  QueueFrame(DecoderStatus::Codes::kOk,
              VideoFrame::CreateFrame(non_opaque_format, frame_size,
                                      gfx::Rect(frame_size), frame_size,
                                      base::Milliseconds(10)));
   QueueFrame(
-      DecodeStatus::OK,
+      DecoderStatus::Codes::kOk,
       VideoFrame::CreateFrame(opaque_format, frame_size, gfx::Rect(frame_size),
                               frame_size, base::Milliseconds(20)));
   QueueFrame(
-      DecodeStatus::OK,
+      DecoderStatus::Codes::kOk,
       VideoFrame::CreateFrame(opaque_format, frame_size, gfx::Rect(frame_size),
                               frame_size, base::Milliseconds(30)));
 

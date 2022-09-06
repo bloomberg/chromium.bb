@@ -11,17 +11,18 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './activity_log_stream.js';
 import './activity_log_history.js';
 import '../strings.m.js';
-import '../shared_style.js';
-import '../shared_vars.js';
+import '../shared_style.css.js';
+import '../shared_vars.css.js';
 
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {navigation, Page} from '../navigation_helper.js';
 
+import {getTemplate} from './activity_log.html.js';
 import {ActivityLogDelegate} from './activity_log_history.js';
 
 /**
@@ -45,9 +46,9 @@ const enum ActivityLogSubpage {
 export type ActivityLogExtensionPlaceholder = {
   id: string,
   isPlaceholder: boolean,
-}
+};
 
-interface ExtensionsActivityLogElement {
+export interface ExtensionsActivityLogElement {
   $: {
     closeButton: HTMLElement,
   };
@@ -56,13 +57,14 @@ interface ExtensionsActivityLogElement {
 const ExtensionsActivityLogElementBase =
     I18nMixin(CrContainerShadowMixin(PolymerElement));
 
-class ExtensionsActivityLogElement extends ExtensionsActivityLogElementBase {
+export class ExtensionsActivityLogElement extends
+    ExtensionsActivityLogElementBase {
   static get is() {
     return 'extensions-activity-log';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -96,7 +98,7 @@ class ExtensionsActivityLogElement extends ExtensionsActivityLogElementBase {
   selectedSubpage_: ActivityLogSubpage;
   private tabNames_: string[];
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('view-enter-start', this.onViewEnterStart_);
     this.addEventListener('view-exit-finish', this.onViewExitFinish_);
@@ -168,6 +170,13 @@ class ExtensionsActivityLogElement extends ExtensionsActivityLogElementBase {
     }
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'extensions-activity-log': ExtensionsActivityLogElement;
+  }
+}
+
 
 customElements.define(
     ExtensionsActivityLogElement.is, ExtensionsActivityLogElement);

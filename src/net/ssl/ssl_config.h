@@ -12,6 +12,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_private_key.h"
@@ -120,7 +121,7 @@ struct NET_EXPORT SSLConfig {
   NextProtoVector alpn_protos;
 
   // True if renegotiation should be allowed for the default application-level
-  // protocol when the peer negotiates neither ALPN nor NPN.
+  // protocol when the peer does not negotiate ALPN.
   bool renego_allowed_default = false;
 
   // The list of application-level protocols to enable renegotiation for.

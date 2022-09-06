@@ -271,7 +271,7 @@ UBool NumberingSystem::isAlgorithmic() const {
 namespace {
 
 UVector* gNumsysNames = nullptr;
-UInitOnce gNumSysInitOnce = U_INITONCE_INITIALIZER;
+UInitOnce gNumSysInitOnce {};
 
 U_CFUNC UBool U_CALLCONV numSysCleanup() {
     delete gNumsysNames;
@@ -313,12 +313,7 @@ U_CFUNC void initNumsysNames(UErrorCode &status) {
         }
         const char *nsName = ures_getKey(nsCurrent.getAlias());
         LocalPointer<UnicodeString> newElem(new UnicodeString(nsName, -1, US_INV), status);
-        if (U_SUCCESS(status)) {
-            numsysNames->addElementX(newElem.getAlias(), status);
-            if (U_SUCCESS(status)) {
-                newElem.orphan(); // on success, the numsysNames vector owns newElem.
-            }
-        }
+        numsysNames->adoptElement(newElem.orphan(), status);
     }
 
     ures_close(numberingSystemsInfo);

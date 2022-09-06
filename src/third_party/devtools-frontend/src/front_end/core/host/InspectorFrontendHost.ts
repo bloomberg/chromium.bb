@@ -36,7 +36,10 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
-import type {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventTypes, ExtensionDescriptor, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult, SyncInformation} from './InspectorFrontendHostAPI.js';
+import type {
+  CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventTypes, ExtensionDescriptor,
+  InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult,
+  SyncInformation} from './InspectorFrontendHostAPI.js';
 import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
 
@@ -51,10 +54,12 @@ const str_ = i18n.i18n.registerUIStrings('core/host/InspectorFrontendHost.ts', U
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 const MAX_RECORDED_HISTOGRAMS_SIZE = 100;
+const OVERRIDES_FILE_SYSTEM_PATH = '/overrides' as Platform.DevToolsPath.RawPathString;
 
 export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
-  readonly #urlsBeingSaved: Map<string, string[]>;
+  readonly #urlsBeingSaved: Map<Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString, string[]>;
   events!: Common.EventTarget.EventTarget<EventTypes>;
+  #fileSystem: FileSystem|null = null;
 
   recordedEnumeratedHistograms: {actionName: EnumeratedHistogram, actionCode: number}[] = [];
   recordedPerformanceHistograms: {histogramName: string, duration: number}[] = [];
@@ -94,15 +99,15 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   setIsDocked(isDocked: boolean, callback: () => void): void {
-    setTimeout(callback, 0);
+    window.setTimeout(callback, 0);
   }
 
   showSurvey(trigger: string, callback: (arg0: ShowSurveyResult) => void): void {
-    setTimeout(() => callback({surveyShown: false}), 0);
+    window.setTimeout(() => callback({surveyShown: false}), 0);
   }
 
   canShowSurvey(trigger: string, callback: (arg0: CanShowSurveyResult) => void): void {
-    setTimeout(() => callback({canShowSurvey: false}), 0);
+    window.setTimeout(() => callback({canShowSurvey: false}), 0);
   }
 
   /**
@@ -122,7 +127,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   setInjectedScriptForOrigin(origin: string, script: string): void {
   }
 
-  inspectedURLChanged(url: string): void {
+  inspectedURLChanged(url: Platform.DevToolsPath.UrlString): void {
     document.title = i18nString(UIStrings.devtoolsS, {PH1: url.replace(/^https?:\/\//, '')});
   }
 
@@ -130,19 +135,20 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     if (text === undefined || text === null) {
       return;
     }
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
   }
 
-  openInNewTab(url: string): void {
+  openInNewTab(url: Platform.DevToolsPath.UrlString): void {
     window.open(url, '_blank');
   }
 
-  showItemInFolder(fileSystemPath: string): void {
+  showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void {
     Common.Console.Console.instance().error(
         'Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
   }
 
-  save(url: string, content: string, forceSaveAs: boolean): void {
+  save(url: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean):
+      void {
     let buffer = this.#urlsBeingSaved.get(url);
     if (!buffer) {
       buffer = [];
@@ -152,7 +158,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     this.events.dispatchEventToListeners(Events.SavedURL, {url, fileSystemPath: url});
   }
 
-  append(url: string, content: string): void {
+  append(url: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString, content: string): void {
     const buffer = this.#urlsBeingSaved.get(url);
     if (buffer) {
       buffer.push(content);
@@ -160,7 +166,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     }
   }
 
-  close(url: string): void {
+  close(url: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString): void {
     const buffer = this.#urlsBeingSaved.get(url) || [];
     this.#urlsBeingSaved.delete(url);
     let fileName = '';
@@ -209,18 +215,46 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   addFileSystem(type?: string): void {
+    const onFileSystem = (fs: FileSystem): void => {
+      this.#fileSystem = fs;
+      const fileSystem = {
+        fileSystemName: 'sandboxedRequestedFileSystem',
+        fileSystemPath: OVERRIDES_FILE_SYSTEM_PATH,
+        rootURL: 'filesystem:devtools://devtools/isolated/',
+        type: 'overrides',
+      };
+      this.events.dispatchEventToListeners(Events.FileSystemAdded, {fileSystem});
+    };
+    window.webkitRequestFileSystem(window.TEMPORARY, 1024 * 1024, onFileSystem);
   }
 
-  removeFileSystem(fileSystemPath: string): void {
+  removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void {
+    const removalCallback = (entries: Entry[]): void => {
+      entries.forEach(entry => {
+        if (entry.isDirectory) {
+          (entry as DirectoryEntry).removeRecursively(() => {});
+        } else if (entry.isFile) {
+          entry.remove(() => {});
+        }
+      });
+    };
+
+    if (this.#fileSystem) {
+      this.#fileSystem.root.createReader().readEntries(removalCallback);
+    }
+
+    this.#fileSystem = null;
+    this.events.dispatchEventToListeners(Events.FileSystemRemoved, OVERRIDES_FILE_SYSTEM_PATH);
   }
 
   isolatedFileSystem(fileSystemId: string, registeredName: string): FileSystem|null {
-    return null;
+    return this.#fileSystem;
   }
 
   loadNetworkResource(
       url: string, headers: string, streamId: number, callback: (arg0: LoadNetworkResourceResult) => void): void {
-    Root.Runtime.loadResourcePromise(url)
+    fetch(url)
+        .then(result => result.text())
         .then(function(text) {
           resourceLoaderStreamWrite(streamId, text);
           callback({
@@ -259,6 +293,10 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     callback(prefs);
   }
 
+  getPreference(name: string, callback: (arg0: string) => void): void {
+    callback(window.localStorage[name]);
+  }
+
   setPreference(name: string, value: string): void {
     window.localStorage[name] = value;
   }
@@ -281,13 +319,13 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void {
   }
 
-  indexPath(requestId: number, fileSystemPath: string, excludedFolders: string): void {
+  indexPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, excludedFolders: string): void {
   }
 
   stopIndexing(requestId: number): void {
   }
 
-  searchInPath(requestId: number, fileSystemPath: string, query: string): void {
+  searchInPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, query: string): void {
   }
 
   zoomFactor(): number {

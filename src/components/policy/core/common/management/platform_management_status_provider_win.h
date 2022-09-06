@@ -14,24 +14,51 @@ class POLICY_EXPORT DomainEnrollmentStatusProvider final
     : public ManagementStatusProvider {
  public:
   DomainEnrollmentStatusProvider();
-  ~DomainEnrollmentStatusProvider() override;
 
-  // ManagementStatusProvider impl
-  EnterpriseManagementAuthority GetAuthority() override;
+  DomainEnrollmentStatusProvider(const DomainEnrollmentStatusProvider&) =
+      delete;
+  DomainEnrollmentStatusProvider& operator=(
+      const DomainEnrollmentStatusProvider&) = delete;
 
   static bool IsEnrolledToDomain();
+
+ protected:
+  // ManagementStatusProvider impl
+  EnterpriseManagementAuthority FetchAuthority() final;
 };
 
 class POLICY_EXPORT EnterpriseMDMManagementStatusProvider final
     : public ManagementStatusProvider {
  public:
   EnterpriseMDMManagementStatusProvider();
-  ~EnterpriseMDMManagementStatusProvider() override;
 
-  // ManagementStatusProvider impl
-  EnterpriseManagementAuthority GetAuthority() override;
+  EnterpriseMDMManagementStatusProvider(
+      const EnterpriseMDMManagementStatusProvider&) = delete;
+  EnterpriseMDMManagementStatusProvider& operator=(
+      const EnterpriseMDMManagementStatusProvider&) = delete;
 
   static bool IsEnrolledToDomain();
+
+ protected:
+  // ManagementStatusProvider impl
+  EnterpriseManagementAuthority FetchAuthority() final;
+};
+
+// TODO (crbug/1300217): Handle management state changing while the browser is
+// running.
+class POLICY_EXPORT AzureActiveDirectoryStatusProvider final
+    : public ManagementStatusProvider {
+ public:
+  AzureActiveDirectoryStatusProvider();
+
+  AzureActiveDirectoryStatusProvider(
+      const AzureActiveDirectoryStatusProvider&) = delete;
+  AzureActiveDirectoryStatusProvider& operator=(
+      const AzureActiveDirectoryStatusProvider&) = delete;
+
+ protected:
+  // ManagementStatusProvider impl
+  EnterpriseManagementAuthority FetchAuthority() override;
 };
 
 }  // namespace policy

@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -175,7 +176,7 @@ class PasswordDialogViewTest : public DialogBrowserTest {
 };
 
 void PasswordDialogViewTest::SetUpOnMainThread() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On non-Mac platforms, animations are globally disabled during tests; on
   // Mac they are generally not, but these tests are dramatically slower and
   // flakier with animations.
@@ -469,7 +470,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupCredentialsLeakedPrompt) {
   CredentialLeakType leak_type = CredentialLeakFlags::kPasswordSaved |
                                  CredentialLeakFlags::kPasswordUsedOnOtherSites;
   GURL origin("https://example.com");
-  controller()->OnCredentialLeak(leak_type, origin);
+  std::u16string username(u"Eve");
+  controller()->OnCredentialLeak(leak_type, origin, username);
   ASSERT_TRUE(controller()->current_credential_leak_prompt());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   CredentialLeakDialogView* dialog =
@@ -535,6 +537,15 @@ void PasswordDialogViewTest::ShowUi(const std::string& name) {
   }
 
   GURL origin("https://example.com");
+  std::u16string username(u"Eve");
+  if (name == "CredentialLeak") {
+    CredentialLeakType leak_type =
+        CredentialLeakFlags::kPasswordSaved |
+        CredentialLeakFlags::kPasswordUsedOnOtherSites;
+    controller()->OnCredentialLeak(leak_type, origin, username);
+    return;
+  }
+
   std::vector<std::unique_ptr<password_manager::PasswordForm>>
       local_credentials;
   password_manager::PasswordForm form;
@@ -588,6 +599,14 @@ void PasswordDialogViewTest::ShowUi(const std::string& name) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, InvokeUi_AutoSigninFirstRun) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, InvokeUi_CredentialLeak) {
+  ShowAndVerifyUi();
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, InvokeUi_PopupAutoSigninPrompt) {
   ShowAndVerifyUi();
 }
@@ -601,10 +620,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PasswordDialogViewTest,
     InvokeUi_PopupAccountChooserWithMultipleCredentialClickSignIn) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, InvokeUi_AutoSigninFirstRun) {
   ShowAndVerifyUi();
 }
 

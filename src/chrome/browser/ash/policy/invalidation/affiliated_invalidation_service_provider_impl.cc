@@ -152,7 +152,7 @@ void AffiliatedInvalidationServiceProviderImpl::OnUserProfileLoaded(
     const AccountId& account_id) {
   DCHECK(!is_shut_down_);
   Profile* profile =
-      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+      ash::ProfileHelper::Get()->GetProfileByAccountId(account_id);
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       GetInvalidationProvider(profile);
   if (!invalidation_provider) {
@@ -161,7 +161,7 @@ void AffiliatedInvalidationServiceProviderImpl::OnUserProfileLoaded(
     return;
   }
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user || !user->IsAffiliated()) {
     // If the Profile belongs to a user who is not affiliated on the device,
     // ignore it.
@@ -172,7 +172,7 @@ void AffiliatedInvalidationServiceProviderImpl::OnUserProfileLoaded(
   invalidation::InvalidationService* invalidation_service;
   invalidation_service =
       invalidation_provider->GetInvalidationServiceForCustomSender(
-          policy::kPolicyFCMInvalidationSenderID);
+          kPolicyFCMInvalidationSenderID);
   profile_invalidation_service_observers_.push_back(
       std::make_unique<InvalidationServiceObserver>(this,
                                                     invalidation_service));
@@ -367,7 +367,7 @@ AffiliatedInvalidationServiceProviderImpl::
               device_identity_provider_.get(), g_browser_process->local_state(),
               base::RetainedRef(url_loader_factory)),
           device_instance_id_driver_.get(), g_browser_process->local_state(),
-          policy::kPolicyFCMInvalidationSenderID);
+          kPolicyFCMInvalidationSenderID);
   device_invalidation_service->Init();
   return device_invalidation_service;
 }

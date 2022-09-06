@@ -16,7 +16,6 @@
 #include "ash/components/arc/mojom/bluetooth.mojom.h"
 #include "ash/components/arc/mojom/boot_phase_monitor.mojom.h"
 #include "ash/components/arc/mojom/camera.mojom.h"
-#include "ash/components/arc/mojom/cast_receiver.mojom.h"
 #include "ash/components/arc/mojom/cert_store.mojom.h"
 #include "ash/components/arc/mojom/clipboard.mojom.h"
 #include "ash/components/arc/mojom/compatibility_mode.mojom.h"
@@ -45,6 +44,7 @@
 #include "ash/components/arc/mojom/policy.mojom.h"
 #include "ash/components/arc/mojom/power.mojom.h"
 #include "ash/components/arc/mojom/print_spooler.mojom.h"
+#include "ash/components/arc/mojom/privacy_items.mojom.h"
 #include "ash/components/arc/mojom/process.mojom.h"
 #include "ash/components/arc/mojom/property.mojom.h"
 #include "ash/components/arc/mojom/rotation_lock.mojom.h"
@@ -52,6 +52,7 @@
 #include "ash/components/arc/mojom/sensor.mojom.h"
 #include "ash/components/arc/mojom/sharesheet.mojom.h"
 #include "ash/components/arc/mojom/storage_manager.mojom.h"
+#include "ash/components/arc/mojom/system_ui.mojom.h"
 #include "ash/components/arc/mojom/timer.mojom.h"
 #include "ash/components/arc/mojom/tracing.mojom.h"
 #include "ash/components/arc/mojom/tts.mojom.h"
@@ -103,9 +104,6 @@ void FakeArcBridgeHost::OnBootPhaseMonitorInstanceReady(
 
 void FakeArcBridgeHost::OnCameraInstanceReady(
     mojo::PendingRemote<mojom::CameraInstance> camera_remote) {}
-
-void FakeArcBridgeHost::OnCastReceiverInstanceReady(
-    mojo::PendingRemote<mojom::CastReceiverInstance> cast_receiver_remote) {}
 
 void FakeArcBridgeHost::OnCertStoreInstanceReady(
     mojo::PendingRemote<mojom::CertStoreInstance> instance_remote) {}
@@ -205,6 +203,9 @@ void FakeArcBridgeHost::OnPowerInstanceReady(
 void FakeArcBridgeHost::OnPrintSpoolerInstanceReady(
     mojo::PendingRemote<mojom::PrintSpoolerInstance> print_spooler_remote) {}
 
+void FakeArcBridgeHost::OnPrivacyItemsInstanceReady(
+    mojo::PendingRemote<mojom::PrivacyItemsInstance> privacy_items_remote) {}
+
 void FakeArcBridgeHost::OnProcessInstanceReady(
     mojo::PendingRemote<mojom::ProcessInstance> process_remote) {}
 
@@ -230,6 +231,9 @@ void FakeArcBridgeHost::OnSmartCardManagerInstanceReady(
 void FakeArcBridgeHost::OnStorageManagerInstanceReady(
     mojo::PendingRemote<mojom::StorageManagerInstance> storage_manager_remote) {
 }
+
+void FakeArcBridgeHost::OnSystemUiInstanceReady(
+    mojo::PendingRemote<mojom::SystemUiInstance> system_ui_remote) {}
 
 void FakeArcBridgeHost::OnTimerInstanceReady(
     mojo::PendingRemote<mojom::TimerInstance> timer_remote) {}

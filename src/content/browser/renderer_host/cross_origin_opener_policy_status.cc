@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/cross_origin_embedder_policy.h"
 #include "content/browser/renderer_host/cross_origin_opener_policy_access_report_manager.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -154,7 +153,10 @@ CrossOriginOpenerPolicyStatus::SanitizeResponse(
   // is not "unsafe-none". This ensures a COOP document does not inherit any
   // property from an opener.
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+  // Don't apply the limitation to a fenced frame because the fenced frame
+  // has its own set of forced sandbox flags and it also supports COOP.
   if (coop.value != network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
+      !frame_tree_node_->IsInFencedFrameTree() &&
       (frame_tree_node_->pending_frame_policy().sandbox_flags !=
        network::mojom::WebSandboxFlags::kNone)) {
     // Blob and Filesystem documents' cross-origin-opener-policy values are
@@ -391,8 +393,9 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
     network::mojom::URLResponseHead* response_head) const {
   network::CrossOriginOpenerPolicy& coop =
       response_head->parsed_headers->cross_origin_opener_policy;
+
   network::AugmentCoopWithCoep(
-      &coop, CoepFromMainResponse(response_url, response_head));
+      &coop, response_head->parsed_headers->cross_origin_embedder_policy);
 
   if (coop == network::CrossOriginOpenerPolicy())
     return;

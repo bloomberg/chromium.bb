@@ -34,7 +34,7 @@ using testing::SaveArg;
 template <typename T>
 std::string ParamsToJSON(const T& params) {
   base::ListValue params_value;
-  params_value.Append(params.ToValue());
+  params_value.Append(base::Value::FromUniquePtrValue(params.ToValue()));
   std::string params_json_string;
   EXPECT_TRUE(base::JSONWriter::Write(params_value, &params_json_string));
 
@@ -129,7 +129,8 @@ class FeedbackPrivateApiUnittest : public FeedbackPrivateApiUnittestBase {
     EXPECT_TRUE(values.is_list());
 
     std::unique_ptr<api::feedback_private::SendFeedback::Params> params =
-        api::feedback_private::SendFeedback::Params::Create(values.GetList());
+        api::feedback_private::SendFeedback::Params::Create(
+            values.GetListDeprecated());
     EXPECT_TRUE(params);
 
     scoped_refptr<FeedbackData> actual_feedback_data;

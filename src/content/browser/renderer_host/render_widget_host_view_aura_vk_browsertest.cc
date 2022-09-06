@@ -4,6 +4,7 @@
 
 #include "base/observer_list.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
@@ -168,7 +169,7 @@ class RenderWidgetHostViewAuraBrowserMockIMETest : public ContentBrowserTest {
                                            ax::mojom::Event::kLoadComplete);
     GURL html_data_url("data:text/html," + html);
     EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
-    waiter.WaitForNotification();
+    ASSERT_TRUE(waiter.WaitForNotification());
   }
 
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
@@ -195,7 +196,7 @@ class RenderWidgetHostViewAuraBrowserMockIMETest : public ContentBrowserTest {
   }
 };
 
-#ifdef OS_WIN
+#if BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
                        VirtualKeyboardAccessibilityFocusTest) {
   // The keyboard input pane events are not supported on Win7.
@@ -216,13 +217,13 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   auto* root = web_contents->GetPrimaryFrameTree().root();
   web_contents->GetPrimaryFrameTree().SetFocusedFrame(
-      root, root->current_frame_host()->GetSiteInstance());
+      root, root->current_frame_host()->GetSiteInstance()->group());
 
   AccessibilityNotificationWaiter waiter2(
       shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
   GetManager()->SetFocus(*target);
   GetManager()->DoDefaultAction(*target);
-  waiter2.WaitForNotification();
+  ASSERT_TRUE(waiter2.WaitForNotification());
 
   BrowserAccessibility* focus = GetManager()->GetFocus();
   EXPECT_EQ(focus->GetId(), target->GetId());
@@ -242,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   auto* root = web_contents->GetPrimaryFrameTree().root();
   web_contents->GetPrimaryFrameTree().SetFocusedFrame(
-      root, root->current_frame_host()->GetSiteInstance());
+      root, root->current_frame_host()->GetSiteInstance()->group());
 
   // Send a touch event so that RenderWidgetHostViewAura will create the
   // keyboard observer (requires last_pointer_type_ to be TOUCH).
@@ -308,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   auto* root = web_contents->GetPrimaryFrameTree().root();
   web_contents->GetPrimaryFrameTree().SetFocusedFrame(
-      root, root->current_frame_host()->GetSiteInstance());
+      root, root->current_frame_host()->GetSiteInstance()->group());
 
   // Send a touch event so that RenderWidgetHostViewAura will create the
   // keyboard observer (requires last_pointer_type_ to be TOUCH).
@@ -346,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   auto* root = web_contents->GetPrimaryFrameTree().root();
   web_contents->GetPrimaryFrameTree().SetFocusedFrame(
-      root, root->current_frame_host()->GetSiteInstance());
+      root, root->current_frame_host()->GetSiteInstance()->group());
 
   // Send a touch event so that RenderWidgetHostViewAura will create the
   // keyboard observer (requires last_pointer_type_ to be TOUCH).
@@ -406,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   auto* root = web_contents->GetPrimaryFrameTree().root();
   web_contents->GetPrimaryFrameTree().SetFocusedFrame(
-      root, root->current_frame_host()->GetSiteInstance());
+      root, root->current_frame_host()->GetSiteInstance()->group());
 
   // Send a touch event so that RenderWidgetHostViewAura will create the
   // keyboard observer (requires last_pointer_type_ to be TOUCH).
@@ -418,6 +419,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   SimulateTapAt(web_contents, gfx::Point(left + 1, top + 1));
   type_observer_none.Wait();
 }
-#endif  // #ifdef OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace content

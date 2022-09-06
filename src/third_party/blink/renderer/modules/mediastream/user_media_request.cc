@@ -44,13 +44,15 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_set.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
+#include "third_party/blink/renderer/modules/mediastream/transferred_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -263,10 +265,6 @@ void CountVideoConstraintUses(ExecutionContext* context,
     counter.Count(WebFeature::kMediaStreamConstraintsGroupIdVideo);
   }
   if (RequestUsesDiscreteConstraint(
-          constraints, &MediaTrackConstraintSetPlatform::video_kind)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsVideoKind);
-  }
-  if (RequestUsesDiscreteConstraint(
           constraints, &MediaTrackConstraintSetPlatform::media_stream_source)) {
     counter.Count(WebFeature::kMediaStreamConstraintsMediaStreamSourceVideo);
   }
@@ -306,32 +304,6 @@ MediaConstraints ParseOptions(
 }
 
 }  // namespace
-
-class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
- public:
-  V8Callbacks(V8NavigatorUserMediaSuccessCallback* success_callback,
-              V8NavigatorUserMediaErrorCallback* error_callback)
-      : success_callback_(success_callback), error_callback_(error_callback) {}
-  ~V8Callbacks() override = default;
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(success_callback_);
-    visitor->Trace(error_callback_);
-    UserMediaRequest::Callbacks::Trace(visitor);
-  }
-
-  void OnSuccess(MediaStream* stream) override {
-    success_callback_->InvokeAndReportException(nullptr, stream);
-  }
-  void OnError(ScriptWrappable* callback_this_value,
-               const V8MediaStreamError* error) override {
-    error_callback_->InvokeAndReportException(callback_this_value, error);
-  }
-
- private:
-  Member<V8NavigatorUserMediaSuccessCallback> success_callback_;
-  Member<V8NavigatorUserMediaErrorCallback> error_callback_;
-};
 
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
@@ -421,23 +393,7 @@ UserMediaRequest* UserMediaRequest::Create(
 
   return MakeGarbageCollected<UserMediaRequest>(
       context, controller, media_type, audio, video,
-      options->preferCurrentTab(),
-      RuntimeEnabledFeatures::RegionCaptureEnabled(context), callbacks,
-      surface);
-}
-
-UserMediaRequest* UserMediaRequest::Create(
-    ExecutionContext* context,
-    UserMediaController* controller,
-    const MediaStreamConstraints* options,
-    V8NavigatorUserMediaSuccessCallback* success_callback,
-    V8NavigatorUserMediaErrorCallback* error_callback,
-    MediaErrorState& error_state,
-    IdentifiableSurface surface) {
-  return Create(
-      context, controller, UserMediaRequest::MediaType::kUserMedia, options,
-      MakeGarbageCollected<V8Callbacks>(success_callback, error_callback),
-      error_state, surface);
+      options->preferCurrentTab(), callbacks, surface);
 }
 
 UserMediaRequest* UserMediaRequest::CreateForTesting(
@@ -445,8 +401,7 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
       nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
-      /*should_prefer_current_tab=*/false, /*region_capture_capable=*/false,
-      nullptr, IdentifiableSurface());
+      /*should_prefer_current_tab=*/false, nullptr, IdentifiableSurface());
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
@@ -455,7 +410,6 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    MediaConstraints audio,
                                    MediaConstraints video,
                                    bool should_prefer_current_tab,
-                                   bool region_capture_capable,
                                    Callbacks* callbacks,
                                    IdentifiableSurface surface)
     : ExecutionContextLifecycleObserver(context),
@@ -463,7 +417,6 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       audio_(audio),
       video_(video),
       should_prefer_current_tab_(should_prefer_current_tab),
-      region_capture_capable_(region_capture_capable),
       should_disable_hardware_noise_suppression_(
           RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
               context)),
@@ -549,34 +502,52 @@ void UserMediaRequest::Start() {
     controller_->RequestUserMedia(this);
 }
 
-void UserMediaRequest::Succeed(MediaStreamDescriptor* stream_descriptor) {
+void UserMediaRequest::Succeed(
+    const MediaStreamDescriptorVector& streams_descriptors) {
   DCHECK(!is_resolved_);
+  DCHECK(transferred_track_ == nullptr || streams_descriptors.size() == 1u);
   if (!GetExecutionContext())
     return;
 
-  MediaStream::Create(GetExecutionContext(), stream_descriptor,
-                      WTF::Bind(&UserMediaRequest::OnMediaStreamInitialized,
-                                WrapPersistent(this)));
+  if (transferred_track_) {
+    MediaStream::Create(GetExecutionContext(), streams_descriptors[0],
+                        transferred_track_,
+                        WTF::Bind(&UserMediaRequest::OnMediaStreamInitialized,
+                                  WrapPersistent(this)));
+  } else {
+    MediaStreamSet::Create(
+        GetExecutionContext(), streams_descriptors,
+        WTF::Bind(&UserMediaRequest::OnMediaStreamsInitialized,
+                  WrapPersistent(this)));
+  }
 }
 
 void UserMediaRequest::OnMediaStreamInitialized(MediaStream* stream) {
+  OnMediaStreamsInitialized({stream});
+}
+
+void UserMediaRequest::OnMediaStreamsInitialized(MediaStreamVector streams) {
   DCHECK(!is_resolved_);
 
-  MediaStreamTrackVector audio_tracks = stream->getAudioTracks();
-  for (const auto& audio_track : audio_tracks)
-    audio_track->SetConstraints(audio_);
+  for (const Member<MediaStream>& stream : streams) {
+    MediaStreamTrackVector audio_tracks = stream->getAudioTracks();
+    for (const auto& audio_track : audio_tracks)
+      audio_track->SetConstraints(audio_);
 
-  MediaStreamTrackVector video_tracks = stream->getVideoTracks();
-  for (const auto& video_track : video_tracks)
-    video_track->SetConstraints(video_);
+    MediaStreamTrackVector video_tracks = stream->getVideoTracks();
+    for (const auto& video_track : video_tracks)
+      video_track->SetConstraints(video_);
 
-  RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
-                              IdentifiabilityBenignStringToken(g_empty_string));
-  if (auto* window = GetWindow()) {
-    PeerConnectionTracker::From(*window).TrackGetUserMediaSuccess(this, stream);
+    RecordIdentifiabilityMetric(
+        surface_, GetExecutionContext(),
+        IdentifiabilityBenignStringToken(g_empty_string));
+    if (auto* window = GetWindow()) {
+      PeerConnectionTracker::From(*window).TrackGetUserMediaSuccess(this,
+                                                                    stream);
+    }
   }
   // After this call, the execution context may be invalid.
-  callbacks_->OnSuccess(stream);
+  callbacks_->OnSuccess(streams);
   is_resolved_ = true;
 }
 
@@ -673,6 +644,7 @@ void UserMediaRequest::ContextDestroyed() {
 void UserMediaRequest::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
   visitor->Trace(callbacks_);
+  visitor->Trace(transferred_track_);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 

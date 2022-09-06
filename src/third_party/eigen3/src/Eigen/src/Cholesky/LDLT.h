@@ -246,7 +246,7 @@ template<typename MatrixType_, int UpLo_> class LDLT
       * This method is provided for compatibility with other matrix decompositions, thus enabling generic code such as:
       * \code x = decomposition.adjoint().solve(b) \endcode
       */
-    const LDLT& adjoint() const { return *this; };
+    const LDLT& adjoint() const { return *this; }
 
     EIGEN_DEVICE_FUNC inline EIGEN_CONSTEXPR Index rows() const EIGEN_NOEXCEPT { return m_matrix.rows(); }
     EIGEN_DEVICE_FUNC inline EIGEN_CONSTEXPR Index cols() const EIGEN_NOEXCEPT { return m_matrix.cols(); }
@@ -440,7 +440,7 @@ template<> struct ldlt_inplace<Lower>
       // Update the terms of L
       Index rs = size-j-1;
       w.tail(rs) -= wj * mat.col(j).tail(rs);
-      if(gamma != 0)
+      if(!numext::is_exactly_zero(gamma))
         mat.col(j).tail(rs) += (sigma*numext::conj(wj)/gamma)*w.tail(rs);
     }
     return true;

@@ -69,6 +69,8 @@ source_set("platform") {
     "inspect/ax_inspect.h",
     "inspect/ax_inspect_scenario.cc",
     "inspect/ax_inspect_scenario.h",
+    "inspect/ax_inspect_test_helper.cc",
+    "inspect/ax_inspect_test_helper.h",
     "inspect/ax_inspect_utils.cc",
     "inspect/ax_inspect_utils.h",
     "inspect/ax_optional.h",
@@ -91,12 +93,28 @@ source_set("platform") {
   if (is_fuchsia) {
     sources += [
       "fuchsia/accessibility_bridge_fuchsia.h",
+      "fuchsia/accessibility_bridge_fuchsia_impl.cc",
+      "fuchsia/accessibility_bridge_fuchsia_impl.h",
       "fuchsia/accessibility_bridge_fuchsia_registry.cc",
       "fuchsia/accessibility_bridge_fuchsia_registry.h",
+      "fuchsia/ax_platform_node_fuchsia.cc",
+      "fuchsia/ax_platform_node_fuchsia.h",
+      "fuchsia/semantic_provider.h",
+      "fuchsia/semantic_provider_impl.cc",
+      "fuchsia/semantic_provider_impl.h",
     ]
 
-    public_deps +=
-        [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics" ]
+    public_deps += [
+      "//base",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.math",
+      "//third_party/fuchsia-sdk/sdk/pkg/inspect",
+      "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+      "//ui/aura",
+      "//ui/gfx/geometry",
+    ]
   }
 
   if (has_native_accessibility) {
@@ -124,6 +142,10 @@ source_set("platform") {
         "ax_platform_relation_win.h",
         "ax_system_caret_win.cc",
         "ax_system_caret_win.h",
+        "inspect/ax_event_recorder_win.cc",
+        "inspect/ax_event_recorder_win.h",
+        "inspect/ax_event_recorder_win_uia.cc",
+        "inspect/ax_event_recorder_win_uia.h",
         "inspect/ax_inspect_utils_win.cc",
         "inspect/ax_inspect_utils_win.h",
         "uia_registrar_win.cc",
@@ -132,6 +154,7 @@ source_set("platform") {
 
       public_deps += [
         "//third_party/iaccessible2",
+        "//third_party/isimpledom",
         "//ui/accessibility/platform:ichromeaccessible",
       ]
 
@@ -153,10 +176,18 @@ source_set("platform") {
         "ax_private_roles_mac.h",
         "ax_private_webkit_constants_mac.h",
         "ax_private_webkit_constants_mac.mm",
+        "ax_utils_mac.h",
+        "ax_utils_mac.mm",
+        "inspect/ax_call_statement_invoker_mac.h",
+        "inspect/ax_call_statement_invoker_mac.mm",
+        "inspect/ax_event_recorder_mac.h",
+        "inspect/ax_event_recorder_mac.mm",
         "inspect/ax_inspect_utils_mac.h",
         "inspect/ax_inspect_utils_mac.mm",
         "inspect/ax_transform_mac.h",
         "inspect/ax_transform_mac.mm",
+        "inspect/ax_tree_formatter_mac.h",
+        "inspect/ax_tree_formatter_mac.mm",
         "inspect/ax_tree_indexer_mac.h",
       ]
 
@@ -175,8 +206,12 @@ source_set("platform") {
         "ax_platform_atk_hyperlink.h",
         "ax_platform_node_auralinux.cc",
         "ax_platform_node_auralinux.h",
+        "inspect/ax_call_statement_invoker_auralinux.cc",
+        "inspect/ax_call_statement_invoker_auralinux.h",
         "inspect/ax_inspect_utils_auralinux.cc",
         "inspect/ax_inspect_utils_auralinux.h",
+        "inspect/ax_tree_indexer.h",
+        "inspect/ax_tree_indexer_auralinux.h",
       ]
 
       configs += [ "//build/config/linux/atspi2" ]

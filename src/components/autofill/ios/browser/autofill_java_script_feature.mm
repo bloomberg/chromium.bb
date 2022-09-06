@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -21,7 +22,7 @@
 #endif
 
 namespace {
-const char kScriptName[] = "autofill_js";
+const char kScriptName[] = "autofill_controller";
 
 // The timeout for any JavaScript call in this file.
 const int64_t kJavaScriptExecutionTimeoutInSeconds = 5;

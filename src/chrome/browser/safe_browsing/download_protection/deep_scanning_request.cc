@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -33,7 +34,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
-#include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -154,7 +154,7 @@ EventResult GetEventResult(download::DownloadDangerType danger_type,
   if (download_core_service) {
     ChromeDownloadManagerDelegate* delegate =
         download_core_service->GetDownloadManagerDelegate();
-    if (delegate && delegate->ShouldBlockFile(danger_type, item)) {
+    if (delegate && delegate->ShouldBlockFile(danger_type)) {
       return EventResult::BLOCKED;
     }
   }
@@ -417,21 +417,22 @@ void DeepScanningRequest::StartSavePackageScan() {
   std::vector<FileOpeningJob::FileOpeningTask> tasks(pending_scan_requests_);
   size_t i = 0;
   for (const auto& tmp_path_and_final_path : save_package_files_) {
+    base::FilePath file_location = ReportOnlyScan()
+                                       ? tmp_path_and_final_path.second
+                                       : tmp_path_and_final_path.first;
     auto request = std::make_unique<FileAnalysisRequest>(
-        analysis_settings_, tmp_path_and_final_path.first,
+        analysis_settings_, file_location,
         tmp_path_and_final_path.second.BaseName(), /*mimetype*/ "",
         /* delay_opening_file */ true,
         base::BindOnce(&DeepScanningRequest::OnScanComplete,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       tmp_path_and_final_path.first));
+                       weak_ptr_factory_.GetWeakPtr(), file_location));
     request->set_filename(tmp_path_and_final_path.second.AsUTF8Unsafe());
 
     FileAnalysisRequest* request_raw = request.get();
-    PopulateRequest(request_raw, profile, tmp_path_and_final_path.first);
+    PopulateRequest(request_raw, profile, file_location);
     request_raw->GetRequestData(base::BindOnce(
         &DeepScanningRequest::OnGotRequestData, weak_ptr_factory_.GetWeakPtr(),
-        tmp_path_and_final_path.second, tmp_path_and_final_path.first,
-        std::move(request)));
+        tmp_path_and_final_path.second, file_location, std::move(request)));
     DCHECK_LT(i, tasks.size());
     tasks[i++].request = request_raw;
   }
@@ -464,8 +465,8 @@ void DeepScanningRequest::PopulateRequest(FileAnalysisRequest* request,
     request->set_content_type(file_metadata_.at(path).mime_type);
   }
 
-  for (const std::string& tag : analysis_settings_.tags)
-    request->add_tag(tag);
+  for (const auto& tag : analysis_settings_.tags)
+    request->add_tag(tag.first);
 }
 
 void DeepScanningRequest::PrepareClientDownloadRequest(

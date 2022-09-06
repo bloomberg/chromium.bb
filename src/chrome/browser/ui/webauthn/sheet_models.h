@@ -73,15 +73,18 @@ class AuthenticatorSheetModelBase
 class AuthenticatorMechanismSelectorSheetModel
     : public AuthenticatorSheetModelBase {
  public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+  explicit AuthenticatorMechanismSelectorSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
 
  private:
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
+  bool IsManageDevicesButtonVisible() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   std::u16string GetStepTitle() const override;
   std::u16string GetStepDescription() const override;
+  void OnManageDevices() override;
 };
 
 class AuthenticatorInsertAndActivateUsbSheetModel
@@ -261,12 +264,15 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
  private:
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
+  bool IsCloseButtonVisible() const override;
+  bool IsCancelButtonVisible() const override;
   bool IsActivityIndicatorVisible() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   std::u16string GetStepTitle() const override;
   std::u16string GetStepDescription() const override;
   ui::MenuModel* GetOtherMechanismsMenuModel() override;
+  void OnBack() override;
 
   std::unique_ptr<OtherMechanismsMenuModel> other_mechanisms_menu_model_;
 };

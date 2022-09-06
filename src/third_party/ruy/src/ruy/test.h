@@ -1063,19 +1063,17 @@ void EvalEigenTensor(const Matrix<Scalar>& lhs, const Matrix<Scalar>& rhs,
                                                         : dst->layout().rows());
   using DimPair =
       typename Eigen::Tensor<Scalar, 1, 0, Eigen::Index>::DimensionPair;
-  Eigen::array<DimPair, 1> contract_dims(
+  Eigen::array<DimPair, 1> contract_dims{
       {DimPair((LhsOrder == Order::kColMajor) ? 1 : 0,
-               (RhsOrder == Order::kColMajor) ? 0 : 1)});
-  Eigen::array<int, 2> shuffle(DstOrder == Order::kColMajor ? 0 : 1,
-                               DstOrder == Order::kColMajor ? 1 : 0);
+               (RhsOrder == Order::kColMajor) ? 0 : 1)}};
   static Eigen::ThreadPool pool(max_num_threads ? max_num_threads : 1);
   static Eigen::ThreadPoolDevice device(&pool, pool.NumThreads());
   if (mul_params.bias()) {
     TensorBiasType tensor_bias(mul_params.bias(), dst->layout().rows());
-    Eigen::array<int, 2> bias_2d_shape(tr ? 1 : dst->layout().rows(),
-                                       tr ? dst->layout().rows() : 1);
-    Eigen::array<int, 2> bcast(tr ? dst->layout().cols() : 1,
-                               tr ? 1 : dst->layout().cols());
+    Eigen::array<int, 2> bias_2d_shape{tr ? 1 : dst->layout().rows(),
+                                       tr ? dst->layout().rows() : 1};
+    Eigen::array<int, 2> bcast{tr ? dst->layout().cols() : 1,
+                               tr ? 1 : dst->layout().cols()};
     if (mul_params.clamp_max() == std::numeric_limits<Scalar>::infinity() &&
         mul_params.clamp_min() == -std::numeric_limits<Scalar>::infinity()) {
       tensor_dst.device(device) =
@@ -1715,6 +1713,16 @@ template <typename LhsScalar, typename RhsScalar, typename AccumScalar,
           typename DstScalar>
 void TestSet<LhsScalar, RhsScalar, AccumScalar, DstScalar>::MakeZeroPoints() {
   RUY_CHECK_EQ(life_stage, LifeStage::kInitial);
+  if (std::is_same<LhsScalar, std::int16_t>::value ||
+      std::is_same<RhsScalar, std::int16_t>::value) {
+    // For now, support for int16 source types is limited to the
+    // symmetric case (zero_point==0) because that appears to be
+    // the case in the initial use cases, and that limits complexity
+    // in thinking about accumulator overflows.
+    // Setting use_specified_zero_points causes the default values 0 to be
+    // used unless explicitly overridden.
+    use_specified_zero_points = true;
+  }
   if (!benchmark && !use_specified_zero_points) {
     MakeRandomScalar(RandomRange::kReasonableSrcZeroPoint, &lhs_zero_point);
     MakeRandomScalar(RandomRange::kReasonableSrcZeroPoint, &rhs_zero_point);
@@ -1845,6 +1853,12 @@ void TestSet<LhsScalar, RhsScalar, AccumScalar, DstScalar>::MakeResultPaths() {
     // enabled paths.
     Context context;
     paths_bitfield = get_ctx(&context)->GetRuntimeEnabledPaths();
+  }
+
+  // Disable the internal test-only variants of the StandardCpp path in
+  // benchmarks
+  if (benchmark) {
+    paths_bitfield = paths_bitfield & kAllPaths;
   }
 
   // Disable the internal test-only variants of the StandardCpp path on large

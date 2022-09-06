@@ -26,7 +26,6 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -107,8 +106,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
 
 class FakeDataChannel {
  public:
-  FakeDataChannel()
-      : read_buf_len_(0), closed_(false), write_called_after_close_(false) {}
+  FakeDataChannel() = default;
 
   FakeDataChannel(const FakeDataChannel&) = delete;
   FakeDataChannel& operator=(const FakeDataChannel&) = delete;
@@ -204,19 +202,19 @@ class FakeDataChannel {
 
   CompletionOnceCallback read_callback_;
   scoped_refptr<IOBuffer> read_buf_;
-  int read_buf_len_;
+  int read_buf_len_ = 0;
 
   CompletionOnceCallback write_callback_;
 
   base::queue<scoped_refptr<DrainableIOBuffer>> data_;
 
   // True if Close() has been called.
-  bool closed_;
+  bool closed_ = false;
 
   // Controls the completion of Write() after the FakeDataChannel is closed.
   // After the FakeDataChannel is closed, the first Write() call completes
   // asynchronously.
-  bool write_called_after_close_;
+  bool write_called_after_close_ = false;
 
   base::WeakPtrFactory<FakeDataChannel> weak_factory_{this};
 };
@@ -284,14 +282,6 @@ class FakeSocket : public StreamSocket {
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
 
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
-
-  void GetConnectionAttempts(ConnectionAttempts* out) const override {
-    out->clear();
-  }
-
-  void ClearConnectionAttempts() override {}
-
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
 
   int64_t GetTotalReceivedBytes() const override {
     NOTIMPLEMENTED();
@@ -1206,7 +1196,7 @@ TEST_F(SSLServerSocketTest, RequireEcdheFlag) {
   };
   SSLContextConfig config;
   config.disabled_cipher_suites.assign(
-      kEcdheCiphers, kEcdheCiphers + base::size(kEcdheCiphers));
+      kEcdheCiphers, kEcdheCiphers + std::size(kEcdheCiphers));
 
   // Legacy RSA key exchange ciphers only exist in TLS 1.2 and below.
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
@@ -1286,7 +1276,7 @@ TEST_F(SSLServerSocketTest, HandshakeServerSSLPrivateKeyRequireEcdhe) {
   };
   SSLContextConfig config;
   config.disabled_cipher_suites.assign(
-      kEcdheCiphers, kEcdheCiphers + base::size(kEcdheCiphers));
+      kEcdheCiphers, kEcdheCiphers + std::size(kEcdheCiphers));
   // TLS 1.3 always works with SSLPrivateKey.
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
   ssl_config_service_->UpdateSSLConfigAndNotify(config);

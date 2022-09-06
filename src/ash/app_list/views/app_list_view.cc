@@ -12,7 +12,6 @@
 
 #include "ash/app_list/app_list_event_targeter.h"
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_folder_view.h"
@@ -547,7 +546,8 @@ class AppListBackgroundShieldView : public views::View {
     // add the inset to the bottom to keep padding at the top of the AppList the
     // same.
     gfx::Rect new_bounds = bounds;
-    new_bounds.Inset(0, 0, 0, -shelf_background_corner_radius_ * 2);
+    new_bounds.Inset(
+        gfx::Insets::TLBR(0, 0, -shelf_background_corner_radius_ * 2, 0));
     SetBoundsRect(new_bounds);
   }
 
@@ -659,8 +659,7 @@ void AppListView::InitContents() {
   SearchBoxViewBase::InitParams params;
   params.show_close_button_when_active = true;
   params.create_background = true;
-  params.animate_changing_search_icon =
-      features::IsProductivityLauncherAnimationEnabled();
+  params.animate_changing_search_icon = true;
   search_box_view_->Init(params);
 
   // Assign |app_list_main_view_| here since it is accessed during Init().
@@ -726,6 +725,7 @@ void AppListView::InitChildWidget() {
   views::Widget* search_box_widget = new views::Widget;
   search_box_widget->Init(std::move(search_box_widget_params));
   search_box_widget->SetContentsView(search_box_view_);
+  search_box_view_->MaybeCreateFocusRing();
   DCHECK_EQ(search_box_widget, search_box_view_->GetWidget());
 
   // Assign an accessibility role to the native window of |search_box_widget|,
@@ -782,7 +782,6 @@ void AppListView::Show(AppListViewState preferred_state, bool is_side_shelf) {
   UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
                       base::Time::Now() - time_shown_.value());
   time_shown_ = absl::nullopt;
-  RecordFolderMetrics();
 }
 
 void AppListView::SetDragAndDropHostOfCurrentAppList(
@@ -917,9 +916,9 @@ gfx::Insets AppListView::GetMainViewInsetsForShelf() const {
   if (is_side_shelf()) {
     // Set both horizontal insets so the app list remains centered on the
     // screen.
-    return gfx::Insets(0, delegate_->GetShelfSize());
+    return gfx::Insets::VH(0, delegate_->GetShelfSize());
   }
-  return gfx::Insets(0, 0, delegate_->GetShelfSize(), 0);
+  return gfx::Insets::TLBR(0, 0, delegate_->GetShelfSize(), 0);
 }
 
 void AppListView::UpdateWidget() {
@@ -1707,6 +1706,14 @@ void AppListView::UpdateWindowTitle() {
   }
 }
 
+void AppListView::OnAppListVisibilityWillChange(bool visible) {
+  GetAppsContainerView()->OnAppListVisibilityWillChange(visible);
+}
+
+void AppListView::OnAppListVisibilityChanged(bool shown) {
+  GetAppsContainerView()->OnAppListVisibilityChanged(shown);
+}
+
 base::TimeDelta AppListView::GetStateTransitionAnimationDuration(
     AppListViewState target_state) {
   if (is_side_shelf_ || (target_state == AppListViewState::kClosed &&
@@ -2318,32 +2325,6 @@ void AppListView::SetBackgroundShieldColor() {
   app_list_background_shield_->UpdateColor(
       GetBackgroundShieldColor(delegate_->GetWallpaperProminentColors(),
                                color_opacity, delegate_->IsInTabletMode()));
-}
-
-void AppListView::RecordFolderMetrics() {
-  int number_of_apps_in_folders = 0;
-  int number_of_folders = 0;
-  int non_system_folders = 0;
-  AppListModel* const model = AppListModelProvider::Get()->model();
-  AppListItemList* const item_list = model->top_level_item_list();
-  for (size_t i = 0; i < item_list->item_count(); ++i) {
-    AppListItem* item = item_list->item_at(i);
-    if (item->GetItemType() != AppListFolderItem::kItemType)
-      continue;
-    ++number_of_folders;
-    AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
-    if (folder->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM)
-      continue;  // Don't count items in OEM folders.
-    number_of_apps_in_folders += folder->item_list()->item_count();
-    if (folder->id() == kCrostiniFolderId)
-      continue;
-    // Folders that are not the OEM folder and not "Linux apps".
-    ++non_system_folders;
-  }
-  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfFolders", number_of_folders);
-  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfNonSystemFolders", non_system_folders);
-  UMA_HISTOGRAM_COUNTS_100("Apps.AppsInFolders.FullscreenAppListEnabled",
-                           number_of_apps_in_folders);
 }
 
 bool AppListView::ShouldIgnoreScrollEvents() {

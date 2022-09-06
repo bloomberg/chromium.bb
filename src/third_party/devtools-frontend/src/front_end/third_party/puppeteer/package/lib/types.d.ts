@@ -1,20 +1,3 @@
-/**
- * These global declarations exist so puppeteer can work without the need to use `"dom"`
- * types.
- *
- * To get full type information for these interfaces, add `"types": "dom"`in your
- * `tsconfig.json` file.
- */
-declare global {
-    interface Document {
-    }
-    interface Element {
-    }
-    interface NodeListOf<TNode> {
-    }
-}
-export {};
-//# sourceMappingURL=global.d.ts.map
 /// <reference types="node" />
 
 import { ChildProcess } from 'child_process';
@@ -194,13 +177,14 @@ export declare class Browser extends EventEmitter {
     /**
      * @internal
      */
-    static create(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback): Promise<Browser>;
+    static create(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback, isPageTargetCallback?: IsPageTargetCallback): Promise<Browser>;
     private _ignoreHTTPSErrors;
     private _defaultViewport?;
     private _process?;
     private _connection;
     private _closeCallback;
     private _targetFilterCallback;
+    private _isPageTargetCallback;
     private _defaultContext;
     private _contexts;
     private _screenshotTaskQueue;
@@ -213,12 +197,16 @@ export declare class Browser extends EventEmitter {
     /**
      * @internal
      */
-    constructor(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback);
+    constructor(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback, isPageTargetCallback?: IsPageTargetCallback);
     /**
      * The spawned browser process. Returns `null` if the browser instance was created with
      * {@link Puppeteer.connect}.
      */
     process(): ChildProcess | null;
+    /**
+     * @internal
+     */
+    _setIsPageTargetCallback(isPageTargetCallback?: IsPageTargetCallback): void;
     /**
      * Creates a new incognito browser context. This won't share cookies/cache with other
      * browser contexts.
@@ -305,7 +293,7 @@ export declare class Browser extends EventEmitter {
      * const newWindowTarget = await browser.waitForTarget(target => target.url() === 'https://www.example.com/');
      * ```
      */
-    waitForTarget(predicate: (x: Target) => boolean, options?: WaitForTargetOptions): Promise<Target>;
+    waitForTarget(predicate: (x: Target) => boolean | Promise<boolean>, options?: WaitForTargetOptions): Promise<Target>;
     /**
      * An array of all open pages inside the Browser.
      *
@@ -379,6 +367,10 @@ export declare interface BrowserConnectOptions {
      * Callback to decide if Puppeteer should connect to a given target or not.
      */
     targetFilter?: TargetFilterCallback;
+    /**
+     * @internal
+     */
+    isPageTarget?: IsPageTargetCallback;
 }
 
 /**
@@ -442,7 +434,7 @@ export declare class BrowserContext extends EventEmitter {
      * @returns Promise which resolves to the first target found
      * that matches the `predicate` function.
      */
-    waitForTarget(predicate: (x: Target) => boolean, options?: {
+    waitForTarget(predicate: (x: Target) => boolean | Promise<boolean>, options?: {
         timeout?: number;
     }): Promise<Target>;
     /**
@@ -716,7 +708,7 @@ export declare interface BrowserLaunchArgumentOptions {
      * Whether to run the browser in headless mode.
      * @defaultValue true
      */
-    headless?: boolean;
+    headless?: boolean | 'chrome';
     /**
      * Path to a user data directory.
      * {@link https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/user_data_dir.md | see the Chromium docs}
@@ -725,7 +717,7 @@ export declare interface BrowserLaunchArgumentOptions {
     userDataDir?: string;
     /**
      * Whether to auto-open a DevTools panel for each tab. If this is set to
-     * `true`, then `headless` will be set to `false` automatically.
+     * `true`, then `headless` will be forced to `false`.
      * @defaultValue `false`
      */
     devtools?: boolean;
@@ -768,7 +760,7 @@ export declare class CDPSession extends EventEmitter {
     /**
      * @internal
      */
-    _connection: Connection;
+    _connection?: Connection;
     private _sessionId;
     private _targetType;
     private _callbacks;
@@ -776,7 +768,7 @@ export declare class CDPSession extends EventEmitter {
      * @internal
      */
     constructor(connection: Connection, targetType: string, sessionId: string);
-    connection(): Connection;
+    connection(): Connection | undefined;
     send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
     /**
      * @internal
@@ -795,6 +787,18 @@ export declare class CDPSession extends EventEmitter {
      * @internal
      */
     id(): string;
+}
+
+declare interface CDPSession_2 extends EventEmitter {
+    send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
+}
+
+declare interface CDPSession_3 extends EventEmitter {
+    send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
+}
+
+declare interface CDPSession_4 extends EventEmitter {
+    send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
 }
 
 /**
@@ -845,7 +849,7 @@ export declare interface ClickOptions {
     /**
      * @defaultValue 'left'
      */
-    button?: 'left' | 'right' | 'middle';
+    button?: MouseButton;
     /**
      * @defaultValue 1
      */
@@ -871,7 +875,7 @@ export declare interface CommonEventEmitter {
 }
 
 /**
- * Settings that are common to the Puppeteer class, regardless of enviroment.
+ * Settings that are common to the Puppeteer class, regardless of environment.
  * @internal
  */
 export declare interface CommonPuppeteerSettings {
@@ -896,7 +900,7 @@ export declare class Connection extends EventEmitter {
     _closed: boolean;
     _callbacks: Map<number, ConnectionCallback>;
     constructor(url: string, transport: ConnectionTransport, delay?: number);
-    static fromSession(session: CDPSession): Connection;
+    static fromSession(session: CDPSession): Connection | undefined;
     /**
      * @param sessionId - The session id
      * @returns The current CDP session if it exists
@@ -953,8 +957,8 @@ export declare const ConnectionEmittedEvents: {
  * @public
  */
 export declare interface ConnectionTransport {
-    send(string: any): any;
-    close(): any;
+    send(message: string): void;
+    close(): void;
     onmessage?: (message: string) => void;
     onclose?: () => void;
 }
@@ -1251,6 +1255,13 @@ export declare interface CustomQueryHandler {
 export declare function customQueryHandlerNames(): string[];
 
 /**
+ * The default cooperative request interception resolution priority
+ *
+ * @public
+ */
+export declare const DEFAULT_INTERCEPT_RESOLUTION_PRIORITY = 0;
+
+/**
  * Copyright 2017 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1496,12 +1507,103 @@ export declare class DOMWorld {
  * @public
  */
 export declare class ElementHandle<ElementType extends Element = Element> extends JSHandle<ElementType> {
+    private _frame;
     private _page;
     private _frameManager;
     /**
      * @internal
      */
-    constructor(context: ExecutionContext, client: CDPSession, remoteObject: Protocol.Runtime.RemoteObject, page: Page, frameManager: FrameManager);
+    constructor(context: ExecutionContext, client: CDPSession, remoteObject: Protocol.Runtime.RemoteObject, frame: Frame, page: Page, frameManager: FrameManager);
+    /**
+     * Wait for the `selector` to appear within the element. If at the moment of calling the
+     * method the `selector` already exists, the method will return immediately. If
+     * the `selector` doesn't appear after the `timeout` milliseconds of waiting, the
+     * function will throw.
+     *
+     * This method does not work across navigations or if the element is detached from DOM.
+     *
+     * @param selector - A
+     * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | selector}
+     * of an element to wait for
+     * @param options - Optional waiting parameters
+     * @returns Promise which resolves when element specified by selector string
+     * is added to DOM. Resolves to `null` if waiting for hidden: `true` and
+     * selector is not found in DOM.
+     * @remarks
+     * The optional parameters in `options` are:
+     *
+     * - `visible`: wait for the selected element to be present in DOM and to be
+     * visible, i.e. to not have `display: none` or `visibility: hidden` CSS
+     * properties. Defaults to `false`.
+     *
+     * - `hidden`: wait for the selected element to not be found in the DOM or to be hidden,
+     * i.e. have `display: none` or `visibility: hidden` CSS properties. Defaults to
+     * `false`.
+     *
+     * - `timeout`: maximum time to wait in milliseconds. Defaults to `30000`
+     * (30 seconds). Pass `0` to disable timeout. The default value can be changed
+     * by using the {@link Page.setDefaultTimeout} method.
+     */
+    waitForSelector(selector: string, options?: {
+        visible?: boolean;
+        hidden?: boolean;
+        timeout?: number;
+    }): Promise<ElementHandle | null>;
+    /**
+     * Wait for the `xpath` within the element. If at the moment of calling the
+     * method the `xpath` already exists, the method will return immediately. If
+     * the `xpath` doesn't appear after the `timeout` milliseconds of waiting, the
+     * function will throw.
+     *
+     * If `xpath` starts with `//` instead of `.//`, the dot will be appended automatically.
+     *
+     * This method works across navigation
+     * ```js
+     * const puppeteer = require('puppeteer');
+     * (async () => {
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * let currentURL;
+     * page
+     * .waitForXPath('//img')
+     * .then(() => console.log('First URL with image: ' + currentURL));
+     * for (currentURL of [
+     * 'https://example.com',
+     * 'https://google.com',
+     * 'https://bbc.com',
+     * ]) {
+     * await page.goto(currentURL);
+     * }
+     * await browser.close();
+     * })();
+     * ```
+     * @param xpath - A
+     * {@link https://developer.mozilla.org/en-US/docs/Web/XPath | xpath} of an
+     * element to wait for
+     * @param options - Optional waiting parameters
+     * @returns Promise which resolves when element specified by xpath string is
+     * added to DOM. Resolves to `null` if waiting for `hidden: true` and xpath is
+     * not found in DOM.
+     * @remarks
+     * The optional Argument `options` have properties:
+     *
+     * - `visible`: A boolean to wait for element to be present in DOM and to be
+     * visible, i.e. to not have `display: none` or `visibility: hidden` CSS
+     * properties. Defaults to `false`.
+     *
+     * - `hidden`: A boolean wait for element to not be found in the DOM or to be
+     * hidden, i.e. have `display: none` or `visibility: hidden` CSS properties.
+     * Defaults to `false`.
+     *
+     * - `timeout`: A number which is maximum time to wait for in milliseconds.
+     * Defaults to `30000` (30 seconds). Pass `0` to disable timeout. The default
+     * value can be changed by using the {@link Page.setDefaultTimeout} method.
+     */
+    waitForXPath(xpath: string, options?: {
+        visible?: boolean;
+        hidden?: boolean;
+        timeout?: number;
+    }): Promise<ElementHandle | null>;
     asElement(): ElementHandle<ElementType> | null;
     /**
      * Resolves to the content frame for element handles referencing
@@ -1509,6 +1611,7 @@ export declare class ElementHandle<ElementType extends Element = Element> extend
      */
     contentFrame(): Promise<Frame | null>;
     private _scrollIntoViewIfNeeded;
+    private _getOOPIFOffsets;
     /**
      * Returns the middle point within an element unless a specific offset is provided.
      */
@@ -1913,7 +2016,7 @@ export declare class ExecutionContext {
      *
      * @returns A promise that resolves to the return value of the given function.
      */
-    evaluate<ReturnType extends any>(pageFunction: Function | string, ...args: unknown[]): Promise<ReturnType>;
+    evaluate<ReturnType>(pageFunction: Function | string, ...args: unknown[]): Promise<ReturnType>;
     /**
      * @remarks
      * The only difference between `executionContext.evaluate` and
@@ -1990,6 +2093,8 @@ export declare class ExecutionContext {
      */
     _adoptElementHandle(elementHandle: ElementHandle): Promise<ElementHandle>;
 }
+
+declare type FetchRequestId = string;
 
 /**
  * File choosers let you react to the page requesting for a file.
@@ -2105,6 +2210,10 @@ export declare class Frame {
     /**
      * @internal
      */
+    _hasStartedLoading: boolean;
+    /**
+     * @internal
+     */
     _lifecycleEvents: Set<string>;
     /**
      * @internal
@@ -2130,6 +2239,11 @@ export declare class Frame {
      * @internal
      */
     _updateClient(client: CDPSession): void;
+    /**
+     * @remarks
+     *
+     * @returns `true` if the frame is an OOP frame, or `false` otherwise.
+     */
     isOOPFrame(): boolean;
     /**
      * @remarks
@@ -2200,6 +2314,10 @@ export declare class Frame {
         waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
     }): Promise<HTTPResponse | null>;
     /**
+     * @internal
+     */
+    client(): CDPSession;
+    /**
      * @returns a promise that resolves to the frame's default execution context.
      */
     executionContext(): Promise<ExecutionContext>;
@@ -2258,7 +2376,7 @@ export declare class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     $eval<ReturnType>(selector: string, pageFunction: (element: Element, ...args: unknown[]) => ReturnType | Promise<ReturnType>, ...args: SerializableOrJSHandle[]): Promise<WrapElementHandle<ReturnType>>;
     /**
@@ -2278,7 +2396,7 @@ export declare class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     $$eval<ReturnType>(selector: string, pageFunction: (elements: Element[], ...args: unknown[]) => ReturnType | Promise<ReturnType>, ...args: SerializableOrJSHandle[]): Promise<WrapElementHandle<ReturnType>>;
     /**
@@ -2618,6 +2736,10 @@ export declare class Frame {
     /**
      * @internal
      */
+    _onLoadingStarted(): void;
+    /**
+     * @internal
+     */
     _detach(): void;
 }
 
@@ -2679,7 +2801,6 @@ export declare class FrameManager extends EventEmitter {
     private _contextIdToContext;
     private _isolatedWorlds;
     private _mainFrame;
-    private _disconnectPromise?;
     constructor(client: CDPSession, page: Page, ignoreHTTPSErrors: boolean, timeoutSettings: TimeoutSettings);
     private setupEventListeners;
     initialize(client?: CDPSession): Promise<void>;
@@ -2696,6 +2817,7 @@ export declare class FrameManager extends EventEmitter {
     private _onAttachedToTarget;
     private _onDetachedFromTarget;
     _onLifecycleEvent(event: Protocol.Page.LifecycleEventEvent): void;
+    _onFrameStartedLoading(frameId: string): void;
     _onFrameStoppedLoading(frameId: string): void;
     _handleFrameTree(session: CDPSession, frameTree: Protocol.Page.FrameTree): void;
     page(): Page;
@@ -2714,6 +2836,10 @@ export declare class FrameManager extends EventEmitter {
     private _removeFramesRecursively;
 }
 
+declare interface FrameManager_2 {
+    frame(frameId: string): Frame | null;
+}
+
 /**
  * We use symbols to prevent external parties listening to these events.
  * They are internal to Puppeteer.
@@ -2724,6 +2850,7 @@ export declare const FrameManagerEmittedEvents: {
     FrameAttached: symbol;
     FrameNavigated: symbol;
     FrameDetached: symbol;
+    FrameSwapped: symbol;
     LifecycleEvent: symbol;
     FrameNavigatedWithinDocument: symbol;
     ExecutionContextCreated: symbol;
@@ -2856,14 +2983,13 @@ export declare class HTTPRequest {
     private _continueRequestOverrides;
     private _responseForRequest;
     private _abortErrorReason;
-    private _currentStrategy;
-    private _currentPriority;
-    private _interceptActions;
+    private _interceptResolutionState;
+    private _interceptHandlers;
     private _initiator;
     /**
      * @internal
      */
-    constructor(client: CDPSession, frame: Frame, interceptionId: string, allowInterception: boolean, event: Protocol.Network.RequestWillBeSentEvent, redirectChain: HTTPRequest[]);
+    constructor(client: CDPSession_4, frame: Frame, interceptionId: string, allowInterception: boolean, event: Protocol.Network.RequestWillBeSentEvent, redirectChain: HTTPRequest[]);
     /**
      * @returns the URL of the request
      */
@@ -2878,21 +3004,32 @@ export declare class HTTPRequest {
      * @returns The `ResponseForRequest` that gets used if the
      * interception is allowed to respond (ie, `abort()` is not called).
      */
-    responseForRequest(): Partial<ResponseForRequest>;
+    responseForRequest(): Partial<ResponseForRequest> | null;
     /**
      * @returns the most recent reason for aborting the request
      */
-    abortErrorReason(): Protocol.Network.ErrorReason;
+    abortErrorReason(): Protocol.Network.ErrorReason | null;
     /**
-     * @returns An array of the current intercept resolution strategy and priority
-     * `[strategy,priority]`. Strategy is one of: `abort`, `respond`, `continue`,
+     * @returns An InterceptResolutionState object describing the current resolution
+     *  action and priority.
+     *
+     *  InterceptResolutionState contains:
+     *    action: InterceptResolutionAction
+     *    priority?: number
+     *
+     *  InterceptResolutionAction is one of: `abort`, `respond`, `continue`,
      *  `disabled`, `none`, or `already-handled`.
      */
-    private interceptResolution;
+    interceptResolutionState(): InterceptResolutionState;
+    /**
+     * @returns `true` if the intercept resolution has already been handled,
+     * `false` otherwise.
+     */
+    isInterceptResolutionHandled(): boolean;
     /**
      * Adds an async request handler to the processing queue.
      * Deferred handlers are not guaranteed to execute in any particular order,
-     * but they are guarnateed to resolve before the request interception
+     * but they are guaranteed to resolve before the request interception
      * is finalized.
      */
     enqueueInterceptAction(pendingHandler: () => void | PromiseLike<unknown>): void;
@@ -2982,7 +3119,7 @@ export declare class HTTPRequest {
      *
      * @returns `null` unless the request failed. If the request fails this can
      * return an object with `errorText` containing a human-readable error
-     * message, e.g. `net::ERR_FAILED`. It is not guaranteeded that there will be
+     * message, e.g. `net::ERR_FAILED`. It is not guaranteed that there will be
      * failure text if the request fails.
      */
     failure(): {
@@ -3088,10 +3225,15 @@ export declare class HTTPResponse {
     private _fromServiceWorker;
     private _headers;
     private _securityDetails;
+    private _timing;
     /**
      * @internal
      */
-    constructor(client: CDPSession, request: HTTPRequest, responsePayload: Protocol.Network.Response);
+    constructor(client: CDPSession_3, request: HTTPRequest, responsePayload: Protocol.Network.Response, extraInfo: Protocol.Network.ResponseReceivedExtraInfoEvent | null);
+    /**
+     * @internal
+     */
+    _parseStatusTextFromExtrInfo(extraInfo: Protocol.Network.ResponseReceivedExtraInfoEvent | null): string | undefined;
     /**
      * @internal
      */
@@ -3128,6 +3270,10 @@ export declare class HTTPResponse {
          * secure connection, or `null` otherwise.
          */
      securityDetails(): SecurityDetails | null;
+     /**
+      * @returns Timing information related to the response.
+      */
+     timing(): Protocol.Network.ResourceTiming | null;
      /**
       * @returns Promise which resolves to a buffer with response body.
       */
@@ -3169,7 +3315,29 @@ export declare class HTTPResponse {
     /**
      * @public
      */
-    export declare type InterceptResolutionStrategy = 'abort' | 'respond' | 'continue' | 'disabled' | 'none' | 'alreay-handled';
+    export declare enum InterceptResolutionAction {
+        Abort = "abort",
+        Respond = "respond",
+        Continue = "continue",
+        Disabled = "disabled",
+        None = "none",
+        AlreadyHandled = "already-handled"
+    }
+
+    /**
+     * @public
+     */
+    export declare interface InterceptResolutionState {
+        action: InterceptResolutionAction;
+        priority?: number;
+    }
+
+    /**
+     * @public
+     *
+     * @deprecated please use {@link InterceptResolutionAction} instead.
+     */
+    export declare type InterceptResolutionStrategy = InterceptResolutionAction;
 
     /**
      * @public
@@ -3187,6 +3355,11 @@ export declare class HTTPResponse {
         queryAll?: (element: ElementHandle, selector: string) => Promise<ElementHandle[]>;
         queryAllArray?: (element: ElementHandle, selector: string) => Promise<JSHandle>;
     }
+
+    /**
+     * @internal
+     */
+    export declare type IsPageTargetCallback = (target: Protocol.Target.TargetInfo) => boolean;
 
     /**
      * @public
@@ -3673,10 +3846,11 @@ export declare class HTTPResponse {
         _timeoutPromise: Promise<TimeoutError | null>;
         _maximumTimer?: NodeJS.Timeout;
         _hasSameDocumentNavigation?: boolean;
+        _swapped?: boolean;
         constructor(frameManager: FrameManager, frame: Frame, waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[], timeout: number);
         _onRequest(request: HTTPRequest): void;
         _onFrameDetached(frame: Frame): void;
-        navigationResponse(): HTTPResponse | null;
+        navigationResponse(): Promise<HTTPResponse | null>;
         _terminate(error: Error): void;
         sameDocumentNavigationPromise(): Promise<Error | null>;
         newDocumentNavigationPromise(): Promise<Error | null>;
@@ -3684,9 +3858,12 @@ export declare class HTTPResponse {
         timeoutOrTerminationPromise(): Promise<Error | TimeoutError | null>;
         _createTimeoutPromise(): Promise<TimeoutError | null>;
         _navigatedWithinDocument(frame: Frame): void;
+        _frameSwapped(frame: Frame): void;
         _checkLifecycleComplete(): void;
         dispose(): void;
     }
+
+    declare type LowerCasePaperFormat = 'letter' | 'legal' | 'tabloid' | 'ledger' | 'a0' | 'a1' | 'a2' | 'a3' | 'a4' | 'a5' | 'a6';
 
     /**
      * @public
@@ -3871,7 +4048,7 @@ export declare class HTTPResponse {
     /**
      * @public
      */
-    export declare type MouseButton = 'left' | 'right' | 'middle';
+    export declare type MouseButton = 'left' | 'right' | 'middle' | 'back' | 'forward';
 
     /**
      * @public
@@ -3905,14 +4082,44 @@ export declare class HTTPResponse {
 
     /**
      * @internal
+     *
+     * Helper class to track network events by request ID
+     */
+    declare class NetworkEventManager {
+        private _requestWillBeSentMap;
+        private _requestPausedMap;
+        private _httpRequestsMap;
+        private _responseReceivedExtraInfoMap;
+        private _queuedRedirectInfoMap;
+        private _queuedEventGroupMap;
+        forget(networkRequestId: NetworkRequestId): void;
+        responseExtraInfo(networkRequestId: NetworkRequestId): Protocol.Network.ResponseReceivedExtraInfoEvent[];
+        private queuedRedirectInfo;
+        queueRedirectInfo(fetchRequestId: FetchRequestId, redirectInfo: RedirectInfo): void;
+        takeQueuedRedirectInfo(fetchRequestId: FetchRequestId): RedirectInfo | undefined;
+        numRequestsInProgress(): number;
+        storeRequestWillBeSent(networkRequestId: NetworkRequestId, event: Protocol.Network.RequestWillBeSentEvent): void;
+        getRequestWillBeSent(networkRequestId: NetworkRequestId): Protocol.Network.RequestWillBeSentEvent | undefined;
+        forgetRequestWillBeSent(networkRequestId: NetworkRequestId): void;
+        getRequestPaused(networkRequestId: NetworkRequestId): Protocol.Fetch.RequestPausedEvent | undefined;
+        forgetRequestPaused(networkRequestId: NetworkRequestId): void;
+        storeRequestPaused(networkRequestId: NetworkRequestId, event: Protocol.Fetch.RequestPausedEvent): void;
+        getRequest(networkRequestId: NetworkRequestId): HTTPRequest | undefined;
+        storeRequest(networkRequestId: NetworkRequestId, request: HTTPRequest): void;
+        forgetRequest(networkRequestId: NetworkRequestId): void;
+        getQueuedEventGroup(networkRequestId: NetworkRequestId): QueuedEventGroup | undefined;
+        queueEventGroup(networkRequestId: NetworkRequestId, event: QueuedEventGroup): void;
+        forgetQueuedEventGroup(networkRequestId: NetworkRequestId): void;
+    }
+
+    /**
+     * @internal
      */
     export declare class NetworkManager extends EventEmitter {
-        _client: CDPSession;
+        _client: CDPSession_2;
         _ignoreHTTPSErrors: boolean;
-        _frameManager: FrameManager;
-        _requestIdToRequestWillBeSentEvent: Map<string, Protocol.Network.RequestWillBeSentEvent>;
-        _requestIdToRequestPausedEvent: Map<string, Protocol.Fetch.RequestPausedEvent>;
-        _requestIdToRequest: Map<string, HTTPRequest>;
+        _frameManager: FrameManager_2;
+        _networkEventManager: NetworkEventManager;
         _extraHTTPHeaders: Record<string, string>;
         _credentials?: Credentials;
         _attemptedAuthentications: Set<string>;
@@ -3920,7 +4127,7 @@ export declare class HTTPResponse {
         _protocolRequestInterceptionEnabled: boolean;
         _userCacheDisabled: boolean;
         _emulatedNetworkConditions: InternalNetworkConditions;
-        constructor(client: CDPSession, ignoreHTTPSErrors: boolean, frameManager: FrameManager);
+        constructor(client: CDPSession_2, ignoreHTTPSErrors: boolean, frameManager: FrameManager_2);
         initialize(): Promise<void>;
         authenticate(credentials?: Credentials): Promise<void>;
         setExtraHTTPHeaders(extraHTTPHeaders: Record<string, string>): Promise<void>;
@@ -3937,14 +4144,28 @@ export declare class HTTPResponse {
         _updateProtocolCacheDisabled(): Promise<void>;
         _onRequestWillBeSent(event: Protocol.Network.RequestWillBeSentEvent): void;
         _onAuthRequired(event: Protocol.Fetch.AuthRequiredEvent): void;
+        /**
+         * CDP may send a Fetch.requestPaused without or before a
+         * Network.requestWillBeSent
+         *
+         * CDP may send multiple Fetch.requestPaused
+         * for the same Network.requestWillBeSent.
+         *
+         *
+         */
         _onRequestPaused(event: Protocol.Fetch.RequestPausedEvent): void;
-        _onRequest(event: Protocol.Network.RequestWillBeSentEvent, interceptionId?: string): void;
+        _patchRequestEventHeaders(requestWillBeSentEvent: Protocol.Network.RequestWillBeSentEvent, requestPausedEvent: Protocol.Fetch.RequestPausedEvent): void;
+        _onRequest(event: Protocol.Network.RequestWillBeSentEvent, fetchRequestId?: FetchRequestId): void;
         _onRequestServedFromCache(event: Protocol.Network.RequestServedFromCacheEvent): void;
-        _handleRequestRedirect(request: HTTPRequest, responsePayload: Protocol.Network.Response): void;
+        _handleRequestRedirect(request: HTTPRequest, responsePayload: Protocol.Network.Response, extraInfo: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
+        _emitResponseEvent(responseReceived: Protocol.Network.ResponseReceivedEvent, extraInfo: Protocol.Network.ResponseReceivedExtraInfoEvent | null): void;
         _onResponseReceived(event: Protocol.Network.ResponseReceivedEvent): void;
+        _onResponseReceivedExtraInfo(event: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
         _forgetRequest(request: HTTPRequest, events: boolean): void;
         _onLoadingFinished(event: Protocol.Network.LoadingFinishedEvent): void;
+        _emitLoadingFinished(event: Protocol.Network.LoadingFinishedEvent): void;
         _onLoadingFailed(event: Protocol.Network.LoadingFailedEvent): void;
+        _emitLoadingFailed(event: Protocol.Network.LoadingFailedEvent): void;
     }
 
     /**
@@ -3960,6 +4181,8 @@ export declare class HTTPResponse {
         readonly RequestFailed: symbol;
         readonly RequestFinished: symbol;
     };
+
+    declare type NetworkRequestId = string;
 
     /**
      * @public
@@ -5306,7 +5529,7 @@ export declare class HTTPResponse {
         screenshot(options?: ScreenshotOptions): Promise<Buffer | string>;
         private _screenshotTask;
         /**
-         * Generatees a PDF of the page with the `print` CSS media type.
+         * Generates a PDF of the page with the `print` CSS media type.
          * @remarks
          *
          * NOTE: PDF generation is only supported in Chrome headless mode.
@@ -5906,7 +6129,7 @@ export declare class HTTPResponse {
      *
      * @public
      */
-    export declare type PaperFormat = 'letter' | 'legal' | 'tabloid' | 'ledger' | 'a0' | 'a1' | 'a2' | 'a3' | 'a4' | 'a5' | 'a6';
+    export declare type PaperFormat = Uppercase<LowerCasePaperFormat> | Capitalize<LowerCasePaperFormat> | LowerCasePaperFormat;
 
     /**
      * @internal
@@ -5919,7 +6142,7 @@ export declare class HTTPResponse {
     /**
      * @internal
      */
-    export declare const paperFormats: Record<PaperFormat, PaperFormatDimensions>;
+    export declare const paperFormats: Record<LowerCasePaperFormat, PaperFormatDimensions>;
 
     /**
      * Copyright 2020 Google Inc. All rights reserved.
@@ -6051,7 +6274,7 @@ export declare class HTTPResponse {
      * Supported platforms.
      * @public
      */
-    export declare type Platform = 'linux' | 'mac' | 'win32' | 'win64';
+    export declare type Platform = 'linux' | 'mac' | 'mac_arm' | 'win32' | 'win64';
 
     /**
      * @public
@@ -6108,9 +6331,9 @@ export declare class HTTPResponse {
      * @public
      */
     export declare interface ProductLauncher {
-        launch(object: PuppeteerNodeLaunchOptions): any;
-        executablePath: (string?: any) => string;
-        defaultArgs(object: BrowserLaunchArgumentOptions): any;
+        launch(object: PuppeteerNodeLaunchOptions): Promise<Browser>;
+        executablePath: (path?: any) => string;
+        defaultArgs(object: BrowserLaunchArgumentOptions): string[];
         product: Product;
     }
 
@@ -6312,8 +6535,8 @@ export declare class HTTPResponse {
      * @public
      */
     export declare class PuppeteerNode extends Puppeteer {
-        private _lazyLauncher;
-        private _projectRoot;
+        private _lazyLauncher?;
+        private _projectRoot?;
         private __productName?;
         /**
          * @internal
@@ -6323,7 +6546,7 @@ export declare class HTTPResponse {
          * @internal
          */
         constructor(settings: {
-            projectRoot: string;
+            projectRoot?: string;
             preferredRevision: string;
             productName?: Product;
         } & CommonPuppeteerSettings);
@@ -6339,8 +6562,8 @@ export declare class HTTPResponse {
         /**
          * @internal
          */
-        get _productName(): Product;
-        set _productName(name: Product);
+        get _productName(): Product | undefined;
+        set _productName(name: Product | undefined);
         /**
          * Launches puppeteer and launches a browser instance with given arguments
          * and options when specified.
@@ -6415,6 +6638,17 @@ export declare class HTTPResponse {
      */
     export declare type PuppeteerNodeLaunchOptions = BrowserLaunchArgumentOptions & LaunchOptions & BrowserConnectOptions;
 
+    declare type QueuedEventGroup = {
+        responseReceivedEvent: Protocol.Network.ResponseReceivedEvent;
+        loadingFinishedEvent?: Protocol.Network.LoadingFinishedEvent;
+        loadingFailedEvent?: Protocol.Network.LoadingFailedEvent;
+    };
+
+    declare type RedirectInfo = {
+        event: Protocol.Network.RequestWillBeSentEvent;
+        fetchRequestId?: FetchRequestId;
+    };
+
     /**
      * @public
      * {@inheritDoc Puppeteer.registerCustomQueryHandler}
@@ -6425,8 +6659,8 @@ export declare class HTTPResponse {
      * @public
      */
     export declare interface RemoteAddress {
-        ip: string;
-        port: number;
+        ip?: string;
+        port?: number;
     }
 
     /**
@@ -6689,7 +6923,11 @@ export declare class HTTPResponse {
              /**
               * @internal
               */
-             constructor(targetInfo: Protocol.Target.TargetInfo, browserContext: BrowserContext, sessionFactory: () => Promise<CDPSession>, ignoreHTTPSErrors: boolean, defaultViewport: Viewport | null, screenshotTaskQueue: TaskQueue);
+             _isPageTargetCallback: IsPageTargetCallback;
+             /**
+              * @internal
+              */
+             constructor(targetInfo: Protocol.Target.TargetInfo, browserContext: BrowserContext, sessionFactory: () => Promise<CDPSession>, ignoreHTTPSErrors: boolean, defaultViewport: Viewport | null, screenshotTaskQueue: TaskQueue, isPageTargetCallback: IsPageTargetCallback);
              /**
               * Creates a Chrome Devtools Protocol session attached to the target.
               */
@@ -6954,6 +7192,7 @@ export declare class HTTPResponse {
              visible?: boolean;
              hidden?: boolean;
              timeout?: number;
+             root?: ElementHandle;
          }
 
          /**
@@ -6975,6 +7214,7 @@ export declare class HTTPResponse {
              _polling: string | number;
              _timeout: number;
              _predicateBody: string;
+             _predicateAcceptsContextElement: boolean;
              _args: SerializableOrJSHandle[];
              _binding: PageBinding;
              _runCount: number;
@@ -6983,6 +7223,7 @@ export declare class HTTPResponse {
              _reject: (x: Error) => void;
              _timeoutTimer?: NodeJS.Timeout;
              _terminated: boolean;
+             _root: ElementHandle;
              constructor(options: WaitTaskOptions);
              terminate(error: Error): void;
              rerun(): Promise<void>;
@@ -6995,11 +7236,13 @@ export declare class HTTPResponse {
          export declare interface WaitTaskOptions {
              domWorld: DOMWorld;
              predicateBody: Function | string;
+             predicateAcceptsContextElement: boolean;
              title: string;
              polling: string | number;
              timeout: number;
              binding?: PageBinding;
              args: SerializableOrJSHandle[];
+             root?: ElementHandle;
          }
 
          /**
@@ -7071,7 +7314,7 @@ export declare class HTTPResponse {
               * @param args - Arguments to pass to `pageFunction`.
               * @returns Promise which resolves to the return value of `pageFunction`.
               */
-             evaluate<ReturnType extends any>(pageFunction: Function | string, ...args: any[]): Promise<ReturnType>;
+             evaluate<ReturnType>(pageFunction: Function | string, ...args: any[]): Promise<ReturnType>;
              /**
               * The only difference between `worker.evaluate` and `worker.evaluateHandle`
               * is that `worker.evaluateHandle` returns in-page object (JSHandle). If the

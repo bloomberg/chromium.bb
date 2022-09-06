@@ -169,8 +169,8 @@ bool XRWebGLDrawingBuffer::Initialize(const gfx::Size& size,
   DVLOG(2) << __FUNCTION__
            << ": anti_aliasing_mode_=" << static_cast<int>(anti_aliasing_mode_);
 
-#if defined(OS_ANDROID)
-  // On Android devices use a smaller numer of samples to provide more breathing
+#if BUILDFLAG(IS_ANDROID)
+  // On Android devices use a smaller number of samples to provide more breathing
   // room for fill-rate-bound applications.
   sample_count_ = std::min(2, max_sample_count);
 #else
@@ -622,7 +622,9 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage() {
       /* is_origin_top_left = */ false,
       drawing_buffer_->ContextProviderWeakPtr(),
       base::PlatformThread::CurrentRef(), Thread::Current()->GetTaskRunner(),
-      std::move(release_callback));
+      std::move(release_callback), /*supports_display_compositing=*/true,
+      // CreateColorBuffer() never sets the SCANOUT usage bit.
+      /*is_overlay_candidate=*/false);
 }
 
 // static

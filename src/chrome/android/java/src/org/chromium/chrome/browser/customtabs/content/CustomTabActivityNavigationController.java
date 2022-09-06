@@ -110,6 +110,8 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
 
     private boolean mIsHandlingUserNavigation;
 
+    private @FinishReason int mFinishReason;
+
     private final CustomTabActivityTabProvider.Observer mTabObserver =
             new CustomTabActivityTabProvider.Observer() {
 
@@ -172,6 +174,12 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
             return;
         }
 
+        if (tab.isDestroyed()) {
+            // This code path may be called asynchronously, assume that if the tab has been
+            // destroyed there is no point in continuing.
+            return;
+        }
+
         // TODO(pkotwicz): Figure out whether we want to record these metrics for WebAPKs.
         if (mIntentDataProvider.getWebappExtras() == null) {
             mCustomTabObserver.get().trackNextPageLoadFromTimestamp(tab, timeStamp);
@@ -192,8 +200,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
 
         params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
                 mIntentDataProvider.getIntent(), transition));
-
-        IntentHandler.setAttributionParamsFromIntent(params, mIntentDataProvider.getIntent());
 
         tab.loadUrl(params);
     }
@@ -306,6 +312,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     public void finish(@FinishReason int reason) {
         if (mIsFinishing) return;
         mIsFinishing = true;
+        mFinishReason = reason;
 
         if (reason != REPARENTING) {
             // Closing the activity destroys the renderer as well. Re-create a spare renderer some
@@ -320,6 +327,10 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         if (mFinishHandler != null) {
             mFinishHandler.onFinish(reason);
         }
+    }
+
+    public @FinishReason int getFinishReason() {
+        return mFinishReason;
     }
 
     /**

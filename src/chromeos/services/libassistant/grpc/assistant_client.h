@@ -17,12 +17,15 @@ namespace assistant {
 namespace api {
 class CancelSpeakerIdEnrollmentRequest;
 class GetSpeakerIdEnrollmentInfoRequest;
+class GetSpeakerIdEnrollmentInfoResponse;
 class GetAssistantSettingsResponse;
 class Interaction;
 class OnAlarmTimerEventRequest;
 class OnAssistantDisplayEventRequest;
+class OnConversationStateEventRequest;
 class OnDeviceStateEventRequest;
 class OnDisplayRequestRequest;
+class OnMediaActionFallbackEventRequest;
 class OnSpeakerIdEnrollmentEventRequest;
 class StartSpeakerIdEnrollmentRequest;
 class UpdateAssistantSettingsResponse;
@@ -46,6 +49,7 @@ class ActionModule;
 class AssistantManager;
 class AssistantManagerInternal;
 class ChromeOSApiDelegate;
+class HttpConnectionFactory;
 }  // namespace assistant_client
 
 namespace chromeos {
@@ -62,6 +66,8 @@ class AssistantClient {
       ::assistant::api::CancelSpeakerIdEnrollmentRequest;
   using GetSpeakerIdEnrollmentInfoRequest =
       ::assistant::api::GetSpeakerIdEnrollmentInfoRequest;
+  using GetSpeakerIdEnrollmentInfoResponse =
+      ::assistant::api::GetSpeakerIdEnrollmentInfoResponse;
   using StartSpeakerIdEnrollmentRequest =
       ::assistant::api::StartSpeakerIdEnrollmentRequest;
   using SpeakerIdEnrollmentEvent =
@@ -77,6 +83,12 @@ class AssistantClient {
   // Media:
   using MediaStatus = ::assistant::api::events::DeviceState::MediaStatus;
   using OnDeviceStateEventRequest = ::assistant::api::OnDeviceStateEventRequest;
+  using OnMediaActionFallbackEventRequest =
+      ::assistant::api::OnMediaActionFallbackEventRequest;
+
+  // Conversation:
+  using OnConversationStateEventRequest =
+      ::assistant::api::OnConversationStateEventRequest;
 
   // Each authentication token exists of a [gaia_id, access_token] tuple.
   using AuthTokens = std::vector<std::pair<std::string, std::string>>;
@@ -92,6 +104,9 @@ class AssistantClient {
   // on new status change.
   virtual void StartServices(
       ServicesStatusObserver* services_status_observer) = 0;
+
+  virtual void StartGrpcHttpConnectionClient(
+      assistant_client::HttpConnectionFactory*) = 0;
 
   virtual void SetChromeOSApiDelegate(
       assistant_client::ChromeOSApiDelegate* delegate) = 0;
@@ -132,9 +147,10 @@ class AssistantClient {
   // Sets the current media status of media playing outside of libassistant.
   // Setting external state will stop any internally playing media.
   virtual void SetExternalPlaybackState(const MediaStatus& status_proto) = 0;
-
   virtual void AddDeviceStateEventObserver(
       GrpcServicesObserver<OnDeviceStateEventRequest>* observer) = 0;
+  virtual void AddMediaActionFallbackEventObserver(
+      GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer) = 0;
 
   // Conversation methods.
   virtual void SendVoicelessInteraction(
@@ -148,6 +164,8 @@ class AssistantClient {
       const std::vector<std::string>& context_protos) = 0;
   virtual void StartVoiceInteraction() = 0;
   virtual void StopAssistantInteraction(bool cancel_conversation) = 0;
+  virtual void AddConversationStateEventObserver(
+      GrpcServicesObserver<OnConversationStateEventRequest>* observer) = 0;
 
   // Settings-related functionality during bootup:
   virtual void SetAuthenticationInfo(const AuthTokens& tokens) = 0;

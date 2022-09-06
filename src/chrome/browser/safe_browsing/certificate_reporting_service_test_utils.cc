@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
@@ -314,7 +313,8 @@ void CertificateReportingServiceTestHelper::SendResponse(
   head->headers = new net::HttpResponseHeaders(
       "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
   head->mime_type = "text/html";
-  client_remote->OnReceiveResponse(std::move(head));
+  client_remote->OnReceiveResponse(std::move(head),
+                                   mojo::ScopedDataPipeConsumerHandle());
   client_remote->OnComplete(network::URLLoaderCompletionStatus());
 }
 

@@ -388,9 +388,6 @@ chromium-os/developer-guide/chromium-os-sandboxing/mount_event_propagation.png
 chromium-os/developer-guide/TrackerName.png
 chromium-os/chromiumos-design-docs/keyboard-controlled-reset-circuit/KbdReset.png
 chromium-os/chromiumos-design-docs/filesystem-autoupdate/ChromeOSFilesystemAutoupdate.png
-chromium-os/chromiumos-design-docs/disk-format/kernel2.png
-chromium-os/chromiumos-design-docs/disk-format/layout.png
-chromium-os/chromiumos-design-docs/disk-format/flow.png
 chromium-os/chromiumos-design-docs/ec-3po/EC-3PO- The EC console interpreter (1).png
 chromium-os/chromiumos-design-docs/ec-3po/EC-3PO- The EC console interpreter.png
 chromium-os/chromiumos-design-docs/boot-design/boot_design_diagram.png
@@ -727,11 +724,6 @@ developers/npapi-deprecation/Plugin-blocked bubble.png
 developers/npapi-deprecation/npapimock.png
 developers/npapi-deprecation/Plugin-blocked-yellow-slide.png
 developers/npapi-deprecation/Screen Shot 2013-12-03 at 10.09.10 AM.png
-developers/using-requestautocomplete/1m438-F2ObI9EqH66C94s_A6pzh5nN7Komyde.png
-developers/using-requestautocomplete/order-summary.png
-developers/using-requestautocomplete/1LjbbxAJEBfpWRufhVtrUxNAB_WgavjqvfgpL.png
-developers/using-requestautocomplete/1bViPA1pF_5p0g5UaRwdhWedLTrTjXkcszqV3.png
-developers/using-requestautocomplete/1Zh85u4gzhhDkC6myiRAyO2SH1iRgCCbUoJ4O.png
 developers/Web-page-views/WebContents2.png
 developers/Web-page-views/WebContents3.png
 developers/Web-page-views/WebContents.png
@@ -920,8 +912,6 @@ developers/telemetry/record_a_page_set/WebPageReplayDiagram.png
 developers/telemetry/diagnosing-test-failures/Screen Shot 2014-12-10 at 9.42.17 AM.png
 developers/telemetry/performance-try-bots/Screen Shot 2014-08-26 at 10.49.51 AM.png
 developers/telemetry/performance-try-bots/Screen Shot 2014-08-26 at 10.49.28 AM.png
-developers/cluster-telemetry/LW5ZqMVpXdw.png
-developers/cluster-telemetry/6bAxkmCFOA8.png
 developers/design-documents/profile-chooser-menu/Avatar Menu Classes.png
 developers/design-documents/aura-desktop-window-manager/Chrome Graphics Infrastructure.png
 developers/design-documents/video-capture/VideoCaptureBrowserClasses.jpg
@@ -1078,7 +1068,6 @@ developers/design-documents/sync/unified-sync-and-storage-overview/sGBklpDhSmt-d
 developers/design-documents/sync/unified-sync-and-storage-overview/syHRLLSqHvALzjSchvniqSw.png
 developers/design-documents/sync/unified-sync-and-storage-overview/sSbkKodQc5-RbyCqTGkUCzw.png
 developers/design-documents/sync/unified-sync-and-storage-overview/sK5QS5Ee9i0OE2L4RIHredA.png
-developers/design-documents/sync/syncable-service-api/SyncAPI.pdf
 developers/design-documents/pepper-plugin-implementation/pepper_design.png
 developers/design-documents/pepper-plugin-implementation/Pepper design.ai
 developers/design-documents/accessibility/properties.png

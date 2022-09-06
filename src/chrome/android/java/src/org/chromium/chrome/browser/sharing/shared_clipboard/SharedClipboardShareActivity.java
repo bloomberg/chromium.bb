@@ -20,13 +20,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
-import org.chromium.chrome.browser.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.sync.protocol.SharingSpecificFields;
 import org.chromium.ui.widget.ButtonCompat;
@@ -43,7 +42,8 @@ public class SharedClipboardShareActivity
      * the SharedClipboardShareActivity appropriately. This call requires native to be loaded.
      */
     public static void updateComponentEnabledState() {
-        boolean enabled = ChromeFeatureList.isEnabled(ChromeFeatureList.SHARED_CLIPBOARD_UI);
+        // TODO(https://crbug.com/1311675): Remove this.
+        boolean enabled = false;
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> setComponentEnabled(enabled));
     }
 
@@ -77,7 +77,7 @@ public class SharedClipboardShareActivity
         mask.setOnClickListener(v -> finish());
 
         ButtonCompat chromeSettingsButton = findViewById(R.id.chrome_settings);
-        if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
+        if (SyncService.get() == null || !SyncService.get().isSyncRequested()) {
             chromeSettingsButton.setVisibility(View.VISIBLE);
             chromeSettingsButton.setOnClickListener(view -> {
                 SettingsLauncher settingsLauncher = new SettingsLauncherImpl();

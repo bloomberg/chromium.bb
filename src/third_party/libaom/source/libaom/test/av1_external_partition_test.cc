@@ -58,7 +58,10 @@ aom_ext_part_status_t ext_part_create_model(
   TestData *received_data = reinterpret_cast<TestData *>(priv);
   EXPECT_EQ(received_data->version, kVersion);
   ToyModel *toy_model = new (std::nothrow) ToyModel;
-  EXPECT_NE(toy_model, nullptr);
+  if (toy_model == nullptr) {
+    EXPECT_NE(toy_model, nullptr);
+    return AOM_EXT_PART_ERROR;
+  }
   toy_model->data = received_data;
   *ext_part_model = toy_model;
   EXPECT_EQ(part_config->superblock_size, BLOCK_64X64);
@@ -462,7 +465,10 @@ aom_ext_part_status_t ext_part_create_model(
   TestData *received_data = reinterpret_cast<TestData *>(priv);
   EXPECT_EQ(received_data->version, kVersion);
   ToyModel *toy_model = new (std::nothrow) ToyModel;
-  EXPECT_NE(toy_model, nullptr);
+  if (toy_model == nullptr) {
+    EXPECT_NE(toy_model, nullptr);
+    return AOM_EXT_PART_ERROR;
+  }
   toy_model->data = received_data;
   *ext_part_model = toy_model;
   EXPECT_EQ(part_config->superblock_size, BLOCK_64X64);

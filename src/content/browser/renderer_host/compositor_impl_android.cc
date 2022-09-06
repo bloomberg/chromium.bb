@@ -19,6 +19,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -66,6 +67,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -218,6 +220,74 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
 
  private:
   raw_ptr<CompositorImpl> compositor_;
+};
+
+class CompositorImpl::HostBeginFrameObserver
+    : public viz::mojom::BeginFrameObserver {
+ public:
+  HostBeginFrameObserver(
+      const base::flat_set<SimpleBeginFrameObserver*>& observers,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : simple_begin_frame_observers_(observers),
+        task_runner_(std::move(task_runner)) {}
+
+  void OnStandaloneBeginFrame(const viz::BeginFrameArgs& args) override {
+    if (args.type == viz::BeginFrameArgs::MISSED)
+      return;
+
+    if (pending_coalesce_callback_) {
+      begin_frame_args_ = args;
+      return;
+    }
+
+    static const bool kCoalesce = base::FeatureList::IsEnabled(
+        ::features::kCoalesceIndependentBeginFrame);
+    if (kCoalesce &&
+        (base::TimeTicks::Now() - args.frame_time) > args.interval) {
+      begin_frame_args_ = args;
+      pending_coalesce_callback_ = true;
+      task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(
+              &CompositorImpl::HostBeginFrameObserver::CoalescedBeginFrame,
+              weak_factory_.GetWeakPtr()),
+          base::Microseconds(1));
+      return;
+    }
+
+    CallObservers(args);
+  }
+
+  mojo::PendingRemote<viz::mojom::BeginFrameObserver> GetBoundRemote() {
+    return receiver_.BindNewPipeAndPassRemote(task_runner_);
+  }
+
+ private:
+  void CoalescedBeginFrame() {
+    DCHECK(begin_frame_args_.IsValid());
+    pending_coalesce_callback_ = false;
+    viz::BeginFrameArgs args = begin_frame_args_;
+    begin_frame_args_ = viz::BeginFrameArgs();
+    CallObservers(args);
+  }
+
+  // This may be deleted as part of `CallObservers`.
+  void CallObservers(const viz::BeginFrameArgs& args) {
+    auto observers_copy = simple_begin_frame_observers_;
+    for (auto* simple_observer : observers_copy) {
+      simple_observer->OnBeginFrame(args.frame_time);
+    }
+  }
+
+  const base::flat_set<SimpleBeginFrameObserver*>&
+      simple_begin_frame_observers_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  bool pending_coalesce_callback_ = false;
+  viz::BeginFrameArgs begin_frame_args_;
+
+  mojo::Receiver<viz::mojom::BeginFrameObserver> receiver_{this};
+  base::WeakPtrFactory<HostBeginFrameObserver> weak_factory_{this};
 };
 
 class CompositorImpl::ScopedCachedBackBuffer {
@@ -487,6 +557,7 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
   display_private_.reset();
   GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
   display_client_.reset();
+  host_begin_frame_observer_.reset();
 }
 
 void CompositorImpl::RegisterRootFrameSink() {
@@ -844,7 +915,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
   renderer_settings.initial_screen_size = display_props.GetSizeInPixel();
-  renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
   renderer_settings.color_space = display_color_spaces_.GetOutputColorSpace(
       gfx::ContentColorUsage::kHDR, requires_alpha_channel_);
 
@@ -865,6 +935,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
   display_private_->SetSupportedRefreshRates(
       root_window_->GetSupportedRefreshRates());
+  MaybeUpdateObserveBeginFrame();
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
@@ -949,6 +1020,42 @@ void CompositorImpl::SetDidSwapBuffersCallbackEnabled(bool enable) {
 void CompositorImpl::DecrementPendingReadbacks() {
   DCHECK_GT(pending_readbacks_, 0u);
   --pending_readbacks_;
+}
+
+void CompositorImpl::AddSimpleBeginFrameObserver(
+    SimpleBeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(!base::Contains(simple_begin_frame_observers_, obs));
+  simple_begin_frame_observers_.insert(obs);
+  MaybeUpdateObserveBeginFrame();
+}
+
+void CompositorImpl::RemoveSimpleBeginFrameObserver(
+    SimpleBeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(base::Contains(simple_begin_frame_observers_, obs));
+
+  simple_begin_frame_observers_.erase(obs);
+  MaybeUpdateObserveBeginFrame();
+}
+
+void CompositorImpl::MaybeUpdateObserveBeginFrame() {
+  if (simple_begin_frame_observers_.empty()) {
+    host_begin_frame_observer_.reset();
+    return;
+  }
+
+  if (host_begin_frame_observer_)
+    return;
+
+  if (!display_private_)
+    return;
+
+  host_begin_frame_observer_ = std::make_unique<HostBeginFrameObserver>(
+      simple_begin_frame_observers_,
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
+  display_private_->SetStandaloneBeginFrameObserver(
+      host_begin_frame_observer_->GetBoundRemote());
 }
 
 }  // namespace content

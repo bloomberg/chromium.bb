@@ -19,11 +19,12 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_health {
 
-class NetworkHealth : public mojom::NetworkHealthService,
-                      public network_config::mojom::CrosNetworkConfigObserver {
+class NetworkHealth
+    : public chromeos::network_health::mojom::NetworkHealthService,
+      public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   NetworkHealth();
 
@@ -31,27 +32,36 @@ class NetworkHealth : public mojom::NetworkHealthService,
 
   // Binds this instance to |receiver|.
   void BindReceiver(
-      mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
+      mojo::PendingReceiver<
+          chromeos::network_health::mojom::NetworkHealthService> receiver);
 
   // Returns the current NetworkHealthState.
-  const mojom::NetworkHealthStatePtr GetNetworkHealthState();
+  const chromeos::network_health::mojom::NetworkHealthState&
+  GetNetworkHealthState();
+
+  // Returns the tracked network guids.
+  const std::map<std::string, base::Time>& GetTrackedGuidsForTest();
 
   // NetworkHealthService
-  void AddObserver(
-      mojo::PendingRemote<mojom::NetworkEventsObserver> observer) override;
+  void AddObserver(mojo::PendingRemote<
+                   chromeos::network_health::mojom::NetworkEventsObserver>
+                       observer) override;
   void GetNetworkList(GetNetworkListCallback) override;
   void GetHealthSnapshot(GetHealthSnapshotCallback) override;
+  void GetRecentlyActiveNetworks(GetRecentlyActiveNetworksCallback) override;
 
   // CrosNetworkConfigObserver
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
   void OnActiveNetworksChanged(
-      std::vector<network_config::mojom::NetworkStatePropertiesPtr>
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           active_networks) override;
   void OnNetworkStateChanged(
-      network_config::mojom::NetworkStatePropertiesPtr network_state) override;
-  void OnVpnProvidersChanged() override;
-  void OnNetworkCertificatesChanged() override;
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network_state)
+      override;
+  void OnVpnProvidersChanged() override {}
+  void OnNetworkCertificatesChanged() override {}
+  void OnPoliciesApplied(const std::string& userhash) override {}
 
   // Signal strength changes larger than
   // |kMaxSignalStrengthFluctuationTolerance| trigger a signal strength change
@@ -66,11 +76,11 @@ class NetworkHealth : public mojom::NetworkHealthService,
  private:
   // Handler for receiving the network state list.
   void OnNetworkStateListReceived(
-      std::vector<network_config::mojom::NetworkStatePropertiesPtr>);
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>);
 
   // Handler for receiving networking devices.
   void OnDeviceStateListReceived(
-      std::vector<network_config::mojom::DeviceStatePropertiesPtr>);
+      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>);
 
   // Creates the NetworkHealthState structure from cached network information.
   void CreateNetworkHealthState();
@@ -81,21 +91,23 @@ class NetworkHealth : public mojom::NetworkHealthService,
   void RequestDeviceStateList();
 
   // Finds the matching network using |guid|.
-  const mojom::NetworkPtr* FindMatchingNetwork(const std::string& guid) const;
+  const chromeos::network_health::mojom::NetworkPtr* FindMatchingNetwork(
+      const std::string& guid) const;
 
   // Handles the case when an active network changes. Also handles the case
   // when a network that was not active becomes active.
   void HandleNetworkEventsForActiveNetworks(
-      std::vector<network_config::mojom::NetworkStatePropertiesPtr>
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           active_networks);
 
   // Handles the case when an active network becomes no longer active.
   void HandleNetworkEventsForInactiveNetworks(
-      network_config::mojom::NetworkStatePropertiesPtr network);
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network);
 
   // Notifies observers of connection state changes.
-  void NotifyObserversConnectionStateChanged(const std::string& guid,
-                                             mojom::NetworkState state);
+  void NotifyObserversConnectionStateChanged(
+      const std::string& guid,
+      chromeos::network_health::mojom::NetworkState state);
 
   // Notifies observers of signal strength changes.
   void NotifyObserversSignalStrengthChanged(const std::string& guid,
@@ -103,44 +115,69 @@ class NetworkHealth : public mojom::NetworkHealthService,
 
   // Checks if a connection state changed has occurred.
   bool ConnectionStateChanged(
-      const mojom::NetworkPtr& network,
-      const network_config::mojom::NetworkStatePropertiesPtr& network_state);
+      const chromeos::network_health::mojom::NetworkPtr& network,
+      const chromeos::network_config::mojom::NetworkStatePropertiesPtr&
+          network_state);
 
   // Checks if a signal strength change event has occurred.
   bool SignalStrengthChanged(
-      const mojom::NetworkPtr& network,
-      const network_config::mojom::NetworkStatePropertiesPtr& network_state);
+      const chromeos::network_health::mojom::NetworkPtr& network,
+      const chromeos::network_config::mojom::NetworkStatePropertiesPtr&
+          network_state);
 
   // Function to add a signal strength sample for each network and update the
   // statistics over time for each network.
   void AnalyzeSignalStrength();
 
+  // Checks if the network with a matching |guid| exists in the network health
+  // state.
+  bool ExistsInNetworkHealthState(const std::string& guid);
+
+  // Checks if the network is active.
+  bool IsActive(const chromeos::network_health::mojom::NetworkPtr& network);
+
+  // Checks if |network|'s guid is being tracked in |tracked_guids|.
+  bool IsTracked(const chromeos::network_health::mojom::NetworkPtr& network);
+
+  // Updates the timestamp for active networks.
+  void UpdateTrackedGuids();
+
   // Remotes for tracking observers that will be notified of network events in
   // the mojom::NetworkEventsObserver interface.
-  mojo::RemoteSet<mojom::NetworkEventsObserver> observers_;
+  mojo::RemoteSet<chromeos::network_health::mojom::NetworkEventsObserver>
+      observers_;
   // Remote for sending requests to the CrosNetworkConfig service.
-  mojo::Remote<network_config::mojom::CrosNetworkConfig>
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
   // Receiver for the CrosNetworkConfigObserver events.
-  mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver>
+  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
   // Receivers for external requests (WebUI, Feedback, CrosHealthdClient).
-  mojo::ReceiverSet<mojom::NetworkHealthService> receivers_;
+  mojo::ReceiverSet<chromeos::network_health::mojom::NetworkHealthService>
+      receivers_;
 
   // Container for storing a running tally of the average signal strength per
   // network GUID.
   std::map<std::string, SignalStrengthTracker> signal_strength_trackers_;
   // Timer that triggers the function to analyze the networks' signal strengths.
   std::unique_ptr<base::RepeatingTimer> timer_;
+  // Contains guid to time pairs where each guid represents a network that is
+  // either currently active or has been active within the past hour.
+  std::map<std::string, base::Time> guid_to_active_time_;
+  // Timer that triggers the function to update |tracked_guids_|;
+  base::RepeatingTimer tracked_guids_timer_;
 
-  mojom::NetworkHealthState network_health_state_;
-  std::vector<network_config::mojom::DeviceStatePropertiesPtr>
+  // Contains a list of networking devices and any associated connections. Only
+  // networking technologies that are present on the device are included.
+  // Networks will be sorted with active connections listed first.
+  chromeos::network_health::mojom::NetworkHealthState network_health_state_;
+  std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
       device_properties_;
-  std::vector<network_config::mojom::NetworkStatePropertiesPtr>
+  std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
       network_properties_;
 };
 
 }  // namespace network_health
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_HEALTH_NETWORK_HEALTH_H_

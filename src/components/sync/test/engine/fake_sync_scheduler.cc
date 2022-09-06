@@ -22,7 +22,7 @@ void FakeSyncScheduler::ScheduleLocalRefreshRequest(ModelTypeSet types) {}
 
 void FakeSyncScheduler::ScheduleInvalidationNudge(
     ModelType type,
-    std::unique_ptr<InvalidationInterface> interface) {}
+    std::unique_ptr<SyncInvalidation> interface) {}
 
 void FakeSyncScheduler::ScheduleConfiguration(
     sync_pb::SyncEnums::GetUpdatesOrigin origin,
@@ -65,5 +65,10 @@ void FakeSyncScheduler::OnSyncProtocolError(const SyncProtocolError& error) {}
 void FakeSyncScheduler::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {}
 
 void FakeSyncScheduler::OnReceivedMigrationRequest(ModelTypeSet types) {}
+
+void FakeSyncScheduler::OnReceivedQuotaParamsForExtensionTypes(
+    absl::optional<int> max_tokens,
+    absl::optional<base::TimeDelta> refill_interval,
+    absl::optional<base::TimeDelta> depleted_quota_nudge_delay) {}
 
 }  // namespace syncer

@@ -11,7 +11,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/prefs/pref_service.h"
 
 namespace enterprise_reporting {
@@ -83,12 +82,12 @@ void RealTimeUploader::CreateReportQueueRequest(
     reporting::StatusOr<std::unique_ptr<reporting::ReportQueueConfiguration>>
         config,
     reporting::ReportQueueProvider::CreateReportQueueCallback callback) {
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   reporting::ReportQueueProvider::CreateQueue(std::move(config.ValueOrDie()),
                                               std::move(callback));
 #else
   NOTREACHED();
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 }
 
 void RealTimeUploader::OnReportQueueCreated(
@@ -115,12 +114,12 @@ void RealTimeUploader::OnReportQueueCreated(
 }
 
 void RealTimeUploader::UploadClosure(
-    std::unique_ptr<google::protobuf::MessageLite> report,
+    std::unique_ptr<const google::protobuf::MessageLite> report,
     EnqueueCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(report_queue_);
   report_queue_->Enqueue(
-      report.get(), report_priority_,
+      std::move(report), report_priority_,
       base::BindPostTask(
           base::ThreadTaskRunnerHandle::Get(),
           base::BindOnce(&RealTimeUploader::OnReportEnqueued,

@@ -17,8 +17,7 @@
 #ifndef SRC_TRACE_PROCESSOR_DYNAMIC_CONNECTED_FLOW_GENERATOR_H_
 #define SRC_TRACE_PROCESSOR_DYNAMIC_CONNECTED_FLOW_GENERATOR_H_
 
-#include "src/trace_processor/sqlite/db_sqlite_table.h"
-
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 #include <queue>
@@ -33,7 +32,7 @@ class TraceProcessorContext;
 // - DIRECTLY_CONNECTED_FLOW
 // - PRECEDING_FLOW
 // - FOLLOWING_FLOW
-class ConnectedFlowGenerator : public DbSqliteTable::DynamicTableGenerator {
+class ConnectedFlowGenerator : public DynamicTableGenerator {
  public:
   enum class Mode {
     // Directly connected slices through the same flow ID given by the trace
@@ -53,9 +52,11 @@ class ConnectedFlowGenerator : public DbSqliteTable::DynamicTableGenerator {
   Table::Schema CreateSchema() override;
   std::string TableName() override;
   uint32_t EstimateRowCount() override;
-  util::Status ValidateConstraints(const QueryConstraints&) override;
-  std::unique_ptr<Table> ComputeTable(const std::vector<Constraint>& cs,
-                                      const std::vector<Order>& ob) override;
+  base::Status ValidateConstraints(const QueryConstraints&) override;
+  base::Status ComputeTable(const std::vector<Constraint>& cs,
+                            const std::vector<Order>& ob,
+                            const BitVector& cols_used,
+                            std::unique_ptr<Table>& table_return) override;
 
  private:
   Mode mode_;

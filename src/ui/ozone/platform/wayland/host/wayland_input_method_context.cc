@@ -27,6 +27,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/zwp_text_input_wrapper_v1.h"
 #include "ui/ozone/public/ozone_switches.h"
 
@@ -38,7 +39,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/check.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 namespace ui {
@@ -74,13 +75,8 @@ bool IsImeEnabled() {
   // Lacros-chrome side, which helps us on releasing.
   // TODO(crbug.com/1159237): In the future, we may want to unify the behavior
   // of ozone/wayland across platforms.
-  const auto* lacros_service = chromeos::LacrosService::Get();
-
-  // Note: |init_params| may be null, if ash-chrome is too old.
-  // TODO(crbug.com/1156033): Clean up the condition, after ash-chrome in the
-  // world becomes new enough.
   const crosapi::mojom::BrowserInitParams* init_params =
-      lacros_service ? lacros_service->init_params() : nullptr;
+      chromeos::BrowserInitParams::Get();
   if (init_params && init_params->exo_ime_support !=
                          crosapi::mojom::ExoImeSupport::kUnsupported) {
     return true;
@@ -119,71 +115,6 @@ ConvertStyle(uint32_t style) {
       VLOG(1) << "Unsupported style. Skipped: " << style;
   }
   return absl::nullopt;
-}
-
-// Converts Chrome's TextInputType into wayland's content_purpose.
-// Some of TextInputType values do not have clearly corresponding wayland value,
-// and they fallback to closer type.
-uint32_t InputTypeToContentPurpose(TextInputType input_type) {
-  switch (input_type) {
-    case TEXT_INPUT_TYPE_NONE:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NORMAL;
-    case TEXT_INPUT_TYPE_TEXT:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NORMAL;
-    case TEXT_INPUT_TYPE_PASSWORD:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_PASSWORD;
-    case TEXT_INPUT_TYPE_SEARCH:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NORMAL;
-    case TEXT_INPUT_TYPE_EMAIL:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_EMAIL;
-    case TEXT_INPUT_TYPE_NUMBER:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NUMBER;
-    case TEXT_INPUT_TYPE_TELEPHONE:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_PHONE;
-    case TEXT_INPUT_TYPE_URL:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_URL;
-    case TEXT_INPUT_TYPE_DATE:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATE;
-    case TEXT_INPUT_TYPE_DATE_TIME:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATETIME;
-    case TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATETIME;
-    case TEXT_INPUT_TYPE_MONTH:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATE;
-    case TEXT_INPUT_TYPE_TIME:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_TIME;
-    case TEXT_INPUT_TYPE_WEEK:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATE;
-    case TEXT_INPUT_TYPE_TEXT_AREA:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NORMAL;
-    case TEXT_INPUT_TYPE_CONTENT_EDITABLE:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NORMAL;
-    case TEXT_INPUT_TYPE_DATE_TIME_FIELD:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATETIME;
-    case TEXT_INPUT_TYPE_NULL:
-      return ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NORMAL;
-  }
-}
-
-// Converts Chrome's TextInputType into wayland's content_hint.
-uint32_t InputFlagsToContentHint(int input_flags) {
-  uint32_t hint = 0;
-  if (input_flags & TEXT_INPUT_FLAG_AUTOCOMPLETE_ON)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_AUTO_COMPLETION;
-  if (input_flags & TEXT_INPUT_FLAG_AUTOCORRECT_ON)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_AUTO_CORRECTION;
-  // No good match. Fallback to AUTO_CORRECTION.
-  if (input_flags & TEXT_INPUT_FLAG_SPELLCHECK_ON)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_AUTO_CORRECTION;
-  if (input_flags & TEXT_INPUT_FLAG_AUTOCAPITALIZE_CHARACTERS)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_UPPERCASE;
-  if (input_flags & TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_TITLECASE;
-  if (input_flags & TEXT_INPUT_FLAG_AUTOCAPITALIZE_SENTENCES)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_AUTO_CAPITALIZATION;
-  if (input_flags & TEXT_INPUT_FLAG_HAS_BEEN_PASSWORD)
-    hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_PASSWORD;
-  return hint;
 }
 
 }  // namespace
@@ -273,6 +204,27 @@ void WaylandInputMethodContext::Reset() {
   character_composer_.Reset();
   if (text_input_)
     text_input_->Reset();
+}
+
+void WaylandInputMethodContext::UpdateFocus(bool has_client,
+                                            TextInputType old_type,
+                                            TextInputType new_type) {
+  // TODO(b/226781965): Known issue that this does not work.
+  if (is_simple_) {
+    // simple context can be used in any textfield, including password box, and
+    // even if the focused text input client's text input type is
+    // ui::TEXT_INPUT_TYPE_NONE.
+    if (has_client)
+      Focus();
+    else
+      Blur();
+  } else {
+    // Otherwise We only focus when the focus is in a textfield.
+    if (old_type != TEXT_INPUT_TYPE_NONE)
+      Blur();
+    if (new_type != TEXT_INPUT_TYPE_NONE)
+      Focus();
+  }
 }
 
 void WaylandInputMethodContext::Focus() {
@@ -386,14 +338,49 @@ void WaylandInputMethodContext::SetSurroundingText(
   text_input_->SetSurroundingText(truncated_text, relocated_selection_range);
 }
 
-void WaylandInputMethodContext::SetContentType(TextInputType input_type,
-                                               int input_flags) {
+void WaylandInputMethodContext::SetContentType(TextInputType type,
+                                               TextInputMode mode,
+                                               uint32_t flags,
+                                               bool should_do_learning) {
+  if (!text_input_)
+    return;
+  text_input_->SetContentType(type, mode, flags, should_do_learning);
+}
+
+VirtualKeyboardController*
+WaylandInputMethodContext::GetVirtualKeyboardController() {
+  if (!text_input_)
+    return nullptr;
+  return this;
+}
+
+bool WaylandInputMethodContext::DisplayVirtualKeyboard() {
+  if (!text_input_)
+    return false;
+
+  text_input_->ShowInputPanel();
+  return true;
+}
+
+void WaylandInputMethodContext::DismissVirtualKeyboard() {
   if (!text_input_)
     return;
 
-  uint32_t content_purpose = InputTypeToContentPurpose(input_type);
-  uint32_t content_hint = InputFlagsToContentHint(input_flags);
-  text_input_->SetContentType(content_hint, content_purpose);
+  text_input_->HideInputPanel();
+}
+
+void WaylandInputMethodContext::AddObserver(
+    VirtualKeyboardControllerObserver* observer) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandInputMethodContext::RemoveObserver(
+    VirtualKeyboardControllerObserver* observer) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+bool WaylandInputMethodContext::IsKeyboardVisible() {
+  return virtual_keyboard_visible_;
 }
 
 void WaylandInputMethodContext::OnPreeditString(
@@ -482,26 +469,46 @@ void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,
 
 void WaylandInputMethodContext::OnKeysym(uint32_t keysym,
                                          uint32_t state,
-                                         uint32_t modifiers) {
+                                         uint32_t modifiers_bits) {
 #if BUILDFLAG(USE_XKBCOMMON)
   auto* layout_engine = KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
   if (!layout_engine)
     return;
 
-  // TODO(crbug.com/1079353): Handle modifiers.
+  // TODO(crbug.com/1289236): This is for the backward compatibility with older
+  // ash-chrome (M101 and earlier). In that version of ash-chrome didn't send
+  // CapsLock so that we hit an issue on using it.
+  // Because newer ash-chrome always sends CapsLock modifier map, as short term
+  // workaround, check the condition to identify whether Lacros is running
+  // on top of enough newer ash-chrome.
+  // To avoid accident, we also check text_input_extension, which is available
+  // only on ash-chrome.
+  // We can remove this workaround check in M104 or later.
+  absl::optional<std::vector<base::StringPiece>> modifiers;
+  if (!connection_->text_input_extension_v1() ||
+      base::Contains(modifiers_map_, XKB_MOD_NAME_CAPS)) {
+    std::vector<base::StringPiece> modifier_content;
+    for (size_t i = 0; i < modifiers_map_.size(); ++i) {
+      if (modifiers_bits & (1 << i))
+        modifier_content.emplace_back(modifiers_map_[i]);
+    }
+    modifiers = std::move(modifier_content);
+  }
+
   DomCode dom_code = static_cast<XkbKeyboardLayoutEngine*>(layout_engine)
-                         ->GetDomCodeByKeysym(keysym);
+                         ->GetDomCodeByKeysym(keysym, modifiers);
   if (dom_code == DomCode::NONE)
     return;
 
   // Keyboard might not exist.
-  int device_id =
-      connection_->keyboard() ? connection_->keyboard()->device_id() : 0;
+  int device_id = connection_->seat()->keyboard()
+                      ? connection_->seat()->keyboard()->device_id()
+                      : 0;
 
   EventType type =
       state == WL_KEYBOARD_KEY_STATE_PRESSED ? ET_KEY_PRESSED : ET_KEY_RELEASED;
   key_delegate_->OnKeyboardKeyEvent(type, dom_code, /*repeat=*/false,
-                                    EventTimeForNow(), device_id,
+                                    absl::nullopt, EventTimeForNow(), device_id,
                                     WaylandKeyboard::KeyEventKind::kKey);
 #else
   NOTIMPLEMENTED();
@@ -569,6 +576,19 @@ void WaylandInputMethodContext::OnSetPreeditRegion(
                                     ime_text_spans);
 }
 
+void WaylandInputMethodContext::OnInputPanelState(uint32_t state) {
+  virtual_keyboard_visible_ = (state & 1) != 0;
+  // Note: Currently there's no support of VirtualKeyboardControllerObserver.
+  // In the future, we may need to support it. Specifically,
+  // RenderWidgetHostViewAura would like to know the VirtualKeyboard's
+  // region somehow.
+}
+
+void WaylandInputMethodContext::OnModifiersMap(
+    std::vector<std::string> modifiers_map) {
+  modifiers_map_ = std::move(modifiers_map);
+}
+
 void WaylandInputMethodContext::OnKeyboardFocusedWindowChanged() {
   MaybeUpdateActivated();
 }
@@ -579,9 +599,13 @@ void WaylandInputMethodContext::MaybeUpdateActivated() {
 
   WaylandWindow* window =
       connection_->wayland_window_manager()->GetCurrentKeyboardFocusedWindow();
+  if (!window && !connection_->seat()->keyboard())
+    window = connection_->wayland_window_manager()->GetCurrentActiveWindow();
   // Activate Wayland IME only if 1) InputMethod in Chrome has some
   // TextInputClient connected, and 2) the actual keyboard focus of Wayland
   // is given to Chrome, which is notified via wl_keyboard::enter.
+  // If no keyboard is connected, the current active window is used for 2)
+  // instead (https://crbug.com/1168411).
   bool activated = focused_ && window;
   if (activated_ == activated)
     return;

@@ -70,7 +70,7 @@ std::string MissingHeaderMessage(const std::string& header_name) {
 
 std::string GenerateHandshakeChallenge() {
   std::string raw_challenge(websockets::kRawChallengeLength, '\0');
-  crypto::RandBytes(base::data(raw_challenge), raw_challenge.length());
+  crypto::RandBytes(std::data(raw_challenge), raw_challenge.length());
   std::string encoded_challenge;
   base::Base64Encode(raw_challenge, &encoded_challenge);
   return encoded_challenge;
@@ -117,7 +117,8 @@ bool ValidateUpgrade(const HttpResponseHeaders* headers,
     return false;
   }
 
-  if (!base::LowerCaseEqualsASCII(value, websockets::kWebSocketLowercase)) {
+  if (!base::EqualsCaseInsensitiveASCII(value,
+                                        websockets::kWebSocketLowercase)) {
     *failure_message =
         "'Upgrade' header value is not 'WebSocket': " + value;
     return false;
@@ -159,6 +160,13 @@ bool ValidateConnection(const HttpResponseHeaders* headers,
   return true;
 }
 
+base::Value NetLogFailureParam(int net_error, const std::string& message) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("net_error", net_error);
+  dict.SetStringKey("message", message);
+  return dict;
+}
+
 }  // namespace
 
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
@@ -169,10 +177,8 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::vector<std::string> requested_extensions,
     WebSocketStreamRequestAPI* request,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : result_(HandshakeResult::INCOMPLETE),
-      state_(std::move(connection), using_proxy),
+    : state_(std::move(connection), using_proxy),
       connect_delegate_(connect_delegate),
-      http_response_info_(nullptr),
       requested_sub_protocols_(std::move(requested_sub_protocols)),
       requested_extensions_(std::move(requested_extensions)),
       stream_request_(request),
@@ -191,14 +197,20 @@ WebSocketBasicHandshakeStream::~WebSocketBasicHandshakeStream() {
   RecordHandshakeResult(result_);
 }
 
+void WebSocketBasicHandshakeStream::RegisterRequest(
+    const HttpRequestInfo* request_info) {
+  DCHECK(request_info);
+  DCHECK(request_info->traffic_annotation.is_valid());
+  request_info_ = request_info;
+}
+
 int WebSocketBasicHandshakeStream::InitializeStream(
-    const HttpRequestInfo* request_info,
     bool can_send_early,
     RequestPriority priority,
     const NetLogWithSource& net_log,
     CompletionOnceCallback callback) {
-  DCHECK(request_info->traffic_annotation.is_valid());
-  url_ = request_info->url;
+  url_ = request_info_->url;
+  net_log_ = net_log;
   // The WebSocket may receive a socket in the early data state from
   // HttpNetworkTransaction, which means it must call ConfirmHandshake() for
   // requests that need replay protection. However, the first request on any
@@ -209,7 +221,9 @@ int WebSocketBasicHandshakeStream::InitializeStream(
   // Data after the WebSockets handshake may not be replayable, but the
   // handshake is guaranteed to be confirmed once the HTTP response is received.
   DCHECK(can_send_early);
-  state_.Initialize(request_info, priority, net_log);
+  state_.Initialize(request_info_, priority, net_log);
+  // RequestInfo is no longer needed after this point.
+  request_info_ = nullptr;
   return OK;
 }
 
@@ -348,11 +362,11 @@ void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
   parser()->GetSSLCertRequestInfo(cert_request_info);
 }
 
-bool WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
+int WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   if (!state_.connection() || !state_.connection()->socket())
-    return false;
+    return ERR_SOCKET_NOT_CONNECTED;
 
-  return state_.connection()->socket()->GetPeerAddress(endpoint) == OK;
+  return state_.connection()->socket()->GetPeerAddress(endpoint);
 }
 
 void WebSocketBasicHandshakeStream::PopulateNetErrorDetails(
@@ -389,7 +403,7 @@ HttpStream* WebSocketBasicHandshakeStream::RenewStreamForAuth() {
   return handshake_stream.release();
 }
 
-const std::vector<std::string>& WebSocketBasicHandshakeStream::GetDnsAliases()
+const std::set<std::string>& WebSocketBasicHandshakeStream::GetDnsAliases()
     const {
   return state_.GetDnsAliases();
 }
@@ -408,7 +422,7 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
       std::make_unique<WebSocketBasicStream>(
           std::make_unique<WebSocketClientSocketHandleAdapter>(
               state_.ReleaseConnection()),
-          state_.read_buf(), sub_protocol_, extensions_);
+          state_.read_buf(), sub_protocol_, extensions_, net_log_);
   DCHECK(extension_params_.get());
   if (extension_params_->deflate_enabled) {
     return std::make_unique<WebSocketDeflateStream>(
@@ -529,6 +543,8 @@ void WebSocketBasicHandshakeStream::OnFailure(
     const std::string& message,
     int net_error,
     absl::optional<int> response_code) {
+  net_log_.AddEvent(net::NetLogEventType::WEBSOCKET_UPGRADE_FAILURE,
+                    [&] { return NetLogFailureParam(net_error, message); });
   // Avoid connection reuse if auth did not happen.
   state_.connection()->socket()->Disconnect();
   stream_request_->OnFailure(message, net_error, response_code);

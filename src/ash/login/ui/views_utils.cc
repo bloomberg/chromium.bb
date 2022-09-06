@@ -9,6 +9,7 @@
 
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/style/ash_color_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/focus_ring.h"
@@ -53,7 +54,10 @@ namespace login_views_utils {
 
 std::unique_ptr<views::View> WrapViewForPreferredSize(
     std::unique_ptr<views::View> view) {
-  auto proxy = std::make_unique<NonAccessibleView>();
+  // Using ContainerView here ensures that click events will be passed to the
+  // wrapped view even if a transform is applied that moves the view outside the
+  // wrapper.
+  auto proxy = std::make_unique<ContainerView>();
   auto layout_manager = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical);
   layout_manager->set_cross_axis_alignment(
@@ -180,7 +184,6 @@ void ConfigureRectFocusRingCircleInkDrop(views::View* view,
                                          absl::optional<int> radius) {
   DCHECK(view);
   DCHECK(focus_ring);
-  focus_ring->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   focus_ring->SetPathGenerator(
       std::make_unique<views::RectHighlightPathGenerator>());
 

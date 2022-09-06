@@ -128,8 +128,7 @@ class CAPTURE_EXPORT CameraPrivacySwitchObserver
 // See https://crbug.com/891961.
 class CAPTURE_EXPORT CameraHalDispatcherImpl final
     : public cros::mojom::CameraHalDispatcher,
-      public cros::mojom::CameraHalServerCallbacks,
-      public base::trace_event::TraceLog::EnabledStateObserver {
+      public cros::mojom::CameraHalServerCallbacks {
  public:
   static CameraHalDispatcherImpl* GetInstance();
 
@@ -167,6 +166,9 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void RegisterPluginVmToken(const base::UnguessableToken& token);
   void UnregisterPluginVmToken(const base::UnguessableToken& token);
 
+  // Used when running capture unittests to avoid running sensor related path.
+  void DisableSensorForTesting();
+
   // CameraHalDispatcher implementations.
   void RegisterServer(
       mojo::PendingRemote<cros::mojom::CameraHalServer> server) final;
@@ -201,10 +203,6 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   base::UnguessableToken GetTokenForTrustedClient(
       cros::mojom::CameraClientType type);
-
-  // base::trace_event::TraceLog::EnabledStateObserver implementation.
-  void OnTraceLogEnabled() final;
-  void OnTraceLogDisabled() final;
 
  private:
   friend struct base::DefaultSingletonTraits<CameraHalDispatcherImpl>;
@@ -250,9 +248,6 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   void StopOnProxyThread();
 
-  void OnTraceLogEnabledOnProxyThread();
-  void OnTraceLogDisabledOnProxyThread();
-
   TokenManager* GetTokenManagerForTesting();
 
   base::ScopedFD proxy_fd_;
@@ -294,6 +289,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   scoped_refptr<base::ObserverListThreadSafe<CameraPrivacySwitchObserver>>
       privacy_switch_observers_;
+
+  bool sensor_enabled_ = true;
 
   base::WeakPtrFactory<CameraHalDispatcherImpl> weak_factory_{this};
 };

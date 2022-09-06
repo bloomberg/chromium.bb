@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_br.h"
@@ -49,11 +50,13 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_text_control_inner_editor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_text_control_multi_line.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_text_control_single_line.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
@@ -61,8 +64,10 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_token_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -130,6 +135,18 @@ LayoutBlock* LayoutObjectFactory::CreateBlockForLineClamp(
                       LayoutDeprecatedFlexibleBox>(node, legacy);
 }
 
+LayoutView* LayoutObjectFactory::CreateView(Document& document,
+                                            const ComputedStyle& style) {
+  bool disable_ng_for_type =
+      !RuntimeEnabledFeatures::LayoutNGViewEnabled() ||
+      (LayoutView::ShouldUsePrintingLayout(document) &&
+       !RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
+
+  if (disable_ng_for_type)
+    return MakeGarbageCollected<LayoutView>(&document);
+  return MakeGarbageCollected<LayoutNGView>(&document);
+}
+
 LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
@@ -140,24 +157,28 @@ LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
 LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
                                              const ComputedStyle& style,
                                              LegacyLayout legacy) {
-  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGGridEnabled();
-  if (disable_ng_for_type)
-    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByGrid);
-  return CreateObject<LayoutBlock, LayoutNGGrid, LayoutGrid>(
-      node, legacy, disable_ng_for_type);
+  return CreateObject<LayoutBlock, LayoutNGGrid, LayoutGrid>(node, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateMath(Node& node,
                                              const ComputedStyle& style,
                                              LegacyLayout legacy) {
-  DCHECK(IsA<MathMLElement>(node));
-  DCHECK_NE(legacy, LegacyLayout::kForce);
+  DCHECK(IsA<MathMLElement>(node) || node.IsDocumentNode() /* is_anonymous */);
   bool disable_ng_for_type = !RuntimeEnabledFeatures::MathMLCoreEnabled();
-  if (To<MathMLElement>(node).IsTokenElement()) {
+  if (IsA<MathMLTokenElement>(node)) {
     return CreateObject<LayoutBlockFlow, LayoutNGMathMLBlockFlow,
                         LayoutBlockFlow>(node, legacy, disable_ng_for_type);
   }
   return CreateObject<LayoutBlock, LayoutNGMathMLBlock, LayoutBlockFlow>(
+      node, legacy, disable_ng_for_type);
+}
+
+LayoutBlock* LayoutObjectFactory::CreateCustom(Node& node,
+                                               const ComputedStyle& style,
+                                               LegacyLayout legacy) {
+  DCHECK(node.IsElementNode());
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::CSSLayoutAPIEnabled();
+  return CreateObject<LayoutBlock, LayoutNGCustom, LayoutBlockFlow>(
       node, legacy, disable_ng_for_type);
 }
 
@@ -315,7 +336,7 @@ LayoutText* LayoutObjectFactory::CreateTextCombine(
     scoped_refptr<StringImpl> str,
     LegacyLayout legacy) {
   bool force_legacy = false;
-  if (RuntimeEnabledFeatures::LayoutNGTextCombineEnabled()) {
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     force_legacy = legacy == LegacyLayout::kForce;
     if (!force_legacy)
       return MakeGarbageCollected<LayoutNGText>(node, str);
@@ -365,6 +386,17 @@ LayoutObject* LayoutObjectFactory::CreateRubyText(Node* node,
                                                   const ComputedStyle& style,
                                                   LegacyLayout legacy) {
   return CreateObject<LayoutRubyText, LayoutNGRubyText>(*node, legacy);
+}
+
+LayoutObject* LayoutObjectFactory::CreateSVGForeignObject(
+    Node& node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  const bool disable_ng_for_type =
+      !RuntimeEnabledFeatures::LayoutNGForeignObjectEnabled();
+  return CreateObject<LayoutBlockFlow, LayoutNGSVGForeignObject,
+                      LayoutSVGForeignObject>(node, legacy,
+                                              disable_ng_for_type);
 }
 
 LayoutObject* LayoutObjectFactory::CreateSVGText(Node& node,

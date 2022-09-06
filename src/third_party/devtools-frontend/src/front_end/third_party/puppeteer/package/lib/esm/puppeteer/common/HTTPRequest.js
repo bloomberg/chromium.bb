@@ -1,6 +1,11 @@
 import { assert } from './assert.js';
-import { debugError , helper} from './helper.js';
-
+import { helper, debugError } from './helper.js';
+/**
+ * The default cooperative request interception resolution priority
+ *
+ * @public
+ */
+export const DEFAULT_INTERCEPT_RESOLUTION_PRIORITY = 0;
 /**
  *
  * Represents an HTTP request sent by a page.
@@ -52,6 +57,11 @@ export class HTTPRequest {
         this._fromMemoryCache = false;
         this._interceptionHandled = false;
         this._headers = {};
+        this._responseForRequest = null;
+        this._abortErrorReason = null;
+        this._interceptResolutionState = {
+            action: InterceptResolutionAction.None,
+        };
         this._client = client;
         this._requestId = event.requestId;
         this._isNavigationRequest =
@@ -59,15 +69,13 @@ export class HTTPRequest {
         this._interceptionId = interceptionId;
         this._allowInterception = allowInterception;
         this._url = event.request.url;
-        this._resourceType = event.type.toLowerCase();
+        this._resourceType = (event.type || 'other').toLowerCase();
         this._method = event.request.method;
         this._postData = event.request.postData;
         this._frame = frame;
         this._redirectChain = redirectChain;
         this._continueRequestOverrides = {};
-        this._currentStrategy = 'none';
-        this._currentPriority = undefined;
-        this._interceptActions = [];
+        this._interceptHandlers = [];
         this._initiator = event.initiator;
         for (const key of Object.keys(event.request.headers))
             this._headers[key.toLowerCase()] = event.request.headers[key];
@@ -103,37 +111,53 @@ export class HTTPRequest {
         return this._abortErrorReason;
     }
     /**
-     * @returns An array of the current intercept resolution strategy and priority
-     * `[strategy,priority]`. Strategy is one of: `abort`, `respond`, `continue`,
+     * @returns An InterceptResolutionState object describing the current resolution
+     *  action and priority.
+     *
+     *  InterceptResolutionState contains:
+     *    action: InterceptResolutionAction
+     *    priority?: number
+     *
+     *  InterceptResolutionAction is one of: `abort`, `respond`, `continue`,
      *  `disabled`, `none`, or `already-handled`.
      */
-    interceptResolution() {
+    interceptResolutionState() {
         if (!this._allowInterception)
-            return ['disabled'];
+            return { action: InterceptResolutionAction.Disabled };
         if (this._interceptionHandled)
-            return ['alreay-handled'];
-        return [this._currentStrategy, this._currentPriority];
+            return { action: InterceptResolutionAction.AlreadyHandled };
+        return { ...this._interceptResolutionState };
+    }
+    /**
+     * @returns `true` if the intercept resolution has already been handled,
+     * `false` otherwise.
+     */
+    isInterceptResolutionHandled() {
+        return this._interceptionHandled;
     }
     /**
      * Adds an async request handler to the processing queue.
      * Deferred handlers are not guaranteed to execute in any particular order,
-     * but they are guarnateed to resolve before the request interception
+     * but they are guaranteed to resolve before the request interception
      * is finalized.
      */
     enqueueInterceptAction(pendingHandler) {
-        this._interceptActions.push(pendingHandler);
+        this._interceptHandlers.push(pendingHandler);
     }
     /**
      * Awaits pending interception handlers and then decides how to fulfill
      * the request interception.
      */
     async finalizeInterceptions() {
-        await this._interceptActions.reduce((promiseChain, interceptAction) => promiseChain.then(interceptAction), Promise.resolve());
-        const [resolution] = this.interceptResolution();
-        switch (resolution) {
+        await this._interceptHandlers.reduce((promiseChain, interceptAction) => promiseChain.then(interceptAction), Promise.resolve());
+        const { action } = this.interceptResolutionState();
+        switch (action) {
             case 'abort':
                 return this._abort(this._abortErrorReason);
             case 'respond':
+                if (this._responseForRequest === null) {
+                    throw new Error('Response is missing for the interception');
+                }
                 return this._respond(this._responseForRequest);
             case 'continue':
                 return this._continue(this._continueRequestOverrides);
@@ -238,7 +262,7 @@ export class HTTPRequest {
      *
      * @returns `null` unless the request failed. If the request fails this can
      * return an object with `errorText` containing a human-readable error
-     * message, e.g. `net::ERR_FAILED`. It is not guaranteeded that there will be
+     * message, e.g. `net::ERR_FAILED`. It is not guaranteed that there will be
      * failure text if the request fails.
      */
     failure() {
@@ -286,18 +310,21 @@ export class HTTPRequest {
             return this._continue(overrides);
         }
         this._continueRequestOverrides = overrides;
-        if (priority > this._currentPriority ||
-            this._currentPriority === undefined) {
-            this._currentStrategy = 'continue';
-            this._currentPriority = priority;
+        if (this._interceptResolutionState.priority === undefined ||
+            priority > this._interceptResolutionState.priority) {
+            this._interceptResolutionState = {
+                action: InterceptResolutionAction.Continue,
+                priority,
+            };
             return;
         }
-        if (priority === this._currentPriority) {
-            if (this._currentStrategy === 'abort' ||
-                this._currentStrategy === 'respond') {
+        if (priority === this._interceptResolutionState.priority) {
+            if (this._interceptResolutionState.action === 'abort' ||
+                this._interceptResolutionState.action === 'respond') {
                 return;
             }
-            this._currentStrategy = 'continue';
+            this._interceptResolutionState.action =
+                InterceptResolutionAction.Continue;
         }
         return;
     }
@@ -361,17 +388,19 @@ export class HTTPRequest {
             return this._respond(response);
         }
         this._responseForRequest = response;
-        if (priority > this._currentPriority ||
-            this._currentPriority === undefined) {
-            this._currentStrategy = 'respond';
-            this._currentPriority = priority;
+        if (this._interceptResolutionState.priority === undefined ||
+            priority > this._interceptResolutionState.priority) {
+            this._interceptResolutionState = {
+                action: InterceptResolutionAction.Respond,
+                priority,
+            };
             return;
         }
-        if (priority === this._currentPriority) {
-            if (this._currentStrategy === 'abort') {
+        if (priority === this._interceptResolutionState.priority) {
+            if (this._interceptResolutionState.action === 'abort') {
                 return;
             }
-            this._currentStrategy = 'respond';
+            this._interceptResolutionState.action = InterceptResolutionAction.Respond;
         }
     }
     async _respond(response) {
@@ -381,18 +410,23 @@ export class HTTPRequest {
             : response.body || null;
         const responseHeaders = {};
         if (response.headers) {
-            for (const header of Object.keys(response.headers))
-                responseHeaders[header.toLowerCase()] = String(response.headers[header]);
+            for (const header of Object.keys(response.headers)) {
+                const value = response.headers[header];
+                responseHeaders[header.toLowerCase()] = Array.isArray(value)
+                    ? value.map((item) => String(item))
+                    : String(value);
+            }
         }
         if (response.contentType)
             responseHeaders['content-type'] = response.contentType;
         if (responseBody && !('content-length' in responseHeaders))
             responseHeaders['content-length'] = String(Buffer.byteLength(responseBody));
+        const status = response.status || 200;
         await this._client
             .send('Fetch.fulfillRequest', {
             requestId: this._interceptionId,
-            responseCode: response.status || 200,
-            responsePhrase: STATUS_TEXTS[response.status || 200],
+            responseCode: status,
+            responsePhrase: STATUS_TEXTS[status],
             responseHeaders: headersArray(responseHeaders),
             body: responseBody ? responseBody.toString('base64') : undefined,
         })
@@ -426,10 +460,12 @@ export class HTTPRequest {
             return this._abort(errorReason);
         }
         this._abortErrorReason = errorReason;
-        if (priority >= this._currentPriority ||
-            this._currentPriority === undefined) {
-            this._currentStrategy = 'abort';
-            this._currentPriority = priority;
+        if (this._interceptResolutionState.priority === undefined ||
+            priority >= this._interceptResolutionState.priority) {
+            this._interceptResolutionState = {
+                action: InterceptResolutionAction.Abort,
+                priority,
+            };
             return;
         }
     }
@@ -438,11 +474,23 @@ export class HTTPRequest {
         await this._client
             .send('Fetch.failRequest', {
             requestId: this._interceptionId,
-            errorReason,
+            errorReason: errorReason || 'Failed',
         })
             .catch(handleError);
     }
 }
+/**
+ * @public
+ */
+export var InterceptResolutionAction;
+(function (InterceptResolutionAction) {
+    InterceptResolutionAction["Abort"] = "abort";
+    InterceptResolutionAction["Respond"] = "respond";
+    InterceptResolutionAction["Continue"] = "continue";
+    InterceptResolutionAction["Disabled"] = "disabled";
+    InterceptResolutionAction["None"] = "none";
+    InterceptResolutionAction["AlreadyHandled"] = "already-handled";
+})(InterceptResolutionAction || (InterceptResolutionAction = {}));
 const errorReasons = {
     aborted: 'Aborted',
     accessdenied: 'AccessDenied',
@@ -462,8 +510,11 @@ const errorReasons = {
 function headersArray(headers) {
     const result = [];
     for (const name in headers) {
-        if (!Object.is(headers[name], undefined))
-            result.push({ name, value: headers[name] + '' });
+        const value = headers[name];
+        if (!Object.is(value, undefined)) {
+            const values = Array.isArray(value) ? value : [value];
+            result.push(...values.map((value) => ({ name, value: value + '' })));
+        }
     }
     return result;
 }

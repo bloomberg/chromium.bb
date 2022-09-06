@@ -8,6 +8,7 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -151,7 +152,7 @@ void RenderWidgetHostViewBase::SelectionBoundsChanged(
     base::i18n::TextDirection focus_dir,
     const gfx::Rect& bounding_box,
     bool is_anchor_first) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionBoundsChanged(
         this, anchor_rect, anchor_dir, focus_rect, focus_dir, bounding_box,
@@ -222,7 +223,7 @@ void RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
   if (!main_host || !main_frame_host)
     return;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   NOTREACHED()
       << "RenderWidgetHostViewAndroid::CopyFromSurface calls "
          "DelegatedFrameHostAndroid::CopyFromCompositingSurface directly, "
@@ -303,7 +304,8 @@ std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
 RenderWidgetHostViewBase::CreateVideoCapturer() {
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer =
       GetHostFrameSinkManager()->CreateVideoCapturer();
-  video_capturer->ChangeTarget(viz::VideoCaptureTarget(GetFrameSinkId()));
+  video_capturer->ChangeTarget(viz::VideoCaptureTarget(GetFrameSinkId()),
+                               /*crop_version=*/0);
   return video_capturer;
 }
 
@@ -507,6 +509,13 @@ void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
   NOTREACHED();
 }
 
+// Send system cursor size to the renderer via UpdateScreenInfo().
+void RenderWidgetHostViewBase::UpdateSystemCursorSize(
+    const gfx::Size& cursor_size) {
+  system_cursor_size_ = cursor_size;
+  UpdateScreenInfo();
+}
+
 void RenderWidgetHostViewBase::UpdateScreenInfo() {
   bool force_sync_visual_properties = false;
   // Delegate, which is usually WebContentsImpl, do not send rect updates for
@@ -528,6 +537,23 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
   }
 
   auto new_screen_infos = GetNewScreenInfosForUpdate();
+
+  if (scale_override_for_capture_ != 1.0f) {
+    // If HiDPI capture mode is active, adjust the device scale factor to
+    // increase the rendered pixel count. |new_screen_infos| always contains the
+    // unmodified original values for the display, and a copy of it is saved in
+    // |screen_infos_|, with a modification applied if applicable. When HiDPI
+    // mode is turned off (the scale override is 1.0), the original
+    // |new_screen_infos| value gets copied unchanged to |screen_infos_|.
+    const float old_device_scale_factor =
+        new_screen_infos.current().device_scale_factor;
+    new_screen_infos.mutable_current().device_scale_factor =
+        old_device_scale_factor * scale_override_for_capture_;
+    DVLOG(1) << __func__ << ": Overriding device_scale_factor from "
+             << old_device_scale_factor << " to "
+             << new_screen_infos.current().device_scale_factor
+             << " for capture.";
+  }
 
   if (screen_infos_ == new_screen_infos && !force_sync_visual_properties)
     return;
@@ -551,6 +577,16 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
     OnSynchronizedDisplayPropertiesChanged(has_rotation_changed);
     host()->NotifyScreenInfoChanged();
   }
+}
+
+void RenderWidgetHostViewBase::UpdateActiveState(bool active) {
+  // Send active state through the delegate if there is one to make sure
+  // it stays consistent across all widgets in the tab. Not every
+  // RenderWidgetHost has a delegate (for example, drop-down widgets).
+  if (host()->delegate())
+    host()->delegate()->SendActiveState(active);
+  else
+    host()->SetActive(active);
 }
 
 void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
@@ -604,6 +640,16 @@ display::ScreenInfos RenderWidgetHostViewBase::GetScreenInfos() const {
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
   return screen_infos_.current().device_scale_factor;
+}
+
+void RenderWidgetHostViewBase::SetScaleOverrideForCapture(float scale) {
+  DVLOG(1) << __func__ << ": override=" << scale;
+  scale_override_for_capture_ = scale;
+  UpdateScreenInfo();
+}
+
+float RenderWidgetHostViewBase::GetScaleOverrideForCapture() const {
+  return scale_override_for_capture_;
 }
 
 void RenderWidgetHostViewBase::OnAutoscrollStart() {
@@ -803,16 +849,24 @@ display::ScreenInfos RenderWidgetHostViewBase::GetNewScreenInfosForUpdate() {
   // RWHVChildFrame gets its ScreenInfos from the CrossProcessFrameConnector.
   DCHECK(!IsRenderWidgetHostViewChildFrame());
 
+  display::ScreenInfos screen_infos;
+
   if (auto* screen = display::Screen::GetScreen()) {
     gfx::NativeView native_view = GetNativeView();
     const auto& display = native_view
                               ? screen->GetDisplayNearestView(native_view)
                               : screen->GetPrimaryDisplay();
-    return screen->GetScreenInfosNearestDisplay(display.id());
+    screen_infos = screen->GetScreenInfosNearestDisplay(display.id());
+  } else {
+    // If there is no Screen, create fake ScreenInfos (for tests).
+    screen_infos = display::ScreenInfos(display::ScreenInfo());
   }
 
-  // If there is no Screen, create fake ScreenInfos (for tests).
-  return display::ScreenInfos(display::ScreenInfo());
+  // Set system cursor size separately as it's not a property of screen or
+  // display.
+  screen_infos.system_cursor_size = system_cursor_size_;
+
+  return screen_infos;
 }
 
 void RenderWidgetHostViewBase::DidNavigate() {

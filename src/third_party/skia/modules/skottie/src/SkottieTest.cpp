@@ -321,6 +321,7 @@ DEF_TEST(Skottie_Properties, reporter) {
       120,
       12,
       0,
+      0,
       SkTextUtils::kLeft_Align,
       Shaper::VAlign::kTopBaseline,
       Shaper::ResizePolicy::kNone,
@@ -331,6 +332,7 @@ DEF_TEST(Skottie_Properties, reporter) {
       SK_ColorTRANSPARENT,
       SK_ColorTRANSPARENT,
       TextPaintOrder::kFillStroke,
+      SkPaint::Join::kDefault_Join,
       false,
       false
     }));
@@ -480,7 +482,6 @@ DEF_TEST(Skottie_Shaper_HAlign, reporter) {
                 Shaper::LinebreakPolicy::kExplicit,
                 Shaper::Direction::kLTR,
                 Shaper::Capitalization::kNone,
-                Shaper::Flags::kNone
             };
 
             const auto shape_result = Shaper::Shape(text, desc, text_point,
@@ -551,7 +552,6 @@ DEF_TEST(Skottie_Shaper_VAlign, reporter) {
                 Shaper::LinebreakPolicy::kParagraph,
                 Shaper::Direction::kLTR,
                 Shaper::Capitalization::kNone,
-                Shaper::Flags::kNone
             };
 
             const auto shape_result = Shaper::Shape(text, desc, text_box, SkFontMgr::RefDefault());
@@ -592,7 +592,6 @@ DEF_TEST(Skottie_Shaper_FragmentGlyphs, reporter) {
         Shaper::LinebreakPolicy::kParagraph,
         Shaper::Direction::kLTR,
         Shaper::Capitalization::kNone,
-        Shaper::Flags::kNone
     };
 
     const SkString text("Foo bar baz");
@@ -685,7 +684,6 @@ DEF_TEST(Skottie_Shaper_ExplicitFontMgr, reporter) {
         Shaper::LinebreakPolicy::kParagraph,
         Shaper::Direction::kLTR,
         Shaper::Capitalization::kNone,
-        Shaper::Flags::kNone
     };
 
     const auto text_box = SkRect::MakeWH(100, 100);
@@ -860,4 +858,30 @@ DEF_TEST(Skottie_Image_Loading, reporter) {
         REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 2);
         REPORTER_ASSERT(reporter, SkScalarNearlyEqual(multi_asset->requestedFrames()[1], 2));
     }
+}
+
+DEF_TEST(Skottie_Layer_NoType, r) {
+    static constexpr char json[] =
+        R"({
+             "v": "5.2.1",
+             "w": 100,
+             "h": 100,
+             "fr": 10,
+             "ip": 0,
+             "op": 100,
+             "layers": [
+               {
+                 "ind": 0,
+                 "ip": 0,
+                 "op": 100,
+                 "ks": {}
+               }
+             ]
+           })";
+
+    SkMemoryStream stream(json, strlen(json));
+    auto anim = Animation::Make(&stream);
+
+    // passes if we don't crash
+    REPORTER_ASSERT(r, anim);
 }

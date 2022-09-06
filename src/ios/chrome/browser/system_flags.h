@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SYSTEM_FLAGS_H_
 #define IOS_CHROME_BROWSER_SYSTEM_FLAGS_H_
 
-#include <string>
+#import <Foundation/Foundation.h>
 
 #include "base/feature_list.h"
 
@@ -14,12 +14,6 @@
 // them) should be added.
 
 namespace experimental_flags {
-
-enum GaiaEnvironment {
-  GAIA_ENVIRONMENT_PROD,
-  GAIA_ENVIRONMENT_STAGING,
-  GAIA_ENVIRONMENT_TEST,
-};
 
 enum WhatsNewPromoStatus {
   WHATS_NEW_DEFAULT = 0,          // Not forced to enable a promo.
@@ -33,24 +27,37 @@ enum WhatsNewPromoStatus {
 // Whether the First Run UI will be always be displayed.
 bool AlwaysDisplayFirstRun();
 
-GaiaEnvironment GetGaiaEnvironment();
-
 // Returns the host name for an alternative Origin Server host for use by
 // |BrandCode| startup ping. Returns empty string if there is no alternative
 // host specified.
-std::string GetOriginServerHost();
+NSString* GetOriginServerHost();
 
 // Returns the promo force enabled, as determined by the experimental flags.
 // If |WHATS_NEW_DEFAULT| is returned, no promo is force enabled.
 WhatsNewPromoStatus GetWhatsNewPromoStatus();
 
 // Returns the URL for the alternative Discover Feed server.
-std::string getAlternateDiscoverFeedServerURL();
+NSString* GetAlternateDiscoverFeedServerURL();
 
 // Returns true if the prefs for the notice card views count and clicks count
 // should be reset to zero on feed start.
 // TODO(crbug.com/1189232): Remove after launch.
 bool ShouldResetNoticeCardOnFeedStart();
+
+// Returns true if the count of showing the First Follow modal should be reset
+// to zero.
+// TODO(crbug.com/1312124): Remove after launch.
+bool ShouldResetFirstFollowCount();
+
+// Should be called after the count has been reset so that the resetting flag
+// can be turned off.
+// TODO(crbug.com/1312124): Remove after launch.
+void DidResetFirstFollowCount();
+
+// Returns true if the First Follow modal should always be shown when the user
+// follows a channel.
+// TODO(crbug.com/1312124): Remove after launch.
+bool ShouldAlwaysShowFirstFollow();
 
 // Whether memory debugging tools are enabled.
 bool IsMemoryDebuggingEnabled();

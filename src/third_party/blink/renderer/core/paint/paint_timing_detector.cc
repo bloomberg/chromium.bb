@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "ui/gfx/geometry/rect.h"
@@ -147,7 +149,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
 void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
     const gfx::Size& intrinsic_size,
-    const ImageResourceContent& cached_image,
+    const MediaTiming& media_timing,
     const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const gfx::Rect& image_border) {
   if (IgnorePaintTimingScope::ShouldIgnore())
@@ -160,17 +162,16 @@ void PaintTimingDetector::NotifyImagePaint(
   if (!detector)
     return;
 
-  detector->RecordImage(object, intrinsic_size, cached_image,
+  detector->RecordImage(object, intrinsic_size, media_timing,
                         current_paint_chunk_properties, nullptr, image_border);
 }
 
-void PaintTimingDetector::NotifyImageFinished(
-    const LayoutObject& object,
-    const ImageResourceContent* cached_image) {
+void PaintTimingDetector::NotifyImageFinished(const LayoutObject& object,
+                                              const MediaTiming* media_timing) {
   if (IgnorePaintTimingScope::ShouldIgnore())
     return;
   if (image_paint_timing_detector_)
-    image_paint_timing_detector_->NotifyImageFinished(object, cached_image);
+    image_paint_timing_detector_->NotifyImageFinished(object, media_timing);
 }
 
 void PaintTimingDetector::LayoutObjectWillBeDestroyed(
@@ -255,21 +256,39 @@ PaintTimingDetector::GetLargestContentfulPaintCalculator() {
 bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
     base::TimeTicks image_paint_time,
     uint64_t image_paint_size,
-    bool is_animated) {
+    ImageRecord* image_record,
+    double image_bpp) {
+  // (Experimental) Images with insufficient entropy are not considered
+  // candidates for LCP
+  if (base::FeatureList::IsEnabled(features::kExcludeLowEntropyImagesFromLCP)) {
+    if (image_bpp < features::kMinimumEntropyForLCP.Get())
+      return false;
+  }
   if (!HasLargestImagePaintChanged(image_paint_time, image_paint_size))
     return false;
 
-  if (is_animated) {
-    // Set the animated image flag.
-    largest_contentful_paint_type_ |=
-        LargestContentfulPaintType::kLCPTypeAnimatedImage;
-  } else {
-    // Unset the animated image flag.
-    largest_contentful_paint_type_ &=
-        ~LargestContentfulPaintType::kLCPTypeAnimatedImage;
+  largest_contentful_paint_type_ = blink::LargestContentfulPaintType::kNone;
+  if (image_record) {
+    Node* image_node = DOMNodeIds::NodeForId(image_record->node_id);
+    HTMLImageElement* element = DynamicTo<HTMLImageElement>(image_node);
+    if (element && !image_node->IsInShadowTree() &&
+        element->IsChangedShortlyAfterMouseover()) {
+      largest_contentful_paint_type_ |=
+          blink::LargestContentfulPaintType::kAfterMouseover;
+    }
+    // TODO(yoav): Once we'd enable the kLCPAnimatedImagesReporting flag by
+    // default, we'd be able to use the value of
+    // largest_image_record->first_animated_frame_time directly.
+    if (image_record && image_record->media_timing &&
+        image_record->media_timing->IsPaintedFirstFrame()) {
+      // Set the animated image flag.
+      largest_contentful_paint_type_ |=
+          blink::LargestContentfulPaintType::kAnimatedImage;
+    }
   }
   largest_image_paint_time_ = image_paint_time;
   largest_image_paint_size_ = image_paint_size;
+  largest_contentful_paint_image_bpp_ = image_bpp;
   UpdateLargestContentfulPaintTime();
   DidChangePerformanceTiming();
   return true;
@@ -474,6 +493,10 @@ void PaintTimingCallbackManagerImpl::
 void PaintTimingCallbackManagerImpl::ReportPaintTime(
     std::unique_ptr<PaintTimingCallbackManager::CallbackQueue> frame_callbacks,
     base::TimeTicks paint_time) {
+  // Do not report any paint timings for detached frames.
+  if (frame_view_->GetFrame().IsDetached())
+    return;
+
   while (!frame_callbacks->empty()) {
     std::move(frame_callbacks->front()).Run(paint_time);
     frame_callbacks->pop();

@@ -98,11 +98,11 @@ class SpellcheckServiceUnitTestBase : public testing::Test {
 
  protected:
   void SetUp() override {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Tests were designed assuming Hunspell dictionary used and may fail when
     // Windows spellcheck is enabled by default.
     feature_list_.InitAndDisableFeature(spellcheck::kWinUseBrowserSpellChecker);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
     // Use SetTestingFactoryAndUse to force creation and initialization.
     SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -111,10 +111,10 @@ class SpellcheckServiceUnitTestBase : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // feature_list_ needs to be destroyed after profile_.
   base::test::ScopedFeatureList feature_list_;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   TestingProfile profile_;
 };
 
@@ -126,27 +126,37 @@ INSTANTIATE_TEST_SUITE_P(
     TestCases,
     SpellcheckServiceUnitTest,
     testing::Values(
-        TestCase("en,aa", {"aa"}, {}, {}),
-        TestCase("en,en-JP,fr,aa", {"fr"}, {"fr"}, {"fr"}),
-        TestCase("en,en-JP,fr,zz,en-US", {"fr"}, {"fr", "en-US"}, {"fr"}),
-        TestCase("en,en-US,en-GB", {"en-GB"}, {"en-US", "en-GB"}, {"en-GB"}),
-        TestCase("en,en-US,en-AU", {"en-AU"}, {"en-US", "en-AU"}, {"en-AU"}),
-        TestCase("en,en-US,en-AU", {"en-US"}, {"en-US", "en-AU"}, {"en-US"}),
-        TestCase("en,en-US", {"en-US"}, {"en-US"}, {"en-US"}),
-        TestCase("en,en-US,fr", {"en-US"}, {"en-US", "fr"}, {"en-US"}),
+        TestCase("en-JP,aa", {"aa"}, {}, {}),
+        TestCase("en,aa", {"aa"}, {"en"}, {}),
+        TestCase("en,en-JP,fr,aa", {"fr"}, {"en", "fr"}, {"fr"}),
+        TestCase("en,en-JP,fr,zz,en-US", {"fr"}, {"en", "fr", "en-US"}, {"fr"}),
+        TestCase("en,en-US,en-GB",
+                 {"en-GB"},
+                 {"en", "en-US", "en-GB"},
+                 {"en-GB"}),
+        TestCase("en,en-US,en-AU",
+                 {"en-AU"},
+                 {"en", "en-US", "en-AU"},
+                 {"en-AU"}),
+        TestCase("en,en-US,en-AU",
+                 {"en-US"},
+                 {"en", "en-US", "en-AU"},
+                 {"en-US"}),
+        TestCase("en,en-US", {"en-US"}, {"en", "en-US"}, {"en-US"}),
+        TestCase("en,en-US,fr", {"en-US"}, {"en", "en-US", "fr"}, {"en-US"}),
         TestCase("en,fr,en-US,en-AU",
                  {"en-US", "fr"},
-                 {"fr", "en-US", "en-AU"},
+                 {"en", "fr", "en-US", "en-AU"},
                  {"fr", "en-US"}),
-        TestCase("en-US,en", {"en-US"}, {"en-US"}, {"en-US"}),
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+        TestCase("en-US,en", {"en-US"}, {"en-US", "en"}, {"en-US"}),
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
         // Scenario where user disabled the Windows spellcheck feature with some
         // non-Hunspell languages set in preferences.
         TestCase("fr,eu,en-US,ar",
                  {"fr", "eu", "en-US", "ar"},
                  {"fr", "en-US"},
                  {"fr", "en-US"}),
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
         TestCase("hu-HU,hr-HR", {"hr"}, {"hu", "hr"}, {"hr"})));
 
 TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
@@ -165,7 +175,7 @@ TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
   EXPECT_EQ(GetParam().expected_dictionaries, dictionaries);
 }
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 class SpellcheckServiceHybridUnitTestBase
     : public SpellcheckServiceUnitTestBase {
  public:
@@ -353,7 +363,10 @@ static const TestCase kHybridGetDictionariesParams[] = {
     TestCase("ceb", {}, {}, {}),
     TestCase("ceb,gl,hr", {"gl", "hr"}, {"gl", "hr"}, {"gl", "hr"}),
     // Finnish has only "fi" in hard-coded list of accept languages.
-    TestCase("fi-FI,fi,en-US,en", {"en-US"}, {"fi", "en-US"}, {"fi", "en-US"}),
+    TestCase("fi-FI,fi,en-US,en",
+             {"en-US"},
+             {"fi", "en-US", "en"},
+             {"fi", "en-US"}),
     // First language is supported by Windows but private use dictionaries
     // are ignored.
     TestCase("ja,gl", {"gl"}, {"gl"}, {"gl"}),
@@ -545,4 +558,4 @@ TEST_P(SpellcheckServiceWindowsDictionaryMappingUnitTestDelayInit,
       GetParam().expected_accept_language_generic,
       GetParam().expected_tag_passed_to_spellcheck_generic);
 }
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)

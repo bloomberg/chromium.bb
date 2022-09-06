@@ -7,10 +7,14 @@
  * google3/intelligence/dbw/proto/macros/user_intent.proto.
  * These should match semantic tags in Voice Access, see
  * voiceaccess_config.config and voiceaccess.patterns_template.
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ * Ensure this enum stays in sync with the CrosDictationMacroName enum in
+ * tools/metrics/histograms/enums.xml.
  * @enum {number}
  */
 export const MacroName = {
-  UNSPECIFID: 0,
+  UNSPECIFIED: 0,
 
   // Simply input text into a text field.
   INPUT_TEXT_VIEW: 1,
@@ -62,6 +66,27 @@ export const MacroName = {
   // Insert a new line character.
   // Note: This doesn't correspond to a Voice Access action.
   NEW_LINE: 15,
+
+  // Stops dictation.
+  STOP_LISTENING: 16,
+
+  // Delete one word.
+  DELETE_PREV_WORD: 17,
+
+  // Delete one sentence.
+  DELETE_PREV_SENT: 18,
+
+  // Move the cursor to the next word.
+  NAV_NEXT_WORD: 19,
+
+  // Move the cursor to the previous word.
+  NAV_PREV_WORD: 20,
+
+  // Deletes a provided word or phrase.
+  SMART_DELETE_PHRASE: 21,
+
+  // Replaces a provided word or phrase.
+  SMART_REPLACE_PHRASE: 22,
 
   // Any new actions should match with Voice Access's semantic tags.
 };

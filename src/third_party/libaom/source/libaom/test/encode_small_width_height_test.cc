@@ -161,10 +161,13 @@ TEST(EncodeSmallWidthHeight, 1x1) {
   img.stride[AOM_PLANE_U] = img.stride[AOM_PLANE_V] = uv_stride;
   std::unique_ptr<unsigned char[]> y_plane(
       new unsigned char[y_height * y_stride]());
+  ASSERT_NE(y_plane, nullptr);
   std::unique_ptr<unsigned char[]> u_plane(
       new unsigned char[uv_height * uv_stride]());
+  ASSERT_NE(u_plane, nullptr);
   std::unique_ptr<unsigned char[]> v_plane(
       new unsigned char[uv_height * uv_stride]());
+  ASSERT_NE(v_plane, nullptr);
   img.planes[AOM_PLANE_Y] = y_plane.get();
   img.planes[AOM_PLANE_U] = u_plane.get();
   img.planes[AOM_PLANE_V] = v_plane.get();

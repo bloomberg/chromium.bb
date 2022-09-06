@@ -9,6 +9,7 @@
 
 #include "ash/shell_delegate.h"
 #include "base/callback_forward.h"
+#include "url/gurl.h"
 
 class ChromeShellDelegate : public ash::ShellDelegate {
  public:
@@ -31,6 +32,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       ash::NearbyShareController* controller) const override;
   std::unique_ptr<ash::DesksTemplatesDelegate> CreateDesksTemplatesDelegate()
       const override;
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetGeolocationUrlLoaderFactory() const override;
   void OpenKeyboardShortcutHelpPage() const override;
   bool CanGoBack(gfx::NativeWindow window) const override;
   void SetTabScrubberChromeOSEnabled(bool enabled) override;
@@ -44,9 +47,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   void BindFingerprint(
       mojo::PendingReceiver<device::mojom::Fingerprint> receiver) override;
   void BindMultiDeviceSetup(
-      mojo::PendingReceiver<
-          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
-      override;
+      mojo::PendingReceiver<ash::multidevice_setup::mojom::MultiDeviceSetup>
+          receiver) override;
   media_session::MediaSessionService* GetMediaSessionService() override;
   bool IsSessionRestoreInProgress() const override;
   void SetUpEnvironmentForLockedFullscreen(bool locked) override;
@@ -59,6 +61,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   void OpenFeedbackPageForPersistentDesksBar() override;
   static void SetDisableLoggingRedirectForTesting(bool value);
   static void ResetDisableLoggingRedirectForTesting();
+  const GURL& GetLastCommittedURLForWindowIfAny(aura::Window* window) override;
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_

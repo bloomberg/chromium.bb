@@ -73,8 +73,8 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_SVR)
-            @CommandLineFlags.Add({"enable-features=WebXR"})
-            public void testPoseDataUnfocusedTab_WebXr() {
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    public void testPoseDataUnfocusedTab_WebXr() {
         testPoseDataUnfocusedTabImpl("webxr_test_pose_data_unfocused_tab", mWebXrVrTestFramework);
     }
 
@@ -97,8 +97,8 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-            @CommandLineFlags.Add({"enable-features=WebXR"})
-            public void testPermissionsInOtherTab() throws InterruptedException {
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    public void testPermissionsInOtherTab() throws InterruptedException {
         testPermissionsInOtherTabImpl(false /* incognito */);
     }
 

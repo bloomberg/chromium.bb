@@ -24,7 +24,7 @@
 #define RIGHT_SHIFT_MV(x) (((x) + 3 + ((x) >= 0)) >> 3)
 
 typedef struct {
-  FULLPEL_MV fmv;
+  int_mv fmv;
   int weight;
 } cand_mv_t;
 
@@ -90,8 +90,10 @@ static INLINE void get_mv_candidate_from_tpl(const AV1_COMP *const cpi,
                                  GET_MV_RAWPEL(mv.as_mv.col) };
         int unique = 1;
         for (int m = 0; m < *cand_count; m++) {
-          if (RIGHT_SHIFT_MV(fmv.row) == RIGHT_SHIFT_MV(cand[m].fmv.row) &&
-              RIGHT_SHIFT_MV(fmv.col) == RIGHT_SHIFT_MV(cand[m].fmv.col)) {
+          if (RIGHT_SHIFT_MV(fmv.row) ==
+                  RIGHT_SHIFT_MV(cand[m].fmv.as_fullmv.row) &&
+              RIGHT_SHIFT_MV(fmv.col) ==
+                  RIGHT_SHIFT_MV(cand[m].fmv.as_fullmv.col)) {
             unique = 0;
             cand[m].weight++;
             break;
@@ -99,7 +101,7 @@ static INLINE void get_mv_candidate_from_tpl(const AV1_COMP *const cpi,
         }
 
         if (unique) {
-          cand[*cand_count].fmv = fmv;
+          cand[*cand_count].fmv.as_fullmv = fmv;
           cand[*cand_count].weight = 1;
           (*cand_count)++;
         }
@@ -168,15 +170,50 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     start_mv = get_fullmv_from_mv(&ref_mv);
 
   // cand stores start_mv and all possible MVs in a SB.
-  cand_mv_t cand[MAX_TPL_BLK_IN_SB * MAX_TPL_BLK_IN_SB + 1] = { { { 0, 0 },
-                                                                  0 } };
-  cand[0].fmv = start_mv;
+  cand_mv_t cand[MAX_TPL_BLK_IN_SB * MAX_TPL_BLK_IN_SB + 1];
+  av1_zero(cand);
+  cand[0].fmv.as_fullmv = start_mv;
   int cnt = 1;
   int total_weight = 0;
 
   if (!cpi->sf.mv_sf.full_pixel_search_level &&
       mbmi->motion_mode == SIMPLE_TRANSLATION) {
     get_mv_candidate_from_tpl(cpi, x, bsize, ref, cand, &cnt, &total_weight);
+  }
+
+  const int cand_cnt = AOMMIN(2, cnt);
+  // TODO(any): Test the speed feature for OBMC_CAUSAL mode.
+  if (cpi->sf.mv_sf.skip_fullpel_search_using_startmv &&
+      mbmi->motion_mode == SIMPLE_TRANSLATION) {
+    const int stack_size = args->start_mv_cnt;
+    for (int cand_idx = 0; cand_idx < cand_cnt; cand_idx++) {
+      int_mv *fmv_cand = &cand[cand_idx].fmv;
+      int skip_cand_mv = 0;
+
+      // Check difference between mvs in the stack and candidate mv.
+      for (int stack_idx = 0; stack_idx < stack_size; stack_idx++) {
+        FULLPEL_MV *fmv_stack = &args->start_mv_stack[stack_idx];
+        const int row = abs(fmv_stack->row - fmv_cand->as_fullmv.row);
+        const int col = abs(fmv_stack->col - fmv_cand->as_fullmv.col);
+
+        if (row <= 1 && col <= 1) {
+          skip_cand_mv = 1;
+          break;
+        }
+      }
+      if (skip_cand_mv) {
+        // Mark the candidate mv as invalid so that motion search gets skipped.
+        cand[cand_idx].fmv.as_int = INVALID_MV;
+      } else {
+        // Store start mv candidate of full-pel search in the mv stack (except
+        // last ref_mv_idx).
+        if (mbmi->ref_mv_idx != MAX_REF_MV_SEARCH - 1) {
+          args->start_mv_stack[args->start_mv_cnt] = fmv_cand->as_fullmv;
+          args->start_mv_cnt++;
+          assert(args->start_mv_cnt <= (MAX_REF_MV_SEARCH - 1) * 2);
+        }
+      }
+    }
   }
 
   // Further reduce the search range.
@@ -211,13 +248,16 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     case SIMPLE_TRANSLATION: {
       // Perform a search with the top 2 candidates
       int sum_weight = 0;
-      for (int m = 0; m < AOMMIN(2, cnt); m++) {
-        FULLPEL_MV smv = cand[m].fmv;
+      for (int m = 0; m < cand_cnt; m++) {
+        int_mv smv = cand[m].fmv;
         FULLPEL_MV this_best_mv, this_second_best_mv;
 
-        int thissme = av1_full_pixel_search(
-            smv, &full_ms_params, step_param, cond_cost_list(cpi, cost_list),
-            &this_best_mv, &this_second_best_mv);
+        if (smv.as_int == INVALID_MV) continue;
+
+        int thissme =
+            av1_full_pixel_search(smv.as_fullmv, &full_ms_params, step_param,
+                                  cond_cost_list(cpi, cost_list), &this_best_mv,
+                                  &this_second_best_mv);
 
         if (thissme < bestsme) {
           bestsme = thissme;
@@ -235,6 +275,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       break;
     default: assert(0 && "Invalid motion mode!\n");
   }
+  if (best_mv->as_int == INVALID_MV) return;
 
   if (scaled_ref_frame) {
     // Swap back the original buffers for subpel motion search.

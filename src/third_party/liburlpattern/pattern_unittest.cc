@@ -227,7 +227,7 @@ TEST(PatternStringTest, Group) {
 }
 
 TEST(PatternStringTest, GroupWithRegexp) {
-  RunPatternStringTest("/foo/{(bar)}", "/foo/(bar)");
+  RunPatternStringTest("/foo/{(bar)}", "/foo/{(bar)}");
 }
 
 TEST(PatternStringTest, GroupWithPrefixAndRegexp) {
@@ -355,11 +355,11 @@ TEST(PatternStringTest, NamedGroupInGroupingFollowedByWildcardInGrouping) {
 }
 
 TEST(PatternStringTest, NamedGroupInGroupingFollowedByWildcardWithSuffix) {
-  RunPatternStringTest("{:foo}{(.*)bar}", ":foo{(.*)bar}");
+  RunPatternStringTest("{:foo}{(.*)bar}", ":foo{*bar}");
 }
 
 TEST(PatternStringTest, NamedGroupInGroupingFollowedByWildcardWithPrefix) {
-  RunPatternStringTest("{:foo}{bar(.*)}", ":foo{bar(.*)}");
+  RunPatternStringTest("{:foo}{bar(.*)}", ":foo{bar*}");
 }
 
 TEST(PatternStringTest, NamedGroupInGroupingFollowedByWildcardWithCustomName) {
@@ -379,14 +379,75 @@ TEST(PatternStringTest, NamedGroupWithEscapedInvalidNameSuffix) {
   RunPatternStringTest("{:foo\\.bar}", "{:foo.bar}");
 }
 
-TEST(PatternStringTest, NamedGroupWithCustomRegexpAndValidNameSuffix) {
+TEST(PatternStringTest, NamedGroupInGroupingFollowedByValidNameText) {
+  RunPatternStringTest("{:foo}bar", "{:foo}bar");
+}
+
+TEST(PatternStringTest, NamedGroupFollowedByEscapedValidNameText) {
+  RunPatternStringTest(":foo\\bar", "{:foo}bar");
+}
+
+TEST(PatternStringTest, NamedGroupWithRegexpFollowedByValidNameText) {
+  RunPatternStringTest(":foo(baz)bar", ":foo(baz)bar");
+}
+
+TEST(PatternStringTest, NamedGroupFollowedByEmptyGroupAndWildcard) {
+  RunPatternStringTest(":foo{}(.*)", "{:foo}(.*)");
+}
+
+TEST(PatternStringTest, NamedGroupFollowedByEmptyGroupAndValidNameText) {
+  RunPatternStringTest(":foo{}bar", "{:foo}bar");
+}
+
+TEST(PatternStringTest,
+     NamedGroupFollowedByEmptyGroupWithOptionalModifierAndValidNameText) {
+  RunPatternStringTest(":foo{}?bar", "{:foo}bar");
+}
+
+TEST(PatternStringTest, NamedGroupWithRegexpFollowedByWildcard) {
+  RunPatternStringTest(":foo(bar)(.*)", ":foo(bar)(.*)");
+}
+
+TEST(PatternStringTest, NamedGroupWithRegexpAndValidNameSuffix) {
   RunPatternStringTest("{:foo(baz)bar}", "{:foo(baz)bar}");
+}
+
+TEST(PatternStringTest, WildcardSlashAndWildcard) {
+  RunPatternStringTest("*/*", "*/*");
+}
+
+TEST(PatternStringTest, WildcardEscapedSlashAndWildcard) {
+  // The backslash in the original input forces the `/` to not be an
+  // implicit prefix for the second `*`.  The generated pattern string
+  // must similarly prevent the implicit prefix from occuring.  This
+  // is done using the `{}` grouping instead, however, as its a bit more
+  // readable than escape backslashes.
+  RunPatternStringTest("*\\/*", "*/{*}");
+}
+
+TEST(PatternStringTest, WildcardSlashAndWildcardInGrouping) {
+  RunPatternStringTest("*/{*}", "*/{*}");
+}
+
+TEST(PatternStringTest, WildcardSlashSlashAndWildcard) {
+  RunPatternStringTest("*//*", "*//*");
+}
+
+TEST(
+    PatternStringTest,
+    WildcardFollowedByEmptyGroupWithZeroOrMoreModifierAndWildcardWithOptionalModifier) {
+  RunPatternStringTest("*{}**?", "*(.*)?");
+}
+
+TEST(PatternStringTest, CaseFromFuzzer) {
+  RunPatternStringTest(".:bax\\a*{}**", "{.:bax}a*(.*)");
 }
 
 struct DirectMatchCase {
   absl::string_view input;
   bool expected_match = true;
-  std::vector<std::pair<absl::string_view, absl::string_view>> expected_groups;
+  std::vector<std::pair<absl::string_view, absl::optional<absl::string_view>>>
+      expected_groups;
 };
 
 void RunDirectMatchTest(absl::string_view input,
@@ -398,7 +459,8 @@ void RunDirectMatchTest(absl::string_view input,
   auto& pattern = result.value();
   EXPECT_TRUE(pattern.CanDirectMatch());
   for (const auto& c : case_list) {
-    std::vector<std::pair<absl::string_view, absl::string_view>> matched_groups;
+    std::vector<std::pair<absl::string_view, absl::optional<absl::string_view>>>
+        matched_groups;
     EXPECT_EQ(c.expected_match, pattern.DirectMatch(c.input, &matched_groups));
     ASSERT_EQ(c.expected_groups.size(), matched_groups.size());
     for (size_t i = 0; i < matched_groups.size(); ++i) {

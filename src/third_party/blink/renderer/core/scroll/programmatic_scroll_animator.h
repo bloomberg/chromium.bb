@@ -6,15 +6,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_PROGRAMMATIC_SCROLL_ANIMATOR_H_
 
 #include <memory>
+#include "base/time/time.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_compositor_coordinator.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class ScrollableArea;
-class CompositorScrollOffsetAnimationCurve;
 
 // ProgrammaticScrollAnimator manages scroll offset animations ("smooth
 // scrolls") triggered by web APIs such as "scroll-behavior: smooth" which are
@@ -58,7 +59,7 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   void AnimationFinished();
 
   Member<ScrollableArea> scrollable_area_;
-  std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
+  std::unique_ptr<cc::ScrollOffsetAnimationCurve> animation_curve_;
   ScrollOffset target_offset_;
   base::TimeTicks start_time_;
   // is_sequenced_scroll_ is true for the entire duration of an animated scroll

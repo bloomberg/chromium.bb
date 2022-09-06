@@ -20,9 +20,9 @@
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "chromeos/dbus/arc/fake_arc_data_snapshotd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -45,7 +45,7 @@ namespace {
 
 constexpr char kPublicAccountEmail[] = "public-account@localhost";
 
-class TestUpstartClient : public chromeos::FakeUpstartClient {
+class TestUpstartClient : public ash::FakeUpstartClient {
  public:
   // FakeUpstartClient overrides:
   MOCK_METHOD(void,
@@ -177,7 +177,7 @@ class ArcDataSnapshotdManagerBasicTest : public testing::Test {
     local_state_.SetInitializationCompleted();
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kFirstExecAfterBoot);
+        ash::switches::kFirstExecAfterBoot);
   }
 
   void SetUp() override { SetDBusClientAvailability(true /* is_available */); }
@@ -214,7 +214,7 @@ class ArcDataSnapshotdManagerBasicTest : public testing::Test {
 
   void SetUpRestoredSessionCommandLine() {
     auto* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(chromeos::switches::kLoginUser);
+    command_line->AppendSwitch(ash::switches::kLoginUser);
   }
 
   void SetDBusClientAvailability(bool is_available) {

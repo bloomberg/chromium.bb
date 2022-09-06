@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/task/current_thread.h"
@@ -18,7 +19,9 @@
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/stylus_state.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
+#include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/gfx/geometry/size.h"
 
 struct input_event;
@@ -30,6 +33,18 @@ struct InputDeviceSettingsEvdev;
 class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
     : public base::MessagePumpForUI::FdWatcher {
  public:
+  using ReportStylusStateCallback =
+      base::RepeatingCallback<void(const InProgressTouchEvdev&,
+                                   const int32_t x_res,
+                                   const int32_t y_res,
+                                   const base::TimeTicks&)>;
+
+  using GetLatestStylusStateCallback =
+      base::RepeatingCallback<void(const InProgressStylusState**)>;
+
+  using ReceivedValidInputCallback =
+      base::RepeatingCallback<void(const EventConverterEvdev* converter)>;
+
   EventConverterEvdev(int fd,
                       const base::FilePath& path,
                       int id,
@@ -69,6 +84,12 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   bool IsEnabled() const;
 
+  // Flag this device as being suspected for identifying as a device that it is
+  // not.
+  void SetSuspectedImposter(bool is_suspected);
+
+  bool IsSuspectedImposter() const;
+
   // Cleanup after we stop reading events (release buttons, etc).
   virtual void OnStopped();
 
@@ -80,6 +101,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   // Dump recent events into a file.
   virtual void DumpTouchEventLog(const char* filename);
+
+  // Returns value corresponding to keyboard status (No Keyboard, Keyboard in
+  // Blocklist, ect.).
+  virtual KeyboardType GetKeyboardType() const;
 
   // Returns true if the converter is used for a keyboard device.
   virtual bool HasKeyboard() const;
@@ -135,6 +160,9 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
   // Returns whether the gamepad device supports rumble type force feedback.
   virtual bool GetGamepadRumbleCapability() const;
 
+  // Returns supported key bits of the gamepad.
+  virtual std::vector<uint64_t> GetGamepadKeyBits() const;
+
   // Sets which keyboard keys should be processed. If |enable_filter| is
   // false, all keys are allowed and |allowed_keys| is ignored.
   virtual void SetKeyFilter(bool enable_filter,
@@ -149,6 +177,21 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
   // Sets callback to enable/disable palm suppression.
   virtual void SetPalmSuppressionCallback(
       const base::RepeatingCallback<void(bool)>& callback);
+
+  // Sets callback to report the latest stylus state.
+  virtual void SetReportStylusStateCallback(
+      const ReportStylusStateCallback& callback);
+
+  // Sets callback to get the latest stylus state.
+  virtual void SetGetLatestStylusStateCallback(
+      const GetLatestStylusStateCallback& callback);
+
+  // Set callback to trigger keyboard device update.
+  virtual void SetReceivedValidInputCallback(
+      ReceivedValidInputCallback callback);
+
+  // Returns supported key bits of the keyboard.
+  virtual std::vector<uint64_t> GetKeyboardKeyBits() const;
 
   // Helper to generate a base::TimeTicks from an input_event's time
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);

@@ -922,7 +922,6 @@ void Init8bpp() {
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
-
 void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
@@ -939,14 +938,36 @@ void Init10bpp() {
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
-
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->loop_restorations[0] = WienerFilter_C<12, uint16_t>;
+  dsp->loop_restorations[1] = SelfGuidedFilter_C<12, uint16_t>;
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp12bpp_WienerFilter
+  dsp->loop_restorations[0] = WienerFilter_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_SelfGuidedFilter
+  dsp->loop_restorations[1] = SelfGuidedFilter_C<12, uint16_t>;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 }  // namespace
 
 void LoopRestorationInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

@@ -10,6 +10,7 @@
 
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypes.h"
+#include "include/private/SkTDArray.h"
 #include "src/core/SkScalerContext.h"
 #include "src/ports/SkTypeface_win_dw.h"
 
@@ -31,9 +32,15 @@ protected:
     void generateMetrics(SkGlyph* glyph, SkArenaAlloc*) override;
     void generateImage(const SkGlyph& glyph) override;
     bool generatePath(const SkGlyph&, SkPath*) override;
+    sk_sp<SkDrawable> generateDrawable(const SkGlyph&) override;
     void generateFontMetrics(SkFontMetrics*) override;
 
 private:
+    struct ScalerContextBits {
+        using value_type = decltype(SkGlyph::fScalerContextBits);
+        static const constexpr value_type ForceBW = 1 << 0;
+    };
+
     static void BilevelToBW(const uint8_t* SK_RESTRICT src, const SkGlyph& glyph);
 
     template<bool APPLY_PREBLEND>
@@ -59,23 +66,20 @@ private:
                            DWRITE_TEXTURE_TYPE textureType,
                            RECT* bbox);
 
-    bool isColorGlyph(const SkGlyph& glyph);
-
-    bool isPngGlyph(const SkGlyph& glyph);
-
     DWriteFontTypeface* getDWriteTypeface() {
         return static_cast<DWriteFontTypeface*>(this->getTypeface());
     }
 
-    bool getColorGlyphRun(const SkGlyph& glyph, IDWriteColorGlyphRunEnumerator** colorGlyph);
+    bool isColorGlyph(const SkGlyph&);
+    bool getColorGlyphRun(const SkGlyph&, IDWriteColorGlyphRunEnumerator**);
+    bool generateColorMetrics(SkGlyph*);
+    void generateColorGlyphImage(const SkGlyph&);
+    void drawColorGlyphImage(const SkGlyph&, SkCanvas&);
 
-    bool generateColorMetrics(SkGlyph* glyph);
-
-    void generateColorGlyphImage(const SkGlyph& glyph);
-
-    bool generatePngMetrics(SkGlyph* glyph);
-
-    void generatePngGlyphImage(const SkGlyph& glyph);
+    bool isPngGlyph(const SkGlyph&);
+    bool generatePngMetrics(SkGlyph*);
+    void generatePngGlyphImage(const SkGlyph&);
+    void drawPngGlyphImage(const SkGlyph&, SkCanvas&);
 
 
     SkTDArray<uint8_t> fBits;
@@ -93,7 +97,6 @@ private:
     DWRITE_MEASURING_MODE fMeasuringMode;
     DWRITE_TEXT_ANTIALIAS_MODE fAntiAliasMode;
     DWRITE_GRID_FIT_MODE fGridFitMode;
-    bool fIsColorFont;
 };
 
 #endif

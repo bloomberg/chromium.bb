@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -100,19 +100,20 @@ def InstallPrivilegedApps(device, apk_tuples):
     device.RunShellCommand(['am', 'restart'])
 
 
+# TODO(crbug.com/1298252): Remove the package_name arg and set replacement_apk
+# back to a non-default argument
 @contextlib.contextmanager
 def ReplaceSystemApp(device,
-                     package_name,
-                     replacement_apk,
+                     replacement_apk=None,
                      install_timeout=None):
   """A context manager that replaces the given system app while in scope.
 
   Args:
     device: (device_utils.DeviceUtils) the device for which the given
       system app should be replaced.
-    package_name: (str) the name of the package to replace.
     replacement_apk: (str) the path to the APK to use as a replacement.
   """
+  package_name = apk_helper.GetPackageName(replacement_apk)
   storage_dir = device_temp_file.NamedDeviceTemporaryDirectory(device.adb)
   relocate_app = _RelocateApp(device, package_name, storage_dir.name)
   install_app = _TemporarilyInstallApp(device, replacement_apk, install_timeout)
@@ -297,6 +298,7 @@ def _RelocateApp(device, package_name, relocate_to):
   relocation_map = {}
   system_package_paths = _FindSystemPackagePaths(device, [package_name])
   if system_package_paths:
+    logger.info('Relocating system package "%s"', package_name)
     relocation_map = {
         p: posixpath.join(relocate_to, posixpath.relpath(p, '/'))
         for p in system_package_paths
@@ -372,12 +374,12 @@ def main(raw_args):
 
   @contextlib.contextmanager
   def replace_system_app(device, args):
-    with ReplaceSystemApp(device, args.package, args.replace_with):
+    with ReplaceSystemApp(device, replacement_apk=args.replace_with):
       yield
 
   replace_parser = subparsers.add_parser('replace')
   replace_parser.add_argument(
-      '--package', required=True, help='The system package to replace.')
+      '--package', help='DEPRECATED. The system package to replace.')
   replace_parser.add_argument(
       '--replace-with',
       metavar='APK',

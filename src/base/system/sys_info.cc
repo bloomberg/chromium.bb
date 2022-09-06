@@ -13,18 +13,21 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/system/sys_info_internal.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 
 namespace base {
 namespace {
+#if BUILDFLAG(IS_IOS)
+// For M99, 45% of devices have 2GB of RAM, and 55% have more.
+constexpr int64_t kLowMemoryDeviceThresholdMB = 1024;
+#else
 // Updated Desktop default threshold to match the Android 2021 definition.
 constexpr int64_t kLowMemoryDeviceThresholdMB = 2048;
+#endif
 }  // namespace
 
 // static
@@ -68,7 +71,7 @@ bool SysInfo::IsLowEndDevice() {
   return IsLowEndDeviceImpl();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // The Android equivalent of this lives in `detectLowEndDevice()` at:
 // base/android/java/src/org/chromium/base/SysUtils.java
 bool DetectLowEndDevice() {
@@ -89,18 +92,18 @@ bool SysInfo::IsLowEndDeviceImpl() {
 }
 #endif
 
-#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_WIN) && \
-    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_WIN) && \
+    !BUILDFLAG(IS_CHROMEOS)
 std::string SysInfo::HardwareModelName() {
   return std::string();
 }
 #endif
 
 void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_APPLE)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {}, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetHardwareInfoSync),
       std::move(callback));

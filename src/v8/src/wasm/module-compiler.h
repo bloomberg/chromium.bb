@@ -70,15 +70,23 @@ V8_EXPORT_PRIVATE
 WasmCode* CompileImportWrapper(
     NativeModule* native_module, Counters* counters,
     compiler::WasmImportCallKind kind, const FunctionSig* sig,
-    int expected_arity, WasmImportWrapperCache::ModificationScope* cache_scope);
+    int expected_arity, Suspend suspend,
+    WasmImportWrapperCache::ModificationScope* cache_scope);
 
 // Triggered by the WasmCompileLazy builtin. The return value indicates whether
 // compilation was successful. Lazy compilation can fail only if validation is
 // also lazy.
 bool CompileLazy(Isolate*, Handle<WasmInstanceObject>, int func_index);
 
-V8_EXPORT_PRIVATE void TriggerTierUp(Isolate*, NativeModule*, int func_index,
-                                     Handle<WasmInstanceObject> instance);
+// Throws the compilation error after failed lazy compilation.
+void ThrowLazyCompilationError(Isolate* isolate,
+                               const NativeModule* native_module,
+                               int func_index);
+
+// Trigger tier-up of a particular function to TurboFan. If tier-up was already
+// triggered, we instead increase the priority with exponential back-off.
+V8_EXPORT_PRIVATE void TriggerTierUp(WasmInstanceObject instance,
+                                     int func_index);
 
 template <typename Key, typename Hash>
 class WrapperQueue {
@@ -214,6 +222,7 @@ class AsyncCompileJob {
   Isolate* const isolate_;
   const char* const api_method_name_;
   const WasmFeatures enabled_features_;
+  const DynamicTiering dynamic_tiering_;
   const bool wasm_lazy_compilation_;
   base::TimeTicks start_time_;
   // Copy of the module wire bytes, moved into the {native_module_} on its

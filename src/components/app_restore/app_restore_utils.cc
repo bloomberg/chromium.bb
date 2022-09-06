@@ -5,12 +5,12 @@
 #include "components/app_restore/app_restore_utils.h"
 
 #include "ash/constants/app_types.h"
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/desk_template_read_handler.h"
 #include "components/app_restore/features.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_read_handler.h"
+#include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -19,16 +19,36 @@
 namespace app_restore {
 namespace {
 
+const char kCrxAppPrefix[] = "_crx_";
+
+static int32_t session_id_counter = kArcSessionIdOffsetForRestoredLaunching;
+
 // Always use the full restore ARC data if ARC apps for desks templates is not
 // enabled.
 bool ShouldUseFullRestoreArcData() {
-  return ash::features::AreDesksTemplatesEnabled()
-             ? full_restore::FullRestoreReadHandler::GetInstance()
-                   ->IsFullRestoreRunning()
-             : true;
+  return full_restore::FullRestoreReadHandler::GetInstance()
+      ->IsFullRestoreRunning();
 }
 
 }  // namespace
+
+bool IsArcWindow(aura::Window* window) {
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::ARC_APP);
+}
+
+bool IsLacrosWindow(aura::Window* window) {
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::LACROS);
+}
+
+bool HasWindowInfo(int32_t restore_window_id) {
+  auto* full_restore_instance =
+      full_restore::FullRestoreReadHandler::GetInstance();
+  if (full_restore_instance->IsFullRestoreRunning())
+    return full_restore_instance->HasWindowInfo(restore_window_id);
+  return !!DeskTemplateReadHandler::Get()->GetWindowInfo(restore_window_id);
+}
 
 void ApplyProperties(app_restore::WindowInfo* window_info,
                      ui::PropertyHandler* property_handler) {
@@ -50,20 +70,17 @@ void ApplyProperties(app_restore::WindowInfo* window_info,
     // are shown are activated by default. Force the widget to not be
     // activatable; the activation will be restored in ash once the window is
     // launched.
-    property_handler->SetProperty(app_restore::kLaunchedFromFullRestoreKey,
+    property_handler->SetProperty(app_restore::kLaunchedFromAppRestoreKey,
                                   true);
   }
   if (window_info->pre_minimized_show_state_type) {
-    property_handler->SetProperty(aura::client::kPreMinimizedShowStateKey,
+    property_handler->SetProperty(aura::client::kRestoreShowStateKey,
                                   *window_info->pre_minimized_show_state_type);
   }
 }
 
 void ModifyWidgetParams(int32_t restore_window_id,
                         views::Widget::InitParams* out_params) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return;
-
   DCHECK(out_params);
 
   const bool is_arc_app =
@@ -76,7 +93,8 @@ void ModifyWidgetParams(int32_t restore_window_id,
     ArcReadHandler* arc_read_handler =
         ShouldUseFullRestoreArcData()
             ? full_restore_read_handler->arc_read_handler()
-            : DeskTemplateReadHandler::Get()->arc_read_handler();
+            : DeskTemplateReadHandler::Get()->GetArcReadHandlerForWindow(
+                  restore_window_id);
     window_info = arc_read_handler
                       ? arc_read_handler->GetWindowInfo(restore_window_id)
                       : nullptr;
@@ -117,7 +135,7 @@ void ModifyWidgetParams(int32_t restore_window_id,
   if (delegate) {
     delegate->RegisterWidgetInitializedCallback(base::BindOnce(
         [](views::WidgetDelegate* delegate) {
-          full_restore::FullRestoreInfo::GetInstance()->OnWidgetInitialized(
+          app_restore::AppRestoreInfo::GetInstance()->OnWidgetInitialized(
               delegate->GetWidget());
         },
         delegate));
@@ -125,9 +143,6 @@ void ModifyWidgetParams(int32_t restore_window_id,
 }
 
 int32_t FetchRestoreWindowId(const std::string& app_id) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return 0;
-
   // If full restore is not running, check if desk templates can get a viable
   // window id, otherwise default to checking full restore.
   auto* full_restore_read_handler =
@@ -143,12 +158,14 @@ int32_t FetchRestoreWindowId(const std::string& app_id) {
       ->FetchRestoreWindowId(app_id);
 }
 
-int32_t GetArcSessionId() {
-  if (ShouldUseFullRestoreArcData()) {
-    return full_restore::FullRestoreReadHandler::GetInstance()
-        ->GetArcSessionId();
+int32_t CreateArcSessionId() {
+  // ARC session id offset start counting from a large number. When the counter
+  // overflow, it will less the start number.
+  if (session_id_counter < kArcSessionIdOffsetForRestoredLaunching) {
+    LOG(WARNING) << "ARC session id is overflow: " << session_id_counter;
+    session_id_counter = kArcSessionIdOffsetForRestoredLaunching;
   }
-  return DeskTemplateReadHandler::Get()->GetArcSessionId();
+  return ++session_id_counter;
 }
 
 void SetArcSessionIdForWindowId(int32_t arc_session_id, int32_t window_id) {
@@ -160,10 +177,13 @@ void SetArcSessionIdForWindowId(int32_t arc_session_id, int32_t window_id) {
       arc_session_id, window_id);
 }
 
-int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return 0;
+void SetDeskTemplateLaunchIdForArcSessionId(int32_t arc_session_id,
+                                            int32_t desk_template_launch_id) {
+  DeskTemplateReadHandler::Get()->SetLaunchIdForArcSessionId(
+      arc_session_id, desk_template_launch_id);
+}
 
+int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id) {
   if (ShouldUseFullRestoreArcData()) {
     return full_restore::FullRestoreReadHandler::GetInstance()
         ->GetArcRestoreWindowIdForTaskId(task_id);
@@ -173,15 +193,31 @@ int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id) {
 }
 
 int32_t GetArcRestoreWindowIdForSessionId(int32_t session_id) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return 0;
-
   if (ShouldUseFullRestoreArcData()) {
     return full_restore::FullRestoreReadHandler::GetInstance()
         ->GetArcRestoreWindowIdForSessionId(session_id);
   }
   return DeskTemplateReadHandler::Get()->GetArcRestoreWindowIdForSessionId(
       session_id);
+}
+
+std::string GetAppIdFromAppName(const std::string& app_name) {
+  std::string prefix(kCrxAppPrefix);
+  if (app_name.substr(0, prefix.length()) != prefix)
+    return std::string();
+  return app_name.substr(prefix.length());
+}
+
+const std::string GetLacrosWindowId(aura::Window* window) {
+  const std::string* lacros_window_id =
+      window->GetProperty(app_restore::kLacrosWindowId);
+  DCHECK(lacros_window_id);
+  return *lacros_window_id;
+}
+
+int32_t GetLacrosRestoreWindowId(const std::string& lacros_window_id) {
+  return full_restore::FullRestoreReadHandler::GetInstance()
+      ->GetLacrosRestoreWindowId(lacros_window_id);
 }
 
 }  // namespace app_restore

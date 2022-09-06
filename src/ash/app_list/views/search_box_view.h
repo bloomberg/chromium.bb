@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "ash/app_list/app_list_model_provider.h"
@@ -17,6 +18,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/search_box/search_box_view_base.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace views {
@@ -40,6 +42,13 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                                  public AppListModelProvider::Observer,
                                  public SearchBoxModelObserver {
  public:
+  enum class PlaceholderTextType {
+    kShortcuts = 0,
+    kTabs = 1,
+    kSettings = 2,
+    kGames = 3
+  };
+
   SearchBoxView(SearchBoxViewDelegate* delegate,
                 AppListViewDelegate* view_delegate,
                 AppListView* app_list_view = nullptr);
@@ -63,6 +72,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Returns the total focus ring spacing for use in folders.
   static int GetFocusRingSpacing();
 
+  // Creates a focus ring layer if the search box is not in the bubble launcher.
+  void MaybeCreateFocusRing();
+
   // Overridden from SearchBoxViewBase:
   void Init(const InitParams& params) override;
   void UpdateSearchTextfieldAccessibleNodeData(
@@ -79,6 +91,7 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void SetupBackButton() override;
   void RecordSearchBoxActivationHistogram(ui::EventType event_type) override;
   void OnSearchBoxActiveChanged(bool active) override;
+  void UpdateSearchBoxFocusPaint() override;
 
   // AppListModelProvider::Observer:
   void OnActiveAppListModelsChanged(AppListModel* model,
@@ -89,8 +102,10 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   void OnThemeChanged() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // Updates the search box's background corner radius and color based on the
   // state of AppListModel.
@@ -113,6 +128,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Sets the autocomplete text if autocomplete conditions are met.
   void ProcessAutocomplete(SearchResultBaseView* first_result_view);
+
+  // Removes all autocomplete text.
+  void ClearAutocompleteText();
 
   // Updates the search box with |new_query| and starts a new search.
   void UpdateQuery(const std::u16string& new_query);
@@ -142,7 +160,16 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Update search box view background when result container visibility changes.
   void OnResultContainerVisibilityChanged(bool visible);
 
+  // Whether the search box has a non-empty, non-whitespace query.
+  bool HasValidQuery();
+
+  // Calculates the correct sizing for search box icons and buttons.
+  int GetSearchBoxIconSize();
+  int GetSearchBoxButtonSize();
+
  private:
+  class FocusRingLayer;
+
   // Updates the text field text color.
   void UpdateTextColor();
 
@@ -155,9 +182,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Returns true if there is currently an autocomplete suggestion in
   // search_box().
   bool HasAutocompleteText();
-
-  // Removes all autocomplete text.
-  void ClearAutocompleteText();
 
   // After verifying autocomplete text is valid, sets the current searchbox
   // text to the autocomplete text and sets the text highlight.
@@ -211,11 +235,21 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Owned by views hierarchy. May be null for bubble launcher.
   ContentsView* contents_view_ = nullptr;
 
+  // The layer that will draw the focus ring if needed. Could be a nullptr if
+  // the search box is in the bubble launcher.
+  std::unique_ptr<FocusRingLayer> focus_ring_layer_;
+
   // Whether the search box is embedded in the bubble launcher.
   const bool is_app_list_bubble_;
 
   // Whether tablet mode is active.
   bool is_tablet_mode_;
+
+  // Whether the search box view should draw a highlight border.
+  bool should_paint_highlight_border_ = false;
+
+  // The corner radius of the search box background.
+  int corner_radius_ = 0;
 
   // Set by SearchResultPageView when the accessibility selection moves to a
   // search result view - the value is the ID of the currently selected result
@@ -225,6 +259,11 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Owned by SearchResultPageView (for fullscreen launcher) or
   // ProductivityLauncherSearchPage (for bubble launcher).
   ResultSelectionController* result_selection_controller_ = nullptr;
+
+  // The timestamp taken when the search box model's query is updated by the
+  // user. Used in metrics. Metrics are only recorded for search model updates
+  // that occur after a search has been initiated.
+  base::TimeTicks user_initiated_model_update_time_;
 
   base::ScopedObservation<SearchBoxModel, SearchBoxModelObserver>
       search_box_model_observer_{this};

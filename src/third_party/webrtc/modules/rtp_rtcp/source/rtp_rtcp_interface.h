@@ -15,10 +15,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/frame_transformer_interface.h"
 #include "api/scoped_refptr.h"
-#include "api/transport/webrtc_key_value_config.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "modules/rtp_rtcp/include/receive_statistics.h"
 #include "modules/rtp_rtcp/include/report_block_data.h"
@@ -27,7 +28,6 @@
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
 #include "modules/rtp_rtcp/source/video_fec_generator.h"
-#include "rtc_base/constructor_magic.h"
 #include "system_wrappers/include/ntp_time.h"
 
 namespace webrtc {
@@ -46,6 +46,9 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
   struct Configuration {
     Configuration() = default;
     Configuration(Configuration&& rhs) = default;
+
+    Configuration(const Configuration&) = delete;
+    Configuration& operator=(const Configuration&) = delete;
 
     // True for a audio version of the RTP/RTCP module object false will create
     // a video version.
@@ -126,7 +129,7 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
 
     // If set, field trials are read from `field_trials`, otherwise
     // defaults to  webrtc::FieldTrialBasedConfig.
-    const WebRtcKeyValueConfig* field_trials = nullptr;
+    const FieldTrialsView* field_trials = nullptr;
 
     // SSRCs for media and retransmission, respectively.
     // FlexFec SSRC is fetched from `flexfec_sender`.
@@ -146,8 +149,11 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
     // https://tools.ietf.org/html/rfc3611#section-4.4 and #section-4.5
     bool non_sender_rtt_measurement = false;
 
-   private:
-    RTC_DISALLOW_COPY_AND_ASSIGN(Configuration);
+    // If non-empty, sets the value for sending in the RID (and Repaired) RTP
+    // header extension. RIDs are used to identify an RTP stream if SSRCs are
+    // not negotiated. If the RID and Repaired RID extensions are not
+    // registered, the RID will not be sent.
+    std::string rid;
   };
 
   // Stats for RTCP sender reports (SR) for a specific SSRC.
@@ -252,16 +258,10 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
   // Returns SSRC.
   virtual uint32_t SSRC() const = 0;
 
-  // Sets the value for sending in the RID (and Repaired) RTP header extension.
-  // RIDs are used to identify an RTP stream if SSRCs are not negotiated.
-  // If the RID and Repaired RID extensions are not registered, the RID will
-  // not be sent.
-  virtual void SetRid(const std::string& rid) = 0;
-
   // Sets the value for sending in the MID RTP header extension.
   // The MID RTP header extension should be registered for this to do anything.
   // Once set, this value can not be changed or removed.
-  virtual void SetMid(const std::string& mid) = 0;
+  virtual void SetMid(absl::string_view mid) = 0;
 
   // Sets CSRC.
   // `csrcs` - vector of CSRCs
@@ -374,7 +374,7 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
 
   // Sets RTCP CName (i.e unique identifier).
   // Returns -1 on failure else 0.
-  virtual int32_t SetCNAME(const char* cname) = 0;
+  virtual int32_t SetCNAME(absl::string_view cname) = 0;
 
   // Returns remote NTP.
   // Returns -1 on failure else 0.

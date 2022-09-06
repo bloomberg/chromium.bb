@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "media/base/status.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/chromeos/chromeos_status.h"
@@ -16,10 +17,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace gpu {
-class GpuMemoryBufferFactory;
-}  // namespace gpu
 
 namespace media {
 
@@ -37,11 +34,11 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
 
   using CreateFrameCB =
       base::RepeatingCallback<CroStatus::Or<scoped_refptr<VideoFrame>>(
-          gpu::GpuMemoryBufferFactory*,
           VideoPixelFormat,
           const gfx::Size&,
           const gfx::Rect&,
           const gfx::Size&,
+          bool,
           bool,
           base::TimeDelta)>;
 
@@ -73,7 +70,8 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       size_t max_num_frames,
-      bool use_protected) = 0;
+      bool use_protected,
+      bool use_linear_buffers = false) = 0;
 
   // Returns a frame from the pool with the layout that is returned by the
   // previous Initialize() method and zero timestamp. Returns nullptr if the
@@ -95,6 +93,9 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   // which will cause new ones to be allocated. This method must be called on
   // |parent_task_runner_| because it may invalidate weak ptrs.
   virtual void ReleaseAllFrames() = 0;
+
+  // Returns true if and only if the pool is a mock pool used for testing.
+  virtual bool IsFakeVideoFramePool();
 
  protected:
   scoped_refptr<base::SequencedTaskRunner> parent_task_runner_;

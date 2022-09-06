@@ -19,15 +19,15 @@ template<typename MatrixType> void verifyIsQuasiTriangular(const MatrixType& T)
   // Check T is lower Hessenberg
   for(int row = 2; row < size; ++row) {
     for(int col = 0; col < row - 1; ++col) {
-      VERIFY(T(row,col) == Scalar(0));
+      VERIFY_IS_EQUAL(T(row,col), Scalar(0));
     }
   }
 
   // Check that any non-zero on the subdiagonal is followed by a zero and is
   // part of a 2x2 diagonal block with imaginary eigenvalues.
   for(int row = 1; row < size; ++row) {
-    if (T(row,row-1) != Scalar(0)) {
-      VERIFY(row == size-1 || T(row+1,row) == 0);
+    if (!numext::is_exactly_zero(T(row, row - 1))) {
+      VERIFY(row == size-1 || numext::is_exactly_zero(T(row + 1, row)));
       Scalar tr = T(row-1,row-1) + T(row,row);
       Scalar det = T(row-1,row-1) * T(row,row) - T(row-1,row) * T(row,row-1);
       VERIFY(4 * det > tr * tr);

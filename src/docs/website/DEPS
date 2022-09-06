@@ -93,13 +93,9 @@ hooks = [
   {
     'name': 'fetch_lobs',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--no_auth',
-                '--bucket', 'chromium-website-lob-storage',
-                '-d', 'site',
-                '--recursive',
-                '-t', '16',
+    'action': [
+      'vpython3',
+      'scripts/fetch_lobs.py',
     ],
   },
   {

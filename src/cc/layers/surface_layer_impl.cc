@@ -5,10 +5,11 @@
 #include "cc/layers/surface_layer_impl.h"
 
 #include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 
-#include "base/cxx17_backports.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
@@ -54,7 +55,7 @@ SurfaceLayerImpl::~SurfaceLayerImpl() {
 }
 
 std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
-    LayerTreeImpl* tree_impl) {
+    LayerTreeImpl* tree_impl) const {
   return SurfaceLayerImpl::Create(tree_impl, id(),
                                   std::move(update_submission_state_callback_));
 }
@@ -181,8 +182,9 @@ void SurfaceLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
 
   if (surface_range_.IsValid()) {
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
+    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
     quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                 surface_range_, background_color(),
+                 surface_range_, background_color().toSkColor(),
                  stretch_content_to_fill_bounds_);
     quad->is_reflection = is_reflection_;
     // Add the primary surface ID as a dependency.
@@ -198,8 +200,10 @@ void SurfaceLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
   } else {
     auto* quad =
         render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
     quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                 background_color(), false /* force_anti_aliasing_off */);
+                 background_color().toSkColor(),
+                 false /* force_anti_aliasing_off */);
   }
 
   // Unless the client explicitly specifies otherwise, don't block on
@@ -216,7 +220,7 @@ gfx::Rect SurfaceLayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
       layer_tree_impl()->device_scale_factor());
 }
 
-void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,
+void SurfaceLayerImpl::GetDebugBorderProperties(SkColor4f* color,
                                                 float* width) const {
   *color = DebugColors::SurfaceLayerBorderColor();
   *width = DebugColors::SurfaceLayerBorderWidth(
@@ -232,7 +236,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
-  SkColor color;
+  SkColor4f color;
   float border_width;
   GetDebugBorderProperties(&color, &border_width);
 
@@ -244,7 +248,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(
       0x800000ff,  // Blue.
       0x80ee82ee,  // Violet.
   };
-  const int kNumColors = base::size(colors);
+  const int kNumColors = std::size(colors);
 
   const int kStripeWidth = 300;
   const int kStripeHeight = 300;

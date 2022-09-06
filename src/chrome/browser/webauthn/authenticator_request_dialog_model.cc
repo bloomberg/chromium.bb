@@ -10,13 +10,15 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/pin.h"
@@ -25,6 +27,17 @@
 #include "ui/gfx/text_elider.h"
 
 namespace {
+
+// BleEvent enumerates user-visible BLE events.
+enum class BleEvent {
+  kAlreadyPowered = 0,    // BLE was already powered.
+  kNeedsPowerAuto = 1,    // BLE was not powered and so we asked the user.
+  kNeedsPowerManual = 2,  // BLE was not powered and so we asked the user, but
+                          // they have to do it manually.
+  kNewlyPowered = 3,      // BLE wasn't powered, but the user turned it on.
+
+  kMaxValue = kNewlyPowered,
+};
 
 constexpr int GetMessageIdForTransportDescription(
     AuthenticatorTransport transport) {
@@ -108,12 +121,12 @@ AuthenticatorRequestDialogModel::Mechanism::Mechanism(
     const gfx::VectorIcon* in_icon,
     base::RepeatingClosure in_callback,
     bool is_priority)
-    : name(std::move(in_name)),
+    : type(std::move(in_type)),
+      name(std::move(in_name)),
       short_name(std::move(in_short_name)),
       icon(in_icon),
       callback(std::move(in_callback)),
-      priority(is_priority),
-      type(std::move(in_type)) {}
+      priority(is_priority) {}
 AuthenticatorRequestDialogModel::Mechanism::~Mechanism() = default;
 AuthenticatorRequestDialogModel::Mechanism::Mechanism(Mechanism&&) = default;
 
@@ -132,16 +145,10 @@ AuthenticatorRequestDialogModel::PairedPhone&
 AuthenticatorRequestDialogModel::PairedPhone::operator=(const PairedPhone&) =
     default;
 
-bool AuthenticatorRequestDialogModel::PairedPhone::CompareByName(
-    const PairedPhone& a,
-    const PairedPhone& b) {
-  return a.name < b.name;
-}
-
 void AuthenticatorRequestDialogModel::EphemeralState::Reset() {
   selected_authenticator_id_ = absl::nullopt;
   saved_authenticators_.RemoveAllAuthenticators();
-  users_.clear();
+  creds_.clear();
 }
 
 AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel(
@@ -159,7 +166,8 @@ void AuthenticatorRequestDialogModel::HideDialog() {
 
 void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
-    bool use_location_bar_bubble) {
+    bool use_location_bar_bubble,
+    bool prefer_native_api) {
   DCHECK(!started_);
   DCHECK_EQ(current_step(), Step::kNotStarted);
 
@@ -167,7 +175,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
   transport_availability_ = std::move(transport_availability);
   use_location_bar_bubble_ = use_location_bar_bubble;
 
-  PopulateMechanisms();
+  PopulateMechanisms(prefer_native_api);
 
   if (use_location_bar_bubble_) {
     // This is a conditional request so show a lightweight, non-modal dialog
@@ -253,24 +261,38 @@ void AuthenticatorRequestDialogModel::
          current_step() == Step::kAndroidAccessory ||
          current_step() == Step::kOffTheRecordInterstitial ||
          current_step() == Step::kNotStarted);
+
   if (ble_adapter_is_powered()) {
+    base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
+                                  BleEvent::kAlreadyPowered);
     SetCurrentStep(step);
     return;
   }
 
-  next_step_once_ble_powered_ = step;
-  SetCurrentStep(transport_availability()->can_power_on_ble_adapter
-                     ? Step::kBlePowerOnAutomatic
-                     : Step::kBlePowerOnManual);
+  after_ble_adapter_powered_ =
+      base::BindOnce(&AuthenticatorRequestDialogModel::SetCurrentStep,
+                     weak_factory_.GetWeakPtr(), step);
+
+  BleEvent event;
+  if (transport_availability()->can_power_on_ble_adapter) {
+    event = BleEvent::kNeedsPowerAuto;
+    SetCurrentStep(Step::kBlePowerOnAutomatic);
+  } else {
+    event = BleEvent::kNeedsPowerManual;
+    SetCurrentStep(Step::kBlePowerOnManual);
+  }
+
+  base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents", event);
 }
 
 void AuthenticatorRequestDialogModel::ContinueWithFlowAfterBleAdapterPowered() {
   DCHECK(current_step() == Step::kBlePowerOnManual ||
          current_step() == Step::kBlePowerOnAutomatic);
   DCHECK(ble_adapter_is_powered());
-  DCHECK(next_step_once_ble_powered_.has_value());
+  base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
+                                BleEvent::kNewlyPowered);
 
-  SetCurrentStep(*next_step_once_ble_powered_);
+  std::move(after_ble_adapter_powered_).Run();
 }
 
 void AuthenticatorRequestDialogModel::PowerOnBleAdapter() {
@@ -290,10 +312,11 @@ void AuthenticatorRequestDialogModel::StartPlatformAuthenticatorFlow() {
   // fail. Proceed to a special error screen instead.
   if (transport_availability_.request_type ==
       device::FidoRequestType::kGetAssertion) {
-    DCHECK(transport_availability_
-               .has_recognized_platform_authenticator_credential);
-    if (!*transport_availability_
-              .has_recognized_platform_authenticator_credential) {
+    DCHECK_NE(transport_availability_.has_platform_authenticator_credential,
+              device::FidoRequestHandlerBase::RecognizedCredential::kUnknown);
+    if (transport_availability_.has_platform_authenticator_credential ==
+        device::FidoRequestHandlerBase::RecognizedCredential::
+            kNoRecognizedCredential) {
       SetCurrentStep(Step::kErrorInternalUnrecognized);
       return;
     }
@@ -319,7 +342,19 @@ void AuthenticatorRequestDialogModel::OnOffTheRecordInterstitialAccepted() {
 
 void AuthenticatorRequestDialogModel::ShowCableUsbFallback() {
   DCHECK_EQ(current_step(), Step::kCableActivate);
-  SetCurrentStep(Step::kAndroidAccessory);
+
+  switch (experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      SetCurrentStep(Step::kAndroidAccessory);
+      break;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+      Cancel();
+      break;
+  }
 }
 
 void AuthenticatorRequestDialogModel::ShowCable() {
@@ -334,6 +369,12 @@ void AuthenticatorRequestDialogModel::Cancel() {
 
   for (auto& observer : observers_)
     observer.OnCancelRequest();
+}
+
+void AuthenticatorRequestDialogModel::ManageDevices() {
+  for (auto& observer : observers_) {
+    observer.OnManageDevicesClicked();
+  }
 }
 
 void AuthenticatorRequestDialogModel::OnSheetModelDidChange() {
@@ -417,6 +458,29 @@ void AuthenticatorRequestDialogModel::OnUserConsentDenied() {
 }
 
 bool AuthenticatorRequestDialogModel::OnWinUserCancelled() {
+#if BUILDFLAG(IS_WIN)
+  // If the native Windows API was triggered immediately (i.e. before any Chrome
+  // dialog) then start the request over (once) if the user cancels the Windows
+  // UI and there are other options in Chrome's UI.
+  if (!have_restarted_due_to_windows_cancel_) {
+    bool have_other_option = std::any_of(
+        mechanisms_.begin(), mechanisms_.end(), [](const Mechanism& m) -> bool {
+          return absl::holds_alternative<Mechanism::Phone>(m.type) ||
+                 absl::holds_alternative<Mechanism::AddPhone>(m.type);
+        });
+    bool windows_was_priority = std::any_of(
+        mechanisms_.begin(), mechanisms_.end(), [](const Mechanism& m) -> bool {
+          return m.priority &&
+                 absl::holds_alternative<Mechanism::WindowsAPI>(m.type);
+        });
+    if (have_other_option && windows_was_priority) {
+      have_restarted_due_to_windows_cancel_ = true;
+      StartOver();
+      return true;
+    }
+  }
+#endif
+
   return false;
 }
 
@@ -435,6 +499,12 @@ void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
 void AuthenticatorRequestDialogModel::SetRequestCallback(
     RequestCallback request_callback) {
   request_callback_ = request_callback;
+}
+
+void AuthenticatorRequestDialogModel::SetAccountPreselectedCallback(
+    content::AuthenticatorRequestClientDelegate::AccountPreselectedCallback
+        callback) {
+  account_preselected_callback_ = callback;
 }
 
 void AuthenticatorRequestDialogModel::SetBluetoothAdapterPowerOnCallback(
@@ -473,9 +543,10 @@ void AuthenticatorRequestDialogModel::OnAttestationPermissionResponse(
 void AuthenticatorRequestDialogModel::AddAuthenticator(
     const device::FidoAuthenticator& authenticator) {
   if (!authenticator.AuthenticatorTransport()) {
-#if defined(OS_WIN)
-    DCHECK(authenticator.IsWinNativeApiAuthenticator());
-#endif  // defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
+    DCHECK_EQ(authenticator.GetType(),
+              device::FidoAuthenticator::Type::kWinNative);
+#endif  // BUILDFLAG(IS_WIN)
     return;
   }
 
@@ -496,22 +567,11 @@ void AuthenticatorRequestDialogModel::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
     base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
         callback) {
-  if (preselected_account_) {
-    for (auto& response : responses) {
-      if (response.user_entity == preselected_account_) {
-        std::move(callback).Run(std::move(response));
-        return;
-      }
-    }
-    // The user selected an account that was not part of the responses. This
-    // shouldn't really happen, cancel the request.
-    Cancel();
-    return;
-  }
   ephemeral_state_.responses_ = std::move(responses);
-  ephemeral_state_.users_ = {};
+  ephemeral_state_.creds_ = {};
   for (const auto& response : ephemeral_state_.responses_) {
-    ephemeral_state_.users_.push_back(*response.user_entity);
+    ephemeral_state_.creds_.emplace_back(device::DiscoverableCredentialMetadata(
+        response.credential->id, *response.user_entity));
   }
   selection_callback_ = std::move(callback);
   SetCurrentStep(Step::kSelectAccount);
@@ -526,18 +586,22 @@ void AuthenticatorRequestDialogModel::OnAccountSelected(size_t index) {
 
   device::AuthenticatorGetAssertionResponse response =
       std::move(ephemeral_state_.responses_.at(index));
-  ephemeral_state_.users_.clear();
+  ephemeral_state_.creds_.clear();
   ephemeral_state_.responses_.clear();
   std::move(selection_callback_).Run(std::move(response));
 }
 
 void AuthenticatorRequestDialogModel::OnAccountPreselected(
     const std::vector<uint8_t>& id) {
-  for (const auto& account : users()) {
-    if (account.id == id) {
-      preselected_account_ = std::move(account);
-      ephemeral_state_.users_.clear();
-      HideDialogAndDispatchToPlatformAuthenticator();
+  for (const auto& cred : creds()) {
+    if (cred.user.id == id) {
+      account_preselected_callback_.Run(cred.cred_id);
+      ephemeral_state_.creds_.clear();
+      if (transport_availability()->has_win_native_api_authenticator) {
+        HideDialogAndDispatchToNativeWindowsApi();
+      } else {
+        HideDialogAndDispatchToPlatformAuthenticator();
+      }
       return;
     }
   }
@@ -577,8 +641,18 @@ void AuthenticatorRequestDialogModel::SetCurrentStepForTesting(Step step) {
 }
 
 bool AuthenticatorRequestDialogModel::cable_should_suggest_usb() const {
-  return base::Contains(transport_availability_.available_transports,
-                        AuthenticatorTransport::kAndroidAccessory);
+  switch (experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+      return base::Contains(transport_availability_.available_transports,
+                            AuthenticatorTransport::kAndroidAccessory);
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+      return true;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      return false;
+  }
 }
 
 void AuthenticatorRequestDialogModel::CollectPIN(
@@ -641,6 +715,17 @@ void AuthenticatorRequestDialogModel::RequestAttestationPermission(
                      : Step::kAttestationPermissionRequest);
 }
 
+void AuthenticatorRequestDialogModel::GetCredentialListForConditionalUi(
+    base::OnceCallback<void(
+        const std::vector<device::DiscoverableCredentialMetadata>&)> callback) {
+  if (current_step() == Step::kLocationBarBubble) {
+    std::move(callback).Run(ephemeral_state_.creds_);
+    return;
+  }
+
+  conditional_ui_user_list_callback_ = std::move(callback);
+}
+
 void AuthenticatorRequestDialogModel::set_cable_transport_info(
     absl::optional<bool> extension_is_v2,
     std::vector<PairedPhone> paired_phones,
@@ -663,16 +748,11 @@ void AuthenticatorRequestDialogModel::set_cable_transport_info(
   contact_phone_callback_ = std::move(contact_phone_callback);
   cable_qr_string_ = cable_qr_string;
 
-  std::stable_sort(paired_phones_.begin(), paired_phones_.end(),
-                   PairedPhone::CompareByName);
   paired_phones_contacted_.assign(paired_phones_.size(), false);
 }
 
 std::vector<std::string> AuthenticatorRequestDialogModel::paired_phone_names()
     const {
-  DCHECK(std::is_sorted(paired_phones_.begin(), paired_phones_.end(),
-                        PairedPhone::CompareByName));
-
   std::vector<std::string> names;
   std::transform(paired_phones_.begin(), paired_phones_.end(),
                  std::back_inserter(names),
@@ -681,6 +761,11 @@ std::vector<std::string> AuthenticatorRequestDialogModel::paired_phone_names()
                  });
   names.erase(std::unique(names.begin(), names.end()), names.end());
   return names;
+}
+
+void AuthenticatorRequestDialogModel::ReplaceCredListForTesting(
+    std::vector<device::DiscoverableCredentialMetadata> creds) {
+  ephemeral_state_.creds_ = std::move(creds);
 }
 
 base::WeakPtr<AuthenticatorRequestDialogModel>
@@ -768,16 +853,45 @@ void AuthenticatorRequestDialogModel::ContactPhone(const std::string& name,
 
 void AuthenticatorRequestDialogModel::ContactPhoneAfterOffTheRecordInterstitial(
     std::string name) {
+  if (!ble_adapter_is_powered()) {
+    after_ble_adapter_powered_ = base::BindOnce(
+        &AuthenticatorRequestDialogModel::ContactPhoneAfterBleIsPowered,
+        weak_factory_.GetWeakPtr(), std::move(name));
+
+    BleEvent event;
+    if (transport_availability()->can_power_on_ble_adapter) {
+      event = BleEvent::kNeedsPowerAuto;
+      SetCurrentStep(Step::kBlePowerOnAutomatic);
+    } else {
+      event = BleEvent::kNeedsPowerManual;
+      SetCurrentStep(Step::kBlePowerOnManual);
+    }
+    base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents", event);
+    return;
+  }
+
+  base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
+                                BleEvent::kAlreadyPowered);
+  ContactPhoneAfterBleIsPowered(std::move(name));
+}
+
+void AuthenticatorRequestDialogModel::ContactPhoneAfterBleIsPowered(
+    std::string name) {
   ContactNextPhoneByName(name);
-  EnsureBleAdapterIsPoweredAndContinueWithStep(Step::kCableActivate);
+  SetCurrentStep(Step::kCableActivate);
 }
 
 void AuthenticatorRequestDialogModel::StartLocationBarBubbleRequest() {
-  ephemeral_state_.users_ = {};
-  for (const auto& user :
+  ephemeral_state_.creds_ = {};
+  for (const auto& cred :
        transport_availability_.recognized_platform_authenticator_credentials) {
-    ephemeral_state_.users_.push_back(user);
+    ephemeral_state_.creds_.emplace_back(cred);
   }
+
+  if (conditional_ui_user_list_callback_) {
+    std::move(conditional_ui_user_list_callback_).Run(ephemeral_state_.creds_);
+  }
+
   SetCurrentStep(Step::kLocationBarBubble);
 }
 
@@ -804,9 +918,6 @@ void AuthenticatorRequestDialogModel::DispatchRequestAsyncInternal(
 
 void AuthenticatorRequestDialogModel::ContactNextPhoneByName(
     const std::string& name) {
-  DCHECK(std::is_sorted(paired_phones_.begin(), paired_phones_.end(),
-                        PairedPhone::CompareByName));
-
   bool found_name = false;
   for (size_t i = 0; i != paired_phones_.size(); i++) {
     const PairedPhone& phone = paired_phones_[i];
@@ -827,7 +938,8 @@ void AuthenticatorRequestDialogModel::ContactNextPhoneByName(
   DCHECK(found_name);
 }
 
-void AuthenticatorRequestDialogModel::PopulateMechanisms() {
+void AuthenticatorRequestDialogModel::PopulateMechanisms(
+    bool prefer_native_api) {
   const bool is_get_assertion = transport_availability_.request_type ==
                                 device::FidoRequestType::kGetAssertion;
   // priority_transport contains the transport that should be activated
@@ -837,8 +949,9 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
   if (base::Contains(transport_availability_.available_transports,
                      AuthenticatorTransport::kInternal) &&
       is_get_assertion &&
-      *transport_availability_
-           .has_recognized_platform_authenticator_credential) {
+      transport_availability_.has_platform_authenticator_credential ==
+          device::FidoRequestHandlerBase::RecognizedCredential::
+              kHasRecognizedCredential) {
     priority_transport = AuthenticatorTransport::kInternal;
   }
 
@@ -853,8 +966,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
   if (cable_ui_type_) {
     switch (*cable_ui_type_) {
       case AuthenticatorRequestDialogModel::CableUIType::CABLE_V2_2ND_FACTOR:
-        if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
-            base::Contains(transport_availability_.available_transports,
+        if (base::Contains(transport_availability_.available_transports,
                            kCable)) {
           include_add_phone_option = true;
         }
@@ -869,8 +981,6 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
         if (base::Contains(transport_availability_.available_transports,
                            kCable)) {
           transports_to_list_if_active.push_back(kCable);
-          DCHECK(is_get_assertion ||
-                 base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
           if (!priority_transport) {
             priority_transport = kCable;
           }
@@ -886,7 +996,36 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
     }
   }
 
+  // The Windows API option comes first so that it gets focus and people can
+  // select it by simply hitting enter.
+  if (win_native_api_enabled()) {
+    const std::u16string desc = l10n_util::GetStringUTF16(
+        IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN);
+    mechanisms_.emplace_back(
+        Mechanism::WindowsAPI(/*unused*/ true), desc, desc,
+        GetTransportIcon(AuthenticatorTransport::kUsbHumanInterfaceDevice),
+        base::BindRepeating(&AuthenticatorRequestDialogModel::StartWinNativeApi,
+                            base::Unretained(this), mechanisms_.size()),
+        // The Windows API should have priority when requested unless caBLE does
+        // because it's v1 or server-link.
+        !priority_transport.has_value() &&
+            (prefer_native_api ||
+             (!include_add_phone_option && paired_phone_names().empty())));
+  }
+
   if (include_add_phone_option) {
+    // If there's no other priority mechanism, no phones, and nothing on the
+    // platform authenticator, jump directly to showing a QR code.
+    const bool is_priority =
+        std::none_of(mechanisms_.begin(), mechanisms_.end(),
+                     [](const Mechanism& m) { return m.priority; }) &&
+        paired_phone_names().empty() && is_get_assertion &&
+        transport_availability_.has_empty_allow_list &&
+        transport_availability_.has_platform_authenticator_credential !=
+            device::FidoRequestHandlerBase::RecognizedCredential::
+                kHasRecognizedCredential &&
+        base::FeatureList::IsEnabled(device::kWebAuthPasskeysUI);
+
     const std::u16string label =
         l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
     mechanisms_.emplace_back(
@@ -894,7 +1033,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
         base::BindRepeating(
             &AuthenticatorRequestDialogModel::StartGuidedFlowForAddPhone,
             base::Unretained(this), mechanisms_.size()),
-        /*is_priority=*/false);
+        is_priority);
   }
 
   for (const auto transport : transports_to_list_if_active) {
@@ -912,19 +1051,6 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
         transport_availability_.request_type ==
                 device::FidoRequestType::kGetAssertion &&
             priority_transport.has_value() && *priority_transport == transport);
-  }
-
-  if (win_native_api_enabled()) {
-    const std::u16string desc = l10n_util::GetStringUTF16(
-        IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN);
-    mechanisms_.emplace_back(
-        Mechanism::WindowsAPI(/*unused*/ true), desc, desc,
-        GetTransportIcon(AuthenticatorTransport::kUsbHumanInterfaceDevice),
-        base::BindRepeating(&AuthenticatorRequestDialogModel::StartWinNativeApi,
-                            base::Unretained(this), mechanisms_.size()),
-        // The Windows API should have priority unless caBLE does or if there
-        // are linked phones.
-        !priority_transport.has_value() && paired_phones_.empty());
   }
 
   if (base::Contains(transport_availability_.available_transports, kCable)) {

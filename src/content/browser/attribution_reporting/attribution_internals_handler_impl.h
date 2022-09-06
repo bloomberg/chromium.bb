@@ -9,7 +9,8 @@
 #include "base/scoped_observation.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_storage.h"
+#include "content/browser/attribution_reporting/attribution_observer.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -24,12 +25,12 @@ class WebUI;
 // reports being sent or dropped, to the internals WebUI. Owned by
 // `AttributionInternalsUI`.
 class AttributionInternalsHandlerImpl
-    : public mojom::AttributionInternalsHandler,
-      public AttributionManager::Observer {
+    : public attribution_internals::mojom::Handler,
+      public AttributionObserver {
  public:
   AttributionInternalsHandlerImpl(
       WebUI* web_ui,
-      mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver);
+      mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver);
   AttributionInternalsHandlerImpl(
       const AttributionInternalsHandlerImpl& other) = delete;
   AttributionInternalsHandlerImpl& operator=(
@@ -42,44 +43,44 @@ class AttributionInternalsHandlerImpl
 
   // mojom::AttributionInternalsHandler:
   void IsAttributionReportingEnabled(
-      mojom::AttributionInternalsHandler::IsAttributionReportingEnabledCallback
-          callback) override;
+      attribution_internals::mojom::Handler::
+          IsAttributionReportingEnabledCallback callback) override;
   void GetActiveSources(
-      mojom::AttributionInternalsHandler::GetActiveSourcesCallback callback)
+      attribution_internals::mojom::Handler::GetActiveSourcesCallback callback)
       override;
-  void GetReports(
-      mojom::AttributionInternalsHandler::GetReportsCallback callback) override;
-  void SendPendingReports(
-      mojom::AttributionInternalsHandler::SendPendingReportsCallback callback)
-      override;
-  void ClearStorage(mojom::AttributionInternalsHandler::ClearStorageCallback
+  void GetReports(AttributionReport::ReportType report_type,
+                  attribution_internals::mojom::Handler::GetReportsCallback
+                      callback) override;
+  void SendReports(const std::vector<AttributionReport::Id>& ids,
+                   attribution_internals::mojom::Handler::SendReportsCallback
+                       callback) override;
+  void ClearStorage(attribution_internals::mojom::Handler::ClearStorageCallback
                         callback) override;
   void AddObserver(
-      mojo::PendingRemote<mojom::AttributionInternalsObserver> observer,
-      mojom::AttributionInternalsHandler::AddObserverCallback callback)
+      mojo::PendingRemote<attribution_internals::mojom::Observer> observer,
+      attribution_internals::mojom::Handler::AddObserverCallback callback)
       override;
 
-  void SetAttributionManagerProviderForTesting(
-      std::unique_ptr<AttributionManager::Provider> manager_provider);
-
  private:
-  // AttributionManager::Observer:
+  // AttributionObserver:
   void OnSourcesChanged() override;
-  void OnReportsChanged() override;
-  void OnSourceDeactivated(
-      const AttributionStorage::DeactivatedSource& deactivated_source) override;
-  void OnReportSent(const SentReport& info) override;
-  void OnReportDropped(
-      const AttributionStorage::CreateReportResult& result) override;
+  void OnReportsChanged(AttributionReport::ReportType report_type) override;
+  void OnSourceDeactivated(const StoredSource& deactivated_source) override;
+  void OnSourceHandled(const StorableSource& source,
+                       StorableSource::Result result) override;
+  void OnReportSent(const AttributionReport& report,
+                    bool is_debug_report,
+                    const SendResult& info) override;
+  void OnTriggerHandled(const AttributionTrigger& trigger,
+                        const CreateReportResult& result) override;
 
   raw_ptr<WebUI> web_ui_;
-  std::unique_ptr<AttributionManager::Provider> manager_provider_;
 
-  mojo::Receiver<mojom::AttributionInternalsHandler> receiver_;
+  mojo::Receiver<attribution_internals::mojom::Handler> receiver_;
 
-  mojo::RemoteSet<mojom::AttributionInternalsObserver> observers_;
+  mojo::RemoteSet<attribution_internals::mojom::Observer> observers_;
 
-  base::ScopedObservation<AttributionManager, AttributionManager::Observer>
+  base::ScopedObservation<AttributionManager, AttributionObserver>
       manager_observation_{this};
 };
 

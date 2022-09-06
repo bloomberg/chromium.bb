@@ -14,7 +14,6 @@
 #include "components/page_load_metrics/renderer/page_timing_metadata_recorder.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
 #include "third_party/blink/public/common/use_counter/use_counter_feature_tracker.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -56,14 +55,10 @@ class PageTimingMetricsSender {
   void DidObserveLayoutNg(uint32_t all_block_count,
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
-                          uint32_t ng_call_count,
-                          uint32_t flexbox_ng_block_count,
-                          uint32_t grid_ng_block_count);
-  void DidObserveLazyLoadBehavior(
-      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);
+                          uint32_t ng_call_count);
   void DidObserveMobileFriendlinessChanged(const blink::MobileFriendliness&);
 
-  void DidStartResponse(const GURL& response_url,
+  void DidStartResponse(const url::SchemeHostPort& final_response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
                         network::mojom::RequestDestination request_destination);
@@ -75,11 +70,13 @@ class PageTimingMetricsSender {
                                       int request_id,
                                       int64_t encoded_body_length,
                                       const std::string& mime_type);
-  void OnMainFrameIntersectionChanged(const gfx::Rect& intersect_rect);
+  void OnMainFrameIntersectionChanged(
+      const gfx::Rect& main_frame_intersection_rect);
+  void OnMainFrameViewportRectangleChanged(
+      const gfx::Rect& main_frame_viewport_rect);
 
   void DidObserveInputDelay(base::TimeDelta input_delay);
   void DidObserveUserInteraction(base::TimeDelta max_event_duration,
-                                 base::TimeDelta total_event_duration,
                                  blink::UserInteractionType interaction_type);
   // Updates the timing information. Buffers |timing| to be sent over mojo
   // sometime 'soon'.
@@ -122,7 +119,6 @@ class PageTimingMetricsSender {
   // browser.
   std::vector<blink::UseCounterFeature> new_features_;
   mojom::FrameRenderDataUpdate render_data_;
-  mojom::DeferredResourceCountsPtr new_deferred_resource_data_;
 
   blink::UseCounterFeatureTracker feature_tracker_;
 

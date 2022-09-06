@@ -479,14 +479,15 @@ aom_codec_caps_t aom_codec_get_caps(aom_codec_iface_t *iface);
  * ctx->err will be set to the same value as the return value.
  *
  * \param[in]     ctx              Pointer to this instance's context
- * \param[in]     ctrl_id          Algorithm specific control identifier
+ * \param[in]     ctrl_id          Algorithm specific control identifier.
+ *                                 Must be nonzero.
  *
  * \retval #AOM_CODEC_OK
  *     The control request was processed.
  * \retval #AOM_CODEC_ERROR
  *     The control request was not processed.
  * \retval #AOM_CODEC_INVALID_PARAM
- *     The data was not valid.
+ *     The control ID was zero, or the data was not valid.
  */
 aom_codec_err_t aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...);
 

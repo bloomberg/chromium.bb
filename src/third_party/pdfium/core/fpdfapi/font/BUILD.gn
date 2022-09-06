@@ -17,8 +17,6 @@ source_set("font") {
     "cpdf_cidfont.h",
     "cpdf_cmap.cpp",
     "cpdf_cmap.h",
-    "cpdf_cmapmanager.cpp",
-    "cpdf_cmapmanager.h",
     "cpdf_cmapparser.cpp",
     "cpdf_cmapparser.h",
     "cpdf_font.cpp",
@@ -40,17 +38,21 @@ source_set("font") {
     "cpdf_type3font.cpp",
     "cpdf_type3font.h",
   ]
-  configs += [ "../../../:pdfium_strict_config" ]
+  configs += [
+    "../../../:pdfium_strict_config",
+    "../../../:pdfium_noshorten_config",
+  ]
   deps = [
+    "../../../constants",
     "../../fxcrt",
     "../../fxge",
     "../cmaps",
     "../parser",
   ]
+  visibility = [ "../../../*" ]
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
   }
-  visibility = [ "../../../*" ]
 }
 
 pdfium_unittest_source_set("unittests") {
@@ -61,8 +63,9 @@ pdfium_unittest_source_set("unittests") {
   ]
   deps = [
     ":font",
-    "../page",
+    "../page:unit_test_support",
     "../parser",
+    "../parser:unit_test_support",
     "../render",
   ]
   pdfium_root_dir = "../../../"

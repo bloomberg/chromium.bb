@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -35,9 +36,11 @@ CGFloat const kTitleTopMinimumMargin = 48;
 CGFloat const kTitleHorizontalMargin = 18;
 CGFloat const kDefaultBannerMultiplier = 0.25;
 CGFloat const kContentWidthMultiplier = 0.65;
+CGFloat const kBottomMargin = 10;
 CGFloat const kButtonHorizontalMargin = 4;
+CGFloat const kContentOptimalWidth = 327;
 
-BOOL isPasswordManagerBrandingUpdateEnabled() {
+BOOL IsPasswordManagerBrandingUpdateEnabled() {
   return base::FeatureList::IsEnabled(
       password_manager::features::kIOSEnablePasswordManagerBrandingUpdate);
 }
@@ -48,7 +51,9 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
 // Properties set on initialization.
 @property(nonatomic, copy, readonly) NSString* titleText;
 @property(nonatomic, copy, readonly) NSString* subtitleText;
-@property(nonatomic, strong, readonly) UIImage* bannerImage;
+// Whether banner is light or dark mode
+@property(nonatomic, assign) UIUserInterfaceStyle bannerStyle;
+@property(nonatomic, copy, readonly) NSString* bannerName;
 @property(nonatomic, copy, readonly) NSString* actionString;
 
 // Visible UI components.
@@ -57,7 +62,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
 @property(nonatomic, strong) UILabel* subtitleLabel;
 @property(nonatomic, strong) UIView* turnOnInstructionView;
 @property(nonatomic, strong) UIView* turnOffInstructionView;
-@property(nonatomic, strong) UIButton* actionButton;
+@property(nonatomic, strong) HighlightButton* actionButton;
 
 @property(nonatomic, strong) UIActivityIndicatorView* spinner;
 // Views that are used to format the layout of visible UI components.
@@ -76,7 +81,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
 @property(nonatomic, strong) UINavigationBarAppearance* defaultAppearance;
 
 // Whether the image is currently being calculated; used to prevent infinite
-// recursions caused by |viewDidLayoutSubviews|.
+// recursions caused by `viewDidLayoutSubviews`.
 @property(nonatomic, assign) BOOL calculatingImageSize;
 @end
 
@@ -94,7 +99,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
     _titleText =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS);
     _actionString = l10n_util::GetNSString(IDS_IOS_OPEN_SETTINGS);
-    if (isPasswordManagerBrandingUpdateEnabled()) {
+    if (IsPasswordManagerBrandingUpdateEnabled()) {
       UIUserInterfaceIdiom idiom =
           [[UIDevice currentDevice] userInterfaceIdiom];
       if (idiom == UIUserInterfaceIdiomPad) {
@@ -105,14 +110,13 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
             IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_SUBTITLE_IPHONE);
       }
 
-      _bannerImage =
-          [UIImage imageNamed:@"settings_passwords_in_other_apps_banner"];
+      _bannerName = @"settings_passwords_in_other_apps_banner";
     } else {
       _subtitleText = l10n_util::GetNSString(
           IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS_SUBTITLE);
-      _bannerImage = [UIImage
-          imageNamed:@"legacy_settings_passwords_in_other_apps_banner"];
+      _bannerName = @"legacy_settings_passwords_in_other_apps_banner";
     }
+    self.bannerStyle = UIUserInterfaceStyleUnspecified;
   }
   return self;
 }
@@ -240,6 +244,18 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
         constraintEqualToAnchor:self.scrollContentView.bottomAnchor],
   ]];
 
+  // This constraint is added to enforce that the content width should be as
+  // close to the optimal width as possible, within the range already activated
+  // for "widthLayoutGuide.widthAnchor" previously, with a higher priority.
+  // In this case, the content width in iPad and iPhone landscape mode should be
+  // the safe layout width multiplied by kContentWidthMultiplier, while the
+  // content width for a iPhone portrait mode should be kContentOptimalWidth.
+  NSLayoutConstraint* contentLayoutGuideWidthConstraint =
+      [widthLayoutGuide.widthAnchor
+          constraintEqualToConstant:kContentOptimalWidth];
+  contentLayoutGuideWidthConstraint.priority = UILayoutPriorityRequired - 1;
+  contentLayoutGuideWidthConstraint.active = YES;
+
   // In iPhone landscape mode, the top image is removed. In that case, we should
   // make sure there is enough distance between the title label and the top edge
   // of the iPhone.
@@ -308,7 +324,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  // Prevents potential recursive calls to |viewDidLayoutSubviews|.
+  // Prevents potential recursive calls to `viewDidLayoutSubviews`.
   if (self.calculatingImageSize) {
     return;
   }
@@ -385,6 +401,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
     _titleLabel.adjustsFontForContentSizeCategory = YES;
     _titleLabel.accessibilityIdentifier =
         kPasswordsInOtherAppsTitleAccessibilityIdentifier;
+    _titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
   }
   return _titleLabel;
 }
@@ -425,7 +442,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
 
 - (UIButton*)actionButton {
   if (!_actionButton) {
-    _actionButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    _actionButton = [[HighlightButton alloc] initWithFrame:CGRectZero];
     _actionButton.contentEdgeInsets =
         UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
     [_actionButton
@@ -506,7 +523,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
               constraintEqualToAnchor:self.specificContentView.topAnchor],
           [_turnOnInstructionView.bottomAnchor
               constraintEqualToAnchor:self.specificContentView.bottomAnchor
-                             constant:-kDefaultMargin],
+                             constant:-kBottomMargin],
           [_turnOnInstructionView.centerXAnchor
               constraintEqualToAnchor:self.specificContentView.centerXAnchor],
           [_turnOnInstructionView.widthAnchor
@@ -525,7 +542,8 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
         [self.actionButton.centerXAnchor
             constraintEqualToAnchor:_turnOnInstructionView.centerXAnchor],
         [self.actionButton.bottomAnchor
-            constraintEqualToAnchor:_turnOnInstructionView.bottomAnchor],
+            constraintEqualToAnchor:_turnOnInstructionView.bottomAnchor
+                           constant:-kBottomMargin],
         [instructionLayoutGuide.bottomAnchor
             constraintEqualToAnchor:self.actionButton.topAnchor
                            constant:-kDefaultMargin],
@@ -702,18 +720,27 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
   return captionTextView;
 }
 
-// Returns a new UIImage which is |sourceImage| resized to |newSize|.
-// Returns |currentImage| if it is already at the correct size.
+// Returns a new UIImage which is `sourceImage` resized to `newSize`.
+// Returns `currentImage` if it is already at the correct size.
 // Returns nil when the view should not show an image (iPhone landscape mode).
 - (UIImage*)createOrUpdateImage:(UIImage*)currentImage {
   if (IsCompactHeight(self)) {
     return nil;
   }
+  UIUserInterfaceStyle currentStyle =
+      UITraitCollection.currentTraitCollection.userInterfaceStyle;
   CGSize newSize = [self computeBannerImageSize];
-  if (CGSizeEqualToSize(newSize, currentImage.size)) {
+  if (CGSizeEqualToSize(newSize, currentImage.size) &&
+      self.bannerStyle == currentStyle) {
     return currentImage;
   }
-  return ResizeImage(self.bannerImage, newSize, ProjectionMode::kAspectFit);
+  self.bannerStyle = currentStyle;
+  return ResizeImage([self bannerImage], newSize, ProjectionMode::kAspectFit);
+}
+
+// The banner image
+- (UIImage*)bannerImage {
+  return [UIImage imageNamed:self.bannerName];
 }
 
 // Computes banner's image size.
@@ -721,7 +748,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
   CGFloat destinationHeight =
       roundf(self.view.bounds.size.height * kDefaultBannerMultiplier);
   CGFloat destinationWidth =
-      roundf(self.bannerImage.size.width / self.bannerImage.size.height *
+      roundf([self bannerImage].size.width / [self bannerImage].size.height *
              destinationHeight);
   CGSize newSize = CGSizeMake(destinationWidth, destinationHeight);
   return newSize;

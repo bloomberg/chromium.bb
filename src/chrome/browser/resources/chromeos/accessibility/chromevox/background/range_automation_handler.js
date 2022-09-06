@@ -5,6 +5,11 @@
 /**
  * @fileoverview Handles automation from ChromeVox's current range.
  */
+import {BaseAutomationHandler} from '/chromevox/background/base_automation_handler.js';
+import {ChromeVoxState, ChromeVoxStateObserver} from '/chromevox/background/chromevox_state.js';
+import {DesktopAutomationHandler} from '/chromevox/background/desktop_automation_handler.js';
+import {Output} from '/chromevox/background/output/output.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -17,8 +22,9 @@ const StateType = chrome.automation.StateType;
  * @implements {ChromeVoxStateObserver}
  */
 export class RangeAutomationHandler extends BaseAutomationHandler {
+  /** @private */
   constructor() {
-    super(undefined);
+    super(null);
 
     /** @private {AutomationNode} */
     this.lastAttributeTarget_;
@@ -32,10 +38,18 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
     ChromeVoxState.addObserver(this);
   }
 
+  static init() {
+    if (RangeAutomationHandler.instance) {
+      throw 'Error: Trying to create two copies of singleton RangeAutomationHandler';
+    }
+    RangeAutomationHandler.instance = new RangeAutomationHandler();
+  }
+
   /**
    * @param {cursors.Range} newRange
+   * @param {boolean=} opt_fromEditing
    */
-  onCurrentRangeChanged(newRange) {
+  onCurrentRangeChanged(newRange, opt_fromEditing) {
     if (this.node_) {
       this.removeAllListeners();
       this.node_ = undefined;
@@ -98,8 +112,7 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
    * @param {!ChromeVoxEvent} evt
    */
   onEventIfInRange(evt) {
-    if (!DesktopAutomationHandler.announceActions &&
-        evt.eventFrom === 'action') {
+    if (BaseAutomationHandler.disallowEventFromAction(evt)) {
       return;
     }
 
@@ -129,7 +142,7 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
       let maybeControlledBy = evt.target;
       while (maybeControlledBy) {
         if (maybeControlledBy.controlledBy &&
-            maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
+            maybeControlledBy.controlledBy.find(n => Boolean(n.autoComplete))) {
           clearTimeout(this.delayedAttributeOutputId_);
           this.delayedAttributeOutputId_ = setTimeout(() => {
             this.lastAttributeOutput_.go();
@@ -212,21 +225,21 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
   onLocationChanged(evt) {
     const cur = ChromeVoxState.instance.currentRange;
     if (!cur || !cur.isValid()) {
-      if (ChromeVoxState.instance.getFocusBounds().length) {
-        ChromeVoxState.instance.setFocusBounds([]);
+      if (FocusBounds.get().length) {
+        FocusBounds.set([]);
       }
       return;
     }
 
     // Rather than trying to figure out if the current range falls somewhere
     // in |evt.target|, just update it if our cached bounds don't match.
-    const oldFocusBounds = ChromeVoxState.instance.getFocusBounds();
+    const oldFocusBounds = FocusBounds.get();
     const startRect = cur.start.node.location;
     const endRect = cur.end.node.location;
 
     const found =
-        oldFocusBounds.some((rect) => this.areRectsEqual_(rect, startRect)) &&
-        oldFocusBounds.some((rect) => this.areRectsEqual_(rect, endRect));
+        oldFocusBounds.some(rect => this.areRectsEqual_(rect, startRect)) &&
+        oldFocusBounds.some(rect => this.areRectsEqual_(rect, endRect));
     if (found) {
       return;
     }
@@ -245,3 +258,6 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
         rectA.width === rectB.width && rectA.height === rectB.height;
   }
 }
+
+/** @type {RangeAutomationHandler} */
+RangeAutomationHandler.instance;

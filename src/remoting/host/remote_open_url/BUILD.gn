@@ -21,7 +21,6 @@ source_set("common") {
   ]
 
   deps = [
-    "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
@@ -36,9 +35,12 @@ source_set("common") {
     "//ui/base",
   ]
 
-  public_deps = [ "//remoting/proto" ]
+  public_deps = [
+    "//base",
+    "//remoting/proto",
+  ]
 
-  if (is_linux && !is_chromeos_lacros) {
+  if (is_linux) {
     sources += [
       "remote_open_url_client_delegate_linux.cc",
       "remote_open_url_client_delegate_linux.h",

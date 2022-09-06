@@ -5,7 +5,7 @@
 import {addEntries, ENTRIES, getCaller, pending, repeatUntil, sendBrowserTestCommand, sendTestMessage, TestEntryInfo} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {openAndWaitForClosingDialog, remoteCall} from './background.js';
+import {openAndWaitForClosingDialog, openEntryChoosingWindow, pollForChosenEntry, remoteCall} from './background.js';
 import {BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 
 /**
@@ -248,7 +248,7 @@ export async function waitForDialog() {
  */
 async function checkFeedbackDisplayHidden(type) {
   // Open dialog of the specified 'type'.
-  chrome.fileSystem.chooseEntry({type: type}, (entry) => {});
+  await openEntryChoosingWindow({type: type});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.
@@ -265,7 +265,9 @@ async function checkFeedbackDisplayHidden(type) {
  * @return {!string}
  */
 function getTestFileName() {
-  return BASIC_LOCAL_ENTRY_SET[0].targetPath;
+  // Type TestEntryInfo's targetPath can be undefined, but the first item
+  // from BASIC_LOCAL_ENTRY_SET has value, we need to do type casting here.
+  return /** @type {!string} */ (BASIC_LOCAL_ENTRY_SET[0].targetPath);
 }
 
 /**
@@ -280,7 +282,7 @@ testcase.openFileDialogDownloads = () => {
  */
 testcase.openFileDialogAriaMultipleSelect = async () => {
   // Open File dialog.
-  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  await openEntryChoosingWindow({type: 'openFile'});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.
@@ -300,7 +302,7 @@ testcase.openFileDialogAriaMultipleSelect = async () => {
  */
 testcase.saveFileDialogAriaSingleSelect = async () => {
   // Open Save as dialog.
-  chrome.fileSystem.chooseEntry({type: 'saveFile'}, (entry) => {});
+  await openEntryChoosingWindow({type: 'saveFile'});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.
@@ -328,7 +330,7 @@ testcase.saveFileDialogDownloads = () => {
  */
 testcase.saveFileDialogDownloadsNewFolderButton = async () => {
   // Open Save as dialog.
-  chrome.fileSystem.chooseEntry({type: 'saveFile'}, (entry) => {});
+  await openEntryChoosingWindow({type: 'saveFile'});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.
@@ -490,7 +492,7 @@ testcase.openFileDialogEscapeDrive = () => {
  * Tests opening file dialog, then closing it with an 'unload' event.
  */
 testcase.openFileDialogUnload = async () => {
-  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  await openEntryChoosingWindow({type: 'openFile'});
   const dialog = await waitForDialog();
   await unloadOpenFileDialog(dialog);
 };
@@ -505,7 +507,7 @@ testcase.openFileDialogDefaultFilter = async () => {
     accepts: [{extensions: ['jpg']}],
     acceptsAllTypes: true,
   };
-  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  await openEntryChoosingWindow(params);
   const dialog = await waitForDialog();
 
   // Check: 'JPEG image' should be selected.
@@ -524,7 +526,7 @@ testcase.saveFileDialogDefaultFilter = async () => {
     accepts: [{extensions: ['jpg']}],
     acceptsAllTypes: true,
   };
-  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  await openEntryChoosingWindow(params);
   const dialog = await waitForDialog();
 
   // Check: 'All files' should be selected.
@@ -544,7 +546,7 @@ testcase.saveFileDialogDefaultFilterKeyNavigation = async () => {
     accepts: [{extensions: ['jpg']}],
     acceptsAllTypes: true,
   };
-  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  await openEntryChoosingWindow(params);
   const dialog = await waitForDialog();
 
   // Check: 'All files' should be selected.
@@ -704,7 +706,7 @@ testcase.saveFileDialogSingleFilterNoAcceptAll = async () => {
     accepts: [{extensions: ['jpg']}],
     acceptsAllTypes: false,
   };
-  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  await openEntryChoosingWindow(params);
   const dialog = await waitForDialog();
 
   // Check: 'JPEG image' should be selected.
@@ -723,20 +725,21 @@ testcase.saveFileDialogSingleFilterNoAcceptAll = async () => {
  * @return {!Promise<string>} The name of the entry from chooseEntry().
  */
 async function showSaveAndConfirmExpecting(extraParams, expectName) {
+  const caller = getCaller();
+
   const params = {
     type: 'saveFile',
     accepts: [{extensions: ['jpg']}],
   };
-  const result = new Promise(resolve => {
-    chrome.fileSystem.chooseEntry(Object.assign(params, extraParams), resolve);
-  });
+  await openEntryChoosingWindow(Object.assign(params, extraParams));
   const dialog = await waitForDialog();
 
   // Ensure the input field is ready.
   await remoteCall.waitForElement(dialog, '#filename-input-textbox');
 
   await clickOkButtonExpectName(dialog, expectName, 'saveAs');
-  return (await result).name;
+  const entry = await pollForChosenEntry(caller);
+  return entry.name;
 }
 
 /**
@@ -790,7 +793,7 @@ testcase.openFileDialogFileListShowContextMenu = async () => {
   await addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
 
   // Open file picker dialog.
-  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  await openEntryChoosingWindow({type: 'openFile'});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.
@@ -842,7 +845,7 @@ testcase.openFileDialogFileListShowContextMenu = async () => {
  */
 testcase.openFileDialogSelectAllDisabled = async () => {
   // Open file picker dialog.
-  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  await openEntryChoosingWindow({type: 'openFile'});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.
@@ -870,8 +873,7 @@ testcase.openMultiFileDialogSelectAllEnabled = async () => {
   sendBrowserTestCommand({name: 'setLastDownloadDir'}, () => {});
 
   // Open file picker dialog with support for selecting multiple files.
-  chrome.fileSystem.chooseEntry(
-      {type: 'openFile', acceptsMultiple: true}, (entry) => {});
+  await openEntryChoosingWindow({type: 'openFile', acceptsMultiple: true});
   const appId = await waitForDialog();
 
   // Wait to finish initial load.

@@ -4,7 +4,6 @@
 
 #include "components/ntp_snippets/features.h"
 
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/clock.h"
@@ -18,11 +17,11 @@ namespace ntp_snippets {
 namespace {
 // All platforms proxy for whether the simplified NTP is enabled.
 bool IsSimplifiedNtpEnabled() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return true;
 #else
   return false;
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 }  // namespace
 
@@ -77,7 +76,7 @@ const base::Feature kOptionalImagesEnabledFeature{
 std::vector<const base::Feature*> GetAllFeatures() {
   // Skip the last feature as it's a nullptr.
   return std::vector<const base::Feature*>(
-      kAllFeatures, kAllFeatures + base::size(kAllFeatures));
+      kAllFeatures, kAllFeatures + std::size(kAllFeatures));
 }
 
 // Default referrer for the content suggestions.

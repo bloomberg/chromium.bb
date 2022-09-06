@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <iterator>
+
 #include "base/base64.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -21,6 +23,7 @@ namespace net {
 namespace {
 
 namespace test_default {
+#include "base/time/time.h"
 #include "net/http/transport_security_state_static_unittest_default.h"
 }
 

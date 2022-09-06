@@ -24,7 +24,7 @@
 namespace base {
 class DeferredSequencedTaskRunner;
 class SystemMonitor;
-}
+}  // namespace base
 
 namespace media {
 class AudioDeviceListenerMac;
@@ -33,6 +33,7 @@ class AudioLogFactory;
 }  // namespace media
 
 namespace audio {
+class AecdumpRecordingManager;
 class DebugRecording;
 class DeviceNotifier;
 class LogFactoryManager;
@@ -117,10 +118,15 @@ class Service final : public mojom::AudioService {
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   const bool enable_remote_client_support_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   std::unique_ptr<media::AudioDeviceListenerMac> audio_device_listener_mac_;
 #endif
   std::unique_ptr<SystemInfo> system_info_;
+
+  // Manages starting / stopping of diagnostic audio processing recordings. Must
+  // outlive |debug_recording_| and |stream_factory_|, if instantiated.
+  std::unique_ptr<AecdumpRecordingManager> aecdump_recording_manager_;
+
   std::unique_ptr<DebugRecording> debug_recording_;
   absl::optional<StreamFactory> stream_factory_;
   std::unique_ptr<DeviceNotifier> device_notifier_;

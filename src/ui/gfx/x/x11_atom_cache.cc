@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/singleton.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/future.h"
@@ -106,6 +105,8 @@ constexpr const char* kAtomsToCache[] = {
     "_NET_ACTIVE_WINDOW",
     "_NET_CURRENT_DESKTOP",
     "_NET_FRAME_EXTENTS",
+    "_NET_STARTUP_INFO",
+    "_NET_STARTUP_INFO_BEGIN",
     "_NET_SUPPORTED",
     "_NET_SUPPORTING_WM_CHECK",
     "_NET_SYSTEM_TRAY_OPCODE",
@@ -169,7 +170,7 @@ constexpr const char* kAtomsToCache[] = {
     "xwayland-touch",
 };
 
-constexpr int kCacheCount = base::size(kAtomsToCache);
+constexpr int kCacheCount = std::size(kAtomsToCache);
 
 }  // namespace
 

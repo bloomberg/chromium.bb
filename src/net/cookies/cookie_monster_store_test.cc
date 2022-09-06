@@ -30,8 +30,7 @@ CookieStoreCommand::CookieStoreCommand(Type type, const CanonicalCookie& cookie)
 CookieStoreCommand::CookieStoreCommand(CookieStoreCommand&& other) = default;
 CookieStoreCommand::~CookieStoreCommand() = default;
 
-MockPersistentCookieStore::MockPersistentCookieStore()
-    : store_load_commands_(false), load_return_value_(true), loaded_(false) {}
+MockPersistentCookieStore::MockPersistentCookieStore() = default;
 
 void MockPersistentCookieStore::SetLoadExpectation(
     bool return_value,
@@ -121,8 +120,8 @@ std::unique_ptr<CanonicalCookie> BuildCanonicalCookie(
 
   return CanonicalCookie::CreateUnsafeCookieForTesting(
       pc.Name(), pc.Value(), "." + url.host(), cookie_path, creation_time,
-      cookie_expires, base::Time(), pc.IsSecure(), pc.IsHttpOnly(),
-      pc.SameSite(), pc.Priority(), pc.IsSameParty());
+      cookie_expires, base::Time(), base::Time(), pc.IsSecure(),
+      pc.IsHttpOnly(), pc.SameSite(), pc.Priority(), pc.IsSameParty());
 }
 
 void AddCookieToList(const GURL& url,
@@ -135,9 +134,7 @@ void AddCookieToList(const GURL& url,
   out_list->push_back(std::move(cookie));
 }
 
-MockSimplePersistentCookieStore::MockSimplePersistentCookieStore()
-    : loaded_(false) {
-}
+MockSimplePersistentCookieStore::MockSimplePersistentCookieStore() = default;
 
 void MockSimplePersistentCookieStore::Load(
     LoadedCallback loaded_callback,
@@ -205,7 +202,7 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     int num_old_non_secure_cookies,
     int days_old) {
   base::Time current(base::Time::Now());
-  base::Time past_creation(base::Time::Now() - base::Days(1000));
+  base::Time past_creation(base::Time::Now() - base::Days(100));
   scoped_refptr<MockSimplePersistentCookieStore> store(
       new MockSimplePersistentCookieStore);
   int total_cookies = num_secure_cookies + num_non_secure_cookies;
@@ -234,13 +231,15 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     std::unique_ptr<CanonicalCookie> cc =
         CanonicalCookie::CreateUnsafeCookieForTesting(
             "a", "1", base::StringPrintf("h%05d.izzle", i), "/path",
-            creation_time, expiration_time, base::Time(), secure, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false);
+            creation_time, expiration_time, base::Time(), base::Time(), secure,
+            false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+            false);
     cc->SetLastAccessDate(last_access_time);
     store->AddCookie(*cc);
   }
 
-  return std::make_unique<CookieMonster>(store.get(), nullptr);
+  return std::make_unique<CookieMonster>(store.get(), /*net_log=*/nullptr,
+                                         /*first_party_sets_enabled=*/false);
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() = default;

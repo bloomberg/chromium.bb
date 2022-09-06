@@ -264,8 +264,8 @@ HBBlob stream_to_blob(std::unique_ptr<SkStreamAsset> asset) {
 SkDEBUGCODE(static hb_user_data_key_t gDataIdKey;)
 
 HBFace create_hb_face(const SkTypeface& typeface) {
-    int index;
-    std::unique_ptr<SkStreamAsset> typefaceAsset = typeface.openStream(&index);
+    int index = 0;
+    std::unique_ptr<SkStreamAsset> typefaceAsset = typeface.openExistingStream(&index);
     HBFace face;
     if (typefaceAsset && typefaceAsset->getMemoryBase()) {
         HBBlob blob(stream_to_blob(std::move(typefaceAsset)));
@@ -286,12 +286,12 @@ HBFace create_hb_face(const SkTypeface& typeface) {
             skhb_get_table,
             const_cast<SkTypeface*>(SkRef(&typeface)),
             [](void* user_data){ SkSafeUnref(reinterpret_cast<SkTypeface*>(user_data)); }));
+        hb_face_set_index(face.get(), (unsigned)index);
     }
     SkASSERT(face);
     if (!face) {
         return nullptr;
     }
-    hb_face_set_index(face.get(), (unsigned)index);
     hb_face_set_upem(face.get(), typeface.getUnitsPerEm());
 
     SkDEBUGCODE(
@@ -302,11 +302,11 @@ HBFace create_hb_face(const SkTypeface& typeface) {
     return face;
 }
 
-HBFont create_hb_font(const SkFont& font, const HBFace& face) {
-    SkDEBUGCODE(
-        void* dataId = hb_face_get_user_data(face.get(), &gDataIdKey);
-        SkASSERT(dataId == font.getTypeface());
-    )
+HBFont create_typeface_hb_font(const SkTypeface& typeface) {
+    HBFace face(create_hb_face(typeface));
+    if (!face) {
+        return nullptr;
+    }
 
     HBFont otFont(hb_font_create(face.get()));
     SkASSERT(otFont);
@@ -314,19 +314,29 @@ HBFont create_hb_font(const SkFont& font, const HBFace& face) {
         return nullptr;
     }
     hb_ot_font_set_funcs(otFont.get());
-    int axis_count = font.getTypeface()->getVariationDesignPosition(nullptr, 0);
+    int axis_count = typeface.getVariationDesignPosition(nullptr, 0);
     if (axis_count > 0) {
         SkAutoSTMalloc<4, SkFontArguments::VariationPosition::Coordinate> axis_values(axis_count);
-        if (font.getTypeface()->getVariationDesignPosition(axis_values, axis_count) == axis_count) {
+        if (typeface.getVariationDesignPosition(axis_values, axis_count) == axis_count) {
             hb_font_set_variations(otFont.get(),
                                    reinterpret_cast<hb_variation_t*>(axis_values.get()),
                                    axis_count);
         }
     }
 
+    return otFont;
+}
+
+HBFont create_sub_hb_font(const SkFont& font, const HBFont& typefaceFont) {
+    SkDEBUGCODE(
+        hb_face_t* face = hb_font_get_face(typefaceFont.get());
+        void* dataId = hb_face_get_user_data(face, &gDataIdKey);
+        SkASSERT(dataId == font.getTypeface());
+    )
+
     // Creating a sub font means that non-available functions
     // are found from the parent.
-    HBFont skFont(hb_font_create_sub_font(otFont.get()));
+    HBFont skFont(hb_font_create_sub_font(typefaceFont.get()));
     hb_font_set_funcs(skFont.get(), skhb_get_font_funcs(),
                       reinterpret_cast<void *>(new SkFont(font)),
                       [](void* user_data){ delete reinterpret_cast<SkFont*>(user_data); });
@@ -1261,37 +1271,35 @@ void ShapeDontWrapOrReorder::wrap(char const * const utf8, size_t utf8Bytes,
 
 class HBLockedFaceCache {
 public:
-    HBLockedFaceCache(SkLRUCache<SkFontID, HBFace>& lruCache, SkMutex& mutex)
+    HBLockedFaceCache(SkLRUCache<SkTypefaceID, HBFont>& lruCache, SkMutex& mutex)
         : fLRUCache(lruCache), fMutex(mutex)
     {
         fMutex.acquire();
     }
     HBLockedFaceCache(const HBLockedFaceCache&) = delete;
     HBLockedFaceCache& operator=(const HBLockedFaceCache&) = delete;
-    // Required until C++17 copy elision
-    HBLockedFaceCache(HBLockedFaceCache&&) = default;
     HBLockedFaceCache& operator=(HBLockedFaceCache&&) = delete;
 
     ~HBLockedFaceCache() {
         fMutex.release();
     }
 
-    HBFace* find(SkFontID fontId) {
+    HBFont* find(SkTypefaceID fontId) {
         return fLRUCache.find(fontId);
     }
-    HBFace* insert(SkFontID fontId, HBFace hbFace) {
-        return fLRUCache.insert(fontId, std::move(hbFace));
+    HBFont* insert(SkTypefaceID fontId, HBFont hbFont) {
+        return fLRUCache.insert(fontId, std::move(hbFont));
     }
     void reset() {
         fLRUCache.reset();
     }
 private:
-    SkLRUCache<SkFontID, HBFace>& fLRUCache;
+    SkLRUCache<SkTypefaceID, HBFont>& fLRUCache;
     SkMutex& fMutex;
 };
 static HBLockedFaceCache get_hbFace_cache() {
     static SkMutex gHBFaceCacheMutex;
-    static SkLRUCache<SkFontID, HBFace> gHBFaceCache(100);
+    static SkLRUCache<SkTypefaceID, HBFont> gHBFaceCache(100);
     return HBLockedFaceCache(gHBFaceCache, gHBFaceCacheMutex);
 }
 
@@ -1354,13 +1362,13 @@ ShapedRun ShaperHarfBuzz::shape(char const * const utf8,
     HBFont hbFont;
     {
         HBLockedFaceCache cache = get_hbFace_cache();
-        SkFontID dataId = font.currentFont().getTypeface()->uniqueID();
-        HBFace* hbFaceCached = cache.find(dataId);
-        if (!hbFaceCached) {
-            HBFace hbFace(create_hb_face(*font.currentFont().getTypeface()));
-            hbFaceCached = cache.insert(dataId, std::move(hbFace));
+        SkTypefaceID dataId = font.currentFont().getTypeface()->uniqueID();
+        HBFont* typefaceFontCached = cache.find(dataId);
+        if (!typefaceFontCached) {
+            HBFont typefaceFont(create_typeface_hb_font(*font.currentFont().getTypeface()));
+            typefaceFontCached = cache.insert(dataId, std::move(typefaceFont));
         }
-        hbFont = create_hb_font(font.currentFont(), *hbFaceCached);
+        hbFont = create_sub_hb_font(font.currentFont(), *typefaceFontCached);
     }
     if (!hbFont) {
         return run;

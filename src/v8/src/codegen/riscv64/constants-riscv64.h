@@ -176,7 +176,7 @@ enum SoftwareInterruptCodes {
 //   debugger.
 const uint32_t kMaxWatchpointCode = 31;
 const uint32_t kMaxStopCode = 127;
-STATIC_ASSERT(kMaxWatchpointCode < kMaxStopCode);
+static_assert(kMaxWatchpointCode < kMaxStopCode);
 
 // ----- Fields offset and length.
 // RISCV constants
@@ -957,7 +957,7 @@ enum Opcode : uint32_t {
 
   VFCLASS_V = 0b10000,
   VFSQRT_V = 0b00000,
-  VFSQRT7_V = 0b00100,
+  VFRSQRT7_V = 0b00100,
   VFREC7_V = 0b00101,
 
   VFADD_FUNCT6 = 0b000000,
@@ -975,6 +975,35 @@ enum Opcode : uint32_t {
   VFMUL_FUNCT6 = 0b100100,
   RO_V_VFMUL_VV = OP_FVV | (VFMUL_FUNCT6 << kRvvFunct6Shift),
   RO_V_VFMUL_VF = OP_FVF | (VFMUL_FUNCT6 << kRvvFunct6Shift),
+
+  // Vector Widening Floating-Point Add/Subtract Instructions
+  VFWADD_FUNCT6 = 0b110000,
+  RO_V_VFWADD_VV = OP_FVV | (VFWADD_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWADD_VF = OP_FVF | (VFWADD_FUNCT6 << kRvvFunct6Shift),
+
+  VFWSUB_FUNCT6 = 0b110010,
+  RO_V_VFWSUB_VV = OP_FVV | (VFWSUB_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWSUB_VF = OP_FVF | (VFWSUB_FUNCT6 << kRvvFunct6Shift),
+
+  VFWADD_W_FUNCT6 = 0b110100,
+  RO_V_VFWADD_W_VV = OP_FVV | (VFWADD_W_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWADD_W_VF = OP_FVF | (VFWADD_W_FUNCT6 << kRvvFunct6Shift),
+
+  VFWSUB_W_FUNCT6 = 0b110110,
+  RO_V_VFWSUB_W_VV = OP_FVV | (VFWSUB_W_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWSUB_W_VF = OP_FVF | (VFWSUB_W_FUNCT6 << kRvvFunct6Shift),
+
+  // Vector Widening Floating-Point Reduction Instructions
+  VFWREDUSUM_FUNCT6 = 0b110001,
+  RO_V_VFWREDUSUM_VV = OP_FVV | (VFWREDUSUM_FUNCT6 << kRvvFunct6Shift),
+
+  VFWREDOSUM_FUNCT6 = 0b110011,
+  RO_V_VFWREDOSUM_VV = OP_FVV | (VFWREDOSUM_FUNCT6 << kRvvFunct6Shift),
+
+  // Vector Widening Floating-Point Multiply
+  VFWMUL_FUNCT6 = 0b111000,
+  RO_V_VFWMUL_VV = OP_FVV | (VFWMUL_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWMUL_VF = OP_FVF | (VFWMUL_FUNCT6 << kRvvFunct6Shift),
 
   VMFEQ_FUNCT6 = 0b011000,
   RO_V_VMFEQ_VV = OP_FVV | (VMFEQ_FUNCT6 << kRvvFunct6Shift),
@@ -1053,6 +1082,23 @@ enum Opcode : uint32_t {
   RO_V_VFNMSAC_VV = OP_FVV | (VFNMSAC_FUNCT6 << kRvvFunct6Shift),
   RO_V_VFNMSAC_VF = OP_FVF | (VFNMSAC_FUNCT6 << kRvvFunct6Shift),
 
+  // Vector Widening Floating-Point Fused Multiply-Add Instructions
+  VFWMACC_FUNCT6 = 0b111100,
+  RO_V_VFWMACC_VV = OP_FVV | (VFWMACC_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWMACC_VF = OP_FVF | (VFWMACC_FUNCT6 << kRvvFunct6Shift),
+
+  VFWNMACC_FUNCT6 = 0b111101,
+  RO_V_VFWNMACC_VV = OP_FVV | (VFWNMACC_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWNMACC_VF = OP_FVF | (VFWNMACC_FUNCT6 << kRvvFunct6Shift),
+
+  VFWMSAC_FUNCT6 = 0b111110,
+  RO_V_VFWMSAC_VV = OP_FVV | (VFWMSAC_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWMSAC_VF = OP_FVF | (VFWMSAC_FUNCT6 << kRvvFunct6Shift),
+
+  VFWNMSAC_FUNCT6 = 0b111111,
+  RO_V_VFWNMSAC_VV = OP_FVV | (VFWNMSAC_FUNCT6 << kRvvFunct6Shift),
+  RO_V_VFWNMSAC_VF = OP_FVF | (VFWNMSAC_FUNCT6 << kRvvFunct6Shift),
+
   VNCLIP_FUNCT6 = 0b101111,
   RO_V_VNCLIP_WV = OP_IVV | (VNCLIP_FUNCT6 << kRvvFunct6Shift),
   RO_V_VNCLIP_WX = OP_IVX | (VNCLIP_FUNCT6 << kRvvFunct6Shift),
@@ -1069,8 +1115,7 @@ enum Opcode : uint32_t {
 // The 'U' prefix is used to specify unsigned comparisons.
 // Opposite conditions must be paired as odd/even numbers
 // because 'NegateCondition' function flips LSB to negate condition.
-enum Condition {  // Any value < 0 is considered no_condition.
-  kNoCondition = -1,
+enum Condition {
   overflow = 0,
   no_overflow = 1,
   Uless = 2,
@@ -1100,9 +1145,6 @@ enum Condition {  // Any value < 0 is considered no_condition.
 };
 
 // Returns the equivalent of !cc.
-// Negation of the default kNoCondition (-1) results in a non-default
-// no_condition value (-2). As long as tests for no_condition check
-// for condition < 0, this will work as expected.
 inline Condition NegateCondition(Condition cc) {
   DCHECK(cc != cc_always);
   return static_cast<Condition>(cc ^ 1);
@@ -1177,7 +1219,7 @@ enum FFlagsMask {
   kInexact = 0b1                // NX:  Inexact
 };
 
-enum RoundingMode {
+enum FPURoundingMode {
   RNE = 0b000,  // Round to Nearest, ties to Even
   RTZ = 0b001,  // Round towards Zero
   RDN = 0b010,  // Round Down (towards -infinity)

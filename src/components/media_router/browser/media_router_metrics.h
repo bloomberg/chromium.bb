@@ -20,9 +20,9 @@ namespace media_router {
 
 enum class SinkIconType;
 
-// NOTE: Do not renumber enums as that would confuse interpretation of
-// previously logged data. When making changes, also update the enum list
-// in tools/metrics/histograms/enums.xml to keep it in sync.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. When making changes, also update the
+// enum list in tools/metrics/histograms/enums.xml to keep it in sync.
 
 // NOTE: For metrics specific to the Media Router component extension, see
 // mojo/media_router_mojo_metrics.h.
@@ -34,29 +34,33 @@ enum class DialogActivationLocationAndCastMode {
   kPinnedIconAndPresentation,
   kPinnedIconAndTabMirror,
   kPinnedIconAndDesktopMirror,
-  kPinnedIconAndLocalFile,
+  kPinnedIconAndLocalFile,  // Obsolete.
   // One can start casting from an ephemeral icon by stopping a session, then
   // starting another from the same dialog.
   kEphemeralIconAndPresentation,
   kEphemeralIconAndTabMirror,
   kEphemeralIconAndDesktopMirror,
-  kEphemeralIconAndLocalFile,
+  kEphemeralIconAndLocalFile,  // Obsolete.
   kContextMenuAndPresentation,
   kContextMenuAndTabMirror,
   kContextMenuAndDesktopMirror,
-  kContextMenuAndLocalFile,
+  kContextMenuAndLocalFile,  // Obsolete.
   kPageAndPresentation,
   kPageAndTabMirror,
   kPageAndDesktopMirror,
-  kPageAndLocalFile,
+  kPageAndLocalFile,  // Obsolete.
   kAppMenuAndPresentation,
   kAppMenuAndTabMirror,
   kAppMenuAndDesktopMirror,
-  kAppMenuAndLocalFile,
+  kAppMenuAndLocalFile,  // Obsolete.
+  kSharingHubAndPresentation,
+  kSharingHubAndTabMirror,
+  kSharingHubAndDesktopMirror,
 
   // NOTE: Do not reorder existing entries, and add entries only immediately
-  // above this line.
-  kMaxValue = kAppMenuAndLocalFile
+  // above this line. Remember to also update
+  // tools/metrics/histograms/enums.xml.
+  kMaxValue = kSharingHubAndDesktopMirror
 };
 
 // Where the user clicked to open the Media Router dialog.
@@ -69,9 +73,11 @@ enum class MediaRouterDialogOpenOrigin {
   PAGE = 3,
   APP_MENU = 4,
   SYSTEM_TRAY = 5,
+  SHARING_HUB = 6,
 
-  // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 6
+  // NOTE: Add entries only immediately above this line. Remember to also update
+  // tools/metrics/histograms/enums.xml.
+  TOTAL_COUNT = 7
 };
 
 // The possible outcomes from a route creation response.
@@ -80,7 +86,8 @@ enum class MediaRouterRouteCreationOutcome {
   FAILURE_NO_ROUTE = 1,
   FAILURE_INVALID_SINK = 2,
 
-  // Note: Add entries only immediately above this line.
+  // Note: Add entries only immediately above this line. Remember to also update
+  // tools/metrics/histograms/enums.xml.
   TOTAL_COUNT = 3,
 };
 
@@ -95,7 +102,8 @@ enum class MediaRouterUserAction {
   REPLACE_LOCAL_ROUTE = 5,
   STOP_REMOTE = 6,
 
-  // Note: Add entries only immediately above this line.
+  // Note: Add entries only immediately above this line. Remember to also update
+  // tools/metrics/histograms/enums.xml.
   TOTAL_COUNT = 7
 };
 
@@ -118,6 +126,18 @@ enum class UiType {
   kGlobalMediaControls,
 };
 
+enum class MediaRouterAndroidDialogType {
+  kRouteController = 0,
+  kRouteChooser = 1,
+  kMaxValue = kRouteChooser,
+};
+
+enum class MediaRouterAndroidDialogAction {
+  kTerminateRoute = 0,
+  kStartRoute = 1,
+  kMaxValue = kStartRoute,
+};
+
 class MediaRouterMetrics {
  public:
   MediaRouterMetrics();
@@ -125,8 +145,6 @@ class MediaRouterMetrics {
 
   // UMA histogram names.
   static const char kHistogramCloseLatency[];
-  static const char kHistogramCloudPrefAtDialogOpen[];
-  static const char kHistogramCloudPrefAtInit[];
   static const char kHistogramIconClickLocation[];
   static const char kHistogramMediaRouterFileFormat[];
   static const char kHistogramMediaRouterFileSize[];
@@ -144,6 +162,8 @@ class MediaRouterMetrics {
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiFirstAction[];
   static const char kHistogramUiIconStateAtInit[];
+  static const char kHistogramUiAndroidDialogType[];
+  static const char kHistogramUiAndroidDialogAction[];
 
   // When recording the number of devices shown in UI we record after a delay
   // because discovering devices can take some time after the UI is shown.
@@ -232,14 +252,6 @@ class MediaRouterMetrics {
   // Recorded whenever the browser is initialized.
   static void RecordIconStateAtInit(bool is_pinned);
 
-  // Records the pref value to enable the cloud services. Recorded whenever the
-  // Cast dialog is opened.
-  static void RecordCloudPrefAtDialogOpen(bool enabled);
-
-  // Records the pref value to enable the cloud services. Recorded whenever the
-  // browser is initialized.
-  static void RecordCloudPrefAtInit(bool enabled);
-
   // Records the outcome of a create route request to a Media Route Provider.
   // This and the following methods that record ResultCode use per-provider
   // histograms.
@@ -257,6 +269,14 @@ class MediaRouterMetrics {
   static void RecordMediaRouteProviderTerminateRoute(
       RouteRequestResult::ResultCode result_code,
       absl::optional<mojom::MediaRouteProviderId> provider_id = absl::nullopt);
+
+  // Records the type of the MediaRouter dialog opened. Android only.
+  static void RecordMediaRouterAndroidDialogType(
+      MediaRouterAndroidDialogType type);
+
+  // Records the action taken on the MediaRouter dialog. Android only.
+  static void RecordMediaRouterAndroidDialogAction(
+      MediaRouterAndroidDialogAction action);
 };
 
 }  // namespace media_router

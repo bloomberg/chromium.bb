@@ -7,15 +7,11 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ash/external_metrics.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chrome/browser/ash/net/bluetooth_pref_state_observer.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chrome/browser/ash/net/network_pref_state_observer.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chrome/browser/ash/net/network_throttling_observer.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/network_change_manager_client.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
@@ -24,6 +20,7 @@
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
+#include "chromeos/ash/components/memory/memory.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chromeos/network/fast_transition_observer.h"
 
@@ -44,16 +41,21 @@ namespace chromeos {
 namespace default_app_order {
 class ExternalLoader;
 }
+namespace cros_healthd {
+namespace internal {
+class DataCollector;
+}
+}  // namespace cros_healthd
 }  // namespace chromeos
 
 namespace crosapi {
 class BrowserManager;
 class CrosapiManager;
+class LacrosAvailabilityPolicyObserver;
 }  // namespace crosapi
 
 namespace crostini {
 class CrostiniUnsupportedActionNotifier;
-class CrosvmMetrics;
 }  // namespace crostini
 
 namespace lock_screen_apps {
@@ -67,24 +69,29 @@ class LockToSingleUserManager;
 namespace ash {
 class AccessibilityEventRewriterDelegateImpl;
 class ArcKioskAppManager;
+class AudioSurveyHandler;
+class BluetoothPrefStateObserver;
 class BulkPrintersCalculatorFactory;
 class CrosUsbDetector;
 class DebugdNotificationHandler;
 class DemoModeResourcesRemover;
 class EventRewriterDelegateImpl;
 class FirmwareUpdateManager;
+class FwupdDownloadClientImpl;
 class GnubbyNotification;
 class IdleActionWarningObserver;
 class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
-class PowerMetricsReporter;
+class NetworkPrefStateObserver;
+class NetworkThrottlingObserver;
 class PSIMemoryMetrics;
-class QuickAnswersController;
+class PowerMetricsReporter;
 class RendererFreezer;
 class SessionTerminationManager;
 class ShortcutMappingPrefService;
 class ShutdownPolicyForwarder;
+class SigninProfileHandler;
 class WebKioskAppManager;
 
 namespace device_activity {
@@ -93,6 +100,10 @@ class DeviceActivityController;
 
 namespace internal {
 class DBusServices;
+}
+
+namespace mojo_service_manager {
+class Helper;
 }
 
 namespace platform_keys {
@@ -118,13 +129,17 @@ class BreakpadConsentWatcher;
 class DarkResumeController;
 }  // namespace system
 
+namespace traffic_counters {
+class TrafficCountersHandler;
+}  // namespace traffic_counters
+
 // ChromeBrowserMainParts implementation for chromeos specific code.
 // NOTE: Chromeos UI (Ash) support should be added to
 // ChromeBrowserMainExtraPartsAsh instead. This class should not depend on
 // src/ash or chrome/browser/ui/ash.
 class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
  public:
-  ChromeBrowserMainPartsAsh(content::MainFunctionParams parameters,
+  ChromeBrowserMainPartsAsh(bool is_integration_test,
                             StartupData* startup_data);
 
   ChromeBrowserMainPartsAsh(const ChromeBrowserMainPartsAsh&) = delete;
@@ -141,17 +156,18 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   // Stages called from PreMainMessageLoopRun.
   void PreProfileInit() override;
-  void PostProfileInit() override;
+  void PostProfileInit(Profile* profile, bool is_initial_profile) override;
   void PreBrowserStart() override;
   void PostBrowserStart() override;
-
-  // After initialization is finished.
-  void OnFirstIdle() override;
 
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 
  private:
+  // Helper which depends on device policies being loaded before initializing
+  // the |device_activity_controller_|.
+  void StartDeviceActivityController();
+
   std::unique_ptr<chromeos::default_app_order::ExternalLoader>
       app_order_loader_;
   std::unique_ptr<NetworkPrefStateObserver> network_pref_state_observer_;
@@ -163,9 +179,10 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
   std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
   std::unique_ptr<DebugdNotificationHandler> debugd_notification_handler_;
-  std::unique_ptr<ash::QuickAnswersController> quick_answers_controller_;
 
   std::unique_ptr<internal::DBusServices> dbus_services_;
+
+  base::ScopedClosureRunner mojo_service_manager_closer_;
 
   std::unique_ptr<SystemTokenCertDBInitializer>
       system_token_certdb_initializer_;
@@ -181,6 +198,8 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   scoped_refptr<ExternalMetrics> external_metrics_;
 
   scoped_refptr<PSIMemoryMetrics> memory_pressure_detail_;
+
+  scoped_refptr<memory::ZramMetrics> zram_detail_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
 
@@ -203,6 +222,8 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       lock_screen_apps_state_controller_;
   std::unique_ptr<crosapi::CrosapiManager> crosapi_manager_;
   std::unique_ptr<crosapi::BrowserManager> browser_manager_;
+  std::unique_ptr<crosapi::LacrosAvailabilityPolicyObserver>
+      lacros_availability_policy_observer_;
 
   std::unique_ptr<power::SmartChargingManager> smart_charging_manager_;
 
@@ -213,7 +234,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       auto_screen_brightness_controller_;
 
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
-  std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
 
   std::unique_ptr<AshUsbDetector> ash_usb_detector_;
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
@@ -229,12 +249,18 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<BulkPrintersCalculatorFactory>
       bulk_printers_calculator_factory_;
 
+  std::unique_ptr<FwupdDownloadClientImpl> fwupd_download_client_;
+
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
+
+  std::unique_ptr<chromeos::cros_healthd::internal::DataCollector>
+      cros_healthd_data_collector_;
 
   // Set when PreProfileInit() is called. If PreMainMessageLoopRun() exits
   // early, this will be false during PostMainMessageLoopRun(), etc.
   // Used to prevent shutting down classes that were not initialized.
   bool pre_profile_init_called_ = false;
+  std::unique_ptr<ash::SigninProfileHandler> signin_profile_handler_;
 
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
@@ -257,10 +283,17 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<quick_pair::QuickPairBrowserDelegateImpl>
       quick_pair_delegate_;
 
+  std::unique_ptr<AudioSurveyHandler> audio_survey_handler_;
+
   // Only temporarily owned, will be null after PostCreateMainMessageLoop().
   // The Accessor is constructed before initialization of FeatureList and should
   // only be used by ChromeFeaturesServiceProvider.
   std::unique_ptr<base::FeatureList::Accessor> feature_list_accessor_;
+
+  std::unique_ptr<ash::traffic_counters::TrafficCountersHandler>
+      traffic_counters_handler_;
+
+  base::WeakPtrFactory<ChromeBrowserMainPartsAsh> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

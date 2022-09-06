@@ -112,7 +112,7 @@ class TestLauncher {
 
     int flags = 0;
     // These mirror values in base::LaunchOptions, see it for details.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     base::LaunchOptions::Inherit inherit_mode =
         base::LaunchOptions::Inherit::kSpecific;
     base::HandlesToInheritVector handles_to_inherit;
@@ -136,7 +136,7 @@ class TestLauncher {
   // Runs the launcher. Must be called at most once.
   // command_line is null by default.
   // if null, uses command line for current process.
-  bool Run(CommandLine* command_line = nullptr) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool Run(CommandLine* command_line = nullptr);
 
   // Launches a child process (assumed to be gtest-based binary) which runs
   // tests indicated by |test_names|.
@@ -158,7 +158,7 @@ class TestLauncher {
   // Returns true if child test processes should have dedicated temporary
   // directories.
   static constexpr bool SupportsPerChildTempDirs() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     return true;
 #else
     // TODO(https://crbug.com/1038857): Enable for macOS, Linux, and Fuchsia.
@@ -167,7 +167,7 @@ class TestLauncher {
   }
 
  private:
-  bool Init(CommandLine* command_line) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool Init(CommandLine* command_line);
 
   // Gets tests from the delegate, and converts to TestInfo objects.
   // Catches and logs uninstantiated parameterized tests.
@@ -205,7 +205,7 @@ class TestLauncher {
   // Rest counters, retry tests list, and test result tracker.
   void OnTestIterationStart();
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   void OnShutdownPipeReadable();
 #endif
 
@@ -221,7 +221,7 @@ class TestLauncher {
   // Creates and starts a ThreadPoolInstance with |num_parallel_jobs| dedicated
   // to foreground blocking tasks (corresponds to the traits used to launch and
   // wait for child processes). virtual to mock in testing.
-  virtual void CreateAndStartThreadPool(int num_parallel_jobs);
+  virtual void CreateAndStartThreadPool(size_t num_parallel_jobs);
 
   // Callback to receive result of a test.
   // |result_file| is a path to xml file written by child process.

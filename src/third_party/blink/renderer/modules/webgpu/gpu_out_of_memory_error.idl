@@ -5,7 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    Exposed(Window WebGPU, Worker WebGPU)
-] interface GPUOutOfMemoryError {
-  constructor();
+    Exposed(Window WebGPU, DedicatedWorker WebGPU),
+    SecureContext
+] interface GPUOutOfMemoryError : GPUError {
+    constructor(DOMString message);
 };

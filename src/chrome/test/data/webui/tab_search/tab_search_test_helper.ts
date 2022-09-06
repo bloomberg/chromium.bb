@@ -14,7 +14,7 @@ export function disableAnimationBehavior(klass: any, functionName: string) {
   klass.prototype[functionName] = function(options: any) {
     const args = [];
     if (typeof options === 'object' && options !== null) {
-      let noAnimationOptions = Object.assign({}, options);
+      const noAnimationOptions = Object.assign({}, options);
       delete noAnimationOptions.behavior;
 
       args.push(noAnimationOptions);
@@ -65,4 +65,14 @@ export function initLoadTimeDataWithDefaults(
         recentlyClosedDefaultItemDisplayCount: 5,
       },
       loadTimeOverriddenData));
+}
+
+/**
+ * Returns a style property number value that needs to be determined from the
+ * computed style of an HTML element.
+ */
+export function getStylePropertyPixelValue(
+    element: HTMLElement, name: string): number {
+  const pxValue = getComputedStyle(element).getPropertyValue(name);
+  return Number.parseInt(pxValue.trim().slice(0, -2), 10);
 }

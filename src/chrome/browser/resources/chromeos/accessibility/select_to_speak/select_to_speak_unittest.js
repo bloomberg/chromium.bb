@@ -9,13 +9,10 @@ GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
  */
 SelectToSpeakUnitTest = class extends SelectToSpeakE2ETest {
   /** @override */
-  setUp() {
-    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
-    (async function() {
-      await importModule(
-          'getGSuiteAppRoot', '/select_to_speak/select_to_speak.js');
-      runTest();
-    })();
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        'getGSuiteAppRoot', '/select_to_speak/select_to_speak.js');
   }
 };
 

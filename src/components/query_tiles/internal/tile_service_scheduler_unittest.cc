@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/query_tiles/internal/black_hole_log_sink.h"
@@ -88,7 +90,7 @@ class TileServiceSchedulerTest : public testing::Test {
 
   std::unique_ptr<net::BackoffEntry> GetBackoffPolicy() {
     std::unique_ptr<net::BackoffEntry> result;
-    const base::ListValue* value = prefs()->GetList(kBackoffEntryKey);
+    const base::Value* value = prefs()->GetList(kBackoffEntryKey);
     if (value) {
       result = net::BackoffEntrySerializer::DeserializeFromValue(
           *value, &kTestPolicy, tick_clock(), clock()->Now());

@@ -126,8 +126,7 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
   if (StyleRef().HasInFlowPosition()) {
     scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
     new_style->SetPosition(EPosition::kStatic);
-    SetModifiedStyleOutsideStyleRecalc(new_style,
-                                       LayoutObject::ApplyStyleChanges::kNo);
+    SetStyle(new_style, LayoutObject::ApplyStyleChanges::kNo);
   }
 
   LayoutTableBoxComponent::StyleDidChange(diff, old_style);
@@ -2172,9 +2171,9 @@ bool LayoutTableSection::MapToVisualRectInAncestorSpaceInternal(
   // enclosing LayoutFlowThread will convert to visual coordinates.
   if (IsRepeatingHeaderGroup() || IsRepeatingFooterGroup()) {
     transform_state.Flatten();
-    FloatRect rect = transform_state.LastPlanarQuad().BoundingBox();
+    gfx::RectF rect = transform_state.LastPlanarQuad().BoundingBox();
     rect.set_height(Table()->LogicalHeight());
-    transform_state.SetQuad(FloatQuad(rect));
+    transform_state.SetQuad(gfx::QuadF(rect));
     return Table()->MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, flags);
   }

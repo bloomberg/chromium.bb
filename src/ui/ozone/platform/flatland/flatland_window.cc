@@ -18,7 +18,6 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
-#include "base/ignore_result.h"
 #include "base/memory/scoped_refptr.h"
 #include "flatland_connection.h"
 #include "ui/base/cursor/platform_cursor.h"
@@ -36,8 +35,13 @@ FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
       window_delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
       view_ref_(std::move(properties.view_ref_pair.view_ref)),
+      view_controller_(std::move(properties.view_controller)),
       flatland_("Chromium FlatlandWindow"),
       bounds_(properties.bounds) {
+  if (view_controller_) {
+    view_controller_.set_error_handler(
+        fit::bind_member(this, &FlatlandWindow::OnViewControllerDisconnected));
+  }
   fuchsia::ui::views::ViewIdentityOnCreation view_identity = {
       .view_ref = CloneViewRef(),
       .view_ref_control = std::move(properties.view_ref_pair.control_ref)};
@@ -126,13 +130,22 @@ fuchsia::ui::views::ViewRef FlatlandWindow::CloneViewRef() {
   return dup;
 }
 
-gfx::Rect FlatlandWindow::GetBounds() const {
+gfx::Rect FlatlandWindow::GetBoundsInPixels() const {
   return bounds_;
 }
 
-void FlatlandWindow::SetBounds(const gfx::Rect& bounds) {
+void FlatlandWindow::SetBoundsInPixels(const gfx::Rect& bounds) {
   // This path should only be reached in tests.
   bounds_ = bounds;
+}
+
+gfx::Rect FlatlandWindow::GetBoundsInDIP() const {
+  return window_delegate_->ConvertRectToDIP(bounds_);
+}
+
+void FlatlandWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  // This path should only be reached in tests.
+  bounds_ = window_delegate_->ConvertRectToPixels(bounds);
 }
 
 void FlatlandWindow::SetTitle(const std::u16string& title) {
@@ -158,6 +171,10 @@ void FlatlandWindow::Hide() {
 }
 
 void FlatlandWindow::Close() {
+  if (view_controller_) {
+    view_controller_->Dismiss();
+    view_controller_ = nullptr;
+  }
   Hide();
   window_delegate_->OnClosed();
 }
@@ -171,16 +188,15 @@ void FlatlandWindow::PrepareForShutdown() {
 }
 
 void FlatlandWindow::SetCapture() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  has_capture_ = true;
 }
 
 void FlatlandWindow::ReleaseCapture() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  has_capture_ = false;
 }
 
 bool FlatlandWindow::HasCapture() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return has_capture_;
 }
 
 void FlatlandWindow::ToggleFullscreen() {
@@ -206,7 +222,11 @@ PlatformWindowState FlatlandWindow::GetPlatformWindowState() const {
     return PlatformWindowState::kFullScreen;
   if (!is_view_attached_)
     return PlatformWindowState::kMinimized;
-  return PlatformWindowState::kNormal;
+
+  // TODO(crbug.com/1241868): We cannot tell what portion of the screen is
+  // occupied by the View, so report is as maximized to reduce the space used
+  // by any browser chrome.
+  return PlatformWindowState::kMaximized;
 }
 
 void FlatlandWindow::Activate() {
@@ -236,11 +256,11 @@ void FlatlandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-void FlatlandWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+void FlatlandWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-gfx::Rect FlatlandWindow::GetRestoredBoundsInPixels() const {
+gfx::Rect FlatlandWindow::GetRestoredBoundsInDIP() const {
   NOTIMPLEMENTED();
   return gfx::Rect();
 }
@@ -255,8 +275,8 @@ void FlatlandWindow::SizeConstraintsChanged() {
 }
 
 void FlatlandWindow::OnGetLayout(fuchsia::ui::composition::LayoutInfo info) {
-  device_pixel_ratio_ =
-      std::max(info.pixel_scale().width, info.pixel_scale().height);
+  // TODO(https://fxbug.dev/99312): Read device pixel ratio from LayoutInfo when
+  // available.
   view_properties_ = info.logical_size();
 
   if (view_properties_ || device_pixel_ratio_ > 0.0)
@@ -311,11 +331,9 @@ void FlatlandWindow::UpdateSize() {
   bounds_ = gfx::Rect(ceilf(width * device_pixel_ratio_),
                       ceilf(height * device_pixel_ratio_));
 
-  // TODO(crbug.com/1230150): Handle zero size scenario.
-
   PlatformWindowDelegate::BoundsChange bounds;
   bounds.bounds = bounds_;
-  // TODO(crbug.com/1230150): Calculate insets and update.
+  // TODO(fxbug.dev/93998): Calculate insets and update.
   window_delegate_->OnBoundsChanged(bounds);
 }
 
@@ -336,6 +354,11 @@ void FlatlandWindow::DispatchEvent(ui::Event* event) {
     located_event->set_location_f(location);
   }
   window_delegate_->DispatchEvent(event);
+}
+
+void FlatlandWindow::OnViewControllerDisconnected(zx_status_t status) {
+  view_controller_ = nullptr;
+  window_delegate_->OnCloseRequest();
 }
 
 }  // namespace ui

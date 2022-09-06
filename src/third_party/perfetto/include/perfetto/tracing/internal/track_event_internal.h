@@ -35,13 +35,24 @@ namespace perfetto {
 
 // Represents a point in time for the clock specified by |clock_id|.
 struct TraceTimestamp {
-  protos::pbzero::BuiltinClock clock_id;
-  uint64_t nanoseconds;
+  // Clock IDs have the following semantic:
+  // [1, 63]:    Builtin types, see BuiltinClock from
+  //             ../common/builtin_clock.proto.
+  // [64, 127]:  User-defined clocks. These clocks are sequence-scoped. They
+  //             are only valid within the same |trusted_packet_sequence_id|
+  //             (i.e. only for TracePacket(s) emitted by the same TraceWriter
+  //             that emitted the clock snapshot).
+  // [128, MAX]: Reserved for future use. The idea is to allow global clock
+  //             IDs and setting this ID to hash(full_clock_name) & ~127.
+  // Learn more: `clock_snapshot.proto`
+  uint32_t clock_id;
+  uint64_t value;
 };
 
 class EventContext;
 class TrackEventSessionObserver;
 struct Category;
+struct TraceTimestamp;
 namespace protos {
 namespace gen {
 class TrackEventConfig;
@@ -54,7 +65,7 @@ class DebugAnnotation;
 // A callback interface for observing track event tracing sessions starting and
 // stopping. See TrackEvent::{Add,Remove}SessionObserver. Note that all methods
 // will be called on an internal Perfetto thread.
-class PERFETTO_EXPORT TrackEventSessionObserver {
+class PERFETTO_EXPORT_COMPONENT TrackEventSessionObserver {
  public:
   virtual ~TrackEventSessionObserver();
   // Called when a track event tracing session is configured. Note tracing isn't
@@ -72,7 +83,7 @@ class PERFETTO_EXPORT TrackEventSessionObserver {
 namespace internal {
 class TrackEventCategoryRegistry;
 
-class PERFETTO_EXPORT BaseTrackEventInternedDataIndex {
+class PERFETTO_EXPORT_COMPONENT BaseTrackEventInternedDataIndex {
  public:
   virtual ~BaseTrackEventInternedDataIndex();
 
@@ -82,8 +93,29 @@ class PERFETTO_EXPORT BaseTrackEventInternedDataIndex {
 #endif  // PERFETTO_DCHECK_IS_ON()
 };
 
+struct TrackEventTlsState {
+  template <typename TraceContext>
+  explicit TrackEventTlsState(const TraceContext& trace_context);
+  bool enable_thread_time_sampling = false;
+  bool filter_debug_annotations = false;
+  bool filter_dynamic_event_names = false;
+  uint64_t timestamp_unit_multiplier = 1;
+  uint32_t default_clock;
+};
+
 struct TrackEventIncrementalState {
   static constexpr size_t kMaxInternedDataFields = 32;
+
+  // Packet-sequence-scoped clock that encodes nanosecond timestamps in the
+  // domain of the clock returned by GetClockId() as delta values - see
+  // Clock::is_incremental in perfetto/trace/clock_snapshot.proto.
+  // Default unit: nanoseconds.
+  static constexpr uint32_t kClockIdIncremental = 64;
+
+  // Packet-sequence-scoped clock that encodes timestamps in the domain of the
+  // clock returned by GetClockId() with custom unit_multiplier.
+  // Default unit: nanoseconds.
+  static constexpr uint32_t kClockIdAbsolute = 65;
 
   bool was_cleared = true;
 
@@ -116,12 +148,23 @@ struct TrackEventIncrementalState {
   // this tracing session. The value in the map indicates whether the category
   // is enabled or disabled.
   std::unordered_map<std::string, bool> dynamic_categories;
+
+  // The latest reference timestamp that was used in a TracePacket or in a
+  // ClockSnapshot. The increment between this timestamp and the current trace
+  // time (GetTimeNs) is a value in kClockIdIncremental's domain.
+  uint64_t last_timestamp_ns = 0;
+
+  // The latest known counter values that was used in a TracePacket for each
+  // counter track. The key (uint64_t) is the uuid of counter track.
+  // The value is used for delta encoding of counter values.
+  std::unordered_map<uint64_t, int64_t> last_counter_value_per_track;
+  int64_t last_thread_time_ns = 0;
 };
 
 // The backend portion of the track event trace point implemention. Outlined to
 // a separate .cc file so it can be shared by different track event category
 // namespaces.
-class PERFETTO_EXPORT TrackEventInternal {
+class PERFETTO_EXPORT_COMPONENT TrackEventInternal {
  public:
   static bool Initialize(
       const TrackEventCategoryRegistry&,
@@ -140,15 +183,33 @@ class PERFETTO_EXPORT TrackEventInternal {
                                 const protos::gen::TrackEventConfig& config,
                                 const Category& category);
 
+  static void WriteEventName(perfetto::DynamicString event_name,
+                             perfetto::EventContext& event_ctx,
+                             const TrackEventTlsState&);
+
+  static void WriteEventName(perfetto::StaticString event_name,
+                             perfetto::EventContext& event_ctx,
+                             const TrackEventTlsState&);
+
   static perfetto::EventContext WriteEvent(
       TraceWriterBase*,
       TrackEventIncrementalState*,
+      const TrackEventTlsState& tls_state,
       const Category* category,
-      const char* name,
       perfetto::protos::pbzero::TrackEvent::Type,
-      TraceTimestamp timestamp = {GetClockId(), GetTimeNs()});
+      const TraceTimestamp& timestamp,
+      bool on_current_thread_track);
 
-  static void ResetIncrementalState(TraceWriterBase*, TraceTimestamp);
+  static void ResetIncrementalStateIfRequired(
+      TraceWriterBase* trace_writer,
+      TrackEventIncrementalState* incr_state,
+      const TrackEventTlsState& tls_state,
+      const TraceTimestamp& timestamp) {
+    if (incr_state->was_cleared) {
+      incr_state->was_cleared = false;
+      ResetIncrementalState(trace_writer, incr_state, tls_state, timestamp);
+    }
+  }
 
   // TODO(altimin): Remove this method once Chrome uses
   // EventContext::AddDebugAnnotation directly.
@@ -157,8 +218,9 @@ class PERFETTO_EXPORT TrackEventInternal {
                                  const char* name,
                                  T&& value) {
     auto annotation = AddDebugAnnotation(event_ctx, name);
-    WriteIntoTracedValue(internal::CreateTracedValueFromProto(annotation),
-                         std::forward<T>(value));
+    WriteIntoTracedValue(
+        internal::CreateTracedValueFromProto(annotation, event_ctx),
+        std::forward<T>(value));
   }
 
   // If the given track hasn't been seen by the trace writer yet, write a
@@ -168,23 +230,32 @@ class PERFETTO_EXPORT TrackEventInternal {
   static void WriteTrackDescriptorIfNeeded(
       const TrackType& track,
       TraceWriterBase* trace_writer,
-      TrackEventIncrementalState* incr_state) {
+      TrackEventIncrementalState* incr_state,
+      const TrackEventTlsState& tls_state,
+      const TraceTimestamp& timestamp) {
     auto it_and_inserted = incr_state->seen_tracks.insert(track.uuid);
     if (PERFETTO_LIKELY(!it_and_inserted.second))
       return;
-    WriteTrackDescriptor(track, trace_writer);
+    WriteTrackDescriptor(track, trace_writer, incr_state, tls_state, timestamp);
   }
 
   // Unconditionally write a track descriptor into the trace.
   template <typename TrackType>
   static void WriteTrackDescriptor(const TrackType& track,
-                                   TraceWriterBase* trace_writer) {
+                                   TraceWriterBase* trace_writer,
+                                   TrackEventIncrementalState* incr_state,
+                                   const TrackEventTlsState& tls_state,
+                                   const TraceTimestamp& timestamp) {
+    ResetIncrementalStateIfRequired(trace_writer, incr_state, tls_state,
+                                    timestamp);
     TrackRegistry::Get()->SerializeTrack(
-        track, NewTracePacket(trace_writer, {GetClockId(), GetTimeNs()}));
+        track, NewTracePacket(trace_writer, incr_state, tls_state, timestamp));
   }
 
   // Get the current time in nanoseconds in the trace clock timebase.
   static uint64_t GetTimeNs();
+
+  static TraceTimestamp GetTraceTime();
 
   // Get the clock used by GetTimeNs().
   static constexpr protos::pbzero::BuiltinClock GetClockId() {
@@ -202,8 +273,15 @@ class PERFETTO_EXPORT TrackEventInternal {
   static const Track kDefaultTrack;
 
  private:
+  static void ResetIncrementalState(TraceWriterBase* trace_writer,
+                                    TrackEventIncrementalState* incr_state,
+                                    const TrackEventTlsState& tls_state,
+                                    const TraceTimestamp& timestamp);
+
   static protozero::MessageHandle<protos::pbzero::TracePacket> NewTracePacket(
       TraceWriterBase*,
+      TrackEventIncrementalState*,
+      const TrackEventTlsState& tls_state,
       TraceTimestamp,
       uint32_t seq_flags =
           protos::pbzero::TracePacket::SEQ_NEEDS_INCREMENTAL_STATE);
@@ -213,6 +291,31 @@ class PERFETTO_EXPORT TrackEventInternal {
 
   static std::atomic<int> session_count_;
 };
+
+template <typename TraceContext>
+TrackEventTlsState::TrackEventTlsState(const TraceContext& trace_context) {
+  auto locked_ds = trace_context.GetDataSourceLocked();
+  bool disable_incremental_timestamps = false;
+  if (locked_ds.valid()) {
+    const auto& config = locked_ds->GetConfig();
+    disable_incremental_timestamps = config.disable_incremental_timestamps();
+    filter_debug_annotations = config.filter_debug_annotations();
+    filter_dynamic_event_names = config.filter_dynamic_event_names();
+    enable_thread_time_sampling = config.enable_thread_time_sampling();
+    if (config.has_timestamp_unit_multiplier()) {
+      timestamp_unit_multiplier = config.timestamp_unit_multiplier();
+    }
+  }
+  if (disable_incremental_timestamps) {
+    if (timestamp_unit_multiplier == 1) {
+      default_clock = TrackEventInternal::GetClockId();
+    } else {
+      default_clock = TrackEventIncrementalState::kClockIdAbsolute;
+    }
+  } else {
+    default_clock = TrackEventIncrementalState::kClockIdIncremental;
+  }
+}
 
 }  // namespace internal
 }  // namespace perfetto

@@ -21,12 +21,12 @@ class NavigationElement extends NavigationMixin
   changeCalled: boolean = false;
   route: string = '';
 
-  ready() {
+  override ready() {
     super.ready();
     this.reset();
   }
 
-  onRouteChange(route: Routes, _step: string) {
+  override onRouteChange(route: Routes, _step: string) {
     this.changeCalled = true;
     this.route = route;
   }
@@ -92,7 +92,7 @@ suite('ProfilePickerMainViewTest', function() {
                userName: sync ? `User${i}@gmail.com` : '',
                isManaged: i % 4 === 0,
                avatarIcon: `AvatarUrl-${i}`,
-               // <if expr="lacros">
+               // <if expr="chromeos_lacros">
                isPrimaryLacrosProfile: false,
                // </if>
              }));
@@ -136,13 +136,13 @@ suite('ProfilePickerMainViewTest', function() {
     assertEquals(navigationElement.route, Routes.MAIN);
     await browserProxy.whenCalled('initializeMainView');
     // Hidden while profiles list is not yet defined.
-    assertTrue(mainViewElement.$.wrapper.hidden);
+    assertTrue(mainViewElement.$.profilesContainer.hidden);
     assertTrue(mainViewElement.$.askOnStartup.hidden);
     const profiles = generateProfilesList(6);
     webUIListenerCallback('profiles-list-changed', [...profiles]);
     flushTasks();
     // Profiles list defined.
-    assertTrue(!mainViewElement.$.wrapper.hidden);
+    assertTrue(!mainViewElement.$.profilesContainer.hidden);
     assertTrue(!mainViewElement.$.askOnStartup.hidden);
     assertTrue(mainViewElement.$.askOnStartup.checked);
     // Verify profile card.
@@ -226,7 +226,7 @@ suite('ProfilePickerMainViewTest', function() {
   test('AskOnStartupSingleToMultipleProfiles', async function() {
     await browserProxy.whenCalled('initializeMainView');
     // Hidden while profiles list is not yet defined.
-    assertTrue(mainViewElement.$.wrapper.hidden);
+    assertTrue(mainViewElement.$.profilesContainer.hidden);
     assertTrue(mainViewElement.$.askOnStartup.hidden);
     let profiles = generateProfilesList(1);
     webUIListenerCallback('profiles-list-changed', [...profiles]);
@@ -252,7 +252,7 @@ suite('ProfilePickerMainViewTest', function() {
   test('AskOnStartupMultipleToSingleProfile', async function() {
     await browserProxy.whenCalled('initializeMainView');
     // Hidden while profiles list is not yet defined.
-    assertTrue(mainViewElement.$.wrapper.hidden);
+    assertTrue(mainViewElement.$.profilesContainer.hidden);
     assertTrue(mainViewElement.$.askOnStartup.hidden);
     const profiles = generateProfilesList(2);
     webUIListenerCallback('profiles-list-changed', [...profiles]);
@@ -276,7 +276,7 @@ suite('ProfilePickerMainViewTest', function() {
 
     await browserProxy.whenCalled('initializeMainView');
     // Hidden while profiles list is not yet defined.
-    assertTrue(mainViewElement.$.wrapper.hidden);
+    assertTrue(mainViewElement.$.profilesContainer.hidden);
     assertTrue(mainViewElement.$.askOnStartup.hidden);
     const profiles = generateProfilesList(2);
     webUIListenerCallback('profiles-list-changed', [...profiles]);

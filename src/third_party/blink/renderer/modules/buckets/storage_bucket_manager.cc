@@ -6,10 +6,12 @@
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_bucket_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/modules/buckets/storage_bucket.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -43,19 +45,26 @@ bool IsValidName(const String& name) {
 mojom::blink::BucketPoliciesPtr ToMojoBucketPolicies(
     const StorageBucketOptions* options) {
   auto policies = mojom::blink::BucketPolicies::New();
-  policies->persisted = options->persisted();
-  policies->quota = options->hasQuotaNonNull()
-                        ? options->quotaNonNull()
-                        : mojom::blink::kNoQuotaPolicyValue;
+  if (options->hasPersistedNonNull()) {
+    policies->persisted = options->persistedNonNull();
+    policies->has_persisted = true;
+  }
 
-  if (options->durability() == "strict") {
-    policies->durability = mojom::blink::BucketDurability::kStrict;
-  } else {
-    policies->durability = mojom::blink::BucketDurability::kRelaxed;
+  if (options->hasQuotaNonNull()) {
+    policies->quota = options->quotaNonNull();
+    policies->has_quota = true;
+  }
+
+  if (options->hasDurabilityNonNull()) {
+    policies->durability = options->durabilityNonNull() == "strict"
+                               ? mojom::blink::BucketDurability::kStrict
+                               : mojom::blink::BucketDurability::kRelaxed;
+    policies->has_durability = true;
   }
 
   if (options->hasExpiresNonNull())
     policies->expires = base::Time::FromJavaTime(options->expiresNonNull());
+
   return policies;
 }
 

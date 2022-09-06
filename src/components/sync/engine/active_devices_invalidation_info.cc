@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "components/sync/engine/sync_engine_switches.h"
-
 namespace syncer {
 
 // static
@@ -31,6 +29,10 @@ ActiveDevicesInvalidationInfo::ActiveDevicesInvalidationInfo(bool initialized)
 
 ActiveDevicesInvalidationInfo::~ActiveDevicesInvalidationInfo() = default;
 
+ActiveDevicesInvalidationInfo::ActiveDevicesInvalidationInfo(
+    const ActiveDevicesInvalidationInfo&) = default;
+ActiveDevicesInvalidationInfo& ActiveDevicesInvalidationInfo::operator=(
+    const ActiveDevicesInvalidationInfo&) = default;
 ActiveDevicesInvalidationInfo::ActiveDevicesInvalidationInfo(
     ActiveDevicesInvalidationInfo&&) = default;
 ActiveDevicesInvalidationInfo& ActiveDevicesInvalidationInfo::operator=(

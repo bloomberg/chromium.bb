@@ -27,7 +27,6 @@
 
 import gdb
 import re
-import itertools
 from bisect import bisect_left
 
 
@@ -54,18 +53,18 @@ class _MatrixEntryIterator(object):
 			if self.currentCol >= self.cols:
 				raise StopIteration
 				
-			self.currentRow = self.currentRow + 1
+			self.currentRow += 1
 			if self.currentRow >= self.rows:
 				self.currentRow = 0
-				self.currentCol = self.currentCol + 1
+				self.currentCol += 1
 		else:
 			if self.currentRow >= self.rows:
 				raise StopIteration
 				
-			self.currentCol = self.currentCol + 1
+			self.currentCol += 1
 			if self.currentCol >= self.cols:
 				self.currentCol = 0
-				self.currentRow = self.currentRow + 1
+				self.currentRow += 1
 
 		return row, col
 
@@ -126,7 +125,7 @@ class EigenMatrixPrinter:
 			row, col = super(EigenMatrixPrinter._Iterator, self).__next__()
 			
 			item = self.dataPtr.dereference()
-			self.dataPtr = self.dataPtr + 1
+			self.dataPtr += 1
 			if self.cols == 1:  # if it's a column vector
 				return '[%d]' % (row,), item
 			elif self.rows == 1:  # if it's a row vector
@@ -134,7 +133,6 @@ class EigenMatrixPrinter:
 			return '[%d,%d]' % (row, col), item
 			
 	def children(self):
-		
 		return self._Iterator(self.rows, self.cols, self.data, self.rowMajor)
 		
 	def to_string(self):
@@ -268,14 +266,13 @@ class EigenQuaternionPrinter:
 			if self.currentElement >= 4:  # there are 4 elements in a quaternion
 				raise StopIteration
 			
-			self.currentElement = self.currentElement + 1
+			self.currentElement += 1
 			
 			item = self.dataPtr.dereference()
-			self.dataPtr = self.dataPtr + 1
+			self.dataPtr += 1
 			return '[%s]' % (self.elementNames[element],), item
 			
 	def children(self):
-		
 		return self._Iterator(self.data)
 	
 	def to_string(self):
@@ -285,15 +282,15 @@ class EigenQuaternionPrinter:
 def cast_eigen_block_to_matrix(val):
 	# Get the type of the variable (and convert to a string)
 	# Example: 'const Eigen::Block<Eigen::Block<Eigen::Matrix<double, -1, -1, 0, -1, -1>, -1, -1, false> const, -1, -1, false>'
-	type = str(val.type)
+	val_type = str(val.type)
 
 	# Extract the Eigen::Matrix type from the Block:
 	# From the previous example: Eigen::Matrix<double, -1, -1, 0, -1, -1>
-	begin = type.find('Eigen::Matrix<')
-	end = type.find('>', begin) + 1
+	begin = val_type.find('Eigen::Matrix<')
+	end = val_type.find('>', begin) + 1
 
 	# Convert the Eigen::Block to an Eigen::Matrix
-	return val.cast(gdb.lookup_type(type[begin:end]))
+	return val.cast(gdb.lookup_type(val_type[begin:end]))
 
 
 def build_eigen_dictionary():

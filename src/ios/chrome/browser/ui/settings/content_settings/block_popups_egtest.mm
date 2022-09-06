@@ -121,7 +121,7 @@ class ScopedBlockPopupsException {
 
   // Request popup (execute script without using a user gesture) and make sure
   // the popup opened in a new tab.
-  [ChromeEarlGrey executeJavaScript:kOpenPopupScript];
+  [ChromeEarlGrey evaluateJavaScriptForSideEffect:kOpenPopupScript];
   [ChromeEarlGrey waitForMainTabCount:2];
 
   // No infobar should be displayed.
@@ -151,7 +151,7 @@ class ScopedBlockPopupsException {
   // Request popup (execute script without using a user gesture), then make sure
   // it was blocked and an infobar was displayed. The window.open() call is run
   // via async JS, so the infobar may not open immediately.
-  [ChromeEarlGrey executeJavaScript:kOpenPopupScript];
+  [ChromeEarlGrey evaluateJavaScriptForSideEffect:kOpenPopupScript];
 
   BOOL infobarVisible = [[GREYCondition
       conditionWithName:@"Wait for blocked popups infobar to show"
@@ -189,9 +189,9 @@ class ScopedBlockPopupsException {
   // Toggle the switch off via the UI and make sure the exceptions are not
   // visible.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    @"blockPopupsContentView_switch", YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
                                           allowedPattern))]
       assertWithMatcher:grey_notVisible()];
@@ -206,9 +206,9 @@ class ScopedBlockPopupsException {
 
   // Toggle the switch back on via the UI and make sure the exceptions are now
   // visible.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                           @"blockPopupsContentView_switch", NO)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
                                           allowedPattern))]
       assertWithMatcher:grey_sufficientlyVisible()];

@@ -21,6 +21,7 @@
     overflow: hidden;
     width: var(--sidebar-width);
     display: flex;
+    position: relative;
     flex-direction: column;
     transition: margin-left var(--anim-easing) var(--sidebar-timing),
                 visibility linear var(--sidebar-timing);
@@ -64,7 +65,7 @@
         }
     }
     .sidebar-button {
-      position: absolute;
+      position: fixed;
       z-index: 5;
       background-color: #262f3c;
       height: var(--topbar-height);
@@ -84,6 +85,10 @@
       margin-left: calc(var(--sidebar-width) * -1);
       .sidebar-button {
         left: 0;
+        background-color: transparent;
+        border-radius: unset;
+        border-bottom: none;
+        color: #aaaaaa;
       }
     }
     .sidebar-scroll {
@@ -132,6 +137,13 @@
                     margin-top: 8px;
                     font-weight: 400;
                 }
+                &:before {
+                  @include material-icon('expand_more');
+                  float: right;
+                  color: rgba(255, 255, 255, 0.3);
+                  margin-right: 12px;
+                  margin-top: -4px;
+                }
             }
             &:hover {
                 background-color: #373f4b;
@@ -139,9 +151,16 @@
             &.expanded {
                 background-color: #19212b;
                 max-height: unset;
-                .section-header h2 {
+                .section-header {
+                  h2 {
                     opacity: 0;
+                  }
+
+                  &:before {
+                    content: 'expand_less';
+                  }
                 }
+
                 .section-content {
                     pointer-events: inherit;
                     opacity: 1;
@@ -207,7 +226,6 @@
                   white-space: break-spaces;
                   font-family: 'Roboto Condensed', sans-serif;
                   word-break: break-all;
-                  user-select: text;
                   font-weight: 300;
                   letter-spacing: 0;
                   margin-top: -10px;
@@ -227,7 +245,6 @@
       height: - var(--sidebar-padding-bottom);
       grid-template-columns: repeat(4, min-content);
       grid-gap: 10px;
-      user-select: text;
 
       > button {
         color: hsl(217, 39%, 94%);

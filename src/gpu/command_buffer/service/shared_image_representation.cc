@@ -4,17 +4,17 @@
 
 #include "gpu/command_buffer/service/shared_image_representation.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_fence.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/scoped_hardware_buffer_fence_sync.h"
-#endif
 
 namespace gpu {
 
@@ -125,7 +125,22 @@ SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
       end_state_(std::move(end_state)) {}
 
 SharedImageRepresentationSkia::ScopedWriteAccess::~ScopedWriteAccess() {
+  if (end_state_) {
+    NOTREACHED() << "Before ending write access TakeEndState() must be called "
+                    "and the result passed to skia to make sure all layout and "
+                    "ownership transitions are done.";
+
+    static std::atomic_int count = 0;
+    if (count++ < 3)
+      base::debug::DumpWithoutCrashing();
+  }
+
   representation()->EndWriteAccess(std::move(surface_));
+}
+
+std::unique_ptr<GrBackendSurfaceMutableState>
+SharedImageRepresentationSkia::ScopedWriteAccess::TakeEndState() {
+  return std::move(end_state_);
 }
 
 std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
@@ -178,7 +193,7 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
     AllowUnclearedAccess allow_uncleared,
     bool use_sk_surface) {
   return BeginScopedWriteAccess(
-      0 /* final_msaa_count */,
+      /*final_msaa_count=*/1,
       SkSurfaceProps(0 /* flags */, kUnknown_SkPixelGeometry), begin_semaphores,
       end_semaphores, allow_uncleared, use_sk_surface);
 }
@@ -193,6 +208,15 @@ SharedImageRepresentationSkia::ScopedReadAccess::ScopedReadAccess(
       end_state_(std::move(end_state)) {}
 
 SharedImageRepresentationSkia::ScopedReadAccess::~ScopedReadAccess() {
+  if (end_state_) {
+    NOTREACHED() << "Before ending read access TakeEndState() must be called "
+                    "and the result passed to skia to make sure all layout and "
+                    "ownership transitions are done.";
+    static std::atomic_int count = 0;
+    if (count++ < 3)
+      base::debug::DumpWithoutCrashing();
+  }
+
   representation()->EndReadAccess();
 }
 
@@ -206,6 +230,11 @@ sk_sp<SkImage> SharedImageRepresentationSkia::ScopedReadAccess::CreateSkImage(
   return SkImage::MakeFromTexture(
       context, promise_image_texture_->backendTexture(), surface_origin,
       color_type, alpha_type, sk_color_space);
+}
+
+std::unique_ptr<GrBackendSurfaceMutableState>
+SharedImageRepresentationSkia::ScopedReadAccess::TakeEndState() {
+  return std::move(end_state_);
 }
 
 std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
@@ -266,7 +295,7 @@ sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkia::BeginReadAccess(
   return nullptr;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 AHardwareBuffer* SharedImageRepresentationOverlay::GetAHardwareBuffer() {
   NOTREACHED();
   return nullptr;
@@ -350,13 +379,6 @@ SharedImageRepresentationFactoryRef::~SharedImageRepresentationFactoryRef() {
   backing()->MarkForDestruction();
 }
 
-#if defined(OS_ANDROID)
-std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-SharedImageRepresentationFactoryRef::GetAHardwareBuffer() {
-  return backing()->GetAHardwareBuffer();
-}
-#endif
-
 SharedImageRepresentationVaapi::SharedImageRepresentationVaapi(
     SharedImageManager* manager,
     SharedImageBacking* backing,
@@ -407,7 +429,7 @@ SharedImageRepresentationRaster::ScopedReadAccess::ScopedReadAccess(
     base::PassKey<SharedImageRepresentationRaster> pass_key,
     SharedImageRepresentationRaster* representation,
     const cc::PaintOpBuffer* paint_op_buffer,
-    const absl::optional<SkColor>& clear_color)
+    const absl::optional<SkColor4f>& clear_color)
     : ScopedAccessBase(representation),
       paint_op_buffer_(paint_op_buffer),
       clear_color_(clear_color) {}
@@ -428,7 +450,7 @@ SharedImageRepresentationRaster::ScopedWriteAccess::~ScopedWriteAccess() {
 
 std::unique_ptr<SharedImageRepresentationRaster::ScopedReadAccess>
 SharedImageRepresentationRaster::BeginScopedReadAccess() {
-  absl::optional<SkColor> clear_color;
+  absl::optional<SkColor4f> clear_color;
   auto* paint_op_buffer = BeginReadAccess(clear_color);
   if (!paint_op_buffer)
     return nullptr;
@@ -439,12 +461,15 @@ SharedImageRepresentationRaster::BeginScopedReadAccess() {
 
 std::unique_ptr<SharedImageRepresentationRaster::ScopedWriteAccess>
 SharedImageRepresentationRaster::BeginScopedWriteAccess(
+    scoped_refptr<SharedContextState> context_state,
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
-    const absl::optional<SkColor>& clear_color) {
+    const absl::optional<SkColor4f>& clear_color,
+    bool visible) {
   return std::make_unique<ScopedWriteAccess>(
       base::PassKey<SharedImageRepresentationRaster>(), this,
-      BeginWriteAccess(final_msaa_count, surface_props, clear_color));
+      BeginWriteAccess(std::move(context_state), final_msaa_count,
+                       surface_props, clear_color, visible));
 }
 
 }  // namespace gpu

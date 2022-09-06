@@ -44,7 +44,6 @@ constexpr char kWallpaperUrlPropertyValue[] =
     "https://example.com/device_wallpaper.jpg";
 constexpr char kWallpaperHashPropertyName[] = "hash";
 constexpr char kWallpaperHashPropertyValue[] = "examplewallpaperhash";
-const char kUserWhitelist[] = "*@test-domain.com";
 constexpr char kValidBluetoothServiceUUID4[] = "0x1124";
 constexpr char kValidBluetoothServiceUUID8[] = "0000180F";
 constexpr char kValidBluetoothServiceUUID32[] =
@@ -105,7 +104,8 @@ void DevicePolicyDecoderTest::DecodeDevicePolicyTestHelper(
 
   DecodeDevicePolicy(device_policy, external_data_manager, &policies);
 
-  const base::Value* actual_value = policies.GetValue(policy_path);
+  // It is safe to use `GetValueUnsafe()` as multiple policy types are handled.
+  const base::Value* actual_value = policies.GetValueUnsafe(policy_path);
   ASSERT_NE(actual_value, nullptr);
   EXPECT_EQ(*actual_value, expected_value);
 }
@@ -120,7 +120,8 @@ void DevicePolicyDecoderTest::DecodeUnsetDevicePolicyTestHelper(
 
   DecodeDevicePolicy(device_policy, external_data_manager, &policies);
 
-  const base::Value* actual_value = policies.GetValue(policy_path);
+  // It is safe to use `GetValueUnsafe()` as multiple policy types are handled.
+  const base::Value* actual_value = policies.GetValueUnsafe(policy_path);
   EXPECT_EQ(actual_value, nullptr);
 }
 
@@ -180,35 +181,6 @@ TEST_F(DevicePolicyDecoderTest, DecodeJsonStringAndNormalizeSuccess) {
   EXPECT_TRUE(error.empty());
 }
 
-TEST_F(DevicePolicyDecoderTest, UserWhitelistWarning) {
-  PolicyBundle bundle;
-  PolicyMap& policies = bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
-
-  base::WeakPtr<ExternalDataManager> external_data_manager;
-
-  em::ChromeDeviceSettingsProto device_policy;
-  device_policy.mutable_user_whitelist()->add_user_whitelist()->assign(
-      kUserWhitelist);
-
-  DecodeDevicePolicy(device_policy, external_data_manager, &policies);
-
-  EXPECT_TRUE(policies.GetValue(key::kDeviceUserWhitelist));
-
-  std::vector<base::Value> list;
-  list.emplace_back(base::Value(kUserWhitelist));
-  EXPECT_EQ(base::ListValue(list),
-            *policies.GetValue(key::kDeviceUserWhitelist));
-
-  base::RepeatingCallback<std::u16string(int)> l10nlookup =
-      base::BindRepeating(&l10n_util::GetStringUTF16);
-
-  // Should have a deprecation warning.
-  EXPECT_FALSE(
-      policies.Get(key::kDeviceUserWhitelist)
-          ->GetLocalizedMessages(PolicyMap::MessageType::kError, l10nlookup)
-          .empty());
-}
-
 TEST_F(DevicePolicyDecoderTest, ReportDeviceLoginLogout) {
   em::ChromeDeviceSettingsProto device_policy;
 
@@ -221,6 +193,19 @@ TEST_F(DevicePolicyDecoderTest, ReportDeviceLoginLogout) {
 
   DecodeDevicePolicyTestHelper(device_policy, key::kReportDeviceLoginLogout,
                                std::move(report_login_logout_value));
+}
+
+TEST_F(DevicePolicyDecoderTest, ReportDeviceCRDSessions) {
+  em::ChromeDeviceSettingsProto device_policy;
+
+  DecodeUnsetDevicePolicyTestHelper(device_policy, key::kReportCRDSessions);
+
+  base::Value report_crd_sessions_value(true);
+  device_policy.mutable_device_reporting()->set_report_crd_sessions(
+      report_crd_sessions_value.GetBool());
+
+  DecodeDevicePolicyTestHelper(device_policy, key::kReportCRDSessions,
+                               std::move(report_crd_sessions_value));
 }
 
 TEST_F(DevicePolicyDecoderTest, ReportDeviceNetworkTelemetryCollectionRateMs) {
@@ -270,6 +255,19 @@ TEST_F(DevicePolicyDecoderTest, ReportDeviceAudioStatusCheckingRateMs) {
   DecodeDevicePolicyTestHelper(device_policy,
                                key::kReportDeviceAudioStatusCheckingRateMs,
                                std::move(event_checking_rate_ms_value));
+}
+TEST_F(DevicePolicyDecoderTest, ReportDevicePeripherals) {
+  em::ChromeDeviceSettingsProto device_policy;
+
+  DecodeUnsetDevicePolicyTestHelper(device_policy,
+                                    key::kReportDevicePeripherals);
+
+  base::Value report_peripherals_value(true);
+  device_policy.mutable_device_reporting()->set_report_peripherals(
+      report_peripherals_value.GetBool());
+
+  DecodeDevicePolicyTestHelper(device_policy, key::kReportDevicePeripherals,
+                               std::move(report_peripherals_value));
 }
 
 TEST_F(DevicePolicyDecoderTest, EnableDeviceGranularReporting) {
@@ -393,6 +391,21 @@ TEST_F(DevicePolicyDecoderTest,
       device_policy,
       key::kDeviceLoginScreenPromptOnMultipleMatchingCertificates,
       std::move(login_screen_prompt_value));
+}
+
+TEST_F(DevicePolicyDecoderTest, DecodeDeviceEncryptedReportingPipelineEnabled) {
+  em::ChromeDeviceSettingsProto device_policy;
+
+  DecodeUnsetDevicePolicyTestHelper(
+      device_policy, key::kDeviceEncryptedReportingPipelineEnabled);
+
+  base::Value prompt_value(true);
+  device_policy.mutable_device_encrypted_reporting_pipeline_enabled()
+      ->set_enabled(prompt_value.GetBool());
+
+  DecodeDevicePolicyTestHelper(device_policy,
+                               key::kDeviceEncryptedReportingPipelineEnabled,
+                               std::move(prompt_value));
 }
 
 }  // namespace policy

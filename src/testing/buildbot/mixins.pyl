@@ -137,18 +137,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android29',
+            'caches': 'generic_android29',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android29',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_29_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android29',
+          'path': '.android_emulator/generic_android29',
         },
       ]
     },
@@ -164,18 +160,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android30',
+            'caches': 'generic_android30',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android30',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_30_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android30',
+          'path': '.android_emulator/generic_android30',
         },
       ]
     },
@@ -191,18 +183,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android31',
+            'caches': 'generic_android31',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android31',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_31_google_apis_x64',
-          'path': '.emulator_sdk',
+          'name': 'generic_android31',
+          'path': '.android_emulator/generic_android31',
         },
       ]
     },
@@ -211,6 +199,13 @@
     'swarming': {
       'dimensions': {
         'device_os': 'R',
+      },
+    },
+  },
+  'android_t': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'T',
       },
     },
   },
@@ -227,16 +222,6 @@
         'device_type': 'bullhead',
         'os': 'Android',
       },
-    },
-  },
-  'chrome-gold-service-account': {
-    'swarming': {
-      'service_account': 'chrome-gold@chops-service-accounts.iam.gserviceaccount.com',
-    },
-  },
-  'chrome-gpu-gold-service-account': {
-    'swarming': {
-      'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
   'chrome-swarming-pool': {
@@ -268,6 +253,11 @@
           }
         ],
       },
+      # This cache dir doesn't actually contain anything. Rather, its presence
+      # merely signals to the fleet that the a CrOS VM test recently ran on the
+      # bot and that its large VM image is likely still present in the bot's
+      # isolated cache. So by optionally targeting bots with that magic dir,
+      # CrOS VM tests can naturally have higher cache hit rates.
       'named_caches': [
         {
           'name': 'cros_vm',
@@ -282,6 +272,7 @@
         {
           'cpu': 'x86',
           'kvm': '1',
+          'gce': '1',
           'os': 'Ubuntu-18.04',
           'pool': 'chrome.tests',
         }
@@ -293,6 +284,8 @@
           }
         ],
       },
+      # See the 'chromeos-amd64-generic' mixin above for the purpose of this
+      # cache.
       'named_caches': [
         {
           'name': 'cros_vm',
@@ -301,12 +294,64 @@
       ],
     },
   },
+  'chromeos-jacuzzi': {
+    'swarming': {
+      'dimensions': {
+        'os': 'ChromeOS',
+        'device_type': 'jacuzzi',
+      },
+    },
+  },
   'chromeos-kevin': {
     'swarming': {
       'dimensions': {
         'os': 'ChromeOS',
         'device_type': 'kevin',
         'pool': 'chromium.tests',
+      },
+    },
+  },
+  'chromeos-octopus': {
+    'swarming': {
+      'dimensions': {
+        'os': 'ChromeOS',
+        'device_type': 'octopus',
+      },
+    },
+  },
+  'chromeos-reven': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'cpu': 'x86',
+          'kvm': '1',
+          'gce': '1',
+          'os': 'Ubuntu-18.04',
+          'pool': 'chrome.tests',
+        }
+      ],
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'cros_reven_vm',
+          }
+        ],
+      },
+      # See the 'chromeos-amd64-generic' mixin above for the purpose of this
+      # cache.
+      'named_caches': [
+        {
+          'name': 'cros_reven_vm',
+          'path': 'magic_cros_reven_vm_cache',
+        },
+      ],
+    },
+  },
+  'chromeos-zork': {
+    'swarming': {
+      'dimensions': {
+        'os': 'ChromeOS',
+        'device_type': 'zork',
       },
     },
   },
@@ -320,9 +365,6 @@
       'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
-  'chromium-webrtc-rel-7': {
-    'perf_builder_name_alias': 'chromium-webrtc-rel-7',
-  },
   'chromium-webrtc-rel-linux': {
     'perf_builder_name_alias': 'chromium-webrtc-rel-linux',
   },
@@ -331,9 +373,6 @@
   },
   'chromium-webrtc-rel-win10': {
     'perf_builder_name_alias': 'chromium-webrtc-rel-win10',
-  },
-  'chromium-webrtc-rel-win8': {
-    'perf_builder_name_alias': 'chromium-webrtc-rel-win8',
   },
   # Used for invert CQ tests selection. Adding ci_only: False to
   # test_suite_exceptions.pyl to select tests that are allowed on CQ builders.
@@ -347,6 +386,13 @@
         # Dawn test retries deliberately disabled to prevent flakiness.
         '--test-launcher-retry-limit=0',
         '--exclusive-device-type-preference=discrete,integrated',
+      ],
+    },
+  },
+  'disable_field_trial_config_for_earl_grey': {
+    '$mixin_append': {
+      'args': [
+        '--extra-app-args=--disable-field-trial-config',
       ],
     },
   },
@@ -384,6 +430,15 @@
       ],
     },
   },
+  'finch-chromium-swarming-pool': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'pool': 'chromium.tests.finch',
+        },
+      ],
+    },
+  },
   'flame': {
     # Pixel 4
     'swarming': {
@@ -393,40 +448,23 @@
       },
     },
   },
-  'flounder': {
-    # Nexus 9
-    'swarming': {
-      'dimensions': {
-        'device_type': 'flounder',
-        'os': 'Android',
-      },
-    },
-  },
-  'foster': {
-    # NVIDIA SHIELD TV
-    'swarming': {
-      'dimensions': {
-        'device_os_type': 'user',
-        'device_type': 'foster',
-        'os': 'Android',
-      },
-    },
-  },
   'fuchsia-code-coverage': {
     '$mixin_append': {
       'args': [
         '--code-coverage',
-        '--code-coverage-dir=${ISOLATED_OUTDIR}'
+        '--code-coverage-dir=${ISOLATED_OUTDIR}',
+        '--test-launcher-jobs=2'
       ],
     },
   },
-  'fuchsia-femu': {
-    '$mixin_append': {
-      'args': [
-        '--device=aemu',
-      ],
+  'fuchsia-test-pool': {
+    # This pool is dedicated to test the test infra of fuchsia in chromium.
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.fuchsia',
+      },
     },
-  }, 
+  },
   'fuchsia_logs': {
     '$mixin_append': {
       'args': [
@@ -434,11 +472,33 @@
       ],
     },
   },
+  'gpu-exp-swarming-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.gpu.experimental',
+      },
+    },
+  },
   'gpu-swarming-pool': {
     'swarming': {
       'dimensions': {
         'pool': 'chromium.tests.gpu',
       },
+    },
+  },
+  'gtest_run_disabled': {
+    '$mixin_append': {
+      'args': [
+        '--gtest_also_run_disabled_tests',
+      ],
+    },
+  },
+  'gtest_run_disabled_only': {
+    '$mixin_append': {
+      'args': [
+        '--gtest_also_run_disabled_tests',
+        '--gtest_filter=*DISABLE*',
+      ],
     },
   },
   'hammerhead': {
@@ -519,14 +579,66 @@
       },
     },
   },
+  'ios_runtime_cache_15_2': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_15_2',
+            'path': 'Runtime-ios-15.2',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_15_5': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_15_5',
+            'path': 'Runtime-ios-15.5',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_16_0': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_16_0',
+            'path': 'Runtime-ios-16.0',
+          },
+        ],
+      },
+    },
+  },
   'isolate_profile_data': {
     'isolate_profile_data': True,
   },
-  'kitkat': {
+  'kitkat-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android19.textpb',
+      ],
+    },
     'swarming': {
-      'dimensions': {
-        'device_os': 'KTU84P',
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android19',
+          }
+        ],
       },
+      'named_caches': [
+        {
+          'name': 'generic_android19',
+          'path': '.android_emulator/generic_android19',
+        },
+      ]
     },
   },
   'limited_capacity_bot': {
@@ -556,13 +668,8 @@
       },
     },
   },
-  'linux-trusty': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Ubuntu-14.04',
-      },
-    },
-  },
+  # TODO(crbug.com/1260217): Remove the xenial mixin once the MSAN bots have
+  # migrated to focal.
   'linux-xenial': {
     'swarming': {
       'dimensions': {
@@ -570,46 +677,29 @@
       },
     },
   },
-  'linux-xenial-or-bionic': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Ubuntu-16.04|Ubuntu-18.04',
-      },
-    },
-  },
   'linux_amd_rx_5500_xt': {
     'swarming': {
       'dimensions': {
         'gpu': '1002:7340',
-        'os': 'Ubuntu',
-        'pool': 'chromium.tests.gpu.experimental',
-      },
-    },
-  },
-  'linux_intel_hd_630_experimental': {
-    # Similar to stable, but with a newer Mesa version.
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:5912-20.0.8',
-        'os': 'Ubuntu-18.04.5',
+        'os': 'Ubuntu-18.04.6',
         'pool': 'chromium.tests.gpu',
       },
     },
   },
-  'linux_intel_hd_630_stable': {
+  'linux_intel_uhd_630_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-19.0.2',
-        'os': 'Ubuntu-19.04',
+        'gpu': '8086:9bc5-20.0.8',
+        'os': 'Ubuntu-18.04.6',
         'pool': 'chromium.tests.gpu',
-      }
+      },
     }
   },
   'linux_intel_uhd_630_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:3e92-20.0.8',
-        'os': 'Ubuntu-18.04.5',
+        'gpu': '8086:9bc5-20.0.8',
+        'os': 'Ubuntu-18.04.6',
         'pool': 'chromium.tests.gpu',
       },
     }
@@ -632,33 +722,33 @@
       },
     },
   },
-  'lollipop': {
+  'lollipop-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android22.textpb',
+      ],
+    },
     'swarming': {
-      'dimensions': {
-        'device_os': 'LMY48M',
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android22',
+          }
+        ],
       },
+      'named_caches': [
+        {
+          'name': 'generic_android22',
+          'path': '.android_emulator/generic_android22',
+        },
+      ]
     },
   },
   'mac-archive-rel-args': {
     'args': [
       'mac-release/sizes',
     ],
-  },
-  'mac_10.11': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-10.11',
-      },
-    },
-  },
-  'mac_10.12': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-10.12.6',
-      },
-    },
   },
   'mac_10.13': {
     'swarming': {
@@ -692,6 +782,23 @@
       },
     },
   },
+  # TODO(crbug.com/1325185) Remove Mac11 once testers have been upgraded to Mac12
+  'mac_11_or_12_arm64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-11|Mac-12',
+      },
+    },
+  },
+  'mac_11_or_12_x64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-11|Mac-10.16|Mac-12',
+      },
+    },
+  },
   'mac_11_x64': {
     'swarming': {
       'dimensions': {
@@ -716,11 +823,20 @@
       },
     },
   },
+  'mac_12_x64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-12',
+      },
+    },
+  },
   'mac_arm64_apple_m1_gpu': {
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-11',
+        'mac_model': 'Macmini9,1',
+        'os': 'Mac-11|Mac-12',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -741,7 +857,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-11.5.2',
+        'os': 'Mac-11.5.2|Mac-12.4',
         'display_attached': '1',
       },
     },
@@ -751,7 +867,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '1002:679e',
-        'os': 'Mac-10.12.6',
+        'os': 'Mac-12.4',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -763,7 +879,7 @@
         'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'Mac-12.0',
+        'os': 'Mac-12.1',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -775,7 +891,7 @@
         'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'Mac-11.4|Mac-12.1',
+        'os': 'Mac-12.1',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -847,18 +963,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android23',
+            'caches': 'generic_android23',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android23',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_23_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android23',
+          'path': '.android_emulator/generic_android23',
         },
       ]
     },
@@ -870,11 +982,43 @@
       },
     },
   },
+  'mdarcy': {
+    # NVIDIA Shield TV 2019
+    'swarming': {
+      'dimensions': {
+        'device_type': 'mdarcy',
+        'os': 'Android',
+      },
+    },
+  },
   'no_gpu': {
     'swarming': {
       'dimensions': {
         'gpu': 'none',
       },
+    },
+  },
+  'nougat-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android24.textpb',
+      ],
+    },
+    'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android25',
+          }
+        ],
+      },
+      'named_caches': [
+        {
+          'name': 'generic_android25',
+          'path': '.android_emulator/generic_android25',
+        },
+      ]
     },
   },
   'nougat_generic': {
@@ -895,18 +1039,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android27',
+            'caches': 'generic_android27',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android27',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_27_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android27',
+          'path': '.android_emulator/generic_android27',
         },
       ]
     },
@@ -916,6 +1056,15 @@
       'dimensions': {
         'device_os': 'OPM4.171019.021.P2',
         'device_os_flavor': 'google',
+      },
+    },
+  },
+  'oriole': {
+    # Pixel 6
+    'swarming': {
+      'dimensions': {
+        'device_type': 'oriole',
+        'os': 'Android',
       },
     },
   },
@@ -938,18 +1087,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android28',
+            'caches': 'generic_android28',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android28',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_28_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android28',
+          'path': '.android_emulator/generic_android28',
         },
       ]
     },
@@ -959,6 +1104,13 @@
       'dimensions': {
         'device_os': 'PQ3A.190801.002',
         'device_os_flavor': 'google',
+      },
+    },
+  },
+  'pie_generic': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'P',
       },
     },
   },
@@ -1005,6 +1157,31 @@
         'device_type': 'walleye',
         'os': 'Android',
       },
+    },
+  },
+  'webgpu_cts': {
+    '$mixin_append': {
+      'args': [
+        # crbug.com/953991 Ensure WebGPU is ready before running tests
+        '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
+      ],
+      'win64_args': [ '--target=Release_x64' ],
+      'mac_args': [
+        '--platform=mac-mac11'
+      ],
+      'linux_args': [
+        '--no-xvfb',
+        '--additional-driver-flag=--enable-features=Vulkan',
+      ],
+    },
+    'merge': {
+      'args': [
+        '--verbose',
+      ],
+      'script': '//third_party/blink/tools/merge_web_test_results.py',
+    },
+    'resultdb': {
+      'enable': True,
     },
   },
   'win10': {
@@ -1104,35 +1281,17 @@
       ],
     },
   },
+  'win11': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-11-22000',
+      },
+    },
+  },
   'win7': {
     'swarming': {
       'dimensions': {
         'os': 'Windows-7-SP1',
-      },
-    },
-  },
-  'win7_amd_r7_240': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:6613',
-        'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
-  'win7_nvidia_quadro_p400': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '10de:1cb3-24.21.14.1195',
-        'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
-  'win8': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Windows-8.1-SP0',
       },
     },
   },
@@ -1150,7 +1309,7 @@
       },
     },
   },
-  # (default in Chromium iOS) xcode 12.4 gm seed
+  # xcode 12.4 gm seed
   'xcode_12d4e': {
     '$mixin_append': {
       'args': [
@@ -1168,51 +1327,52 @@
 
     },
   },
-  # Xcode 12.5 RC
-  'xcode_12e262': {
+  # Xcode 13 used on beta bots.
+  'xcode_13_beta_bots': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '12e262'
-      ],
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'xcode_ios_12e262',
-            'path': 'Xcode.app',
-          },
-        ],
-      },
-    },
-  },
-  'xcode_13_latest_beta': {
-    '$mixin_append': {
-      'args': [
-        '--xcode-build-version',
-        '13a233'
+        '13f17a'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_13a233',
+          'name': 'xcode_ios_13f17a',
           'path': 'Xcode.app',
         },
       ],
     },
   },
-  # Default Xcode 13 on main (Xcode 13.0 release candidate).
+  # Default Xcode 13 on main.
   'xcode_13_main': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '13a233'
+        '13c100'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_13a233',
+          'name': 'xcode_ios_13c100',
+          'path': 'Xcode.app',
+        },
+      ],
+    },
+  },
+  # Default Xcode 14 beta 1.
+  'xcode_14_beta': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '14a5228q'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_14a5228q',
           'path': 'Xcode.app',
         },
       ],

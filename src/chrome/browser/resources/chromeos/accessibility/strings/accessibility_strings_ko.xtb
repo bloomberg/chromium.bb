@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">표 <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">다음 키 누름 무시</translation>
 <translation id="4623097797855662355">출판사 이름</translation>
+<translation id="4624970070706497034">Chromebook용 TalkBack 맞춤설정 기능이 더 이상 제공되지 않습니다. 기능은 계속 사용할 수 있지만 TalkBack 기본 키보드 단축키를 사용하셔야 합니다. 검색 키와 A 키를 동시에 누른 후 K 키를 눌러 사용 가능한 단축키를 보세요. TalkBack 기능을 계속 사용하려면 명령 키를 다시 누르시기 바랍니다.</translation>
 <translation id="463135993322337640">ChromeVox o, n을 눌러 새로운 기능을 살펴보세요</translation>
 <translation id="4649220074413114917">두 손가락으로 화면을 탭하면 현재 음성 안내를 중지할 수 있습니다. ChromeVox의 음성 안내가 필요하지 않을 때 유용합니다. 계속하려면 두 손가락으로 화면을 탭하세요.</translation>
 <translation id="4660783501463101648">기본 버전이 삭제되었습니다. ChromeVox 기본 버전으로 다시 전환하기 위한 키보드 토글이 삭제되었습니다.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">점자 캡션을 사용 설정했습니다</translation>
 <translation id="5183440668879371625">점자 이전 행으로 이동</translation>
 <translation id="5189244881767082992">행</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> 입력</translation>
 <translation id="5263034204789987535">콘실크</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">종료</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">간단한 입문 과정 완료</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">게인스보로</translation>
+<translation id="554893713779400387">음성기록 전환</translation>
 <translation id="5549179427201066174">음성 피드백(이어콘) 사용 설정 또는 중지</translation>
 <translation id="556042886152191864">버튼</translation>
 <translation id="5561345396546889625">다음 목록</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">로그</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">그래픽 기호</translation>
+<translation id="5648939288050772726">축하합니다. ChromeVox를 사용하기 위한 기본사항을 배웠습니다. 언제든지 검색+마침표 키를 눌러 ChromeVox 명령어 메뉴를 열 수 있습니다. ChromeVox와 ChromeOS에 관해 더 자세히 알아보려면 다음 도움말을 참고하세요.
+    가이드를 완료했다면 ChromeVox를 사용하여 닫기 버튼으로 이동해 클릭하세요.</translation>
 <translation id="5653397561111110475">Chromebook 터치스크린 접근성 기능 사용하기</translation>
 <translation id="5655682562155942719">이동 명령어</translation>
 <translation id="56637627897541303">텍스트 영역</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{콜론}other{콜론 #개}}</translation>
 <translation id="6444046323172968959">알림 대화상자</translation>
 <translation id="6452403590345320472">목차</translation>
+<translation id="6457542714329819968">입력</translation>
 <translation id="6468049171101508116">다음 버튼</translation>
 <translation id="646954774886932461">색인</translation>
 <translation id="6475604559827479857">단어 강조표시 색상:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">자연 음성</translation>
 <translation id="7714340021005120797">다음 콤보 상자가 없습니다</translation>
-<translation id="772146615414628379">축하합니다! ChromeVox를 사용하기 위한 기본사항을 배웠습니다. 언제든지 검색+마침표를 눌러 ChromeVox 명령어 메뉴를 열 수 있습니다. ChromeVox와 Chrome OS에 관해 더 자세히 알아보려면 다음 도움말을 참고하세요.
-    가이드를 완료했다면 ChromeVox를 사용하여 닫기 버튼으로 이동해 클릭하세요.</translation>
 <translation id="7724603315864178912">잘라내기</translation>
 <translation id="7731785449856576010">다음 미디어 위젯이 없습니다</translation>
 <translation id="7735498529470878067">터치하여 탐색 기능을 사용하면 화면에 표시된 내용을 빠르게 파악할 수 있습니다.</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">딥 레드</translation>
 <translation id="923331726185079994">ChromeVox 업데이트됨</translation>
 <translation id="93384979447910801">다크 씨 그린</translation>
+<translation id="937605981140327129">TalkBack이 현재 설치되지 않았습니다. Play 스토어에서 Android 접근성 도구 모음을 설치하고 다시 시도하세요.</translation>
 <translation id="948171205378458592">말하기 속도 줄이기</translation>
 <translation id="957570623732056069">한 손가락을 왼쪽 또는 오른쪽으로 스와이프하여 이 수업으로 이동</translation>
 <translation id="958854023026327378">손가락 한 개를 사용하여 아래로 스와이프</translation>

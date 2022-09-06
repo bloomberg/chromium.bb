@@ -5,39 +5,51 @@
  * found in the LICENSE file.
  */
 
+#include "src/sksl/ir/SkSLIndexExpression.h"
+
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkTArray.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLConstantFolder.h"
-#include "src/sksl/SkSLProgramSettings.h"
-#include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLConstructorArray.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
-#include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
+#include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLTypeReference.h"
+
+#include <optional>
 
 namespace SkSL {
 
-static bool index_out_of_range(const Context& context, SKSL_INT index, const Expression& base) {
-    if (index >= 0 && index < base.type().columns()) {
-        return false;
+static bool index_out_of_range(const Context& context, Position pos, SKSL_INT index,
+        const Expression& base) {
+    if (index >= 0) {
+        if (base.type().columns() == Type::kUnsizedArray) {
+            return false;
+        } else if (index < base.type().columns()) {
+            return false;
+        }
     }
-
-    context.fErrors->error(base.fLine, "index " + to_string(index) + " out of range for '" +
-                                       base.type().displayName() + "'");
+    context.fErrors->error(pos, "index " + std::to_string(index) + " out of range for '" +
+            base.type().displayName() + "'");
     return true;
 }
 
 const Type& IndexExpression::IndexType(const Context& context, const Type& type) {
     if (type.isMatrix()) {
-        if (type.componentType() == *context.fTypes.fFloat) {
+        if (type.componentType().matches(*context.fTypes.fFloat)) {
             switch (type.rows()) {
                 case 2: return *context.fTypes.fFloat2;
                 case 3: return *context.fTypes.fFloat3;
                 case 4: return *context.fTypes.fFloat4;
                 default: SkASSERT(false);
             }
-        } else if (type.componentType() == *context.fTypes.fHalf) {
+        } else if (type.componentType().matches(*context.fTypes.fHalf)) {
             switch (type.rows()) {
                 case 2: return *context.fTypes.fHalf2;
                 case 3: return *context.fTypes.fHalf3;
@@ -51,22 +63,23 @@ const Type& IndexExpression::IndexType(const Context& context, const Type& type)
 
 std::unique_ptr<Expression> IndexExpression::Convert(const Context& context,
                                                      SymbolTable& symbolTable,
+                                                     Position pos,
                                                      std::unique_ptr<Expression> base,
                                                      std::unique_ptr<Expression> index) {
     // Convert an array type reference: `int[10]`.
     if (base->is<TypeReference>()) {
         const Type& baseType = base->as<TypeReference>().value();
-        SKSL_INT arraySize = baseType.convertArraySize(context, std::move(index));
+        SKSL_INT arraySize = baseType.convertArraySize(context, pos, std::move(index));
         if (!arraySize) {
             return nullptr;
         }
-        return TypeReference::Convert(context, base->fLine,
+        return TypeReference::Convert(context, pos,
                                       symbolTable.addArrayDimension(&baseType, arraySize));
     }
     // Convert an index expression with an expression inside of it: `arr[a * 3]`.
     const Type& baseType = base->type();
     if (!baseType.isArray() && !baseType.isMatrix() && !baseType.isVector()) {
-        context.fErrors->error(base->fLine,
+        context.fErrors->error(base->fPosition,
                                "expected array, but found '" + baseType.displayName() + "'");
         return nullptr;
     }
@@ -80,14 +93,15 @@ std::unique_ptr<Expression> IndexExpression::Convert(const Context& context,
     const Expression* indexExpr = ConstantFolder::GetConstantValueForVariable(*index);
     if (indexExpr->isIntLiteral()) {
         SKSL_INT indexValue = indexExpr->as<Literal>().intValue();
-        if (index_out_of_range(context, indexValue, *base)) {
+        if (index_out_of_range(context, index->fPosition, indexValue, *base)) {
             return nullptr;
         }
     }
-    return IndexExpression::Make(context, std::move(base), std::move(index));
+    return IndexExpression::Make(context, pos, std::move(base), std::move(index));
 }
 
 std::unique_ptr<Expression> IndexExpression::Make(const Context& context,
+                                                  Position pos,
                                                   std::unique_ptr<Expression> base,
                                                   std::unique_ptr<Expression> index) {
     const Type& baseType = base->type();
@@ -97,11 +111,12 @@ std::unique_ptr<Expression> IndexExpression::Make(const Context& context,
     const Expression* indexExpr = ConstantFolder::GetConstantValueForVariable(*index);
     if (indexExpr->isIntLiteral()) {
         SKSL_INT indexValue = indexExpr->as<Literal>().intValue();
-        if (!index_out_of_range(context, indexValue, *base)) {
+        if (!index_out_of_range(context, index->fPosition, indexValue, *base)) {
             if (baseType.isVector()) {
                 // Constant array indexes on vectors can be converted to swizzles: `v[2]` --> `v.z`.
                 // Swizzling is harmless and can unlock further simplifications for some base types.
-                return Swizzle::Make(context, std::move(base), ComponentArray{(int8_t)indexValue});
+                return Swizzle::Make(context, pos, std::move(base),
+                        ComponentArray{(int8_t)indexValue});
             }
 
             if (baseType.isArray() && !base->hasSideEffects()) {
@@ -113,7 +128,7 @@ std::unique_ptr<Expression> IndexExpression::Make(const Context& context,
                     const ExpressionArray& arguments = arrayCtor.arguments();
                     SkASSERT(arguments.count() == baseType.columns());
 
-                    return arguments[indexValue]->clone();
+                    return arguments[indexValue]->clone(pos);
                 }
             }
 
@@ -132,9 +147,10 @@ std::unique_ptr<Expression> IndexExpression::Make(const Context& context,
                 ExpressionArray ctorArgs;
                 ctorArgs.reserve_back(vecWidth);
                 for (int slot = 0; slot < vecWidth; ++slot) {
-                    skstd::optional<double> slotVal = baseExpr->getConstantValue(indexValue + slot);
+                    std::optional<double> slotVal = baseExpr->getConstantValue(indexValue + slot);
                     if (slotVal.has_value()) {
-                        ctorArgs.push_back(Literal::Make(baseExpr->fLine, *slotVal, &scalarType));
+                        ctorArgs.push_back(Literal::Make(baseExpr->fPosition, *slotVal,
+                                &scalarType));
                     } else {
                         ctorArgs.reset();
                         break;
@@ -142,14 +158,13 @@ std::unique_ptr<Expression> IndexExpression::Make(const Context& context,
                 }
 
                 if (!ctorArgs.empty()) {
-                    int line = ctorArgs.front()->fLine;
-                    return ConstructorCompound::Make(context, line, vecType, std::move(ctorArgs));
+                    return ConstructorCompound::Make(context, pos, vecType, std::move(ctorArgs));
                 }
             }
         }
     }
 
-    return std::make_unique<IndexExpression>(context, std::move(base), std::move(index));
+    return std::make_unique<IndexExpression>(context, pos, std::move(base), std::move(index));
 }
 
 }  // namespace SkSL

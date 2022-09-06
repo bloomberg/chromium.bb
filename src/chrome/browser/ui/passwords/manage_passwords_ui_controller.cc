@@ -10,9 +10,12 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autofill_assistant/password_change/apc_client.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -32,8 +35,8 @@
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/credential_manager_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
@@ -42,6 +45,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -55,13 +59,14 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #endif
 
@@ -274,7 +279,8 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
 
 void ManagePasswordsUIController::OnCredentialLeak(
     const password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {
+    const GURL& url,
+    const std::u16string& username) {
   // Existing dialog shouldn't be closed.
   if (dialog_controller_)
     return;
@@ -285,8 +291,12 @@ void ManagePasswordsUIController::OnCredentialLeak(
   else
     ClearPopUpFlagForBubble();
 
-  auto* raw_controller =
-      new CredentialLeakDialogControllerImpl(this, leak_type);
+  auto* raw_controller = new CredentialLeakDialogControllerImpl(
+      this, leak_type, url, username,
+      std::make_unique<
+          password_manager::metrics_util::LeakDialogMetricsRecorder>(
+          web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId(),
+          password_manager::GetLeakDialogType(leak_type)));
   dialog_controller_.reset(raw_controller);
   raw_controller->ShowCredentialLeakPrompt(
       CreateCredentialLeakPrompt(raw_controller));
@@ -630,10 +640,17 @@ void ManagePasswordsUIController::NavigateToPasswordCheckup(
   password_manager::LogPasswordCheckReferrer(referrer);
 }
 
+void ManagePasswordsUIController::StartAutomatedPasswordChange(
+    const GURL& origin,
+    const std::u16string& username) {
+  ApcClient* apc_client = ApcClient::GetOrCreateForWebContents(web_contents());
+  // Start checks that no other run is ongoing, so we can always call it.
+  apc_client->Start(origin, base::UTF16ToUTF8(username), /*skip_login=*/true);
+}
+
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   signin_ui_util::EnableSyncFromSingleAccountPromo(
-      browser, account,
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()), account,
       signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
 }
 
@@ -656,7 +673,7 @@ void ManagePasswordsUIController::OnLeakDialogHidden() {
 }
 
 bool ManagePasswordsUIController::AuthenticateUser() {
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -754,18 +771,7 @@ bool ManagePasswordsUIController::HasBrowserWindow() const {
   return chrome::FindBrowserWithWebContents(web_contents()) != nullptr;
 }
 
-void ManagePasswordsUIController::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      // Don't react to same-document (fragment) navigations.
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
+void ManagePasswordsUIController::PrimaryPageChanged(content::Page& page) {
   // Keep the state if the bubble is currently open or the fallback for saving
   // should be still available.
   if (IsShowingBubble() || save_fallback_timer_.IsRunning()) {
@@ -848,11 +854,11 @@ void ManagePasswordsUIController::ReopenBubbleAfterAuth(
 }
 
 bool ManagePasswordsUIController::ShowAuthenticationDialog() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return password_manager_util_win::AuthenticateUser(
       web_contents()->GetNativeView(),
       password_manager::ReauthPurpose::VIEW_PASSWORD);
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   return password_manager_util_mac::AuthenticateUser(
       password_manager::ReauthPurpose::VIEW_PASSWORD);
 #else

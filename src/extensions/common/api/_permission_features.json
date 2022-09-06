@@ -83,6 +83,12 @@
       "session_types": ["kiosk"]
     },
     {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
+      "session_types": ["kiosk"]
+    },
+    {
       "channel": "stable",
       "extension_types": ["extension"],
       "platforms": ["chromeos"],
@@ -164,7 +170,9 @@
       "platforms": ["chromeos"],
       "allowlist": [
         "75C7F4B720314B6CB1B5817CD86089DB95CD2461",  // http://crbug.com/899052
-        "A430CF8BD146137B32764433F69685A53BF11F03"   // http://crbug.com/1256996
+        "A430CF8BD146137B32764433F69685A53BF11F03",  // http://crbug.com/1256996
+        "F9AEB1FBFD91AFB39A16798763FB4707E5EB71C2",  // http://crbug.com/1256996
+        "A547E19FA29B6371C507EFF218B4948AF7B8597B"   // http://crbug.com/1256996
       ]
     }
   ],
@@ -475,8 +483,16 @@
       "D467F51D3846ED6D137F9FD403AE11CE416CD995",  // http://crbug.com/1105137
       "3823525AD445E0025E449F964C20922996B0F97F",  // http://crbug.com/1105137
       "827B5D482FADCE120F4694AD0FA0680E3717C6EC",  // http://crbug.com/1105137
-      "A430CF8BD146137B32764433F69685A53BF11F03"   // http://crbug.com/1256996
+      "A430CF8BD146137B32764433F69685A53BF11F03",  // http://crbug.com/1256996
+      "F9AEB1FBFD91AFB39A16798763FB4707E5EB71C2",  // http://crbug.com/1256996
+      "A547E19FA29B6371C507EFF218B4948AF7B8597B"   // http://crbug.com/1256996
     ]
+  },
+  {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "platforms": ["chromeos", "lacros"],
+    "session_types": ["kiosk"]
   }],
   "networkingPrivate": {
     "channel": "stable",
@@ -609,6 +625,10 @@
       "channel": "stable",
       "extension_types": ["hosted_app"],
       "allowlist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"]
     }
   ],
   "system.storage": [
@@ -665,6 +685,12 @@
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8"   // CryptoToken (dev)
       ]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
+      "session_types": ["kiosk"]
     }
   ],
   "usbDevices": [
@@ -685,6 +711,12 @@
         "4839A26B29CD1BD021B2E126EF6D28C9CB84018B",  // http://crbug.com/710541
         "8F44FBB4474CCDF23450B166C9E83E85BD03AE24"   // http://crbug.com/710541
       ]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
+      "session_types": ["kiosk"]
     }
   ],
   "videoCapture": [
@@ -701,12 +733,17 @@
       ]
     }
   ],
-  "virtualKeyboard": {
+  "virtualKeyboard": [{
     "channel": "stable",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"],
     "session_types": ["kiosk"]
-  },
+  }, {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "platforms": ["chromeos", "lacros"],
+    "session_types": ["kiosk"]
+  }],
   "virtualKeyboardPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
@@ -731,7 +768,7 @@
   "vpnProvider": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
-    "platforms": ["chromeos"]
+    "platforms": ["chromeos", "lacros"]
   },
   "webview": {
     "channel": "stable",

@@ -51,16 +51,20 @@ source_set("css") {
     "cfx_cssvaluelistparser.cpp",
     "cfx_cssvaluelistparser.h",
   ]
+  configs += [
+    "../../../:pdfium_strict_config",
+    "../../../:pdfium_noshorten_config",
+  ]
   deps = [
     "../",
     "../../fxge",
   ]
-  configs += [ "../../../:pdfium_strict_config" ]
   visibility = [ "../../../*" ]
 }
 
 pdfium_unittest_source_set("unittests") {
   sources = [
+    "cfx_cssdata_unittest.cpp",
     "cfx_cssdeclaration_unittest.cpp",
     "cfx_cssstylesheet_unittest.cpp",
     "cfx_csssyntaxparser_unittest.cpp",

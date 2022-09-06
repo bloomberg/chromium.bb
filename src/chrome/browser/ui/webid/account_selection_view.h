@@ -11,8 +11,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/types/strong_alias.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/view.h"
 #include "url/gurl.h"
 
 using Account = content::IdentityRequestAccount;
@@ -23,14 +25,26 @@ class AccountSelectionView {
  public:
   class Delegate {
    public:
+    virtual ~Delegate() = default;
     // Informs the controller that the user has made a selection.
     virtual void OnAccountSelected(const Account& account) = 0;
     // Informs the controller that the user has dismissed the sheet.
-    virtual void OnDismiss() = 0;
+    // |should_embargo| indicates whether the FedCM API should be embargoed due
+    // to the user explicitly dismissing the FedCM account picker.
+    virtual void OnDismiss(bool should_embargo) = 0;
+    // The web page view containing the focused field.
     virtual gfx::NativeView GetNativeView() = 0;
+    // The WebContents for the page.
+    virtual content::WebContents* GetWebContents() = 0;
   };
 
   static std::unique_ptr<AccountSelectionView> Create(Delegate* delegate);
+
+  // Returns the brand icon minimum size in dip.
+  static int GetBrandIconMinimumSize();
+
+  // Returns the brand icon ideal size in dip.
+  static int GetBrandIconIdealSize();
 
   explicit AccountSelectionView(Delegate* delegate) : delegate_(delegate) {}
   AccountSelectionView(const AccountSelectionView&) = delete;
@@ -38,13 +52,12 @@ class AccountSelectionView {
   virtual ~AccountSelectionView() = default;
 
   // Instructs the view to show the provided |accounts| to the user.
-  // |rp_url| is the relying party's url which is normally the current page's
-  // url, and |idp_url| is the identity provider's url that is providing
-  // the accounts. |sign_in_mode| represents whether this is an auto sign in
-  // flow. After user interaction either OnAccountSelected() or
-  // OnDismiss() gets invoked.
-  virtual void Show(const GURL& rp_url,
-                    const GURL& idp_url,
+  // |rp_for_display| and |idp_for_display| are the relying party URL and
+  // identity provider URL to display in the prompt respectively. |sign_in_mode|
+  // represents whether this is an auto sign in flow. After user interaction
+  // either OnAccountSelected() or OnDismiss() gets invoked.
+  virtual void Show(const std::string& rp_for_display,
+                    const std::string& idp_for_display,
                     base::span<const Account> accounts,
                     const content::IdentityProviderMetadata& idp_metadata,
                     const content::ClientIdData& client_data,

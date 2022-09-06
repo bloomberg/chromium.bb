@@ -22,6 +22,27 @@ extern const char kLocalStorageLeveldbName[];
 COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
 extern const base::FilePath::CharType kServiceWorkerDirectory[];
 
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kMediaLicenseDirectory[];
+
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kMediaLicenseDatabaseFileName[];
+
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kFileSystemDirectory[];
+
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kIndexedDbDirectory[];
+
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kCacheStorageDirectory[];
+
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kScriptCacheDirectory[];
+
+COMPONENT_EXPORT(STORAGE_SERVICE_PUBLIC)
+extern const base::FilePath::CharType kSharedStoragePath[];
+
 }  // namespace storage
 
 #endif  // COMPONENTS_SERVICES_STORAGE_PUBLIC_CPP_CONSTANTS_H_

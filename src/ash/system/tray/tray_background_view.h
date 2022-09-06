@@ -43,7 +43,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
  public:
   METADATA_HEADER(TrayBackgroundView);
 
-  explicit TrayBackgroundView(Shelf* shelf);
+  enum RoundedCornerBehavior { kStartRounded, kEndRounded, kAllRounded };
+
+  TrayBackgroundView(Shelf* shelf,
+                     RoundedCornerBehavior corner_behavior = kAllRounded);
   TrayBackgroundView(const TrayBackgroundView&) = delete;
   TrayBackgroundView& operator=(const TrayBackgroundView&) = delete;
   ~TrayBackgroundView() override;
@@ -51,7 +54,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called after the tray has been added to the widget containing it.
   virtual void Initialize();
 
-  // Initializes animations for the bubble.
+  // Initializes animations for the bubble. This contains only a fade out
+  // animation that hides `bubble_widget` when it becomes invisible.
   static void InitializeBubbleAnimations(views::Widget* bubble_widget);
 
   // ActionableView:
@@ -68,9 +72,16 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // returns nullptr.
   virtual views::Widget* GetBubbleWidget() const;
 
+  // Returns a lock that prevents window activation from closing bubbles.
+  [[nodiscard]] static base::ScopedClosureRunner
+  DisableCloseBubbleOnWindowActivated();
+
+  // Whether a window activation change should close bubbles.
+  static bool ShouldCloseBubbleOnWindowActivated();
+
   // Closes the associated tray bubble view if it exists and is currently
   // showing.
-  virtual void CloseBubble();
+  virtual void CloseBubble() {}
 
   // Shows the associated tray bubble if one exists. |show_by_click| indicates
   // whether the showing operation is initiated by mouse or gesture click.
@@ -155,10 +166,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Disables bounce in and fade in animation. The animation will remain
   // disabled until the returned scoped closure runner is run.
-  base::ScopedClosureRunner DisableShowAnimation() WARN_UNUSED_RESULT;
+  [[nodiscard]] base::ScopedClosureRunner DisableShowAnimation();
 
   // Returns true if the view is showing a context menu.
   bool IsShowingMenu() const;
+
+  // Returns the corners based on the `corner_behavior_`;
+  gfx::RoundedCornersF GetRoundedCorners();
 
  protected:
   // ActionableView:
@@ -271,6 +285,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Number of active requests to disable the bounce-in and fade-in animation.
   size_t disable_show_animation_count_ = 0;
+
+  // The shape of this tray which is only applied to the horizontal tray.
+  // Defaults to `kAllRounded`.
+  const RoundedCornerBehavior corner_behavior_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

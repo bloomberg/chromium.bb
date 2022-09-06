@@ -28,12 +28,12 @@ luci.bucket(
 
 defaults.bucket.set("webrtc")
 defaults.builder_group.set("chromium.webrtc")
-defaults.builderless.set(False)
+defaults.builderless.set(None)
 defaults.build_numbers.set(True)
 defaults.cpu.set(cpu.X86_64)
 defaults.executable.set("recipe:chromium")
 defaults.execution_timeout.set(2 * time.hour)
-defaults.os.set(os.LINUX_XENIAL_OR_BIONIC_REMOVE)
+defaults.os.set(os.LINUX_DEFAULT)
 defaults.service_account.set("chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com")
 defaults.triggered_by.set(["chromium-gitiles-trigger"])
 
@@ -65,14 +65,12 @@ builder(
 
 builder(
     name = "WebRTC Chromium Mac Builder",
-    cores = 8,
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
 builder(
     name = "WebRTC Chromium Mac Tester",
-    os = os.MAC_ANY,
     triggered_by = ["WebRTC Chromium Mac Builder"],
 )
 
@@ -85,18 +83,5 @@ builder(
 
 builder(
     name = "WebRTC Chromium Win10 Tester",
-    os = os.WINDOWS_ANY,
-    triggered_by = ["WebRTC Chromium Win Builder"],
-)
-
-builder(
-    name = "WebRTC Chromium Win7 Tester",
-    os = os.WINDOWS_ANY,
-    triggered_by = ["WebRTC Chromium Win Builder"],
-)
-
-builder(
-    name = "WebRTC Chromium Win8 Tester",
-    os = os.WINDOWS_ANY,
     triggered_by = ["WebRTC Chromium Win Builder"],
 )

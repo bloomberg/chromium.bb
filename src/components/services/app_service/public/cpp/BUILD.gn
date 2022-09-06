@@ -49,13 +49,25 @@ component("app_types") {
   sources = [
     "app_types.cc",
     "app_types.h",
+    "features.cc",
+    "features.h",
+    "intent_filter.cc",
+    "intent_filter.h",
+    "macros.h",
+    "permission.cc",
+    "permission.h",
+    "shortcut.cc",
+    "shortcut.h",
   ]
 
   defines = [ "IS_APP_TYPES_IMPL" ]
 
   public_deps = [ "//components/services/app_service/public/mojom" ]
 
-  deps = [ ":icon_types" ]
+  deps = [
+    ":icon_types",
+    ":run_on_os_login",
+  ]
 }
 
 component("app_update") {
@@ -73,6 +85,7 @@ component("app_update") {
     "app_update.h",
     "capability_access_update.cc",
     "capability_access_update.h",
+    "macros.h",
   ]
 
   defines = [ "IS_APP_UPDATE_IMPL" ]
@@ -86,6 +99,7 @@ component("app_update") {
     ":app_types",
     ":icon_types",
     ":intents",
+    ":run_on_os_login",
     "//ui/gfx",
   ]
 }
@@ -173,10 +187,23 @@ component("icon_types") {
   deps = [ "//ui/gfx" ]
 }
 
+component("run_on_os_login") {
+  output_name = "LOGIN_MODE"
+  sources = [
+    "macros.h",
+    "run_on_os_login_types.cc",
+    "run_on_os_login_types.h",
+  ]
+
+  defines = [ "IS_LOGIN_MODE_IMPL" ]
+
+  public_deps = [ "//components/services/app_service/public/mojom" ]
+}
+
 source_set("intents") {
   sources = [
-    "intent_constants.cc",
-    "intent_constants.h",
+    "intent.cc",
+    "intent.h",
     "intent_filter_util.cc",
     "intent_filter_util.h",
     "intent_util.cc",
@@ -184,6 +211,7 @@ source_set("intents") {
   ]
 
   deps = [
+    ":app_types",
     "//base",
     "//components/services/app_service/public/mojom",
     "//third_party/blink/public/common",
@@ -200,10 +228,24 @@ source_set("protocol_handling") {
   deps = [ "//url" ]
 }
 
+source_set("preferred_app") {
+  sources = [
+    "preferred_app.cc",
+    "preferred_app.h",
+  ]
+
+  deps = [
+    ":app_types",
+    "//components/services/app_service/public/mojom",
+  ]
+}
+
 source_set("preferred_apps") {
   sources = [
     "preferred_apps_converter.cc",
     "preferred_apps_converter.h",
+    "preferred_apps_impl.cc",
+    "preferred_apps_impl.h",
     "preferred_apps_list.cc",
     "preferred_apps_list.h",
     "preferred_apps_list_handle.cc",
@@ -211,9 +253,12 @@ source_set("preferred_apps") {
   ]
 
   deps = [
+    ":app_types",
     ":intents",
+    ":preferred_app",
     "//base",
     "//components/services/app_service/public/mojom",
+    "//content/public/browser",
     "//url",
   ]
 }
@@ -236,6 +281,7 @@ source_set("test_support") {
   ]
 
   deps = [
+    ":app_types",
     ":intents",
     "//components/services/app_service/public/mojom",
   ]
@@ -293,8 +339,10 @@ source_set("unit_tests") {
     ":icon_loader",
     ":icon_types",
     ":intents",
+    ":preferred_app",
     ":preferred_apps",
     ":publisher",
+    ":run_on_os_login",
     ":test_support",
     ":types",
     "//content/test:test_support",

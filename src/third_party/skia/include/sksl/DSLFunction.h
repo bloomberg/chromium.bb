@@ -8,17 +8,21 @@
 #ifndef SKSL_DSL_FUNCTION
 #define SKSL_DSL_FUNCTION
 
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkTArray.h"
 #include "include/sksl/DSLBlock.h"
 #include "include/sksl/DSLExpression.h"
-#include "include/sksl/DSLType.h"
+#include "include/sksl/DSLModifiers.h"
+#include "include/sksl/DSLStatement.h"
 #include "include/sksl/DSLVar.h"
-#include "include/sksl/DSLWrapper.h"
+#include "include/sksl/SkSLPosition.h"
+
+#include <string_view>
+#include <utility>
 
 namespace SkSL {
 
-class Block;
 class FunctionDeclaration;
-class Variable;
 
 namespace dsl {
 
@@ -27,31 +31,28 @@ class DSLType;
 class DSLFunction {
 public:
     template<class... Parameters>
-    DSLFunction(const DSLType& returnType, skstd::string_view name, Parameters&... parameters)
+    DSLFunction(const DSLType& returnType, std::string_view name, Parameters&... parameters)
         : DSLFunction(DSLModifiers(), returnType, name, parameters...) {}
 
     template<class... Parameters>
-    DSLFunction(const DSLModifiers& modifiers, const DSLType& returnType, skstd::string_view name,
+    DSLFunction(const DSLModifiers& modifiers, const DSLType& returnType, std::string_view name,
                 Parameters&... parameters) {
         SkTArray<DSLParameter*> parameterArray;
         parameterArray.reserve_back(sizeof...(parameters));
+        (parameterArray.push_back(&parameters), ...);
 
-        // in C++17, we could just do:
-        // (parameterArray.push_back(&parameters), ...);
-        int unused[] = {0, (static_cast<void>(parameterArray.push_back(&parameters)), 0)...};
-        static_cast<void>(unused);
         // We can't have a default parameter and a template parameter pack at the same time, so
-        // unfortunately we can't capture position info from this overload.
-        this->init(modifiers, returnType, name, std::move(parameterArray), PositionInfo());
+        // unfortunately we can't capture position from this overload.
+        this->init(modifiers, returnType, name, std::move(parameterArray), Position());
     }
 
-    DSLFunction(const DSLType& returnType, skstd::string_view name,
-                SkTArray<DSLParameter*> parameters, PositionInfo pos = PositionInfo::Capture()) {
+    DSLFunction(const DSLType& returnType, std::string_view name,
+                SkTArray<DSLParameter*> parameters, Position pos = {}) {
         this->init(DSLModifiers(), returnType, name, std::move(parameters), pos);
     }
 
-    DSLFunction(const DSLModifiers& modifiers, const DSLType& returnType, skstd::string_view name,
-                SkTArray<DSLParameter*> parameters, PositionInfo pos = PositionInfo::Capture()) {
+    DSLFunction(const DSLModifiers& modifiers, const DSLType& returnType, std::string_view name,
+                SkTArray<DSLParameter*> parameters, Position pos = {}) {
         this->init(modifiers, returnType, name, std::move(parameters), pos);
     }
 
@@ -66,7 +67,7 @@ public:
         this->define(std::move(block));
     }
 
-    void define(DSLBlock block, PositionInfo pos = PositionInfo::Capture());
+    void define(DSLBlock block, Position pos = {});
 
     /**
      * Invokes the function with the given arguments.
@@ -82,10 +83,9 @@ public:
     /**
      * Invokes the function with the given arguments.
      */
-    DSLExpression call(SkTArray<DSLWrapper<DSLExpression>> args,
-            PositionInfo pos = PositionInfo::Capture());
+    DSLExpression call(SkTArray<DSLExpression> args, Position pos = {});
 
-    DSLExpression call(ExpressionArray args, PositionInfo pos = PositionInfo::Capture());
+    DSLExpression call(ExpressionArray args, Position pos = {});
 
 private:
     void collectArgs(ExpressionArray& args) {}
@@ -102,11 +102,11 @@ private:
         collectArgs(args, std::forward<RemainingArgs>(remaining)...);
     }
 
-    void init(DSLModifiers modifiers, const DSLType& returnType, skstd::string_view name,
-              SkTArray<DSLParameter*> params, PositionInfo pos);
+    void init(DSLModifiers modifiers, const DSLType& returnType, std::string_view name,
+              SkTArray<DSLParameter*> params, Position pos);
 
     const SkSL::FunctionDeclaration* fDecl = nullptr;
-    SkSL::PositionInfo fPosition;
+    SkSL::Position fPosition;
 };
 
 } // namespace dsl

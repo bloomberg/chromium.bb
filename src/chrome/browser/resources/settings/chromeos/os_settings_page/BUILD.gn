@@ -7,7 +7,7 @@ import("//tools/polymer/html_to_js.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
-  closure_flags = os_settings_closure_flags
+  closure_flags = os_settings_closure_flags + mojom_js_args
   is_polymer3 = true
   deps = [
     ":main_page_behavior",
@@ -20,21 +20,21 @@ js_library("os_settings_page") {
   deps = [
     ":main_page_behavior",
     ":settings_idle_load",
-    "..:os_page_visibility.m",
-    "..:os_route.m",
+    "..:os_page_visibility",
+    "..:os_route",
     "..:route_observer_behavior",
     "../..:router",
     "../bluetooth_page:bluetooth_page",
     "../crostini_page:crostini_page",
     "../device_page:device_page",
     "../kerberos_page:kerberos_page",
-    "../multidevice_page:multidevice_page.m",
+    "../multidevice_page:multidevice_page",
     "../os_a11y_page:os_a11y_page",
     "../os_apps_page:android_apps_browser_proxy",
     "../os_apps_page:os_apps_page",
     "../os_apps_page/app_notifications_page:app_notifications_subpage",
     "../os_bluetooth_page:os_bluetooth_page",
-    "../os_people_page:os_people_page.m",
+    "../os_people_page:os_people_page",
     "../os_printing_page:os_printing_page",
     "../os_privacy_page:os_privacy_page",
     "../os_search_page:os_search_page",

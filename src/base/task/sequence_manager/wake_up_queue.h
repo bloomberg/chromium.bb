@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_WAKE_UP_QUEUE_H_
 #define BASE_TASK_SEQUENCE_MANAGER_WAKE_UP_QUEUE_H_
 
+#include "base/base_export.h"
 #include "base/check.h"
 #include "base/containers/intrusive_heap.h"
 #include "base/memory/raw_ptr.h"
@@ -37,7 +38,7 @@ class BASE_EXPORT WakeUpQueue {
   // Returns a wake-up for the next pending delayed task (pending delayed tasks
   // that are ripe may be ignored). If there are no such tasks (immediate tasks
   // don't count) or queues are disabled it returns nullopt.
-  absl::optional<WakeUp> GetNextWakeUp() const;
+  absl::optional<WakeUp> GetNextDelayedWakeUp() const;
 
   // Debug info.
   Value AsValue(TimeTicks now) const;
@@ -65,13 +66,13 @@ class BASE_EXPORT WakeUpQueue {
   virtual void UnregisterQueue(internal::TaskQueueImpl* queue) = 0;
 
   // Removes all canceled delayed tasks from the front of the queue. After
-  // calling this, GetNextWakeUp() is guaranteed to return a wake up time
+  // calling this, GetNextDelayedWakeUp() is guaranteed to return a wake up time
   // for a non-canceled task.
   void RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now);
 
  protected:
   explicit WakeUpQueue(
-      scoped_refptr<internal::AssociatedThreadId> associated_thread);
+      scoped_refptr<const internal::AssociatedThreadId> associated_thread);
 
   // Called every time the next `next_wake_up` changes. absl::nullopt is used to
   // cancel the next wake-up. Subclasses may use this to tell SequenceManager to
@@ -89,7 +90,7 @@ class BASE_EXPORT WakeUpQueue {
     internal::TaskQueueImpl* queue;
 
     bool operator>(const ScheduledWakeUp& other) const {
-      return wake_up > other.wake_up;
+      return wake_up.latest_time() > other.wake_up.latest_time();
     }
 
     void SetHeapHandle(HeapHandle handle) {
@@ -108,7 +109,7 @@ class BASE_EXPORT WakeUpQueue {
   IntrusiveHeap<ScheduledWakeUp, std::greater<>> wake_up_queue_;
   int pending_high_res_wake_up_count_ = 0;
 
-  scoped_refptr<internal::AssociatedThreadId> associated_thread_;
+  const scoped_refptr<const internal::AssociatedThreadId> associated_thread_;
 };
 
 // Default WakeUpQueue implementation that forwards wake-ups to

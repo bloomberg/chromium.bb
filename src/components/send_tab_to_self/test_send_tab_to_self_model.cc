@@ -10,8 +10,6 @@ std::vector<std::string> TestSendTabToSelfModel::GetAllGuids() const {
   return {};
 }
 
-void TestSendTabToSelfModel::DeleteAllEntries() {}
-
 const SendTabToSelfEntry* TestSendTabToSelfModel::GetEntryByGUID(
     const std::string& guid) const {
   return nullptr;
@@ -20,7 +18,6 @@ const SendTabToSelfEntry* TestSendTabToSelfModel::GetEntryByGUID(
 const SendTabToSelfEntry* TestSendTabToSelfModel::AddEntry(
     const GURL& url,
     const std::string& title,
-    base::Time navigation_time,
     const std::string& device_id) {
   return nullptr;
 }

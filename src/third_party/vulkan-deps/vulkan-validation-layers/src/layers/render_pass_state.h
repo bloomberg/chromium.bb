@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,9 +90,10 @@ class RENDER_PASS_STATE : public BASE_NODE {
     };
     const bool use_dynamic_rendering;
     const bool use_dynamic_rendering_inherited;
-    const safe_VkRenderingInfoKHR dynamic_rendering_begin_rendering_info;
-    const safe_VkPipelineRenderingCreateInfoKHR dynamic_rendering_pipeline_create_info;
-    const safe_VkCommandBufferInheritanceRenderingInfoKHR inheritance_rendering_info;
+    const bool has_multiview_enabled;
+    const safe_VkRenderingInfo dynamic_rendering_begin_rendering_info;
+    const safe_VkPipelineRenderingCreateInfo dynamic_rendering_pipeline_create_info;
+    const safe_VkCommandBufferInheritanceRenderingInfo inheritance_rendering_info;
     const safe_VkRenderPassCreateInfo2 createInfo;
     using SubpassVec = std::vector<uint32_t>;
     using SelfDepVec = std::vector<SubpassVec>;
@@ -113,9 +114,9 @@ class RENDER_PASS_STATE : public BASE_NODE {
     RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo2 const *pCreateInfo);
     RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo const *pCreateInfo);
 
-    RENDER_PASS_STATE(VkPipelineRenderingCreateInfoKHR const *pPipelineRenderingCreateInfo);
-    RENDER_PASS_STATE(VkRenderingInfoKHR const *pRenderingInfo);
-    RENDER_PASS_STATE(VkCommandBufferInheritanceRenderingInfoKHR const *pInheritanceRenderingInfo);
+    RENDER_PASS_STATE(VkPipelineRenderingCreateInfo const *pPipelineRenderingCreateInfo);
+    RENDER_PASS_STATE(VkRenderingInfo const *pRenderingInfo);
+    RENDER_PASS_STATE(VkCommandBufferInheritanceRenderingInfo const *pInheritanceRenderingInfo);
 
     VkRenderPass renderPass() const { return handle_.Cast<VkRenderPass>(); }
 
@@ -131,6 +132,7 @@ class FRAMEBUFFER_STATE : public BASE_NODE {
 
     FRAMEBUFFER_STATE(VkFramebuffer fb, const VkFramebufferCreateInfo *pCreateInfo, std::shared_ptr<RENDER_PASS_STATE> &&rpstate,
                       std::vector<std::shared_ptr<IMAGE_VIEW_STATE>> &&attachments);
+    void LinkChildNodes() override;
 
     VkFramebuffer framebuffer() const { return handle_.Cast<VkFramebuffer>(); }
 

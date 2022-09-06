@@ -101,8 +101,9 @@ typedef enum {
     GLSLANG_TARGET_VULKAN_1_0 = (1 << 22),
     GLSLANG_TARGET_VULKAN_1_1 = (1 << 22) | (1 << 12),
     GLSLANG_TARGET_VULKAN_1_2 = (1 << 22) | (2 << 12),
+    GLSLANG_TARGET_VULKAN_1_3 = (1 << 22) | (3 << 12),
     GLSLANG_TARGET_OPENGL_450 = 450,
-    LAST_ELEMENT_MARKER(GLSLANG_TARGET_CLIENT_VERSION_COUNT = 4),
+    LAST_ELEMENT_MARKER(GLSLANG_TARGET_CLIENT_VERSION_COUNT = 5),
 } glslang_target_client_version_t;
 
 /* SH_TARGET_LanguageVersion counterpart */
@@ -113,13 +114,16 @@ typedef enum {
     GLSLANG_TARGET_SPV_1_3 = (1 << 16) | (3 << 8),
     GLSLANG_TARGET_SPV_1_4 = (1 << 16) | (4 << 8),
     GLSLANG_TARGET_SPV_1_5 = (1 << 16) | (5 << 8),
-    LAST_ELEMENT_MARKER(GLSLANG_TARGET_LANGUAGE_VERSION_COUNT = 6),
+    GLSLANG_TARGET_SPV_1_6 = (1 << 16) | (6 << 8),
+    LAST_ELEMENT_MARKER(GLSLANG_TARGET_LANGUAGE_VERSION_COUNT = 7),
 } glslang_target_language_version_t;
 
 /* EShExecutable counterpart */
 typedef enum { GLSLANG_EX_VERTEX_FRAGMENT, GLSLANG_EX_FRAGMENT } glslang_executable_t;
 
-/* EShOptimizationLevel counterpart  */
+// EShOptimizationLevel counterpart
+// This enum is not used in the current C interface, but could be added at a later date.
+// GLSLANG_OPT_NONE is the current default.
 typedef enum {
     GLSLANG_OPT_NO_GENERATION,
     GLSLANG_OPT_NONE,
@@ -153,6 +157,7 @@ typedef enum {
     GLSLANG_MSG_HLSL_LEGALIZATION_BIT = (1 << 12),
     GLSLANG_MSG_HLSL_DX9_COMPATIBLE_BIT = (1 << 13),
     GLSLANG_MSG_BUILTIN_SYMBOL_TABLE_BIT = (1 << 14),
+    GLSLANG_MSG_ENHANCED = (1 << 15),
     LAST_ELEMENT_MARKER(GLSLANG_MSG_COUNT),
 } glslang_messages_t;
 

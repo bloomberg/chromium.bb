@@ -18,7 +18,7 @@ namespace {
 
 void ExpectTranslateX(SkScalar translate_x,
                       const gfx::TransformOperations& operations) {
-  EXPECT_FLOAT_EQ(translate_x, operations.Apply().matrix().get(0, 3));
+  EXPECT_FLOAT_EQ(translate_x, operations.Apply().matrix().rc(0, 3));
 }
 
 // Tests that a color animation with one keyframe works as expected.
@@ -265,8 +265,8 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes) {
 
   // There is a discontinuity at 1. Any value between 4 and 6 is valid.
   gfx::Transform value = curve->GetValue(base::Seconds(1.f)).Apply();
-  EXPECT_GE(value.matrix().get(0, 3), 4.f);
-  EXPECT_LE(value.matrix().get(0, 3), 6.f);
+  EXPECT_GE(value.matrix().rc(0, 3), 4.f);
+  EXPECT_LE(value.matrix().rc(0, 3), 6.f);
 
   ExpectTranslateX(6.f, curve->GetValue(base::Seconds(1.5f)));
   ExpectTranslateX(6.f, curve->GetValue(base::Seconds(2.f)));
@@ -469,6 +469,27 @@ TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtEnd) {
   for (float i = 0.5f; i <= num_steps; i += 1.0f) {
     const base::TimeDelta time = base::Seconds(i / num_steps);
     EXPECT_FLOAT_EQ(std::floor(i), curve->GetValue(time));
+  }
+}
+
+// A jump_both steps function has 1 extra jump. Ensure that this doesn't
+// overflow when using the maximum number of steps. In this case, the steps
+// function should be effectively the same as linear.
+// crbug.com/1313399
+TEST(KeyframedAnimationCurveTest, StepsTimingFunctionMaxSteps) {
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  const int num_steps = std::numeric_limits<int>::max();
+  curve->AddKeyframe(FloatKeyframe::Create(
+      base::TimeDelta(), 0.f,
+      StepsTimingFunction::Create(
+          num_steps, StepsTimingFunction::StepPosition::JUMP_BOTH)));
+  curve->AddKeyframe(FloatKeyframe::Create(base::Seconds(1.0), 1.f, nullptr));
+
+  for (int i = 0; i <= 100; i++) {
+    const float value = 0.001f * i;
+    const base::TimeDelta time = base::Seconds(value);
+    EXPECT_NEAR(value, curve->GetValue(time), 0.0001);
   }
 }
 

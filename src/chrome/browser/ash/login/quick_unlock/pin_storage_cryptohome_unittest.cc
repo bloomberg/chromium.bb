@@ -6,18 +6,21 @@
 
 #include <vector>
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/cryptohome/cryptohome_util.h"
+#include "ash/components/cryptohome/system_salt_getter.h"
+#include "ash/components/login/auth/cryptohome_key_constants.h"
+#include "ash/components/login/auth/user_context.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ash/login/quick_unlock/fake_pin_salt_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
-#include "chromeos/login/auth/cryptohome_key_constants.h"
+#include "components/account_id/account_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,20 +37,23 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    EnabledForTesting(true);
+    test_api_ = std::make_unique<TestApi>(/*override_quick_unlock=*/true);
+    test_api_->EnablePinByPolicy(Purpose::kAny);
     SystemSaltGetter::Initialize();
     CryptohomeMiscClient::InitializeFake();
     UserDataAuthClient::InitializeFake();
-    FakeUserDataAuthClient::Get()->set_supports_low_entropy_credentials(true);
+    FakeUserDataAuthClient::TestApi::Get()
+        ->set_supports_low_entropy_credentials(true);
+    FakeUserDataAuthClient::TestApi::Get()->set_enable_auth_check(true);
     storage_ = std::make_unique<PinStorageCryptohome>();
+    storage_->SetPinSaltStorageForTesting(
+        std::make_unique<FakePinSaltStorage>());
   }
 
   void TearDown() override {
     UserDataAuthClient::Shutdown();
     CryptohomeMiscClient::Shutdown();
     SystemSaltGetter::Shutdown();
-    EnabledForTesting(false);
-    IsFingerprintEnabled(nullptr);
   }
 
   bool IsPinSet() const {
@@ -69,10 +75,25 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     bool res;
     base::RunLoop loop;
     storage_->CanAuthenticate(
-        test_account_id_,
+        test_account_id_, Purpose::kAny,
         base::BindOnce(
             [](base::OnceClosure closure, bool* res, bool can_auth) {
               *res = can_auth;
+              std::move(closure).Run();
+            },
+            loop.QuitClosure(), &res));
+    loop.Run();
+    return res;
+  }
+
+  bool TryAuthenticate(const std::string& pin, Purpose purpose) const {
+    bool res;
+    base::RunLoop loop;
+    storage_->TryAuthenticate(
+        test_account_id_, Key(pin), purpose,
+        base::BindOnce(
+            [](base::OnceClosure closure, bool* res, bool auth_success) {
+              *res = auth_success;
               std::move(closure).Run();
             },
             loop.QuitClosure(), &res));
@@ -177,6 +198,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
   std::unique_ptr<PinStorageCryptohome> storage_;
   AccountId test_account_id_{
       AccountId::FromUserEmailGaiaId("user@example.com", "11111")};
+  std::unique_ptr<TestApi> test_api_;
 };
 
 }  // namespace
@@ -211,10 +233,12 @@ TEST_F(PinStorageCryptohomeUnitTest, SetRemovePin) {
   ASSERT_TRUE(SetPin(kDummyPin));
   ASSERT_TRUE(IsPinSet());
   ASSERT_TRUE(CanAuthenticate());
+  EXPECT_TRUE(TryAuthenticate(kDummyPin, Purpose::kAny));
 
   ASSERT_TRUE(RemovePin(kDummyPin));
   ASSERT_FALSE(IsPinSet());
   ASSERT_FALSE(CanAuthenticate());
+  EXPECT_FALSE(TryAuthenticate(kDummyPin, Purpose::kAny));
 }
 
 // Verifies case when pin can't be used to authenticate (`auth_locked` == True).
@@ -223,6 +247,30 @@ TEST_F(PinStorageCryptohomeUnitTest, AuthLockedTest) {
 
   ASSERT_FALSE(CanAuthenticate());
   ASSERT_TRUE(IsPinSet());
+}
+
+// Verifies the `unlock_webauthn_secret` parameter is set correctly when
+// TryAuthenticate with different purposes.
+TEST_F(PinStorageCryptohomeUnitTest, UnlockWebAuthnSecret) {
+  ASSERT_TRUE(SetPin(kDummyPin));
+  ASSERT_TRUE(IsPinSet());
+  ASSERT_TRUE(CanAuthenticate());
+
+  // Only calling TryAuthenticate with purpose Purpose::kWebAuthn should set the
+  // `unlock_webauthn_secret` parameter to true.
+
+  ASSERT_TRUE(TryAuthenticate(kDummyPin, Purpose::kAny));
+  EXPECT_FALSE(
+      FakeUserDataAuthClient::Get()->get_last_unlock_webauthn_secret());
+
+  test_api_->EnablePinByPolicy(Purpose::kWebAuthn);
+  ASSERT_TRUE(TryAuthenticate(kDummyPin, Purpose::kWebAuthn));
+  EXPECT_TRUE(FakeUserDataAuthClient::Get()->get_last_unlock_webauthn_secret());
+
+  test_api_->EnablePinByPolicy(Purpose::kUnlock);
+  ASSERT_TRUE(TryAuthenticate(kDummyPin, Purpose::kUnlock));
+  EXPECT_FALSE(
+      FakeUserDataAuthClient::Get()->get_last_unlock_webauthn_secret());
 }
 
 }  // namespace quick_unlock

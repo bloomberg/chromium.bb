@@ -138,7 +138,7 @@ class FakeScanService {
    * @private
    */
   getResolver_(methodName) {
-    let method = this.resolverMap_.get(methodName);
+    const method = this.resolverMap_.get(methodName);
     assertTrue(!!method, `Method '${methodName}' not found.`);
     return method;
   }
@@ -333,7 +333,7 @@ class FakeMultiPageScanController {
    * @private
    */
   getResolver_(methodName) {
-    let method = this.resolverMap_.get(methodName);
+    const method = this.resolverMap_.get(methodName);
     assertTrue(!!method, `Method '${methodName}' not found.`);
     return method;
   }
@@ -2446,10 +2446,6 @@ export function scanningAppTest() {
   // Verify that the multi-page scanning checkbox is only visible when both
   // Flatbed and PDF scan settings are selected.
   test('showMultiPageCheckbox', () => {
-    if (!loadTimeData.getBoolean('scanAppMultiPageScanEnabled')) {
-      return;
-    }
-
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
           return getScannerCapabilities();

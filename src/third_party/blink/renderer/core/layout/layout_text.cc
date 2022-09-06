@@ -70,7 +70,6 @@
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -82,6 +81,7 @@
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -212,7 +212,7 @@ LayoutText* LayoutText::CreateEmptyAnonymous(
   return text;
 }
 
-LayoutText* LayoutText::CreateAnonymous(
+LayoutText* LayoutText::CreateAnonymousForFormattedText(
     Document& doc,
     scoped_refptr<const ComputedStyle> style,
     scoped_refptr<StringImpl> text,
@@ -220,7 +220,7 @@ LayoutText* LayoutText::CreateAnonymous(
   LayoutText* layout_text =
       LayoutObjectFactory::CreateText(nullptr, std::move(text), legacy);
   layout_text->SetDocumentForAnonymous(&doc);
-  layout_text->SetStyle(std::move(style));
+  layout_text->SetStyleInternal(std::move(style));
   return layout_text;
 }
 
@@ -303,7 +303,7 @@ void LayoutText::WillBeDestroyed() {
   GetSelectionDisplayItemClientMap().erase(this);
 
   if (node_id_ != kInvalidDOMNodeId) {
-    if (auto* manager = GetContentCaptureManager())
+    if (auto* manager = GetOrResetContentCaptureManager())
       manager->OnLayoutTextWillBeDestroyed(*GetNode());
     node_id_ = kInvalidDOMNodeId;
   }
@@ -606,7 +606,7 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
   }
 }
 
-void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
+void LayoutText::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
   CollectLineBoxRects([this, &quads, mode](const PhysicalRect& r) {
@@ -657,7 +657,7 @@ bool LayoutText::MapDOMOffsetToTextContentOffset(const NGOffsetMapping& mapping,
   return true;
 }
 
-void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
+void LayoutText::AbsoluteQuadsForRange(Vector<gfx::QuadF>& quads,
                                        unsigned start,
                                        unsigned end) const {
   NOT_DESTROYED();
@@ -689,7 +689,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     // TODO(layout-dev): This heuristic doesn't cover all cases, as we return
     // 2 collapsed quads (instead of 1) for range [3, 3] in the above example.
     bool found_non_collapsed_quad = false;
-    Vector<FloatQuad, 1> collapsed_quads_candidates;
+    Vector<gfx::QuadF, 1> collapsed_quads_candidates;
 
     // Find fragments that have text for the specified range.
     DCHECK_LE(start, end);
@@ -721,12 +721,12 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       }
       if (UNLIKELY(text_combine))
         rect = text_combine->AdjustRectForBoundingBox(rect);
-      FloatQuad quad;
+      gfx::QuadF quad;
       if (item.Type() == NGFragmentItem::kSvgText) {
         gfx::RectF float_rect(rect);
         float_rect.Offset(item.SvgFragmentData()->rect.OffsetFromOrigin());
         quad = item.BuildSvgTransformForBoundingBox().MapQuad(
-            FloatRect(float_rect));
+            gfx::QuadF(float_rect));
         const float scaling_factor = item.SvgScalingFactor();
         quad.Scale(1 / scaling_factor, 1 / scaling_factor);
         quad = LocalToAbsoluteQuad(quad);
@@ -790,18 +790,18 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
   }
 }
 
-FloatRect LayoutText::LocalBoundingBoxRectForAccessibility() const {
+gfx::RectF LayoutText::LocalBoundingBoxRectForAccessibility() const {
   NOT_DESTROYED();
-  FloatRect result;
+  gfx::RectF result;
   const LayoutBlock* block_for_flipping =
       UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   CollectLineBoxRects(
       [this, &result, block_for_flipping](const PhysicalRect& r) {
         LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
-        result.Union(FloatRect(rect));
+        result.Union(gfx::RectF(rect));
       },
       kClipToEllipsis);
-  // TODO(wangxianzhu): This is one of a few cases that a FloatRect is required
+  // TODO(wangxianzhu): This is one of a few cases that a gfx::RectF is required
   // to be in flipped blocks direction. Should eliminite them.
   return result;
 }
@@ -2241,7 +2241,7 @@ void LayoutText::TextDidChangeWithoutInvalidation() {
     text_autosizer->Record(this);
 
   if (HasNodeId()) {
-    if (auto* content_capture_manager = GetContentCaptureManager())
+    if (auto* content_capture_manager = GetOrResetContentCaptureManager())
       content_capture_manager->OnNodeTextChanged(*GetNode());
   }
 
@@ -2259,6 +2259,14 @@ void LayoutText::InvalidateSubtreeLayoutForFontUpdates() {
   SetNeedsCollectInlines();
   SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kFontsChanged);
+  if (RuntimeEnabledFeatures::ParallelTextShapingEnabled()) {
+    if (!GetText().ContainsOnlyWhitespaceOrEmpty()) {
+      // The test[1] needs to do this for `document.fonts.add(face)` to kick off
+      // font load before layout.
+      // [1] fast/css/fontfaceset-ready.html
+      StyleRef().GetFont().WillUseFontData(GetText());
+    }
+  }
 }
 
 void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {
@@ -2465,7 +2473,7 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
     float scaling_factor =
         svg_inline_text ? svg_inline_text->ScalingFactor() : 1.0f;
     PhysicalRect rect;
-    NGInlineCursor cursor(*ContainingNGBlockFlow());
+    NGInlineCursor cursor(*FragmentItemsContainer());
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
       if (cursor.Current().IsHiddenForPaint())
         continue;
@@ -2475,9 +2483,9 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
         continue;
       PhysicalRect item_rect = cursor.CurrentLocalSelectionRectForText(status);
       if (svg_inline_text) {
-        FloatRect float_rect(item_rect);
+        gfx::RectF float_rect(item_rect);
         const NGFragmentItem& item = *cursor.CurrentItem();
-        float_rect.MoveBy(item.SvgFragmentData()->rect.origin());
+        float_rect.Offset(item.SvgFragmentData()->rect.OffsetFromOrigin());
         if (item.HasSvgTransformForBoundingBox()) {
           float_rect =
               item.BuildSvgTransformForBoundingBox().MapRect(float_rect);
@@ -2871,7 +2879,7 @@ PhysicalRect LayoutText::DebugRect() const {
 DOMNodeId LayoutText::EnsureNodeId() {
   NOT_DESTROYED();
   if (node_id_ == kInvalidDOMNodeId) {
-    if (auto* content_capture_manager = GetContentCaptureManager()) {
+    if (auto* content_capture_manager = GetOrResetContentCaptureManager()) {
       if (auto* node = GetNode()) {
         content_capture_manager->ScheduleTaskIfNeeded(*node);
         node_id_ = DOMNodeIds::IdForNode(node);
@@ -2881,11 +2889,11 @@ DOMNodeId LayoutText::EnsureNodeId() {
   return node_id_;
 }
 
-ContentCaptureManager* LayoutText::GetContentCaptureManager() {
+ContentCaptureManager* LayoutText::GetOrResetContentCaptureManager() {
   NOT_DESTROYED();
   if (auto* node = GetNode()) {
     if (auto* frame = node->GetDocument().GetFrame()) {
-      return frame->LocalFrameRoot().GetContentCaptureManager();
+      return frame->LocalFrameRoot().GetOrResetContentCaptureManager();
     }
   }
   return nullptr;

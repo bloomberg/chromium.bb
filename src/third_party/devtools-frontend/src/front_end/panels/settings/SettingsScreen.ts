@@ -32,6 +32,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -128,7 +129,7 @@ export class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocati
     tabbedPane.makeVerticalTabLayout();
     const keyBindsView = UI.ViewManager.ViewManager.instance().view('keybinds');
     if (keyBindsView) {
-      keyBindsView.widget().then(widget => {
+      void keyBindsView.widget().then(widget => {
         this.keybindsTab = widget as KeybindsSettingsTab;
       });
     }
@@ -392,7 +393,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
   constructor() {
     super(i18nString(UIStrings.experiments), 'experiments-tab-content');
     const filterSection = this.appendSection();
-    filterSection.style.paddingTop = '1px';
+    filterSection.classList.add('experiments-filter');
 
     const labelElement = filterSection.createChild('label');
     labelElement.textContent = i18nString(UIStrings.filterExperimentsLabel);
@@ -506,14 +507,14 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
   handleAction(context: UI.Context.Context, actionId: string): boolean {
     switch (actionId) {
       case 'settings.show':
-        SettingsScreen.showSettingsScreen({focusTabHeader: true} as ShowSettingsScreenOptions);
+        void SettingsScreen.showSettingsScreen({focusTabHeader: true} as ShowSettingsScreenOptions);
         return true;
       case 'settings.documentation':
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
-            UI.UIUtils.addReferrerToURL('https://developer.chrome.com/docs/devtools/'));
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(UI.UIUtils.addReferrerToURL(
+            'https://developer.chrome.com/docs/devtools/' as Platform.DevToolsPath.UrlString));
         return true;
       case 'settings.shortcuts':
-        SettingsScreen.showSettingsScreen({name: 'keybinds', focusTabHeader: true});
+        void SettingsScreen.showSettingsScreen({name: 'keybinds', focusTabHeader: true});
         return true;
     }
     return false;
@@ -541,7 +542,7 @@ export class Revealer implements Common.Revealer.Revealer {
       }
       if (settingRegistration.settingName === setting.name) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-        SettingsScreen.showSettingsScreen();
+        void SettingsScreen.showSettingsScreen();
         success = true;
       }
     }
@@ -556,7 +557,7 @@ export class Revealer implements Common.Revealer.Revealer {
       const settings = view.settings();
       if (settings && settings.indexOf(setting.name) !== -1) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-        SettingsScreen.showSettingsScreen({name: id} as ShowSettingsScreenOptions);
+        void SettingsScreen.showSettingsScreen({name: id} as ShowSettingsScreenOptions);
         success = true;
       }
     }

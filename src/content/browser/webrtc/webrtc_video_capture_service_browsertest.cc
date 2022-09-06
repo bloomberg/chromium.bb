@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -32,7 +33,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -45,7 +45,7 @@
 #include "ui/compositor/compositor.h"
 
 // ImageTransportFactory::GetInstance is not available on all build configs.
-#if defined(USE_AURA) || defined(OS_MAC)
+#if defined(USE_AURA) || BUILDFLAG(IS_MAC)
 #define CAN_USE_IMAGE_TRANSPORT_FACTORY 1
 #endif
 
@@ -289,10 +289,9 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
                    OnNewBufferCallback callback) override {
-    CHECK(buffer_handle->is_shared_buffer_handle());
+    CHECK(buffer_handle->is_unsafe_shmem_region());
     base::UnsafeSharedMemoryRegion region =
-        mojo::UnwrapUnsafeSharedMemoryRegion(
-            std::move(buffer_handle->get_shared_buffer_handle()));
+        std::move(buffer_handle->get_unsafe_shmem_region());
     CHECK(region.IsValid());
     base::WritableSharedMemoryMapping mapping = region.Map();
     CHECK(mapping.IsValid());
@@ -539,9 +538,17 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
       this};
 };
 
+// TODO(https://crbug.com/1318247): Fix and enable on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage \
+  DISABLED_FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage
+#else
+#define MAYBE_FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage \
+  FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage
+#endif
 IN_PROC_BROWSER_TEST_F(
     WebRtcVideoCaptureServiceBrowserTest,
-    FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage) {
+    MAYBE_FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage) {
   Initialize();
   auto device_exerciser = std::make_unique<TextureDeviceExerciser>();
   device_exerciser->Initialize();
@@ -556,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(
   run_loop.Run();
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1235254): This test is flakey on macOS.
 #define MAYBE_FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage \
   DISABLED_FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage
@@ -581,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(
   run_loop.Run();
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1235254): This test is flakey on macOS.
 #define MAYBE_PaddedI420FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage \
   DISABLED_PaddedI420FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage

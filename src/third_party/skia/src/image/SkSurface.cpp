@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cmath>
 #include "include/core/SkCanvas.h"
+#include "include/core/SkCapabilities.h"
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkImagePriv.h"
 #include "src/core/SkPaintPriv.h"
@@ -51,6 +52,10 @@ SkSurface_Base::~SkSurface_Base() {
 }
 
 GrRecordingContext* SkSurface_Base::onGetRecordingContext() {
+    return nullptr;
+}
+
+skgpu::graphite::Recorder* SkSurface_Base::onGetRecorder() {
     return nullptr;
 }
 
@@ -155,6 +160,10 @@ uint32_t SkSurface_Base::newGenerationID() {
     return nextID.fetch_add(1, std::memory_order_relaxed);
 }
 
+sk_sp<const SkCapabilities> SkSurface_Base::onCapabilities() {
+    return SkCapabilities::RasterBackend();
+}
+
 static SkSurface_Base* asSB(SkSurface* surface) {
     return static_cast<SkSurface_Base*>(surface);
 }
@@ -199,6 +208,10 @@ void SkSurface::notifyContentWillChange(ContentChangeMode mode) {
 
 SkCanvas* SkSurface::getCanvas() {
     return asSB(this)->getCachedCanvas();
+}
+
+sk_sp<const SkCapabilities> SkSurface::capabilities() {
+    return asSB(this)->onCapabilities();
 }
 
 sk_sp<SkImage> SkSurface::makeImageSnapshot() {
@@ -318,6 +331,10 @@ GrRecordingContext* SkSurface::recordingContext() {
     return asSB(this)->onGetRecordingContext();
 }
 
+skgpu::graphite::Recorder* SkSurface::recorder() {
+    return asSB(this)->onGetRecorder();
+}
+
 bool SkSurface::wait(int numSemaphores, const GrBackendSemaphore* waitSemaphores,
                      bool deleteSemaphoresAfterWait) {
     return asSB(this)->onWait(numSemaphores, waitSemaphores, deleteSemaphoresAfterWait);
@@ -354,6 +371,10 @@ bool SkSurface::replaceBackendTexture(const GrBackendTexture& backendTexture,
                                       ReleaseContext releaseContext) {
     return asSB(this)->onReplaceBackendTexture(backendTexture, origin, mode, textureReleaseProc,
                                                releaseContext);
+}
+
+void SkSurface::resolveMSAA() {
+    asSB(this)->onResolveMSAA();
 }
 
 GrSemaphoresSubmitted SkSurface::flush(BackendSurfaceAccess access, const GrFlushInfo& flushInfo) {
@@ -398,6 +419,10 @@ protected:
     void onWritePixels(const SkPixmap&, int x, int y) override {}
     void onDraw(SkCanvas*, SkScalar, SkScalar, const SkSamplingOptions&, const SkPaint*) override {}
     bool onCopyOnWrite(ContentChangeMode) override { return true; }
+    sk_sp<const SkCapabilities> onCapabilities() override {
+        // Not really, but we have to return *something*
+        return SkCapabilities::RasterBackend();
+    }
 };
 
 sk_sp<SkSurface> SkSurface::MakeNull(int width, int height) {

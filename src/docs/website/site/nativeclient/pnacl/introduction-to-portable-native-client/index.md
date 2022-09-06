@@ -148,4 +148,4 @@ How to report bugs / feedback for PNaCl
 ## PNaCl Developers
 
 The section on developing PNaCl itself has moved to
-<https://sites.google.com/a/chromium.org/dev/nativeclient/pnacl/developing-pnacl>
+<https://www.chromium.org/nativeclient/pnacl/developing-pnacl>

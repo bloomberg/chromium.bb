@@ -11,11 +11,14 @@ struct PreviousOperatorEntry {
   // Name of the operator.
   string name;
   // Time when operator stopped operating this log.
-  mojo_base.mojom.TimeDelta end_time;
+  mojo_base.mojom.Time end_time;
 };
 
 // A single Certificate Transparency Log configuration.
 struct CTLogInfo {
+  // LogID found in SCTs issued by this log.
+  string id;
+
   // The DER-encoded SubjectPublicKeyInfo of the log.
   // TODO(rsleevi): Convert this to array<uint8> when net::CTLogVerifier uses
   // base::span<>
@@ -32,7 +35,11 @@ struct CTLogInfo {
   // If set, the time since the Unix Epoch when the log was disqualified. This
   // is used to determine the "once or currently qualified" status of the log.
   // If the log is currently qualified, this will not be set.
-  mojo_base.mojom.TimeDelta? disqualified_at;
+  mojo_base.mojom.Time? disqualified_at;
+
+  // Maximum merge delay. The log should not take longer than this to
+  // incorporate a certificate.
+  mojo_base.mojom.TimeDelta mmd;
 
   // Current operator for this log.
   string current_operator;

@@ -148,7 +148,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
 
     const saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.save), 'largeicon-download');
     saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
-      this.saveAsFile();
+      void this.saveAsFile();
     });
     topToolbar.appendToolbarItem(saveButton);
 
@@ -247,7 +247,8 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
                 const [domain, method] = String(methodColumn.value).split('.');
                 const type = typeColumn.value === 'sent' ? 'method' : 'event';
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
-                    `https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
+                    `https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}` as
+                    Platform.DevToolsPath.UrlString);
               });
             },
       },
@@ -398,7 +399,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     responseIcon.data = {iconName: 'ic_response', color: 'var(--color-text-disabled)', width: '16px', height: '16px'};
     const newRow: DataGrid.DataGridUtils.Row = {
       cells: [
-        {columnId: 'method', value: message.method},
+        {columnId: 'method', value: message.method, title: message.method},
         {columnId: 'request', value: '', renderer: DataGrid.DataGridRenderers.codeBlockRenderer},
         {
           columnId: 'response',
@@ -439,7 +440,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
         '--override-data-grid-row-background-color': 'var(--override-data-grid-sent-message-row-background-color)',
       },
       cells: [
-        {columnId: 'method', value: message.method},
+        {columnId: 'method', value: message.method, title: message.method},
         {
           columnId: 'request',
           value: JSON.stringify(message.params),
@@ -466,7 +467,8 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
 
   private async saveAsFile(): Promise<void> {
     const now = new Date();
-    const fileName = 'ProtocolMonitor-' + Platform.DateUtilities.toISO8601Compact(now) + '.json';
+    const fileName = 'ProtocolMonitor-' + Platform.DateUtilities.toISO8601Compact(now) + '.json' as
+        Platform.DevToolsPath.RawPathString;
     const stream = new Bindings.FileUtils.FileOutputStream();
 
     const accepted = await stream.open(fileName);
@@ -474,8 +476,8 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       return;
     }
 
-    stream.write(JSON.stringify(this.messages, null, '  '));
-    stream.close();
+    void stream.write(JSON.stringify(this.messages, null, '  '));
+    void stream.close();
   }
 }
 

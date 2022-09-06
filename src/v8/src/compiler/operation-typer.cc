@@ -93,7 +93,7 @@ Type OperationTyper::WeakenRange(Type previous_range, Type current_range) {
                                             140737488355327.0,
                                             281474976710655.0,
                                             562949953421311.0};
-  STATIC_ASSERT(arraysize(kWeakenMinLimits) == arraysize(kWeakenMaxLimits));
+  static_assert(arraysize(kWeakenMinLimits) == arraysize(kWeakenMaxLimits));
 
   double current_min = current_range.Min();
   double new_min = current_min;
@@ -1130,16 +1130,24 @@ SPECULATIVE_NUMBER_BINOP(NumberShiftRightLogical)
 #undef SPECULATIVE_NUMBER_BINOP
 
 Type OperationTyper::BigIntAdd(Type lhs, Type rhs) {
+  DCHECK(lhs.Is(Type::BigInt()));
+  DCHECK(rhs.Is(Type::BigInt()));
+
   if (lhs.IsNone() || rhs.IsNone()) return Type::None();
   return Type::BigInt();
 }
 
 Type OperationTyper::BigIntSubtract(Type lhs, Type rhs) {
+  DCHECK(lhs.Is(Type::BigInt()));
+  DCHECK(rhs.Is(Type::BigInt()));
+
   if (lhs.IsNone() || rhs.IsNone()) return Type::None();
   return Type::BigInt();
 }
 
 Type OperationTyper::BigIntNegate(Type type) {
+  DCHECK(type.Is(Type::BigInt()));
+
   if (type.IsNone()) return type;
   return Type::BigInt();
 }

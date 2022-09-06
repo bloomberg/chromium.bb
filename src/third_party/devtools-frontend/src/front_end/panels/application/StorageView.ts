@@ -178,9 +178,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     this.reportView.element.classList.add('clear-storage-header');
     this.reportView.show(this.contentElement);
-    /** @type {?SDK.Target.Target} */
     this.target = null;
-    /** @type {?string} */
     this.securityOrigin = null;
 
     this.settings = new Map();
@@ -213,19 +211,18 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     quotaOverrideCheckboxRow.appendChild(this.quotaOverrideCheckbox);
     this.quotaOverrideCheckbox.checkboxElement.addEventListener('click', this.onClickCheckbox.bind(this), false);
     this.quotaOverrideControlRow = quota.appendRow();
-    /** @type {!HTMLInputElement} */
     this.quotaOverrideEditor =
         this.quotaOverrideControlRow.createChild('input', 'quota-override-notification-editor') as HTMLInputElement;
     this.quotaOverrideControlRow.appendChild(UI.UIUtils.createLabel(i18nString(UIStrings.mb)));
     this.quotaOverrideControlRow.classList.add('hidden');
     this.quotaOverrideEditor.addEventListener('keyup', event => {
       if (event.key === 'Enter') {
-        this.applyQuotaOverrideFromInputField();
+        void this.applyQuotaOverrideFromInputField();
         event.consume(true);
       }
     });
     this.quotaOverrideEditor.addEventListener('focusout', event => {
-      this.applyQuotaOverrideFromInputField();
+      void this.applyQuotaOverrideFromInputField();
       event.consume(true);
     });
 
@@ -313,7 +310,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
       this.quotaOverrideCheckbox.checkboxElement.checked = false;
       this.quotaOverrideErrorMessage.textContent = '';
     }
-    this.doUpdate();
+    void this.doUpdate();
   }
 
   private async applyQuotaOverrideFromInputField(): Promise<void> {
@@ -384,7 +381,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     this.clearButton.disabled = true;
     const label = this.clearButton.textContent;
     this.clearButton.textContent = i18nString(UIStrings.clearing);
-    setTimeout(() => {
+    window.setTimeout(() => {
       this.clearButton.disabled = false;
       this.clearButton.textContent = label;
       this.clearButton.focus();
@@ -394,7 +391,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
   static clear(
       target: SDK.Target.Target, securityOrigin: string, selectedStorageTypes: string[],
       includeThirdPartyCookies: boolean): void {
-    target.storageAgent().invoke_clearDataForOrigin(
+    void target.storageAgent().invoke_clearDataForOrigin(
         {origin: securityOrigin, storageTypes: selectedStorageTypes.join(',')});
 
     const set = new Set(selectedStorageTypes);
@@ -402,7 +399,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     if (set.has(Protocol.Storage.StorageType.Cookies) || hasAll) {
       const cookieModel = target.model(SDK.CookieModel.CookieModel);
       if (cookieModel) {
-        cookieModel.clear(undefined, includeThirdPartyCookies ? undefined : securityOrigin);
+        void cookieModel.clear(undefined, includeThirdPartyCookies ? undefined : securityOrigin);
       }
     }
 
@@ -446,7 +443,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
       return;
     }
 
-    const securityOrigin = /** @type {string} */ (this.securityOrigin);
+    const securityOrigin = this.securityOrigin;
     const response = await this.target.storageAgent().invoke_getUsageAndQuota({origin: securityOrigin});
     this.quotaRow.textContent = '';
     if (response.getError()) {
@@ -475,8 +472,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     if (this.quotaUsage === null || this.quotaUsage !== response.usage) {
       this.quotaUsage = response.usage;
-      /** @type {!Array<!PerfUI.PieChart.Slice>} */
-      const slices = [];
+      const slices: PerfUI.PieChart.Slice[] = [];
       for (const usageForType of response.usageBreakdown.sort((a, b) => b.usage - a.usage)) {
         const value = usageForType.usage;
         if (!value) {

@@ -130,6 +130,7 @@ struct GLColor
 {
     constexpr GLColor() : R(0), G(0), B(0), A(0) {}
     constexpr GLColor(GLubyte r, GLubyte g, GLubyte b, GLubyte a) : R(r), G(g), B(b), A(a) {}
+    GLColor(const angle::Vector3 &floatColor);
     GLColor(const angle::Vector4 &floatColor);
     GLColor(GLuint colorValue);
 
@@ -361,9 +362,6 @@ class ANGLETestBase
   public:
     void setWindowVisible(OSWindow *osWindow, bool isVisible);
 
-    virtual void overrideWorkaroundsD3D(angle::FeaturesD3D *featuresD3D) {}
-    virtual void overrideFeaturesVk(angle::FeaturesVk *featuresVulkan) {}
-
     static void ReleaseFixtures();
 
     bool isSwiftshader() const
@@ -468,6 +466,7 @@ class ANGLETestBase
     void setBindGeneratesResource(bool bindGeneratesResource);
     void setClientArraysEnabled(bool enabled);
     void setRobustResourceInit(bool enabled);
+    void setMutableRenderBuffer(bool enabled);
     void setContextProgramCacheEnabled(bool enabled);
     void setContextResetStrategy(EGLenum resetStrategy);
     void forceNewDisplay();
@@ -482,7 +481,6 @@ class ANGLETestBase
     EGLWindow *getEGLWindow() const;
     int getWindowWidth() const;
     int getWindowHeight() const;
-    bool isEmulatedPrerotation() const;
 
     EGLint getPlatformRenderer() const;
 
@@ -498,7 +496,7 @@ class ANGLETestBase
     // Has a float uniform "u_layer" to choose the 3D texture layer.
     GLuint get3DTexturedQuadProgram();
 
-    class ScopedIgnorePlatformMessages : angle::NonCopyable
+    class ANGLE_NO_DISCARD ScopedIgnorePlatformMessages : angle::NonCopyable
     {
       public:
         ScopedIgnorePlatformMessages();
@@ -532,17 +530,7 @@ class ANGLETestBase
                mCurrentParams->isSwiftshader();
     }
 
-    bool isAsyncCommandQueueFeatureEnabled() const
-    {
-        return mCurrentParams->eglParameters.asyncCommandQueueFeatureVulkan == EGL_TRUE;
-    }
-
     bool platformSupportsMultithreading() const;
-
-    bool isAllocateNonZeroMemoryEnabled() const
-    {
-        return mCurrentParams->getAllocateNonZeroMemoryFeature() == EGL_TRUE;
-    }
 
     bool mIsSetUp = false;
 

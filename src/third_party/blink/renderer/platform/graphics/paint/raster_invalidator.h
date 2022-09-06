@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_
 
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -106,8 +106,8 @@ class PLATFORM_EXPORT RasterInvalidator {
 
   void GenerateRasterInvalidations(RasterInvalidationFunction,
                                    const PaintChunkSubset&,
-                                   const PropertyTreeState& layer_state,
-                                   bool layer_offset_changed,
+                                   bool layer_offset_or_state_changed,
+                                   bool layer_effect_changed,
                                    Vector<PaintChunkInfo>& new_chunks_info);
 
   ALWAYS_INLINE const PaintChunk& GetOldChunk(wtf_size_t index) const;
@@ -154,6 +154,7 @@ class PLATFORM_EXPORT RasterInvalidator {
 
   gfx::Vector2dF layer_offset_;
   gfx::Size layer_bounds_;
+  PropertyTreeState layer_state_ = PropertyTreeState::Root();
   Vector<PaintChunkInfo> old_paint_chunks_info_;
   scoped_refptr<const PaintArtifact> current_paint_artifact_;
   scoped_refptr<const PaintArtifact> old_paint_artifact_;

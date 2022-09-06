@@ -45,8 +45,7 @@ namespace policy {
 namespace {
 class TestTargetPolicy : public TargetPolicy {
  public:
-  void AddRef() override {}
-  void Release() override {}
+  ~TestTargetPolicy() override {}
   ResultCode SetTokenLevel(sandbox::TokenLevel initial,
                            TokenLevel lockdown) override {
     return SBOX_ALL_OK;
@@ -135,7 +134,6 @@ class TestTargetPolicy : public TargetPolicy {
     return blocklisted_dlls_;
   }
 
-  std::unique_ptr<PolicyInfo> GetPolicyInfo() override { return nullptr; }
   void SetAllowNoSandboxJob() override { NOTREACHED(); }
   bool GetAllowNoSandboxJob() override { return false; }
 
@@ -213,7 +211,10 @@ class SandboxWinTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(SandboxWinTest, IsGpuAppContainerEnabled) {
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+  // Unlike the other tests below that merely test App Container behavior, and
+  // can rely on RS1 version check, the GPU App Container feature is gated on
+  // RS5. See sandbox::features::IsAppContainerSandboxSupported.
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS5)
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   EXPECT_FALSE(SandboxWin::IsAppContainerEnabledForSandbox(
@@ -374,18 +375,18 @@ TEST_F(SandboxWinTest, GeneratedPolicyTest) {
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   base::HandlesToInheritVector handles_to_inherit;
   BrokerServices* broker = SandboxFactory::GetBrokerServices();
-  scoped_refptr<TargetPolicy> policy = broker->CreatePolicy();
+  auto policy = broker->CreatePolicy();
   // PreSpawn should get called, but not modifying the policy for this test.
   EXPECT_CALL(test_renderer_delegate, PreSpawnTarget(_)).WillOnce(Return(true));
   ResultCode result = SandboxWin::GeneratePolicyForSandboxedProcess(
       cmd_line, switches::kRendererProcess, handles_to_inherit,
-      &test_renderer_delegate, policy);
+      &test_renderer_delegate, policy.get());
   ASSERT_EQ(ResultCode::SBOX_ALL_OK, result);
   // Check some default values come back. No need to check the exact policy in
   // detail, but just that GeneratePolicyForSandboxedProcess generated some kind
   // of valid policy.
   EXPECT_EQ(IntegrityLevel::INTEGRITY_LEVEL_LOW, policy->GetIntegrityLevel());
-  EXPECT_EQ(JobLevel::JOB_LOCKDOWN, policy->GetJobLevel());
+  EXPECT_EQ(JobLevel::kLockdown, policy->GetJobLevel());
   EXPECT_EQ(TokenLevel::USER_LOCKDOWN, policy->GetLockdownTokenLevel());
 }
 
@@ -395,14 +396,14 @@ TEST_F(SandboxWinTest, GeneratedPolicyTestNoSandbox) {
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   base::HandlesToInheritVector handles_to_inherit;
   BrokerServices* broker = SandboxFactory::GetBrokerServices();
-  scoped_refptr<TargetPolicy> policy = broker->CreatePolicy();
+  auto policy = broker->CreatePolicy();
   // Unsandboxed processes never call the delegate prespawn as there is no
   // policy.
   EXPECT_CALL(test_unsandboxed_delegate, PreSpawnTarget(_)).Times(0);
 
   ResultCode result = SandboxWin::GeneratePolicyForSandboxedProcess(
       cmd_line, switches::kRendererProcess, handles_to_inherit,
-      &test_unsandboxed_delegate, policy);
+      &test_unsandboxed_delegate, policy.get());
   ASSERT_EQ(ResultCode::SBOX_ERROR_UNSANDBOXED_PROCESS, result);
 }
 

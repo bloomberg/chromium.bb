@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -172,7 +171,7 @@ bool IsModifierKey(char16_t key) {
 bool KeyCodeFromSpecialWebDriverKey(char16_t key, ui::KeyboardCode* key_code) {
   int index = static_cast<int>(key) - 0xE000U;
   bool is_special_key =
-      index >= 0 && index < static_cast<int>(base::size(kSpecialWebDriverKeys));
+      index >= 0 && index < static_cast<int>(std::size(kSpecialWebDriverKeys));
   if (is_special_key)
     *key_code = kSpecialWebDriverKeys[index];
   return is_special_key;
@@ -578,7 +577,7 @@ Status ConvertKeysToKeyEvents(const std::u16string& client_keys,
     }
 
     // Create the key events.
-    int number_modifiers = base::size(kModifiers);
+    int number_modifiers = std::size(kModifiers);
     bool necessary_modifiers[number_modifiers];
     for (int j = 0; j < number_modifiers; ++j) {
       necessary_modifiers[j] = all_modifiers & kModifiers[j].mask &&
@@ -624,13 +623,14 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
     return Status(kUnknownError, "missing 'value'");
 
   int32_t char_index = 0;
-  uint32_t code_point;
+  base_icu::UChar32 code_point;
   base::ReadUnicodeCharacter(raw_key.c_str(), raw_key.size(), &char_index,
                              &code_point);
 
   std::string key;
   if (code_point >= kNormalisedKeyValueBase &&
-      code_point < kNormalisedKeyValueBase + base::size(kNormalisedKeyValue)) {
+      code_point < base_icu::UChar32{kNormalisedKeyValueBase +
+                                     std::size(kNormalisedKeyValue)}) {
     key = kNormalisedKeyValue[code_point - kNormalisedKeyValueBase];
   }
   if (key.size() == 0)
@@ -639,7 +639,7 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
   base::DictionaryValue* pressed;
   if (!input_state->GetDictionary("pressed", &pressed))
     return Status(kUnknownError, "missing 'pressed'");
-  bool already_pressed = pressed->HasKey(key);
+  bool already_pressed = pressed->FindKey(key);
   if (!is_key_down && !already_pressed)
     return Status(kOk);
 
@@ -653,9 +653,11 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
     }
   }
 
-  int modifiers;
-  if (!input_state->GetInteger("modifiers", &modifiers))
+  absl::optional<int> maybe_modifiers = input_state->FindIntKey("modifiers");
+  if (!maybe_modifiers)
     return Status(kUnknownError, "missing 'modifiers'");
+
+  int modifiers = *maybe_modifiers;
 
   bool is_modifier_key = false;
   bool is_special_key = false;
@@ -754,9 +756,9 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
   }
 
   if (is_key_down)
-    pressed->SetBoolean(key, true);
+    pressed->GetDict().Set(key, true);
   else
-    pressed->RemoveKey(key);
+    pressed->GetDict().Remove(key);
 
   KeyEventBuilder builder;
   builder.SetKeyCode(key_code)

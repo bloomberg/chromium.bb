@@ -19,6 +19,15 @@ HttpsEngagementPageLoadMetricsObserver::HttpsEngagementPageLoadMetricsObserver(
       HttpsEngagementServiceFactory::GetForBrowserContext(context);
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+HttpsEngagementPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class is interested only in the primary page's end of life timing,
+  // and doesn't need to continue observing FencedFrame pages.
+  return STOP_OBSERVING;
+}
+
 void HttpsEngagementPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!GetDelegate().DidCommit() || !GetDelegate().GetUrl().is_valid()) {

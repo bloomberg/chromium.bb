@@ -28,7 +28,7 @@
 #include "modules/video_coding/media_opt_util.h"
 #include "modules/video_coding/packet.h"
 #include "modules/video_coding/receiver.h"
-#include "modules/video_coding/timing.h"
+#include "modules/video_coding/timing/timing.h"
 #include "modules/video_coding/video_coding_impl.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/location.h"
@@ -40,11 +40,13 @@
 namespace webrtc {
 namespace vcm {
 
-VideoReceiver::VideoReceiver(Clock* clock, VCMTiming* timing)
+VideoReceiver::VideoReceiver(Clock* clock,
+                             VCMTiming* timing,
+                             const FieldTrialsView& field_trials)
     : clock_(clock),
       _timing(timing),
-      _receiver(_timing, clock_),
-      _decodedFrameCallback(_timing, clock_),
+      _receiver(_timing, clock_, field_trials),
+      _decodedFrameCallback(_timing, clock_, field_trials),
       _frameTypeCallback(nullptr),
       _packetRequestCallback(nullptr),
       _scheduleKeyRequest(false),
@@ -203,8 +205,9 @@ int32_t VideoReceiver::Decode(uint16_t maxWaitTimeMs) {
   }
 
   // If this frame was too late, we should adjust the delay accordingly
-  _timing->UpdateCurrentDelay(frame->RenderTimeMs(),
-                              clock_->TimeInMilliseconds());
+  if (frame->RenderTimeMs() > 0)
+    _timing->UpdateCurrentDelay(Timestamp::Millis(frame->RenderTimeMs()),
+                                clock_->CurrentTime());
 
   if (first_frame_received_()) {
     RTC_LOG(LS_INFO) << "Received first complete decodable video frame";

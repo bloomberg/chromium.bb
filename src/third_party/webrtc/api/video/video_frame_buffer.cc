@@ -11,6 +11,8 @@
 #include "api/video/video_frame_buffer.h"
 
 #include "api/video/i420_buffer.h"
+#include "api/video/i422_buffer.h"
+#include "api/video/i444_buffer.h"
 #include "api/video/nv12_buffer.h"
 #include "rtc_base/checks.h"
 
@@ -46,6 +48,11 @@ const I444BufferInterface* VideoFrameBuffer::GetI444() const {
   return static_cast<const I444BufferInterface*>(this);
 }
 
+const I422BufferInterface* VideoFrameBuffer::GetI422() const {
+  RTC_CHECK(type() == Type::kI422);
+  return static_cast<const I422BufferInterface*>(this);
+}
+
 const I010BufferInterface* VideoFrameBuffer::GetI010() const {
   RTC_CHECK(type() == Type::kI010);
   return static_cast<const I010BufferInterface*>(this);
@@ -76,6 +83,8 @@ const char* VideoFrameBufferTypeToString(VideoFrameBuffer::Type type) {
       return "kI420A";
     case VideoFrameBuffer::Type::kI444:
       return "kI444";
+    case VideoFrameBuffer::Type::kI422:
+      return "kI422";
     case VideoFrameBuffer::Type::kI010:
       return "kI010";
     case VideoFrameBuffer::Type::kNV12:
@@ -94,7 +103,7 @@ int I420BufferInterface::ChromaHeight() const {
 }
 
 rtc::scoped_refptr<I420BufferInterface> I420BufferInterface::ToI420() {
-  return this;
+  return rtc::scoped_refptr<I420BufferInterface>(this);
 }
 
 const I420BufferInterface* I420BufferInterface::GetI420() const {
@@ -115,6 +124,44 @@ int I444BufferInterface::ChromaWidth() const {
 
 int I444BufferInterface::ChromaHeight() const {
   return height();
+}
+
+rtc::scoped_refptr<VideoFrameBuffer> I444BufferInterface::CropAndScale(
+    int offset_x,
+    int offset_y,
+    int crop_width,
+    int crop_height,
+    int scaled_width,
+    int scaled_height) {
+  rtc::scoped_refptr<I444Buffer> result =
+      I444Buffer::Create(scaled_width, scaled_height);
+  result->CropAndScaleFrom(*this, offset_x, offset_y, crop_width, crop_height);
+  return result;
+}
+
+VideoFrameBuffer::Type I422BufferInterface::type() const {
+  return Type::kI422;
+}
+
+int I422BufferInterface::ChromaWidth() const {
+  return (width() + 1) / 2;
+}
+
+int I422BufferInterface::ChromaHeight() const {
+  return height();
+}
+
+rtc::scoped_refptr<VideoFrameBuffer> I422BufferInterface::CropAndScale(
+    int offset_x,
+    int offset_y,
+    int crop_width,
+    int crop_height,
+    int scaled_width,
+    int scaled_height) {
+  rtc::scoped_refptr<I422Buffer> result =
+      I422Buffer::Create(scaled_width, scaled_height);
+  result->CropAndScaleFrom(*this, offset_x, offset_y, crop_width, crop_height);
+  return result;
 }
 
 VideoFrameBuffer::Type I010BufferInterface::type() const {

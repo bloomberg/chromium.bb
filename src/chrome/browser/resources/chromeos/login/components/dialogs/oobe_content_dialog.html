@@ -105,6 +105,15 @@
         display: none;
       }
 
+      :host([fullscreen]) #scrollContainer {
+        padding-inline-end: 0;
+        padding-inline-start: 0;
+      }
+
+      :host([fullscreen]) #contentContainer {
+        width: 100%;
+      }
+
       .bottom-buttons-container {
         padding-bottom: var(--oobe-adaptive-dialog-buttons-vertical-padding);
         padding-inline-end:
@@ -128,7 +137,7 @@
       #oobe-icon-div ::slotted(iron-icon) {
         --iron-icon-height: 32px;
         --iron-icon-width: 32px;
-        --iron-icon-fill-color: var(--google-blue-600);
+        --iron-icon-fill-color: var(--cros-icon-color-blue);
       }
     </style>
     <cr-lazy-render id="lazy">

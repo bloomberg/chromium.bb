@@ -53,6 +53,8 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   void CacheWebContents(
       const std::vector<std::unique_ptr<TabStripModel::DetachedWebContents>>&
           web_contents) override;
+  void FollowSite(content::WebContents* web_contents) override;
+  void UnfollowSite(content::WebContents* web_contents) override;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_

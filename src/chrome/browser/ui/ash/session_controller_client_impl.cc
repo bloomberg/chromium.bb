@@ -16,6 +16,7 @@
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -26,8 +27,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -37,15 +38,13 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/notification_service.h"
-#include "mojo/public/cpp/bindings/equals_traits.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
@@ -56,6 +55,10 @@ using session_manager::SessionState;
 using user_manager::User;
 using user_manager::UserList;
 using user_manager::UserManager;
+
+// TODO(b/228873153): Remove after figuring out the root cause of the bug
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace {
 
@@ -84,7 +87,7 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   const uint32_t user_session_id = GetSessionId(user);
   DCHECK_NE(0u, user_session_id);
 
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(&user);
   DCHECK(profile);
 
   auto session = std::make_unique<ash::UserSession>();
@@ -129,27 +132,13 @@ void OnAcceptMultiprofilesIntroDialog(bool accept, bool never_show_again) {
 
 }  // namespace
 
-namespace mojo {
-
-// When comparing two mojom::UserSession objects we need to decide if the avatar
-// images are changed. Consider them equal if they have the same storage rather
-// than comparing the backing pixels.
-template <>
-struct EqualsTraits<gfx::ImageSkia> {
-  static bool Equals(const gfx::ImageSkia& a, const gfx::ImageSkia& b) {
-    return a.BackedBySameObjectAs(b);
-  }
-};
-
-}  // namespace mojo
-
 SessionControllerClientImpl::SessionControllerClientImpl() {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
+  subscription_ = browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
+      &SessionControllerClientImpl::OnAppTerminating, base::Unretained(this)));
 
   local_state_registrar_ = std::make_unique<PrefChangeRegistrar>();
   local_state_registrar_->Init(g_browser_process->local_state());
@@ -299,7 +288,7 @@ void SessionControllerClientImpl::EmitAshInitialized() {
 }
 
 PrefService* SessionControllerClientImpl::GetSigninScreenPrefService() {
-  return chromeos::ProfileHelper::Get()->GetSigninProfile()->GetPrefs();
+  return ash::ProfileHelper::Get()->GetSigninProfile()->GetPrefs();
 }
 
 PrefService* SessionControllerClientImpl::GetUserPrefService(
@@ -375,7 +364,7 @@ bool SessionControllerClientImpl::CanLockScreen() {
 bool SessionControllerClientImpl::ShouldLockScreenAutomatically() {
   const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
   for (auto* user : logged_in_users) {
-    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
     if (profile &&
         profile->GetPrefs()->GetBoolean(ash::prefs::kEnableAutoScreenLock)) {
       return true;
@@ -425,8 +414,9 @@ void SessionControllerClientImpl::DoLockScreen() {
   if (!CanLockScreen())
     return;
 
-  VLOG(1) << "Requesting screen lock from SessionControllerClientImpl";
-  chromeos::SessionManagerClient::Get()->RequestLockScreen();
+  VLOG(1) << "b/228873153 : Requesting screen lock from "
+             "SessionControllerClientImpl";
+  ash::SessionManagerClient::Get()->RequestLockScreen();
 }
 
 // static
@@ -499,33 +489,23 @@ void SessionControllerClientImpl::OnSessionStateChanged() {
 void SessionControllerClientImpl::OnUserProfileLoaded(
     const AccountId& account_id) {
   OnLoginUserProfilePrepared(
-      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id));
+      ash::ProfileHelper::Get()->GetProfileByAccountId(account_id));
 }
 
 void SessionControllerClientImpl::OnCustodianInfoChanged() {
   DCHECK(supervised_user_profile_);
-  User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
-      supervised_user_profile_);
+  User* user =
+      ash::ProfileHelper::Get()->GetUserByProfile(supervised_user_profile_);
   if (user)
     SendUserSession(*user);
 }
 
-void SessionControllerClientImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      session_controller_->NotifyChromeTerminating();
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
-      break;
-  }
+void SessionControllerClientImpl::OnAppTerminating() {
+  session_controller_->NotifyChromeTerminating();
 }
 
 void SessionControllerClientImpl::OnLoginUserProfilePrepared(Profile* profile) {
-  const User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  const User* user = ash::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
 
   if (profile->IsChild()) {
@@ -583,7 +563,7 @@ void SessionControllerClientImpl::SendUserSession(const User& user) {
   // Check user profile via GetProfileByUser() instead of is_profile_created()
   // flag because many tests have only setup testing user profile in
   // ProfileHelper but do not have the flag updated.
-  if (!chromeos::ProfileHelper::Get()->GetProfileByUser(&user)) {
+  if (!ash::ProfileHelper::Get()->GetProfileByUser(&user)) {
     pending_users_.insert(user.GetAccountId());
     return;
   }

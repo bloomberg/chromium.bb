@@ -30,10 +30,11 @@
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
-#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
+#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/mojom/event_router.mojom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "url/gurl.h"
 
@@ -118,7 +119,7 @@ class EventRouter : public KeyedService,
   // methods BroadcastEvent or DispatchEventToExtension.
   // Note that this method will dispatch the event with
   // UserGestureState:USER_GESTURE_UNKNOWN.
-  static void DispatchEventToSender(IPC::Sender* ipc_sender,
+  static void DispatchEventToSender(content::RenderProcessHost* rph,
                                     content::BrowserContext* browser_context,
                                     const std::string& extension_id,
                                     events::HistogramValue histogram_value,
@@ -126,7 +127,7 @@ class EventRouter : public KeyedService,
                                     int render_process_id,
                                     int worker_thread_id,
                                     int64_t service_worker_version_id,
-                                    std::unique_ptr<base::ListValue> event_args,
+                                    base::Value::List event_args,
                                     mojom::EventFilteringInfoPtr info);
 
   // Returns false when the event is scoped to a context and the listening
@@ -341,6 +342,8 @@ class EventRouter : public KeyedService,
       UpdateHostAccess_UnrequestedHostsDispatchUpdateEvents);
   FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiUnitTest,
                            ExtensionUpdatedEventOnPermissionsChange);
+  FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiUnitTest,
+                           OnUserSiteSettingsChanged);
   FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiAllowlistUnitTest,
                            ExtensionUpdatedEventOnAllowlistWarningChange);
   FRIEND_TEST_ALL_PREFIXES(StorageApiUnittest, StorageAreaOnChanged);
@@ -356,13 +359,13 @@ class EventRouter : public KeyedService,
 
   // TODO(gdk): Document this.
   static void DispatchExtensionMessage(
-      IPC::Sender* ipc_sender,
+      content::RenderProcessHost* rph,
       int worker_thread_id,
       content::BrowserContext* browser_context,
       const std::string& extension_id,
       int event_id,
       const std::string& event_name,
-      base::ListValue* event_args,
+      base::Value::List event_args,
       UserGestureState user_gesture,
       extensions::mojom::EventFilteringInfoPtr info);
 
@@ -414,7 +417,7 @@ class EventRouter : public KeyedService,
                               content::RenderProcessHost* process,
                               int64_t service_worker_version_id,
                               int worker_thread_id,
-                              Event* event,
+                              const Event& event,
                               const base::DictionaryValue* listener_filter,
                               bool did_enqueue);
 
@@ -444,6 +447,10 @@ class EventRouter : public KeyedService,
                                int event_id,
                                const std::string& event_name,
                                int64_t service_worker_version_id);
+
+  void RouteDispatchEvent(content::RenderProcessHost* rph,
+                          mojom::DispatchEventParamsPtr params,
+                          base::Value::List event_args);
 
   // static
   static void DoDispatchEventToSenderBookkeeping(
@@ -494,6 +501,10 @@ class EventRouter : public KeyedService,
 
   EventAckData event_ack_data_;
 
+  std::map<content::RenderProcessHost*,
+           mojo::AssociatedRemote<mojom::EventDispatcher>>
+      rph_dispatcher_map_;
+
   // All the Mojo receivers for the EventRouter. Keeps track of the render
   // process id.
   mojo::AssociatedReceiverSet<mojom::EventRouter, int /*render_process_id*/>
@@ -505,12 +516,13 @@ class EventRouter : public KeyedService,
 struct Event {
   // This callback should return true if the event should be dispatched to the
   // given context and extension, and false otherwise.
-  using WillDispatchCallback =
-      base::RepeatingCallback<bool(content::BrowserContext*,
-                                   Feature::Context,
-                                   const Extension*,
-                                   Event*,
-                                   const base::DictionaryValue*)>;
+  using WillDispatchCallback = base::RepeatingCallback<bool(
+      content::BrowserContext*,
+      Feature::Context,
+      const Extension*,
+      const base::DictionaryValue*,
+      std::unique_ptr<base::Value::List>* event_args_out,
+      mojom::EventFilteringInfoPtr* event_filtering_info_out)>;
 
   // The identifier for the event, for histograms. In most cases this
   // correlates 1:1 with |event_name|, in some cases events will generate
@@ -539,10 +551,11 @@ struct Event {
   mojom::EventFilteringInfoPtr filter_info;
 
   // If specified, this is called before dispatching an event to each
-  // extension. The third argument is a mutable reference to event_args,
-  // allowing the caller to provide different arguments depending on the
-  // extension and profile. This is guaranteed to be called synchronously with
+  // extension. This is guaranteed to be called synchronously with
   // DispatchEvent, so callers don't need to worry about lifetime.
+  // The args |event_args_out|, |event_filtering_info_out| allows caller to
+  // provide modified `Event::event_args`, `Event::filter_info` depending on the
+  // extension and profile.
   //
   // NOTE: the Extension argument to this may be NULL because it's possible for
   // this event to be dispatched to non-extension processes, like WebUI.

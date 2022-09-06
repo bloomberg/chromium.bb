@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//ios/build/config.gni")
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("js_messaging") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -126,17 +126,17 @@ source_set("scoped_wk_script_message_handler") {
   ]
 }
 
-js_compile_bundle("setup_frame_js") {
+optimize_js("setup_frame_js") {
   visibility = [ ":js_messaging" ]
-  closure_entry_point = "__crWeb.setupFrame"
 
+  primary_script = "resources/setup_frame.js"
   sources = [ "resources/setup_frame.js" ]
 }
 
-js_compile_bundle("frame_listeners_js") {
+optimize_js("frame_listeners_js") {
   visibility = [ ":js_messaging" ]
-  closure_entry_point = "__crWeb.frameListeners"
 
+  primary_script = "resources/frame_listeners.js"
   sources = [ "resources/frame_listeners.js" ]
 }
 
@@ -155,9 +155,12 @@ source_set("unittests") {
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public/js_messaging",
     "//ios/web/public/test",
+    "//ios/web/public/test:test_fixture",
     "//ios/web/public/test/fakes",
+    "//ios/web/test:js_test_util_internal",
     "//ios/web/test/fakes",
     "//ios/web/web_state:web_state_impl_header",
+    "//ios/web/web_state/ui:web_controller_header",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -194,10 +197,13 @@ source_set("inttests") {
     "//ios/web/public",
     "//ios/web/public/js_messaging",
     "//ios/web/public/test",
+    "//ios/web/public/test:test_fixture",
     "//ios/web/public/test:util",
     "//ios/web/public/test/fakes",
+    "//ios/web/test:js_test_util_internal",
     "//ios/web/test:test_support",
     "//ios/web/test/fakes",
+    "//ios/web/web_state/ui:web_controller_header",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider_header",
     "//net:test_support",
     "//testing/gmock",

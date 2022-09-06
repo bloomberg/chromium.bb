@@ -11,11 +11,16 @@ import * as ARIAUtils from './ARIAUtils.js';
 import type {ContextMenu, Provider} from './ContextMenu.js';
 import {html} from './Fragment.js';
 import {Tooltip} from './Tooltip.js';
-import {addReferrerToURLIfNecessary, copyLinkAddressLabel, MaxLengthForDisplayedURLs, openLinkExternallyLabel} from './UIUtils.js';
+import {
+  addReferrerToURLIfNecessary,
+  copyLinkAddressLabel,
+  MaxLengthForDisplayedURLs,
+  openLinkExternallyLabel,
+} from './UIUtils.js';
 import {XElement} from './XElement.js';
 
 export class XLink extends XElement {
-  hrefInternal: string|null;
+  hrefInternal: Platform.DevToolsPath.UrlString|null;
   private clickable: boolean;
   private readonly onClick: (arg0: Event) => void;
   private readonly onKeyDown: (arg0: Event) => void;
@@ -30,7 +35,7 @@ export class XLink extends XElement {
   <x-link href='${url}' tabindex="0" class='${className} devtools-link' ${preventClick ? 'no-click' : ''}
   >${Platform.StringUtilities.trimMiddle(linkText, MaxLengthForDisplayedURLs)}</x-link>`;
     // clang-format on
-    return /** @type {!HTMLElement} */ element as HTMLElement;
+    return element as HTMLElement;
   }
 
   constructor() {
@@ -47,13 +52,17 @@ export class XLink extends XElement {
 
     this.onClick = (event: Event): void => {
       event.consume(true);
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab((this.hrefInternal as string));
+      if (this.hrefInternal) {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.hrefInternal);
+      }
       this.dispatchEvent(new Event('x-link-invoke'));
     };
     this.onKeyDown = (event: Event): void => {
       if (isEnterOrSpaceKey(event)) {
         event.consume(true);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab((this.hrefInternal as string));
+        if (this.hrefInternal) {
+          Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.hrefInternal);
+        }
       }
       this.dispatchEvent(new Event('x-link-invoke'));
     };
@@ -64,7 +73,7 @@ export class XLink extends XElement {
     return XElement.observedAttributes.concat(['href', 'no-click']);
   }
 
-  get href(): string|null {
+  get href(): Platform.DevToolsPath.UrlString|null {
     return this.hrefInternal;
   }
 
@@ -80,11 +89,11 @@ export class XLink extends XElement {
       if (!newValue) {
         newValue = '';
       }
-      let href: string|null = null;
+      let href: Platform.DevToolsPath.UrlString|null = null;
       let url: URL|null = null;
       try {
-        url = new URL(addReferrerToURLIfNecessary(newValue));
-        href = url.toString();
+        url = new URL(addReferrerToURLIfNecessary(newValue as Platform.DevToolsPath.UrlString));
+        href = url.toString() as Platform.DevToolsPath.UrlString;
       } catch {
       }
       if (url && url.protocol === 'javascript:') {

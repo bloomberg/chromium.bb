@@ -59,7 +59,7 @@ extern const base::Feature kMigrateAlwaysTranslateLanguagesFix;
 
 // Minimum number of times the user must accept a translation before we show
 // a shortcut to the "Always Translate" functionality.
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // The "Always Translate" shortcut is always shown on iOS and Android.
 constexpr int kAlwaysTranslateShortcutMinimumAccepts = 1;
 #else
@@ -70,18 +70,16 @@ constexpr int kAlwaysTranslateShortcutMinimumAccepts = 3;
 // a shortcut to the "Never Translate" functionality.
 // Android and iOS implementations do not offer a drop down (for space reasons),
 // so we are more aggressive about showing this shortcut.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // On Android, this shows the "Never Translate" shortcut after two denials just
 // like on iOS. However, the last event is not counted so we must subtract one
 // to get the same behavior.
 constexpr int kNeverTranslateShortcutMinimumDenials = 1;
-#elif defined(OS_IOS)
+#elif BUILDFLAG(IS_IOS)
 constexpr int kNeverTranslateShortcutMinimumDenials = 2;
 #else
 constexpr int kNeverTranslateShortcutMinimumDenials = 3;
 #endif
-
-class TranslateAcceptLanguages;
 
 // This class holds various info about a language, that are related to Translate
 // Preferences and Language Settings.
@@ -119,11 +117,11 @@ class TranslatePrefs {
   static const char kPrefTranslateAcceptedCount[];
   // Deprecated 10/2021.
   static const char kPrefAlwaysTranslateListDeprecated[];
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   static const char kPrefTranslateAutoAlwaysCount[];
   static const char kPrefTranslateAutoNeverCount[];
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static const char kPrefExplicitLanguageAskShown[];
 #endif
 
@@ -289,7 +287,7 @@ class TranslatePrefs {
   void IncrementTranslationAcceptedCount(base::StringPiece language);
   void ResetTranslationAcceptedCount(base::StringPiece language);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   // These methods are used to track how many times the auto-always translation
   // has been triggered for a specific language.
   int GetTranslationAutoAlwaysCount(base::StringPiece language) const;
@@ -303,7 +301,7 @@ class TranslatePrefs {
   void ResetTranslationAutoNeverCount(base::StringPiece language);
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // These methods are used to determine whether the explicit language ask
   // prompt was displayed to the user already.
   bool GetExplicitLanguageAskPromptShown() const;
@@ -322,8 +320,7 @@ class TranslatePrefs {
   // Gets the user selected language list from language settings.
   void GetUserSelectedLanguageList(std::vector<std::string>* languages) const;
 
-  bool CanTranslateLanguage(TranslateAcceptLanguages* accept_languages,
-                            base::StringPiece language);
+  bool CanTranslateLanguage(base::StringPiece language);
   bool ShouldAutoTranslate(base::StringPiece source_language,
                            std::string* target_language);
   // True if the detailed language settings are enabled for this user.

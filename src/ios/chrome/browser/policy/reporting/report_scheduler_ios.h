@@ -23,7 +23,7 @@ class ReportSchedulerIOS : public ReportScheduler::Delegate {
   ~ReportSchedulerIOS() override;
 
   // ReportScheduler::Delegate implementation.
-  PrefService* GetLocalState() override;
+  PrefService* GetPrefService() override;
   void StartWatchingUpdatesIfNeeded(base::Time last_upload,
                                     base::TimeDelta upload_interval) override;
   void StopWatchingUpdates() override;
@@ -31,6 +31,8 @@ class ReportSchedulerIOS : public ReportScheduler::Delegate {
   void StartWatchingExtensionRequestIfNeeded() override;
   void StopWatchingExtensionRequest() override;
   void OnExtensionRequestUploaded() override;
+  policy::DMToken GetProfileDMToken() override;
+  std::string GetProfileClientId() override;
 };
 
 }  // namespace enterprise_reporting

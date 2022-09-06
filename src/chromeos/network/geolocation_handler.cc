@@ -22,7 +22,10 @@ constexpr const char* kDevicePropertyNames[] = {
     shill::kGeoWifiAccessPointsProperty, shill::kGeoCellTowersProperty};
 
 std::string HexToDecimal(std::string hex_str) {
-  return std::to_string(std::stoi(hex_str, nullptr, 16));
+  int result;
+  if (!base::HexStringToInt(hex_str, &result))
+    return std::string();
+  return base::NumberToString(result);
 }
 
 std::string FindStringOrEmpty(const base::Value& dict,
@@ -111,14 +114,13 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
                                                const base::Value& value) {
   if (key != shill::kEnabledTechnologiesProperty)
     return;
-  const base::ListValue* technologies = nullptr;
-  if (!value.GetAsList(&technologies) || !technologies)
+  if (!value.is_list())
     return;
   bool wifi_was_enabled = wifi_enabled_;
   bool cellular_was_enabled = cellular_enabled_;
   cellular_enabled_ = false;
   wifi_enabled_ = false;
-  for (const auto& entry : technologies->GetList()) {
+  for (const auto& entry : value.GetListDeprecated()) {
     const std::string* technology = entry.GetIfString();
     if (technology && *technology == shill::kTypeWifi) {
       wifi_enabled_ = true;
@@ -174,7 +176,7 @@ void GeolocationHandler::GeolocationCallback(
     }
 
     // List[Dictionary<key, value_str>]
-    for (const auto& entry : entry_list->GetList()) {
+    for (const auto& entry : entry_list->GetListDeprecated()) {
       if (!entry.is_dict()) {
         LOG(WARNING) << "Geolocation list value not a Dictionary";
         continue;

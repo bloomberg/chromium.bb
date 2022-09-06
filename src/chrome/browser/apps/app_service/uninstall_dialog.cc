@@ -22,11 +22,9 @@ constexpr int32_t kUninstallIconSize = 48;
 namespace apps {
 
 UninstallDialog::UninstallDialog(Profile* profile,
-                                 apps::mojom::AppType app_type,
+                                 apps::AppType app_type,
                                  const std::string& app_id,
                                  const std::string& app_name,
-                                 apps::mojom::IconKeyPtr mojom_icon_key,
-                                 apps::IconLoader* icon_loader,
                                  gfx::NativeWindow parent_window,
                                  UninstallCallback uninstall_callback)
     : profile_(profile),
@@ -37,20 +35,26 @@ UninstallDialog::UninstallDialog(Profile* profile,
       uninstall_callback_(std::move(uninstall_callback)) {
   if (parent_window)
     parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
+}
 
-  switch (app_type) {
-    case apps::mojom::AppType::kArc:
-    case apps::mojom::AppType::kBorealis:
-    case apps::mojom::AppType::kPluginVm:
+UninstallDialog::~UninstallDialog() = default;
+
+void UninstallDialog::PrepareToShow(IconKey icon_key,
+                                    apps::IconLoader* icon_loader) {
+  switch (app_type_) {
+    case apps::AppType::kArc:
+    case apps::AppType::kBorealis:
+    case apps::AppType::kPluginVm:
       break;
-    case apps::mojom::AppType::kCrostini:
+    case apps::AppType::kCrostini:
       // Crostini icons might be a big image, and not fit the size, so add the
       // resize icon effect, to resize the image.
-      mojom_icon_key->icon_effects = static_cast<apps::IconEffects>(
-          mojom_icon_key->icon_effects | apps::IconEffects::kResizeAndPad);
+      icon_key.icon_effects = static_cast<apps::IconEffects>(
+          icon_key.icon_effects | apps::IconEffects::kMdIconStyle);
       break;
-    case apps::mojom::AppType::kChromeApp:
-    case apps::mojom::AppType::kWeb:
+    case apps::AppType::kChromeApp:
+    case apps::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kWeb:
       UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallSource",
                                 extensions::UNINSTALL_SOURCE_APP_LIST,
                                 extensions::NUM_UNINSTALL_SOURCES);
@@ -59,45 +63,42 @@ UninstallDialog::UninstallDialog(Profile* profile,
       NOTREACHED();
       return;
   }
+
   constexpr bool kAllowPlaceholderIcon = false;
   // Currently ARC apps only support 48*48 native icon.
   int32_t size_hint_in_dip = kUninstallIconSize;
   if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
-    std::unique_ptr<IconKey> icon_key =
-        ConvertMojomIconKeyToIconKey(mojom_icon_key);
     auto icon_type = IconType::kStandard;
     icon_loader->LoadIconFromIconKey(
-        ConvertMojomAppTypToAppType(app_type), app_id, *icon_key, icon_type,
-        size_hint_in_dip, kAllowPlaceholderIcon,
+        app_type_, app_id_, icon_key, icon_type, size_hint_in_dip,
+        kAllowPlaceholderIcon,
         base::BindOnce(&UninstallDialog::OnLoadIcon,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     auto mojom_icon_type = apps::mojom::IconType::kStandard;
     icon_loader->LoadIconFromIconKey(
-        app_type, app_id, std::move(mojom_icon_key), mojom_icon_type,
+        ConvertAppTypeToMojomAppType(app_type_), app_id_,
+        ConvertIconKeyToMojomIconKey(icon_key), mojom_icon_type,
         size_hint_in_dip, kAllowPlaceholderIcon,
         MojomIconValueToIconValueCallback(base::BindOnce(
             &UninstallDialog::OnLoadIcon, weak_ptr_factory_.GetWeakPtr())));
   }
 }
 
-UninstallDialog::~UninstallDialog() = default;
+views::Widget* UninstallDialog::GetWidget() {
+  return widget_;
+}
 
 void UninstallDialog::OnDialogClosed(bool uninstall,
                                      bool clear_site_data,
                                      bool report_abuse) {
-  if (!uninstall && (app_type_ == apps::mojom::AppType::kChromeApp ||
-                     app_type_ == apps::mojom::AppType::kWeb)) {
-    ExtensionAppsChromeOs::RecordUninstallCanceledAction(profile_, app_id_);
-  }
-
   std::move(uninstall_callback_)
       .Run(uninstall, clear_site_data, report_abuse, this);
 }
 
 void UninstallDialog::SetDialogCreatedCallbackForTesting(
-    base::OnceClosure callback) {
-  dialog_created_callback_ = std::move(callback);
+    OnUninstallForTestingCallback callback) {
+  uninstall_dialog_created_callback_ = std::move(callback);
 }
 
 void UninstallDialog::OnLoadIcon(IconValuePtr icon_value) {
@@ -112,13 +113,13 @@ void UninstallDialog::OnLoadIcon(IconValuePtr icon_value) {
     return;
   }
 
-  UiBase::Create(profile_, app_type_, app_id_, app_name_,
-                 icon_value->uncompressed, parent_window_, this);
+  widget_ = UiBase::Create(profile_, app_type_, app_id_, app_name_,
+                           icon_value->uncompressed, parent_window_, this);
 
   // For browser tests, if the callback is set, run the callback to stop the run
   // loop.
-  if (!dialog_created_callback_.is_null()) {
-    std::move(dialog_created_callback_).Run();
+  if (!uninstall_dialog_created_callback_.is_null()) {
+    std::move(uninstall_dialog_created_callback_).Run(true);
   }
 }
 

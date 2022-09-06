@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_TAILORED_SECURITY_TAILORED_SECURITY_URL_OBSERVER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_TAILORED_SECURITY_TAILORED_SECURITY_URL_OBSERVER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/safe_browsing/tailored_security/unconsented_message_android.h"
 #endif
 
@@ -56,20 +57,23 @@ class TailoredSecurityUrlObserver
 
   friend class content::WebContentsUserData<TailoredSecurityUrlObserver>;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void MessageDismissed();
 
   std::unique_ptr<TailoredSecurityUnconsentedMessageAndroid> message_;
 #endif
 
   // Reference to the TailoredSecurityService for this profile.
-  TailoredSecurityService* service_;
+  raw_ptr<TailoredSecurityService> service_;
 
   // Whether the WebContents is currently in focus.
   bool focused_ = false;
 
   // The most recent URL the WebContents navigated to.
   GURL last_url_;
+
+  // Whether we currently have a query request.
+  bool has_query_request_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

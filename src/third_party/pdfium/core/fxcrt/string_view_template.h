@@ -72,10 +72,10 @@ class StringViewTemplate {
           0) noexcept
       : m_Span(other) {}
 
-  // Deliberately implicit to avoid calling on every string literal.
+  // Deliberately implicit to avoid calling on every char literal.
   // |ch| must be an lvalue that outlives the StringViewTemplate.
   // NOLINTNEXTLINE(runtime/explicit)
-  constexpr StringViewTemplate(CharType& ch) noexcept
+  constexpr StringViewTemplate(const CharType& ch) noexcept
       : m_Span(reinterpret_cast<const UnsignedType*>(&ch), 1) {}
 
   // Any changes to |vec| invalidate the string.
@@ -286,12 +286,8 @@ inline bool operator<(const T* lhs, const StringViewTemplate<T>& rhs) {
   return rhs > lhs;
 }
 
-// Workaround for one of the cases external template classes are
-// failing in GCC before version 7 with -O0
-#if !defined(__GNUC__) || __GNUC__ >= 7
 extern template class StringViewTemplate<char>;
 extern template class StringViewTemplate<wchar_t>;
-#endif
 
 using ByteStringView = StringViewTemplate<char>;
 using WideStringView = StringViewTemplate<wchar_t>;

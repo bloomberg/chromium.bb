@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/abseil-cpp/absl/base/attributes.h"
 
 namespace content {
 
@@ -28,10 +29,11 @@ class WebContents;
 //
 // In order to expose the interface to all RenderFrames, a binder must be
 // registered for the interface. Typically this is done in
-// BindAssociatedReceiverFromFrame() in a ContentBrowserClient subclass.  Doing
-// that will expose the interface to all remote RenderFrame objects. If the
-// WebContents is destroyed at any point, the receivers will automatically
-// reset and will cease to dispatch further incoming messages.
+// RegisterAssociatedInterfaceBindersForRenderFrameHost() in a
+// ContentBrowserClient subclass.  Doing that will expose the interface to all
+// remote RenderFrame objects. If the WebContents is destroyed at any point, the
+// receivers will automatically reset and will cease to dispatch further
+// incoming messages.
 //
 // Because this object uses Channel-associated interface receivers, all messages
 // sent via these interfaces are ordered with respect to legacy Chrome IPC
@@ -66,7 +68,10 @@ class CONTENT_EXPORT RenderFrameHostReceiverSet : public WebContentsObserver {
     frame_to_receivers_map_[render_frame_host].push_back(id);
   }
 
-  RenderFrameHost* GetCurrentTargetFrame() {
+  // Implementations of `Interface` can call `GetCurrentTargetFrame()` to
+  // determine which frame sent the message. `GetCurrentTargetFrame()` will
+  // never return `nullptr`.
+  RenderFrameHost* GetCurrentTargetFrame() ABSL_ATTRIBUTE_RETURNS_NONNULL {
     if (current_target_frame_for_testing_)
       return current_target_frame_for_testing_;
     return receivers_.current_context();

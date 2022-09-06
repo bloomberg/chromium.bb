@@ -10,7 +10,7 @@
 #include "ash/components/phonehub/feature_status_provider.h"
 #include "ash/components/phonehub/message_receiver.h"
 #include "ash/components/phonehub/proto/phonehub_api.pb.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 
 namespace ash {
 namespace phonehub {
@@ -20,9 +20,10 @@ using ::google::protobuf::RepeatedPtrField;
 class DoNotDisturbController;
 class FindMyDeviceController;
 class MutablePhoneModel;
-class NotificationAccessManager;
+class MultideviceFeatureAccessManager;
 class NotificationProcessor;
 class ScreenLockManager;
+class RecentAppsInteractionHandler;
 
 // Responsible for receiving incoming protos and calling on clients to update
 // their models.
@@ -36,11 +37,12 @@ class PhoneStatusProcessor
       FeatureStatusProvider* feature_status_provider,
       MessageReceiver* message_receiver,
       FindMyDeviceController* find_my_device_controller,
-      NotificationAccessManager* notification_access_manager,
+      MultideviceFeatureAccessManager* multidevice_feature_access_manager,
       ScreenLockManager* screen_lock_manager,
       NotificationProcessor* notification_processor_,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      MutablePhoneModel* phone_model);
+      MutablePhoneModel* phone_model,
+      RecentAppsInteractionHandler* recent_apps_interaction_handler);
   ~PhoneStatusProcessor() override;
 
   PhoneStatusProcessor(const PhoneStatusProcessor&) = delete;
@@ -63,6 +65,8 @@ class PhoneStatusProcessor
       const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
           host_device_with_status) override;
 
+  void SetStreamableApps(const proto::StreamableApps& streamable_apps);
+
   void ProcessReceivedNotifications(
       const RepeatedPtrField<proto::Notification>& notification_protos);
 
@@ -78,11 +82,12 @@ class PhoneStatusProcessor
   FeatureStatusProvider* feature_status_provider_;
   MessageReceiver* message_receiver_;
   FindMyDeviceController* find_my_device_controller_;
-  NotificationAccessManager* notification_access_manager_;
+  MultideviceFeatureAccessManager* multidevice_feature_access_manager_;
   ScreenLockManager* screen_lock_manager_;
   NotificationProcessor* notification_processor_;
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
   MutablePhoneModel* phone_model_;
+  RecentAppsInteractionHandler* recent_apps_interaction_handler_;
 };
 
 }  // namespace phonehub

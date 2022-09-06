@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 import { assert } from './assert.js';
-import { CDPSessionEmittedEvents } from './Connection.js';
+import { helper } from './helper.js';
 import { TimeoutError } from './Errors.js';
 import { FrameManagerEmittedEvents, } from './FrameManager.js';
-import { helper } from './helper.js';
 import { NetworkManagerEmittedEvents } from './NetworkManager.js';
-
+import { CDPSessionEmittedEvents } from './Connection.js';
 const puppeteerToProtocolLifecycle = new Map([
     ['load', 'load'],
     ['domcontentloaded', 'DOMContentLoaded'],
@@ -49,6 +48,7 @@ export class LifecycleWatcher {
             helper.addEventListener(frameManager._client, CDPSessionEmittedEvents.Disconnected, () => this._terminate(new Error('Navigation failed because browser has disconnected!'))),
             helper.addEventListener(this._frameManager, FrameManagerEmittedEvents.LifecycleEvent, this._checkLifecycleComplete.bind(this)),
             helper.addEventListener(this._frameManager, FrameManagerEmittedEvents.FrameNavigatedWithinDocument, this._navigatedWithinDocument.bind(this)),
+            helper.addEventListener(this._frameManager, FrameManagerEmittedEvents.FrameSwapped, this._frameSwapped.bind(this)),
             helper.addEventListener(this._frameManager, FrameManagerEmittedEvents.FrameDetached, this._onFrameDetached.bind(this)),
             helper.addEventListener(this._frameManager.networkManager(), NetworkManagerEmittedEvents.Request, this._onRequest.bind(this)),
         ];
@@ -79,7 +79,8 @@ export class LifecycleWatcher {
         }
         this._checkLifecycleComplete();
     }
-    navigationResponse() {
+    async navigationResponse() {
+        // We may need to wait for ExtraInfo events before the request is complete.
         return this._navigationRequest ? this._navigationRequest.response() : null;
     }
     _terminate(error) {
@@ -109,14 +110,25 @@ export class LifecycleWatcher {
         this._hasSameDocumentNavigation = true;
         this._checkLifecycleComplete();
     }
+    _frameSwapped(frame) {
+        if (frame !== this._frame)
+            return;
+        this._swapped = true;
+        this._checkLifecycleComplete();
+    }
     _checkLifecycleComplete() {
         // We expect navigation to commit.
         if (!checkLifecycle(this._frame, this._expectedLifecycle))
             return;
         this._lifecycleCallback();
         if (this._frame._loaderId === this._initialLoaderId &&
-            !this._hasSameDocumentNavigation)
+            !this._hasSameDocumentNavigation) {
+            if (this._swapped) {
+                this._swapped = false;
+                this._newDocumentNavigationCompleteCallback();
+            }
             return;
+        }
         if (this._hasSameDocumentNavigation)
             this._sameDocumentNavigationCompleteCallback();
         if (this._frame._loaderId !== this._initialLoaderId)
@@ -132,8 +144,10 @@ export class LifecycleWatcher {
                     return false;
             }
             for (const child of frame.childFrames()) {
-                if (!checkLifecycle(child, expectedLifecycle))
+                if (child._hasStartedLoading &&
+                    !checkLifecycle(child, expectedLifecycle)) {
                     return false;
+                }
             }
             return true;
         }

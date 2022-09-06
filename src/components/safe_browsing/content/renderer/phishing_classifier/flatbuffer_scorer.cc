@@ -15,10 +15,11 @@
 #include "base/strings/string_piece.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
+#include "components/safe_browsing/content/common/visual_utils.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
-#include "components/safe_browsing/core/common/visual_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "crypto/sha2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -93,7 +94,7 @@ FlatBufferModelScorer::FlatBufferModelScorer() = default;
 FlatBufferModelScorer::~FlatBufferModelScorer() = default;
 
 /* static */
-FlatBufferModelScorer* FlatBufferModelScorer::Create(
+std::unique_ptr<FlatBufferModelScorer> FlatBufferModelScorer::Create(
     base::ReadOnlySharedMemoryRegion region,
     base::File visual_tflite_model) {
   std::unique_ptr<FlatBufferModelScorer> scorer(new FlatBufferModelScorer());
@@ -141,7 +142,7 @@ FlatBufferModelScorer* FlatBufferModelScorer::Create(
   RecordScorerCreationStatus(SCORER_SUCCESS);
   scorer->flatbuffer_mapping_ = std::move(mapping);
 
-  return scorer.release();
+  return scorer;
 }
 
 double FlatBufferModelScorer::ComputeRuleScore(
@@ -174,33 +175,23 @@ double FlatBufferModelScorer::ComputeScore(const FeatureMap& features) const {
   return LogOdds2Prob(logodds);
 }
 
-// Only DOM model implemented for FlatBuffer.
-void FlatBufferModelScorer::GetMatchingVisualTargets(
-    const SkBitmap& bitmap,
-    std::unique_ptr<ClientPhishingRequest> request,
-    base::OnceCallback<void(std::unique_ptr<ClientPhishingRequest>)> callback)
-    const {
-  NOTIMPLEMENTED();
-}
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !defined(OS_CHROMEOS) && \
-    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 void FlatBufferModelScorer::ApplyVisualTfLiteModel(
     const SkBitmap& bitmap,
     base::OnceCallback<void(std::vector<double>)> callback) const {
   DCHECK(content::RenderThread::IsMainThread());
   if (visual_tflite_model_.IsValid()) {
     base::Time start_post_task_time = base::Time::Now();
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT, base::WithBaseSyncPrimitives()},
-        base::BindOnce(&ApplyVisualTfLiteModelHelper, bitmap,
-                       flatbuffer_model_->tflite_metadata()->input_width(),
-                       flatbuffer_model_->tflite_metadata()->input_height(),
-                       std::string(reinterpret_cast<const char*>(
-                                       visual_tflite_model_.data()),
-                                   visual_tflite_model_.length())),
-        std::move(callback));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(
+            &ApplyVisualTfLiteModelHelper, bitmap,
+            flatbuffer_model_->tflite_metadata()->input_width(),
+            flatbuffer_model_->tflite_metadata()->input_height(),
+            std::string(
+                reinterpret_cast<const char*>(visual_tflite_model_.data()),
+                visual_tflite_model_.length()),
+            base::SequencedTaskRunnerHandle::Get(), std::move(callback)));
     base::UmaHistogramTimes(
         "SBClientPhishing.TfLiteModelLoadTime.FlatbufferScorer",
         base::Time::Now() - start_post_task_time);
@@ -212,6 +203,10 @@ void FlatBufferModelScorer::ApplyVisualTfLiteModel(
 
 int FlatBufferModelScorer::model_version() const {
   return flatbuffer_model_->version();
+}
+
+int FlatBufferModelScorer::dom_model_version() const {
+  return flatbuffer_model_->dom_model_version();
 }
 
 bool FlatBufferModelScorer::has_page_term(const std::string& str) const {

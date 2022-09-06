@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
+#include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
 
 class AppManagementPageHandler;
 class ShelfControllerHelper;
@@ -31,7 +31,8 @@ class AppManagementShelfDelegate : public ash::ShelfModelObserver {
   ~AppManagementShelfDelegate() override;
 
   bool IsPinned(const std::string& app_id);
-  void SetPinned(const std::string& app_id, apps::mojom::OptionalBool pinned);
+  void SetPinned(const std::string& app_id,
+                 app_management::mojom::OptionalBool pinned);
 
   bool IsPolicyPinned(const std::string& app_id) const;
 

@@ -20,10 +20,11 @@
 
 namespace base {
 class SequencedTaskRunner;
-class TaskRunner;
 }
 
 namespace disk_cache {
+class BackendFileOperations;
+class BackendFileOperationsFactory;
 
 const uint64_t kSimpleIndexMagicNumber = UINT64_C(0x656e74657220796f);
 
@@ -32,11 +33,12 @@ struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
   ~SimpleIndexLoadResult();
   void Reset();
 
-  bool did_load;
+  bool did_load = false;
   SimpleIndex::EntrySet entries;
-  SimpleIndex::IndexWriteToDiskReason index_write_reason;
+  SimpleIndex::IndexWriteToDiskReason index_write_reason =
+      SimpleIndex::INDEX_WRITE_REASON_MAX;
   SimpleIndex::IndexInitMethod init_method;
-  bool flush_required;
+  bool flush_required = false;
 };
 
 // Simple Index File format is a pickle of IndexMetadata and EntryMetadata
@@ -86,10 +88,11 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint64_t cache_size_;  // Total cache storage size in bytes.
   };
 
-  SimpleIndexFile(const scoped_refptr<base::SequencedTaskRunner>& cache_runner,
-                  const scoped_refptr<base::TaskRunner>& worker_pool,
-                  net::CacheType cache_type,
-                  const base::FilePath& cache_directory);
+  SimpleIndexFile(
+      scoped_refptr<base::SequencedTaskRunner> cache_runner,
+      scoped_refptr<BackendFileOperationsFactory> file_operations_factory,
+      net::CacheType cache_type,
+      const base::FilePath& cache_directory);
 
   SimpleIndexFile(const SimpleIndexFile&) = delete;
   SimpleIndexFile& operator=(const SimpleIndexFile&) = delete;
@@ -126,14 +129,17 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   static const int kExtraSizeForMerge = 512;
 
   // Synchronous (IO performing) implementation of LoadIndexEntries.
-  static void SyncLoadIndexEntries(net::CacheType cache_type,
-                                   base::Time cache_last_modified,
-                                   const base::FilePath& cache_directory,
-                                   const base::FilePath& index_file_path,
-                                   SimpleIndexLoadResult* out_result);
+  static void SyncLoadIndexEntries(
+      std::unique_ptr<BackendFileOperations> file_operations,
+      net::CacheType cache_type,
+      base::Time cache_last_modified,
+      const base::FilePath& cache_directory,
+      const base::FilePath& index_file_path,
+      SimpleIndexLoadResult* out_result);
 
   // Load the index file from disk returning an EntrySet.
-  static void SyncLoadFromDisk(net::CacheType cache_type,
+  static void SyncLoadFromDisk(BackendFileOperations* file_operations,
+                               net::CacheType cache_type,
                                const base::FilePath& index_filename,
                                base::Time* out_last_cache_seen_by_index,
                                SimpleIndexLoadResult* out_result);
@@ -163,25 +169,19 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                           base::Time* out_cache_last_modified,
                           SimpleIndexLoadResult* out_result);
 
-  // Implemented either in simple_index_file_posix.cc or
-  // simple_index_file_win.cc. base::FileEnumerator turned out to be very
-  // expensive in terms of memory usage therefore it's used only on non-POSIX
-  // environments for convenience (for now). Returns whether the traversal
-  // succeeded.
-  static bool TraverseCacheDirectory(
-      const base::FilePath& cache_path,
-      const EntryFileCallback& entry_file_callback);
-
   // Writes the index file to disk atomically.
-  static void SyncWriteToDisk(net::CacheType cache_type,
-                              const base::FilePath& cache_directory,
-                              const base::FilePath& index_filename,
-                              const base::FilePath& temp_index_filename,
-                              std::unique_ptr<base::Pickle> pickle);
+  static void SyncWriteToDisk(
+      std::unique_ptr<BackendFileOperations> file_operations,
+      net::CacheType cache_type,
+      const base::FilePath& cache_directory,
+      const base::FilePath& index_filename,
+      const base::FilePath& temp_index_filename,
+      std::unique_ptr<base::Pickle> pickle);
 
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.
-  static void SyncRestoreFromDisk(net::CacheType cache_type,
+  static void SyncRestoreFromDisk(BackendFileOperations* file_operations,
+                                  net::CacheType cache_type,
                                   const base::FilePath& cache_directory,
                                   const base::FilePath& index_file_path,
                                   SimpleIndexLoadResult* out_result);
@@ -190,11 +190,12 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // modification of the cache directory. Obsolete, used only for a histogram to
   // compare with the new method.
   // TODO(pasko): remove this method after getting enough data.
-  static bool LegacyIsIndexFileStale(base::Time cache_last_modified,
+  static bool LegacyIsIndexFileStale(BackendFileOperations* file_operations,
+                                     base::Time cache_last_modified,
                                      const base::FilePath& index_file_path);
 
   const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
-  const scoped_refptr<base::TaskRunner> worker_pool_;
+  const scoped_refptr<BackendFileOperationsFactory> file_operations_factory_;
   const net::CacheType cache_type_;
   const base::FilePath cache_directory_;
   const base::FilePath index_file_;

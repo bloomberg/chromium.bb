@@ -37,10 +37,9 @@ const AccessPoint kAccessPointsThatSupportUserAction[] = {
     AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
     AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
     AccessPoint::ACCESS_POINT_TAB_SWITCHER,
-    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
-    AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE,
     AccessPoint::ACCESS_POINT_MACHINE_LOGON,
-    AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS};
+    AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS,
+    AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO};
 
 const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_START_PAGE,
@@ -60,8 +59,7 @@ const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
     AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
     AccessPoint::ACCESS_POINT_TAB_SWITCHER,
-    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
-    AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE};
+    AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO};
 
 const AccessPoint kAccessPointsThatSupportPersonalizedPromos[] = {
     AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER,
@@ -73,8 +71,7 @@ const AccessPoint kAccessPointsThatSupportPersonalizedPromos[] = {
     AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,
     AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
     AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
-    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
-    AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE};
+    AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO};
 
 class SigninMetricsTest : public ::testing::Test {
  public:
@@ -124,10 +121,6 @@ class SigninMetricsTest : public ::testing::Test {
         return "ReSigninInfobar";
       case AccessPoint::ACCESS_POINT_TAB_SWITCHER:
         return "TabSwitcher";
-      case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-        return "SaveCardBubble";
-      case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-        return "ManageCardsBubble";
       case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
         return "MachineLogon";
       case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
@@ -146,6 +139,14 @@ class SigninMetricsTest : public ::testing::Test {
         return "Kaleidoscope";
       case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
         return "EnterpriseSignoutResignSheet";
+      case AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
+        return "SigninInterceptFirstRunExperience";
+      case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+        return "SendTabToSelfPromo";
+      case AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
+        return "NTPFeedTopPromo";
+      case AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+        return "SettingsSyncOffRow";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";
@@ -236,26 +237,6 @@ TEST_F(SigninMetricsTest, RecordSigninImpressionUserAction) {
     RecordSigninImpressionUserActionForAccessPoint(ap);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Impression_From" + GetAccessPointDescription(ap)));
-  }
-}
-
-TEST_F(SigninMetricsTest, RecordSigninImpressionWithAccountUserAction) {
-  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
-    base::UserActionTester user_action_tester;
-    RecordSigninImpressionWithAccountUserActionForAccessPoint(ap, true);
-    EXPECT_EQ(1, user_action_tester.GetActionCount(
-                     "Signin_ImpressionWithAccount_From" +
-                     GetAccessPointDescription(ap)));
-  }
-}
-
-TEST_F(SigninMetricsTest, RecordSigninImpressionWithNoAccountUserAction) {
-  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
-    base::UserActionTester user_action_tester;
-    RecordSigninImpressionWithAccountUserActionForAccessPoint(ap, false);
-    EXPECT_EQ(1, user_action_tester.GetActionCount(
-                     "Signin_ImpressionWithNoAccount_From" +
-                     GetAccessPointDescription(ap)));
   }
 }
 

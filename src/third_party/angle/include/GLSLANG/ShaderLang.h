@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 268
+#define ANGLE_SH_VERSION 280
 
 enum ShShaderSpec
 {
@@ -247,7 +247,9 @@ const ShCompileOptions SH_SELECT_VIEW_IN_NV_GLSL_VERTEX_SHADER = UINT64_C(1) << 
 // ShBuiltInResources in vertex shaders.
 const ShCompileOptions SH_CLAMP_POINT_SIZE = UINT64_C(1) << 32;
 
-// Bit 33 is available.
+// This flag indicates whether advanced blend equation should be emulated.  Currently only
+// implemented for the Vulkan backend.
+const ShCompileOptions SH_ADD_ADVANCED_BLEND_EQUATIONS_EMULATION = UINT64_C(1) << 33;
 
 // Don't use loops to initialize uninitialized variables. Only has an effect if some kind of
 // variable initialization is turned on.
@@ -302,10 +304,7 @@ const ShCompileOptions SH_REMOVE_DYNAMIC_INDEXING_OF_SWIZZLED_VECTOR = UINT64_C(
 // This flag works around a slow fxc compile performance issue with dynamic uniform indexing.
 const ShCompileOptions SH_ALLOW_TRANSLATE_UNIFORM_BLOCK_TO_STRUCTUREDBUFFER = UINT64_C(1) << 46;
 
-// This flag indicates whether Bresenham line raster emulation code should be generated.  This
-// emulation is necessary if the backend uses a differnet algorithm to draw lines.  Currently only
-// implemented for the Vulkan backend.
-const ShCompileOptions SH_ADD_BRESENHAM_LINE_RASTER_EMULATION = UINT64_C(1) << 47;
+// Note: bit 47 is unused
 
 // This flag allows disabling ARB_texture_rectangle on a per-compile basis. This is necessary
 // for WebGL contexts becuase ARB_texture_rectangle may be necessary for the WebGL implementation
@@ -319,11 +318,11 @@ const ShCompileOptions SH_REWRITE_ROW_MAJOR_MATRICES = UINT64_C(1) << 49;
 // Drop any explicit precision qualifiers from shader.
 const ShCompileOptions SH_IGNORE_PRECISION_QUALIFIERS = UINT64_C(1) << 50;
 
-// Allow compiler to do early fragment tests as an optimization.
-const ShCompileOptions SH_EARLY_FRAGMENT_TESTS_OPTIMIZATION = UINT64_C(1) << 51;
+// Ask compiler to generate code for depth correction to conform to the Vulkan clip space.  If
+// VK_EXT_depth_clip_control is supported, this code is not generated, saving a uniform look up.
+const ShCompileOptions SH_ADD_VULKAN_DEPTH_CORRECTION = UINT64_C(1) << 51;
 
-// Allow compiler to insert Android pre-rotation code.
-const ShCompileOptions SH_ADD_PRE_ROTATION = UINT64_C(1) << 52;
+// Note: bit 52 is unused
 
 const ShCompileOptions SH_FORCE_SHADER_PRECISION_HIGHP_TO_MEDIUMP = UINT64_C(1) << 53;
 
@@ -348,6 +347,10 @@ const ShCompileOptions SH_GENERATE_SPIRV_THROUGH_GLSLANG = UINT64_C(1) << 58;
 
 // Insert explicit casts for float/double/unsigned/signed int on macOS 10.15 with Intel driver
 const ShCompileOptions SH_ADD_EXPLICIT_BOOL_CASTS = UINT64_C(1) << 59;
+
+// Add round() after applying dither.  This works around a Qualcomm quirk where values can get
+// ceil()ed instead.
+const ShCompileOptions SH_ROUND_OUTPUT_AFTER_DITHERING = UINT64_C(1) << 60;
 
 // The 64 bits hash function. The first parameter is the input string; the
 // second parameter is the string length.
@@ -415,7 +418,10 @@ struct ShBuiltInResources
     int OES_sample_variables;
     int EXT_clip_cull_distance;
     int EXT_primitive_bounding_box;
+    int OES_primitive_bounding_box;
     int ANGLE_base_vertex_base_instance_shader_builtin;
+    int ANDROID_extension_pack_es31a;
+    int KHR_blend_equation_advanced;
 
     // Set to 1 to enable replacing GL_EXT_draw_buffers #extension directives
     // with GL_NV_draw_buffers in ESSL output. This flag can be used to emulate
@@ -715,8 +721,9 @@ sh::WorkGroupSize GetComputeShaderLocalGroupSize(const ShHandle handle);
 // Returns the number of views specified through the num_views layout qualifier. If num_views is
 // not set, the function returns -1.
 int GetVertexShaderNumViews(const ShHandle handle);
-// Returns true if compiler has injected instructions for early fragment tests as an optimization
-bool HasEarlyFragmentTestsOptimization(const ShHandle handle);
+// Returns true if the shader has specified the |sample| qualifier, implying that per-sample shading
+// should be enabled
+bool EnablesPerSampleShading(const ShHandle handle);
 
 // Returns specialization constant usage bits
 uint32_t GetShaderSpecConstUsageBits(const ShHandle handle);
@@ -792,6 +799,10 @@ GLenum GetTessGenSpacing(const ShHandle handle);
 GLenum GetTessGenVertexOrder(const ShHandle handle);
 GLenum GetTessGenPointMode(const ShHandle handle);
 
+// Returns the blend equation list supported in the fragment shader.  This is a bitset of
+// gl::BlendEquationType, and can only include bits from KHR_blend_equation_advanced.
+uint32_t GetAdvancedBlendEquations(const ShHandle handle);
+
 //
 // Helper function to identify specs that are based on the WebGL spec.
 //
@@ -819,39 +830,29 @@ namespace vk
 // Specialization constant ids
 enum class SpecializationConstantId : uint32_t
 {
-    LineRasterEmulation = 0,
-    SurfaceRotation     = 1,
-    DrawableWidth       = 2,
-    DrawableHeight      = 3,
+    SurfaceRotation = 0,
+    Dither          = 1,
 
-    InvalidEnum = 4,
+    InvalidEnum = 2,
     EnumCount   = InvalidEnum,
-};
-
-enum class SurfaceRotation : uint32_t
-{
-    Identity,
-    Rotated90Degrees,
-    Rotated180Degrees,
-    Rotated270Degrees,
-    FlippedIdentity,
-    FlippedRotated90Degrees,
-    FlippedRotated180Degrees,
-    FlippedRotated270Degrees,
-
-    InvalidEnum,
-    EnumCount = InvalidEnum,
 };
 
 enum class SpecConstUsage : uint32_t
 {
-    LineRasterEmulation = 0,
-    YFlip               = 1,
-    Rotation            = 2,
-    DrawableSize        = 3,
+    Rotation = 0,
+    Dither   = 1,
 
-    InvalidEnum = 4,
+    InvalidEnum = 2,
     EnumCount   = InvalidEnum,
+};
+
+enum ColorAttachmentDitherControl
+{
+    // See comments in ContextVk::updateDither and EmulateDithering.cpp
+    kDitherControlNoDither   = 0,
+    kDitherControlDither4444 = 1,
+    kDitherControlDither5551 = 2,
+    kDitherControlDither565  = 3,
 };
 
 // Interface block name containing the aggregate default uniforms
@@ -866,11 +867,25 @@ extern const char kDefaultUniformsNameCS[];
 extern const char kDriverUniformsBlockName[];
 extern const char kDriverUniformsVarName[];
 
+// Packing information for driver uniform's misc field:
+// - 1 bit for whether surface rotation results in swapped axes
+// - 5 bits for advanced blend equation
+// - 6 bits for sample count
+// - 8 bits for enabled clip planes
+// - 1 bit for whether depth should be transformed to Vulkan clip space
+// - 11 bits unused
+constexpr uint32_t kDriverUniformsMiscSwapXYMask                  = 0x1;
+constexpr uint32_t kDriverUniformsMiscAdvancedBlendEquationOffset = 1;
+constexpr uint32_t kDriverUniformsMiscAdvancedBlendEquationMask   = 0x1F;
+constexpr uint32_t kDriverUniformsMiscSampleCountOffset           = 6;
+constexpr uint32_t kDriverUniformsMiscSampleCountMask             = 0x3F;
+constexpr uint32_t kDriverUniformsMiscEnabledClipPlanesOffset     = 12;
+constexpr uint32_t kDriverUniformsMiscEnabledClipPlanesMask       = 0xFF;
+constexpr uint32_t kDriverUniformsMiscTransformDepthOffset        = 20;
+constexpr uint32_t kDriverUniformsMiscTransformDepthMask          = 0x1;
+
 // Interface block array name used for atomic counter emulation
 extern const char kAtomicCountersBlockName[];
-
-// Line raster emulation varying
-extern const char kLineRasterEmulationPosition[];
 
 // Transform feedback emulation support
 extern const char kXfbEmulationGetOffsetsFunctionName[];
@@ -881,6 +896,9 @@ extern const char kXfbEmulationBufferFieldName[];
 
 // Transform feedback extension support
 extern const char kXfbExtensionPositionOutName[];
+
+// Pre-rotation support
+extern const char kTransformPositionFunctionName[];
 
 // EXT_shader_framebuffer_fetch and EXT_shader_framebuffer_fetch_non_coherent
 extern const char kInputAttachmentName[];
@@ -894,6 +912,9 @@ extern const char kCoverageMaskEnabledConstName[];
 
 // Specialization constant to emulate rasterizer discard.
 extern const char kRasterizerDiscardEnabledConstName[];
+
+// Specialization constant to enable depth write in fragment shaders.
+extern const char kDepthWriteEnabledConstName[];
 }  // namespace mtl
 
 // For backends that use glslang (the Vulkan shader compiler), i.e. Vulkan and Metal, call these to

@@ -187,7 +187,7 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
   // before asking for the map of supported configs.  We do this because it
   // (a) saves an ipc call, and (b) makes the return of those configs atomic.
   interface_factory_->CreateVideoDecoder(
-      video_decoder_.BindNewPipeAndPassReceiver());
+      video_decoder_.BindNewPipeAndPassReceiver(), /*dst_video_decoder=*/{});
   video_decoder_.set_disconnect_handler(
       base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::OnDecoderSupportFailed,
                      base::Unretained(this)));
@@ -367,7 +367,7 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
 
   mojo::PendingRemote<media::mojom::VideoDecoder> video_decoder;
   interface_factory_->CreateVideoDecoder(
-      video_decoder.InitWithNewPipeAndPassReceiver());
+      video_decoder.InitWithNewPipeAndPassReceiver(), /*dst_video_decoder=*/{});
   return std::make_unique<media::MojoVideoDecoder>(
       task_runner_, this, media_log, std::move(video_decoder),
       std::move(request_overlay_info_cb), rendering_color_space_);
@@ -449,7 +449,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
     if (capabilities.image_ycbcr_p010 && bit_depth == 10)
       return media::GpuVideoAcceleratorFactories::OutputFormat::P010;
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     // If high bit depth rendering is enabled, bail here, otherwise try and use
     // XR30 storage, and if not and we support RG textures, use those, albeit at
     // a reduced bit depth of 8 bits per component.
@@ -459,7 +459,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
       return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
 #endif
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     // TODO(mcasas): enable Win https://crbug.com/803451.
     // TODO(mcasas): remove the |bit_depth| check when libyuv supports more than
     // just x010ToAR30 conversions, https://crbug.com/libyuv/751.

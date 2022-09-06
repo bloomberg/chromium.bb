@@ -6,6 +6,7 @@
 
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
@@ -13,15 +14,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/tpm/install_attributes.h"
 
 namespace policy {
+
 namespace {
 
 // By default, device name policy should be kPolicyHostnameNotConfigurable for
 // managed devices and kNoPolicy for unmanaged devices.
 DeviceNamePolicyHandler::DeviceNamePolicy ComputeInitialPolicy() {
-  if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+  if (ash::InstallAttributes::Get()->IsEnterpriseManaged()) {
     // We assume that the device name is not configurable unless/until we know
     // about any policies that are set.
     return DeviceNamePolicyHandler::DeviceNamePolicy::
@@ -140,7 +141,7 @@ DeviceNamePolicyHandlerImpl::ComputePolicy(std::string* hostname_template_out) {
   // If no policies are set, device name policy should be
   // kPolicyHostnameNotConfigurable for managed devices and kNoPolicy for
   // unmanaged devices.
-  if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged())
+  if (ash::InstallAttributes::Get()->IsEnterpriseManaged())
     return DeviceNamePolicy::kPolicyHostnameNotConfigurable;
 
   return DeviceNamePolicy::kNoPolicy;
@@ -173,8 +174,8 @@ std::string DeviceNamePolicyHandlerImpl::GenerateHostname(
     }
   }
 
-  return policy::FormatHostname(hostname_template, asset_id, serial, mac,
-                                machine_name, location);
+  return FormatHostname(hostname_template, asset_id, serial, mac, machine_name,
+                        location);
 }
 
 void DeviceNamePolicyHandlerImpl::SetDeviceNamePolicy(

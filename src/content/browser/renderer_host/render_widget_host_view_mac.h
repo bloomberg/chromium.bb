@@ -148,6 +148,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void EnsureSurfaceSynchronizedForWebTest() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
+  void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
@@ -259,8 +260,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Rect GetFirstRectForCompositionRange(const gfx::Range& range,
                                             gfx::Range* actual_range);
 
-  // Converts from given whole character range to composition oriented range. If
-  // the conversion failed, return gfx::Range::InvalidRange.
+  // Converts from given whole character range to composition oriented range.
+  // If `request_range` is beyond the end of composition range, return an empty
+  // range at the composition end as a heuristic result.
+  // If the conversion failed, return gfx::Range::InvalidRange.
   gfx::Range ConvertCharacterRangeToCompositionRange(
       const gfx::Range& request_range);
 
@@ -380,12 +383,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                                     uint32_t* index) override;
   void SyncGetFirstRectForRange(
       const gfx::Range& requested_range,
-      const gfx::Rect& rect,
-      const gfx::Range& actual_range,
       SyncGetFirstRectForRangeCallback callback) override;
   bool SyncGetFirstRectForRange(const gfx::Range& requested_range,
-                                const gfx::Rect& rect,
-                                const gfx::Range& actual_range,
                                 gfx::Rect* out_rect,
                                 gfx::Range* out_actual_range,
                                 bool* out_success) override;
@@ -565,10 +564,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // State tracked by Show/Hide/IsShowing.
   bool is_visible_ = false;
 
-  // Set to true if |this| has ever been displayed via a parent ui::Layer (in
-  // which case its NSView will only ever be used for input, not display).
-  bool display_only_using_parent_ui_layer_ = false;
-
   // The bounds of the view in its NSWindow's coordinate system (with origin
   // in the upper-left).
   gfx::Rect view_bounds_in_window_dip_;
@@ -688,6 +683,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // are expressed in DIPs relative to the view. See display_feature.h for more
   // details.
   absl::optional<DisplayFeature> display_feature_;
+
+  const uint64_t ns_view_id_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

@@ -97,6 +97,7 @@ if (is_linux || is_chromeos || is_android || is_fuchsia) {
 if (is_apple) {
   libangle_common_sources += [
     "src/common/apple/SoftLinking.h",
+    "src/common/apple/apple_platform.h",
     "src/common/gl/cgl/FunctionsCGL.cpp",
     "src/common/gl/cgl/FunctionsCGL.h",
     "src/common/system_utils_apple.cpp",
@@ -127,7 +128,6 @@ libangle_image_util_headers = [
   "src/image_util/imageformats.h",
   "src/image_util/loadimage.h",
   "src/image_util/loadimage.inc",
-  "src/image_util/loadtextureborder.h",
 ]
 
 libangle_image_util_sources = [
@@ -135,7 +135,6 @@ libangle_image_util_sources = [
   "src/image_util/imageformats.cpp",
   "src/image_util/loadimage.cpp",
   "src/image_util/loadimage_etc.cpp",
-  "src/image_util/loadtextureborder.cpp",
 ]
 
 libangle_gpu_info_util_sources = [
@@ -196,11 +195,11 @@ libangle_includes = [
   "include/KHR/khrplatform.h",
   "include/WGL/wgl.h",
   "include/platform/Feature.h",
-  "include/platform/FeaturesD3D.h",
-  "include/platform/FeaturesGL.h",
-  "include/platform/FeaturesMtl.h",
-  "include/platform/FeaturesVk.h",
-  "include/platform/FrontendFeatures.h",
+  "include/platform/FeaturesD3D_autogen.h",
+  "include/platform/FeaturesGL_autogen.h",
+  "include/platform/FeaturesMtl_autogen.h",
+  "include/platform/FeaturesVk_autogen.h",
+  "include/platform/FrontendFeatures_autogen.h",
   "include/platform/Platform.h",
   "include/platform/PlatformMethods.h",
   "include/vulkan/vulkan_fuchsia_ext.h",
@@ -326,7 +325,6 @@ libangle_headers = [
   "src/libANGLE/renderer/copyvertex.h",
   "src/libANGLE/renderer/copyvertex.inc.h",
   "src/libANGLE/renderer/load_functions_table.h",
-  "src/libANGLE/renderer/load_texture_border_functions_table.h",
   "src/libANGLE/renderer/renderer_utils.h",
   "src/libANGLE/renderer/serial_utils.h",
   "src/libANGLE/validationEGL.h",
@@ -428,7 +426,6 @@ libangle_sources = [
   "src/libANGLE/renderer/TextureImpl.cpp",
   "src/libANGLE/renderer/driver_utils.cpp",
   "src/libANGLE/renderer/load_functions_table_autogen.cpp",
-  "src/libANGLE/renderer/load_texture_border_functions_table_autogen.cpp",
   "src/libANGLE/renderer/renderer_utils.cpp",
   "src/libANGLE/validationEGL.cpp",
   "src/libANGLE/validationES.cpp",
@@ -534,6 +531,7 @@ libangle_mac_sources = [
 # The frame capture headers are always visible to libANGLE.
 libangle_sources += [
   "src/libANGLE/capture/FrameCapture.h",
+  "src/libANGLE/capture/capture_egl.h",
   "src/libANGLE/capture/capture_gles_1_0_autogen.h",
   "src/libANGLE/capture/capture_gles_2_0_autogen.h",
   "src/libANGLE/capture/capture_gles_3_0_autogen.h",
@@ -548,6 +546,7 @@ libangle_sources += [
 
 libangle_capture_sources = [
   "src/libANGLE/capture/FrameCapture.cpp",
+  "src/libANGLE/capture/capture_egl.cpp",
   "src/libANGLE/capture/capture_gles_1_0_autogen.cpp",
   "src/libANGLE/capture/capture_gles_1_0_params.cpp",
   "src/libANGLE/capture/capture_gles_2_0_autogen.cpp",

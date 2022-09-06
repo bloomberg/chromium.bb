@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/services/media_gallery_util/ipc_data_source.h"
 #include "chrome/services/media_gallery_util/video_thumbnail_parser.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -17,10 +16,8 @@ namespace {
 void OnVideoFrameExtracted(
     std::unique_ptr<VideoThumbnailParser>,
     MediaParser::ExtractVideoFrameCallback video_frame_callback,
-    bool success,
-    chrome::mojom::VideoFrameDataPtr frame_data,
-    const absl::optional<media::VideoDecoderConfig>& config) {
-  std::move(video_frame_callback).Run(success, std::move(frame_data), config);
+    chrome::mojom::ExtractVideoFrameResultPtr result) {
+  std::move(video_frame_callback).Run(std::move(result));
 }
 
 }  // namespace

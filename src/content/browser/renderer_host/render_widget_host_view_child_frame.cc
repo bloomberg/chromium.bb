@@ -497,9 +497,13 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     host()->SetIntersectsViewport(
         !intersection_state.viewport_intersection.IsEmpty());
 
-    // Do not send viewport intersection to main frames.
+    // Do not send |visual_properties| to main frames.
     DCHECK(!visual_properties.has_value() || !host()->owner_delegate());
-    if (!host()->owner_delegate()) {
+
+    // TODO(crbug.com/1148960): Also propagate this for portals.
+    bool is_fenced_frame =
+        host()->frame_tree()->type() == FrameTree::Type::kFencedFrame;
+    if (!host()->owner_delegate() || is_fenced_frame) {
       host()->GetAssociatedFrameWidget()->SetViewportIntersection(
           intersection_state.Clone(), visual_properties);
     }
@@ -692,7 +696,7 @@ const viz::LocalSurfaceId& RenderWidgetHostViewChildFrame::GetLocalSurfaceId()
 void RenderWidgetHostViewChildFrame::NotifyHitTestRegionUpdated(
     const viz::AggregatedHitTestRegion& region) {
   gfx::RectF screen_rect(region.rect);
-  if (!region.transform().TransformRectReverse(&screen_rect)) {
+  if (!region.transform.TransformRectReverse(&screen_rect)) {
     last_stable_screen_rect_ = gfx::RectF();
     screen_rect_stable_since_ = base::TimeTicks::Now();
     return;
@@ -793,7 +797,7 @@ bool RenderWidgetHostViewChildFrame::IsRenderWidgetHostViewChildFrame() {
   return true;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {}
 
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
@@ -814,7 +818,7 @@ void RenderWidgetHostViewChildFrame::ShowSharePicker(
     const std::string& url,
     const std::vector<std::string>& file_paths,
     blink::mojom::ShareService::ShareCallback callback) {}
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 void RenderWidgetHostViewChildFrame::CopyFromSurface(
     const gfx::Rect& src_subrect,

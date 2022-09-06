@@ -318,61 +318,61 @@ layer at (0,0) size 800x34
         actual_text='\nfoo\r\n\r\r\n')
 
     # For reftests.
-    tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html')
+    tests.add_reftest('passes/reftest.html', 'platform/generic/passes/reftest-expected.html')
     # This adds a different virtual reference to ensure that that also works.
-    tests.add_reference('virtual/virtual_passes/passes/reftest-expected.html')
+    tests.add_reference('platform/generic/virtual/virtual_passes/passes/reftest-expected.html')
 
     tests.add_reftest(
         'passes/reftest-with-text.html',
-        'passes/reftest-with-text-expected.html',
+        'platform/generic/passes/reftest-with-text-expected.html',
         actual_text='reftest',
         expected_text='reftest')
     tests.add_reftest(
         'passes/mismatch.html',
-        'passes/mismatch-expected-mismatch.html',
+        'platform/generic/passes/mismatch-expected-mismatch.html',
         same_image=False)
     tests.add_reftest('passes/svgreftest.svg',
-                      'passes/svgreftest-expected.svg')
+                      'platform/generic/passes/svgreftest-expected.svg')
     tests.add_reftest('passes/xhtreftest.xht',
-                      'passes/xhtreftest-expected.html')
+                      'platform/generic/passes/xhtreftest-expected.html')
     tests.add_reftest(
         'passes/phpreftest.php',
-        'passes/phpreftest-expected-mismatch.svg',
+        'platform/generic/passes/phpreftest-expected-mismatch.svg',
         same_image=False)
     tests.add_reftest(
         'failures/expected/reftest.html',
-        'failures/expected/reftest-expected.html',
+        'platform/generic/failures/expected/reftest-expected.html',
         same_image=False)
     tests.add_reftest(
         'failures/unexpected/reftest-with-matching-text.html',
-        'failures/unexpected/reftest-with-matching-text-expected.html',
+        'platform/generic/failures/unexpected/reftest-with-matching-text-expected.html',
         same_image=False,
         actual_text='reftest',
         expected_text='reftest')
     tests.add_reftest(
         'failures/unexpected/reftest-with-mismatching-text.html',
-        'failures/unexpected/reftest-with-mismatching-text-expected.html',
+        'platform/generic/failures/unexpected/reftest-with-mismatching-text-expected.html',
         actual_text='reftest',
         expected_text='reftest-different')
     tests.add_reftest('failures/expected/mismatch.html',
-                      'failures/expected/mismatch-expected-mismatch.html')
+                      'platform/generic/failures/expected/mismatch-expected-mismatch.html')
     tests.add_reftest(
         'failures/unexpected/crash-reftest.html',
-        'failures/unexpected/crash-reftest-expected.html',
+        'platform/generic/failures/unexpected/crash-reftest-expected.html',
         crash=True)
     tests.add_reftest(
         'failures/unexpected/reftest.html',
-        'failures/unexpected/reftest-expected.html',
+        'platform/generic/failures/unexpected/reftest-expected.html',
         same_image=False)
     tests.add_reftest(
         'failures/unexpected/reftest-mismatch-with-text-mismatch-with-stderr.html',
-        'failures/unexpected/reftest-mismatch-with-text-mismatch-with-stderr-expected.html',
+        'platform/generic/failures/unexpected/reftest-mismatch-with-text-mismatch-with-stderr-expected.html',
         same_image=False,
         actual_text='actual',
         expected_text='expected',
         error=b'oops')
     tests.add_reftest('failures/unexpected/mismatch.html',
-                      'failures/unexpected/mismatch-expected-mismatch.html')
+                      'platform/generic/failures/unexpected/mismatch-expected-mismatch.html')
     tests.add(
         'failures/unexpected/reftest-nopixel.html',
         actual_checksum=None,
@@ -491,20 +491,33 @@ passes/slow.html [ Slow ]
         filesystem.write_binary_file(
             filesystem.join(dirname, base + suffix), contents)
 
+    def add_baseline(test, suffix, contents):
+        dirname = filesystem.join(WEB_TEST_DIR,
+                                  "platform",
+                                  "generic",
+                                  test.name[0:test.name.rfind('/')])
+        base = test.base
+        filesystem.maybe_make_directory(dirname)
+        filesystem.write_binary_file(
+            filesystem.join(dirname, base + suffix), contents)
+
     # Add each test and the expected output, if any.
     test_list = unit_test_list()
     for test in test_list.tests.values():
         add_file(test, test.name[test.name.rfind('.'):], b'')
         if test.expected_audio:
-            add_file(test, '-expected.wav', test.expected_audio)
+            add_baseline(test, '-expected.wav', test.expected_audio)
         if test.expected_text:
-            add_file(test, '-expected.txt', test.expected_text.encode('utf-8'))
+            add_baseline(test, '-expected.txt', test.expected_text.encode('utf-8'))
         if test.expected_image:
-            add_file(test, '-expected.png', test.expected_image)
+            add_baseline(test, '-expected.png', test.expected_image)
 
     filesystem.write_text_file(
-        filesystem.join(WEB_TEST_DIR, 'virtual', 'virtual_passes', 'passes',
+        filesystem.join(WEB_TEST_DIR, 'platform', 'generic',
+                        'virtual', 'virtual_passes', 'passes',
                         'args-expected.txt'), 'args-txt --virtual-arg')
+    filesystem.maybe_make_directory(
+        filesystem.join(WEB_TEST_DIR, 'virtual', 'virtual_passes'))
 
     filesystem.maybe_make_directory(
         filesystem.join(WEB_TEST_DIR, 'external', 'wpt'))
@@ -744,10 +757,12 @@ class TestPort(Port):
         if not actual_contents or not expected_contents:
             return (True, None)
         if diffed:
-            return (
-                ('< %s\n---\n> %s\n' %
-                 (expected_contents, actual_contents)),  #.encode('utf8'),
-                None)
+            mock_diff = '\n'.join([
+                '< %s' % base64.b64encode(expected_contents).decode('utf-8'),
+                '---',
+                '> %s' % base64.b64encode(actual_contents).decode('utf-8'),
+            ])
+            return (mock_diff, None)
         return (None, None)
 
     def web_tests_dir(self):
@@ -819,25 +834,32 @@ class TestPort(Port):
     def virtual_test_suites(self):
         return [
             VirtualTestSuite(prefix='virtual_passes',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['passes', 'passes_two'],
                              args=['--virtual-arg']),
             VirtualTestSuite(prefix='skipped',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['failures/expected'],
                              args=['--virtual-arg-skipped']),
-            VirtualTestSuite(
-                prefix='virtual_failures',
-                bases=['failures/expected', 'failures/unexpected'],
-                args=['--virtual-arg-failures']),
+            VirtualTestSuite(prefix='virtual_failures',
+                             platforms=['Linux', 'Mac', 'Win'],
+                             bases=['failures/expected',
+                                    'failures/unexpected'],
+                             args=['--virtual-arg-failures']),
             VirtualTestSuite(prefix='virtual_wpt',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['external/wpt'],
                              args=['--virtual-arg-wpt']),
             VirtualTestSuite(prefix='virtual_wpt_dom',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['external/wpt/dom', 'wpt_internal/dom'],
                              args=['--virtual-arg-wpt-dom']),
             VirtualTestSuite(prefix='virtual_empty_bases',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=[],
                              args=['--virtual-arg-empty-bases']),
             VirtualTestSuite(prefix='mixed_wpt',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['http', 'external/wpt/dom'],
                              args=['--virtual-arg']),
         ]

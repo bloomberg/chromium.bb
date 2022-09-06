@@ -9,12 +9,14 @@
 
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 
 struct wl_resource;
 
 namespace wl {
+
+class TestAugmentedSubSurface;
 
 extern const struct wl_subsurface_interface kTestSubSurfaceImpl;
 
@@ -27,16 +29,27 @@ class TestSubSurface : public ServerObject {
   TestSubSurface(const TestSubSurface& rhs) = delete;
   TestSubSurface& operator=(const TestSubSurface& rhs) = delete;
 
-  void SetPosition(int x, int y);
-  gfx::Point position() const { return position_; }
+  MOCK_METHOD1(PlaceAbove, void(wl_resource* reference_resource));
+  MOCK_METHOD1(PlaceBelow, void(wl_resource* sibling_resource));
+  MOCK_METHOD2(SetPosition, void(float x, float y));
+
+  void SetPositionImpl(float x, float y);
+  gfx::PointF position() const { return position_; }
 
   void set_sync(bool sync) { sync_ = sync; }
   bool sync() const { return sync_; }
 
   wl_resource* parent_resource() const { return parent_resource_; }
 
+  void set_augmented_subsurface(TestAugmentedSubSurface* augmented_subsurface) {
+    augmented_subsurface_ = augmented_subsurface;
+  }
+  TestAugmentedSubSurface* augmented_subsurface() const {
+    return augmented_subsurface_;
+  }
+
  private:
-  gfx::Point position_;
+  gfx::PointF position_;
   bool sync_ = false;
 
   // Surface resource that is the ground for this subsurface.
@@ -44,6 +57,8 @@ class TestSubSurface : public ServerObject {
 
   // Parent surface resource.
   wl_resource* parent_resource_ = nullptr;
+
+  TestAugmentedSubSurface* augmented_subsurface_ = nullptr;
 };
 
 }  // namespace wl

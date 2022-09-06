@@ -10,14 +10,18 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,9 +33,16 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
@@ -58,8 +69,9 @@ namespace CloseTerminalProcess =
     extensions::api::terminal_private::CloseTerminalProcess;
 namespace SendInput = extensions::api::terminal_private::SendInput;
 namespace AckOutput = extensions::api::terminal_private::AckOutput;
-namespace SetSettings = extensions::api::terminal_private::SetSettings;
 namespace OpenWindow = extensions::api::terminal_private::OpenWindow;
+namespace GetPrefs = extensions::api::terminal_private::GetPrefs;
+namespace SetPrefs = extensions::api::terminal_private::SetPrefs;
 
 using crostini::mojom::InstallerState;
 
@@ -80,6 +92,15 @@ const char kSwitchStartupId[] = "startup_id";
 const char kSwitchCurrentWorkingDir[] = "cwd";
 
 const char kCwdTerminalIdPrefix[] = "terminal_id:";
+
+// Prefs that we read and observe.
+static const base::NoDestructor<std::vector<std::string>> kPrefsReadAllowList{{
+    ash::prefs::kAccessibilitySpokenFeedbackEnabled,
+    crostini::prefs::kCrostiniContainers,
+    crostini::prefs::kCrostiniEnabled,
+    crostini::prefs::kCrostiniTerminalSettings,
+    crostini::prefs::kTerminalSshAllowedByPolicy,
+}};
 
 void CloseTerminal(const std::string& terminal_id,
                    base::OnceCallback<void(bool)> callback) {
@@ -171,7 +192,8 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
   std::vector<base::Value> args;
   args.push_back(base::Value(terminal_id));
   args.push_back(base::Value(output_type));
-  args.push_back(base::Value(output));
+  args.push_back(base::Value(base::make_span(
+      reinterpret_cast<const uint8_t*>(&output[0]), output.size())));
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(browser_context);
@@ -183,18 +205,19 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
   }
 }
 
-void PreferenceChanged(Profile* profile,
-                       const std::string& pref_name,
-                       extensions::events::HistogramValue histogram,
-                       const char* eventName) {
-  std::vector<base::Value> args;
-  args.push_back(profile->GetPrefs()->Get(pref_name)->Clone());
+void PrefChanged(Profile* profile, const std::string& pref_name) {
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
-  if (event_router) {
-    auto event = std::make_unique<extensions::Event>(histogram, eventName,
-                                                     std::move(args));
-    event_router->BroadcastEvent(std::move(event));
+  if (!event_router) {
+    return;
   }
+  std::vector<base::Value> args;
+  base::Value prefs(base::Value::Type::DICTIONARY);
+  prefs.SetKey(pref_name, profile->GetPrefs()->Get(pref_name)->Clone());
+  args.push_back(std::move(prefs));
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::TERMINAL_PRIVATE_ON_PREF_CHANGED,
+      terminal_private::OnPrefChanged::kEventName, std::move(args));
+  event_router->BroadcastEvent(std::move(event));
 }
 
 }  // namespace
@@ -206,20 +229,10 @@ TerminalPrivateAPI::TerminalPrivateAPI(content::BrowserContext* context)
       pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
   Profile* profile = Profile::FromBrowserContext(context);
   pref_change_registrar_->Init(profile->GetPrefs());
-  pref_change_registrar_->Add(
-      crostini::prefs::kCrostiniTerminalSettings,
-      base::BindRepeating(
-          &PreferenceChanged, profile,
-          crostini::prefs::kCrostiniTerminalSettings,
-          extensions::events::TERMINAL_PRIVATE_ON_SETTINGS_CHANGED,
-          terminal_private::OnSettingsChanged::kEventName));
-  pref_change_registrar_->Add(
-      ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-      base::BindRepeating(
-          &PreferenceChanged, profile,
-          ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-          extensions::events::TERMINAL_PRIVATE_ON_A11Y_STATUS_CHANGED,
-          terminal_private::OnA11yStatusChanged::kEventName));
+  for (const auto& pref : *kPrefsReadAllowList) {
+    pref_change_registrar_->Add(pref,
+                                base::BindRepeating(&PrefChanged, profile));
+  }
 }
 
 TerminalPrivateAPI::~TerminalPrivateAPI() = default;
@@ -268,6 +281,12 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
             command_line->GetSwitchValueASCII(switches::kCroshCommand))));
 
   } else if (process_name == kCroshName) {
+    // Ensure crosh is allowed before starting terminal.
+    if (policy::SystemFeaturesDisableListPolicyHandler::IsSystemFeatureDisabled(
+            policy::SystemFeature::kCrosh, g_browser_process->local_state())) {
+      return RespondNow(Error("crosh not allowed"));
+    }
+
     // command=crosh: use '/usr/bin/crosh' on a device, 'cat' otherwise.
     if (base::SysInfo::IsRunningOnChromeOS()) {
       OpenProcess(user_id_hash,
@@ -276,7 +295,6 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
       OpenProcess(user_id_hash,
                   base::CommandLine(base::FilePath(kStubbedCroshCommand)));
     }
-
   } else if (process_name == kVmShellName) {
     // Ensure crostini is allowed before starting terminal.
     Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -330,19 +348,13 @@ void TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted(
     const std::string& user_id_hash,
     base::CommandLine cmdline,
     crostini::CrostiniResult result) {
-  if (crostini::MaybeShowCrostiniDialogBeforeLaunch(
-          Profile::FromBrowserContext(browser_context()), result)) {
-    const std::string msg = "Waiting for component update dialog response";
-    LOG(ERROR) << msg;
-    Respond(Error(msg));
-    return;
-  }
   startup_status_->OnCrostiniRestarted(result);
   if (result == crostini::CrostiniResult::SUCCESS) {
     OpenVmshellProcess(user_id_hash, std::move(cmdline));
   } else {
     const std::string msg =
-        base::StringPrintf("Error starting crostini for terminal: %d", result);
+        base::StringPrintf("Error starting crostini for terminal: %d (%s)",
+                           result, CrostiniResultString(result));
     LOG(ERROR) << msg;
     Respond(Error(msg));
   }
@@ -432,7 +444,6 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
   }
   auto* contents = GetSenderWebContents();
   if (!contents) {
-    LOG(WARNING) << "content is closed before returning opened process";
     chromeos::ProcessProxyRegistry::GetTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -443,6 +454,9 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
               }
             },
             terminal_id));
+    const std::string msg = "Web contents closed during OpenProcess";
+    LOG(WARNING) << msg;
+    Respond(Error(msg));
     return;
   }
 
@@ -615,13 +629,32 @@ ExtensionFunction::ResponseAction TerminalPrivateOpenWindowFunction::Run() {
       OpenWindow::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->data && params->data->url) {
+  const std::string* url = &crostini::GetTerminalHomeUrl();
+  bool as_tab = false;
+
+  auto& data = params->data;
+  if (data) {
+    if (data->url) {
+      url = data->url.get();
+    }
+    if (data->as_tab) {
+      as_tab = *data->as_tab;
+    }
+  }
+
+  if (as_tab) {
+    auto* browser = chrome::FindBrowserWithWebContents(GetSenderWebContents());
+    if (browser) {
+      chrome::AddTabAt(browser, GURL(*url), -1, true);
+    } else {
+      LOG(ERROR) << "cannot find the browser";
+    }
+  } else {
     crostini::LaunchTerminalWithUrl(
         Profile::FromBrowserContext(browser_context()),
-        display::kInvalidDisplayId, GURL(*params->data->url));
-  } else {
-    crostini::LaunchTerminal(Profile::FromBrowserContext(browser_context()));
+        display::kInvalidDisplayId, GURL(*url));
   }
+
   return RespondNow(NoArguments());
 }
 
@@ -635,43 +668,82 @@ TerminalPrivateOpenOptionsPageFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-TerminalPrivateGetSettingsFunction::~TerminalPrivateGetSettingsFunction() =
-    default;
+TerminalPrivateOpenSettingsSubpageFunction::
+    ~TerminalPrivateOpenSettingsSubpageFunction() = default;
 
-ExtensionFunction::ResponseAction TerminalPrivateGetSettingsFunction::Run() {
-  crostini::RecordTerminalSettingsChangesUMAs(
-      Profile::FromBrowserContext(browser_context()));
-  PrefService* service =
-      Profile::FromBrowserContext(browser_context())->GetPrefs();
-  const base::DictionaryValue* value =
-      service->GetDictionary(crostini::prefs::kCrostiniTerminalSettings);
-  return RespondNow(OneArgument(value->Clone()));
+ExtensionFunction::ResponseAction
+TerminalPrivateOpenSettingsSubpageFunction::Run() {
+  // Ignore params->subpage for now, and always open crostini.
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kCrostiniSectionPath);
+  return RespondNow(NoArguments());
 }
 
-TerminalPrivateSetSettingsFunction::~TerminalPrivateSetSettingsFunction() =
-    default;
+TerminalPrivateGetOSInfoFunction::~TerminalPrivateGetOSInfoFunction() = default;
 
-ExtensionFunction::ResponseAction TerminalPrivateSetSettingsFunction::Run() {
-  std::unique_ptr<SetSettings::Params> params(
-      SetSettings::Params::Create(args()));
+ExtensionFunction::ResponseAction TerminalPrivateGetOSInfoFunction::Run() {
+  base::DictionaryValue info;
+  info.SetBoolKey(
+      "multi_profile",
+      base::FeatureList::IsEnabled(chromeos::features::kTerminalMultiProfile));
+  info.SetBoolKey("tmux_integration",
+                  base::FeatureList::IsEnabled(
+                      chromeos::features::kTerminalTmuxIntegration));
+  return RespondNow(OneArgument(std::move(info)));
+}
+
+TerminalPrivateGetPrefsFunction::~TerminalPrivateGetPrefsFunction() = default;
+
+ExtensionFunction::ResponseAction TerminalPrivateGetPrefsFunction::Run() {
+  std::unique_ptr<GetPrefs::Params> params(GetPrefs::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  PrefService* service =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  base::Value result(base::Value::Type::DICT);
+
+  for (const auto& path : params->paths) {
+    // Ignore non-allowed paths.
+    if (!base::Contains(*kPrefsReadAllowList, path)) {
+      LOG(WARNING) << "Ignoring non-allowed GetPrefs path=" << path;
+      continue;
+    }
+    if (path == crostini::prefs::kCrostiniTerminalSettings) {
+      crostini::RecordTerminalSettingsChangesUMAs(
+          Profile::FromBrowserContext(browser_context()));
+    }
+    result.SetKey(path, service->Get(path)->Clone());
+  }
+  return RespondNow(OneArgument(std::move(result)));
+}
+
+TerminalPrivateSetPrefsFunction::~TerminalPrivateSetPrefsFunction() = default;
+
+ExtensionFunction::ResponseAction TerminalPrivateSetPrefsFunction::Run() {
+  std::unique_ptr<SetPrefs::Params> params(SetPrefs::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   PrefService* service =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
-  service->Set(crostini::prefs::kCrostiniTerminalSettings,
-               params->settings.additional_properties);
+
+  static const base::NoDestructor<
+      base::flat_map<std::string, base::Value::Type>>
+      kAllowList{{{crostini::prefs::kCrostiniTerminalSettings,
+                   base::Value::Type::DICTIONARY}}};
+
+  for (base::DictionaryValue::Iterator it(params->prefs.additional_properties);
+       !it.IsAtEnd(); it.Advance()) {
+    // Write prefs if they are allowed, and match expected type, else ignore.
+    auto allow_it = kAllowList->find(it.key());
+    if (allow_it == kAllowList->end() ||
+        allow_it->second != it.value().type()) {
+      LOG(WARNING) << "Ignoring non-allowed SetPrefs path=" << it.key()
+                   << ", type=" << it.value().type();
+      continue;
+    }
+    service->Set(it.key(), it.value());
+  }
   return RespondNow(NoArguments());
-}
-
-TerminalPrivateGetA11yStatusFunction::~TerminalPrivateGetA11yStatusFunction() =
-    default;
-
-ExtensionFunction::ResponseAction TerminalPrivateGetA11yStatusFunction::Run() {
-  return RespondNow(
-      OneArgument(Profile::FromBrowserContext(browser_context())
-                      ->GetPrefs()
-                      ->Get(ash::prefs::kAccessibilitySpokenFeedbackEnabled)
-                      ->Clone()));
 }
 
 }  // namespace extensions

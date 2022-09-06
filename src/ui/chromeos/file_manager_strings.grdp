@@ -74,6 +74,9 @@
   <message name="IDS_FILE_BROWSER_MY_FILES_ROOT_LABEL" desc="A label for the 'My files' root which is parent of Downloads, Linux and Android files. Use sentence case.">
     My files
   </message>
+  <message name="IDS_FILE_BROWSER_MEDIA_VIEW_ALL_ROOT_LABEL" desc="A label for the 'All' root of media views.">
+    All
+  </message>
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_IMAGES_ROOT_LABEL" desc="A label for the 'Images' root of media views.">
     Images
   </message>
@@ -82,6 +85,18 @@
   </message>
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
     Audio
+  </message>
+  <message name="IDS_FILE_BROWSER_MEDIA_VIEW_DOCUMENTS_ROOT_LABEL" desc="A label for the 'Documents' root of media views.">
+    Documents
+  </message>
+  <message name="IDS_FILE_BROWSER_RECENT_VIEW_FILTER_ON" desc="Message read by Chromevox/screenreader when curtain filter in Recent become active.">
+    <ph name="FILTER_NAME">$1<ex>Audio</ex></ph> filter is on.
+  </message>
+  <message name="IDS_FILE_BROWSER_RECENT_VIEW_FILTER_OFF" desc="Message read by Chromevox/screenreader when curtain filter in Recent become inactive.">
+    <ph name="FILTER_NAME">$1<ex>Vidoes</ex></ph> filter is off.
+  </message>
+  <message name="IDS_FILE_BROWSER_RECENT_VIEW_FILTER_RESET" desc="Message read by Chromevox/screenreader when the filter in Recent is reset to All.">
+    Filter is reset.
   </message>
   <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" desc="Parallels local directory label.">
     Windows files
@@ -325,13 +340,13 @@
     Open
   </message>
   <message name="IDS_FILE_BROWSER_TASK_OPEN_GDOC" desc="Title of the action to open a Google Docs document.">
-    Docs
+    Google Docs
   </message>
   <message name="IDS_FILE_BROWSER_TASK_OPEN_GSHEET" desc="Title of the action to open a Google Spreadsheets document.">
-    Sheets
+    Google Sheets
   </message>
   <message name="IDS_FILE_BROWSER_TASK_OPEN_GSLIDES" desc="Title of the action to open a Google Slides document.">
-    Slides
+    Google Slides
   </message>
   <message name="IDS_FILE_BROWSER_TASK_LISTEN" desc="Title of the action to play an audio file.">
     Listen
@@ -445,6 +460,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Context menu item that cuts the currently-selected file(s) to the clipboard.">
     Cut
+  </message>
+  <message name="IDS_FILE_BROWSER_EXTRACT_ALL_BUTTON_LABEL" desc="Menu item label, showing dialog to extract content from a zip file.">
+    Extract all
   </message>
   <message name="IDS_FILE_BROWSER_OPEN_WITH_BUTTON_LABEL" desc="Menu item label, showing dialog to choose extension to open selected files or directories.">
     Open with...
@@ -635,6 +653,18 @@
   <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING_LONG" desc="File Manager status message including destination folder when copying multiple files or folders. 'Item' is used here as a generic term for file or directory.">
     Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_EXTRACT_FILESYSTEM_ERROR" desc="File Manager error message.">
+    Extract operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_EXTRACT_FILE_NAME" desc="File Manager status message.">
+    Extracting <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
+  </message>
+  <message name="IDS_FILE_BROWSER_EXTRACT_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    Extracting <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
+  </message>
+  <message name="IDS_FILE_BROWSER_EXTRACT_FILE_NAME_LONG" desc="File Manager status message including destination folder when extracting one file.">
+    Extracting <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
+  </message>
   <message name="IDS_FILE_BROWSER_TIME_REMAINING_ESTIMATE"
            desc="The progress panel message indicating estimate of remaining time of a file operation. The time will be in 1 part (hour or minute) like '2 hours' or '3 min'.">
     About <ph name="REMAINING_TIME">$1<ex>1 min</ex></ph> remaining
@@ -658,11 +688,17 @@
   <message name="IDS_FILE_BROWSER_FILE_COPIED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="FILE_NAME">$1<ex>big.xz</ex></ph> copied.
   </message>
+  <message name="IDS_FILE_BROWSER_FILE_EXTRACTED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="FILE_NAME">$1<ex>big.xz</ex></ph> extracted.
+  </message>
   <message name="IDS_FILE_BROWSER_FILE_ITEMS" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items
   </message>
   <message name="IDS_FILE_BROWSER_FILE_ITEMS_COPIED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items copied.
+  </message>
+  <message name="IDS_FILE_BROWSER_FILE_ITEMS_EXTRACTED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items extracted.
   </message>
   <message name="IDS_FILE_BROWSER_FILE_ITEMS_MOVED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items moved.
@@ -1186,13 +1222,13 @@
     Got it
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
-    This file type is not supported. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on Chrome OS.
+    This file type is not supported. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on ChromeOS.
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_EXECUTABLE" desc="Message shown when user tries to open a windows executable file, which we can't handle.">
-    This file is designed for a PC using Windows software. This is not compatible with your device which runs Chrome OS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on Chrome OS.
+    This file is designed for a PC using Windows software. This is not compatible with your device which runs ChromeOS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on ChromeOS.
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_DMG" desc="Message shown when user tries to open a windows executable file, which we can't handle.">
-    This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on Chrome OS.
+    This file is designed for a computer using Macintosh software. This is not compatible with your device which runs ChromeOS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on ChromeOS.
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX_TITLE" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     Wait just a sec
@@ -1261,23 +1297,53 @@
   <message name="IDS_FILE_BROWSER_HTML_DOCUMENT_FILE_TYPE" desc="HTML document file type">
     HTML document
   </message>
-  <message name="IDS_FILE_BROWSER_ZIP_ARCHIVE_FILE_TYPE" desc="Zip archive file type">
-    Zip archive
+  <message name="IDS_FILE_BROWSER_ZIP_ARCHIVE_FILE_TYPE" desc="ZIP archive file type">
+    ZIP archive
   </message>
   <message name="IDS_FILE_BROWSER_RAR_ARCHIVE_FILE_TYPE" desc="RAR archive file type">
     RAR archive
   </message>
-  <message name="IDS_FILE_BROWSER_TAR_ARCHIVE_FILE_TYPE" desc="Tar archive file type">
-    Tar archive
+  <message name="IDS_FILE_BROWSER_ISO_ARCHIVE_FILE_TYPE" desc="ISO archive file type">
+    ISO image
   </message>
-  <message name="IDS_FILE_BROWSER_TAR_BZIP2_ARCHIVE_FILE_TYPE" desc="Bzip2 compressed tar archive file type">
-    Bzip2 compressed tar archive
+  <message name="IDS_FILE_BROWSER_7Z_ARCHIVE_FILE_TYPE" desc="7-Zip archive file type">
+    7-Zip archive
   </message>
-  <message name="IDS_FILE_BROWSER_TAR_GZIP_ARCHIVE_FILE_TYPE" desc="Gzip compressed tar archive file type">
-    Gzip compressed tar archive
+  <message name="IDS_FILE_BROWSER_CRX_ARCHIVE_FILE_TYPE" desc="CRX archive file type">
+    Chrome extension
+  </message>
+  <message name="IDS_FILE_BROWSER_TAR_ARCHIVE_FILE_TYPE" desc="TAR archive file type">
+    TAR archive
+  </message>
+  <message name="IDS_FILE_BROWSER_BZIP2_ARCHIVE_FILE_TYPE" desc="BZIP2 compressed archive file type">
+    BZIP2 compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_GZIP_ARCHIVE_FILE_TYPE" desc="GZIP compressed archive file type">
+    GZIP compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_LZMA_ARCHIVE_FILE_TYPE" desc="LZMA compressed archive file type">
+    LZMA compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_LZIP_ARCHIVE_FILE_TYPE" desc="LZIP compressed archive file type">
+    LZIP compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_LZOP_ARCHIVE_FILE_TYPE" desc="LZOP compressed archive file type">
+    LZOP compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_XZ_ARCHIVE_FILE_TYPE" desc="XZ compressed archive file type">
+    XZ compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_Z_ARCHIVE_FILE_TYPE" desc="Z compressed archive file type">
+    Z compressed archive
+  </message>
+  <message name="IDS_FILE_BROWSER_ZSTD_ARCHIVE_FILE_TYPE" desc="ZSTD compressed archive file type">
+    Zstandard compressed archive
   </message>
   <message name="IDS_FILE_BROWSER_PLAIN_TEXT_FILE_TYPE" desc="Plain text file type">
     Plain text
+  </message>
+  <message name="IDS_FILE_BROWSER_CSV_TEXT_FILE_TYPE" desc="CSV file type">
+    CSV text
   </message>
   <message name="IDS_FILE_BROWSER_PDF_DOCUMENT_FILE_TYPE" desc="PDF document file type">
     PDF document
@@ -1330,10 +1396,10 @@
     This file type is not supported. Please visit the Chrome Web Store to find an app that can open this type of file.
   </message>
   <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE_FOR_DMG" desc="Error message when user attempts to open a dmg file in the Files app via Downloads panel.">
-    This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. Please search the Chrome Web Store for a suitable replacement app.
+    This file is designed for a computer using Macintosh software. This is not compatible with your device which runs ChromeOS. Please search the Chrome Web Store for a suitable replacement app.
   </message>
   <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE_FOR_EXECUTABLE" desc="Error message when user attempts to open a exe file in the Files app via Downloads panel.">
-    This file is designed for a PC using Windows software. This is not compatible with your device which runs Chrome OS. Please search the Chrome Web Store for a suitable replacement app.
+    This file is designed for a PC using Windows software. This is not compatible with your device which runs ChromeOS. Please search the Chrome Web Store for a suitable replacement app.
   </message>
   <message name="IDS_FILE_BROWSER_ERROR_UNRESOLVABLE_FILE" desc="Error message when the file attempted to open from Downloads panel was not found under paths managed by file manager.">
     This file has wandered off somewhere. Please check your download location setting and try again.
@@ -1499,38 +1565,12 @@
     Artwork
   </message>
 
-<!-- Video Player -->
-  <message name="IDS_VIDEO_PLAYER_PLAY_THIS_COMPUTER" desc="In the video player app, message of menu item which is shown at the top of the list of Chromecasts. This menuitem is to play the video on this computer (locally), intead of on TVs with Chromecast.">
-    This computer
+<!-- Data Leak Prevention -->
+  <message name="IDS_FILE_BROWSER_DLP_BLOCK_COPY_TOAST" desc="A toast informing the user that copying files is blocked by the administrator.">
+    Pasting this file is blocked by your administrator
   </message>
-  <message name="IDS_VIDEO_PLAYER_PLAYING_ON" desc="In the video player app, message is shown ahead of the name of the current chromecast which plays the video now. For example, if this message is 'Playing on' and the Chromecast name is 'Foocast', 'Playing on Foocast' is shown.">
-    Playing on
+  <message name="IDS_FILE_BROWSER_DLP_TOAST_BUTTON_LABEL" desc="Toast button label, learn more about data leak prevention policies.">
+    Learn more
   </message>
-  <message name="IDS_VIDEO_PLAYER_PLAY_ON" desc="In the video player app, message is shown above the list of cast devices. The user will select one of them to play the current video on selected device.">
-    Play on
-  </message>
-  <message name="IDS_VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED" desc="In the video player app, message informing that the video could not be played.">
-    This file could not be played.
-  </message>
-  <message name="IDS_VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED_FOR_CAST" desc="Error message which is shown when the video which an user tried to play is not supported by the current cast device.">
-    Sorry, this video is not supported by your cast device.
-  </message>
-  <message name="IDS_VIDEO_PLAYER_PLAYBACK_ERROR" desc="In the video player app, message informing that an error occurred while playing the movie.">
-    An error occurred. Click to restart from the beginning.
-  </message>
-  <message name="IDS_VIDEO_PLAYER_LOOPED_MODE" desc="In the video player app, message informing that the movie will be played in a loop.">
-    This video will keep playing until the cows come home.
-  </message>
-  <message name="IDS_VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL" desc="Label for a button which is used to enter full screen mode in video player.">
-    Full screen
-  </message>
-  <message name="IDS_VIDEO_PLAYER_EXIT_FULL_SCREEN_BUTTON_LABEL" desc="Label for a button which is used to exit full screen mode in video player.">
-    Exit full screen
-  </message>
-  <message name="IDS_VIDEO_PLAYER_ENABLE_SUBTITLES_BUTTON_LABEL" desc="Label for a button which is used to enable subtitles in video player.">
-    Enable subtitles
-  </message>
-  <message name="IDS_VIDEO_PLAYER_DISABLE_SUBTITLES_BUTTON_LABEL" desc="Label for a button which is used to disable subtitles in video player.">
-    Disable subtitles
-  </message>
+
 </grit-part>

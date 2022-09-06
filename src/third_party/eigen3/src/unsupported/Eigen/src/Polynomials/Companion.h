@@ -31,14 +31,14 @@ struct decrement_if_fixed_size
 
 #endif
 
-template< typename Scalar_, int _Deg >
+template< typename Scalar_, int Deg_ >
 class companion
 {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_Deg==Dynamic ? Dynamic : _Deg)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,Deg_==Dynamic ? Dynamic : Deg_)
 
     enum {
-      Deg = _Deg,
+      Deg = Deg_,
       Deg_1=decrement_if_fixed_size<Deg>::ret
     };
 
@@ -49,7 +49,7 @@ class companion
     typedef Matrix<Scalar, Deg_1, 1>               BottomLeftDiagonal;
 
     typedef Matrix<Scalar, Deg, Deg>               DenseCompanionMatrixType;
-    typedef Matrix< Scalar, _Deg, Deg_1 >          LeftBlock;
+    typedef Matrix< Scalar, Deg_, Deg_1 >          LeftBlock;
     typedef Matrix< Scalar, Deg_1, Deg_1 >         BottomLeftBlock;
     typedef Matrix< Scalar, 1, Deg_1 >             LeftBlockFirstRow;
 
@@ -132,9 +132,9 @@ class companion
 
 
 
-template< typename Scalar_, int _Deg >
+template< typename Scalar_, int Deg_ >
 inline
-bool companion<Scalar_,_Deg>::balanced( RealScalar colNorm, RealScalar rowNorm,
+bool companion<Scalar_,Deg_>::balanced( RealScalar colNorm, RealScalar rowNorm,
     bool& isBalanced, RealScalar& colB, RealScalar& rowB )
 {
   if( RealScalar(0) == colNorm || RealScalar(0) == rowNorm 
@@ -186,9 +186,9 @@ bool companion<Scalar_,_Deg>::balanced( RealScalar colNorm, RealScalar rowNorm,
   }
 }
 
-template< typename Scalar_, int _Deg >
+template< typename Scalar_, int Deg_ >
 inline
-bool companion<Scalar_,_Deg>::balancedR( RealScalar colNorm, RealScalar rowNorm,
+bool companion<Scalar_,Deg_>::balancedR( RealScalar colNorm, RealScalar rowNorm,
     bool& isBalanced, RealScalar& colB, RealScalar& rowB )
 {
   if( RealScalar(0) == colNorm || RealScalar(0) == rowNorm ){ return true; }
@@ -213,8 +213,8 @@ bool companion<Scalar_,_Deg>::balancedR( RealScalar colNorm, RealScalar rowNorm,
 }
 
 
-template< typename Scalar_, int _Deg >
-void companion<Scalar_,_Deg>::balance()
+template< typename Scalar_, int Deg_ >
+void companion<Scalar_,Deg_>::balance()
 {
   using std::abs;
   EIGEN_STATIC_ASSERT( Deg == Dynamic || 1 < Deg, YOU_MADE_A_PROGRAMMING_MISTAKE );

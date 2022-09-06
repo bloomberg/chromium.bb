@@ -4,6 +4,7 @@
 
 #include "components/update_client/protocol_parser_json.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -66,7 +67,7 @@ bool ParseManifest(const base::Value& manifest_node,
     return false;
   }
 
-  for (const auto& package : package_node->GetList()) {
+  for (const auto& package : package_node->GetListDeprecated()) {
     if (!package.is_dict()) {
       *error = "'package' is not a dictionary.";
       return false;
@@ -113,7 +114,7 @@ void ParseActions(const base::Value& actions_node,
   if (!action_node || !action_node->is_list())
     return;
 
-  const auto& action_list = action_node->GetList();
+  const auto& action_list = action_node->GetListDeprecated();
   if (action_list.empty() || !action_list[0].is_dict())
     return;
 
@@ -133,7 +134,7 @@ bool ParseUrls(const base::Value& urls_node,
     return false;
   }
 
-  for (const auto& url : url_node->GetList()) {
+  for (const auto& url : url_node->GetListDeprecated()) {
     if (!url.is_dict())
       continue;
     const auto* codebase = url.FindKey("codebase");
@@ -157,6 +158,15 @@ bool ParseUrls(const base::Value& urls_node,
   }
 
   return true;
+}
+
+void ParseData(const base::Value& data_node, ProtocolParser::Result* result) {
+  if (!data_node.is_dict())
+    return;
+
+  result->data.emplace_back(ProtocolParser::Result::Data(
+      GetValueString(data_node, "status"), GetValueString(data_node, "name"),
+      GetValueString(data_node, "index"), GetValueString(data_node, "#text")));
 }
 
 bool ParseUpdateCheck(const base::Value& updatecheck_node,
@@ -257,6 +267,15 @@ bool ParseApp(const base::Value& app_node,
   }
 
   DCHECK(result->status.empty() || result->status == "ok");
+
+  if (const auto* data_node = app_node.FindKey("data")) {
+    if (const auto* data_list = data_node->GetIfList()) {
+      std::for_each(
+          data_list->begin(), data_list->end(),
+          [&result](const base::Value& data) { ParseData(data, result); });
+    }
+  }
+
   const auto* updatecheck_node = app_node.FindKey("updatecheck");
   if (!updatecheck_node) {
     *error = "Missing updatecheck on app.";
@@ -323,7 +342,7 @@ bool ProtocolParserJSON::DoParse(const std::string& response_json,
 
   const auto* app_node = response_node->FindKey("app");
   if (app_node && app_node->is_list()) {
-    for (const auto& app : app_node->GetList()) {
+    for (const auto& app : app_node->GetListDeprecated()) {
       Result result;
       std::string error;
       if (ParseApp(app, &result, &error))

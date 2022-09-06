@@ -41,6 +41,10 @@ Web UI. See the [UI Development](#ui-development) section below for more.
 
 `--linux-arm` will pull the sysroots for cross-compiling for Linux ARM/64.
 
+WARNING: Note that if you're using an M1 or any later ARM Mac, your Python
+version should be at least 3.9.1 to work around
+[this Python Bug](https://bugs.python.org/issue42704).
+
 #### Generate the build files via GN
 
 Perfetto uses [GN](https://gn.googlesource.com/gn/+/HEAD/docs/quick_start.md)
@@ -80,7 +84,7 @@ tools/ninja -C out/android \
   traced_probes \          # Ftrace interop and /proc poller.
   perfetto \               # Cmdline client.
   trace_processor_shell \  # Trace parsing.
-  trace_to_text            # Trace conversion.
+  traceconv                # Trace conversion.
 ...
 ```
 
@@ -137,6 +141,14 @@ The server supports live reloading of CSS and TS/JS contents. Whenever a ui
 source file is changed it, the script will automatically re-build it and show a
 prompt in the web page.
 
+UI unit tests are located next to the functionality being tested, and have
+`_unittest.ts` or `_jsdomtest.ts` suffixes. The following command runs all unit
+tests:
+
+```bash
+ui/run-unittests
+```
+
 ## Build files
 
 The source of truth of our build file is in the BUILD.gn files, which are based
@@ -190,7 +202,7 @@ chrome://tracing). The MSVC build is maintained best-effort.
 The following targets are supported on Windows:
 
 - `trace_processor_shell`: the trace importer and SQL query engine.
-- `trace_to_text`: the trace conversion tool.
+- `traceconv`: the trace conversion tool.
 - `traced` and `perfetto`: the tracing service and cmdline client. They use an
   alternative implementation of the [inter-process tracing protocol](/docs/design-docs/api-and-abi.md#tracing-protocol-abi)
   based on a TCP socket and named shared memory. This configuration is only for

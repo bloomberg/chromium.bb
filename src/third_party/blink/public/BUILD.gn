@@ -126,7 +126,6 @@ source_set("blink_headers") {
     "platform/child_url_loader_factory_bundle.h",
     "platform/cross_variant_mojo_util.h",
     "platform/file_path_conversion.h",
-    "platform/impression_conversions.h",
     "platform/interface_registry.h",
     "platform/internet_disconnected_web_url_loader.h",
     "platform/media/webmediaplayer_delegate.h",
@@ -198,13 +197,13 @@ source_set("blink_headers") {
     "platform/web_dedicated_worker_host_factory_client.h",
     "platform/web_distillability.h",
     "platform/web_document_subresource_filter.h",
-    "platform/web_double_size.h",
     "platform/web_drag_data.h",
     "platform/web_effective_connection_type.h",
     "platform/web_encrypted_media_client.h",
     "platform/web_encrypted_media_key_information.h",
     "platform/web_encrypted_media_request.h",
     "platform/web_encrypted_media_types.h",
+    "platform/web_fenced_frame_reporting.h",
     "platform/web_fetch_client_settings_object.h",
     "platform/web_file_system_type.h",
     "platform/web_font.h",
@@ -217,7 +216,6 @@ source_set("blink_headers") {
     "platform/web_http_header_visitor.h",
     "platform/web_icon_sizes_parser.h",
     "platform/web_image_generator.h",
-    "platform/web_impression.h",
     "platform/web_inband_text_track.h",
     "platform/web_inband_text_track_client.h",
     "platform/web_input_event_result.h",
@@ -280,6 +278,7 @@ source_set("blink_headers") {
     "web/blink.h",
     "web/modules/autofill/web_form_element_observer.h",
     "web/modules/autofill_assistant/node_signals.h",
+    "web/modules/canvas/canvas_test_utils.h",
     "web/modules/media/audio/audio_device_factory.h",
     "web/modules/media/audio/audio_input_ipc_factory.h",
     "web/modules/media/audio/audio_output_ipc_factory.h",
@@ -290,6 +289,7 @@ source_set("blink_headers") {
     "web/modules/mediastream/web_media_stream_device_observer.h",
     "web/modules/mediastream/web_media_stream_utils.h",
     "web/modules/mediastream/webmediaplayer_ms.h",
+    "web/modules/service_worker/web_navigation_preload_request.h",
     "web/modules/service_worker/web_service_worker_context_client.h",
     "web/modules/service_worker/web_service_worker_context_proxy.h",
     "web/web_array_buffer.h",
@@ -307,6 +307,7 @@ source_set("blink_headers") {
     "web/web_content_capture_client.h",
     "web/web_content_holder.h",
     "web/web_crypto_normalize.h",
+    "web/web_css_origin.h",
     "web/web_custom_element.h",
     "web/web_document.h",
     "web/web_document_loader.h",
@@ -363,6 +364,7 @@ source_set("blink_headers") {
     "web/web_pepper_socket.h",
     "web/web_pepper_socket_client.h",
     "web/web_performance.h",
+    "web/web_picture_in_picture_window_options.h",
     "web/web_plugin.h",
     "web/web_plugin_container.h",
     "web/web_plugin_document.h",
@@ -423,6 +425,8 @@ source_set("blink_headers") {
   if (is_win) {
     sources += [
       "platform/web_font_prewarmer.h",
+      "platform/web_font_rendering_client.h",
+      "web/win/web_font_family_names.h",
       "web/win/web_font_rendering.h",
     ]
   }
@@ -450,6 +454,10 @@ source_set("blink_headers") {
     "//ui/base/prediction:prediction",
     "//url",
   ]
+
+  if (is_mac) {
+    public_deps += [ "//ui/gfx" ]
+  }
 
   deps = [
     "//base:base",
@@ -500,6 +508,7 @@ grit("resources") {
     "grit/blink_resources.h",
     "blink_resources.pak",
   ]
+  use_brotli = true
 }
 
 grit("devtools_inspector_resources") {

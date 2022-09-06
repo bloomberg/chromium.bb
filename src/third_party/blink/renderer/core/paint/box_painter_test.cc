@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 
@@ -210,10 +209,9 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
       paint_chunks,
       ElementsAre(
           VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
-          IsPaintChunk(
-              1, 2,
-              PaintChunk::Id(container.Layer()->Id(), DisplayItem::kLayerChunk),
-              container.FirstFragment().LocalBorderBoxProperties()),
+          IsPaintChunk(1, 2,
+                       PaintChunk::Id(container.Id(), kBackgroundChunkType),
+                       container.FirstFragment().LocalBorderBoxProperties()),
           IsPaintChunk(
               2, 2, PaintChunk::Id(container.Id(), DisplayItem::kScrollHitTest),
               container.FirstFragment().LocalBorderBoxProperties(),
@@ -262,6 +260,21 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
   // and the contents should be scrolled by this node.
   EXPECT_EQ(&contents_transform,
             scroll_hit_test_chunk.hit_test_data->scroll_translation);
+}
+
+// crbug.com/1256990
+TEST_P(BoxPainterTest, ScrollerUnderInlineTransform3DSceneLeafCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="transform-style: preserve-3d">
+      <div style="display:inline">
+        <div style="display: inline-block; overflow: scroll;
+                    width: 100px; height: 100px">
+          <div style="height: 200px"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+  // This should not crash.
 }
 
 }  // namespace blink

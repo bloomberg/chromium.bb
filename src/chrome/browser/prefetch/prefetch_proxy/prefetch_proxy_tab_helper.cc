@@ -10,15 +10,19 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/data_saver/data_saver.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/prefetch/prefetch_headers.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_network_context_client.h"
@@ -32,7 +36,6 @@
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_subresource_manager.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_type.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
@@ -41,6 +44,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/frame_accept_header.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
@@ -55,11 +59,13 @@
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/url_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -68,10 +74,14 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace {
+
+bool (*g_host_non_unique_filter)(base::StringPiece) = nullptr;
 
 absl::optional<base::TimeDelta> GetTotalPrefetchTime(
     network::mojom::URLResponseHead* head) {
@@ -180,12 +190,13 @@ bool ShouldConsiderDecoyRequestForStatus(PrefetchProxyPrefetchStatus status) {
       return true;
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleGoogleDomain:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps:
-    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsIPAddress:
     case PrefetchProxyPrefetchStatus::
         kPrefetchNotEligibleNonDefaultStoragePartition:
     case PrefetchProxyPrefetchStatus::kPrefetchPositionIneligible:
     case PrefetchProxyPrefetchStatus::kPrefetchIneligibleRetryAfter:
     case PrefetchProxyPrefetchStatus::kPrefetchProxyNotAvailable:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleDataSaverEnabled:
       // These statuses don't relate to any user state, so don't send a decoy
       // request.
       return false;
@@ -283,6 +294,17 @@ void PrefetchProxyTabHelper::SetServiceWorkerContextForTest(
   g_service_worker_context_for_test = context;
 }
 
+// static
+void PrefetchProxyTabHelper::SetHostNonUniqueFilterForTest(
+    bool (*filter)(base::StringPiece)) {
+  g_host_non_unique_filter = filter;
+}
+
+// static
+void PrefetchProxyTabHelper::ResetHostNonUniqueFilterForTest() {
+  g_host_non_unique_filter = nullptr;
+}
+
 PrefetchProxyTabHelper::PrefetchProxyTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -341,11 +363,6 @@ bool PrefetchProxyTabHelper::IsProfileEligible(Profile* profile) {
     return false;
   }
 
-  if (PrefetchProxyOnlyForLiteMode()) {
-    return data_reduction_proxy::DataReductionProxySettings::
-        IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
-                                 profile->GetPrefs());
-  }
   return true;
 }
 
@@ -470,7 +487,6 @@ PrefetchProxyTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleUserHasCookies:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps:
-    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsIPAddress:
     case PrefetchProxyPrefetchStatus::
         kPrefetchNotEligibleNonDefaultStoragePartition:
     case PrefetchProxyPrefetchStatus::kPrefetchNotFinishedInTime:
@@ -486,6 +502,8 @@ PrefetchProxyTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
     case PrefetchProxyPrefetchStatus::kPrefetchIsPrivacyDecoy:
     case PrefetchProxyPrefetchStatus::kPrefetchNotUsedCookiesChanged:
     case PrefetchProxyPrefetchStatus::kPrefetchFailedRedirectsDisabled:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleDataSaverEnabled:
       return prefetch_container->GetPrefetchStatus();
     // These statuses we are going to update to, and this is the only place that
     // they are set so they are not expected to be passed in.
@@ -589,10 +607,7 @@ PrefetchProxyTabHelper::ComputeAfterSRPMetricsBeforeCommit(
   DCHECK(!handle->GetRedirectChain().empty());
   absl::optional<PrefetchProxyPrefetchStatus> status;
   absl::optional<size_t> prediction_position;
-  for (auto back_iter = handle->GetRedirectChain().rbegin();
-       back_iter != handle->GetRedirectChain().rend(); ++back_iter) {
-    GURL chain_url = *back_iter;
-
+  for (const GURL& chain_url : base::Reversed(handle->GetRedirectChain())) {
     auto container_iter = page_->prefetch_containers_.find(chain_url);
     if (!status && container_iter != page_->prefetch_containers_.end() &&
         container_iter->second->HasPrefetchStatus()) {
@@ -830,6 +845,15 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
   request->load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH;
   request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   request->headers.SetHeader(content::kCorsExemptPurposeHeaderName, "prefetch");
+  request->headers.SetHeader(
+      prefetch::headers::kSecPurposeHeaderName,
+      prefetch_container->GetPrefetchType().IsProxyRequired()
+          ? prefetch::headers::kSecPurposePrefetchAnonymousClientIpHeaderValue
+          : prefetch::headers::kSecPurposePrefetchHeaderValue);
+  request->headers.SetHeader(
+      net::HttpRequestHeaders::kAccept,
+      content::FrameAcceptHeaderValue(/*allow_sxg_responses=*/true, profile_));
+  request->headers.SetHeader("Upgrade-Insecure-Requests", "1");
   // Remove the user agent header if it was set so that the network context's
   // default is used.
   request->headers.RemoveHeader("User-Agent");
@@ -870,6 +894,10 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
       loader.get(), prefetch_container->GetUrl()));
   loader->SetAllowHttpErrorResults(true);
   loader->SetTimeoutDuration(PrefetchProxyTimeoutDuration());
+  loader->SetURLLoaderFactoryOptions(
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse |
+      network::mojom::kURLLoadOptionSniffMimeType |
+      network::mojom::kURLLoadOptionSendSSLInfoForCertificateError);
   loader->DownloadToString(
       GetURLLoaderFactory(prefetch_container->GetUrl()),
       base::BindOnce(&PrefetchProxyTabHelper::OnPrefetchComplete,
@@ -978,9 +1006,11 @@ void PrefetchProxyTabHelper::OnPrefetchComplete(
 
     // Verifies that the request was made using the prefetch proxy if required,
     // or made directly if the proxy was not required.
-    DCHECK(
-        !head->proxy_server.is_direct() ==
-        prefetch_container_iter->second->GetPrefetchType().IsProxyRequired());
+    DCHECK(prefetch_container_iter->second->GetPrefetchType()
+               .IsProxyBypassedForTest() ||
+           !head->proxy_server.is_direct() ==
+               prefetch_container_iter->second->GetPrefetchType()
+                   .IsProxyRequired());
 
     HandlePrefetchResponse(prefetch_container_iter->second.get(),
                            isolation_info, std::move(head), std::move(body));
@@ -1050,7 +1080,7 @@ void PrefetchProxyTabHelper::HandlePrefetchResponse(
     return;
   }
 
-  if (head->mime_type != "text/html") {
+  if (PrefetchProxyHTMLOnly() && head->mime_type != "text/html") {
     prefetch_container->SetPrefetchStatus(
         PrefetchProxyPrefetchStatus::kPrefetchFailedNotHTML);
     return;
@@ -1245,12 +1275,18 @@ void PrefetchProxyTabHelper::PrefetchSpeculationCandidates(
     return;
 
   // For IP-private prefetches, using the Google proxy needs to be restricted to
-  // first party sites until we understand the benefit and determine interest
-  // from other sites.
+  // first party sites unless users opted-in to extended preloading.
   std::vector<std::pair<GURL, PrefetchType>> filtered_prefetches = prefetches;
-  if (!PrefetchProxyAllowAllDomains() &&
+  const bool allow_all_domains =
+      PrefetchProxyAllowAllDomains() ||
+      (PrefetchProxyAllowAllDomainsForExtendedPreloading() &&
+       prefetch::GetPreloadPagesState(*profile_->GetPrefs()) ==
+           prefetch::PreloadPagesState::kExtendedPreloading);
+  if (!allow_all_domains &&
       !IsGoogleDomainUrl(source_document_url, google_util::ALLOW_SUBDOMAIN,
-                         google_util::ALLOW_NON_STANDARD_PORTS)) {
+                         google_util::ALLOW_NON_STANDARD_PORTS) &&
+      !IsYoutubeDomainUrl(source_document_url, google_util::ALLOW_SUBDOMAIN,
+                          google_util::ALLOW_NON_STANDARD_PORTS)) {
     // Filter out prefetches that require the Google proxy.
     auto new_end =
         std::remove_if(filtered_prefetches.begin(), filtered_prefetches.end(),
@@ -1328,7 +1364,7 @@ void PrefetchProxyTabHelper::PrefetchUrls(
     page_->prefetch_metrics_collector_ =
         base::MakeRefCounted<PrefetchProxyPrefetchMetricsCollector>(
             page_->navigation_start_,
-            web_contents()->GetMainFrame()->GetPageUkmSourceId());
+            web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
   }
 
   // Add new prefetches, and update the type for any existing prefetches.
@@ -1386,19 +1422,40 @@ PrefetchProxyTabHelper::CheckEligibilityOfURLSansUserData(
     return std::make_pair(false, absl::nullopt);
   }
 
+  if (data_saver::IsDataSaverEnabled(profile)) {
+    return std::make_pair(
+        false,
+        PrefetchProxyPrefetchStatus::kPrefetchNotEligibleDataSaverEnabled);
+  }
+
   if (!PrefetchProxyUseSpeculationRules() &&
       google_util::IsGoogleAssociatedDomainUrl(url)) {
     return std::make_pair(
         false, PrefetchProxyPrefetchStatus::kPrefetchNotEligibleGoogleDomain);
   }
 
-  if (url.HostIsIPAddress()) {
+  // While a registry-controlled domain could still resolve to a non-publicly
+  // routable IP, this allows hosts which are very unlikely to work via the
+  // proxy to be discarded immediately.
+  if (!prefetch_type.IsProxyBypassedForTest() &&
+      prefetch_type.IsProxyRequired() &&
+      (g_host_non_unique_filter
+           ? g_host_non_unique_filter(url.HostNoBracketsPiece())
+           : net::IsHostnameNonUnique(url.HostNoBrackets()))) {
     return std::make_pair(
         false,
-        PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsIPAddress);
+        PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique);
   }
 
-  if (!url.SchemeIs(url::kHttpsScheme)) {
+  // Only HTTP(S) URLs which are believed to be secure are eligible.
+  // For proxied prefetches, we only want HTTPS URLs.
+  // For non-proxied prefetches, other URLs (notably localhost HTTP) is also
+  // acceptable. This is common during development.
+  const bool is_secure_http = prefetch_type.IsProxyRequired()
+                                  ? url.SchemeIs(url::kHttpsScheme)
+                                  : (url.SchemeIsHTTPOrHTTPS() &&
+                                     network::IsUrlPotentiallyTrustworthy(url));
+  if (!is_secure_http) {
     return std::make_pair(
         false,
         PrefetchProxyPrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps);
@@ -1542,13 +1599,6 @@ void PrefetchProxyTabHelper::OnGotEligibilityResult(
   prefetch_container->SetPrefetchStatus(
       PrefetchProxyPrefetchStatus::kPrefetchNotStarted);
 
-  // Check that we won't go above the allowable size.
-  if (prefetch_container->GetOriginalPredictionIndex() <
-      sizeof(page_->srp_metrics_->ordered_eligible_pages_bitmask_) * 8) {
-    page_->srp_metrics_->ordered_eligible_pages_bitmask_ |=
-        1 << prefetch_container->GetOriginalPredictionIndex();
-  }
-
   if (!PrefetchProxyShouldPrefetchPosition(
           prefetch_container->GetOriginalPredictionIndex())) {
     prefetch_container->SetPrefetchStatus(
@@ -1565,6 +1615,9 @@ void PrefetchProxyTabHelper::OnGotEligibilityResult(
   if (prefetch_container->GetPrefetchType()
           .IsIsolatedNetworkContextRequired()) {
     prefetch_container->RegisterCookieListener(
+        base::BindOnce(
+            &PrefetchProxyTabHelper::OnCookiesChangedAfterInitialCheck,
+            weak_factory_.GetWeakPtr()),
         profile_->GetDefaultStoragePartition()
             ->GetCookieManagerForBrowserProcess());
   }
@@ -1682,6 +1735,13 @@ bool PrefetchProxyTabHelper::HaveCookiesChanged(const GURL& url) const {
   if (prefetch_container_iter == page_->prefetch_containers_.end())
     return false;
   return prefetch_container_iter->second->HaveCookiesChanged();
+}
+
+void PrefetchProxyTabHelper::OnCookiesChangedAfterInitialCheck(
+    const GURL& url) {
+  for (auto& observer : observer_list_) {
+    observer.OnCookiesChangedForPrefetchAfterInitialCheck(url);
+  }
 }
 
 void PrefetchProxyTabHelper::CurrentPageLoad::CreateNetworkContextForUrl(

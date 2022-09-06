@@ -4,11 +4,11 @@
 
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
 
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EmojiButton} from './emoji_button.js';
+import {EmojiCategoryButton} from './emoji_category_button.js';
 import Fuse from './fuse.js';
-import {EmojiGroupData, EmojiVariants} from './types.js';
+import {CategoryEnum, EmojiGroupData, EmojiVariants} from './types.js';
 
 /**
  * @typedef {!Array<{item: !EmojiVariants}>} FuseResults
@@ -28,30 +28,50 @@ export class EmojiSearch extends PolymerElement {
     return {
       /** @type {EmojiGroupData} */
       emojiData: {type: Array, readonly: true},
+      /** @type {EmojiGroupData} */
+      emoticonData: {type: Array, readonly: true},
       /** @type {!string} */
       search: {type: String, notify: true},
       /** @private {!Array<!EmojiVariants>} */
       emojiList: {
         type: Array,
-        computed: 'computeEmojiList(emojiData)',
+        computed: 'computeEmojiList(emojiData,emojiData.length)',
         observer: 'onEmojiListChanged'
       },
-      /** @private {!FuseResults} */
-      results:
-          {type: Array, computed: 'computeSearchResults(search, emojiList)'},
+      /** @private {!Array<!EmojiVariants>} */
+      emoticonList: {
+        type: Array,
+        computed: 'computeEmojiList(emoticonData)',
+        observer: 'onEmoticonListChanged'
+      },
+      /** @private {!Array<!EmojiVariants>} */
+      emojiResults:
+          {type: Array, computed: 'computeSearchResults(search, \'emoji\')'},
+      /** @private {!Array<!EmojiVariants>} */
+      emoticonResults:
+          {type: Array, computed: 'computeSearchResults(search, \'emoticon\')'},
+      /** @private {!boolean} */
+      v2Enabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        readonly: true
+      }
     };
   }
 
   constructor() {
     super();
-    this.fuse = new Fuse([], {
+    const fuseConfig = {
       threshold: 0.0,        // Exact match only.
       ignoreLocation: true,  // Match in all locations.
       keys: [
         {name: 'base.name', weight: 10},  // Increase scoring of emoji name.
         'base.keywords',
       ]
-    });
+    };
+    this.emojiFuse = new Fuse([], fuseConfig);
+    this.emoticonFuse = new Fuse([], fuseConfig);
     this.addEventListener('scroll', () => {
       this.onSearchScroll();
     });
@@ -78,6 +98,11 @@ export class EmojiSearch extends PolymerElement {
    * @param {KeyboardEvent} ev
    */
   onKeyDown(ev) {
+    // TODO(b/233567886): Implement navigation by keyboard for V2.
+    if (this.v2Enabled) {
+      return;
+    }
+
     const isUp = ev.key === 'ArrowUp';
     const isDown = ev.key === 'ArrowDown';
     const isEnter = ev.key === 'Enter';
@@ -88,14 +113,16 @@ export class EmojiSearch extends PolymerElement {
     if (isEnter && focusedResult) {
       focusedResult.click();
     }
-    if (!isUp && !isDown)
+    if (!isUp && !isDown) {
       return;
+    }
 
     ev.preventDefault();
     ev.stopPropagation();
 
-    if (!focusedResult)
+    if (!focusedResult) {
       return;
+    }
 
     const prev = focusedResult.previousElementSibling;
     const next = focusedResult.nextElementSibling;
@@ -120,8 +147,10 @@ export class EmojiSearch extends PolymerElement {
    */
   onSearchKeyDown(ev) {
     // if not searching or no results, do nothing.
-    if (!this.search || !this.results.length)
+    if (!this.search ||
+        (this.emojiResults.length === 0 && this.emoticonResults.length === 0)) {
       return;
+    }
 
     const isDown = ev.key === 'ArrowDown';
     const isEnter = ev.key === 'Enter';
@@ -130,13 +159,34 @@ export class EmojiSearch extends PolymerElement {
       ev.preventDefault();
       ev.stopPropagation();
 
-      // focus first item in result list.
-      const firstButton = this.shadowRoot.querySelector('.result');
-      firstButton.focus();
+      if (!this.v2Enabled) {
+        // focus first item in result list.
+        const firstButton = this.shadowRoot.querySelector('.result');
+        firstButton.focus();
 
-      // if there is only one result, select it on enter.
-      if (isEnter && this.results.length === 1) {
-        firstButton.querySelector('emoji-button').click();
+        // if there is only one result, select it on enter.
+        if (isEnter && this.emojiResults.length === 1) {
+          firstButton.querySelector('emoji-button').click();
+        }
+      } else {
+        const resultsCount =
+          this.emojiResults.length + this.emoticonResults.length;
+
+        if (resultsCount === 0) {
+          return;
+        }
+
+        const firstResultButton = this.findFirstResultButton();
+
+        if (!firstResultButton) {
+          throw new Error('Cannot find search result buttons.');
+        }
+
+        if (isEnter && resultsCount === 1) {
+          firstResultButton.click();
+        } else {
+          firstResultButton.focus();
+        }
       }
     }
   }
@@ -146,9 +196,11 @@ export class EmojiSearch extends PolymerElement {
    * 1) Remove duplicates.
    * 2) Remove groupings.
    * @param {!EmojiGroupData} emojiData
+   * @param {number} emojiDataLength Used to trick polymer into calling this
+   *     when the emojidata is updated via push
    * @return {!Array<!EmojiVariants>}
    */
-  computeEmojiList(emojiData) {
+  computeEmojiList(emojiData, emojiDataLength) {
     return Array.from(
         new Map(emojiData.map(group => group.emoji).flat(1).map(emoji => {
           // The Fuse search library in ChromeOS doesn't support prefix
@@ -166,10 +218,12 @@ export class EmojiSearch extends PolymerElement {
   }
 
   onSearchScroll() {
-    this.$['search-shadow'].style.boxShadow =
-        this.shadowRoot.getElementById('results').scrollTop > 0 ?
-        'var(--cr-elevation-3)' :
-        'none';
+    if (!this.v2Enabled) {
+      this.$['search-shadow'].style.boxShadow =
+          this.shadowRoot.getElementById('results').scrollTop > 0 ?
+          'var(--cr-elevation-3)' :
+          'none';
+    }
   }
 
   /**
@@ -179,24 +233,83 @@ export class EmojiSearch extends PolymerElement {
    */
   onEmojiListChanged(emojiList) {
     // suppressed property error due to Fuse being untyped.
-    this.fuse.setCollection(emojiList);
+    this.emojiFuse.setCollection(emojiList);
+  }
+
+  /**
+   *
+   * @param {!Array<!EmojiVariants>} emoticonList
+   * @suppress {missingProperties}
+   */
+  onEmoticonListChanged(emoticonList) {
+    this.emoticonFuse.setCollection(emoticonList);
   }
 
   /**
    * @param {?string} search
-   * @param {!Array<!EmojiVariants>} emojiList
+   * @param {CategoryEnum} category
    */
-  computeSearchResults(search, emojiList) {
-    if (!search)
+  computeSearchResults(search, category) {
+    if (!search) {
       return [];
+    }
     // Add an initial space to force prefix matching only.
-    return this.fuse.search(' ' + search);
+    const prefixSearchTerm = ` ${search}`;
+    let fuseResults = [];
+    if (!this.v2Enabled) {
+      fuseResults = this.emojiFuse.search(prefixSearchTerm);
+    } else {
+      switch (category) {
+        case CategoryEnum.EMOJI:
+          fuseResults = this.emojiFuse.search(prefixSearchTerm);
+          break;
+        case CategoryEnum.EMOTICON:
+          fuseResults = this.emoticonFuse.search(prefixSearchTerm);
+          break;
+        default:
+          throw new Error('Unknown category.');
+      }
+    }
+    return fuseResults.map(item => item.item);
   }
 
   onResultClick(ev) {
-    ev.currentTarget.querySelector('emoji-button')
-        .shadowRoot.querySelector('button')
-        .click();
+    // If the click is on elements except emoji-button, trigger the click on
+    // the emoji-button.
+    if (ev.target.nodeName !== 'EMOJI-BUTTON') {
+      ev.currentTarget.querySelector('emoji-button')
+          .shadowRoot.querySelector('button')
+          .click();
+    }
+  }
+
+  /**
+   * Find the first button in the search result page.
+   *
+   * @returns {?HTMLElement} First button or null for no results.
+   */
+  findFirstResultButton() {
+    const results = this.shadowRoot.querySelector(
+      '#search-results').querySelectorAll('emoji-group');
+    for (const result of results) {
+      const button = result.firstEmojiButton();
+      if (button) {
+        return button;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @param {!Array<!EmojiVariants>} emojiResults
+   * @param {!Array<!EmojiVariants>} emoticonResults
+   * @returns {boolean}
+   */
+  isSearchResultEmpty(emojiResults, emoticonResults) {
+    if (!this.v2Enabled) {
+      return emojiResults.length === 0;
+    }
+    return emojiResults.length === 0 && emoticonResults.length === 0;
   }
 }
 

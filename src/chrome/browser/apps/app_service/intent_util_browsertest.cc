@@ -138,14 +138,13 @@ IN_PROC_BROWSER_TEST_F(WebAppsUtilsBrowserTest, CreateIntentFilters) {
 
   std::vector<IntentFilterPtr> filters;
   {
-    const web_app::WebAppRegistrar& registrar =
-        web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+    auto& provider = *web_app::WebAppProvider::GetForTest(browser()->profile());
     const web_app::AppId app_id =
         web_app::InstallWebAppFromManifest(browser(), app_url);
-    const web_app::WebApp* web_app = registrar.GetAppById(app_id);
-    GURL scope = registrar.GetAppScope(app_id);
-    ASSERT_TRUE(web_app);
-    filters = CreateWebAppIntentFilters(*web_app, scope);
+    filters = CreateWebAppIntentFilters(
+        app_id, provider.registrar().GetAppScope(app_id),
+        provider.registrar().GetAppShareTarget(app_id),
+        provider.os_integration_manager().GetEnabledFileHandlers(app_id));
   }
 
   ASSERT_EQ(filters.size(), 3U);
@@ -172,14 +171,13 @@ IN_PROC_BROWSER_TEST_F(WebAppsUtilsBrowserTest, PartialWild) {
 
   std::vector<IntentFilterPtr> filters;
   {
-    const web_app::WebAppRegistrar& registrar =
-        web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+    auto& provider = *web_app::WebAppProvider::GetForTest(browser()->profile());
     const web_app::AppId app_id =
         web_app::InstallWebAppFromManifest(browser(), app_url);
-    const web_app::WebApp* web_app = registrar.GetAppById(app_id);
-    GURL scope = registrar.GetAppScope(app_id);
-    ASSERT_TRUE(web_app);
-    filters = CreateWebAppIntentFilters(*web_app, scope);
+    filters = CreateWebAppIntentFilters(
+        app_id, provider.registrar().GetAppScope(app_id),
+        provider.registrar().GetAppShareTarget(app_id),
+        provider.os_integration_manager().GetEnabledFileHandlers(app_id));
   }
 
   ASSERT_EQ(filters.size(), 2U);
@@ -203,14 +201,13 @@ IN_PROC_BROWSER_TEST_F(WebAppsUtilsBrowserTest, ShareTargetWithoutFiles) {
 
   std::vector<IntentFilterPtr> filters;
   {
-    const web_app::WebAppRegistrar& registrar =
-        web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
+    auto& provider = *web_app::WebAppProvider::GetForTest(browser()->profile());
     const web_app::AppId app_id =
         web_app::InstallWebAppFromManifest(browser(), app_url);
-    const web_app::WebApp* web_app = registrar.GetAppById(app_id);
-    GURL scope = registrar.GetAppScope(app_id);
-    ASSERT_TRUE(web_app);
-    filters = CreateWebAppIntentFilters(*web_app, scope);
+    filters = CreateWebAppIntentFilters(
+        app_id, provider.registrar().GetAppScope(app_id),
+        provider.registrar().GetAppShareTarget(app_id),
+        provider.os_integration_manager().GetEnabledFileHandlers(app_id));
   }
 
   ASSERT_EQ(filters.size(), 2U);

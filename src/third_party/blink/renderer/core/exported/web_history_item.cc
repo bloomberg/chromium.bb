@@ -68,17 +68,20 @@ void WebHistoryItem::SetURLString(const WebString& url) {
 }
 
 WebString WebHistoryItem::GetReferrer() const {
-  return private_->GetReferrer().referrer;
+  return private_->GetReferrer();
 }
 
 network::mojom::ReferrerPolicy WebHistoryItem::GetReferrerPolicy() const {
-  return private_->GetReferrer().referrer_policy;
+  return private_->GetReferrerPolicy();
 }
 
-void WebHistoryItem::SetReferrer(
-    const WebString& referrer,
+void WebHistoryItem::SetReferrer(const WebString& referrer) {
+  private_->SetReferrer(referrer);
+}
+
+void WebHistoryItem::SetReferrerPolicy(
     network::mojom::ReferrerPolicy referrer_policy) {
-  private_->SetReferrer(Referrer(referrer, referrer_policy));
+  private_->SetReferrerPolicy(referrer_policy);
 }
 
 const WebString& WebHistoryItem::Target() const {
@@ -234,28 +237,29 @@ void WebHistoryItem::SetScrollAnchorData(
   private_->SetScrollAnchorData(scroll_anchor_data);
 }
 
-WebString WebHistoryItem::GetAppHistoryKey() const {
-  return private_->GetAppHistoryKey();
+WebString WebHistoryItem::GetNavigationApiKey() const {
+  return private_->GetNavigationApiKey();
 }
 
-void WebHistoryItem::SetAppHistoryKey(const WebString& key) {
-  private_->SetAppHistoryKey(key);
+void WebHistoryItem::SetNavigationApiKey(const WebString& key) {
+  private_->SetNavigationApiKey(key);
 }
 
-WebString WebHistoryItem::GetAppHistoryId() const {
-  return private_->GetAppHistoryId();
+WebString WebHistoryItem::GetNavigationApiId() const {
+  return private_->GetNavigationApiId();
 }
 
-void WebHistoryItem::SetAppHistoryId(const WebString& id) {
-  private_->SetAppHistoryId(id);
+void WebHistoryItem::SetNavigationApiId(const WebString& id) {
+  private_->SetNavigationApiId(id);
 }
 
-WebSerializedScriptValue WebHistoryItem::GetAppHistoryState() const {
-  return WebSerializedScriptValue(private_->GetAppHistoryState());
+WebSerializedScriptValue WebHistoryItem::GetNavigationApiState() const {
+  return WebSerializedScriptValue(private_->GetNavigationApiState());
 }
 
-void WebHistoryItem::SetAppHistoryState(const WebSerializedScriptValue& state) {
-  private_->SetAppHistoryState(state);
+void WebHistoryItem::SetNavigationApiState(
+    const WebSerializedScriptValue& state) {
+  private_->SetNavigationApiState(state);
 }
 
 WebHistoryItem::WebHistoryItem(HistoryItem* item) : private_(item) {}

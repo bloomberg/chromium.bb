@@ -61,7 +61,7 @@ const base::DictionaryValue* GetKeyPermissionsMap(
   const policy::PolicyMap& policies = profile_policies->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value =
-      policies.GetValue(policy::key::kKeyPermissions);
+      policies.GetValue(policy::key::kKeyPermissions, base::Value::Type::DICT);
   if (!policy_value) {
     DVLOG(1) << "KeyPermissions policy is not set";
     return nullptr;
@@ -108,7 +108,7 @@ bool PolicyAllowsCorporateKeyUsageForExtension(
   bool allow_corporate_key_usage =
       GetCorporateKeyUsageFromPref(key_permissions_for_ext);
 
-  VLOG_IF(allow_corporate_key_usage, 2)
+  VLOG_IF(2, allow_corporate_key_usage)
       << "Policy allows usage of corporate keys by extension " << extension_id;
   return allow_corporate_key_usage;
 }
@@ -334,10 +334,11 @@ void ExtensionKeyPermissionsService::KeyEntriesFromState(
     LOG(ERROR) << "Found a state store of wrong type.";
     return;
   }
-  for (const auto& entry : state.GetList()) {
+  for (const auto& entry : state.GetListDeprecated()) {
     std::string spki_b64;
     const base::DictionaryValue* dict_entry = nullptr;
-    if (entry.GetAsString(&spki_b64)) {
+    if (entry.is_string()) {
+      spki_b64 = entry.GetString();
       // This handles the case that the store contained a plain list of base64
       // and DER-encoded SPKIs from an older version of ChromeOS.
       KeyEntry new_entry(spki_b64);
@@ -365,25 +366,24 @@ void ExtensionKeyPermissionsService::KeyEntriesFromState(
 
 std::unique_ptr<base::Value>
 ExtensionKeyPermissionsService::KeyEntriesToState() {
-  std::unique_ptr<base::ListValue> new_state(new base::ListValue);
+  base::Value::List new_state;
   for (const KeyEntry& entry : state_store_entries_) {
     // Drop entries that the extension doesn't have any permissions for anymore.
     if (!entry.sign_once && !entry.sign_unlimited)
       continue;
 
-    std::unique_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
-    new_entry->SetKey(kStateStoreSPKI, base::Value(entry.spki_b64));
+    base::Value::Dict new_entry;
+    new_entry.Set(kStateStoreSPKI, entry.spki_b64);
     // Omit writing default values, namely |false|.
     if (entry.sign_once) {
-      new_entry->SetKey(kStateStoreSignOnce, base::Value(entry.sign_once));
+      new_entry.Set(kStateStoreSignOnce, entry.sign_once);
     }
     if (entry.sign_unlimited) {
-      new_entry->SetKey(kStateStoreSignUnlimited,
-                        base::Value(entry.sign_unlimited));
+      new_entry.Set(kStateStoreSignUnlimited, entry.sign_unlimited);
     }
-    new_state->Append(std::move(new_entry));
+    new_state.Append(std::move(new_entry));
   }
-  return std::move(new_state);
+  return std::make_unique<base::Value>(std::move(new_state));
 }
 
 // static

@@ -13,14 +13,25 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult, UpdateRoFirmwareObserverInterface, UpdateRoFirmwareObserverReceiver, UpdateRoFirmwareStatus} from './shimless_rma_types.js';
+import {disableNextButton, enableNextButton} from './shimless_rma_util.js';
 
 /** @type {!Object<!UpdateRoFirmwareStatus, string>} */
-const updateRoFirmwareStatusTextKeys = {
+const STATUS_TEXT_KEY_MAP = {
+  // kDownloading state is not used in V1.
+  [UpdateRoFirmwareStatus.kDownloading]: '',
   [UpdateRoFirmwareStatus.kWaitUsb]: 'firmwareUpdateWaitForUsbText',
   [UpdateRoFirmwareStatus.kFileNotFound]: 'firmwareUpdateFileNotFoundText',
   [UpdateRoFirmwareStatus.kUpdating]: 'firmwareUpdatingText',
   [UpdateRoFirmwareStatus.kRebooting]: 'firmwareUpdateRebootText',
   [UpdateRoFirmwareStatus.kComplete]: 'firmwareUpdateCompleteText',
+};
+
+/** @type {!Object<!UpdateRoFirmwareStatus, string>} */
+const STATUS_IMG_MAP = {
+  [UpdateRoFirmwareStatus.kWaitUsb]: 'insert_usb',
+  [UpdateRoFirmwareStatus.kFileNotFound]: 'error',
+  [UpdateRoFirmwareStatus.kRebooting]: 'downloading',
+  [UpdateRoFirmwareStatus.kComplete]: 'downloading',
 };
 
 /**
@@ -51,15 +62,28 @@ export class UpdateRoFirmwarePage extends UpdateRoFirmwarePageBase {
 
   static get properties() {
     return {
-      /** @protected {!UpdateRoFirmwareStatus} */
+      /** @protected {?UpdateRoFirmwareStatus} */
       status_: {
         type: Object,
+        value: null,
       },
 
-      /** @protected */
+      /** @protected {string} */
       statusString_: {
         type: String,
-        computed: 'getStatusString_(status_)',
+      },
+
+      /** @protected {boolean} */
+      shouldShowSpinner_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @protected {boolean} */
+      shouldShowWarning_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
       },
     };
   }
@@ -81,39 +105,50 @@ export class UpdateRoFirmwarePage extends UpdateRoFirmwarePageBase {
   }
 
   /**
-   * @protected
-   * @return {string}
-   */
-  getStatusString_() {
-    // kDownloading state is not used in V1.
-    if (!this.status_ || this.status_ == UpdateRoFirmwareStatus.kDownloading) {
-      return '';
-    }
-    return this.i18n(updateRoFirmwareStatusTextKeys[this.status_]);
-  }
-
-  /**
    * Implements UpdateRoFirmwareObserver.onUpdateRoFirmwareStatusChanged()
-   * TODO(joonbug): Add error handling and display failure using cr-dialog.
-   * @protected
    * @param {!UpdateRoFirmwareStatus} status
+   * @protected
    */
   onUpdateRoFirmwareStatusChanged(status) {
     this.status_ = status;
+    this.shouldShowSpinner_ = this.status_ === UpdateRoFirmwareStatus.kUpdating;
+    this.shouldShowWarning_ =
+        this.status_ === UpdateRoFirmwareStatus.kFileNotFound;
+
     const disabled = this.status_ != UpdateRoFirmwareStatus.kComplete;
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: disabled},
-        ));
+    if (disabled) {
+      disableNextButton(this);
+    } else {
+      enableNextButton(this);
+    }
   }
 
-  /** @return {!Promise<!StateResult>} */
+  /** @return {!Promise<!{stateResult: !StateResult}>} */
   onNextButtonClick() {
     if (this.status_ == UpdateRoFirmwareStatus.kComplete) {
       return this.shimlessRmaService_.roFirmwareUpdateComplete();
     } else {
       return Promise.reject(new Error('RO Firmware update is not complete.'));
     }
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getStatusString_() {
+    return this.status_ === null ? '' :
+                                   this.i18n(STATUS_TEXT_KEY_MAP[this.status_]);
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getImgSrc_() {
+    return `illustrations/${
+        this.status_ === null ? 'downloading' :
+                                STATUS_IMG_MAP[this.status_]}.svg`;
   }
 }
 

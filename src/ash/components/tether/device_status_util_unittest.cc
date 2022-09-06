@@ -6,16 +6,16 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/fake_tether_host_fetcher.h"
 #include "ash/components/tether/proto_test_util.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -116,4 +116,4 @@ TEST_F(DeviceStatusUtilTest, TestValidValues) {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

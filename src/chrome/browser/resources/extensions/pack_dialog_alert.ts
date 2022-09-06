@@ -7,23 +7,24 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getTemplate} from './pack_dialog_alert.html.js';
 
-interface ExtensionsPackDialogAlertElement {
+export interface ExtensionsPackDialogAlertElement {
   $: {
     dialog: CrDialogElement,
   };
 }
 
-class ExtensionsPackDialogAlertElement extends PolymerElement {
+export class ExtensionsPackDialogAlertElement extends PolymerElement {
   static get is() {
     return 'extensions-pack-dialog-alert';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -47,7 +48,7 @@ class ExtensionsPackDialogAlertElement extends PolymerElement {
     return this.$.dialog.getNative().returnValue;
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     // Initialize button label values for initial html binding.
@@ -70,11 +71,10 @@ class ExtensionsPackDialogAlertElement extends PolymerElement {
         break;
       default:
         assertNotReached();
-        return;
     }
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.$.dialog.showModal();
   }
@@ -91,6 +91,12 @@ class ExtensionsPackDialogAlertElement extends PolymerElement {
     // The confirm button should only be available in WARNING state.
     assert(this.model.status === chrome.developerPrivate.PackStatus.WARNING);
     this.$.dialog.close();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'extensions-pack-dialog-alert': ExtensionsPackDialogAlertElement;
   }
 }
 

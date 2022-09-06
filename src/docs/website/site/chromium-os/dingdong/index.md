@@ -29,8 +29,7 @@ It provides the following features:
 *   video output with resolutions of up to 4K @ 60 Hz (depending on
             system and monitor capabilities)
 
-### [<img alt="image" src="/chromium-os/dingdong/DingDong%20Block%20Diagram.png"
-height=400 width=377>](/chromium-os/dingdong/DingDong%20Block%20Diagram.png)
+![image](/chromium-os/dingdong/DingDong%20Block%20Diagram.png)
 
 For schematics, [click
 here](https://docs.google.com/a/chromium.org/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDo3MWY0NGE4NGM4MjBiYTIy)

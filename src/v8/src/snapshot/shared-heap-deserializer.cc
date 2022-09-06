@@ -23,7 +23,7 @@ void SharedHeapDeserializer::DeserializeIntoIsolate() {
   DeserializeStringTable();
   DeserializeDeferredObjects();
 
-  if (FLAG_rehash_snapshot && can_rehash()) {
+  if (should_rehash()) {
     // Hash seed was initialized in ReadOnlyDeserializer.
     Rehash();
   }
@@ -32,7 +32,7 @@ void SharedHeapDeserializer::DeserializeIntoIsolate() {
 void SharedHeapDeserializer::DeserializeStringTable() {
   // See SharedHeapSerializer::SerializeStringTable.
 
-  DCHECK(isolate()->OwnsStringTable());
+  DCHECK(isolate()->OwnsStringTables());
 
   // Get the string table size.
   int string_table_size = source()->GetInt();

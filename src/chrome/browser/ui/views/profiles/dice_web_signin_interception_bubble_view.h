@@ -9,9 +9,9 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
@@ -36,13 +36,13 @@ class DiceWebSigninInterceptionBubbleView
   // Warning: the bubble is closed when the handle is destroyed ; it is the
   // responsibility of the caller to keep the handle alive until the bubble
   // should be closed.
-  static std::unique_ptr<ScopedDiceWebSigninInterceptionBubbleHandle>
+  [[nodiscard]] static std::unique_ptr<
+      ScopedDiceWebSigninInterceptionBubbleHandle>
   CreateBubble(Profile* profile,
                views::View* anchor_view,
                const DiceWebSigninInterceptor::Delegate::BubbleParameters&
                    bubble_parameters,
-               base::OnceCallback<void(SigninInterceptionResult)> callback)
-      WARN_UNUSED_RESULT;
+               base::OnceCallback<void(SigninInterceptionResult)> callback);
 
   // Record metrics about the result of the signin interception.
   static void RecordInterceptionResult(
@@ -63,6 +63,8 @@ class DiceWebSigninInterceptionBubbleView
                            BubbleAccepted);
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptionBubbleBrowserTest,
                            BubbleAcceptedGuestMode);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptionBubbleBrowserTest,
+                           ProfileKeepAlive);
   FRIEND_TEST_ALL_PREFIXES(ProfileBubbleInteractiveUiTest,
                            InterceptionBubbleFocus);
 
@@ -97,6 +99,10 @@ class DiceWebSigninInterceptionBubbleView
   // This bubble has no native buttons. The user accepts or cancels or selects
   // Guest profile through this method, which is called by the inner web UI.
   void OnWebUIUserChoice(SigninInterceptionUserChoice user_choice);
+
+  // This bubble can outlive the Browser, in particular on Mac (see
+  // https://crbug.com/1302729). Retain the profile to prevent use-after-free.
+  ScopedProfileKeepAlive profile_keep_alive_;
 
   raw_ptr<Profile> profile_;
   bool accepted_ = false;

@@ -28,6 +28,7 @@
 #include "chrome/browser/ash/borealis/borealis_window_manager_mock.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -35,27 +36,25 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_constants/constants.h"
 #include "components/exo/shell_surface_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
 
-using extensions::AppWindow;
-using extensions::Extension;
 using web_app::test::CrosapiParam;
 using web_app::test::WithCrosapiParam;
 
@@ -351,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBrowserTest, AshBrowserWindow) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("chrome://blank")));
 
   auto instances = app_service_proxy_->InstanceRegistry().GetInstances(
-      extension_misc::kChromeAppId);
+      app_constants::kChromeAppId);
   EXPECT_EQ(1u, instances.size());
   auto* instance = *instances.begin();
   EXPECT_EQ(instance->Window(), instance->Window()->GetToplevelWindow());
@@ -373,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowLacrosBrowserTest, LacrosWindow) {
   // Create a fake Lacros window. The native window owns the widget.
   views::Widget* widget = CreateExoWindow("org.chromium.lacros.12345");
 
-  using extension_misc::kLacrosAppId;
+  using app_constants::kLacrosAppId;
   auto instances =
       app_service_proxy_->InstanceRegistry().GetInstances(kLacrosAppId);
   EXPECT_EQ(1u, instances.size());
@@ -382,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowLacrosBrowserTest, LacrosWindow) {
             GetAppInstanceState(kLacrosAppId, (*instances.begin())->Window()));
 
   instances = app_service_proxy_->InstanceRegistry().GetInstances(
-      extension_misc::kLacrosAppId);
+      app_constants::kLacrosAppId);
   EXPECT_EQ(1u, instances.size());
   auto* instance = *instances.begin();
   EXPECT_EQ(instance->Window(), instance->Window()->GetToplevelWindow());
@@ -460,15 +459,19 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBorealisBrowserTest,
             app_service_proxy_->InstanceRegistry().GetInstances(app_id).size());
   ASSERT_NE(-1, shelf_model()->ItemIndexByAppID(app_id));
 
-  // Initially, anonymous apps haven't been published, as that is an
-  // asynchronous operation. This means their shelf item has no title.
-  EXPECT_TRUE(shelf_model()
-                  ->items()[shelf_model()->ItemIndexByAppID(app_id)]
-                  .title.empty());
+  // With non mojom AppService, anonymous apps are published sync, so we don't
+  // need to flush mojom calls and verify no title for shelf items.
+  if (!base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
+    // Initially, anonymous apps haven't been published, as that is an
+    // asynchronous operation. This means their shelf item has no title.
+    EXPECT_TRUE(shelf_model()
+                    ->items()[shelf_model()->ItemIndexByAppID(app_id)]
+                    .title.empty());
 
-  // Flushing calls here simulates the fraction-of-seconds delay between the
-  // window appearing and its app being published.
-  app_service_proxy_->FlushMojoCallsForTesting();
+    // Flushing calls here simulates the fraction-of-seconds delay between the
+    // window appearing and its app being published.
+    app_service_proxy_->FlushMojoCallsForTesting();
+  }
 
   // Now that the app is published, it will have a name based on the window title
   EXPECT_EQ(
@@ -523,7 +526,7 @@ class AppServiceAppWindowWebAppBrowserTest
   // |SetUpWebApp()| must be called after |SetUpOnMainThread()| to make sure
   // the Network Service process has been setup properly.
   std::string CreateWebApp() const {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = GetAppURL();
     web_app_info->scope = GetAppURL().GetWithoutFilename();
 
@@ -933,10 +936,8 @@ class AppServiceAppWindowSystemWebAppBrowserTest
 
 IN_PROC_BROWSER_TEST_P(AppServiceAppWindowSystemWebAppBrowserTest,
                        SystemWebAppWindow) {
-  auto& system_web_app_manager =
-      web_app::WebAppProvider::GetForTest(browser()->profile())
-          ->system_web_app_manager();
-  system_web_app_manager.InstallSystemAppsForTesting();
+  ash::SystemWebAppManager::GetForTest(browser()->profile())
+      ->InstallSystemAppsForTesting();
 
   const std::string app_id = web_app::kOsSettingsAppId;
   web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
@@ -969,11 +970,6 @@ IN_PROC_BROWSER_TEST_P(AppServiceAppWindowSystemWebAppBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          AppServiceAppWindowSystemWebAppBrowserTest,
-                         // TODO(crbug.com/1203992): Tests are not run with the
-                         // flag enabled for now, because WebAppsCrosapi
-                         // automatically enables new browser app tracking, but
-                         // it doesn't implement app service instance registry
-                         // updates yet, so the test will fail with the flag
-                         // enabled.
-                         ::testing::Values(CrosapiParam::kDisabled),
+                         ::testing::Values(CrosapiParam::kEnabled,
+                                           CrosapiParam::kDisabled),
                          WithCrosapiParam::ParamToString);

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
@@ -122,7 +122,7 @@ double PointerEvent::offsetX() const {
     return 0;
   if (!has_cached_relative_position_)
     const_cast<PointerEvent*>(this)->ComputeRelativePosition();
-  return offset_location_.X();
+  return offset_x_;
 }
 
 double PointerEvent::offsetY() const {
@@ -132,7 +132,7 @@ double PointerEvent::offsetY() const {
     return 0;
   if (!has_cached_relative_position_)
     const_cast<PointerEvent*>(this)->ComputeRelativePosition();
-  return offset_location_.Y();
+  return offset_y_;
 }
 
 void PointerEvent::ReceivedTarget() {

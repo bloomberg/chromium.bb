@@ -15,8 +15,7 @@ namespace printing {
 
 class DummyPrintBackend : public PrintBackend {
  public:
-  explicit DummyPrintBackend(const std::string& locale)
-      : PrintBackend(locale) {}
+  DummyPrintBackend() = default;
   DummyPrintBackend(const DummyPrintBackend&) = delete;
   DummyPrintBackend& operator=(const DummyPrintBackend&) = delete;
 
@@ -62,10 +61,9 @@ class DummyPrintBackend : public PrintBackend {
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
-    const base::DictionaryValue* print_backend_settings,
-    const std::string& locale,
-    bool /*for_cloud_print*/) {
-  return base::MakeRefCounted<DummyPrintBackend>(locale);
+    const base::Value::Dict* print_backend_settings,
+    const std::string& /*locale*/) {
+  return base::MakeRefCounted<DummyPrintBackend>();
 }
 
 }  // namespace printing

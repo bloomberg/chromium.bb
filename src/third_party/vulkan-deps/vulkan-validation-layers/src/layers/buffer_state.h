@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@
  */
 #pragma once
 #include "device_memory_state.h"
+#include "range_vector.h"
 
 class ValidationStateTracker;
 
@@ -36,6 +37,7 @@ class BUFFER_STATE : public BINDABLE {
     const VkBufferCreateInfo &createInfo;
     VkDeviceAddress deviceAddress;
     const VkMemoryRequirements requirements;
+    const VkMemoryRequirements *const memory_requirements_pointer = &requirements;
     bool memory_requirements_checked;
 
     BUFFER_STATE(ValidationStateTracker *dev_data, VkBuffer buff, const VkBufferCreateInfo *pCreateInfo);
@@ -44,20 +46,37 @@ class BUFFER_STATE : public BINDABLE {
 
     VkBuffer buffer() const { return handle_.Cast<VkBuffer>(); }
 
+    sparse_container::range<VkDeviceAddress> DeviceAddressRange() const {
+        return {deviceAddress, deviceAddress + createInfo.size};
+    }
 };
+
+using BUFFER_STATE_LINEAR = MEMORY_TRACKED_RESOURCE_STATE<BUFFER_STATE, BindableLinearMemoryTracker>;
+template <bool IS_RESIDENT>
+using BUFFER_STATE_SPARSE = MEMORY_TRACKED_RESOURCE_STATE<BUFFER_STATE, BindableSparseMemoryTracker<IS_RESIDENT>>;
 
 class BUFFER_VIEW_STATE : public BASE_NODE {
   public:
     const VkBufferViewCreateInfo create_info;
     std::shared_ptr<BUFFER_STATE> buffer_state;
-    const VkFormatFeatureFlags format_features;
+    // Format features that matter when accessing the buffer (OpLoad, OpStore,
+    // OpAtomicLoad, etc...)
+    const VkFormatFeatureFlags2KHR buf_format_features;
+    // Format features that matter when accessing the buffer as a image
+    // (OpImageRead, OpImageWrite, etc...)
+    const VkFormatFeatureFlags2KHR img_format_features;
 
     BUFFER_VIEW_STATE(const std::shared_ptr<BUFFER_STATE> &bf, VkBufferView bv, const VkBufferViewCreateInfo *ci,
-                      VkFormatFeatureFlags ff)
-        : BASE_NODE(bv, kVulkanObjectTypeBufferView), create_info(*ci), buffer_state(bf), format_features(ff) {
-        if (buffer_state) {
-            buffer_state->AddParent(this);
-        }
+                      VkFormatFeatureFlags2KHR buf_ff, VkFormatFeatureFlags2KHR img_ff)
+        : BASE_NODE(bv, kVulkanObjectTypeBufferView),
+          create_info(*ci),
+          buffer_state(bf),
+          buf_format_features(buf_ff),
+          img_format_features(img_ff) {}
+
+    void LinkChildNodes() override {
+        // Connect child node(s), which cannot safely be done in the constructor.
+        buffer_state->AddParent(this);
     }
     virtual ~BUFFER_VIEW_STATE() {
         if (!Destroyed()) {
@@ -76,4 +95,5 @@ class BUFFER_VIEW_STATE : public BASE_NODE {
         }
         BASE_NODE::Destroy();
     }
+    bool Invalid() const override { return Destroyed() || !buffer_state || buffer_state->Invalid(); }
 };

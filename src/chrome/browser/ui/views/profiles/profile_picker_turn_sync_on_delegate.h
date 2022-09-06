@@ -11,16 +11,16 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 
 class Profile;
 class SigninUIError;
 
 // Handles turning on sync for signed-in profile creation flow, embedded in the
 // profile picker.
-class ProfilePickerTurnSyncOnDelegate : public DiceTurnSyncOnHelper::Delegate,
+class ProfilePickerTurnSyncOnDelegate : public TurnSyncOnHelper::Delegate,
                                         public LoginUIService::Observer {
  public:
   ProfilePickerTurnSyncOnDelegate(
@@ -33,15 +33,15 @@ class ProfilePickerTurnSyncOnDelegate : public DiceTurnSyncOnHelper::Delegate,
       const ProfilePickerTurnSyncOnDelegate&) = delete;
 
  private:
-  // DiceTurnSyncOnHelper::Delegate:
+  // TurnSyncOnHelper::Delegate:
   void ShowLoginError(const SigninUIError& error) override;
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
-      DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
+      signin::SigninChoiceCallback callback) override;
   void ShowEnterpriseAccountConfirmation(
       const AccountInfo& account_info,
-      DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
+      signin::SigninChoiceCallback callback) override;
   void ShowSyncConfirmation(
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
@@ -60,16 +60,17 @@ class ProfilePickerTurnSyncOnDelegate : public DiceTurnSyncOnHelper::Delegate,
   void ShowSyncConfirmationScreen();
 
   // When ShowSync(Disabled)Confirmation() gets called, this must eventually get
-  // called exactly once in all code branches. Handles the callback and reports
-  // the metrics.
+  // called exactly once in all code branches. Handles the callback.
   void FinishSyncConfirmation(
-      LoginUIService::SyncConfirmationUIClosedResult result,
-      absl::optional<ProfileMetrics::ProfileAddSignInFlowOutcome> outcome);
+      LoginUIService::SyncConfirmationUIClosedResult result);
 
   // Shows the enterprise welcome screen.
   void ShowEnterpriseWelcome(EnterpriseProfileWelcomeUI::ScreenType type);
   void OnEnterpriseWelcomeClosed(EnterpriseProfileWelcomeUI::ScreenType type,
-                                 bool proceed);
+                                 signin::SigninChoice choice);
+
+  // Reports metric with the outcome of the turn-sync-on flow.
+  void LogOutcome(ProfileMetrics::ProfileSignedInFlowOutcome outcome);
 
   // Controls the sign-in flow. Is not guaranteed to outlive this object (gets
   // destroyed when the flow window closes).

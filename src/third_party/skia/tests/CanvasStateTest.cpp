@@ -14,6 +14,7 @@
 #include "include/core/SkRect.h"
 #include "include/core/SkRegion.h"
 #include "include/core/SkScalar.h"
+#include "include/core/SkStream.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkTDArray.h"
@@ -86,7 +87,7 @@ static void write_image(const SkImage* img, const char path[]) {
 }
 
 static void compare(skiatest::Reporter* reporter, SkImage* img0, SkImage* img1) {
-    if (false) {
+    if ((false)) {
         static int counter;
 
         SkDebugf("---- counter %d\n", counter);

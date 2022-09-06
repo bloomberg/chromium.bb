@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL If a payment handler is not installed, then the payment method is not supported. assert_equals: If it throws, then it must be NotAllowedError expected "NotAllowedError" but got "UnknownError"
+FAIL If CanMakePaymentEvent.respondWith(false) is called, then the payment method is not supported. promise_test: Unhandled rejection with value: object "NotAllowedError: Not allowed to install this payment handler"
+FAIL If CanMakePaymentEvent.respondWith(Promise.resolve(false)) is called, then the payment method is not supported. promise_test: Unhandled rejection with value: object "NotAllowedError: Not allowed to install this payment handler"
+FAIL If CanMakePaymentEvent.respondWith(true) is called, then the payment method is supported. promise_test: Unhandled rejection with value: object "NotAllowedError: Not allowed to install this payment handler"
+FAIL If CanMakePaymentEvent.respondWith(Promise.resolve(true)) is called, then the payment method is supported. promise_test: Unhandled rejection with value: object "NotAllowedError: Not allowed to install this payment handler"
+FAIL If CanMakePaymentEvent.respondWith(Promise.reject(error)) is called, then the payment method is not supported. promise_test: Unhandled rejection with value: object "NotAllowedError: Not allowed to install this payment handler"
+Harness: the test ran to completion.
+

@@ -5,6 +5,9 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 
+#include <ostream>
+
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
@@ -26,6 +29,9 @@ enum class AssistantVisibility {
   kClosing,  // Assistant UI is transitioning from `kVisible` to `kClosed`.
   kVisible,  // Assistant UI is visible and a session is in progress.
 };
+
+COMPONENT_EXPORT(ASSISTANT_MODEL)
+std::ostream& operator<<(std::ostream& os, AssistantVisibility visibility);
 
 // Enumeration of Assistant button ID. These values are persisted to logs.
 // Entries should not be renumbered and numeric values should never be reused.
@@ -81,11 +87,21 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
   // Returns the UI entry point. Only valid while UI is visible.
   AssistantEntryPoint entry_point() const { return entry_point_; }
 
+  // Sets the current keyboard traversal mode.
+  void SetKeyboardTraversalMode(bool keyboard_traversal_mode);
+
+  // Returns the current keyboard traversal mode.
+  bool keyboard_traversal_mode() const { return keyboard_traversal_mode_; }
+
+  int AppListBubbleWidth() const { return app_list_bubble_width_; }
+  void SetAppListBubbleWidth(int width);
+
  private:
   void SetVisibility(AssistantVisibility visibility,
                      absl::optional<AssistantEntryPoint> entry_point,
                      absl::optional<AssistantExitPoint> exit_point);
 
+  void NotifyKeyboardTraversalModeChanged();
   void NotifyUiModeChanged(bool due_to_interaction);
   void NotifyUiVisibilityChanged(
       AssistantVisibility old_visibility,
@@ -96,12 +112,17 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
   AssistantUiMode ui_mode_ = AssistantUiMode::kLauncherEmbeddedUi;
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
   AssistantEntryPoint entry_point_ = AssistantEntryPoint::kUnspecified;
+  int app_list_bubble_width_ = kPreferredWidthDip;
 
   mutable base::ObserverList<AssistantUiModelObserver> observers_;
 
   // Usable work area for Assistant. Value is only meaningful when Assistant
   // UI exists.
   gfx::Rect usable_work_area_;
+
+  // Whether or not keyboard traversal is currently enabled.
+  // Used for updating the Assistant UI when it exists.
+  bool keyboard_traversal_mode_ = false;
 };
 
 }  // namespace ash

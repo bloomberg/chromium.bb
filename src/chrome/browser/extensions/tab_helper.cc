@@ -187,8 +187,8 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   CreateSessionServiceTabHelper(web_contents);
-  // The Unretained() is safe because ForEachFrame() is synchronous.
-  web_contents->ForEachFrame(
+  // The Unretained() is safe because ForEachRenderFrameHost() is synchronous.
+  web_contents->ForEachRenderFrameHost(
       base::BindRepeating(&TabHelper::SetTabId, base::Unretained(this)));
   active_tab_permission_granter_ = std::make_unique<ActiveTabPermissionGranter>(
       web_contents, sessions::SessionTabHelper::IdForTab(web_contents).id(),
@@ -216,7 +216,6 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
 
   if (extension) {
     DCHECK(extension->is_app());
-    DCHECK(!extension->from_bookmark());
   }
   extension_app_ = extension;
 
@@ -292,9 +291,6 @@ void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
 
 void TabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->HasCommitted() ||
       !navigation_handle->IsInPrimaryMainFrame())
     return;
@@ -313,13 +309,11 @@ void TabHelper::DidFinishNavigation(
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser && (browser->is_type_app() || browser->is_type_app_popup())) {
-    const Extension* extension = registry->GetExtensionById(
-        web_app::GetAppIdFromApplicationName(browser->app_name()),
-        ExtensionRegistry::EVERYTHING);
+    const Extension* extension = registry->GetInstalledExtension(
+        web_app::GetAppIdFromApplicationName(browser->app_name()));
     if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid()) {
       DCHECK(extension->is_app());
-      if (!extension->from_bookmark())
-        SetExtensionApp(extension);
+      SetExtensionApp(extension);
     }
   } else {
     UpdateExtensionAppIcon(
@@ -431,7 +425,7 @@ void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
   // creation, the renderer-side Frame object would not have been created yet.
   // We should wait for RenderFrameCreated() to happen, to avoid sending this
   // message twice.
-  if (render_frame_host->IsRenderFrameCreated()) {
+  if (render_frame_host->IsRenderFrameLive()) {
     SessionID id = sessions::SessionTabHelper::IdForTab(web_contents());
     CHECK(id.is_valid());
     ExtensionWebContentsObserver::GetForWebContents(web_contents())

@@ -23,20 +23,22 @@ namespace blink {
 
 namespace {
 
-WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc,
-                                 std::string* label,
-                                 GPUDevice* device) {
+WGPUTextureDescriptor AsDawnType(
+    const GPUTextureDescriptor* webgpu_desc,
+    std::string* label,
+    std::unique_ptr<WGPUTextureFormat[]>* view_formats,
+    GPUDevice* device) {
   DCHECK(webgpu_desc);
   DCHECK(label);
+  DCHECK(view_formats);
   DCHECK(device);
 
   WGPUTextureDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.usage = static_cast<WGPUTextureUsage>(webgpu_desc->usage());
-  dawn_desc.dimension =
-      AsDawnEnum<WGPUTextureDimension>(webgpu_desc->dimension());
+  dawn_desc.dimension = AsDawnEnum(webgpu_desc->dimension());
   dawn_desc.size = AsDawnType(webgpu_desc->size());
-  dawn_desc.format = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->format());
+  dawn_desc.format = AsDawnEnum(webgpu_desc->format());
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
 
@@ -44,6 +46,10 @@ WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc,
     *label = webgpu_desc->label().Utf8();
     dawn_desc.label = label->c_str();
   }
+
+  *view_formats = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->viewFormats());
+  dawn_desc.viewFormatCount = webgpu_desc->viewFormats().size();
+  dawn_desc.viewFormats = view_formats->get();
 
   return dawn_desc;
 }
@@ -57,11 +63,10 @@ WGPUTextureViewDescriptor AsDawnType(
   WGPUTextureViewDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   if (webgpu_desc->hasFormat()) {
-    dawn_desc.format = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->format());
+    dawn_desc.format = AsDawnEnum(webgpu_desc->format());
   }
   if (webgpu_desc->hasDimension()) {
-    dawn_desc.dimension =
-        AsDawnEnum<WGPUTextureViewDimension>(webgpu_desc->dimension());
+    dawn_desc.dimension = AsDawnEnum(webgpu_desc->dimension());
   }
   dawn_desc.baseMipLevel = webgpu_desc->baseMipLevel();
   dawn_desc.mipLevelCount = WGPU_MIP_LEVEL_COUNT_UNDEFINED;
@@ -75,7 +80,7 @@ WGPUTextureViewDescriptor AsDawnType(
     dawn_desc.arrayLayerCount = std::min(webgpu_desc->arrayLayerCount(),
                                          dawn_desc.arrayLayerCount - 1u);
   }
-  dawn_desc.aspect = AsDawnEnum<WGPUTextureAspect>(webgpu_desc->aspect());
+  dawn_desc.aspect = AsDawnEnum(webgpu_desc->aspect());
   if (webgpu_desc->hasLabel()) {
     *label = webgpu_desc->label().Utf8();
     dawn_desc.label = label->c_str();
@@ -97,8 +102,21 @@ GPUTexture* GPUTexture::Create(GPUDevice* device,
   DCHECK(device);
   DCHECK(webgpu_desc);
 
+  if (!device->ValidateTextureFormatUsage(webgpu_desc->format(),
+                                          exception_state)) {
+    return nullptr;
+  }
+
+  for (auto view_format : webgpu_desc->viewFormats()) {
+    if (!device->ValidateTextureFormatUsage(view_format, exception_state)) {
+      return nullptr;
+    }
+  }
+
   std::string label;
-  WGPUTextureDescriptor dawn_desc = AsDawnType(webgpu_desc, &label, device);
+  std::unique_ptr<WGPUTextureFormat[]> view_formats;
+  WGPUTextureDescriptor dawn_desc =
+      AsDawnType(webgpu_desc, &label, &view_formats, device);
 
   GPUTexture* texture = MakeGarbageCollected<GPUTexture>(
       device,
@@ -252,8 +270,14 @@ GPUTexture::GPUTexture(GPUDevice* device,
 }
 
 GPUTextureView* GPUTexture::createView(
-    const GPUTextureViewDescriptor* webgpu_desc) {
+    const GPUTextureViewDescriptor* webgpu_desc,
+    ExceptionState& exception_state) {
   DCHECK(webgpu_desc);
+
+  if (webgpu_desc->hasFormat() && !device()->ValidateTextureFormatUsage(
+                                      webgpu_desc->format(), exception_state)) {
+    return nullptr;
+  }
 
   std::string label;
   WGPUTextureViewDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);

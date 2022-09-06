@@ -19,7 +19,6 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -36,7 +35,6 @@ class InvalidationService;
 namespace syncer {
 
 class ActiveDevicesProvider;
-class DataTypeDebugInfoListener;
 class ModelTypeConnector;
 class ProtocolEvent;
 class SyncEngineBackend;
@@ -77,7 +75,10 @@ class SyncEngineImpl : public SyncEngine,
   base::Time GetLastSyncedTimeForDebugging() const override;
   void StartConfiguration() override;
   void StartSyncingWithServer() override;
-  void SetEncryptionPassphrase(const std::string& passphrase) override;
+  void StartHandlingInvalidations() override;
+  void SetEncryptionPassphrase(
+      const std::string& passphrase,
+      const KeyDerivationParams& key_derivation_params) override;
   void SetExplicitPassphraseDecryptionKey(std::unique_ptr<Nigori> key) override;
   void AddTrustedVaultDecryptionKeys(
       const std::vector<std::vector<uint8_t>>& keys,
@@ -126,7 +127,6 @@ class SyncEngineImpl : public SyncEngine,
   // |model_type_connector| is our ModelTypeConnector, which is owned because in
   // production it is a proxy object to the real ModelTypeConnector.
   void HandleInitializationSuccessOnFrontendLoop(
-      const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
       std::unique_ptr<ModelTypeConnector> model_type_connector,
       const std::string& birthday,
       const std::string& bag_of_chips);

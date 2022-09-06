@@ -27,21 +27,12 @@ namespace {
 bool ShouldCloseTabOnExtensionUnload(const Extension* extension,
                                      Browser* browser,
                                      content::WebContents* web_contents) {
-  // Bookmark app extensions are handled by WebAppBrowserController, if enabled.
-  // TODO(crbug.com/1065748): Remove app_controller() part of the condition
-  // after unified browser controller launch.
-  if (extension->from_bookmark() &&
-      (!browser->app_controller() ||
-       browser->app_controller()->AsWebAppBrowserController())) {
-    return false;
-  }
-
   // Case 1: A "regular" extension page, e.g. chrome-extension://<id>/page.html.
   // Note: we check the tuple or precursor tuple in order to close any
   // windows with opaque origins that were opened by extensions, and may
   // still be running code.
   const url::SchemeHostPort& tuple_or_precursor_tuple =
-      web_contents->GetMainFrame()
+      web_contents->GetPrimaryMainFrame()
           ->GetLastCommittedOrigin()
           .GetTupleOrPrecursorTupleIfOpaque();
   if (tuple_or_precursor_tuple.scheme() == extensions::kExtensionScheme &&

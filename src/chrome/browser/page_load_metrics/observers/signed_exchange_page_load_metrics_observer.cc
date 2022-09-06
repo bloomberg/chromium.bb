@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
 
+#include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -104,11 +105,21 @@ SignedExchangePageLoadMetricsObserver::SignedExchangePageLoadMetricsObserver() {
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-SignedExchangePageLoadMetricsObserver::OnCommit(
+SignedExchangePageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    const GURL& currently_committed_url) {
+  // This class is interested only in events that are preprocessed and
+  // dispatched also to the outermost page at PageLoadTracker. So, this class
+  // doesn't need to forward events for FencedFrames.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SignedExchangePageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsSignedExchangeInnerResponse()) {
-    ukm::builders::PageLoad_SignedExchange builder(source_id);
+    ukm::builders::PageLoad_SignedExchange builder(
+        GetDelegate().GetPageUkmSourceId());
     if (IsServedFromGoogleCache(navigation_handle))
       builder.SetServedFromGoogleCache(1);
     builder.Record(ukm::UkmRecorder::Get());

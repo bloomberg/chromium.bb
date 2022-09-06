@@ -4,6 +4,7 @@
 
 #include "ash/system/update/update_notification_controller.h"
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/public/cpp/update_types.h"
@@ -17,8 +18,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -91,7 +92,7 @@ void UpdateNotificationController::GenerateUpdateNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, GetTitle(),
       GetMessage(), std::u16string() /* display_source */, GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kNotifierId),
+                                 kNotifierId, NotificationCatalogName::kUpdate),
       message_center::RichNotificationData(),
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(
@@ -274,8 +275,8 @@ void UpdateNotificationController::RestartForUpdate() {
   }
   // System updates require restarting the device.
   Shell::Get()->system_tray_model()->client()->RequestRestartForUpdate();
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED);
+  base::RecordAction(
+      base::UserMetricsAction("StatusArea_OS_Update_Default_Selected"));
 }
 
 void UpdateNotificationController::RestartCancelled() {

@@ -34,10 +34,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/lock.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
-#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -71,9 +71,9 @@ static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
     int subject_resource_id) {
   typedef HashMap<int, scoped_refptr<AudioBus>> AudioBusMap;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioBusMap, audio_bus_map, ());
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(base::Lock, lock, ());
 
-  MutexLocker locker(mutex);
+  base::AutoLock locker(lock);
   scoped_refptr<AudioBus> bus;
   AudioBusMap::iterator iterator = audio_bus_map.find(subject_resource_id);
   if (iterator == audio_bus_map.end()) {
@@ -83,8 +83,9 @@ static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
 
     bus = concatenated_impulse_responses;
     audio_bus_map.Set(subject_resource_id, bus);
-  } else
+  } else {
     bus = iterator->value;
+  }
 
   size_t response_length = bus->length();
   size_t expected_length =
@@ -120,8 +121,9 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   scoped_refptr<AudioBus> bus(
       GetConcatenatedImpulseResponsesForSubject(subject_resource_id));
 
-  if (!bus)
+  if (!bus) {
     return false;
+  }
 
   // Just sequentially search the table to find the correct index.
   int elevation_index = -1;
@@ -245,8 +247,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
         raw_index * kAzimuthSpacing, actual_elevation, sample_rate,
         subject_resource_id, kernel_list_l->at(interpolated_index),
         kernel_list_r->at(interpolated_index));
-    if (!success)
+    if (!success) {
       return nullptr;
+    }
 
     interpolated_index += kInterpolationFactor;
   }
@@ -258,7 +261,8 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
     // Create the interpolated convolution kernels and delays.
     for (unsigned jj = 1; jj < kInterpolationFactor; ++jj) {
       float x =
-          float(jj) / float(kInterpolationFactor);  // interpolate from 0 -> 1
+          static_cast<float>(jj) /
+          static_cast<float>(kInterpolationFactor);  // interpolate from 0 -> 1
 
       (*kernel_list_l)[i + jj] = HRTFKernel::CreateInterpolatedKernel(
           kernel_list_l->at(i).get(), kernel_list_l->at(j).get(), x);

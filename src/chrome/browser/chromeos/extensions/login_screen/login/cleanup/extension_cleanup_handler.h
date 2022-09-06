@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_CLEANUP_EXTENSION_CLEANUP_HANDLER_H_
 
 #include "base/callback.h"
-#include "base/no_destructor.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/cleanup/cleanup_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 
@@ -41,11 +40,11 @@ class ExtensionCleanupHandler : public CleanupHandler {
 
   std::unordered_set<std::string> GetCleanupExemptExtensions();
 
-  Profile* profile_;
-  extensions::ExtensionService* extension_service_;
+  Profile* profile_ = nullptr;
+  std::vector<std::string> errors_;
+  extensions::ExtensionService* extension_service_ = nullptr;
   CleanupHandlerCallback callback_;
   std::unordered_set<std::string> extensions_to_be_uninstalled_;
-  bool wait_for_uninstall_ = false;
 };
 
 }  // namespace chromeos

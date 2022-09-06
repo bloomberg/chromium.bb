@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -238,11 +238,11 @@ class Hook(object):
         not gclient_eval.EvaluateCondition(self._condition, self._variables)):
       return
 
-    cmd = [arg for arg in self._action]
+    cmd = list(self._action)
 
     if cmd[0] == 'python':
       cmd[0] = 'vpython'
-    if cmd[0] == 'vpython' and _detect_host_os() == 'win':
+    if (cmd[0] in ['vpython', 'vpython3']) and _detect_host_os() == 'win':
       cmd[0] += '.bat'
 
     exit_code = 2
@@ -373,8 +373,8 @@ class DependencySettings(object):
   def target_os(self):
     if self.local_target_os is not None:
       return tuple(set(self.local_target_os).union(self.parent.target_os))
-    else:
-      return self.parent.target_os
+
+    return self.parent.target_os
 
   @property
   def target_cpu(self):
@@ -396,7 +396,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def __init__(self, parent, name, url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process,
-               should_recurse, relative, condition, print_outbuf=False):
+               should_recurse, relative, condition, protocol='https',
+               print_outbuf=False):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, url, managed, custom_deps, custom_vars,
@@ -462,12 +463,16 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # dependency
     self.print_outbuf = print_outbuf
 
+    self.protocol = protocol
+
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
 
   def _OverrideUrl(self):
     """Resolves the parsed url from the parent hierarchy."""
-    parsed_url = self.get_custom_deps(self._name, self.url)
+    parsed_url = self.get_custom_deps(
+      self._name.replace(os.sep, posixpath.sep) \
+        if self._name else self._name, self.url)
     if parsed_url != self.url:
       logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self._name,
                    self.url, parsed_url)
@@ -616,7 +621,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # this line to the solution.
     for dep_name, dep_info in self.custom_deps.items():
       if dep_name not in deps:
-        deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
+        # Don't add it to the solution for the values of "None" and "unmanaged"
+        # in order to force these kinds of custom_deps to act as revision
+        # overrides (via revision_overrides). Having them function as revision
+        # overrides allows them to be applied to recursive dependencies.
+        # https://crbug.com/1031185
+        if dep_info and not dep_info.endswith('@unmanaged'):
+          deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
     # Make child deps conditional on any parent conditions. This ensures that,
     # when flattened, recursed entries have the correct restrictions, even if
@@ -682,7 +693,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             GitDependency(
                 parent=self,
                 name=name,
-                url=url,
+                # Update URL with parent dep's protocol
+                url=GitDependency.updateProtocol(url, self.protocol),
                 managed=True,
                 custom_deps=None,
                 custom_vars=self.custom_vars,
@@ -691,7 +703,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                 should_process=should_process,
                 should_recurse=name in self.recursedeps,
                 relative=use_relative_paths,
-                condition=condition))
+                condition=condition,
+                protocol=self.protocol))
 
     deps_to_add.sort(key=lambda x: x.name)
     return deps_to_add
@@ -1334,6 +1347,16 @@ def _detect_host_os():
 class GitDependency(Dependency):
   """A Dependency object that represents a single git checkout."""
 
+  @staticmethod
+  def updateProtocol(url, protocol):
+    """Updates given URL's protocol"""
+    # only works on urls, skips local paths
+    if not url or not protocol or not re.match('([a-z]+)://', url) or \
+      re.match('file://', url):
+      return url
+
+    return re.sub('^([a-z]+):', protocol + ':', url)
+
   #override
   def GetScmName(self):
     """Always 'git'."""
@@ -1418,10 +1441,18 @@ solutions = %(solution_list)s
     if 'all' in enforced_os:
       enforced_os = self.DEPS_OS_CHOICES.values()
     self._enforced_os = tuple(set(enforced_os))
-    self._enforced_cpu = detect_host_arch.HostArch(),
+    self._enforced_cpu = (detect_host_arch.HostArch(), )
     self._root_dir = root_dir
     self._cipd_root = None
     self.config_content = None
+
+  @staticmethod
+  def _getScheme(url):
+    """Returns the scheme part of the given URL"""
+    if not url or not re.match('^([a-z]+)://', url):
+      return None
+
+    return url.split('://')[0]
 
   def _CheckConfig(self):
     """Verify that the config matches the state of the existing checked-out
@@ -1515,7 +1546,9 @@ it or fix the checkout.
             should_recurse=True,
             relative=None,
             condition=None,
-            print_outbuf=True))
+            print_outbuf=True,
+            # Pass parent URL protocol down the tree for child deps to use.
+            protocol=GClient._getScheme(s['url'])))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
@@ -1744,7 +1777,8 @@ it or fix the checkout.
               GitDependency(
                   parent=self,
                   name=entry,
-                  url=prev_url,
+                  # Update URL with parent dep's protocol
+                  url=GitDependency.updateProtocol(prev_url, self.protocol),
                   managed=False,
                   custom_deps={},
                   custom_vars={},
@@ -1753,7 +1787,8 @@ it or fix the checkout.
                   should_process=True,
                   should_recurse=False,
                   relative=None,
-                  condition=None))
+                  condition=None,
+                  protocol=self.protocol))
           if modified_files and self._options.delete_unversioned_trees:
             print('\nWARNING: \'%s\' is no longer part of this client.\n'
                   'Despite running \'gclient sync -D\' no action was taken '
@@ -1828,7 +1863,7 @@ it or fix the checkout.
     if command == 'update':
       gn_args_dep = self.dependencies[0]
       if gn_args_dep._gn_args_from:
-        deps_map = dict([(dep.name, dep) for dep in gn_args_dep.dependencies])
+        deps_map = {dep.name: dep for dep in gn_args_dep.dependencies}
         gn_args_dep = deps_map.get(gn_args_dep._gn_args_from)
       if gn_args_dep and gn_args_dep.HasGNArgsFile():
         gn_args_dep.WriteGNArgsFile()
@@ -1872,11 +1907,12 @@ it or fix the checkout.
         entries = {}
         def GrabDeps(dep):
           """Recursively grab dependencies."""
-          for d in dep.dependencies:
-            d.PinToActualRevision()
-            if ShouldPrintRevision(d):
-              entries[d.name] = d.url
-            GrabDeps(d)
+          for rec_d in dep.dependencies:
+            rec_d.PinToActualRevision()
+            if ShouldPrintRevision(rec_d):
+              entries[rec_d.name] = rec_d.url
+            GrabDeps(rec_d)
+
         GrabDeps(d)
         json_output.append({
             'name': d.name,
@@ -2273,7 +2309,7 @@ class Flattener(object):
       if key not in self._vars:
         continue
       # Don't "override" existing vars if it's actually the same value.
-      elif self._vars[key][1] == value:
+      if self._vars[key][1] == value:
         continue
       # Anything else is overriding a default value from the DEPS.
       self._vars[key] = (hierarchy + ' [custom_var override]', value)
@@ -2690,6 +2726,11 @@ def CMDsync(parser, args):
                          'patch was created, it is used to determine which '
                          'commits from the |patch-ref| actually constitute a '
                          'patch.')
+  parser.add_option('-t', '--download-topics', action='store_true',
+                    help='Downloads and patches locally changes from all open '
+                         'Gerrit CLs that have the same topic as the changes '
+                         'in the specified patch_refs. Only works if atleast '
+                         'one --patch-ref is specified.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
@@ -2756,6 +2797,10 @@ def CMDsync(parser, args):
 
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
+
+  if options.download_topics and not options.rebase_patch_ref:
+    raise gclient_utils.Error(
+        'Warning: You cannot download topics and not rebase each patch ref')
 
   if options.ignore_locks:
     print('Warning: ignore_locks is no longer used. Please remove its usage.')

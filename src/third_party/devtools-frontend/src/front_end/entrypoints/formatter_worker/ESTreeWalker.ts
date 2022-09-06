@@ -7,16 +7,16 @@ import type * as Acorn from '../../third_party/acorn/acorn.js';
 const SkipSubTreeObject: Object = {};
 
 export class ESTreeWalker {
-  private readonly beforeVisit: (arg0: Acorn.ESTree.Node) => (Object | undefined);
-  private readonly afterVisit: Function;
-  private walkNulls: boolean;
+  readonly #beforeVisit: (arg0: Acorn.ESTree.Node) => (Object | undefined);
+  readonly #afterVisit: Function;
+  #walkNulls: boolean;
 
   constructor(
       beforeVisit: (arg0: Acorn.ESTree.Node) => (Object | undefined),
       afterVisit?: ((arg0: Acorn.ESTree.Node) => void)) {
-    this.beforeVisit = beforeVisit;
-    this.afterVisit = afterVisit || function(): void {};
-    this.walkNulls = false;
+    this.#beforeVisit = beforeVisit;
+    this.#afterVisit = afterVisit || function(): void {};
+    this.#walkNulls = false;
   }
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -26,15 +26,15 @@ export class ESTreeWalker {
   }
 
   setWalkNulls(value: boolean): void {
-    this.walkNulls = value;
+    this.#walkNulls = value;
   }
 
   walk(ast: Acorn.ESTree.Node): void {
-    this.innerWalk(ast, null);
+    this.#innerWalk(ast, null);
   }
 
-  private innerWalk(node: Acorn.ESTree.Node, parent: Acorn.ESTree.Node|null): void {
-    if (!node && parent && this.walkNulls) {
+  #innerWalk(node: Acorn.ESTree.Node, parent: Acorn.ESTree.Node|null): void {
+    if (!node && parent && this.#walkNulls) {
       const result = ({raw: 'null', value: null, parent: null} as Acorn.ESTree.SimpleLiteral);
       // Otherwise Closure can't handle the definition
       result.type = 'Literal';
@@ -47,8 +47,8 @@ export class ESTreeWalker {
     }
     node.parent = parent;
 
-    if (this.beforeVisit.call(null, node) === ESTreeWalker.SkipSubtree) {
-      this.afterVisit.call(null, node);
+    if (this.#beforeVisit.call(null, node) === ESTreeWalker.SkipSubtree) {
+      this.#afterVisit.call(null, node);
       return;
     }
 
@@ -62,10 +62,10 @@ export class ESTreeWalker {
       const templateLiteral = (node as Acorn.ESTree.TemplateLiteral);
       const expressionsLength = templateLiteral.expressions.length;
       for (let i = 0; i < expressionsLength; ++i) {
-        this.innerWalk(templateLiteral.quasis[i], templateLiteral);
-        this.innerWalk(templateLiteral.expressions[i], templateLiteral);
+        this.#innerWalk(templateLiteral.quasis[i], templateLiteral);
+        this.#innerWalk(templateLiteral.expressions[i], templateLiteral);
       }
-      this.innerWalk(templateLiteral.quasis[expressionsLength], templateLiteral);
+      this.#innerWalk(templateLiteral.quasis[expressionsLength], templateLiteral);
     } else {
       for (let i = 0; i < walkOrder.length; ++i) {
         // @ts-ignore We are doing type traversal here, but the strings
@@ -75,19 +75,19 @@ export class ESTreeWalker {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const entity = (node[walkOrder[i]] as any);
         if (Array.isArray(entity)) {
-          this.walkArray((entity as Acorn.ESTree.Node[]), node);
+          this.#walkArray((entity as Acorn.ESTree.Node[]), node);
         } else {
-          this.innerWalk((entity as Acorn.ESTree.Node), node);
+          this.#innerWalk((entity as Acorn.ESTree.Node), node);
         }
       }
     }
 
-    this.afterVisit.call(null, node);
+    this.#afterVisit.call(null, node);
   }
 
-  private walkArray(nodeArray: Acorn.ESTree.Node[], parentNode: Acorn.ESTree.Node|null): void {
+  #walkArray(nodeArray: Acorn.ESTree.Node[], parentNode: Acorn.ESTree.Node|null): void {
     for (let i = 0; i < nodeArray.length; ++i) {
-      this.innerWalk(nodeArray[i], parentNode);
+      this.#innerWalk(nodeArray[i], parentNode);
     }
   }
 }

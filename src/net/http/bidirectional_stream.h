@@ -21,7 +21,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_request.h"
 #include "net/log/net_log_with_source.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_header_block.h"
 
 namespace base {
 class OneShotTimer;
@@ -234,7 +234,7 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
   bool send_request_headers_automatically_;
   // Whether request headers have been sent, as indicated in OnStreamReady()
   // callback.
-  bool request_headers_sent_;
+  bool request_headers_sent_ = false;
 
   const raw_ptr<Delegate> delegate_;
 

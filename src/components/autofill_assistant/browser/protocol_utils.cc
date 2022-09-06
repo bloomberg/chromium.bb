@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include <google/protobuf/message_lite.h>
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -19,14 +20,18 @@
 #include "components/autofill_assistant/browser/actions/delete_password_action.h"
 #include "components/autofill_assistant/browser/actions/dispatch_js_event_action.h"
 #include "components/autofill_assistant/browser/actions/edit_password_action.h"
+#include "components/autofill_assistant/browser/actions/execute_js_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
+#include "components/autofill_assistant/browser/actions/external_action.h"
 #include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
 #include "components/autofill_assistant/browser/actions/get_element_status_action.h"
+#include "components/autofill_assistant/browser/actions/js_flow_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/perform_on_single_element_action.h"
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
 #include "components/autofill_assistant/browser/actions/presave_generated_password_action.h"
 #include "components/autofill_assistant/browser/actions/prompt_action.h"
+#include "components/autofill_assistant/browser/actions/register_password_reset_request_action.h"
 #include "components/autofill_assistant/browser/actions/release_elements_action.h"
 #include "components/autofill_assistant/browser/actions/reset_pending_credentials_action.h"
 #include "components/autofill_assistant/browser/actions/save_generated_password_action.h"
@@ -58,6 +63,24 @@
 #include "url/gurl.h"
 
 namespace autofill_assistant {
+namespace {
+// Parses |bytes| into |out|.
+//
+// On error, returns false and puts an error message into |error_message|.
+bool ParseActionFromString(int32_t action_id,
+                           const std::string& bytes,
+                           std::string* error_message,
+                           google::protobuf::MessageLite* out) {
+  if (out->ParseFromString(bytes)) {
+    return true;
+  }
+  if (error_message != nullptr) {
+    *error_message = base::StrCat({"Message not parseable for action id ",
+                                   base::NumberToString(action_id)});
+  }
+  return false;
+}
+}  // namespace
 
 // static
 std::string ProtocolUtils::CreateGetScriptsRequest(
@@ -70,11 +93,44 @@ std::string ProtocolUtils::CreateGetScriptsRequest(
   script_proto.set_url(url.spec());
   *script_proto.mutable_client_context() = client_context;
   *script_proto.mutable_script_parameters() =
-      script_parameters.ToProto(/* only_trigger_script_allowlisted = */ false);
+      script_parameters.ToProto(/* only_non_sensitive_allowlisted = */ false);
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
   DCHECK(success);
   return serialized_script_proto;
+}
+
+// static
+std::string ProtocolUtils::CreateCapabilitiesByHashRequest(
+    uint32_t hash_prefix_length,
+    const std::vector<uint64_t>& hash_prefix,
+    const ClientContextProto& client_context,
+    const ScriptParameters& script_parameters) {
+  GetCapabilitiesByHashPrefixRequestProto request;
+  request.set_hash_prefix_length(hash_prefix_length);
+  for (uint64_t prefix : hash_prefix) {
+    request.add_hash_prefix(prefix);
+  }
+  *request.mutable_script_parameters() =
+      script_parameters.ToProto(/* only_non_sensitive_allowlisted = */ true);
+
+  ClientContextProto non_sensitive_context;
+  if (client_context.has_locale()) {
+    non_sensitive_context.set_locale(client_context.locale());
+  }
+  if (client_context.has_country()) {
+    non_sensitive_context.set_country(client_context.country());
+  }
+  if (client_context.chrome().has_chrome_version()) {
+    non_sensitive_context.mutable_chrome()->set_chrome_version(
+        client_context.chrome().chrome_version());
+  }
+  *request.mutable_client_context() = non_sensitive_context;
+
+  std::string serialized_request;
+  bool success = request.SerializeToString(&serialized_request);
+  DCHECK(success);
+  return serialized_request;
 }
 
 // static
@@ -126,7 +182,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->set_policy(PolicyType::SCRIPT);
   *request_proto.mutable_client_context() = client_context;
   *initial_request_proto->mutable_script_parameters() =
-      script_parameters.ToProto(/* only_trigger_script_allowlisted = */ false);
+      script_parameters.ToProto(/* only_non_sensitive_allowlisted = */ false);
   if (!global_payload.empty()) {
     request_proto.set_global_payload(global_payload);
   }
@@ -147,16 +203,19 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
     const std::string& script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
     const RoundtripTimingStats& timing_stats,
+    const RoundtripNetworkStats& network_stats,
     const ClientContextProto& client_context) {
   ScriptActionRequestProto request_proto;
   request_proto.set_global_payload(global_payload);
   request_proto.set_script_payload(script_payload);
+
   NextScriptActionsRequestProto* next_request =
       request_proto.mutable_next_request();
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
   *next_request->mutable_timing_stats() = timing_stats;
+  *next_request->mutable_network_stats() = network_stats;
   *request_proto.mutable_client_context() = client_context;
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
@@ -393,6 +452,23 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<ResetPendingCredentialsAction>(delegate, action);
     case ActionProto::ActionInfoCase::kSaveSubmittedPassword:
       return std::make_unique<SaveSubmittedPasswordAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kExecuteJs:
+      return std::make_unique<ExecuteJsAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kJsFlow:
+      return std::make_unique<JsFlowAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kExternalAction:
+      return std::make_unique<ExternalAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
+      return std::make_unique<RegisterPasswordResetRequestAction>(delegate,
+                                                                  action);
+    case ActionProto::ActionInfoCase::kSetNativeValue:
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.set_native_value().client_id(),
+          base::BindOnce(
+              &action_delegate_util::PerformWithTextValue, delegate,
+              action.set_native_value().value(),
+              base::BindOnce(&WebController::SetNativeValue,
+                             delegate->GetWebController()->GetWeakPtr())));
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);
@@ -403,13 +479,298 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
 }
 
 // static
+absl::optional<ActionProto> ProtocolUtils::ParseFromString(
+    int32_t action_id,
+    const std::string& bytes,
+    std::string* error_message) {
+  ActionProto proto;
+  bool success = true;
+  switch (static_cast<ActionProto::ActionInfoCase>(action_id)) {
+    case ActionProto::ActionInfoCase::kTell:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_tell());
+      break;
+    case ActionProto::ActionInfoCase::kShowCast:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_show_cast());
+      break;
+    case ActionProto::ActionInfoCase::kUseAddress:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_use_address());
+      break;
+    case ActionProto::ActionInfoCase::kUseCard:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_use_card());
+      break;
+    case ActionProto::ActionInfoCase::kWaitForDom:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_wait_for_dom());
+      break;
+    case ActionProto::ActionInfoCase::kSelectOption:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_select_option());
+      break;
+    case ActionProto::ActionInfoCase::kNavigate:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_navigate());
+      break;
+    case ActionProto::ActionInfoCase::kPrompt:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_prompt());
+      break;
+    case ActionProto::ActionInfoCase::kStop:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_stop());
+      break;
+    case ActionProto::ActionInfoCase::kUploadDom:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_upload_dom());
+      break;
+    case ActionProto::ActionInfoCase::kShowDetails:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_show_details());
+      break;
+    case ActionProto::ActionInfoCase::kCollectUserData:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_collect_user_data());
+      break;
+    case ActionProto::ActionInfoCase::kShowProgressBar:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_show_progress_bar());
+      break;
+    case ActionProto::ActionInfoCase::kSetAttribute:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_attribute());
+      break;
+    case ActionProto::ActionInfoCase::kShowInfoBox:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_show_info_box());
+      break;
+    case ActionProto::ActionInfoCase::kExpectNavigation:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_expect_navigation());
+      break;
+    case ActionProto::ActionInfoCase::kWaitForNavigation:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_wait_for_navigation());
+      break;
+    case ActionProto::ActionInfoCase::kConfigureBottomSheet:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_configure_bottom_sheet());
+      break;
+    case ActionProto::ActionInfoCase::kShowForm:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_show_form());
+      break;
+    case ActionProto::ActionInfoCase::kUpdateClientSettings:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_update_client_settings());
+      break;
+    case ActionProto::ActionInfoCase::kPopupMessage:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_popup_message());
+      break;
+    case ActionProto::ActionInfoCase::kWaitForDocument:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_wait_for_document());
+      break;
+    case ActionProto::ActionInfoCase::kShowGenericUi:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_show_generic_ui());
+      break;
+    case ActionProto::ActionInfoCase::kGeneratePasswordForFormField:
+      success = ParseActionFromString(
+          action_id, bytes, error_message,
+          proto.mutable_generate_password_for_form_field());
+      break;
+    case ActionProto::ActionInfoCase::kSaveGeneratedPassword:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_save_generated_password());
+      break;
+    case ActionProto::ActionInfoCase::kConfigureUiState:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_configure_ui_state());
+      break;
+    case ActionProto::ActionInfoCase::kPresaveGeneratedPassword:
+      success =
+          ParseActionFromString(action_id, bytes, error_message,
+                                proto.mutable_presave_generated_password());
+      break;
+    case ActionProto::ActionInfoCase::kGetElementStatus:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_get_element_status());
+      break;
+    case ActionProto::ActionInfoCase::kScrollIntoView:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_scroll_into_view());
+      break;
+    case ActionProto::ActionInfoCase::kWaitForDocumentToBecomeInteractive:
+      success = ParseActionFromString(
+          action_id, bytes, error_message,
+          proto.mutable_wait_for_document_to_become_interactive());
+      break;
+    case ActionProto::ActionInfoCase::kWaitForDocumentToBecomeComplete:
+      success = ParseActionFromString(
+          action_id, bytes, error_message,
+          proto.mutable_wait_for_document_to_become_complete());
+      break;
+    case ActionProto::ActionInfoCase::kSendClickEvent:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_send_click_event());
+      break;
+    case ActionProto::ActionInfoCase::kSendTapEvent:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_send_tap_event());
+      break;
+    case ActionProto::ActionInfoCase::kJsClick:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_js_click());
+      break;
+    case ActionProto::ActionInfoCase::kSendKeystrokeEvents:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_send_keystroke_events());
+      break;
+    case ActionProto::ActionInfoCase::kSendChangeEvent:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_send_change_event());
+      break;
+    case ActionProto::ActionInfoCase::kSetElementAttribute:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_element_attribute());
+      break;
+    case ActionProto::ActionInfoCase::kSelectFieldValue:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_select_field_value());
+      break;
+    case ActionProto::ActionInfoCase::kFocusField:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_focus_field());
+      break;
+    case ActionProto::ActionInfoCase::kWaitForElementToBecomeStable:
+      success = ParseActionFromString(
+          action_id, bytes, error_message,
+          proto.mutable_wait_for_element_to_become_stable());
+      break;
+    case ActionProto::ActionInfoCase::kCheckElementIsOnTop:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_check_element_is_on_top());
+      break;
+    case ActionProto::ActionInfoCase::kReleaseElements:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_release_elements());
+      break;
+    case ActionProto::ActionInfoCase::kDispatchJsEvent:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_dispatch_js_event());
+      break;
+    case ActionProto::ActionInfoCase::kSendKeyEvent:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_send_key_event());
+      break;
+    case ActionProto::ActionInfoCase::kSelectOptionElement:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_select_option_element());
+      break;
+    case ActionProto::ActionInfoCase::kCheckElementTag:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_check_element_tag());
+      break;
+    case ActionProto::ActionInfoCase::kCheckOptionElement:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_check_option_element());
+      break;
+    case ActionProto::ActionInfoCase::kSetPersistentUi:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_persistent_ui());
+      break;
+    case ActionProto::ActionInfoCase::kClearPersistentUi:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_clear_persistent_ui());
+      break;
+    case ActionProto::ActionInfoCase::kScrollIntoViewIfNeeded:
+      success =
+          ParseActionFromString(action_id, bytes, error_message,
+                                proto.mutable_scroll_into_view_if_needed());
+      break;
+    case ActionProto::ActionInfoCase::kScrollWindow:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_scroll_window());
+      break;
+    case ActionProto::ActionInfoCase::kScrollContainer:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_scroll_container());
+      break;
+    case ActionProto::ActionInfoCase::kSetTouchableArea:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_touchable_area());
+      break;
+    case ActionProto::ActionInfoCase::kDeletePassword:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_delete_password());
+      break;
+    case ActionProto::ActionInfoCase::kEditPassword:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_edit_password());
+      break;
+    case ActionProto::ActionInfoCase::kBlurField:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_blur_field());
+      break;
+    case ActionProto::ActionInfoCase::kResetPendingCredentials:
+      success =
+          ParseActionFromString(action_id, bytes, error_message,
+                                proto.mutable_reset_pending_credentials());
+      break;
+    case ActionProto::ActionInfoCase::kSaveSubmittedPassword:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_save_submitted_password());
+      break;
+    case ActionProto::ActionInfoCase::kExecuteJs:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_execute_js());
+      break;
+    case ActionProto::ActionInfoCase::kJsFlow:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_js_flow());
+      break;
+    case ActionProto::ActionInfoCase::kExternalAction:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_external_action());
+      break;
+    case ActionProto::ActionInfoCase::kSetNativeValue:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_native_value());
+      break;
+    case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
+      success = ParseActionFromString(
+          action_id, bytes, error_message,
+          proto.mutable_register_password_reset_request());
+      break;
+    case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
+      // This is an "unknown action", handled as such in CreateAction.
+      return proto;
+  }
+  // There's an implicit default case that ends up with success=true and an
+  // empty proto if given an action_id that doesn't fit into ActionInfoCase.
+  // This is the unknown action case. Doing it without an explicit default case
+  // allows relying on exhaustive switch checks in the compiler.
+
+  if (!success) {
+    return absl::nullopt;
+  }
+  return proto;
+}
+
+// static
 bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
                                  const std::string& response,
+                                 uint64_t* run_id,
                                  std::string* return_global_payload,
                                  std::string* return_script_payload,
                                  std::vector<std::unique_ptr<Action>>* actions,
                                  std::vector<std::unique_ptr<Script>>* scripts,
-                                 bool* should_update_scripts) {
+                                 bool* should_update_scripts,
+                                 std::string* js_flow_library) {
   DCHECK(actions);
   DCHECK(scripts);
 
@@ -419,11 +780,17 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
     return false;
   }
 
+  if (run_id) {
+    *run_id = response_proto.run_id();
+  }
   if (return_global_payload) {
     *return_global_payload = response_proto.global_payload();
   }
   if (return_script_payload) {
     *return_script_payload = response_proto.script_payload();
+  }
+  if (js_flow_library) {
+    *js_flow_library = std::move(*response_proto.mutable_js_flow_library());
   }
 
   for (const auto& action : response_proto.actions()) {
@@ -447,6 +814,17 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
 }
 
 // static
+std::unique_ptr<Action> ProtocolUtils::ParseAction(
+    ActionDelegate* delegate,
+    const std::string& serialized_action) {
+  ActionProto proto;
+  if (!proto.ParseFromString(serialized_action)) {
+    return nullptr;
+  }
+  return CreateAction(delegate, proto);
+}
+
+// static
 std::string ProtocolUtils::CreateGetTriggerScriptsRequest(
     const GURL& url,
     const ClientContextProto& client_context,
@@ -455,7 +833,7 @@ std::string ProtocolUtils::CreateGetTriggerScriptsRequest(
   request_proto.set_url(url.spec());
   *request_proto.mutable_client_context() = client_context;
   *request_proto.mutable_script_parameters() =
-      script_parameters.ToProto(/* only_trigger_script_allowlisted = */ true);
+      script_parameters.ToProto(/* only_non_sensitive_allowlisted = */ true);
 
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
@@ -588,6 +966,72 @@ bool ProtocolUtils::ValidateTriggerCondition(
     case TriggerScriptConditionProto::TYPE_NOT_SET:
       return true;
   }
+}
+
+// static
+std::string ProtocolUtils::CreateGetUserDataRequest(
+    uint64_t run_id,
+    bool request_name,
+    bool request_email,
+    bool request_phone,
+    bool request_shipping,
+    const std::vector<std::string>& preexisting_address_ids,
+    bool request_payment_methods,
+    const std::vector<std::string>& supported_card_networks,
+    const std::vector<std::string>& preexisting_payment_instrument_ids,
+    const std::string& client_token) {
+  GetUserDataRequestProto request_proto;
+  request_proto.set_run_id(run_id);
+  request_proto.set_request_name(request_name);
+  request_proto.set_request_email(request_email);
+  request_proto.set_request_phone(request_phone);
+
+  if (request_shipping) {
+    auto* address_request = request_proto.mutable_request_shipping_addresses();
+    for (const std::string& id : preexisting_address_ids) {
+      address_request->add_preexisting_ids(id);
+    }
+  }
+
+  if (request_payment_methods) {
+    auto* payment_methods_request =
+        request_proto.mutable_request_payment_methods();
+    payment_methods_request->set_client_token(client_token);
+    for (const std::string& supported_card_network : supported_card_networks) {
+      payment_methods_request->add_supported_card_networks(
+          supported_card_network);
+    }
+    for (const std::string& id : preexisting_payment_instrument_ids) {
+      payment_methods_request->add_preexisting_ids(id);
+    }
+  }
+
+  std::string serialized_request_proto;
+  bool success = request_proto.SerializeToString(&serialized_request_proto);
+  DCHECK(success);
+  return serialized_request_proto;
+}
+
+// static
+RoundtripNetworkStats ProtocolUtils::ComputeNetworkStats(
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info,
+    const std::vector<std::unique_ptr<Action>>& actions) {
+  RoundtripNetworkStats stats;
+  stats.set_roundtrip_decoded_body_size_bytes(response.size());
+  stats.set_roundtrip_encoded_body_size_bytes(
+      response_info.encoded_body_length);
+  for (const auto& action : actions) {
+    RoundtripNetworkStats::ActionNetworkStats* action_stats =
+        stats.add_action_stats();
+    action_stats->set_action_info_case(
+        static_cast<int>(action->proto().action_info_case()));
+
+    std::string serialized_action;
+    action->proto().SerializeToString(&serialized_action);
+    action_stats->set_decoded_size_bytes(serialized_action.size());
+  }
+  return stats;
 }
 
 }  // namespace autofill_assistant

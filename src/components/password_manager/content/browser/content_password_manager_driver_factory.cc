@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/form_submission_tracker_util.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -66,8 +66,10 @@ void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
   if (!factory)
     return;
 
-  factory->GetDriverForFrame(render_frame_host)
-      ->BindPendingReceiver(std::move(pending_receiver));
+  // TODO(crbug.com/1294378): Remove nullptr check once
+  // EnablePasswordManagerWithinFencedFrame is launched.
+  if (auto* driver = factory->GetDriverForFrame(render_frame_host))
+    driver->BindPendingReceiver(std::move(pending_receiver));
 }
 
 ContentPasswordManagerDriver*
@@ -82,15 +84,22 @@ ContentPasswordManagerDriverFactory::GetDriverForFrame(
   if (!render_frame_host->IsRenderFrameLive())
     return nullptr;
 
-  // TryEmplace() will return an iterator to the driver corresponding to
-  // `render_frame_host`. It creates a new one if required.
-  return &base::TryEmplace(frame_driver_map_, render_frame_host,
-                           // Args passed to the ContentPasswordManagerDriver
-                           // constructor if none exists for `render_frame_host`
-                           // yet.
-                           render_frame_host, password_client_,
-                           autofill_client_)
-              .first->second;
+  if (render_frame_host->IsNestedWithinFencedFrame() &&
+      !base::FeatureList::IsEnabled(
+          features::kEnablePasswordManagerWithinFencedFrame)) {
+    return nullptr;
+  }
+
+  // try_emplace() will return an iterator to the driver corresponding to
+  // `render_frame_host`, creating a new one if `render_frame_host` is not
+  // already a key in the map.
+  auto [it, inserted] = frame_driver_map_.try_emplace(
+      render_frame_host,
+      // Args passed to the ContentPasswordManagerDriver
+      // constructor if none exists for `render_frame_host`
+      // yet.
+      render_frame_host, password_client_, autofill_client_);
+  return &it->second;
 }
 
 void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
@@ -112,9 +121,10 @@ void ContentPasswordManagerDriverFactory::DidFinishNavigation(
                              password_client_->GetPasswordManager());
   // A committed navigation always has a live RenderFrameHost.
   CHECK(navigation->GetRenderFrameHost()->IsRenderFrameLive());
-  GetDriverForFrame(navigation->GetRenderFrameHost())
-      ->GetPasswordAutofillManager()
-      ->DidNavigateMainFrame();
+  // TODO(crbug.com/1294378): Remove nullptr check once
+  // EnablePasswordManagerWithinFencedFrame is launched.
+  if (auto* driver = GetDriverForFrame(navigation->GetRenderFrameHost()))
+    driver->GetPasswordAutofillManager()->DidNavigateMainFrame();
 }
 
 void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {

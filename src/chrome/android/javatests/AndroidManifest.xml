@@ -45,6 +45,15 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="FakeActivity" android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="externalappscheme" />
+            </intent-filter>
+        </activity>
+
         <activity android:name="org.chromium.chrome.browser.sync.SyncTestRule$DummyKeyRetrievalActivity"
             android:exported="true"/>
 
@@ -57,7 +66,7 @@
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
 
-        <activity android:name="org.chromium.ui.test.util.DummyUiActivity"
+        <activity android:name="org.chromium.ui.test.util.BlankUiTestActivity"
             android:theme="@style/Theme.Chromium.Activity"
             android:exported="true"/>
 

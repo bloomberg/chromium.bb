@@ -80,8 +80,8 @@ export interface PasswordManagerProxy {
    * @return A promise that resolves when the password is updated for all ids.
    */
   changeSavedPassword(
-      ids: Array<number>, newUsername: string,
-      newPassword: string): Promise<void>;
+      ids: Array<number>,
+      params: chrome.passwordsPrivate.ChangeSavedPasswordParams): Promise<void>;
 
   /**
    * Should remove the saved password and notify that the list has changed.
@@ -244,6 +244,26 @@ export interface PasswordManagerProxy {
       insecureCredential: chrome.passwordsPrivate.InsecureCredential): void;
 
   /**
+   * Dismisses / mutes the |insecureCredential| in the passwords store.
+   */
+  muteInsecureCredential(insecureCredential:
+                             chrome.passwordsPrivate.InsecureCredential): void;
+
+  /**
+   * Restores / unmutes the |insecureCredential| in the passwords store.
+   */
+  unmuteInsecureCredential(
+      insecureCredential: chrome.passwordsPrivate.InsecureCredential): void;
+
+  /**
+   * Records the state of a change password flow for |insecureCredential|
+   * and notes it is a manual flow via |isManualFlow|.
+   */
+  recordChangePasswordFlowStarted(
+      insecureCredential: chrome.passwordsPrivate.InsecureCredential,
+      isManualFlow: boolean): void;
+
+  /**
    * Add an observer to the compromised passwords change.
    */
   addCompromisedCredentialsListener(listener: CredentialsChangedListener): void;
@@ -324,8 +344,10 @@ export enum PasswordCheckInteraction {
   EDIT_PASSWORD = 4,
   REMOVE_PASSWORD = 5,
   SHOW_PASSWORD = 6,
+  MUTE_PASSWORD = 7,
+  UNMUTE_PASSWORD = 8,
   // Must be last.
-  COUNT = 7,
+  COUNT = 9,
 }
 
 /**
@@ -390,10 +412,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
   }
 
   changeSavedPassword(
-      ids: Array<number>, newUsername: string, newPassword: string) {
+      ids: Array<number>,
+      params: chrome.passwordsPrivate.ChangeSavedPasswordParams) {
     return new Promise<void>(resolve => {
-      chrome.passwordsPrivate.changeSavedPassword(
-          ids, newUsername, newPassword, resolve);
+      chrome.passwordsPrivate.changeSavedPassword(ids, params, resolve);
     });
   }
 
@@ -540,6 +562,23 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
   removeInsecureCredential(insecureCredential:
                                chrome.passwordsPrivate.InsecureCredential) {
     chrome.passwordsPrivate.removeInsecureCredential(insecureCredential);
+  }
+
+  muteInsecureCredential(insecureCredential:
+                             chrome.passwordsPrivate.InsecureCredential) {
+    chrome.passwordsPrivate.muteInsecureCredential(insecureCredential);
+  }
+
+  unmuteInsecureCredential(insecureCredential:
+                               chrome.passwordsPrivate.InsecureCredential) {
+    chrome.passwordsPrivate.unmuteInsecureCredential(insecureCredential);
+  }
+
+  recordChangePasswordFlowStarted(
+      insecureCredential: chrome.passwordsPrivate.InsecureCredential,
+      isManualFlow: boolean) {
+    chrome.passwordsPrivate.recordChangePasswordFlowStarted(
+        insecureCredential, isManualFlow);
   }
 
   addCompromisedCredentialsListener(listener: CredentialsChangedListener) {

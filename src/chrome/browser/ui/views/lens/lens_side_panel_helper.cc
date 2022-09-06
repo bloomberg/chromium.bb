@@ -25,11 +25,25 @@ views::Widget* OpenLensRegionSearchInstructions(
     Browser* browser,
     base::OnceClosure close_callback,
     base::OnceClosure escape_callback) {
+  // Our anchor should be the browser view's ContentsWebView to make the bubble
+  // dialog align with the viewport.
   views::View* anchor =
-      BrowserView::GetBrowserViewForBrowser(browser)->top_container();
+      BrowserView::GetBrowserViewForBrowser(browser)->contents_web_view();
   return views::BubbleDialogDelegateView::CreateBubble(
       std::make_unique<LensRegionSearchInstructionsView>(
           anchor, std::move(close_callback), std::move(escape_callback)));
+}
+
+void CreateLensSidePanelControllerForTesting(Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  browser_view->CreateLensSidePanelController();
+  DCHECK(browser_view->lens_side_panel_controller());
+}
+
+content::WebContents* GetLensSidePanelWebContentsForTesting(Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  DCHECK(browser_view->lens_side_panel_controller());
+  return browser_view->lens_side_panel_controller()->web_contents();
 }
 
 }  // namespace lens

@@ -12,16 +12,15 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/task/post_task.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
-#include "ios/chrome/browser/net/cookie_util.h"
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/components/cookie_util/cookie_util.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -30,6 +29,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,8 +55,8 @@ void OffTheRecordChromeBrowserStateIOData::Handle::DoomIncognitoCache() {
   // The cache for the incognito profile is in RAM.
   scoped_refptr<net::URLRequestContextGetter> getter =
       main_request_context_getter_;
-  base::PostTask(
-      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+  web::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(^{
         DCHECK_CURRENTLY_ON(web::WebThread::IO);
         net::HttpCache* cache = getter->GetURLRequestContext()
                                     ->http_transaction_factory()
@@ -140,49 +140,18 @@ OffTheRecordChromeBrowserStateIOData::OffTheRecordChromeBrowserStateIOData()
 OffTheRecordChromeBrowserStateIOData::~OffTheRecordChromeBrowserStateIOData() {}
 
 void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
-    std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
-    ProfileParams* profile_params,
-    ProtocolHandlerMap* protocol_handlers) const {
-  net::URLRequestContext* main_context = main_request_context();
-
+    net::URLRequestContextBuilder* context_builder,
+    ProfileParams* profile_params) const {
   IOSChromeIOThread* const io_thread = profile_params->io_thread;
-  IOSChromeIOThread::Globals* const io_thread_globals = io_thread->globals();
 
-  ApplyProfileParamsToContext(main_context);
-
-  main_context->set_transport_security_state(transport_security_state());
-
-  main_context->set_net_log(io_thread->net_log());
-
-  main_context->set_network_delegate(chrome_network_delegate.get());
-
-  network_delegate_ = std::move(chrome_network_delegate);
-
-  main_context->set_host_resolver(io_thread_globals->host_resolver.get());
-  main_context->set_http_auth_handler_factory(
-      io_thread_globals->http_auth_handler_factory.get());
-  main_context->set_proxy_resolution_service(proxy_resolution_service());
-
-  // For incognito, we use the default non-persistent HttpServerProperties.
-  set_http_server_properties(std::make_unique<net::HttpServerProperties>());
-  main_context->set_http_server_properties(http_server_properties());
-
-  main_cookie_store_ = cookie_util::CreateCookieStore(
+  context_builder->SetCookieStore(cookie_util::CreateCookieStore(
       cookie_util::CookieStoreConfig(
           cookie_path_,
           cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
           cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr),
-      std::move(profile_params->system_cookie_store), io_thread->net_log());
-  main_context->set_cookie_store(main_cookie_store_.get());
+      std::move(profile_params->system_cookie_store), io_thread->net_log()));
 
-  http_network_session_ = CreateHttpNetworkSession(*profile_params);
-  main_http_factory_ = CreateMainHttpFactory(
-      http_network_session_.get(), net::HttpCache::DefaultBackend::InMemory(0));
-
-  main_context->set_http_transaction_factory(main_http_factory_.get());
-
-  main_job_factory_ = std::make_unique<net::URLRequestJobFactory>();
-
-  InstallProtocolHandlers(main_job_factory_.get(), protocol_handlers);
-  main_context->set_job_factory(main_job_factory_.get());
+  net::URLRequestContextBuilder::HttpCacheParams cache_params;
+  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
+  context_builder->EnableHttpCache(cache_params);
 }

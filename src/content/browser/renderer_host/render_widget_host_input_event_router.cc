@@ -2042,7 +2042,7 @@ void RenderWidgetHostInputEventRouter::ForwardDelegatedInkPoint(
       if (!compositor)
         return;
 
-      TRACE_EVENT_INSTANT0("input",
+      TRACE_EVENT_INSTANT0("delegated_ink_trails",
                            "Binding mojo interface for delegated ink points.",
                            TRACE_EVENT_SCOPE_THREAD);
       compositor->SetDelegatedInkPointRenderer(
@@ -2056,10 +2056,11 @@ void RenderWidgetHostInputEventRouter::ForwardDelegatedInkPoint(
 
     gfx::DelegatedInkPoint delegated_ink_point(
         position, input_event.TimeStamp(), pointer_properties.id);
-    TRACE_EVENT_INSTANT1("input",
-                         "Forwarding delegated ink point from browser.",
-                         TRACE_EVENT_SCOPE_THREAD, "delegated point",
-                         delegated_ink_point.ToString());
+    TRACE_EVENT_WITH_FLOW1("delegated_ink_trails",
+                           "Forwarding delegated ink point from browser.",
+                           TRACE_ID_GLOBAL(delegated_ink_point.trace_id()),
+                           TRACE_EVENT_FLAG_FLOW_OUT, "delegated point",
+                           delegated_ink_point.ToString());
 
     // Calling this will result in IPC calls to get |delegated_ink_point| to
     // viz. The decision to do this here was made with the understanding that
@@ -2075,7 +2076,7 @@ void RenderWidgetHostInputEventRouter::ForwardDelegatedInkPoint(
     // Let viz know that the most recent point it received from us is probably
     // the last point the user is inking, so it shouldn't predict anything
     // beyond it.
-    TRACE_EVENT_INSTANT0("input", "Delegated ink trail ended",
+    TRACE_EVENT_INSTANT0("delegated_ink_trails", "Delegated ink trail ended",
                          TRACE_EVENT_SCOPE_THREAD);
     delegated_ink_point_renderer_->ResetPrediction();
     ended_delegated_ink_trail_ = true;

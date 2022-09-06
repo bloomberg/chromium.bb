@@ -5,6 +5,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -12,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -141,30 +141,31 @@ bool BrowserPolicyConnector::ProviderHasPolicies(
 }
 
 std::string BrowserPolicyConnector::GetDeviceManagementUrl() const {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDeviceManagementUrl) &&
-      IsCommandLineSwitchSupported())
-    return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
-  else
-    return kDefaultDeviceManagementServerUrl;
+  return GetUrlOverride(switches::kDeviceManagementUrl,
+                        kDefaultDeviceManagementServerUrl);
 }
 
 std::string BrowserPolicyConnector::GetRealtimeReportingUrl() const {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kRealtimeReportingUrl) &&
-      IsCommandLineSwitchSupported())
-    return command_line->GetSwitchValueASCII(switches::kRealtimeReportingUrl);
-  else
-    return kDefaultRealtimeReportingServerUrl;
+  return GetUrlOverride(switches::kRealtimeReportingUrl,
+                        kDefaultRealtimeReportingServerUrl);
 }
 
 std::string BrowserPolicyConnector::GetEncryptedReportingUrl() const {
+  return GetUrlOverride(switches::kEncryptedReportingUrl,
+                        kDefaultEncryptedReportingServerUrl);
+}
+
+std::string BrowserPolicyConnector::GetUrlOverride(
+    const char* flag,
+    const char* default_value) const {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEncryptedReportingUrl) &&
-      IsCommandLineSwitchSupported())
-    return command_line->GetSwitchValueASCII(switches::kEncryptedReportingUrl);
-  else
-    return kDefaultEncryptedReportingServerUrl;
+  if (command_line->HasSwitch(flag)) {
+    if (IsCommandLineSwitchSupported())
+      return command_line->GetSwitchValueASCII(flag);
+    else
+      LOG(WARNING) << flag << " not supported on this channel";
+  }
+  return default_value;
 }
 
 // static
@@ -179,7 +180,7 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
   }
   const std::u16string domain = base::UTF8ToUTF16(
       gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
-  for (size_t i = 0; i < base::size(kNonManagedDomainPatterns); i++) {
+  for (size_t i = 0; i < std::size(kNonManagedDomainPatterns); i++) {
     std::u16string pattern = base::WideToUTF16(kNonManagedDomainPatterns[i]);
     if (MatchDomain(domain, pattern, i))
       return true;

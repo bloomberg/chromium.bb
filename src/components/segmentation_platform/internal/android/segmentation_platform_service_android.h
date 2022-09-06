@@ -30,6 +30,23 @@ class SegmentationPlatformServiceAndroid : public base::SupportsUserData::Data {
                           const JavaParamRef<jstring>& j_segmentation_key,
                           const JavaParamRef<jobject>& j_callback);
 
+  ScopedJavaLocalRef<jobject> GetCachedSegmentResult(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& jcaller,
+      const JavaParamRef<jstring>& j_segmentation_key);
+
+  int RegisterOnDemandSegmentSelectionCallback(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& jcaller,
+      const JavaParamRef<jstring>& j_segmentation_key,
+      const JavaParamRef<jobject>& jcallback);
+
+  void UnregisterOnDemandSegmentSelectionCallback(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& jcaller,
+      const JavaParamRef<jstring>& j_segmentation_key,
+      jint j_callback_id);
+
   ScopedJavaLocalRef<jobject> GetJavaObject();
 
  private:

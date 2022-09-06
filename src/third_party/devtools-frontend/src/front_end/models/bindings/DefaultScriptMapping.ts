@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -61,6 +62,12 @@ export class DefaultScriptMapping implements DebuggerSourceMapping {
     this.#uiSourceCodeToScriptsMap = new WeakMap();
   }
 
+  static createV8ScriptURL(script: SDK.Script.Script): Platform.DevToolsPath.UrlString {
+    const name = Common.ParsedURL.ParsedURL.extractName(script.sourceURL);
+    const url = 'debugger:///VM' + script.scriptId + (name ? ' ' + name : '') as Platform.DevToolsPath.UrlString;
+    return url;
+  }
+
   static scriptForUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): SDK.Script.Script|null {
     const scripts = uiSourceCodeToScriptsMap.get(uiSourceCode);
     return scripts ? scripts.values().next().value : null;
@@ -90,8 +97,7 @@ export class DefaultScriptMapping implements DebuggerSourceMapping {
 
   private parsedScriptSource(event: Common.EventTarget.EventTargetEvent<SDK.Script.Script>): void {
     const script = event.data;
-    const name = Common.ParsedURL.ParsedURL.extractName(script.sourceURL);
-    const url = 'debugger:///VM' + script.scriptId + (name ? ' ' + name : '');
+    const url = DefaultScriptMapping.createV8ScriptURL(script);
 
     const uiSourceCode = this.#project.createUISourceCode(url, Common.ResourceType.resourceTypes.Script);
     this.#uiSourceCodeToScriptsMap.set(uiSourceCode, script);
@@ -103,7 +109,7 @@ export class DefaultScriptMapping implements DebuggerSourceMapping {
     }
     scriptToUISourceCodeMap.set(script, uiSourceCode);
     this.#project.addUISourceCodeWithProvider(uiSourceCode, script, null, 'text/javascript');
-    this.#debuggerWorkspaceBinding.updateLocations(script);
+    void this.#debuggerWorkspaceBinding.updateLocations(script);
   }
 
   private discardedScriptSource(event: Common.EventTarget.EventTargetEvent<SDK.Script.Script>): void {

@@ -127,6 +127,8 @@ blink_modules_sources("peerconnection") {
     "rtc_void_request_promise_impl.h",
     "rtc_void_request_script_promise_resolver_impl.cc",
     "rtc_void_request_script_promise_resolver_impl.h",
+    "rtp_contributing_source_cache.cc",
+    "rtp_contributing_source_cache.h",
     "speed_limit_uma_listener.cc",
     "speed_limit_uma_listener.h",
     "thermal_resource.cc",
@@ -143,11 +145,13 @@ blink_modules_sources("peerconnection") {
     "webrtc_media_stream_track_adapter_map.h",
     "webrtc_set_description_observer.cc",
     "webrtc_set_description_observer.h",
+    "webrtc_video_perf_reporter.cc",
+    "webrtc_video_perf_reporter.h",
   ]
 
   public_deps = [ "//third_party/webrtc_overrides:webrtc_component" ]
   deps = [
-    "//jingle:webrtc_glue",
+    "//components/webrtc:thread_wrapper",
     "//services/metrics/public/cpp:ukm_builders",
     "//third_party/abseil-cpp:absl",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",

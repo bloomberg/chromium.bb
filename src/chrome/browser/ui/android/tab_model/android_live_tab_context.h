@@ -33,6 +33,7 @@ class AndroidLiveTabContext : public sessions::LiveTabContext {
   // Overridden from LiveTabContext:
   void ShowBrowserWindow() override;
   SessionID GetSessionID() const override;
+  sessions::SessionWindow::WindowType GetWindowType() const override;
   int GetTabCount() const override;
   int GetSelectedIndex() const override;
   std::string GetAppName() const override;
@@ -83,6 +84,5 @@ class AndroidLiveTabContext : public sessions::LiveTabContext {
  private:
   raw_ptr<TabModel> tab_model_;
 };
-
 
 #endif  // CHROME_BROWSER_UI_ANDROID_TAB_MODEL_ANDROID_LIVE_TAB_CONTEXT_H_

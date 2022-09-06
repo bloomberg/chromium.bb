@@ -4,6 +4,8 @@
 
 #include "ash/webui/eche_app_ui/system_info_provider.h"
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/webui/eche_app_ui/mojom/types_mojom_traits.h"
@@ -11,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
 namespace ash {
@@ -21,6 +22,8 @@ const char kJsonDeviceNameKey[] = "device_name";
 const char kJsonBoardNameKey[] = "board_name";
 const char kJsonTabletModeKey[] = "tablet_mode";
 const char kJsonWifiConnectionStateKey[] = "wifi_connection_state";
+const char kJsonDebugModeKey[] = "debug_mode";
+const char kJsonGaiaIdKey[] = "gaia_id";
 
 using chromeos::network_config::mojom::ConnectionStateType;
 // TODO(https://crbug.com/1164001): remove when it moved to ash.
@@ -43,7 +46,8 @@ SystemInfoProvider::SystemInfoProvider(
   // ScreenBacklight object to remove null check.
   if (ScreenBacklight::Get())
     ScreenBacklight::Get()->AddObserver(this);
-  TabletMode::Get()->AddObserver(this);
+  if (TabletMode::Get())
+    TabletMode::Get()->AddObserver(this);
   cros_network_config_->AddObserver(
       cros_network_config_receiver_.BindNewPipeAndPassRemote());
   FetchWifiNetworkList();
@@ -61,15 +65,20 @@ void SystemInfoProvider::GetSystemInfo(
     base::OnceCallback<void(const std::string&)> callback) {
   PA_LOG(INFO) << "echeapi SystemInfoProvider GetSystemInfo";
   base::DictionaryValue json_dictionary;
-  json_dictionary.SetString(kJsonDeviceNameKey, system_info_->GetDeviceName());
-  json_dictionary.SetString(kJsonBoardNameKey, system_info_->GetBoardName());
-  json_dictionary.SetBoolean(kJsonTabletModeKey,
+  json_dictionary.SetStringKey(kJsonDeviceNameKey,
+                               system_info_->GetDeviceName());
+  json_dictionary.SetStringKey(kJsonBoardNameKey, system_info_->GetBoardName());
+  json_dictionary.SetBoolKey(kJsonTabletModeKey,
                              TabletMode::Get()->InTabletMode());
+  json_dictionary.SetStringKey(kJsonGaiaIdKey, system_info_->GetGaiaId());
   auto found_type = CONNECTION_STATE_TYPE.find(wifi_connection_state_);
   std::string connecton_state_string =
       found_type == CONNECTION_STATE_TYPE.end() ? "" : found_type->second;
-  json_dictionary.SetString(kJsonWifiConnectionStateKey,
-                            connecton_state_string);
+  json_dictionary.SetStringKey(kJsonWifiConnectionStateKey,
+                               connecton_state_string);
+  json_dictionary.SetBoolKey(
+      kJsonDebugModeKey,
+      base::FeatureList::IsEnabled(features::kEcheSWADebugMode));
 
   std::string json_message;
   base::JSONWriter::Write(json_dictionary, &json_message);
@@ -138,7 +147,6 @@ void SystemInfoProvider::OnWifiNetworkList(
 
   for (const auto& network : networks) {
     if (network->type == NetworkType::kWiFi) {
-      PA_LOG(VERBOSE) << "OnWifiNetworkList: " << network->connection_state;
       wifi_connection_state_ = network->connection_state;
       return;
     }

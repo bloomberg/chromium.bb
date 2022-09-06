@@ -542,7 +542,7 @@ static int64_t highbd_segmented_frame_error(
    are set appropriately (if using a ROTZOOM model), and that alpha, beta,
    gamma, delta are all in range.
 
-   TODO(david.barker): Maybe support scaled references?
+   TODO(rachelbarker): Maybe support scaled references?
 */
 /* A note on hardware implementation:
     The warp filter is intended to be implementable using the same hardware as
@@ -1056,8 +1056,6 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
       clamp(vx, -WARPEDMODEL_TRANS_CLAMP, WARPEDMODEL_TRANS_CLAMP - 1);
   wm->wmmat[1] =
       clamp(vy, -WARPEDMODEL_TRANS_CLAMP, WARPEDMODEL_TRANS_CLAMP - 1);
-
-  wm->wmmat[6] = wm->wmmat[7] = 0;
   return 0;
 }
 

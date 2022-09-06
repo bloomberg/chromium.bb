@@ -46,6 +46,9 @@ public interface PrivacyPreferencesManager extends CrashReportingPermissionManag
     @Override
     boolean isNetworkAvailableForCrashUploads();
 
+    @Override
+    boolean isUsageAndCrashReportingPermittedByPolicy();
+
     /**
      * Checks whether uploading of usage metrics and crash dumps is currently permitted, based on
      * user consent only. This doesn't take network condition or experimental state (i.e. disabling
@@ -82,9 +85,4 @@ public interface PrivacyPreferencesManager extends CrashReportingPermissionManag
      * Sets whether the usage and crash reporting pref should be enabled.
      */
     void setMetricsReportingEnabled(boolean enabled);
-
-    /**
-     * @return Whether usage and crash report pref is managed.
-     */
-    boolean isMetricsReportingManaged();
 }

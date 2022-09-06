@@ -109,9 +109,9 @@ class SliderContainerElement final : public HTMLDivElement {
   Direction GetDirection(LayoutPoint&, LayoutPoint&);
   bool CanSlide();
 
-  bool has_touch_event_handler_;
-  bool touch_started_;
-  Direction sliding_direction_;
+  bool has_touch_event_handler_ = false;
+  bool touch_started_ = false;
+  Direction sliding_direction_ = kNoMove;
   LayoutPoint start_point_;
 };
 

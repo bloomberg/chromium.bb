@@ -15,6 +15,7 @@ to set the default value. Can also be accessed through `ci.defaults`.
 
 load("./args.star", "args")
 load("./branches.star", "branches")
+load("./builder_config.star", "builder_config")
 load("./builders.star", "builders", "os", "os_category")
 load("//project.star", "settings")
 
@@ -104,12 +105,10 @@ def ci_builder(
         resultdb.export_test_results(
             bq_table = "chrome-luci-data.chromium.gpu_ci_test_results",
             predicate = resultdb.test_result_predicate(
-                # Only match the telemetry_gpu_integration_test and
-                # fuchsia_telemetry_gpu_integration_test targets.
-                # Android Telemetry targets also have a suffix added to the end
-                # denoting the binary that's included, so also catch those with
-                # [^/]*.
-                test_id_regexp = "ninja://(chrome/test:|content/test:fuchsia_)telemetry_gpu_integration_test[^/]*/.+",
+                # Only match the telemetry_gpu_integration_test target and its
+                # Fuchsia and Android variants that have a suffix added to the
+                # end. Those are caught with [^/]*.
+                test_id_regexp = "ninja://chrome/test:telemetry_gpu_integration_test[^/]*/.+",
             ),
         ),
         resultdb.export_test_results(
@@ -129,6 +128,16 @@ def ci_builder(
         # chrome_browser_release sheriff rotation
         branches.value({branches.STANDARD_BRANCHES: "chrome_browser_release"}),
     )
+
+    # All builders that are selected for extended stable should be part of the
+    # chrome_browser_release sheriff rotation (this is less straightforward than
+    # above because desktop extended stable can coexist with CrOS LTS and we
+    # don't want the CrOS LTS builders to appear in the chrome_browser_release
+    # tree)
+    if branches.matches(branch_selector, target = branches.DESKTOP_EXTENDED_STABLE_BRANCHES):
+        sheriff_rotations = args.listify(sheriff_rotations, branches.value({
+            branches.DESKTOP_EXTENDED_STABLE_BRANCHES: "chrome_browser_release",
+        }))
 
     goma_enable_ats = defaults.get_value_from_kwargs("goma_enable_ats", kwargs)
     if goma_enable_ats == args.COMPUTE:
@@ -202,7 +211,7 @@ def _gpu_linux_builder(*, name, **kwargs):
     groups.
     """
     kwargs.setdefault("cores", 8)
-    kwargs.setdefault("os", os.LINUX_BIONIC_SWITCH_TO_DEFAULT)
+    kwargs.setdefault("os", os.LINUX_DEFAULT)
     return ci.builder(name = name, **kwargs)
 
 def _gpu_mac_builder(*, name, **kwargs):
@@ -211,8 +220,8 @@ def _gpu_mac_builder(*, name, **kwargs):
     This sets mac-specific defaults that are common to GPU-related builder
     groups.
     """
+    kwargs.setdefault("builderless", True)
     kwargs.setdefault("os", os.MAC_ANY)
-    kwargs.setdefault("pool", ci.DEFAULT_POOL)
     return ci.builder(name = name, **kwargs)
 
 def _gpu_windows_builder(*, name, **kwargs):
@@ -253,9 +262,13 @@ def thin_tester(
     Returns:
       The `luci.builder` keyset.
     """
+    builder_spec = kwargs.get("builder_spec")
+    if builder_spec and builder_spec.execution_mode != builder_config.execution_mode.TEST:
+        fail("thin testers with builder specs must have TEST execution mode")
     cores = defaults.get_value("thin_tester_cores", cores)
     kwargs.setdefault("goma_backend", None)
-    kwargs.setdefault("os", builders.os.LINUX_BIONIC_SWITCH_TO_DEFAULT)
+    kwargs.setdefault("reclient_instance", None)
+    kwargs.setdefault("os", builders.os.LINUX_DEFAULT)
     return ci.builder(
         name = name,
         triggered_by = triggered_by,
@@ -286,15 +299,4 @@ ci = struct(
         SERVICE_ACCOUNT = "chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
         TREE_CLOSING_NOTIFIERS = ["gpu-tree-closer-email"],
     ),
-)
-
-rbe_instance = struct(
-    DEFAULT = "rbe-chromium-trusted",
-    GVISOR_SHADOW = "rbe-chromium-gvisor-shadow",
-)
-
-rbe_jobs = struct(
-    DEFAULT = 250,
-    LOW_JOBS_FOR_CI = 80,
-    HIGH_JOBS_FOR_CI = 500,
 )

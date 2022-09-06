@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/task/post_task.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -164,7 +162,8 @@ void ServiceWorkerUpdatedScriptLoader::OnReceiveEarlyHints(
 }
 
 void ServiceWorkerUpdatedScriptLoader::OnReceiveResponse(
-    network::mojom::URLResponseHeadPtr response_head) {
+    network::mojom::URLResponseHeadPtr response_head,
+    mojo::ScopedDataPipeConsumerHandle body) {
   NOTREACHED();
 }
 
@@ -189,11 +188,6 @@ void ServiceWorkerUpdatedScriptLoader::OnReceiveCachedMetadata(
 void ServiceWorkerUpdatedScriptLoader::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
   client_->OnTransferSizeUpdated(transfer_size_diff);
-}
-
-void ServiceWorkerUpdatedScriptLoader::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle consumer) {
-  NOTREACHED();
 }
 
 void ServiceWorkerUpdatedScriptLoader::OnComplete(
@@ -244,8 +238,6 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteResponseHead(
     client_response->ssl_info.reset();
   }
 
-  client_->OnReceiveResponse(std::move(client_response));
-
   mojo::ScopedDataPipeConsumerHandle client_consumer;
   if (mojo::CreateDataPipe(nullptr, client_producer_, client_consumer) !=
       MOJO_RESULT_OK) {
@@ -255,7 +247,9 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteResponseHead(
   }
 
   // Pass the consumer handle to the client.
-  client_->OnStartLoadingResponseBody(std::move(client_consumer));
+  client_->OnReceiveResponse(std::move(client_response),
+                             std::move(client_consumer));
+
   client_producer_watcher_.Watch(
       client_producer_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       base::BindRepeating(&ServiceWorkerUpdatedScriptLoader::OnClientWritable,

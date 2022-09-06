@@ -10,23 +10,23 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/escape.h"
 #include "components/navigation_interception/jni_headers/InterceptNavigationDelegate_jni.h"
-#include "components/navigation_interception/navigation_params_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/escape.h"
+#include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
-using ui::PageTransition;
 using content::RenderViewHost;
 using content::WebContents;
+using ui::PageTransition;
 
 namespace navigation_interception {
 
@@ -37,17 +37,18 @@ const int kMaxValidityOfUserGestureCarryoverInSeconds = 10;
 const void* const kInterceptNavigationDelegateUserDataKey =
     &kInterceptNavigationDelegateUserDataKey;
 
-bool CheckIfShouldIgnoreNavigationOnUIThread(WebContents* source,
-                                             const NavigationParams& params) {
+bool CheckIfShouldIgnoreNavigationOnUIThread(
+    content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(source);
+  DCHECK(navigation_handle);
 
   InterceptNavigationDelegate* intercept_navigation_delegate =
-      InterceptNavigationDelegate::Get(source);
+      InterceptNavigationDelegate::Get(navigation_handle->GetWebContents());
   if (!intercept_navigation_delegate)
     return false;
 
-  return intercept_navigation_delegate->ShouldIgnoreNavigation(params);
+  return intercept_navigation_delegate->ShouldIgnoreNavigation(
+      navigation_handle);
 }
 
 }  // namespace
@@ -103,14 +104,13 @@ InterceptNavigationDelegate::~InterceptNavigationDelegate() {
 }
 
 bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
-    const NavigationParams& navigation_params) {
-  NavigationParams navigation_params_to_use(navigation_params);
-  if (escape_external_handler_value_) {
-    navigation_params_to_use.url() =
-        GURL(net::EscapeExternalHandlerValue(navigation_params.url().spec()));
-  }
+    content::NavigationHandle* navigation_handle) {
+  GURL escaped_url = escape_external_handler_value_
+                         ? GURL(base::EscapeExternalHandlerValue(
+                               navigation_handle->GetURL().spec()))
+                         : navigation_handle->GetURL();
 
-  if (!navigation_params_to_use.url().is_valid())
+  if (!escaped_url.is_valid())
     return false;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -119,16 +119,38 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
   if (jdelegate.is_null())
     return false;
 
-  bool has_user_gesture_carryover =
-      !navigation_params_to_use.has_user_gesture() &&
+  bool has_user_gesture = navigation_handle->HasUserGesture();
+  bool apply_user_gesture_carryover =
+      !has_user_gesture &&
       base::TimeTicks::Now() - last_user_gesture_carryover_timestamp_ <=
           base::Seconds(kMaxValidityOfUserGestureCarryoverInSeconds);
 
-  ScopedJavaLocalRef<jobject> jobject_params = CreateJavaNavigationParams(
-      env, navigation_params_to_use, has_user_gesture_carryover);
-
   return Java_InterceptNavigationDelegate_shouldIgnoreNavigation(
-      env, jdelegate, jobject_params);
+      env, jdelegate, navigation_handle->GetJavaNavigationHandle(),
+      url::GURLAndroid::FromNativeGURL(env, escaped_url),
+      apply_user_gesture_carryover);
+}
+
+void InterceptNavigationDelegate::HandleExternalProtocolDialog(
+    const GURL& url,
+    ui::PageTransition page_transition,
+    bool has_user_gesture,
+    const absl::optional<url::Origin>& initiating_origin) {
+  GURL escaped_url = escape_external_handler_value_
+                         ? GURL(base::EscapeExternalHandlerValue(url.spec()))
+                         : url;
+  if (!escaped_url.is_valid())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jdelegate = weak_jdelegate_.get(env);
+
+  if (jdelegate.is_null())
+    return;
+  Java_InterceptNavigationDelegate_handleExternalProtocolDialog(
+      env, jdelegate, url::GURLAndroid::FromNativeGURL(env, escaped_url),
+      page_transition, has_user_gesture,
+      initiating_origin ? initiating_origin->CreateJavaObject() : nullptr);
 }
 
 void InterceptNavigationDelegate::UpdateLastUserGestureCarryoverTimestamp() {

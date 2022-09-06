@@ -9,7 +9,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -158,11 +157,11 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   ExtensionTestMessageListener open_failure("checkpoint: Failed to get syncfs",
-                                            true);
+                                            ReplyBehavior::kWillReply);
   ExtensionTestMessageListener bar_created("checkpoint: \"/bar\" created",
-                                           true);
+                                           ReplyBehavior::kWillReply);
   ExtensionTestMessageListener foo_created("checkpoint: \"/foo\" created",
-                                           true);
+                                           ReplyBehavior::kWillReply);
   extensions::ResultCatcher catcher;
 
   LoadAndLaunchPlatformApp("sync_file_system/authorization_test", "Launched");

@@ -36,6 +36,7 @@ class BreakPointInfo;
 class CallableTask;
 class CallbackTask;
 class CallHandlerInfo;
+class CallSiteInfo;
 class Expression;
 class EmbedderDataArray;
 class ArrayBoilerplateDescription;
@@ -110,11 +111,6 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
  public:
   inline ReadOnlyRoots read_only_roots() const;
 
-  template <typename T>
-  Handle<T> MakeHandle(T obj) {
-    return handle(obj, isolate());
-  }
-
   Handle<Oddball> NewOddball(Handle<Map> map, const char* to_string,
                              Handle<Object> to_number, const char* type_of,
                              byte kind);
@@ -127,7 +123,8 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   Handle<Oddball> NewBasicBlockCountersMarker();
 
   // Allocates a property array initialized with undefined values.
-  Handle<PropertyArray> NewPropertyArray(int length);
+  Handle<PropertyArray> NewPropertyArray(
+      int length, AllocationType allocation = AllocationType::kYoung);
   // Tries allocating a fixed array initialized with undefined values.
   // In case of an allocation failure (OOM) an empty handle is returned.
   // The caller has to manually signal an
@@ -313,7 +310,7 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   // A cache is used for Latin1 codes.
   Handle<String> LookupSingleCharacterStringFromCode(uint16_t code);
 
-  // Create or lookup a single characters tring made up of a utf16 surrogate
+  // Create or lookup a single character string made up of a utf16 surrogate
   // pair.
   Handle<String> NewSurrogatePairString(uint16_t lead, uint16_t trail);
 
@@ -390,17 +387,28 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
 
   Handle<AccessorInfo> NewAccessorInfo();
 
+  Handle<ErrorStackData> NewErrorStackData(
+      Handle<Object> call_site_infos_or_formatted_stack,
+      Handle<Object> limit_or_stack_frame_infos);
+
   Handle<Script> CloneScript(Handle<Script> script);
 
   Handle<BreakPointInfo> NewBreakPointInfo(int source_position);
   Handle<BreakPoint> NewBreakPoint(int id, Handle<String> condition);
 
-  Handle<StackFrameInfo> NewStackFrameInfo(Handle<Object> receiver_or_instance,
-                                           Handle<Object> function,
-                                           Handle<HeapObject> code_object,
-                                           int code_offset_or_source_position,
-                                           int flags,
-                                           Handle<FixedArray> parameters);
+  Handle<CallSiteInfo> NewCallSiteInfo(Handle<Object> receiver_or_instance,
+                                       Handle<Object> function,
+                                       Handle<HeapObject> code_object,
+                                       int code_offset_or_source_position,
+                                       int flags,
+                                       Handle<FixedArray> parameters);
+  Handle<StackFrameInfo> NewStackFrameInfo(
+      Handle<HeapObject> shared_or_script,
+      int bytecode_offset_or_source_position, Handle<String> function_name,
+      bool is_constructor);
+
+  Handle<PromiseOnStack> NewPromiseOnStack(Handle<Object> prev,
+                                           Handle<JSObject> promise);
 
   // Allocate various microtasks.
   Handle<CallableTask> NewCallableTask(Handle<JSReceiver> callable,
@@ -436,10 +444,12 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
                      ElementsKind elements_kind = TERMINAL_FAST_ELEMENTS_KIND,
                      int inobject_properties = 0,
                      AllocationType allocation_type = AllocationType::kMap);
-  // Initializes the fields of a newly created Map. Exposed for tests and
-  // heap setup; other code should just call NewMap which takes care of it.
+  // Initializes the fields of a newly created Map using roots from the
+  // passed-in Heap. Exposed for tests and heap setup; other code should just
+  // call NewMap which takes care of it.
   Map InitializeMap(Map map, InstanceType type, int instance_size,
-                    ElementsKind elements_kind, int inobject_properties);
+                    ElementsKind elements_kind, int inobject_properties,
+                    Heap* roots);
 
   // Allocate a block of memory of the given AllocationType (filled with a
   // filler). Used as a fall-back for generated code when the space is full.
@@ -514,7 +524,10 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   // points to the site.
   // JS objects are pretenured when allocated by the bootstrapper and
   // runtime.
-  Handle<JSObject> NewJSObjectFromMap(
+  inline Handle<JSObject> NewJSObjectFromMap(
+      Handle<Map> map, AllocationType allocation = AllocationType::kYoung,
+      Handle<AllocationSite> allocation_site = Handle<AllocationSite>::null());
+  inline Handle<JSObject> NewSystemPointerAlignedJSObjectFromMap(
       Handle<Map> map, AllocationType allocation = AllocationType::kYoung,
       Handle<AllocationSite> allocation_site = Handle<AllocationSite>::null());
   // Like NewJSObjectFromMap, but includes allocating a properties dictionary.
@@ -579,6 +592,9 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
 
   Handle<JSModuleNamespace> NewJSModuleNamespace();
 
+  Handle<JSWrappedFunction> NewJSWrappedFunction(
+      Handle<NativeContext> creation_context, Handle<Object> target);
+
 #if V8_ENABLE_WEBASSEMBLY
   Handle<WasmTypeInfo> NewWasmTypeInfo(Address type_address,
                                        Handle<Map> opt_parent,
@@ -589,29 +605,37 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
                                                        Handle<Map> rtt);
   Handle<WasmCapiFunctionData> NewWasmCapiFunctionData(
       Address call_target, Handle<Foreign> embedder_data,
-      Handle<Code> wrapper_code, Handle<Map> rtt,
+      Handle<CodeT> wrapper_code, Handle<Map> rtt,
       Handle<PodArray<wasm::ValueType>> serialized_sig);
   Handle<WasmExportedFunctionData> NewWasmExportedFunctionData(
-      Handle<Code> export_wrapper, Handle<WasmInstanceObject> instance,
+      Handle<CodeT> export_wrapper, Handle<WasmInstanceObject> instance,
       Address call_target, Handle<Object> ref, int func_index,
       Address sig_address, int wrapper_budget, Handle<Map> rtt);
-  Handle<WasmApiFunctionRef> NewWasmApiFunctionRef(Handle<JSReceiver> callable);
+  Handle<WasmApiFunctionRef> NewWasmApiFunctionRef(
+      Handle<JSReceiver> callable, Handle<HeapObject> suspender);
   // {opt_call_target} is kNullAddress for JavaScript functions, and
   // non-null for exported Wasm functions.
   Handle<WasmJSFunctionData> NewWasmJSFunctionData(
       Address opt_call_target, Handle<JSReceiver> callable, int return_count,
       int parameter_count, Handle<PodArray<wasm::ValueType>> serialized_sig,
-      Handle<Code> wrapper_code, Handle<Map> rtt);
+      Handle<CodeT> wrapper_code, Handle<Map> rtt,
+      Handle<HeapObject> suspender);
+  Handle<WasmOnFulfilledData> NewWasmOnFulfilledData(
+      Handle<WasmSuspenderObject> suspender);
   Handle<WasmStruct> NewWasmStruct(const wasm::StructType* type,
                                    wasm::WasmValue* args, Handle<Map> map);
-  Handle<WasmArray> NewWasmArray(const wasm::ArrayType* type,
-                                 const std::vector<wasm::WasmValue>& elements,
-                                 Handle<Map> map);
+  Handle<WasmArray> NewWasmArrayFromElements(
+      const wasm::ArrayType* type, const std::vector<wasm::WasmValue>& elements,
+      Handle<Map> map);
+  Handle<WasmArray> NewWasmArrayFromMemory(uint32_t length, Handle<Map> map,
+                                           Address source);
 
   Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmExportedFunction(
       Handle<String> name, Handle<WasmExportedFunctionData> data);
   Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmJSFunction(
       Handle<String> name, Handle<WasmJSFunctionData> data);
+  Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmOnFulfilled(
+      Handle<WasmOnFulfilledData> data);
   Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmCapiFunction(
       Handle<WasmCapiFunctionData> data);
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -895,6 +919,12 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
       return *this;
     }
 
+    CodeBuilder& set_osr_offset(BytecodeOffset offset) {
+      DCHECK_IMPLIES(!offset.IsNone(), CodeKindCanOSR(kind_));
+      osr_offset_ = offset;
+      return *this;
+    }
+
     CodeBuilder& set_source_position_table(Handle<ByteArray> table) {
       DCHECK_NE(kind_, CodeKind::BASELINE);
       DCHECK(!table.is_null());
@@ -972,6 +1002,7 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
     MaybeHandle<Object> self_reference_;
     Builtin builtin_ = Builtin::kNoBuiltinId;
     uint32_t inlined_bytecode_size_ = 0;
+    BytecodeOffset osr_offset_ = BytecodeOffset::None();
     int32_t kind_specific_flags_ = 0;
     // Either source_position_table for non-baseline code
     // or bytecode_offset_table for baseline code.
@@ -1003,14 +1034,16 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   }
 
   // This is the real Isolate that will be used for allocating and accessing
-  // external pointer entries when V8_HEAP_SANDBOX is enabled.
-  Isolate* isolate_for_heap_sandbox() const {
-#ifdef V8_HEAP_SANDBOX
+  // external pointer entries when V8_SANDBOXED_EXTERNAL_POINTERS is enabled.
+  Isolate* isolate_for_sandbox() const {
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
     return isolate();
 #else
     return nullptr;
-#endif  // V8_HEAP_SANDBOX
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
   }
+
+  V8_INLINE HeapAllocator* allocator() const;
 
   bool CanAllocateInReadOnlySpace();
   bool EmptyStringRootIsInitialized();
@@ -1021,7 +1054,12 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
 
   HeapObject AllocateRawWithAllocationSite(
       Handle<Map> map, AllocationType allocation,
-      Handle<AllocationSite> allocation_site);
+      Handle<AllocationSite> allocation_site,
+      AllocationAlignment alignment = kTaggedAligned);
+
+  Handle<JSObject> NewJSObjectFromMapInternal(
+      Handle<Map> map, AllocationType allocation,
+      Handle<AllocationSite> allocation_site, AllocationAlignment alignment);
 
   Handle<JSArrayBufferView> NewJSArrayBufferView(
       Handle<Map> map, Handle<FixedArrayBase> elements,

@@ -23,7 +23,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -46,7 +45,7 @@
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/devtools_frontend_host.h"
 #endif
 
@@ -203,11 +202,8 @@ ShellDevToolsBindings::GetInstancesForWebContents(WebContents* web_contents) {
 
 void ShellDevToolsBindings::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (navigation_handle->IsInPrimaryMainFrame()) {
     frontend_host_ = DevToolsFrontendHost::Create(
         frame, base::BindRepeating(
@@ -278,7 +274,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
   // Since we've received message by value, we can take the list.
   base::Value::ListStorage params;
   if (params_value) {
-    params = std::move(*params_value).TakeList();
+    params = std::move(*params_value).TakeListDeprecated();
   }
 
   if (*method == "dispatchProtocolMessage" && params.size() == 1) {
@@ -428,7 +424,7 @@ void ShellDevToolsBindings::CallClientFunction(
 
   web_contents()->GetMainFrame()->AllowInjectingJavaScript();
 
-  base::Value arguments(base::Value::Type::LIST);
+  base::Value::List arguments;
   if (!arg1.is_none()) {
     arguments.Append(std::move(arg1));
     if (!arg2.is_none()) {

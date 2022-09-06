@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -33,7 +34,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 #endif
@@ -167,8 +168,8 @@ class CheckClientDownloadRequestBase {
   base::TimeTicks start_time_ = base::TimeTicks::Now();  // Used for stats.
   base::TimeTicks timeout_start_time_;
   base::TimeTicks request_start_time_;
-  bool skipped_url_whitelist_ = false;
-  bool skipped_certificate_whitelist_ = false;
+  bool skipped_url_allowlist_ = false;
+  bool skipped_certificate_allowlist_ = false;
   bool sampled_unsupported_file_ = false;
 
   bool is_extended_reporting_ = false;

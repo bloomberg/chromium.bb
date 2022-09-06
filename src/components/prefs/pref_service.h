@@ -27,11 +27,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/prefs_export.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
 
@@ -40,7 +41,7 @@ class PrefNotifierImpl;
 class PrefObserver;
 class PrefRegistry;
 class PrefStore;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class PrefServiceAndroid;
 #endif
 
@@ -150,6 +151,17 @@ class COMPONENTS_PREFS_EXPORT PrefService {
     // the Preference.
     bool IsExtensionModifiable() const;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Returns true if the Preference value is currently being controlled by a
+    // standalone browser (lacros) and not by any higher-priority source.
+    bool IsStandaloneBrowserControlled() const;
+
+    // Returns true if a standalone browser (lacros) can change the Preference
+    // value, which is the case if no higher-priority source than the standalone
+    // browser store controls the Preference.
+    bool IsStandaloneBrowserModifiable() const;
+#endif
+
     // Return the registration flags for this pref as a bitmask of
     // PrefRegistry::PrefRegistrationFlags.
     uint32_t registration_flags() const { return registration_flags_; }
@@ -176,6 +188,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   PrefService(std::unique_ptr<PrefNotifierImpl> pref_notifier,
               std::unique_ptr<PrefValueStore> pref_value_store,
               scoped_refptr<PersistentPrefStore> user_prefs,
+              scoped_refptr<PersistentPrefStore> standalone_browser_prefs,
               scoped_refptr<PrefRegistry> pref_registry,
               base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
                   read_error_callback,
@@ -228,13 +241,17 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   double GetDouble(const std::string& path) const;
   std::string GetString(const std::string& path) const;
   base::FilePath GetFilePath(const std::string& path) const;
+  const base::Value::Dict* GetValueDict(const std::string& path) const;
+  const base::Value::List* GetValueList(const std::string& path) const;
 
   // Returns the branch if it exists, or the registered default value otherwise.
   // Note that |path| must point to a registered preference. In that case, these
   // functions will never return NULL.
   const base::Value* Get(const std::string& path) const;
-  const base::DictionaryValue* GetDictionary(const std::string& path) const;
-  const base::ListValue* GetList(const std::string& path) const;
+  // DEPRECATED: Prefer Get(), GetValueDict(), and GetValueList().
+  // TODO(https://crbug.com/1334665): Remove these methods.
+  const base::Value* GetDictionary(const std::string& path) const;
+  const base::Value* GetList(const std::string& path) const;
 
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const std::string& path);
@@ -244,14 +261,18 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 
   // If the path is valid (i.e., registered), update the pref value in the user
   // prefs.
-  // To set the value of dictionary or list values in the pref tree use
-  // Set(), but to modify the value of a dictionary or list use either
-  // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
+  //
+  // To set the value of dictionary or list values in the pref tree, use
+  // SetDict()/SetList(), but to modify the value of a dictionary or list use
+  // either DictionaryPrefUpdate or ListPrefUpdate from
+  // scoped_user_pref_update.h.
   void Set(const std::string& path, const base::Value& value);
   void SetBoolean(const std::string& path, bool value);
   void SetInteger(const std::string& path, int value);
   void SetDouble(const std::string& path, double value);
   void SetString(const std::string& path, const std::string& value);
+  void SetDict(const std::string& path, base::Value::Dict dict);
+  void SetList(const std::string& path, base::Value::List list);
   void SetFilePath(const std::string& path, const base::FilePath& value);
 
   // Int64 helper methods that actually store the given value as a string.
@@ -380,7 +401,15 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   void AddPrefObserverAllPrefs(PrefObserver* obs);
   void RemovePrefObserverAllPrefs(PrefObserver* obs);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Write extension-controlled prefs from Lacros in ash.
+  void SetStandaloneBrowserPref(const std::string& path,
+                                const base::Value& value);
+  // Clear extension-controlled prefs from Lacros in ash.
+  void RemoveStandaloneBrowserPref(const std::string& path);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 #endif
 
@@ -396,6 +425,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 
   // Pref Stores and profile that we passed to the PrefValueStore.
   const scoped_refptr<PersistentPrefStore> user_pref_store_;
+  const scoped_refptr<PersistentPrefStore> standalone_browser_pref_store_;
 
   // Callback to call when a read error occurs. Always invoked on the sequence
   // this PrefService was created own.
@@ -435,6 +465,22 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   virtual void AddPrefObserver(const std::string& path, PrefObserver* obs);
   virtual void RemovePrefObserver(const std::string& path, PrefObserver* obs);
 
+  // A PrefStore::Observer which reports loading errors from
+  // PersistentPrefStores after they are loaded. Usually this is only user_prefs
+  // however in ash it additionally includes standalone_browser_prefs. Errors
+  // are only reported once even though multiple files may be loaded.
+  class PersistentPrefStoreLoadingObserver : public PrefStore::Observer {
+   public:
+    explicit PersistentPrefStoreLoadingObserver(PrefService* pref_service_);
+
+    // PrefStore::Observer implementation
+    void OnPrefValueChanged(const std::string& key) override {}
+    void OnInitializationCompleted(bool succeeded) override;
+
+   private:
+    raw_ptr<PrefService> pref_service_ = nullptr;
+  };
+
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate or ScopedDictionaryPrefUpdate if a DictionaryValue
   // or ListValue is changed.
@@ -450,6 +496,11 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // Load preferences from storage, attempting to diagnose and handle errors.
   // This should only be called from the constructor.
   void InitFromStorage(bool async);
+
+  // Verifies that prefs are fully loaded from disk, handling errors. This
+  // method may be called multiple times, but no more than once after all prefs
+  // are loaded.
+  void CheckPrefsLoaded();
 
   // Used to set the value of dictionary or list values in the user pref store.
   // This will create a dictionary or list if one does not exist in the user
@@ -471,12 +522,15 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 
   const scoped_refptr<PrefRegistry> pref_registry_;
 
+  std::unique_ptr<PrefService::PersistentPrefStoreLoadingObserver>
+      pref_store_observer_;
+
   // Local cache of registered Preference objects. The pref_registry_
   // is authoritative with respect to what the types and default values
   // of registered preferences are.
   mutable PreferenceMap prefs_map_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Manage and fetch the java object that wraps this PrefService on
   // android.
   std::unique_ptr<PrefServiceAndroid> pref_service_android_;

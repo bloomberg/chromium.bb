@@ -94,7 +94,8 @@ export class SearchConfig implements Workspace.Workspace.ProjectSearchConfig {
     }
   }
 
-  filePathMatchesFileQuery(filePath: string): boolean {
+  filePathMatchesFileQuery(filePath: Platform.DevToolsPath.RawPathString|
+                           Platform.DevToolsPath.EncodedPathString|Platform.DevToolsPath.UrlString): boolean {
     if (!this.fileRegexQueries) {
       return true;
     }
@@ -159,9 +160,6 @@ export class QueryTerm {
   }
 }
 
-/**
- * @interface
- */
 export interface SearchResult {
   label(): string;
 
@@ -176,9 +174,6 @@ export interface SearchResult {
   matchRevealable(index: number): Object;
 }
 
-/**
- * @interface
- */
 export interface SearchScope {
   performSearch(
       searchConfig: SearchConfig, progress: Common.Progress.Progress,

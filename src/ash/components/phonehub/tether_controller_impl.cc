@@ -4,24 +4,24 @@
 
 #include "ash/components/phonehub/tether_controller_impl.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/phone_status_model.h"
 #include "ash/components/phonehub/user_action_recorder.h"
 #include "ash/components/phonehub/util/histogram_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 
 namespace ash {
 namespace phonehub {
 namespace {
 
-using ::chromeos::multidevice_setup::MultiDeviceSetupClient;
-using ::chromeos::multidevice_setup::mojom::Feature;
-using ::chromeos::multidevice_setup::mojom::FeatureState;
 using ::chromeos::network_config::mojom::ConnectionStateType;
 using ::chromeos::network_config::mojom::DeviceStatePropertiesPtr;
 using ::chromeos::network_config::mojom::FilterType;
 using ::chromeos::network_config::mojom::NetworkType;
 using ::chromeos::network_config::mojom::StartConnectResult;
+using multidevice_setup::MultiDeviceSetupClient;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
 
 // TODO(https://crbug.com/1164001): remove after migrating to namespace ash.
 namespace network_config = ::chromeos::network_config;
@@ -448,9 +448,9 @@ TetherController::Status TetherControllerImpl::ComputeStatus() const {
 
   switch (connection_state) {
     case ConnectionStateType::kOnline:
-      FALLTHROUGH;
+      [[fallthrough]];
     case ConnectionStateType::kConnected:
-      FALLTHROUGH;
+      [[fallthrough]];
     case ConnectionStateType::kPortal:
       return Status::kConnected;
 

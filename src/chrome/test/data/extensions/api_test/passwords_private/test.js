@@ -56,6 +56,7 @@ var availableTests = [
           url: 'https://example.com',
           username: 'username',
           password: 'password',
+          note: '',
           useAccountStore: false
         },
         () => {
@@ -71,6 +72,7 @@ var availableTests = [
           url: 'https://example.com',
           username: 'username',
           password: '',
+          note: '',
           useAccountStore: true
         },
         () => {
@@ -84,7 +86,7 @@ var availableTests = [
 
   function changeSavedPasswordSucceeds() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [0], 'new_user', 'new_pass', () => {
+        [0], {username: 'new_user', password: 'new_pass'}, () => {
           chrome.test.assertNoLastError();
           chrome.test.succeed();
         });
@@ -92,7 +94,7 @@ var availableTests = [
 
   function changeSavedPasswordWithIncorrectIdFails() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [-1], 'new_user', 'new_pass', () => {
+        [-1], {username: 'new_user', password: 'new_pass'}, () => {
           chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
           chrome.test.succeed();
         });
@@ -100,24 +102,35 @@ var availableTests = [
 
   function changeSavedPasswordWithOneIncorrectIdFromArrayFails() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [0, -1], 'new_user', 'new_pass', () => {
+        [0, -1], {username: 'new_user', password: 'new_pass'}, () => {
           chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
           chrome.test.succeed();
         });
   },
 
   function changeSavedPasswordWithEmptyPasswordFails() {
-    chrome.passwordsPrivate.changeSavedPassword([0], 'new_user', '', () => {
-      chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
-      chrome.test.succeed();
-    });
+    chrome.passwordsPrivate.changeSavedPassword(
+        [0], {username: 'new_user', password: ''}, () => {
+          chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
+          chrome.test.succeed();
+        });
   },
 
   function changeSavedPasswordWithEmptyArrayIdFails() {
-    chrome.passwordsPrivate.changeSavedPassword([], 'new_user', '', () => {
-      chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
-      chrome.test.succeed();
-    });
+    chrome.passwordsPrivate.changeSavedPassword(
+        [], {username: 'new_user', password: ''}, () => {
+          chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
+          chrome.test.succeed();
+        });
+  },
+
+  function changeSavedPasswordWithNoteSucceeds() {
+    chrome.passwordsPrivate.changeSavedPassword(
+        [0], {username: 'new_user', password: 'new_pass', note: 'some note'},
+        () => {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
   },
 
   function removeAndUndoRemoveSavedPassword() {
@@ -425,6 +438,7 @@ var availableTests = [
         compromiseTime: COMPROMISE_TIME,
         elapsedTimeSinceCompromise: '3 days ago',
         compromiseType: 'LEAKED',
+        isMuted: false,
       },
     };
 
@@ -448,6 +462,7 @@ var availableTests = [
         compromiseTime: COMPROMISE_TIME,
         elapsedTimeSinceCompromise: '3 days ago',
         compromiseType: 'LEAKED',
+        isMuted: false,
       },
     };
 
@@ -474,6 +489,7 @@ var availableTests = [
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
             compromiseType: 'LEAKED',
+            isMuted: false,
           },
         },
         '', () => {
@@ -497,6 +513,7 @@ var availableTests = [
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
             compromiseType: 'LEAKED',
+            isMuted: false,
           },
         },
         'new_pass', () => {
@@ -520,6 +537,7 @@ var availableTests = [
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
             compromiseType: 'LEAKED',
+            isMuted: false,
           },
         },
         'new_pass', () => {
@@ -541,6 +559,7 @@ var availableTests = [
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
             compromiseType: 'LEAKED',
+            isMuted: false,
           },
         },
         () => {
@@ -565,11 +584,176 @@ var availableTests = [
             compromiseTime: COMPROMISE_TIME,
             elapsedTimeSinceCompromise: '3 days ago',
             compromiseType: 'LEAKED',
+            isMuted: false,
           },
         },
         () => {
           chrome.test.assertNoLastError();
           // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
+
+  function muteInsecureCredentialSucceeds() {
+    chrome.passwordsPrivate.muteInsecureCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: false,
+          },
+        },
+        () => {
+          chrome.test.assertNoLastError();
+          // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
+
+  function muteInsecureCredentialFails() {
+    chrome.passwordsPrivate.muteInsecureCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: false,
+          },
+        },
+        () => {
+          chrome.test.assertLastError(
+              'Could not mute the insecure credential. Probably no ' +
+              'matching password could be found.');
+          // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
+
+  function unmuteInsecureCredentialSucceeds() {
+    chrome.passwordsPrivate.unmuteInsecureCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: true,
+          },
+        },
+        () => {
+          chrome.test.assertNoLastError();
+          // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
+
+  function unmuteInsecureCredentialFails() {
+    chrome.passwordsPrivate.unmuteInsecureCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: true,
+          },
+        },
+        () => {
+          chrome.test.assertLastError(
+              'Could not unmute the insecure credential. Probably no ' +
+              'matching password could be found.');
+          // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
+
+  function recordChangePasswordFlowStartedManual() {
+    chrome.passwordsPrivate.recordChangePasswordFlowStarted(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          changePasswordUrl: 'https://example.com/.well-known/change-password',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: false,
+          },
+        },
+        true, () => {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+
+  function recordChangePasswordFlowStartedAutomated() {
+    chrome.passwordsPrivate.recordChangePasswordFlowStarted(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          changePasswordUrl: 'https://example.com/.well-known/change-password',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: false,
+          },
+        },
+        false, () => {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+
+  function recordChangePasswordFlowStartedAppNoUrl() {
+    chrome.passwordsPrivate.recordChangePasswordFlowStarted(
+        {
+          id: 0,
+          formattedOrigin: 'App (com.example.app)',
+          detailedOrigin: 'com.example.app',
+          isAndroidCredential: true,
+          signonRealm: '',
+          username: 'alice',
+          compromisedInfo: {
+            compromiseTime: COMPROMISE_TIME,
+            elapsedTimeSinceCompromise: '3 days ago',
+            compromiseType: 'LEAKED',
+            isMuted: false,
+          },
+        },
+        true, () => {
+          chrome.test.assertNoLastError();
           chrome.test.succeed();
         });
   },

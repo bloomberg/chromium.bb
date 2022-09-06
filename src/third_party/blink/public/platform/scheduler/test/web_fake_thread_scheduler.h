@@ -44,12 +44,11 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
-  void DidScheduleBeginMainFrame() override;
   void DidRunBeginMainFrame() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
   std::unique_ptr<RendererPauseHandle> PauseRenderer() override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
 #endif
@@ -58,7 +57,6 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
-  void OnMainFrameRequestedForInput() override;
 };
 
 }  // namespace scheduler

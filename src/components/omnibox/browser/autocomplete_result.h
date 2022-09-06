@@ -17,7 +17,7 @@
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
 #endif
@@ -51,7 +51,7 @@ class AutocompleteResult {
   AutocompleteResult(const AutocompleteResult&) = delete;
   AutocompleteResult& operator=(const AutocompleteResult&) = delete;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns a corresponding Java object, creating it if necessary.
   // NOTE: Android specific methods are defined in autocomplete_match_android.cc
   base::android::ScopedJavaLocalRef<jobject> GetOrCreateJavaObject(
@@ -94,11 +94,8 @@ class AutocompleteResult {
                           AutocompleteResult* old_matches,
                           TemplateURLService* template_url_service);
 
-  // Adds a new set of matches to the result set.  Does not re-sort.  Calls
-  // PossiblySwapContentsAndDescriptionForURLSuggestion(input) on all added
-  // matches; see comments there for more information.
-  void AppendMatches(const AutocompleteInput& input,
-                     const ACMatches& matches);
+  // Adds a new set of matches to the result set.  Does not re-sort.
+  void AppendMatches(const ACMatches& matches);
 
   // Removes duplicates, puts the list in sorted order and culls to leave only
   // the best GetMaxMatches() matches. Sets the default match to the best match
@@ -214,8 +211,15 @@ class AutocompleteResult {
       const AutocompleteMatch& match,
       AutocompleteProviderClient* provider_client);
 
-  // Prepend missing tail suggestion prefixes in results, if present.
-  void InlineTailPrefixes();
+  // Gets common prefix from SEARCH_SUGGEST_TAIL matches
+  std::u16string GetCommonPrefix();
+
+  // Populates tail_suggest_common_prefix on the matches as well as prepends
+  // ellipses.
+  void SetTailSuggestContentPrefixes();
+
+  // Populates tail_suggest_common_prefix on the matches.
+  void SetTailSuggestCommonPrefixes();
 
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
@@ -239,11 +243,14 @@ class AutocompleteResult {
 
   void MergeHiddenGroupIds(const std::vector<int>& hidden_group_ids);
 
-  // Logs metrics for when |new_result| replaces |old_result| asynchronously.
-  // |old_result| a list of the comparators for the old matches.
-  static void LogAsynchronousUpdateMetrics(
+  // Logs metrics for when `new_result` replaces `old_result`. `old_result` is a
+  // list of the comparators for the old matches. `in_start` specifies whether
+  // this is during the synchronous initial autocomplete pass of an input or the
+  // subsequent asynchronous passes.
+  static void LogUpdateMetrics(
       const std::vector<MatchDedupComparator>& old_result,
-      const AutocompleteResult& new_result);
+      const AutocompleteResult& new_result,
+      bool in_start);
 
   // This value should be comfortably larger than any max-autocomplete-matches
   // under consideration.
@@ -259,7 +266,7 @@ class AutocompleteResult {
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // iterator::difference_type is not defined in the STL that we compile with on
   // Android.
   typedef int matches_difference_type;
@@ -335,7 +342,7 @@ class AutocompleteResult {
   // The server supplied list of group IDs that should be hidden-by-default.
   std::set<int> hidden_group_ids_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Corresponding Java object.
   // This object should be ignored when AutocompleteResult is copied or moved.
   // This object should never be accessed directly. To acquire a reference to

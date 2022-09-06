@@ -57,6 +57,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
 namespace content {
 
@@ -194,6 +195,11 @@ void BluetoothDelegateCredentialsCallback(
   std::move(callback).Run(delegate_result, base::UTF16ToUTF8(result));
 }
 
+bool& ShouldIgnoreVisibilityRequirementsForTesting() {
+  static bool should_ignore_visibility_requirements = false;
+  return should_ignore_visibility_requirements;
+}
+
 }  // namespace
 
 // Parameters for a call to RemoteCharacteristicStartNotifications. Used to
@@ -251,6 +257,11 @@ WebBluetoothServiceImpl::TranslateConnectErrorAndRecord(
   }
   NOTREACHED();
   return blink::mojom::WebBluetoothResult::CONNECT_UNKNOWN_FAILURE;
+}
+
+// static
+void WebBluetoothServiceImpl::IgnoreVisibilityRequirementsForTesting() {
+  ShouldIgnoreVisibilityRequirementsForTesting() = true;
 }
 
 class WebBluetoothServiceImpl::AdvertisementClient {
@@ -566,11 +577,19 @@ WebBluetoothServiceImpl::WebBluetoothServiceImpl(
 
 WebBluetoothServiceImpl::~WebBluetoothServiceImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Releasing the adapter will drop references to callbacks that have not yet
-  // been executed. The receiver must be closed first so that this is allowed.
-  receiver()->reset();
+
+#if PAIR_BLUETOOTH_ON_DEMAND()
+  // Destroy the pairing manager before releasing the adapter to give it an
+  // opportunity to cancel pairing operations that are in progress.
+  pairing_manager_.reset();
+#endif
 
   BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
+
+  // Force destructor of device_scanning_prompt_controller_ happening before
+  // members destruction stage to prevent use-after-free accessing
+  // scanning_clients_.empty().
+  device_scanning_prompt_controller_.reset();
 }
 
 blink::mojom::WebBluetoothResult
@@ -579,17 +598,16 @@ WebBluetoothServiceImpl::GetBluetoothAllowed() {
   // frames are disallowed.
   DCHECK(!render_frame_host()->IsNestedWithinFencedFrame());
 
+  // Check if Web Bluetooth is allowed by Permissions Policy.
+  if (!render_frame_host()->IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::kBluetooth)) {
+    return blink::mojom::WebBluetoothResult::PERMISSIONS_POLICY_VIOLATION;
+  }
+
   const url::Origin& requesting_origin = origin();
   const url::Origin& embedding_origin =
       render_frame_host()->GetMainFrame()->GetLastCommittedOrigin();
 
-  // TODO(crbug.com/518042): Enforce correctly-delegated permissions instead of
-  // matching origins. When relaxing this, take care to handle non-sandboxed
-  // unique origins.
-  if (!embedding_origin.IsSameOriginWith(requesting_origin)) {
-    return blink::mojom::WebBluetoothResult::
-        REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME;
-  }
   // IsSameOriginWith() no longer excludes opaque origins.
   // TODO(https://crbug.com/994454): Exclude opaque origins explicitly.
 
@@ -703,6 +721,10 @@ content::RenderFrameHost* WebBluetoothServiceImpl::GetRenderFrameHost() {
 }
 
 void WebBluetoothServiceImpl::OnVisibilityChanged(Visibility visibility) {
+  if (ShouldIgnoreVisibilityRequirementsForTesting()) {
+    return;
+  }
+
   if (visibility == content::Visibility::HIDDEN ||
       visibility == content::Visibility::OCCLUDED) {
     ClearAdvertisementClients();
@@ -711,6 +733,10 @@ void WebBluetoothServiceImpl::OnVisibilityChanged(Visibility visibility) {
 
 void WebBluetoothServiceImpl::OnWebContentsLostFocus(
     RenderWidgetHost* render_widget_host) {
+  if (ShouldIgnoreVisibilityRequirementsForTesting()) {
+    return;
+  }
+
   ClearAdvertisementClients();
 }
 
@@ -938,6 +964,27 @@ void WebBluetoothServiceImpl::GetDevices(GetDevicesCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void WebBluetoothServiceImpl::ForgetDevice(
+    const blink::WebBluetoothDeviceId& device_id,
+    ForgetDeviceCallback callback) {
+  if (!base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    auto device_address = allowed_devices().GetDeviceAddress(device_id);
+    allowed_devices().RemoveDevice(device_address);
+    std::move(callback).Run();
+    return;
+  }
+
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate &&
+      delegate->HasDevicePermission(render_frame_host(), device_id)) {
+    delegate->RevokeDevicePermissionWebInitiated(render_frame_host(),
+                                                 device_id);
+  }
+  std::move(callback).Run();
+}
+
 void WebBluetoothServiceImpl::RemoteServerConnect(
     const blink::WebBluetoothDeviceId& device_id,
     mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothServerClient>
@@ -1042,22 +1089,8 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
     return;
   }
 
-  const std::string& device_address = query_result.device->GetAddress();
-
-  // We can't know if a service is present or not until GATT service discovery
-  // is complete for the device.
-  if (query_result.device->IsGattServicesDiscoveryComplete()) {
-    RemoteServerGetPrimaryServicesImpl(device_id, quantity, services_uuid,
-                                       std::move(callback),
-                                       query_result.device);
-    return;
-  }
-
-  DVLOG(1) << "Services not yet discovered.";
-  pending_primary_services_requests_[device_address].push_back(base::BindOnce(
-      &WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl,
-      base::Unretained(this), device_id, quantity, services_uuid,
-      std::move(callback)));
+  RemoteServerGetPrimaryServicesImpl(device_id, quantity, services_uuid,
+                                     std::move(callback), query_result.device);
 }
 
 void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
@@ -1245,7 +1278,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
   // get a value with length > 512, we can assume it's a hostile
   // renderer and kill it.
   if (value.size() > 512) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
     return;
   }
 
@@ -1462,7 +1495,7 @@ void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
   // get a value with length > 512, we can assume it's a hostile
   // renderer and kill it.
   if (value.size() > 512) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
     return;
   }
 
@@ -1521,7 +1554,7 @@ void WebBluetoothServiceImpl::RequestScanningStart(
 
   // The renderer should never send invalid options.
   if (!IsValidRequestScanOptions(options)) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_OPTIONS);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_OPTIONS);
     return;
   }
 
@@ -1558,7 +1591,7 @@ void WebBluetoothServiceImpl::WatchAdvertisementsForDevice(
 
   // The renderer should never send an invalid |device_id|.
   if (!device_id.IsValid()) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_OPTIONS);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_OPTIONS);
     return;
   }
 
@@ -1711,7 +1744,7 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
     scoped_refptr<BluetoothAdapter> adapter) {
   // The renderer should never send invalid options.
   if (!IsValidRequestDeviceOptions(options)) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_OPTIONS);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_OPTIONS);
     return;
   }
 
@@ -1896,6 +1929,18 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
     return;
   }
 
+  // We can't know if a service is present or not until GATT service discovery
+  // is complete for the device.
+  if (!device->IsGattServicesDiscoveryComplete()) {
+    DVLOG(1) << "Services not yet discovered.";
+    pending_primary_services_requests_[device->GetAddress()].push_back(
+        base::BindOnce(
+            &WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl,
+            base::Unretained(this), device_id, quantity, services_uuid,
+            std::move(callback)));
+    return;
+  }
+
   DCHECK(device->IsGattServicesDiscoveryComplete());
 
   std::vector<BluetoothRemoteGattService*> services =
@@ -2027,8 +2072,7 @@ void WebBluetoothServiceImpl::OnCharacteristicReadValue(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
-    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-        base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
       BluetoothDevice* device = GetCachedDevice(
           GetCharacteristicDeviceID(characteristic_instance_id));
       if (device && !device->IsPaired()) {
@@ -2066,8 +2110,7 @@ void WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-      base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
     BluetoothDevice* device =
         GetCachedDevice(GetCharacteristicDeviceID(characteristic_instance_id));
     if (device && !device->IsPaired()) {
@@ -2127,8 +2170,7 @@ void WebBluetoothServiceImpl::OnStartNotifySessionFailed(
   }
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED && client &&
-      base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED && client) {
     BluetoothDevice* device =
         GetCachedDevice(GetCharacteristicDeviceID(characteristic_instance_id));
     if (device && !device->IsPaired()) {
@@ -2177,8 +2219,7 @@ void WebBluetoothServiceImpl::OnDescriptorReadValue(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
 #if PAIR_BLUETOOTH_ON_DEMAND()
-    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-        base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+    if (error_code.value() == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
       BluetoothDevice* device =
           GetCachedDevice(GetDescriptorDeviceId(descriptor_instance_id));
       if (device && !device->IsPaired()) {
@@ -2213,8 +2254,7 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED &&
-      base::FeatureList::IsEnabled(features::kWebBluetoothBondOnDemand)) {
+  if (error_code == GattErrorCode::GATT_ERROR_NOT_AUTHORIZED) {
     BluetoothDevice* device =
         GetCachedDevice(GetDescriptorDeviceId(descriptor_instance_id));
     if (device && !device->IsPaired()) {
@@ -2247,7 +2287,8 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDevice(
   }
 
   if (device_address.empty()) {
-    CrashRendererAndClosePipe(bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
+    TerminateRendererAndDeleteThis(
+        bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
@@ -2269,7 +2310,7 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForService(
 
   // Kill the render, see "ID Not in Map Note" above.
   if (device_iter == service_id_to_device_address_.end()) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_SERVICE_ID);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_SERVICE_ID);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
@@ -2278,7 +2319,8 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForService(
 
   // Kill the renderer if origin is not allowed to access the device.
   if (!device_id.IsValid()) {
-    CrashRendererAndClosePipe(bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
+    TerminateRendererAndDeleteThis(
+        bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
@@ -2293,7 +2335,8 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForService(
   }
 
   if (!IsAllowedToAccessService(device_id, result.service->GetUUID())) {
-    CrashRendererAndClosePipe(bad_message::BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN);
+    TerminateRendererAndDeleteThis(
+        bad_message::BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
   return result;
@@ -2306,7 +2349,7 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForCharacteristic(
 
   // Kill the render, see "ID Not in Map Note" above.
   if (characteristic_iter == characteristic_id_to_service_id_.end()) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_CHARACTERISTIC_ID);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
@@ -2333,7 +2376,7 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDescriptor(
 
   // Kill the render, see "ID Not in Map Note" above.
   if (descriptor_iter == descriptor_id_to_characteristic_id_.end()) {
-    CrashRendererAndClosePipe(bad_message::BDH_INVALID_DESCRIPTOR_ID);
+    TerminateRendererAndDeleteThis(bad_message::BDH_INVALID_DESCRIPTOR_ID);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
@@ -2382,17 +2425,21 @@ BluetoothAdapter* WebBluetoothServiceImpl::GetAdapter() {
   return BluetoothAdapterFactoryWrapper::Get().GetAdapter(this);
 }
 
-void WebBluetoothServiceImpl::CrashRendererAndClosePipe(
+void WebBluetoothServiceImpl::TerminateRendererAndDeleteThis(
     bad_message::BadMessageReason reason) {
   bad_message::ReceivedBadMessage(GetRenderProcessHost(), reason);
-  receiver()->reset();
+  ResetAndDeleteThis();
 }
 
 BluetoothAllowedDevices& WebBluetoothServiceImpl::allowed_devices() {
+  // We should use the embedding origin so that permission delegation using
+  // Permissions Policy works correctly.
+  const url::Origin& embedding_origin =
+      render_frame_host()->GetMainFrame()->GetLastCommittedOrigin();
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       web_contents()->GetBrowserContext()->GetDefaultStoragePartition());
   return partition->GetBluetoothAllowedDevicesMap()->GetOrCreateAllowedDevices(
-      origin());
+      embedding_origin);
 }
 
 void WebBluetoothServiceImpl::StoreAllowedScanOptions(

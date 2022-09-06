@@ -26,11 +26,12 @@ struct CORE_EXPORT LinkLoadParameters {
                      const String& media,
                      const String& nonce,
                      const String& integrity,
-                     const String& importance,
+                     const String& fetch_priority_hint,
                      network::mojom::ReferrerPolicy,
                      const KURL& href,
                      const String& image_srcset,
-                     const String& image_sizes);
+                     const String& image_sizes,
+                     const String& blocking);
   LinkLoadParameters(const LinkHeader&, const KURL& base_url);
 
   LinkRelAttribute rel;
@@ -40,11 +41,12 @@ struct CORE_EXPORT LinkLoadParameters {
   String media;
   String nonce;
   String integrity;
-  String importance;
+  String fetch_priority_hint;
   network::mojom::ReferrerPolicy referrer_policy;
   KURL href;
   String image_srcset;
   String image_sizes;
+  String blocking;
   absl::optional<base::UnguessableToken> recursive_prefetch_token;
 };
 

@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -75,9 +76,7 @@ class UserSigninMediatorTest : public PlatformTest {
         base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     browser_state_ = builder.Build();
 
-    WebStateList* web_state_list = nullptr;
-    browser_ =
-        std::make_unique<TestBrowser>(browser_state_.get(), web_state_list);
+    browser_ = std::make_unique<TestBrowser>(browser_state_.get());
 
     mediator_delegate_mock_ =
         OCMStrictProtocolMock(@protocol(UserSigninMediatorDelegate));
@@ -108,7 +107,7 @@ class UserSigninMediatorTest : public PlatformTest {
   }
 
   // Sets up the necessary mocks for authentication operations in
-  // |authentication_flow_|.
+  // `authentication_flow_`.
   void CreateAuthenticationFlow(PostSignInAction postSignInAction) {
     presenting_view_controller_mock_ =
         OCMStrictClassMock([UIViewController class]);
@@ -117,7 +116,6 @@ class UserSigninMediatorTest : public PlatformTest {
     authentication_flow_ = [[AuthenticationFlow alloc]
                  initWithBrowser:browser_.get()
                         identity:identity_
-                 shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
                 postSignInAction:postSignInAction
         presentingViewController:presenting_view_controller_mock_];
     [authentication_flow_ setPerformerForTesting:performer_mock_];
@@ -133,17 +131,20 @@ class UserSigninMediatorTest : public PlatformTest {
         });
     OCMExpect([performer_mock_ signInIdentity:identity_
                              withHostedDomain:nil
-                               toBrowserState:browser_state_.get()])
-        .andDo(^(NSInvocation*) {
+                               toBrowserState:browser_state_.get()
+                                   completion:[OCMArg any]])
+        .andDo(^(NSInvocation* invocation) {
           NSLog(@" signInIdentity ");
-          authentication_service()->SignIn(identity_);
+          signin_ui::CompletionCallback callback;
+          [invocation getArgument:&callback atIndex:5];
+          authentication_service()->SignIn(identity_, callback);
         });
-    OCMExpect([performer_mock_
-                  shouldHandleMergeCaseForIdentity:identity_
-                                      browserState:browser_state_.get()])
-        .andReturn(NO);
-    NSLog(@" shouldHandleMergeCaseForIdentity ");
     if (postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC) {
+      OCMExpect([performer_mock_
+                    shouldHandleMergeCaseForIdentity:identity_
+                                        browserState:browser_state_.get()])
+          .andReturn(NO);
+      NSLog(@" shouldHandleMergeCaseForIdentity ");
       OCMExpect(
           [performer_mock_ commitSyncForBrowserState:browser_state_.get()]);
     }
@@ -271,6 +272,7 @@ class UserSigninMediatorTest : public PlatformTest {
  protected:
   // Needed for test browser state created by TestChromeBrowserState().
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   FakeChromeIdentity* identity_ = nullptr;
 
   AuthenticationFlow* authentication_flow_ = nullptr;
@@ -515,7 +517,7 @@ TEST_F(UserSigninMediatorTest, OpenSettingsLinkWithDifferentIdentityAndCancel) {
                                      gaiaID:@"foo2ID"
                                        name:@"Fake Foo 2"];
   identity_service()->AddIdentity(identity2);
-  authentication_service()->SignIn(identity2);
+  authentication_service()->SignIn(identity2, nil);
 
   // Opens the settings link with identity 1.
   CreateAuthenticationFlow(POST_SIGNIN_ACTION_NONE);
@@ -567,7 +569,7 @@ TEST_F(UserSigninMediatorTest,
                                      gaiaID:@"foo2ID"
                                        name:@"Fake Foo 2"];
   identity_service()->AddIdentity(identity2);
-  authentication_service()->SignIn(identity2);
+  authentication_service()->SignIn(identity2, nil);
 
   // Opens the settings link with identity 1.
   CreateAuthenticationFlow(POST_SIGNIN_ACTION_NONE);

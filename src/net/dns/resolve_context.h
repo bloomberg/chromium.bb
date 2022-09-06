@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "net/base/isolation_info.h"
 #include "net/base/net_export.h"
+#include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/public/secure_dns_mode.h"
 
@@ -149,6 +150,9 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   void UnregisterDohStatusObserver(const DohStatusObserver* observer);
 
   URLRequestContext* url_request_context() { return url_request_context_; }
+  const URLRequestContext* url_request_context() const {
+    return url_request_context_;
+  }
   void set_url_request_context(URLRequestContext* url_request_context) {
     DCHECK(!url_request_context_);
     DCHECK(url_request_context);
@@ -177,6 +181,11 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   // (alternative service info if it supports QUIC, for instance).
   const IsolationInfo& isolation_info() const { return isolation_info_; }
 
+  // Network to perform the DNS lookups for. When equal to kInvalidNetworkHandle
+  // the decision of which one to target is left to the resolver.
+  // Virtual for testing.
+  virtual NetworkChangeNotifier::NetworkHandle GetTargetNetwork() const;
+
   base::SafeRef<ResolveContext> AsSafeRef() {
     return weak_ptr_factory_.GetSafeRef();
   }
@@ -197,7 +206,7 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
     ~ServerStats();
 
     // Count of consecutive failures after last success.
-    int last_failure_count;
+    int last_failure_count = 0;
 
     // True if any success has ever been recorded for this server for the
     // current connection.

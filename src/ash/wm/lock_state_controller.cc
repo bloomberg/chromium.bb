@@ -11,6 +11,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/cancel_mode.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/shutdown_controller.h"
 #include "ash/root_window_controller.h"
@@ -26,13 +27,20 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -41,6 +49,10 @@
 #define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                    \
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, base::Milliseconds(1), \
                              base::Seconds(50), 100)
+
+// TODO(b/228873153): Remove after figuring out the root cause of the bug
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 
@@ -76,16 +88,48 @@ const int LockStateController::kPreLockContainersMask =
     SessionStateAnimator::SHELF;
 
 LockStateController::LockStateController(
-    ShutdownController* shutdown_controller)
+    ShutdownController* shutdown_controller,
+    PrefService* local_state)
     : animator_(new SessionStateAnimatorImpl()),
       shutdown_controller_(shutdown_controller),
-      scoped_session_observer_(this) {
+      scoped_session_observer_(this),
+      local_state_(local_state) {
   DCHECK(shutdown_controller_);
   Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
+  // |local_state_| could be null in tests.
+  if (local_state_) {
+    // If kLoginShutdownTimestampPrefName is registered, check the last recorded
+    // login shutdown timestamp in local state prefs, in case device was shut
+    // down using shelf button.
+    auto* login_shutdown_timestamp_pref =
+        local_state_->FindPreference(prefs::kLoginShutdownTimestampPrefName);
+    if (login_shutdown_timestamp_pref &&
+        !login_shutdown_timestamp_pref->IsDefaultValue()) {
+      base::Time last_recorded_login_shutdown_timestamp =
+          base::ValueToTime(login_shutdown_timestamp_pref->GetValue()).value();
+      base::TimeDelta duration = base::DefaultClock::GetInstance()->Now() -
+                                 last_recorded_login_shutdown_timestamp;
+      // Report time delta even if it exceeds histogram limit, to better
+      // understand fraction of users using the feature.
+      base::UmaHistogramLongTimes(
+          "Ash.Shelf.ShutdownConfirmationBubble.TimeToNextBoot."
+          "LoginShutdownToPowerUpDuration",
+          duration);
+
+      // Reset to the default value after the value is recorded.
+      local_state_->ClearPref(prefs::kLoginShutdownTimestampPrefName);
+    }
+  }
 }
 
 LockStateController::~LockStateController() {
   Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
+}
+
+// static
+void LockStateController::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterTimePref(prefs::kLoginShutdownTimestampPrefName,
+                             base::Time());
 }
 
 void LockStateController::AddObserver(LockStateObserver* observer) {
@@ -190,6 +234,12 @@ void LockStateController::RequestShutdown(ShutdownReason reason) {
   shutting_down_ = true;
   shutdown_reason_ = reason;
 
+  if (reason == ShutdownReason::LOGIN_SHUT_DOWN_BUTTON) {
+    base::Time now_timestamp = base::DefaultClock::GetInstance()->Now();
+    local_state_->SetTime(prefs::kLoginShutdownTimestampPrefName,
+                          now_timestamp);
+  }
+
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   cursor_manager->HideCursor();
   cursor_manager->LockCursor();
@@ -273,7 +323,12 @@ void LockStateController::OnLockFailTimeout() {
   lock_duration_timer_.reset();
   DCHECK(!system_is_locked_);
 
-  LOG(FATAL) << "Screen lock took too long; crashing intentionally";
+  // b/228873153: Here we use `LOG(ERROR)` instead of `LOG(FATAL)` because it
+  // seems like certain users are hitting this timeout causing chrome to crash
+  // and be restarted from session manager without `--login-manager`
+  LOG(ERROR) << "Screen lock took too long; Signing out";
+  base::debug::DumpWithoutCrashing();
+  Shell::Get()->session_controller()->RequestSignOut();
 }
 
 void LockStateController::StartPreShutdownAnimationTimer() {
@@ -436,6 +491,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock,
     Shell::Get()->session_controller()->LockScreen();
   }
 
+  VLOG(1) << "b/228873153 : Starting lock fail timer";
   lock_fail_timer_.Start(FROM_HERE, kLockFailTimeout, this,
                          &LockStateController::OnLockFailTimeout);
 

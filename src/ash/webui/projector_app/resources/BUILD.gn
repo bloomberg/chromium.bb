@@ -10,14 +10,9 @@ assert(is_chromeos_ash, "Projector is ChromeOS only")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [
-                    "browser_resolver_prefix_replacements=\"chrome-untrusted://projector/js/post_message_api_client.m.js=./js/post_message_api_client.m.js\"",
-                    "browser_resolver_prefix_replacements=\"chrome-untrusted://projector/js/post_message_api_request_handler.m.js=./js/post_message_api_request_handler.m.js\"",
-                  ]
   deps = [
     ":message_types",
     ":projector_browser_proxy",
-    ":selfie_cam",
     ":trusted_annotator_closure_compile",
     ":trusted_app_closure_compile",
     ":untrusted_annotator_closure_compile",
@@ -27,10 +22,6 @@ js_type_check("closure_compile") {
 
 js_library("projector_browser_proxy") {
   sources = [ "communication/projector_browser_proxy.js" ]
-}
-
-js_library("selfie_cam") {
-  sources = [ "selfie_cam/selfie_cam.js" ]
 }
 
 js_library("message_types") {
@@ -110,9 +101,14 @@ generate_grd("build_trusted_grd") {
     "app/embedder.html",
     "app/embedder.css",
     "app/embedder.js",
-    "selfie_cam/selfie_cam.html",
-    "selfie_cam/selfie_cam.css",
-    "selfie_cam/selfie_cam.js",
+    "assets/icon_16.png",
+    "assets/icon_32.png",
+    "assets/icon_48.png",
+    "assets/icon_64.png",
+    "assets/icon_96.png",
+    "assets/icon_128.png",
+    "assets/icon_192.png",
+    "assets/icon_256.png",
   ]
   input_files_base_dir = rebase_path(".", "//")
   grd_prefix = "ash_projector_app_trusted"

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
+#include "base/memory/values_equivalent.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -117,24 +119,15 @@ TEST_F(ComputedStyleTest, LayoutContainmentStackingContext) {
   EXPECT_FALSE(style->IsStackingContextWithoutContainment());
 }
 
-TEST_F(ComputedStyleTest, FirstPublicPseudoStyle) {
-  static_assert(kFirstPublicPseudoId == kPseudoIdFirstLine,
-                "Make sure we are testing the first public pseudo id");
-
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  style->SetHasPseudoElementStyle(kPseudoIdFirstLine);
-  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdFirstLine));
-  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
-}
-
-TEST_F(ComputedStyleTest, LastPublicPseudoElementStyle) {
-  static_assert(kFirstInternalPseudoId - 1 == kPseudoIdGrammarError,
-                "Make sure we are testing the last public pseudo id");
-
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  style->SetHasPseudoElementStyle(kPseudoIdGrammarError);
-  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdGrammarError));
-  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
+TEST_F(ComputedStyleTest, TrackedPseudoStyle) {
+  for (uint8_t pseudo_id_int = kFirstPublicPseudoId;
+       pseudo_id_int <= kLastTrackedPublicPseudoId; pseudo_id_int++) {
+    PseudoId pseudo_id = static_cast<PseudoId>(pseudo_id_int);
+    scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+    style->SetHasPseudoElementStyle(pseudo_id);
+    EXPECT_TRUE(style->HasPseudoElementStyle(pseudo_id));
+    EXPECT_TRUE(style->HasAnyPseudoElementStyles());
+  }
 }
 
 TEST_F(ComputedStyleTest,
@@ -148,7 +141,7 @@ TEST_F(ComputedStyleTest,
 }
 
 TEST_F(ComputedStyleTest,
-       UpdatePropertySpecificDifferencesCompositingReasonsTransforom) {
+       UpdatePropertySpecificDifferencesCompositingReasonsTransform) {
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
 
@@ -166,6 +159,36 @@ TEST_F(ComputedStyleTest,
   style->UpdatePropertySpecificDifferences(*other, diff);
   EXPECT_FALSE(diff.TransformChanged());
   EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST_F(ComputedStyleTest,
+       UpdatePropertySpecificDifferencesRespectsScaleAnimation) {
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+  other->SetHasCurrentScaleAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.TransformChanged());
+}
+
+TEST_F(ComputedStyleTest,
+       UpdatePropertySpecificDifferencesRespectsRotateAnimation) {
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+  other->SetHasCurrentRotateAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.TransformChanged());
+}
+
+TEST_F(ComputedStyleTest,
+       UpdatePropertySpecificDifferencesRespectsTranslateAnimation) {
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+  other->SetHasCurrentTranslateAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.TransformChanged());
 }
 
 TEST_F(ComputedStyleTest,
@@ -259,39 +282,6 @@ TEST_F(ComputedStyleTest,
   EXPECT_TRUE(diff.CompositingReasonsChanged());
 }
 
-TEST_F(ComputedStyleTest, UpdateBackgroundColorDifferencesHasAlpha) {
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
-
-  StyleDifference diff;
-  style->AdjustDiffForBackgroundVisuallyEqual(*other, diff);
-  EXPECT_FALSE(diff.HasAlphaChanged());
-
-  style->SetBackgroundColor(StyleColor(Color(255, 255, 255, 255)));
-  other->SetBackgroundColor(StyleColor(Color(255, 255, 255, 128)));
-
-  EXPECT_FALSE(
-      style->VisitedDependentColor(GetCSSPropertyBackgroundColor()).HasAlpha());
-  EXPECT_TRUE(
-      other->VisitedDependentColor(GetCSSPropertyBackgroundColor()).HasAlpha());
-
-  style->AdjustDiffForBackgroundVisuallyEqual(*other, diff);
-  EXPECT_TRUE(diff.HasAlphaChanged());
-}
-
-TEST_F(ComputedStyleTest, UpdateBackgroundLayerDifferencesHasAlpha) {
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
-
-  StyleDifference diff;
-  style->AdjustDiffForBackgroundVisuallyEqual(*other, diff);
-  EXPECT_FALSE(diff.HasAlphaChanged());
-
-  other->AccessBackgroundLayers().EnsureNext();
-  style->AdjustDiffForBackgroundVisuallyEqual(*other, diff);
-  EXPECT_TRUE(diff.HasAlphaChanged());
-}
-
 TEST_F(ComputedStyleTest, HasOutlineWithCurrentColor) {
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   EXPECT_FALSE(style->HasOutline());
@@ -321,11 +311,12 @@ TEST_F(ComputedStyleTest, CursorList) {
   auto* gradient = MakeGarbageCollected<cssvalue::CSSLinearGradientValue>(
       nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
 
-  auto* image_value = MakeGarbageCollected<StyleGeneratedImage>(*gradient);
-  auto* other_image_value =
-      MakeGarbageCollected<StyleGeneratedImage>(*gradient);
+  auto* image_value = MakeGarbageCollected<StyleGeneratedImage>(
+      *gradient, StyleGeneratedImage::ContainerSizes());
+  auto* other_image_value = MakeGarbageCollected<StyleGeneratedImage>(
+      *gradient, StyleGeneratedImage::ContainerSizes());
 
-  EXPECT_TRUE(DataEquivalent(image_value, other_image_value));
+  EXPECT_TRUE(base::ValuesEquivalent(image_value, other_image_value));
 
   style->AddCursor(image_value, false);
   other->AddCursor(other_image_value, false);
@@ -468,11 +459,17 @@ TEST_F(ComputedStyleTest, BorderStyle) {
 TEST_F(ComputedStyleTest, AnimationFlags) {
   Persistent<Document> document = Document::CreateForTest();
   TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(HasCurrentScaleAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(HasCurrentRotateAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(HasCurrentTranslateAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentBackdropFilterAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(SubtreeWillChangeContents, kInherited);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningTransformAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningScaleAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningRotateAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningTranslateAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningOpacityAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningFilterAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningBackdropFilterAnimationOnCompositor);
@@ -675,7 +672,8 @@ TEST_F(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -708,7 +706,8 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkColor) {
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -750,7 +749,8 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -785,7 +785,8 @@ TEST_F(ComputedStyleTest, StrokeWidthZoomAndCalc) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   style->SetEffectiveZoom(1.5);
@@ -967,7 +968,8 @@ TEST_F(ComputedStyleTest, BorderWidthZoom) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   style->SetEffectiveZoom(2);
@@ -1015,7 +1017,8 @@ TEST_F(ComputedStyleTest,
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
@@ -1055,7 +1058,8 @@ TEST_F(ComputedStyleTest, TextDecorationNotEqualRequiresRecomputeInkOverflow) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
@@ -1163,7 +1167,8 @@ TEST_F(ComputedStyleTest, ApplyInitialAnimationNameAndTransitionProperty) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRecalcContext(), StyleRequest(initial.get()));
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -1231,30 +1236,31 @@ TEST_F(ComputedStyleTest, ShouldApplyAnyContainment) {
   ASSERT_TRUE(html);
   ASSERT_TRUE(body);
 
-  auto display_types = {CSSValueID::kInline,
-                        CSSValueID::kBlock,
-                        CSSValueID::kListItem,
-                        CSSValueID::kInlineBlock,
-                        CSSValueID::kTable,
-                        CSSValueID::kInlineTable,
-                        CSSValueID::kTableRowGroup,
-                        CSSValueID::kTableHeaderGroup,
-                        CSSValueID::kTableFooterGroup,
-                        CSSValueID::kTableRow,
-                        CSSValueID::kTableColumnGroup,
-                        CSSValueID::kTableColumn,
-                        CSSValueID::kTableCell,
-                        CSSValueID::kTableCaption,
-                        CSSValueID::kWebkitBox,
-                        CSSValueID::kWebkitInlineBox,
-                        CSSValueID::kFlex,
-                        CSSValueID::kInlineFlex,
-                        CSSValueID::kGrid,
-                        CSSValueID::kInlineGrid,
-                        CSSValueID::kContents,
-                        CSSValueID::kFlowRoot,
-                        CSSValueID::kNone,
-                        CSSValueID::kMath};
+  std::vector display_types = {CSSValueID::kInline,
+                               CSSValueID::kBlock,
+                               CSSValueID::kListItem,
+                               CSSValueID::kInlineBlock,
+                               CSSValueID::kTable,
+                               CSSValueID::kInlineTable,
+                               CSSValueID::kTableRowGroup,
+                               CSSValueID::kTableHeaderGroup,
+                               CSSValueID::kTableFooterGroup,
+                               CSSValueID::kTableRow,
+                               CSSValueID::kTableColumnGroup,
+                               CSSValueID::kTableColumn,
+                               CSSValueID::kTableCell,
+                               CSSValueID::kTableCaption,
+                               CSSValueID::kWebkitBox,
+                               CSSValueID::kWebkitInlineBox,
+                               CSSValueID::kFlex,
+                               CSSValueID::kInlineFlex,
+                               CSSValueID::kGrid,
+                               CSSValueID::kInlineGrid,
+                               CSSValueID::kContents,
+                               CSSValueID::kFlowRoot,
+                               CSSValueID::kNone};
+  if (RuntimeEnabledFeatures::MathMLCoreEnabled())
+    display_types.push_back(CSSValueID::kMath);
 
   for (auto contain :
        {CSSValueID::kNone, CSSValueID::kLayout, CSSValueID::kPaint,
@@ -1299,6 +1305,8 @@ TEST_F(ComputedStyleTest, ShouldApplyAnyContainment) {
 #if DCHECK_IS_ON()
 
 TEST_F(ComputedStyleTest, DebugDiffFields) {
+  using DebugField = ComputedStyleBase::DebugField;
+
   scoped_refptr<ComputedStyle> style1 = CreateComputedStyle();
   scoped_refptr<ComputedStyle> style2 = CreateComputedStyle();
 
@@ -1309,7 +1317,9 @@ TEST_F(ComputedStyleTest, DebugDiffFields) {
   EXPECT_EQ(0u, style2->DebugDiffFields(*style2).size());
 
   EXPECT_EQ(1u, style1->DebugDiffFields(*style2).size());
-  EXPECT_EQ("width_", style1->DebugDiffFields(*style2)[0]);
+  EXPECT_EQ(DebugField::width_, style1->DebugDiffFields(*style2)[0]);
+  EXPECT_EQ("width_",
+            ComputedStyleBase::DebugFieldToString(DebugField::width_));
 }
 
 #endif  // #if DCHECK_IS_ON()

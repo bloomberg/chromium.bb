@@ -34,6 +34,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
               (),
               (override));
   MOCK_METHOD(gfx::NativeWindow, GetNativeWindow, (), (const, override));
+  MOCK_METHOD(views::Widget*, GetLoginWindowWidget, (), (const, override));
   MOCK_METHOD(OobeUI*, GetOobeUI, (), (const, override));
   MOCK_METHOD(content::WebContents*, GetOobeWebContents, (), (const, override));
   MOCK_METHOD(WebUILoginView*, GetWebUILoginView, (), (const, override));
@@ -50,6 +51,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD(void, StartWizard, (OobeScreenId), (override));
   MOCK_METHOD(WizardController*, GetWizardController, (), (override));
   MOCK_METHOD(KioskLaunchController*, GetKioskLaunchController, (), (override));
+  MOCK_METHOD(bool, IsFinalizing, (), (override));
 
   // Workaround for move-only args in GMock.
   MOCK_METHOD(void, MockStartUserAdding, (base::OnceClosure*));
@@ -59,13 +61,13 @@ class MockLoginDisplayHost : public LoginDisplayHost {
 
   MOCK_METHOD(void, CancelUserAdding, (), (override));
   MOCK_METHOD(void, StartSignInScreen, (), (override));
-  MOCK_METHOD(void, OnPreferencesChanged, (), (override));
   MOCK_METHOD(void, StartKiosk, (const KioskAppId&, bool), (override));
   MOCK_METHOD(void, AttemptShowEnableConsumerKioskScreen, (), (override));
   MOCK_METHOD(void, ShowGaiaDialog, (const AccountId&), (override));
   MOCK_METHOD(void, ShowOsInstallScreen, (), (override));
   MOCK_METHOD(void, ShowGuestTosScreen, (), (override));
-  MOCK_METHOD(void, HideOobeDialog, (), (override));
+  MOCK_METHOD(void, ShowAllowlistCheckFailedError, (), (override));
+  MOCK_METHOD(void, HideOobeDialog, (bool saml_video_timeout), (override));
   MOCK_METHOD(void, SetShelfButtonsEnabled, (bool), (override));
   MOCK_METHOD(void, UpdateOobeDialogState, (OobeDialogState state), (override));
 

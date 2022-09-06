@@ -42,6 +42,7 @@ static_library("cast_channel") {
     "//base",
     "//build:chromeos_buildflags",
     "//components/cast_certificate",
+    "//components/cast_certificate:openscreen_certificate_verifier",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//components/openscreen_platform:openscreen_platform_network_service",
@@ -192,7 +193,7 @@ fuzzer_test("cast_auth_util_fuzzer") {
   seed_corpus_deps = [ ":cast_auth_util_fuzzer_convert_corpus" ]
 }
 
-# TODO(jrw): Rename target to cast_framer_ingest_fuzzer.  The name
+# TODO(crbug.com/1291729): Rename target to cast_framer_ingest_fuzzer.  The name
 # is left unchanged for now to avoid the need to get reviews for
 # various files that include it.
 fuzzer_test("cast_message_fuzzer") {
@@ -243,6 +244,7 @@ fuzzer_test("openscreen_cast_auth_util_fuzzer") {
     "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
     "//third_party/boringssl",
     "//third_party/libprotobuf-mutator",
+    "//third_party/openscreen/src/cast/common:certificate_boringssl",
     "//third_party/openscreen/src/cast/common/certificate/proto:certificate_proto",
     "//third_party/openscreen/src/cast/sender:channel",
   ]

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -13,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_constraint_space_data.h"
@@ -198,7 +201,7 @@ class CORE_EXPORT NGConstraintSpace final {
         bitfields_.percentage_inline_storage)) {
       default:
         NOTREACHED();
-        FALLTHROUGH;
+        [[fallthrough]];
       case kSameAsAvailable:
         return available_size_.inline_size;
       case kZero:
@@ -216,7 +219,7 @@ class CORE_EXPORT NGConstraintSpace final {
         static_cast<NGPercentageStorage>(bitfields_.percentage_block_storage)) {
       default:
         NOTREACHED();
-        FALLTHROUGH;
+        [[fallthrough]];
       case kSameAsAvailable:
         return available_size_.block_size;
       case kZero:
@@ -366,16 +369,35 @@ class CORE_EXPORT NGConstraintSpace final {
     return true;
   }
 
-  // Return the block-offset from the block-start of the fragmentainer
-  // relative to the block-start of the current block formatting context in
-  // the current fragmentainer. Note that if the current block formatting
-  // context starts in a previous fragmentainer, we'll return the block-offset
-  // relative to the current fragmentainer.
+  // Return the border edge block-offset from the block-start of the
+  // fragmentainer relative to the block-start of the current block formatting
+  // context in the current fragmentainer. Note that if the current block
+  // formatting context starts in a previous fragmentainer, we'll return the
+  // block-offset relative to the current fragmentainer.
   LayoutUnit FragmentainerOffsetAtBfc() const {
     DCHECK(HasBlockFragmentation());
     if (HasRareData())
       return rare_data_->fragmentainer_offset_at_bfc;
     return LayoutUnit();
+  }
+
+  // Return true if we're at the start of the fragmentainer. In most cases this
+  // will be equal to "FragmentainerOffsetAtBfc() <= LayoutUnit()", but not
+  // necessarily for floats, since float margins are unbreakable. If a node is
+  // at the start of the fragmentainer, and the node has an untruncated positive
+  // block-start margin, FragmentainerOffsetAtBfc() will be greater than
+  // zero. This normally means that the node *isn't* at the start of the
+  // fragmentainer, but for floats, this should still be considered to be at the
+  // start.
+  bool IsAtFragmentainerStart() const {
+    return HasRareData() && rare_data_->is_at_fragmentainer_start;
+  }
+
+  // Return true if the content is repeatable inside block fragmentation, which
+  // is the case when an element is fixed positioned (printing only), or a
+  // repeatable table header / footer.
+  bool IsRepeatable() const {
+    return HasRareData() && rare_data_->is_repeatable;
   }
 
   // Whether the current constraint space is for the newly established
@@ -504,9 +526,15 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   // Return true if there's an ancestor multicol container with balanced
-  // columns.
+  // columns that we might affect.
   bool IsInsideBalancedColumns() const {
     return HasRareData() && rare_data_->is_inside_balanced_columns;
+  }
+
+  // Return true if forced breaks inside should be ignored. This is needed by
+  // out-of-flow positioned elements during column balancing.
+  bool ShouldIgnoreForcedBreaks() const {
+    return HasRareData() && rare_data_->should_ignore_forced_breaks;
   }
 
   // Return true if we're participating in the same block formatting context as
@@ -544,6 +572,16 @@ class CORE_EXPORT NGConstraintSpace final {
     if (!HasRareData())
       return kBreakAppealLastResort;
     return static_cast<NGBreakAppeal>(rare_data_->min_break_appeal);
+  }
+
+  // In some cases, we may want to calculate the intial-break-before and
+  // final-break-after values for a node outside of the normal fragmentation
+  // pass. For example, the break values of flex/grid items in a row are
+  // propagated to the row itself. Calculating the intial-break-before and
+  // final-break-after for these items can be used to determine the break
+  // appeal of a row before the full fragmentation layout pass is performed.
+  bool ShouldPropagateChildBreakValues() const {
+    return HasRareData() && rare_data_->propagate_child_break_values;
   }
 
   // Return true if the block size of the table-cell should be considered
@@ -669,6 +707,14 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->LinesUntilClamp() : absl::nullopt;
   }
 
+  const NGGridLayoutTrackCollection* SubgriddedColumns() const {
+    return HasRareData() ? rare_data_->SubgriddedColumns() : nullptr;
+  }
+
+  const NGGridLayoutTrackCollection* SubgriddedRows() const {
+    return HasRareData() ? rare_data_->SubgriddedRows() : nullptr;
+  }
+
   // Return true if the two constraint spaces are similar enough that it *may*
   // be possible to skip re-layout. If true is returned, the caller is expected
   // to verify that any constraint space size (available size, percentage size,
@@ -783,7 +829,8 @@ class CORE_EXPORT NGConstraintSpace final {
       kTableRowData,      // A table-row (display: table-row).
       kTableSectionData,  // A table-section (display: table-section).
       kCustomData,        // A custom layout (display: layout(foo)).
-      kStretchData        // The target inline/block stretch sizes for MathML.
+      kStretchData,       // The target inline/block stretch sizes for MathML.
+      kSubgridData        // A nested grid with subgridded columns/rows.
     };
 
     explicit RareData(const NGBfcOffset bfc_offset)
@@ -796,9 +843,13 @@ class CORE_EXPORT NGConstraintSpace final {
               static_cast<unsigned>(kFragmentNone)),
           requires_content_before_breaking(false),
           is_inside_balanced_columns(false),
+          should_ignore_forced_breaks(false),
           is_in_column_bfc(false),
           min_block_size_should_encompass_intrinsic_size(false),
-          min_break_appeal(kBreakAppealLastResort) {}
+          min_break_appeal(kBreakAppealLastResort),
+          propagate_child_break_values(false),
+          is_at_fragmentainer_start(false),
+          is_repeatable(false) {}
     RareData(const RareData& other)
         : percentage_resolution_size(other.percentage_resolution_size),
           replaced_percentage_resolution_block_size(
@@ -817,10 +868,14 @@ class CORE_EXPORT NGConstraintSpace final {
           requires_content_before_breaking(
               other.requires_content_before_breaking),
           is_inside_balanced_columns(other.is_inside_balanced_columns),
+          should_ignore_forced_breaks(other.should_ignore_forced_breaks),
           is_in_column_bfc(other.is_in_column_bfc),
           min_block_size_should_encompass_intrinsic_size(
               other.min_block_size_should_encompass_intrinsic_size),
-          min_break_appeal(other.min_break_appeal) {
+          min_break_appeal(other.min_break_appeal),
+          propagate_child_break_values(other.propagate_child_break_values),
+          is_at_fragmentainer_start(other.is_at_fragmentainer_start),
+          is_repeatable(other.is_repeatable) {
       switch (data_union_type) {
         case kNone:
           break;
@@ -842,6 +897,9 @@ class CORE_EXPORT NGConstraintSpace final {
           break;
         case kStretchData:
           new (&stretch_data_) StretchData(other.stretch_data_);
+          break;
+        case kSubgridData:
+          new (&subgrid_data_) SubgridData(other.subgrid_data_);
           break;
         default:
           NOTREACHED();
@@ -869,15 +927,16 @@ class CORE_EXPORT NGConstraintSpace final {
         case kStretchData:
           stretch_data_.~StretchData();
           break;
+        case kSubgridData:
+          subgrid_data_.~SubgridData();
+          break;
         default:
           NOTREACHED();
       }
     }
 
     bool MaySkipLayout(const RareData& other) const {
-      if (fragmentainer_block_size != other.fragmentainer_block_size ||
-          fragmentainer_offset_at_bfc != other.fragmentainer_offset_at_bfc ||
-          data_union_type != other.data_union_type ||
+      if (data_union_type != other.data_union_type ||
           is_line_clamp_context != other.is_line_clamp_context ||
           is_restricted_block_size_table_cell !=
               other.is_restricted_block_size_table_cell ||
@@ -887,8 +946,11 @@ class CORE_EXPORT NGConstraintSpace final {
           requires_content_before_breaking !=
               other.requires_content_before_breaking ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
+          should_ignore_forced_breaks != other.should_ignore_forced_breaks ||
           is_in_column_bfc != other.is_in_column_bfc ||
-          min_break_appeal != other.min_break_appeal)
+          min_break_appeal != other.min_break_appeal ||
+          propagate_child_break_values != other.propagate_child_break_values ||
+          is_repeatable != other.is_repeatable)
         return false;
 
       switch (data_union_type) {
@@ -906,6 +968,8 @@ class CORE_EXPORT NGConstraintSpace final {
           return custom_data_.MaySkipLayout(other.custom_data_);
         case kStretchData:
           return stretch_data_.MaySkipLayout(other.stretch_data_);
+        case kSubgridData:
+          return subgrid_data_.MaySkipLayout(other.subgrid_data_);
       }
       NOTREACHED();
       return false;
@@ -918,7 +982,10 @@ class CORE_EXPORT NGConstraintSpace final {
           is_restricted_block_size_table_cell || hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
           requires_content_before_breaking || is_inside_balanced_columns ||
-          is_in_column_bfc || min_break_appeal != kBreakAppealLastResort)
+          should_ignore_forced_breaks || is_in_column_bfc ||
+          min_break_appeal != kBreakAppealLastResort ||
+          propagate_child_break_values || is_at_fragmentainer_start ||
+          is_repeatable)
         return false;
 
       switch (data_union_type) {
@@ -936,6 +1003,8 @@ class CORE_EXPORT NGConstraintSpace final {
           return custom_data_.IsInitialForMaySkipLayout();
         case kStretchData:
           return stretch_data_.IsInitialForMaySkipLayout();
+        case kSubgridData:
+          return subgrid_data_.IsInitialForMaySkipLayout();
       }
       NOTREACHED();
       return false;
@@ -1123,6 +1192,27 @@ class CORE_EXPORT NGConstraintSpace final {
           target_stretch_block_sizes;
     }
 
+    const NGGridLayoutTrackCollection* SubgriddedColumns() const {
+      return data_union_type == kSubgridData
+                 ? subgrid_data_.layout_data.columns.get()
+                 : nullptr;
+    }
+
+    void SetSubgriddedColumns(
+        std::unique_ptr<NGGridLayoutTrackCollection> columns) {
+      EnsureSubgridData()->layout_data.columns = std::move(columns);
+    }
+
+    const NGGridLayoutTrackCollection* SubgriddedRows() const {
+      return data_union_type == kSubgridData
+                 ? subgrid_data_.layout_data.rows.get()
+                 : nullptr;
+    }
+
+    void SetSubgriddedRows(std::unique_ptr<NGGridLayoutTrackCollection> rows) {
+      EnsureSubgridData()->layout_data.rows = std::move(rows);
+    }
+
     LogicalSize percentage_resolution_size;
     LayoutUnit replaced_percentage_resolution_block_size;
     LayoutUnit block_start_annotation_space;
@@ -1141,9 +1231,13 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned block_direction_fragmentation_type : 2;
     unsigned requires_content_before_breaking : 1;
     unsigned is_inside_balanced_columns : 1;
+    unsigned should_ignore_forced_breaks : 1;
     unsigned is_in_column_bfc : 1;
     unsigned min_block_size_should_encompass_intrinsic_size : 1;
     unsigned min_break_appeal : kNGBreakAppealBitsNeeded;
+    unsigned propagate_child_break_values : 1;
+    unsigned is_at_fragmentainer_start : 1;
+    unsigned is_repeatable : 1;
 
    private:
     struct BlockData {
@@ -1244,6 +1338,28 @@ class CORE_EXPORT NGConstraintSpace final {
       absl::optional<MathTargetStretchBlockSizes> target_stretch_block_sizes;
     };
 
+    struct SubgridData {
+      bool MaySkipLayout(const SubgridData& other) const {
+        const bool other_has_same_column_geometry =
+            (layout_data.columns && other.layout_data.columns)
+                ? *layout_data.Columns() == *other.layout_data.Columns()
+                : !layout_data.columns && !other.layout_data.columns;
+
+        const bool other_has_same_row_geometry =
+            (layout_data.rows && other.layout_data.rows)
+                ? *layout_data.Rows() == *other.layout_data.Rows()
+                : !layout_data.rows && !other.layout_data.rows;
+
+        return other_has_same_column_geometry && other_has_same_row_geometry;
+      }
+
+      bool IsInitialForMaySkipLayout() const {
+        return !layout_data.columns && !layout_data.rows;
+      }
+
+      NGGridLayoutData layout_data;
+    };
+
     BlockData* EnsureBlockData() {
       DCHECK(data_union_type == kNone || data_union_type == kBlockData);
       if (data_union_type != kBlockData) {
@@ -1298,6 +1414,15 @@ class CORE_EXPORT NGConstraintSpace final {
       return &stretch_data_;
     }
 
+    SubgridData* EnsureSubgridData() {
+      DCHECK(data_union_type == kNone || data_union_type == kSubgridData);
+      if (data_union_type != kSubgridData) {
+        data_union_type = kSubgridData;
+        new (&subgrid_data_) SubgridData();
+      }
+      return &subgrid_data_;
+    }
+
     union {
       BlockData block_data_;
       TableCellData table_cell_data_;
@@ -1305,6 +1430,7 @@ class CORE_EXPORT NGConstraintSpace final {
       TableSectionData table_section_data_;
       CustomData custom_data_;
       StretchData stretch_data_;
+      SubgridData subgrid_data_;
     };
   };
 

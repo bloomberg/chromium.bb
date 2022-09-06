@@ -11,6 +11,7 @@
 #include "base/i18n/string_search.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
@@ -23,7 +24,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/escape.h"
 #include "ui/base/models/tree_node_iterator.h"
 
 using bookmarks::BookmarkNode;
@@ -254,12 +254,11 @@ void PartnerBookmarksShim::ReloadNodeMapping() {
   if (!prefs_)
     return;
 
-  const base::ListValue* list =
-      prefs_->GetList(prefs::kPartnerBookmarkMappings);
+  const base::Value* list = prefs_->GetList(prefs::kPartnerBookmarkMappings);
   if (!list)
     return;
 
-  for (const auto& entry : list->GetList()) {
+  for (const auto& entry : list->GetListDeprecated()) {
     const base::DictionaryValue* dict = nullptr;
     if (!entry.GetAsDictionary(&dict)) {
       NOTREACHED();
@@ -290,11 +289,11 @@ void PartnerBookmarksShim::SaveNodeMapping() {
   for (NodeRenamingMap::const_iterator i = node_rename_remove_map_.begin();
        i != node_rename_remove_map_.end();
        ++i) {
-    auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString(kMappingUrl, i->first.url().spec());
-    dict->SetString(kMappingProviderTitle, i->first.provider_title());
-    dict->SetString(kMappingTitle, i->second);
-    list.Append(std::move(dict));
+    base::Value::Dict dict;
+    dict.Set(kMappingUrl, i->first.url().spec());
+    dict.Set(kMappingProviderTitle, i->first.provider_title());
+    dict.Set(kMappingTitle, i->second);
+    list.Append(base::Value(std::move(dict)));
   }
   prefs_->Set(prefs::kPartnerBookmarkMappings, list);
 }

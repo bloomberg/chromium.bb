@@ -26,10 +26,9 @@ file](https://sites.google.com/a/google.com/chromeos/resources/engineering/getti
 ### How can I get a core dump from a minidump for use by gdb?
 
 There's a `minidump-2-core` executable provided by Breakpad to convert a
-minidump to a core file. You can build it in a Chrome checkout, or you can build
-it in a Chrome OS checkout with `sudo emerge google-breakpad`. Googlers: You can
-also check `/home/mkrebs/public/crash_reporting/minidump-2-core/` for some
-pre-built binaries that might work for you.
+minidump to a core file. You can build it in a Chrome checkout with
+`ninja -C out/Default minidump-2-core`, or you can build it in a Chrome OS
+checkout with `sudo emerge google-breakpad`.
 
 Once you have `minidump-2-core`, you can look at section [Use gdb to show a
 backtrace](http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/crash-reporting/debugging-a-minidump#TOC-Use-gdb-to-show-a-backtrace)

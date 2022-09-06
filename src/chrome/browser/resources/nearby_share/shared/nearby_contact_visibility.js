@@ -2,14 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import '//resources/cr_elements/cr_radio_button/cr_card_radio_button.m.js';
+import '//resources/cr_elements/cr_icons_css.m.js';
+import '//resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import './nearby_page_template.js';
+import './nearby_shared_icons.js';
+
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {sendWithPromise} from '//resources/js/cr.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getContactManager, observeContactManager} from './nearby_contact_manager.js';
+import {NearbySettings} from './nearby_share_settings_behavior.js';
+
 /**
  * @fileoverview The 'nearby-contact-visibility' component allows users to
  * set the preferred visibility to contacts for Nearby Share. This component is
  * embedded in the nearby_visibility_page as well as the settings pop-up dialog.
  */
-
-'use strict';
-(function() {
 
 /** @enum {string} */
 const ContactsState = {
@@ -56,6 +72,18 @@ const visibilityValueToString = function(visibility) {
 };
 
 /**
+ * @type {string}
+ */
+const DEVICE_VISIBILITY_LIGHT_ICON =
+    'nearby-images:nearby-device-visibility-light';
+
+/**
+ * @type {string}
+ */
+const DEVICE_VISIBILITY_DARK_ICON =
+    'nearby-images:nearby-device-visibility-dark';
+
+/**
  * @typedef {{
  *            id:string,
  *            name:string,
@@ -63,9 +91,10 @@ const visibilityValueToString = function(visibility) {
  *            checked:boolean,
  *          }}
  */
-/* #export */ let NearbyVisibilityContact;
+export let NearbyVisibilityContact;
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'nearby-contact-visibility',
 
   behaviors: [I18nBehavior],
@@ -83,7 +112,7 @@ Polymer({
       value: ContactsState.PENDING,
     },
 
-    /** @type {?nearby_share.NearbySettings} */
+    /** @type {?NearbySettings} */
     settings: {
       type: Object,
       notify: true,
@@ -127,6 +156,15 @@ Polymer({
       computed: 'isVisibilitySelected_(selectedVisibility)',
       notify: true,
     },
+
+    /**
+     * Whether the contact visibility page is being rendered in dark mode.
+     * @private {boolean}
+     */
+    isDarkModeActive_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {?nearbyShare.mojom.ContactManagerInterface} */
@@ -144,8 +182,8 @@ Polymer({
 
   /** @override */
   attached() {
-    this.contactManager_ = nearby_share.getContactManager();
-    this.downloadContactsObserverReceiver_ = nearby_share.observeContactManager(
+    this.contactManager_ = getContactManager();
+    this.downloadContactsObserverReceiver_ = observeContactManager(
         /** @type {!nearbyShare.mojom.DownloadContactsObserverInterface} */ (
             this));
     // Start a contacts download now so we have it by the time the component is
@@ -267,27 +305,6 @@ Polymer({
   },
 
   /**
-   * TODO(crbug.com/1128256): Remove after specs/a11y.
-   * Call from the JS debug console to test scrolling.
-   * @param {number} numContacts
-   * @private
-   */
-  genFakeContacts_(numContacts) {
-    clearTimeout(this.downloadTimeoutId_);
-    const fakeContacts = [];
-    for (let i = 0; i < numContacts; i++) {
-      fakeContacts.push({
-        id: String(-i),
-        description: String(i) + '@google.com',
-        name: 'Person ' + i,
-        checked: false,
-      });
-    }
-    this.contacts = fakeContacts;
-    this.contactsState = ContactsState.HAS_CONTACTS;
-  },
-
-  /**
    * Used to show/hide parts of the UI based on current visibility selection.
    * @return {boolean} returns true when checkboxes should be shown for
    *     contacts.
@@ -324,7 +341,7 @@ Polymer({
   },
 
   /**
-   * @param {?nearby_share.NearbySettings} settings
+   * @param {?NearbySettings} settings
    * @private
    */
   settingsChanged_(settings) {
@@ -430,7 +447,7 @@ Polymer({
     contactsFailedMessage.childNodes.forEach((node, index) => {
       // Text nodes should be aria-hidden and associated with an element id
       // that the anchor element can be aria-labelledby.
-      if (node.nodeType == Node.TEXT_NODE) {
+      if (node.nodeType === Node.TEXT_NODE) {
         const spanNode = document.createElement('span');
         spanNode.textContent = node.textContent;
         spanNode.id = `contactsFailedMessage${index}`;
@@ -441,7 +458,7 @@ Polymer({
       }
       // The single element node with anchor tags should also be aria-labelledby
       // itself in-order with respect to the entire string.
-      if (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'A') {
+      if (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'A') {
         node.id = `tryAgainLink`;
         ariaLabelledByIds.push(node.id);
         return;
@@ -455,13 +472,14 @@ Polymer({
     const anchorTags = contactsFailedMessage.getElementsByTagName('a');
     // In the event the localizedString contains only text nodes, populate the
     // contents with the localizedString.
-    if (anchorTags.length == 0) {
+    if (anchorTags.length === 0) {
       contactsFailedMessage.innerHTML = localizedString;
       return;
     }
 
     assert(
-        anchorTags.length == 1, 'string should contain exactly one anchor tag');
+        anchorTags.length === 1,
+        'string should contain exactly one anchor tag');
     const anchorTag = anchorTags[0];
     anchorTag.setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
     anchorTag.href = '#';
@@ -492,7 +510,7 @@ Polymer({
     tempEl.childNodes.forEach((node, index) => {
       // Text nodes should be aria-hidden and associated with an element id
       // that the anchor element can be aria-labelledby.
-      if (node.nodeType == Node.TEXT_NODE) {
+      if (node.nodeType === Node.TEXT_NODE) {
         const spanNode = document.createElement('span');
         spanNode.textContent = node.textContent;
         spanNode.id = `zeroStateText${index}`;
@@ -503,7 +521,7 @@ Polymer({
       }
       // The single element node with anchor tags should also be aria-labelledby
       // itself in-order with respect to the entire string.
-      if (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'A') {
+      if (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'A') {
         node.id = `zeroStateHelpLink`;
         ariaLabelledByIds.push(node.id);
         return;
@@ -517,12 +535,12 @@ Polymer({
     const anchorTags = tempEl.getElementsByTagName('a');
     // In the event the localizedString contains only text nodes, populate the
     // contents with the localizedString.
-    if (anchorTags.length == 0) {
+    if (anchorTags.length === 0) {
       return localizedString;
     }
 
     assert(
-        anchorTags.length == 1,
+        anchorTags.length === 1,
         'nearbyShareContactVisibilityZeroStateText should contain exactly' +
             ' one anchor tag');
     const anchorTag = anchorTags[0];
@@ -551,9 +569,9 @@ Polymer({
     // Template: "# contacts are not available." with correct plural of
     // "contact".
     const labelTemplate =
-        cr.sendWithPromise(
-              'getPluralString', 'nearbyShareContactVisibilityNumUnreachable',
-              this.numUnreachable_)
+        sendWithPromise(
+            'getPluralString', 'nearbyShareContactVisibilityNumUnreachable',
+            this.numUnreachable_)
             .then((labelTemplate) => {
               this.numUnreachableMessage_ = loadTimeData.substituteString(
                   labelTemplate, this.numUnreachable_);
@@ -598,5 +616,26 @@ Polymer({
     }
     this.contactManager_.setAllowedContacts(allowedContacts);
   },
+
+  /**
+   * Return the selected visibility as a enum to nearby_visibiity_page when
+   * logging metric to avoid potential race condition
+   *
+   * @return {?nearbyShare.mojom.Visibility}
+   *
+   * @public
+   */
+  getSelectedVisibility() {
+    return visibilityStringToValue(this.selectedVisibility);
+  },
+
+  /**
+   * Returns the icon based on Light/Dark mode.
+   * @returns {string}
+   * @private
+   */
+  getDeviceVisibilityIcon_() {
+    return this.isDarkModeActive_ ? DEVICE_VISIBILITY_DARK_ICON :
+                                    DEVICE_VISIBILITY_LIGHT_ICON;
+  },
 });
-})();

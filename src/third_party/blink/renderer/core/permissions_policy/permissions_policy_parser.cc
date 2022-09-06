@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -96,27 +95,20 @@ class ParsingContext {
 
   ParsedPermissionsPolicy ParseFeaturePolicy(const String& policy);
   ParsedPermissionsPolicy ParsePermissionsPolicy(const String& policy);
+  ParsedPermissionsPolicy ParsePolicyFromNode(
+      const PermissionsPolicyParser::Node& root);
 
  private:
-  // Following is the intermediate represetnation(IR) of permissions policy.
-  // Parsing of syntax structures is done in this IR, but semantic checks, e.g.
-  // whether feature_name is valid, are not yet performed.
-  struct FeaturePolicyDeclarationNode {
-    String feature_name;
-    Vector<String> allowlist;
-  };
-  using FeaturePolicyNode = Vector<FeaturePolicyDeclarationNode>;
-
-  ParsedPermissionsPolicy ParseIR(const FeaturePolicyNode& root);
-  FeaturePolicyNode ParseFeaturePolicyToIR(const String& policy);
-  FeaturePolicyNode ParsePermissionsPolicyToIR(const String& policy);
+  PermissionsPolicyParser::Node ParseFeaturePolicyToIR(const String& policy);
+  PermissionsPolicyParser::Node ParsePermissionsPolicyToIR(
+      const String& policy);
 
   // normally 1 char = 1 byte
   // max length to parse = 2^16 = 64 kB
   static constexpr wtf_size_t MAX_LENGTH_PARSE = 1 << 16;
 
   absl::optional<ParsedPermissionsPolicyDeclaration> ParseFeature(
-      const FeaturePolicyDeclarationNode&);
+      const PermissionsPolicyParser::Declaration&);
 
   struct ParsedAllowlist {
     std::vector<url::Origin> allowed_origins;
@@ -374,7 +366,7 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
 }
 
 absl::optional<ParsedPermissionsPolicyDeclaration> ParsingContext::ParseFeature(
-    const FeaturePolicyDeclarationNode& declaration_node) {
+    const PermissionsPolicyParser::Declaration& declaration_node) {
   absl::optional<mojom::blink::PermissionsPolicyFeature> feature =
       ParseFeatureName(declaration_node.feature_name);
   if (!feature)
@@ -396,19 +388,18 @@ absl::optional<ParsedPermissionsPolicyDeclaration> ParsingContext::ParseFeature(
 
 ParsedPermissionsPolicy ParsingContext::ParseFeaturePolicy(
     const String& policy) {
-  return ParseIR(ParseFeaturePolicyToIR(policy));
+  return ParsePolicyFromNode(ParseFeaturePolicyToIR(policy));
 }
 
 ParsedPermissionsPolicy ParsingContext::ParsePermissionsPolicy(
     const String& policy) {
-  return ParseIR(ParsePermissionsPolicyToIR(policy));
+  return ParsePolicyFromNode(ParsePermissionsPolicyToIR(policy));
 }
 
-ParsedPermissionsPolicy ParsingContext::ParseIR(
-    const ParsingContext::FeaturePolicyNode& root) {
+ParsedPermissionsPolicy ParsingContext::ParsePolicyFromNode(
+    const PermissionsPolicyParser::Node& root) {
   ParsedPermissionsPolicy parsed_policy;
-  for (const ParsingContext::FeaturePolicyDeclarationNode& declaration_node :
-       root) {
+  for (const PermissionsPolicyParser::Declaration& declaration_node : root) {
     absl::optional<ParsedPermissionsPolicyDeclaration> parsed_feature =
         ParseFeature(declaration_node);
     if (parsed_feature) {
@@ -421,9 +412,9 @@ ParsedPermissionsPolicy ParsingContext::ParseIR(
   return parsed_policy;
 }
 
-ParsingContext::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
+PermissionsPolicyParser::Node ParsingContext::ParseFeaturePolicyToIR(
     const String& policy) {
-  ParsingContext::FeaturePolicyNode root;
+  PermissionsPolicyParser::Node root;
 
   if (policy.length() > MAX_LENGTH_PARSE) {
     logger_.Error("Feature policy declaration exceeds size limit(" +
@@ -470,7 +461,7 @@ ParsingContext::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
       if (tokens.IsEmpty())
         continue;
 
-      ParsingContext::FeaturePolicyDeclarationNode declaration_node;
+      PermissionsPolicyParser::Declaration declaration_node;
       // Break tokens into head & tail, where
       // head = feature_name
       // tail = allowlist
@@ -486,7 +477,7 @@ ParsingContext::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
   return root;
 }
 
-ParsingContext::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
+PermissionsPolicyParser::Node ParsingContext::ParsePermissionsPolicyToIR(
     const String& policy) {
   if (policy.length() > MAX_LENGTH_PARSE) {
     logger_.Error("Permissions policy declaration exceeds size limit(" +
@@ -503,7 +494,7 @@ ParsingContext::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
     return {};
   }
 
-  ParsingContext::FeaturePolicyNode ir_root;
+  PermissionsPolicyParser::Node ir_root;
   for (const auto& feature_entry : root.value()) {
     const auto& key = feature_entry.first;
     const char* feature_name = key.c_str();
@@ -555,7 +546,7 @@ ParsingContext::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
       allowlist.push_back("'none'");
 
     ir_root.push_back(
-        ParsingContext::FeaturePolicyDeclarationNode{feature_name, allowlist});
+        PermissionsPolicyParser::Declaration{feature_name, allowlist});
   }
 
   return ir_root;
@@ -621,6 +612,16 @@ ParsedPermissionsPolicy PermissionsPolicyParser::ParseAttribute(
   return ParsingContext(logger, self_origin, src_origin,
                         GetDefaultFeatureNameMap(), execution_context)
       .ParseFeaturePolicy(policy);
+}
+
+ParsedPermissionsPolicy PermissionsPolicyParser::ParsePolicyFromNode(
+    PermissionsPolicyParser::Node& policy,
+    scoped_refptr<const SecurityOrigin> origin,
+    PolicyParserMessageBuffer& logger,
+    ExecutionContext* execution_context) {
+  return ParsingContext(logger, origin, /*src_origin=*/nullptr,
+                        GetDefaultFeatureNameMap(), execution_context)
+      .ParsePolicyFromNode(policy);
 }
 
 ParsedPermissionsPolicy PermissionsPolicyParser::ParseFeaturePolicyForTest(

@@ -4,7 +4,7 @@
 
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
-#include <stdlib.h>
+#include "base/notreached.h"
 
 namespace ui {
 
@@ -13,6 +13,9 @@ void OverlayCandidatesOzone::CheckOverlaySupport(
   NOTREACHED();
 }
 
-OverlayCandidatesOzone::~OverlayCandidatesOzone() {}
+void OverlayCandidatesOzone::ObserveHardwareCapabilities(
+    ui::HardwareCapabilitiesCallback receive_callback) {}
+
+OverlayCandidatesOzone::~OverlayCandidatesOzone() = default;
 
 }  // namespace ui

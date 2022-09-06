@@ -19,6 +19,10 @@ class BackToTabLabelButton : public views::LabelButton {
   BackToTabLabelButton& operator=(const BackToTabLabelButton&) = delete;
   ~BackToTabLabelButton() override;
 
+  // views::View:
+  ui::Cursor GetCursor(const ui::MouseEvent& event) override;
+  void OnThemeChanged() override;
+
   // Updates the position of this button within the new bounds of the window.
   void SetWindowSize(const gfx::Size& window_size);
 

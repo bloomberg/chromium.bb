@@ -209,24 +209,25 @@ void MDnsAPI::GetValidOnServiceListListeners(
   for (const auto& listener : GetEventListeners()) {
     base::DictionaryValue* filter = listener->filter();
 
-    std::string service_type;
-    filter->GetStringASCII(kEventFilterServiceTypeKey, &service_type);
-    if (service_type.empty())
+    const std::string* service_type =
+        filter->FindStringKey(kEventFilterServiceTypeKey);
+    if (!service_type || service_type->empty() ||
+        !base::IsStringASCII(*service_type))
       continue;
 
     // Match service type when filter isn't ""
-    if (!service_type_filter.empty() && service_type_filter != service_type)
+    if (!service_type_filter.empty() && service_type_filter != *service_type)
       continue;
 
     // Don't listen for services associated only with disabled extensions
     // or non-allowlisted, non-platform-app extensions.
-    if (!IsMDnsAllowed(listener->extension_id(), service_type))
+    if (!IsMDnsAllowed(listener->extension_id(), *service_type))
       continue;
 
     if (extension_ids)
       extension_ids->insert(listener->extension_id());
     if (service_type_counts) {
-      (*service_type_counts)[service_type]++;
+      (*service_type_counts)[*service_type]++;
     }
   }
 }
@@ -252,7 +253,7 @@ void MDnsAPI::WriteToConsole(const std::string& service_type,
         extensions::ProcessManager::Get(browser_context_)
         ->GetBackgroundHostForExtension(extension_id);
     content::RenderFrameHost* rfh =
-        host ? host->host_contents()->GetMainFrame() : nullptr;
+        host ? host->host_contents()->GetPrimaryMainFrame() : nullptr;
     if (rfh)
       rfh->AddMessageToConsole(level, logged_message);
   }

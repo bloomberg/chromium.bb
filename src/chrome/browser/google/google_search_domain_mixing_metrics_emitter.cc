@@ -8,6 +8,7 @@
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/domain_mixing_metrics.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
@@ -85,7 +86,7 @@ void GoogleSearchDomainMixingMetricsEmitter::Start() {
   ui_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&GoogleSearchDomainMixingMetricsEmitter::EmitMetrics,
-                     base::Unretained(this)),
+                     weak_ptr_factory_.GetWeakPtr()),
       // Delay at least ten seconds to avoid delaying browser startup.
       std::max(base::Seconds(10), last_domain_mixing_metrics_time +
                                       base::Days(1) - clock_->Now()));
@@ -122,7 +123,7 @@ void GoogleSearchDomainMixingMetricsEmitter::EmitMetrics() {
     timer_->Start(FROM_HERE, base::Days(1),
                   base::BindRepeating(
                       &GoogleSearchDomainMixingMetricsEmitter::EmitMetrics,
-                      base::Unretained(this)));
+                      weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

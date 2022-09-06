@@ -36,9 +36,6 @@ class CollectUserDataAction : public Action,
 
   ~CollectUserDataAction() override;
 
-  // Overrides Action:
-  bool ShouldInterruptOnPause() const override;
-
   // From autofill::PersonalDataManagerObserver.
   void OnPersonalDataChanged() override;
 
@@ -47,36 +44,26 @@ class CollectUserDataAction : public Action,
       const UserModel& user_model,
       const CollectUserDataOptions& collect_user_data_options);
 
-  // Ensures that |end| is > |start| by modifying either |start| or |end|,
-  // depending on |change_start|. Returns true if changes were performed.
-  static bool SanitizeDateTimeRange(
-      absl::optional<DateProto>* start_date,
-      absl::optional<int>* start_timeslot,
-      absl::optional<DateProto>* end_date,
-      absl::optional<int>* end_timeslot,
-      const CollectUserDataOptions& collect_user_data_options,
-      bool change_start);
-
-  // Comparison function for |DateProto|.
-  // Returns 0 if equal, < 0 if |first| < |second|, > 0 if |second| > |first|.
-  static int CompareDates(const DateProto& first, const DateProto& second);
-
  private:
   struct LoginDetails {
     LoginDetails(bool choose_automatically_if_no_stored_login,
-                 const std::string& payload);
+                 const std::string& payload,
+                 const std::string& tag);
     LoginDetails(bool choose_automatically_if_no_stored_login,
                  const std::string& payload,
+                 const std::string& tag,
                  const WebsiteLoginManager::Login& login);
     ~LoginDetails();
     bool choose_automatically_if_no_stored_login;
     std::string payload;
+    std::string tag;
     // Only for Chrome PWM login details.
     absl::optional<WebsiteLoginManager::Login> login;
   };
 
   void InternalProcessAction(ProcessActionCallback callback) override;
-  void EndAction(const ClientStatus& status);
+  void EndAction(const ClientStatus& status,
+                 const Metrics::CollectUserDataResult result);
   bool HasActionEnded() const;
 
   void OnGetUserData(const CollectUserDataProto& collect_user_data,
@@ -88,7 +75,9 @@ class CollectUserDataAction : public Action,
   void OnTermsAndConditionsLinkClicked(int link,
                                        UserData* user_data,
                                        const UserModel* user_model);
-  void ReloadAction(UserData* user_data);
+  bool IsValidUserFormSection(
+      const autofill_assistant::UserFormSectionProto& proto);
+  void ReloadUserData(UserDataEventField event_field, UserData* user_data);
 
   // Only used for logging purposes.
   void OnSelectionStateChanged(UserDataEventField field,
@@ -97,8 +86,17 @@ class CollectUserDataAction : public Action,
   void OnGetLogins(const LoginDetailsProto::LoginOptionProto& login_option,
                    std::vector<WebsiteLoginManager::Login> logins);
   void ShowToUser();
-  void OnShowToUser(UserData* user_data, UserData::FieldChange* field_change);
-  void UpdateMetrics(UserData* user_data);
+  void OnShowToUser(UserData* user_data, UserDataFieldChange* field_change);
+  void UpdateUserData(UserData* user_data);
+  void UseChromeData(UserData* user_data);
+  void OnRequestUserData(bool is_initial_request,
+                         UserData* user_data,
+                         bool success,
+                         const GetUserDataResponseProto& response);
+  void FallbackToChromeData(UserData* user_data);
+  void UpdateMetrics(UserData* user_data,
+                     Metrics::UserDataSource user_data_source);
+  void UpdateUi();
 
   // Creates a new instance of |CollectUserDataOptions| from |proto_|.
   bool CreateOptionsFromProto();
@@ -112,31 +110,33 @@ class CollectUserDataAction : public Action,
   void FillInitiallySelectedDataStateForMetrics(UserData* user_data);
 
   void WriteProcessedAction(UserData* user_data, const UserModel* user_model);
-  void UpdateProfileAndCardUse(UserData* user_data);
+  void UpdateProfileAndCardUse(
+      UserData* user_data,
+      autofill::PersonalDataManager* personal_data_manager);
 
-  void UpdateUserDataFromProto(
-      const CollectUserDataProto::UserDataProto& proto_data,
-      UserData* user_data);
+  void UpdateUserDataFromProto(const GetUserDataResponseProto& proto_data,
+                               UserData* user_data);
   // Update user data with the new state from personal data manager.
   void UpdatePersonalDataManagerProfiles(
       UserData* user_data,
-      UserData::FieldChange* field_change = nullptr);
+      UserDataFieldChange* field_change = nullptr);
   void UpdatePersonalDataManagerCards(
       UserData* user_data,
-      UserData::FieldChange* field_change = nullptr);
+      UserDataFieldChange* field_change = nullptr);
   void UpdateSelectedContact(UserData* user_data);
+  void UpdateSelectedPhoneNumber(UserData* user_data);
   void UpdateSelectedShippingAddress(UserData* user_data);
   void UpdateSelectedCreditCard(UserData* user_data);
-  void UpdateDateTimeRangeStart(UserData* user_data,
-                                UserData::FieldChange* field_change = nullptr);
-  void UpdateDateTimeRangeEnd(UserData* user_data,
-                              UserData::FieldChange* field_change = nullptr);
   void MaybeLogMetrics();
+  void MaybeRemoveAsPersonalDataManagerObserver();
 
   UserDataMetrics metrics_data_;
   bool shown_to_user_ = false;
   std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;
   ProcessActionCallback callback_;
+
+  // The response of the last user data request.
+  GetUserDataResponseProto last_user_data_;
 
   // Maps login choice identifiers to the corresponding login details.
   base::flat_map<std::string, std::unique_ptr<LoginDetails>> login_details_map_;

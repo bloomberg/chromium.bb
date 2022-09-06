@@ -24,9 +24,11 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DOWNLOAD_PAGE_FEATURE, FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE,
         FeatureConstants.DOWNLOAD_HOME_FEATURE, FeatureConstants.DOWNLOAD_INDICATOR_FEATURE,
         FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
-        FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE,
+        FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE, FeatureConstants.CROW_FEATURE,
+        FeatureConstants.CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
-        FeatureConstants.EPHEMERAL_TAB_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
+        FeatureConstants.DATA_SAVER_MILESTONE_PROMO_FEATURE, FeatureConstants.EPHEMERAL_TAB_FEATURE,
+        FeatureConstants.EXPLORE_SITES_TILE_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
         FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_TRANSLATION_ENABLE_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE,
@@ -35,6 +37,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CONTEXTUAL_SEARCH_OPT_IN_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_IN_PANEL_HELP_FEATURE,
+        FeatureConstants.INSTANCE_SWITCHER,
         FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE,
@@ -44,6 +47,11 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DOWNLOAD_SETTINGS_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,
+        FeatureConstants.FEATURE_NOTIFICATION_GUIDE_DEFAULT_BROWSER_PROMO_FEATURE,
+        FeatureConstants.FEATURE_NOTIFICATION_GUIDE_INCOGNITO_TAB_HELP_BUBBLE_FEATURE,
+        FeatureConstants.FEATURE_NOTIFICATION_GUIDE_NTP_SUGGESTION_CARD_HELP_BUBBLE_FEATURE,
+        FeatureConstants.FEATURE_NOTIFICATION_GUIDE_SIGN_IN_HELP_BUBBLE_FEATURE,
+        FeatureConstants.FEATURE_NOTIFICATION_GUIDE_VOICE_SEARCH_HELP_BUBBLE_FEATURE,
         FeatureConstants.NEW_TAB_PAGE_HOME_BUTTON_FEATURE,
         FeatureConstants.SHOPPING_LIST_MENU_ITEM_FEATURE,
         FeatureConstants.SHOPPING_LIST_SAVE_FLOW_FEATURE,
@@ -54,20 +62,30 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.IDENTITY_DISC_FEATURE, FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
         FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
         FeatureConstants.FEED_HEADER_MENU_FEATURE, FeatureConstants.FEED_SWIPE_REFRESH_FEATURE,
+        FeatureConstants.WEB_FEED_AWARENESS_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE,
         FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE, FeatureConstants.PAGE_INFO_FEATURE,
         FeatureConstants.PAGE_INFO_STORE_INFO_FEATURE,
+        FeatureConstants.READ_LATER_APP_MENU_BOOKMARK_THIS_PAGE_FEATURE,
+        FeatureConstants.READ_LATER_APP_MENU_BOOKMARKS_FEATURE,
+        FeatureConstants.READ_LATER_BOTTOM_SHEET_FEATURE,
+        FeatureConstants.READ_LATER_CONTEXT_MENU_FEATURE, FeatureConstants.IPH_MIC_TOOLBAR_FEATURE,
         FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE,
         FeatureConstants.IPH_SHARING_HUB_LINK_TOGGLE_FEATURE,
         FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE,
         FeatureConstants.IPH_WEB_FEED_POST_FOLLOW_DIALOG_FEATURE,
         FeatureConstants.SHARED_HIGHLIGHTING_BUILDER_FEATURE,
         FeatureConstants.START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE,
-        FeatureConstants.IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE,
         FeatureConstants.SHARED_HIGHLIGHTING_RECEIVER_FEATURE,
-        FeatureConstants.SHARING_HUB_WEBNOTES_STYLIZE_FEATURE})
+        FeatureConstants.SHARING_HUB_WEBNOTES_STYLIZE_FEATURE,
+        FeatureConstants.VIDEO_TUTORIAL_NTP_CHROME_INTRO_FEATURE,
+        FeatureConstants.VIDEO_TUTORIAL_NTP_DOWNLOAD_FEATURE,
+        FeatureConstants.VIDEO_TUTORIAL_NTP_SEARCH_FEATURE,
+        FeatureConstants.VIDEO_TUTORIAL_NTP_SUMMARY_FEATURE,
+        FeatureConstants.VIDEO_TUTORIAL_NTP_VOICE_SEARCH_FEATURE,
+        FeatureConstants.VIDEO_TUTORIAL_TRY_NOW_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE =
@@ -82,6 +100,8 @@ public @interface FeatureConstants {
     String AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE = "IPH_AutoDarkUserEducationMessage";
     String AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE =
             "IPH_AutoDarkUserEducationMessageOptIn";
+    String CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING = "IPH_ContextualPageActions_PriceTracking";
+    String CROW_FEATURE = "IPH_Crow";
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
     String DOWNLOAD_PAGE_SCREENSHOT_FEATURE = "IPH_DownloadPageScreenshot";
     String DOWNLOAD_HOME_FEATURE = "IPH_DownloadHome";
@@ -96,8 +116,7 @@ public @interface FeatureConstants {
     String KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE = "IPH_KeyboardAccessoryPasswordFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE = "IPH_KeyboardAccessoryPaymentFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE = "IPH_KeyboardAccessoryPaymentOffer";
-    String KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE =
-            "IPH_KeyboardAccessoryPaymentVirtualCard";
+    String KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE = "IPH_AutofillVirtualCardSuggestion";
     String KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE = "IPH_KeyboardAccessoryBarSwiping";
     String INSTANCE_SWITCHER = "IPH_InstanceSwitcher";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
@@ -240,6 +259,36 @@ public @interface FeatureConstants {
     String VIDEO_TUTORIAL_TRY_NOW_FEATURE = "IPH_VideoTutorial_TryNow";
 
     /**
+     * Feature notification guide help UI for default browser promo.
+     */
+    String FEATURE_NOTIFICATION_GUIDE_DEFAULT_BROWSER_PROMO_FEATURE =
+            "IPH_FeatureNotificationGuideDefaultBrowserPromo";
+
+    /**
+     * Feature notification guide help UI for sign in promo.
+     */
+    String FEATURE_NOTIFICATION_GUIDE_SIGN_IN_HELP_BUBBLE_FEATURE =
+            "IPH_FeatureNotificationGuideSignInHelpBubble";
+
+    /**
+     * Feature notification guide help UI for incognito tab.
+     */
+    String FEATURE_NOTIFICATION_GUIDE_INCOGNITO_TAB_HELP_BUBBLE_FEATURE =
+            "IPH_FeatureNotificationGuideIncognitoTabHelpBubble";
+
+    /**
+     * Feature notification guide help UI for NTP suggestion card.
+     */
+    String FEATURE_NOTIFICATION_GUIDE_NTP_SUGGESTION_CARD_HELP_BUBBLE_FEATURE =
+            "IPH_FeatureNotificationGuideNTPSuggestionCardHelpBubble";
+
+    /**
+     * Feature notification guide help UI for voice search.
+     */
+    String FEATURE_NOTIFICATION_GUIDE_VOICE_SEARCH_HELP_BUBBLE_FEATURE =
+            "IPH_FeatureNotificationGuideVoiceSearchHelpBubble";
+
+    /**
      * An IPH feature to show on a card menu on the FeedNewTabPage.
      */
     String FEED_CARD_MENU_FEATURE = "IPH_FeedCardMenu";
@@ -248,6 +297,11 @@ public @interface FeatureConstants {
      * An IPH feature to prompt users to pull-to-refresh feed.
      */
     String FEED_SWIPE_REFRESH_FEATURE = "IPH_FeedSwipeRefresh";
+
+    /**
+     * A generic IPH feature to always trigger help UI when asked.
+     */
+    String GENERIC_ALWAYS_TRIGGER_HELP_UI_FEATURE = "IPH_GenericAlwaysTriggerHelpUiFeature";
 
     /**
      * An IPH feature prompting user to tap on identity disc to navigate to "Sync and Google
@@ -265,6 +319,11 @@ public @interface FeatureConstants {
      * An IPH feature to show on the feed header menu button of the FeedNewTabPage.
      */
     String FEED_HEADER_MENU_FEATURE = "IPH_FeedHeaderMenu";
+
+    /**
+     * An IPH used for web feed awareness to be shown on the NTP for the Web Feed tab.
+     */
+    String WEB_FEED_AWARENESS_FEATURE = "IPH_WebFeedAwareness";
 
     /**
      * An IPH feature to show the first re-engagement notification.
@@ -326,13 +385,6 @@ public @interface FeatureConstants {
      * surface is enabled.
      */
     String START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE = "IPH_StartSurfaceTabSwitcherHomeButton";
-
-    /**
-     * An IPH feature to inform users about updated connection security indicators in the omnibox.
-     * Only shown on the first visit to an https page.
-     */
-    String IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE =
-            "IPH_UpdatedConnectionSecurityIndicators";
 
     /**
      * An IPH feature encouraging users to create highlights.

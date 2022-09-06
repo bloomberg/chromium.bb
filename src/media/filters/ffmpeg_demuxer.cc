@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -199,7 +198,7 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   std::unique_ptr<AudioDecoderConfig> audio_config;
   std::unique_ptr<VideoDecoderConfig> video_config;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(kDeprecateLowUsageCodecs)) {
     const auto codec_id = stream->codecpar->codec_id;
     if (codec_id == AV_CODEC_ID_AMR_NB || codec_id == AV_CODEC_ID_AMR_WB ||
@@ -272,8 +271,6 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       audio_config_(audio_config.release()),
       video_config_(video_config.release()),
       media_log_(media_log),
-      type_(UNKNOWN),
-      liveness_(LIVENESS_UNKNOWN),
       end_of_stream_(false),
       last_packet_timestamp_(kNoTimestamp),
       last_packet_duration_(kNoTimestamp),
@@ -494,6 +491,12 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       int discard_front_samples = base::ByteSwapToLE32(*skip_samples_ptr);
       if (last_packet_timestamp_ != kNoTimestamp && discard_front_samples) {
         DLOG(ERROR) << "Skip samples are only allowed for the first packet.";
+        discard_front_samples = 0;
+      }
+
+      if (discard_front_samples < 0) {
+        // See https://crbug.com/1189939 and https://trac.ffmpeg.org/ticket/9622
+        DLOG(ERROR) << "Negative skip samples are not allowed.";
         discard_front_samples = 0;
       }
 
@@ -719,7 +722,7 @@ DemuxerStream::Type FFmpegDemuxerStream::type() const {
   return type_;
 }
 
-DemuxerStream::Liveness FFmpegDemuxerStream::liveness() const {
+StreamLiveness FFmpegDemuxerStream::liveness() const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return liveness_;
 }
@@ -850,9 +853,9 @@ void FFmpegDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
   }
 }
 
-void FFmpegDemuxerStream::SetLiveness(Liveness liveness) {
+void FFmpegDemuxerStream::SetLiveness(StreamLiveness liveness) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(liveness_, LIVENESS_UNKNOWN);
+  DCHECK_EQ(liveness_, StreamLiveness::kUnknown);
   liveness_ = liveness;
 }
 
@@ -1239,7 +1242,7 @@ void FFmpegDemuxer::OnOpenContextDone(bool result) {
     return;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (glue_->detected_hls()) {
     MEDIA_LOG(INFO, media_log_)
         << GetDisplayName() << ": detected HLS manifest";
@@ -1539,11 +1542,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
     timeline_offset_ += start_time_;
 
   if (max_duration == kInfiniteDuration && !timeline_offset_.is_null()) {
-    SetLiveness(DemuxerStream::LIVENESS_LIVE);
+    SetLiveness(StreamLiveness::kLive);
   } else if (max_duration != kInfiniteDuration) {
-    SetLiveness(DemuxerStream::LIVENESS_RECORDED);
+    SetLiveness(StreamLiveness::kRecorded);
   } else {
-    SetLiveness(DemuxerStream::LIVENESS_UNKNOWN);
+    SetLiveness(StreamLiveness::kUnknown);
   }
 
   // Good to go: set the duration and bitrate and notify we're done
@@ -1904,7 +1907,7 @@ void FFmpegDemuxer::NotifyDemuxerError(PipelineStatus status) {
   host_->OnDemuxerError(status);
 }
 
-void FFmpegDemuxer::SetLiveness(DemuxerStream::Liveness liveness) {
+void FFmpegDemuxer::SetLiveness(StreamLiveness liveness) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   for (const auto& stream : streams_) {
     if (stream)

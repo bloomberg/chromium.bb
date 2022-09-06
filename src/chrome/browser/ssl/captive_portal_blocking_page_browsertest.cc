@@ -15,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/interstitials/security_interstitial_idn_test.h"
@@ -254,7 +253,7 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), GURL("https://mock.failed.request/start=-20")));
   content::RenderFrameHost* frame;
-  frame = contents->GetMainFrame();
+  frame = contents->GetPrimaryMainFrame();
   ASSERT_TRUE(WaitForRenderFrameReady(frame));
 
   EXPECT_EQ(expect_wifi == EXPECT_WIFI_YES,
@@ -371,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiFi_SSID_LoginURL) {
 }
 
 // Flaky on mac: https://crbug.com/690170
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_WiFi_NoSSID_LoginURL DISABLED_WiFi_NoSSID_LoginURL
 #else
 #define MAYBE_WiFi_NoSSID_LoginURL WiFi_NoSSID_LoginURL
@@ -386,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 }
 
 // Flaky on mac: https://crbug.com/690125
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_WiFi_SSID_NoLoginURL DISABLED_WiFi_SSID_NoLoginURL
 #else
 #define MAYBE_WiFi_SSID_NoLoginURL WiFi_SSID_NoLoginURL

@@ -218,6 +218,7 @@ void SetupSandboxParameters(sandbox::mojom::Sandbox sandbox_type,
     case sandbox::mojom::Sandbox::kPrintCompositor:
     case sandbox::mojom::Sandbox::kRenderer:
     case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kServiceWithJit:
     case sandbox::mojom::Sandbox::kUtility:
       SetupCommonSandboxParameters(client);
       break;
@@ -238,6 +239,7 @@ void SetupSandboxParameters(sandbox::mojom::Sandbox sandbox_type,
                    << static_cast<int>(sandbox_type);
       break;
     // Setup parameters for sandbox types handled by embedders below.
+    case sandbox::mojom::Sandbox::kScreenAI:
     case sandbox::mojom::Sandbox::kSpeechRecognition:
       SetupCommonSandboxParameters(client);
       CHECK(GetContentClient()->browser()->SetupEmbedderSandboxParameters(

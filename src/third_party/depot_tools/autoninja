@@ -10,8 +10,8 @@ if [ "$(expr "$(uname -s)" : "^MINGW64_NT")" == "10" ]; then
     exit
 fi
 
-# Set unique build ID.
-AUTONINJA_BUILD_ID="$(python3 -c "import uuid; print(uuid.uuid4())")"
+# Set unique build ID if not already set by the user.
+AUTONINJA_BUILD_ID="${AUTONINJA_BUILD_ID:=$(python3 -c "import uuid; print(uuid.uuid4())")}"
 export AUTONINJA_BUILD_ID
 
 if [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then

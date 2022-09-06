@@ -18,10 +18,13 @@ from dashboard.pinpoint.models import results2 as results2_module
 _SERVICE_ACCOUNT_EMAIL = 'some-service-account@example.com'
 
 
+@mock.patch('dashboard.services.swarming.GetAliveBotsByDimensions',
+            mock.MagicMock(return_value=["a"]))
 class JobsTest(test.TestCase):
 
   @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
   def testGet_NoUser(self, _):
     job = job_module.Job.New((), ())
@@ -36,8 +39,10 @@ class JobsTest(test.TestCase):
     self.assertTrue(data['next_cursor'])
     self.assertFalse(data['prev_cursor'])
 
+
   @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
   def testGet_WithUserFilter(self, _):
     job_module.Job.New((), ())
@@ -61,8 +66,10 @@ class JobsTest(test.TestCase):
     sorted_data = sorted(data['jobs'], key=lambda d: d['job_id'])
     self.assertEqual(job.AsDict([job_module.OPTION_STATE]), sorted_data[-1])
 
+
   @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(jobs.utils, 'GetEmail',
                      mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
@@ -91,7 +98,54 @@ class JobsTest(test.TestCase):
     self.assertEqual(expected_job_dict, sorted_data[-1])
 
   @mock.patch.object(utils,
+                     'ServiceAccountEmail', lambda: utils.LEGACY_SERVICE_ACCOUNT
+                    )
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
+  @mock.patch.object(jobs.utils, 'GetEmail',
+                     mock.MagicMock(return_value=utils.LEGACY_SERVICE_ACCOUNT))
+  @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
+  def testGet_WithServiceAccountUser_Legacy(self, _):
+    job_module.Job.New((), ())
+    job_module.Job.New((), (), user=utils.LEGACY_SERVICE_ACCOUNT)
+    job = job_module.Job.New((), (), user=utils.LEGACY_SERVICE_ACCOUNT)
+
+    data = json.loads(
+        self.testapp.get('/api/jobs?o=STATE&filter=user=%s' %
+                         (utils.LEGACY_SERVICE_ACCOUNT,)).body)
+
+    self.assertEqual(2, data['count'])
+    self.assertEqual(2, len(data['jobs']))
+    self.assertEqual(data['jobs'][0]['user'], 'chromeperf (automation)')
+    self.assertEqual(data['jobs'][1]['user'], 'chromeperf (automation)')
+
+    self.assertFalse(data['prev'])
+    self.assertFalse(data['next'])
+    self.assertTrue(data['next_cursor'])
+    self.assertFalse(data['prev_cursor'])
+
+    sorted_data = sorted(data['jobs'], key=lambda d: d['job_id'])
+    expected_job_dict = job.AsDict([job_module.OPTION_STATE])
+    expected_job_dict['user'] = 'chromeperf (automation)'
+    self.assertEqual(expected_job_dict, sorted_data[-1])
+
+  @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: True)
+  @mock.patch.object(jobs.utils, 'GetEmail',
+                     mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
+  @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
+  def testGet_WithServiceAccountUserInStaging(self, _):
+    job_module.Job.New((), (), user=_SERVICE_ACCOUNT_EMAIL)
+
+    data = json.loads(self.testapp.get('/api/jobs?o=STATE').body)
+    self.assertEqual(1, data['count'])
+    self.assertEqual(1, len(data['jobs']))
+    self.assertEqual(data['jobs'][0]['user'], _SERVICE_ACCOUNT_EMAIL)
+
+
+  @mock.patch.object(utils,
+                     'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(jobs.utils, 'GetEmail',
                      mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
@@ -158,8 +212,10 @@ class JobsTest(test.TestCase):
         'user': expected_automation_email,
     }])
 
+
   @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(jobs.utils, 'GetEmail',
                      mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
@@ -206,8 +262,10 @@ class JobsTest(test.TestCase):
     expected_job_dict['user'] = expected_automation_email
     self.assertEqual(expected_job_dict, sorted_data[-1])
 
+
   @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(jobs.utils, 'GetEmail',
                      mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
@@ -256,8 +314,10 @@ class JobsTest(test.TestCase):
     expected_job_dict['user'] = some_user
     self.assertEqual(expected_job_dict, sorted_data[-1])
 
+
   @mock.patch.object(utils,
                      'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
   @mock.patch.object(jobs.utils, 'GetEmail',
                      mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
   @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
@@ -331,3 +391,84 @@ class JobsTest(test.TestCase):
     jobs_ = data['jobs']
     self.assertEqual(jobs_[0]['user'], '2')
     self.assertEqual(jobs_[1]['user'], '1')
+
+  @mock.patch.object(utils,
+                     'ServiceAccountEmail', lambda: _SERVICE_ACCOUNT_EMAIL)
+  @mock.patch.object(utils, 'IsStagingEnvironment', lambda: False)
+  @mock.patch.object(jobs.utils, 'GetEmail',
+                     mock.MagicMock(return_value=_SERVICE_ACCOUNT_EMAIL))
+  @mock.patch.object(results2_module, 'GetCachedResults2', return_value="")
+  @mock.patch.object(jobs, '_MAX_JOBS_TO_FETCH', 2)
+  @mock.patch.object(jobs, '_DEFAULT_FILTERED_JOBS', 2)
+  def testGet_MultiplePagesWithFilter(self, _):
+
+    for i in range(20):
+      job_module.Job.New((), (), user=str(i % 4), name=str(i // 4))
+
+    data = json.loads(self.testapp.get('/api/jobs?filter=user=2').body)
+    self.assertEqual(5, data['count'])
+    self.assertEqual(2, len(data['jobs']))
+    self.assertTrue(data['next'])
+    self.assertFalse(data['prev'])
+
+    next_cursor = data['next_cursor']
+    prev_cursor = data['prev_cursor']
+    self.assertTrue(next_cursor)
+    self.assertFalse(prev_cursor)
+
+    jobs_ = data['jobs']
+    self.assertEqual(jobs_[0]['name'], '4')
+    self.assertEqual(jobs_[1]['name'], '3')
+
+    data = json.loads(
+        self.testapp.get('/api/jobs?next_cursor=%s&filter=user=2' %
+                         next_cursor).body)
+
+    self.assertEqual(5, data['count'])
+    self.assertEqual(2, len(data['jobs']))
+
+    self.assertTrue(data['next'])
+    self.assertTrue(data['prev'])
+    next_cursor = data['next_cursor']
+    prev_cursor = data['prev_cursor']
+    self.assertTrue(next_cursor)
+    self.assertTrue(prev_cursor)
+
+    jobs_ = data['jobs']
+    self.assertEqual(jobs_[0]['name'], '2')
+    self.assertEqual(jobs_[1]['name'], '1')
+
+    data = json.loads(
+        self.testapp.get('/api/jobs?next_cursor=%s&filter=user=2' %
+                         next_cursor).body)
+
+    self.assertEqual(5, data['count'])
+    self.assertEqual(1, len(data['jobs']))
+
+    self.assertFalse(data['next'])
+    self.assertTrue(data['prev'])
+    next_cursor = data['next_cursor']
+    prev_cursor = data['prev_cursor']
+    self.assertTrue(next_cursor)
+    self.assertTrue(prev_cursor)
+
+    jobs_ = data['jobs']
+    self.assertEqual(jobs_[0]['name'], '0')
+
+    data = json.loads(
+        self.testapp.get('/api/jobs?prev_cursor=%s&filter=user=2' %
+                         prev_cursor).body)
+
+    self.assertEqual(5, data['count'])
+    self.assertEqual(2, len(data['jobs']))
+
+    self.assertTrue(data['next'])
+    self.assertTrue(data['prev'])
+    next_cursor = data['next_cursor']
+    prev_cursor = data['prev_cursor']
+    self.assertTrue(next_cursor)
+    self.assertTrue(prev_cursor)
+
+    jobs_ = data['jobs']
+    self.assertEqual(jobs_[0]['name'], '2')
+    self.assertEqual(jobs_[1]['name'], '1')

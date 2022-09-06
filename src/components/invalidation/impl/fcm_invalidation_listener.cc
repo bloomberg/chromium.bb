@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/pref_service.h"
@@ -244,14 +245,14 @@ void FCMInvalidationListener::OnSubscriptionChannelStateChanged(
 base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
   base::DictionaryValue status =
       per_user_topic_subscription_manager_->CollectDebugData();
-  status.SetString("InvalidationListener.FCM-channel-state",
-                   FcmChannelStateToString(fcm_network_state_));
-  status.SetString(
+  status.SetStringPath("InvalidationListener.FCM-channel-state",
+                       FcmChannelStateToString(fcm_network_state_));
+  status.SetStringPath(
       "InvalidationListener.Subscription-channel-state",
       SubscriptionChannelStateToString(subscription_channel_state_));
   for (const auto& topic : interested_topics_) {
-    if (!status.HasKey(topic.first)) {
-      status.SetString(topic.first, "Unsubscribed");
+    if (!status.FindKey(topic.first)) {
+      status.SetStringKey(topic.first, "Unsubscribed");
     }
   }
   return status;

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/containers/cxx20_erase.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/animation/keyframe/animation_curve.h"
 #include "ui/gfx/animation/keyframe/target_property.h"
 #include "ui/gfx/geometry/transform_operations.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 
@@ -65,10 +67,15 @@ KeyframeEffect::~KeyframeEffect() {
 void KeyframeEffect::SetNeedsPushProperties() {
   needs_push_properties_ = true;
 
+  // The keyframe effect may have been removed from the main thread while
+  // an event was in flight from the compositor. In this case, we may need
+  // to push the removal to the compositor but do not expect to have a bound
+  // element animations instance.
   // TODO(smcgruer): We only need the below calls when needs_push_properties_
   // goes from false to true - see http://crbug.com/764405
-  DCHECK(element_animations());
-  element_animations()->SetNeedsPushProperties();
+  if (element_animations()) {
+    element_animations_->SetNeedsPushProperties();
+  }
 
   animation_->SetNeedsPushProperties();
 }
@@ -105,9 +112,6 @@ void KeyframeEffect::DetachElement() {
 
 void KeyframeEffect::Tick(base::TimeTicks monotonic_time) {
   DCHECK(has_bound_element_animations());
-  if (!element_animations_->has_element_in_any_list())
-    return;
-
   if (needs_to_start_keyframe_models_)
     StartKeyframeModels(monotonic_time);
 
@@ -150,16 +154,12 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
       PromoteStartedKeyframeModels(events);
     }
   }
-
-  if (!element_animations()->has_element_in_any_list())
-    RemoveFromTicking();
 }
 
 void KeyframeEffect::UpdateTickingState() {
   if (animation_->has_animation_host()) {
     bool was_ticking = is_ticking_;
-    is_ticking_ = HasNonDeletedKeyframeModel() &&
-                  element_animations_->has_element_in_any_list();
+    is_ticking_ = HasNonDeletedKeyframeModel();
 
     if (is_ticking_ && !was_ticking) {
       animation_->AddToTicking();
@@ -448,7 +448,8 @@ bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-float KeyframeEffect::MaximumScale(ElementListType list_type) const {
+float KeyframeEffect::MaximumScale(ElementId element_id,
+                                   ElementListType list_type) const {
   float maximum_scale = kInvalidScale;
   for (const auto& keyframe_model : keyframe_models()) {
     if (keyframe_model->is_finished())
@@ -456,6 +457,12 @@ float KeyframeEffect::MaximumScale(ElementListType list_type) const {
 
     auto* cc_keyframe_model =
         KeyframeModel::ToCcKeyframeModel(keyframe_model.get());
+
+    ElementId model_element_id = cc_keyframe_model->element_id();
+    if (!model_element_id)
+      model_element_id = element_id_;
+    if (model_element_id != element_id)
+      continue;
 
     if ((list_type == ElementListType::ACTIVE &&
          !cc_keyframe_model->affects_active_elements()) ||
@@ -600,19 +607,18 @@ void KeyframeEffect::PushNewKeyframeModelsToImplThread(
         !ScrollOffsetAnimationCurve::ToScrollOffsetAnimationCurve(
              keyframe_model->curve())
              ->HasSetInitialValue()) {
-      gfx::PointF current_scroll_offset;
-      if (keyframe_effect_impl->HasElementInActiveList()) {
-        current_scroll_offset =
-            keyframe_effect_impl->ScrollOffsetForAnimation();
-      } else {
-        // The owning layer isn't yet in the active tree, so the main thread
-        // scroll offset will be up to date.
+      absl::optional<gfx::PointF> current_scroll_offset;
+      // If the scroller was already composited, prefer using its current scroll
+      // offset.
+      current_scroll_offset = keyframe_effect_impl->ScrollOffsetForAnimation();
+      // Otherwise, take the scroll offset from the commit with the animation.
+      if (!current_scroll_offset.has_value())
         current_scroll_offset = ScrollOffsetForAnimation();
-      }
+      DCHECK(current_scroll_offset);
       ScrollOffsetAnimationCurve* curve =
           ScrollOffsetAnimationCurve::ToScrollOffsetAnimationCurve(
               keyframe_model->curve());
-      curve->SetInitialValue(current_scroll_offset);
+      curve->SetInitialValue(*current_scroll_offset);
     }
 
     // The new keyframe_model should be set to run as soon as possible.
@@ -1023,13 +1029,7 @@ void KeyframeEffect::MarkFinishedKeyframeModels(
     element_animations_->UpdateClientAnimationState();
 }
 
-bool KeyframeEffect::HasElementInActiveList() const {
-  DCHECK(has_bound_element_animations());
-  return element_animations_->has_element_in_active_list();
-}
-
-gfx::PointF KeyframeEffect::ScrollOffsetForAnimation() const {
-  DCHECK(has_bound_element_animations());
+absl::optional<gfx::PointF> KeyframeEffect::ScrollOffsetForAnimation() const {
   return element_animations_->ScrollOffsetForAnimation();
 }
 

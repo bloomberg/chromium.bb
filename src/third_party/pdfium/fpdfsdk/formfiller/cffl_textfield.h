@@ -19,8 +19,7 @@ struct FFL_TextFieldState {
   WideString sValue;
 };
 
-class CFFL_TextField final : public CFFL_TextObject,
-                             public CPWL_Wnd::FocusHandlerIface {
+class CFFL_TextField final : public CFFL_TextObject {
  public:
   CFFL_TextField(CFFL_InteractiveFormFiller* pFormFiller,
                  CPDFSDK_Widget* pWidget);
@@ -30,8 +29,7 @@ class CFFL_TextField final : public CFFL_TextObject,
   CPWL_Wnd::CreateParams GetCreateParam() override;
   std::unique_ptr<CPWL_Wnd> NewPWLWindow(
       const CPWL_Wnd::CreateParams& cp,
-      std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
-      override;
+      std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData) override;
   bool OnChar(CPDFSDK_Widget* pWidget,
               uint32_t nChar,
               Mask<FWL_EVENTFLAG> nFlags) override;
@@ -50,8 +48,8 @@ class CFFL_TextField final : public CFFL_TextObject,
   bool IsFieldFull(const CPDFSDK_PageView* pPageView) override;
 #endif
 
-  // CPWL_Wnd::FocusHandlerIface:
-  void OnSetFocus(CPWL_Edit* pEdit) override;
+  // CPWL_Wnd::ProviderIface:
+  void OnSetFocusForEdit(CPWL_Edit* pEdit) override;
 
  private:
   CPWL_Edit* GetPWLEdit(const CPDFSDK_PageView* pPageView) const;

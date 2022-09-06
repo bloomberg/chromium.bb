@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/commander/commander_handler.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/commander/commander_view_model.h"
@@ -67,17 +70,17 @@ void CommanderHandler::OnJavascriptAllowed() {
 
 void CommanderHandler::HandleTextChanged(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1u, args->GetList().size());
-  std::string text = args->GetList()[0].GetString();
+  CHECK_EQ(1u, args->GetListDeprecated().size());
+  std::string text = args->GetListDeprecated()[0].GetString();
   if (delegate_)
     delegate_->OnTextChanged(base::UTF8ToUTF16(text));
 }
 
 void CommanderHandler::HandleOptionSelected(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(2u, args->GetList().size());
-  int index = args->GetList()[0].GetInt();
-  int result_set_id = args->GetList()[1].GetInt();
+  CHECK_EQ(2u, args->GetListDeprecated().size());
+  int index = args->GetListDeprecated()[0].GetInt();
+  int result_set_id = args->GetListDeprecated()[1].GetInt();
   if (delegate_)
     delegate_->OnOptionSelected(index, result_set_id);
 }
@@ -96,8 +99,8 @@ void CommanderHandler::HandleDismiss(const base::ListValue* args) {
 }
 
 void CommanderHandler::HandleHeightChanged(const base::ListValue* args) {
-  CHECK_EQ(1u, args->GetList().size());
-  int new_height = args->GetList()[0].GetInt();
+  CHECK_EQ(1u, args->GetListDeprecated().size());
+  int new_height = args->GetListDeprecated()[0].GetInt();
   if (delegate_)
     delegate_->OnHeightChanged(new_height);
 }
@@ -105,17 +108,17 @@ void CommanderHandler::HandleHeightChanged(const base::ListValue* args) {
 void CommanderHandler::ViewModelUpdated(
     commander::CommanderViewModel view_model) {
   base::DictionaryValue vm;
-  vm.SetIntKey(kActionKey, view_model.action);
-  vm.SetIntKey(kResultSetIdKey, view_model.result_set_id);
+  vm.GetDict().Set(kActionKey, view_model.action);
+  vm.GetDict().Set(kResultSetIdKey, view_model.result_set_id);
   if (view_model.action ==
       commander::CommanderViewModel::Action::kDisplayResults) {
     base::ListValue option_list;
     for (commander::CommandItemViewModel& item : view_model.items) {
       base::DictionaryValue option;
-      option.SetStringKey(kTitleKey, item.title);
-      option.SetIntKey(kEntityKey, item.entity_type);
+      option.GetDict().Set(kTitleKey, item.title);
+      option.GetDict().Set(kEntityKey, item.entity_type);
       if (!item.annotation.empty())
-        option.SetStringKey(kAnnotationKey, item.annotation);
+        option.GetDict().Set(kAnnotationKey, item.annotation);
       base::ListValue ranges;
       for (const gfx::Range& range : item.matched_ranges) {
         base::ListValue range_value;
@@ -123,15 +126,15 @@ void CommanderHandler::ViewModelUpdated(
         range_value.Append(static_cast<int>(range.end()));
         ranges.Append(std::move(range_value));
       }
-      option.SetKey(kMatchedRangesKey, std::move(ranges));
+      option.GetDict().Set(kMatchedRangesKey, std::move(ranges));
       option_list.Append(std::move(option));
     }
-    vm.SetKey(kOptionsKey, std::move(option_list));
+    vm.GetDict().Set(kOptionsKey, std::move(option_list));
   } else {
     // kDismiss is handled higher in the stack.
     DCHECK_EQ(view_model.action,
               commander::CommanderViewModel::Action::kPrompt);
-    vm.SetStringKey(kPromptTextKey, view_model.prompt_text);
+    vm.GetDict().Set(kPromptTextKey, view_model.prompt_text);
   }
   FireWebUIListener(kViewModelUpdatedEvent, vm);
 }

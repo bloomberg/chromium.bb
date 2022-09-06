@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 
+bool AuthenticatorRequestSheetModel::IsCloseButtonVisible() const {
+  return false;
+}
+
 std::u16string AuthenticatorRequestSheetModel::GetAdditionalDescription()
     const {
   return std::u16string();
@@ -16,3 +20,9 @@ std::u16string AuthenticatorRequestSheetModel::GetError() const {
 ui::MenuModel* AuthenticatorRequestSheetModel::GetOtherMechanismsMenuModel() {
   return nullptr;
 }
+
+bool AuthenticatorRequestSheetModel::IsManageDevicesButtonVisible() const {
+  return false;
+}
+
+void AuthenticatorRequestSheetModel::OnManageDevices() {}

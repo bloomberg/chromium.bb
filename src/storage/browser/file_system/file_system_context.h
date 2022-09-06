@@ -162,8 +162,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       const blink::StorageKey& storage_key,
       FileSystemType type);
 
-  QuotaManagerProxy* quota_manager_proxy() const {
-    return quota_manager_proxy_.get();
+  const scoped_refptr<QuotaManagerProxy>& quota_manager_proxy() const {
+    return quota_manager_proxy_;
   }
 
   // Discards inflight operations in the operation runner.
@@ -214,7 +214,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // Used for OpenFileSystem.
   using OpenFileSystemCallback =
-      base::OnceCallback<void(const GURL& root,
+      base::OnceCallback<void(const FileSystemURL& root_url,
                               const std::string& name,
                               base::File::Error result)>;
 
@@ -238,7 +238,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // If `create` is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
+  // Provide a non-null BucketLocator to override the default storage bucket
+  // for the root URL (which will be propagated to child URLs).
   void OpenFileSystem(const blink::StorageKey& storage_key,
+                      const absl::optional<storage::BucketLocator>& bucket,
                       FileSystemType type,
                       OpenFileSystemMode mode,
                       OpenFileSystemCallback callback);
@@ -346,6 +349,22 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   bool is_incognito() { return is_incognito_; }
 
+  // TODO(com/1231162): Remove this. Used only by test code and to migrate media
+  // license data to the new backend.
+  PluginPrivateFileSystemBackend* plugin_private_backend() const {
+    return plugin_private_backend_.get();
+  }
+
+  void ResolveURLOnOpenFileSystemForTesting(
+      const blink::StorageKey& storage_key,
+      const absl::optional<storage::BucketLocator>& bucket,
+      FileSystemType type,
+      OpenFileSystemMode mode,
+      OpenFileSystemCallback callback) {
+    ResolveURLOnOpenFileSystem(storage_key, bucket, type, mode,
+                               std::move(callback));
+  }
+
  private:
   // For CreateFileSystemOperation.
   friend class FileSystemOperationRunner;
@@ -410,11 +429,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // ResolveURLOnOpenFileSystem is called, either by OnGetOrCreateBucket
   // on successful bucket creation, or (tests onlyh) by OpenFileSystem
   // directly in the absence of a quota manager.
-  void ResolveURLOnOpenFileSystem(const blink::StorageKey& storage_key,
-                                  FileSystemType type,
-                                  OpenFileSystemMode mode,
-                                  OpenFileSystemCallback callback);
-  void DidResolveURLOnOpenFileSystem(OpenFileSystemCallback callback,
+  // `bucket` will be populated if the non-default storage bucket was used.
+  void ResolveURLOnOpenFileSystem(
+      const blink::StorageKey& storage_key,
+      const absl::optional<storage::BucketLocator>& bucket,
+      FileSystemType type,
+      OpenFileSystemMode mode,
+      OpenFileSystemCallback callback);
+  void DidResolveURLOnOpenFileSystem(const FileSystemURL& filesystem_root_url,
+                                     OpenFileSystemCallback callback,
                                      const GURL& filesystem_root,
                                      const std::string& filesystem_name,
                                      base::File::Error error);
@@ -422,11 +445,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // Returns a FileSystemBackend, used only by test code.
   SandboxFileSystemBackend* sandbox_backend() const {
     return sandbox_backend_.get();
-  }
-
-  // Used only by test code.
-  PluginPrivateFileSystemBackend* plugin_private_backend() const {
-    return plugin_private_backend_.get();
   }
 
   // Override the default leveldb Env with `env_override_` if set.

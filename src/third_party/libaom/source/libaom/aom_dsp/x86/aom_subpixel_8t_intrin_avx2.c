@@ -1435,7 +1435,7 @@ filter8_1dfunction aom_filter_block1d4_h2_ssse3;
 //                               const int16_t *filter_x, int x_step_q4,
 //                               const int16_t *filter_y, int y_step_q4,
 //                               int w, int h);
-FUN_CONV_1D(horiz, x_step_q4, filter_x, h, src, , avx2);
-FUN_CONV_1D(vert, y_step_q4, filter_y, v, src - src_stride * 3, , avx2);
+FUN_CONV_1D(horiz, x_step_q4, filter_x, h, src, , avx2)
+FUN_CONV_1D(vert, y_step_q4, filter_y, v, src - src_stride * 3, , avx2)
 
 #endif  // HAVE_AX2 && HAVE_SSSE3

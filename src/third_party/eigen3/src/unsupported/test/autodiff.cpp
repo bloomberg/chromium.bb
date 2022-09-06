@@ -106,7 +106,6 @@ struct TestFunc1
 };
 
 
-#if EIGEN_HAS_VARIADIC_TEMPLATES
 /* Test functor for the C++11 features. */
 template <typename Scalar>
 struct integratorFunctor
@@ -186,7 +185,6 @@ template<typename Func> void forward_jacobian_cpp11(const Func& f)
     VERIFY_IS_APPROX(y, yref);
     VERIFY_IS_APPROX(j, jref);
 }
-#endif
 
 template<typename Func> void forward_jacobian(const Func& f)
 {
@@ -247,9 +245,7 @@ void test_autodiff_jacobian()
   CALL_SUBTEST(( forward_jacobian(TestFunc1<double,3,2>()) ));
   CALL_SUBTEST(( forward_jacobian(TestFunc1<double,3,3>()) ));
   CALL_SUBTEST(( forward_jacobian(TestFunc1<double>(3,3)) ));
-#if EIGEN_HAS_VARIADIC_TEMPLATES
   CALL_SUBTEST(( forward_jacobian_cpp11(integratorFunctor<double>(10)) ));
-#endif
 }
 
 

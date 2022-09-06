@@ -16,8 +16,8 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/system_proxy/system_proxy_client.h"
-#include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
+#include "chromeos/ash/components/dbus/system_proxy/system_proxy_client.h"
+#include "chromeos/ash/components/dbus/system_proxy/system_proxy_service.pb.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_test_helper.h"
 #include "components/prefs/pref_service.h"
@@ -42,11 +42,10 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
-using testing::_;
-using testing::Invoke;
-using testing::WithArg;
+namespace ash {
 
 namespace {
+
 constexpr char kBrowserUsername[] = "browser_username";
 constexpr char16_t kBrowserUsername16[] = u"browser_username";
 constexpr char kBrowserPassword[] = "browser_password";
@@ -103,7 +102,6 @@ net::AuthChallengeInfo GetAuthInfo() {
 
 }  // namespace
 
-namespace chromeos {
 // TODO(acostinas, https://crbug.com/1102351) Replace RunUntilIdle() in tests
 // with RunLoop::Run() with explicit RunLoop::QuitClosure().
 class SystemProxyManagerTest : public testing::Test {
@@ -364,7 +362,7 @@ TEST_F(SystemProxyManagerTest, CanUsePolicyCredentialsUserType) {
       GetAuthInfo(), /*first_auth_attempt=*/true));
 
   LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
-                                      LoginState::LOGGED_IN_USER_KIOSK_APP);
+                                      LoginState::LOGGED_IN_USER_KIOSK);
 
   EXPECT_TRUE(system_proxy_manager_->CanUsePolicyCredentials(
       GetAuthInfo(), /*first_auth_attempt=*/true));
@@ -452,7 +450,7 @@ TEST_F(SystemProxyManagerTest, SystemServicesProxyPacStringDefault) {
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(system_proxy_manager_->SystemServicesProxyPacString(
-                SystemProxyOverride::kDefault),
+                chromeos::SystemProxyOverride::kDefault),
             "PROXY http://example.com:3128");
 }
 
@@ -466,13 +464,14 @@ TEST_F(SystemProxyManagerTest, SystemServicesProxyPacStringOptOut) {
   client_test_interface()->SendWorkerActiveSignal(details);
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(system_proxy_manager_
-                  ->SystemServicesProxyPacString(SystemProxyOverride::kOptOut)
-                  .empty());
+  EXPECT_TRUE(
+      system_proxy_manager_
+          ->SystemServicesProxyPacString(chromeos::SystemProxyOverride::kOptOut)
+          .empty());
 }
 
 // Tests the behaviour of SystemProxyManager when enabled via the feature flag
-// `ash::features::kSystemProxyForSystemServices`.
+// `features::kSystemProxyForSystemServices`.
 class FeatureEnabledSystemProxyTest : public SystemProxyManagerTest {
  public:
   FeatureEnabledSystemProxyTest() : SystemProxyManagerTest() {}
@@ -481,7 +480,7 @@ class FeatureEnabledSystemProxyTest : public SystemProxyManagerTest {
   // testing::Test
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kSystemProxyForSystemServices);
+        features::kSystemProxyForSystemServices);
     SystemProxyManagerTest::SetUp();
   }
 
@@ -499,7 +498,8 @@ TEST_F(FeatureEnabledSystemProxyTest, SystemServicesDefault) {
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(system_proxy_manager_
-                  ->SystemServicesProxyPacString(SystemProxyOverride::kDefault)
+                  ->SystemServicesProxyPacString(
+                      chromeos::SystemProxyOverride::kDefault)
                   .empty());
 }
 
@@ -511,7 +511,7 @@ TEST_F(FeatureEnabledSystemProxyTest, SystemServicesOptIn) {
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(system_proxy_manager_->SystemServicesProxyPacString(
-                SystemProxyOverride::kOptIn),
+                chromeos::SystemProxyOverride::kOptIn),
             "PROXY local-proxy.com:3128");
 }
 
@@ -547,4 +547,4 @@ TEST_F(FeatureEnabledSystemProxyTest, ArcPolicyEnabled) {
                 ::prefs::kSystemProxyUserTrafficHostAndPort));
 }
 
-}  // namespace chromeos
+}  // namespace ash

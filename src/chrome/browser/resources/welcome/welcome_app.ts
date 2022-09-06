@@ -13,13 +13,15 @@ import './signin_view.js';
 import '../strings.m.js';
 
 import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {NavigationMixin, Routes} from './navigation_mixin.js';
 import {NuxSetAsDefaultProxyImpl} from './set_as_default/nux_set_as_default_proxy.js';
 import {BookmarkBarManager} from './shared/bookmark_proxy.js';
+import {getTemplate} from './welcome_app.html.js';
 import {WelcomeBrowserProxyImpl} from './welcome_browser_proxy.js';
 
 /**
@@ -27,7 +29,7 @@ import {WelcomeBrowserProxyImpl} from './welcome_browser_proxy.js';
  */
 type NuxOnboardingModules = {
   'new-user': string[],
-  'returning-user': string[]
+  'returning-user': string[],
 };
 
 /**
@@ -59,6 +61,10 @@ export class WelcomeAppElement extends WelcomeAppElementBase {
     return 'welcome-app';
   }
 
+  static get template() {
+    return getTemplate();
+  }
+
   static get properties() {
     return {
       modulesInitialized_: Boolean,
@@ -80,18 +86,22 @@ export class WelcomeAppElement extends WelcomeAppElementBase {
     };
   }
 
-  ready() {
+  override ready() {
     super.ready();
     this.setAttribute('role', 'main');
     this.addEventListener(
         'default-browser-change', () => this.onDefaultBrowserChange_());
+
+    // Initiate focus-outline-manager for this document so that action-link
+    // style can take advantage of it.
+    FocusOutlineManager.forDocument(document);
   }
 
   private onDefaultBrowserChange_() {
     this.shadowRoot!.querySelector('cr-toast')!.show();
   }
 
-  onRouteChange(route: Routes, step: number) {
+  override onRouteChange(route: Routes, step: number) {
     const setStep = () => {
       // If the specified step doesn't exist, that means there are no more
       // steps. In that case, replace this page with NTP.
@@ -183,10 +193,6 @@ export class WelcomeAppElement extends WelcomeAppElementBase {
             }
           });
         });
-  }
-
-  static get template() {
-    return html`{__html_template__}`;
   }
 }
 

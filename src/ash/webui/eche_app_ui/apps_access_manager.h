@@ -7,6 +7,7 @@
 
 #include <ostream>
 
+#include "ash/components/phonehub/multidevice_feature_access_manager.h"
 #include "ash/webui/eche_app_ui/apps_access_setup_operation.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
@@ -16,18 +17,38 @@
 namespace ash {
 namespace eche_app {
 
+using AccessStatus =
+    ash::phonehub::MultideviceFeatureAccessManager::AccessStatus;
 // Tracks the status of whether the user has enabled apps access on
 // their phones.
 class AppsAccessManager {
  public:
-  // Status of apps access. Numerical values are stored in prefs and
-  // should not be changed or reused.
-  enum class AccessStatus {
-    // Access has not been granted, but the user is free to grant access.
-    kAvailableButNotGranted = 0,
+  // Note: Numerical values should not be changed, they are persisted to logs
+  // and should not be renumbered or re-used. See
+  // tools/metrics/histograms/enums.xml.
+  enum class OnboardingUserActionMetric {
+    // Initial state.
+    kUserActionUnknown = 0,
 
-    // Access has been granted by the user.
-    kAccessGranted = 1
+    // Onboarding is started by user action.
+    kUserActionStartClicked = 1,
+
+    // The permission is granted by user action.
+    kUserActionPermissionGranted = 2,
+
+    // Users explicitly decline the permission request.
+    kUserActionPermissionRejected = 3,
+
+    // The permission request time out after 20 seconds.
+    kUserActionTimeout = 4,
+
+    // The permission request is canceled because the device screen off.
+    kUserActionCanceled = 5,
+
+    // System exceptions thrown out.
+    kSystemError = 6,
+
+    kMaxValue = kSystemError
   };
 
   class Observer : public base::CheckedObserver {
@@ -70,9 +91,6 @@ class AppsAccessManager {
   base::ObserverList<Observer> observer_list_;
   base::WeakPtrFactory<AppsAccessManager> weak_ptr_factory_{this};
 };
-
-std::ostream& operator<<(std::ostream& stream,
-                         AppsAccessManager::AccessStatus status);
 
 }  // namespace eche_app
 }  // namespace ash

@@ -12,9 +12,9 @@
 #include "ash/components/arc/test/fake_webapk_instance.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_metrics.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
@@ -22,9 +22,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "components/webapk/webapk.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -41,8 +42,8 @@ constexpr char kTestManifestUrl[] = "https://www.example.com/manifest.json";
 constexpr char kTestShareTextParam[] = "share_text";
 const std::u16string kTestAppTitle = u"Test App";
 
-std::unique_ptr<WebApplicationInfo> BuildDefaultWebAppInfo() {
-  auto app_info = std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> BuildDefaultWebAppInfo() {
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL(kTestAppUrl);
   app_info->scope = GURL(kTestAppUrl);
   app_info->title = kTestAppTitle;
@@ -107,17 +108,15 @@ class WebApkInstallTaskTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    // Disable the WebAPKs feature so that App Service does not start a
-    // WebApkManager which interferes with the test.
-    // TODO(crbug.com/1234279): Reuse the WebApkManager from App Service
-    // instead.
-    scoped_feature_list_.InitAndDisableFeature(ash::features::kWebApkGenerator);
-
     app_service_test_.SetUp(&profile_);
 
-    auto* const provider = web_app::FakeWebAppProvider::Get(&profile_);
-    provider->SkipAwaitingExtensionSystem();
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
+
+    // Disable WebApkManager by policy. This allows us to unit test
+    // WebApkInstallTask without interference from the WebApkManager started by
+    // ArcApps.
+    profile()->GetPrefs()->SetBoolean(
+        apps::webapk_prefs::kGeneratedWebApksEnabled, false);
 
     arc_test_.SetUp(&profile_);
     auto* arc_bridge_service =
@@ -177,7 +176,6 @@ class WebApkInstallTaskTest : public testing::Test {
   net::EmbeddedTestServer* test_server() { return &test_server_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   apps::AppServiceTest app_service_test_;
@@ -211,10 +209,10 @@ TEST_F(WebApkInstallTaskTest, SuccessfulInstall) {
   EXPECT_EQ(manifest.start_url(), kTestAppUrl);
   EXPECT_EQ(manifest.icons(0).src(), kTestAppIcon);
 
-  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 1);
+  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 1u);
   ASSERT_EQ(fake_webapk_instance()->handled_packages().count(
                 "org.chromium.webapk.some_package"),
-            1);
+            1u);
 
   ASSERT_THAT(apps::webapk_prefs::GetWebApkAppIds(profile()),
               testing::ElementsAre(app_id));
@@ -224,8 +222,6 @@ TEST_F(WebApkInstallTaskTest, SuccessfulInstall) {
                                apps::WebApkInstallStatus::kSuccess, 1);
   histograms.ExpectBucketCount(apps::kWebApkArcInstallResultHistogram,
                                arc::mojom::WebApkInstallResult::kSuccess, 1);
-  histograms.ExpectBucketCount(apps::kWebApkMinterErrorCodeHistogram,
-                               net::HTTP_OK, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, ShareTarget) {
@@ -265,7 +261,7 @@ TEST_F(WebApkInstallTaskTest, ShareTarget) {
 }
 
 TEST_F(WebApkInstallTaskTest, NoIconInManifest) {
-  auto app_info = std::make_unique<WebApplicationInfo>();
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL(kTestAppUrl);
   app_info->scope = GURL(kTestAppUrl);
   app_info->title = kTestAppTitle;
@@ -274,7 +270,7 @@ TEST_F(WebApkInstallTaskTest, NoIconInManifest) {
   base::HistogramTester histograms;
 
   ASSERT_FALSE(InstallWebApk(app_id));
-  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
+  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kAppInvalid, 1);
 }
@@ -288,12 +284,10 @@ TEST_F(WebApkInstallTaskTest, FailedServerCall) {
 
   ASSERT_FALSE(InstallWebApk(app_id));
 
-  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 0);
-  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
+  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 0u);
+  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kNetworkError, 1);
-  histograms.ExpectBucketCount(apps::kWebApkMinterErrorCodeHistogram,
-                               net::HTTP_BAD_REQUEST, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, FailedArcInstall) {
@@ -308,8 +302,8 @@ TEST_F(WebApkInstallTaskTest, FailedArcInstall) {
   ASSERT_FALSE(InstallWebApk(app_id));
   ASSERT_EQ(fake_webapk_instance()->handled_packages().count(
                 "org.chromium.webapk.some_package"),
-            1);
-  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
+            1u);
+  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kGooglePlayError, 1);
   histograms.ExpectBucketCount(
@@ -410,7 +404,7 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateScope) {
               ::testing::ElementsAre(webapk::WebApk::SCOPE_DIFFERS));
 
   webapk::WebAppManifest manifest = last_webapk_request()->manifest();
-  EXPECT_EQ(last_webapk_request()->manifest().scopes_size(), 1);
+  EXPECT_EQ(last_webapk_request()->manifest().scopes_size(), 1u);
   EXPECT_EQ(last_webapk_request()->manifest().scopes(0),
             "https://www.differentexample.com/");
 

@@ -537,6 +537,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="4601367666219428522">‏ٹیبل <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">اگلی کلید دبانے کو نظر انداز کیا جا رہا ہے</translation>
 <translation id="4623097797855662355">خاتمہ کتاب</translation>
+<translation id="4624970070706497034">‏TalkBack اب Chromebooks کے لیے حسب ضرورت بنانے کی سہولت فراہم نہیں کرتا ہے۔ آپ اب بھی اسے استعمال کر سکتے ہیں لیکن TalkBack کے ڈیفالٹ کی بورڈ شارٹ کٹس کا استعمال کریں۔ دستیاب شارٹ کٹس دیکھنے کے لیے Search + A، پھر K دبائیں۔ اگر آپ اب بھی TalkBack استعمال کرنا چاہتے ہیں تو کمانڈ کو دوبارہ دبائیں۔</translation>
 <translation id="463135993322337640">‏نیا کیا ہے یہ جاننے کیلئے ChromeVox o, n دبائیں</translation>
 <translation id="4649220074413114917">‏کسی بھی موجودہ اسپیچ کو روکنے کے لیے آپ اسکرین کو دو انگلیوں سے تھپتھپا سکتے ہیں۔ اگر آپ نہیں چاہتے کہ ChromeVox کچھ پڑھے تو یہ کارآمد ہے۔ جاری رکھنے کے لیے، دو انگلیوں سے اسکرین پر تھپتھپائیں۔</translation>
 <translation id="4660783501463101648">‏کلاسک ہٹا دیا گیا۔ ChromeVox کلاسک میں واپس سوئچ کرنے والا کی بورڈ ٹوگل ہٹا دیا گیا ہے۔</translation>
@@ -619,7 +620,6 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="5170206230005240598">بریل کیپشنز فعال ہیں</translation>
 <translation id="5183440668879371625">بریل کی پچھلی لائن</translation>
 <translation id="5189244881767082992">لکیر</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> ٹائپ کریں</translation>
 <translation id="5263034204789987535">مکئی نما ریشمی</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">اختتام</translation>
@@ -667,6 +667,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="5522423213731659107">فوری سمت بندی مکمل!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">ہلکا نیلگوں خاکستری</translation>
+<translation id="554893713779400387">ڈکٹیشن ٹوگل کریں</translation>
 <translation id="5549179427201066174">صوتی تاثرات (ایئرکونز) آن یا آف کریں</translation>
 <translation id="556042886152191864">بٹن</translation>
 <translation id="5561345396546889625">اگلی فہرست</translation>
@@ -685,6 +686,8 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="5623842676595125836">لاگ</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">گرافکس کی علامت</translation>
+<translation id="5648939288050772726">‏مبارکباد! آپ نے ChromeVox کو کامیابی کے ساتھ استعمال کرنے کے لوازمات سیکھ لیے ہیں۔ یاد رکھیں کہ آپ Search+Period کو دبا کر کسی بھی وقت ChromeVox ہدایت مینو کو کھول سکتے ہیں۔ ChromeVox اور ChromeOS کے بارے میں اور مزید جاننے کے لیے درج ذیل مضامین کا ملاحظہ کریں۔
+    اگر آپ نے ٹیوٹوریل کو مکمل کر لیا ہے تو 'بند کریں' بٹن پر نیویگیٹ کرنے اور اس پر کلک کرنے کیلئے ChromeVox استعمال کریں۔</translation>
 <translation id="5653397561111110475">‏Chromebook ٹچ اسکرین کی ایکسیسبیلٹی خصوصیات استعمال کریں</translation>
 <translation id="5655682562155942719">جمپ کمانڈز</translation>
 <translation id="56637627897541303">ٹیکسٹ ایریا</translation>
@@ -794,6 +797,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="641759969622533235">{COUNT,plural, =1{کولن}other{# کولنز}}</translation>
 <translation id="6444046323172968959">الرٹ ڈائیلاگ</translation>
 <translation id="6452403590345320472">فہرست مشمولات</translation>
+<translation id="6457542714329819968">قسم</translation>
 <translation id="6468049171101508116">اگلا بٹن</translation>
 <translation id="646954774886932461">فہرست مضامین</translation>
 <translation id="6475604559827479857">لفظ کی نمائش کا رنگ:</translation>
@@ -966,8 +970,6 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">قدرتی آواز</translation>
 <translation id="7714340021005120797">کوئی اگلا کومبو باکس نہیں ہے</translation>
-<translation id="772146615414628379">‏مبارک ہو! آپ نے ChromeVox کو کامیابی کے ساتھ استعمال کرنے کے لوازمات سیکھ لیے ہیں۔ یاد رکھیں کہ آپ Search+Period کو دبا کر کسی بھی وقت ChromeVox ہدایت مینو کو کھول سکتے ہیں۔ ChromeVox اور Chrome OS کے بارے میں اور مزید جاننے کے لیے درج ذیل مضامین کا ملاحظہ کریں۔
-    اگر آپ نے ٹیوٹوریل کو مکمل کر لیا ہے تو 'بند کریں' بٹن پر نیویگیٹ کرنے اور اس پر کلک کرنے کیلئے ChromeVox استعمال کریں۔</translation>
 <translation id="7724603315864178912">کٹ کریں</translation>
 <translation id="7731785449856576010">کوئی اگلا میڈیا ویجیٹ نہیں ہے</translation>
 <translation id="7735498529470878067">ٹچ کے ذریعے دریافت کرنے سے آپ کو اسکرین پر موجود چیزوں کے بارے میں فوری طور پر معلومات حاصل کرنے میں مدد مل سکتی ہے۔</translation>
@@ -1169,6 +1171,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="9223032053830369045">گہرا سرخ</translation>
 <translation id="923331726185079994">‏ChromeVox کو اپ ڈیٹ کر دیا گیا</translation>
 <translation id="93384979447910801">گہرا سمندری سبز</translation>
+<translation id="937605981140327129">‏TalkBack فی الحال انسٹال نہیں ہے۔ براہ کرم Play اسٹور سے Android ایکسیسبیلٹی سوئٹ انسٹال کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="948171205378458592">اسپیچ کا ریٹ گھٹائیں</translation>
 <translation id="957570623732056069">اس سبق کو نیویگیٹ کرنے کیلئے ایک انگلی سے بائیں یا دائیں سوائپ کریں</translation>
 <translation id="958854023026327378">ایک انگلی سے نیچے کی طرف سوائپ کریں</translation>

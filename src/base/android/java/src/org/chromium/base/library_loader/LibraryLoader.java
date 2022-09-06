@@ -83,6 +83,8 @@ public class LibraryLoader {
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
 
+    private static boolean sBrowserStartupBlockedForTesting;
+
     // One-way switch becomes true when the libraries are initialized (by calling
     // LibraryLoaderJni.get().libraryLoaded, which forwards to LibraryLoaded(...) in
     // library_loader_hooks.cc). Note that this member should remain a one-way switch, since it
@@ -560,7 +562,7 @@ public class LibraryLoader {
         synchronized (mLock) {
             if (mLinker == null) {
                 mLinker = mUseModernLinker ? new ModernLinker() : new LegacyLinker();
-                Log.i(TAG, "Using linker: %s", mLinker.getClass().getName());
+                Log.i(TAG, mUseModernLinker ? "Using ModernLinker" : "Using LegacyLinker");
             }
             return mLinker;
         }
@@ -868,7 +870,6 @@ public class LibraryLoader {
     }
 
     @VisibleForTesting
-    // After Android M, this function is likely a no-op.
     protected void loadNonMainDex() {
         if (mLoadState == LoadState.LOADED) return;
         synchronized (mNonMainDexLock) {
@@ -876,6 +877,7 @@ public class LibraryLoader {
             if (mLoadState == LoadState.LOADED) return;
             try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadNonMainDex")) {
                 if (!JNIUtils.isSelectiveJniRegistrationEnabled()) {
+                    // On M+ the native symbols are exported, and registering natives seems fast.
                     LibraryLoaderJni.get().registerNonMainDexJni();
                 }
                 mLoadState = LoadState.LOADED;
@@ -986,6 +988,9 @@ public class LibraryLoader {
             throw new ProcessInitException(LoaderErrors.FAILED_TO_REGISTER_JNI);
         }
 
+        // The "Successfully loaded native library" string is used by
+        // tools/android/build_speed/benchmark.py. Please update that script if this log message is
+        // changed.
         Log.i(TAG, "Successfully loaded native library");
         UmaRecorderHolder.onLibraryLoaded();
 
@@ -1038,6 +1043,14 @@ public class LibraryLoader {
     public void setLibrariesLoadedForNativeTests() {
         mLoadState = LoadState.LOADED;
         mInitialized = true;
+    }
+
+    public static void setBrowserProcessStartupBlockedForTesting() {
+        sBrowserStartupBlockedForTesting = true;
+    }
+
+    public static boolean isBrowserProcessStartupBlockedForTesting() {
+        return sBrowserStartupBlockedForTesting;
     }
 
     // The native methods below are defined in library_loader_hooks.cc.

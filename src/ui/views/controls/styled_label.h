@@ -69,8 +69,8 @@ class VIEWS_EXPORT StyledLabel : public View {
     // Tooltip for the range.
     std::u16string tooltip;
 
-    // If set, the whole range will be put on a single line.
-    bool disable_line_wrapping = false;
+    // Accessible name for the range.
+    std::u16string accessible_name;
 
     // A custom view shown instead of the underlying text. Ownership of custom
     // views must be passed to StyledLabel via AddCustomView().
@@ -147,6 +147,9 @@ class VIEWS_EXPORT StyledLabel : public View {
 
   bool GetAutoColorReadabilityEnabled() const;
   void SetAutoColorReadabilityEnabled(bool auto_color_readability);
+
+  bool GetSubpixelRenderingEnabled() const;
+  void SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled);
 
   // Returns the layout size information that would be used to layout the label
   // at width |w|.  This can be used by callers who need more detail than what's
@@ -249,6 +252,9 @@ class VIEWS_EXPORT StyledLabel : public View {
   // Controls whether the text is automatically re-colored to be readable on the
   // background.
   bool auto_color_readability_enabled_ = true;
+
+  // Controls whether subpixel rendering is enabled.
+  bool subpixel_rendering_enabled_ = true;
 
   // The horizontal alignment. This value is flipped for RTL. The default
   // behavior is to align left in LTR UI and right in RTL UI.

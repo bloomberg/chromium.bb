@@ -7,22 +7,22 @@
 #include "base/check.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
-#include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_matcher/url_matcher.h"
+#include "components/url_matcher/url_util.h"
 #include "url/gurl.h"
 
 namespace enterprise_connectors {
 
 namespace {
 
-const base::ListValue* GetPolicyUrlPatterns(PrefService* prefs) {
+const base::Value* GetPolicyUrlPatterns(PrefService* prefs) {
   return prefs->GetList(kContextAwareAccessSignalsAllowlistPref);
 }
 
 bool ConnectorPolicyHasValues(PrefService* profile_prefs) {
   const auto* list = GetPolicyUrlPatterns(profile_prefs);
-  return list && !list->GetList().empty();
+  return list && !list->GetListDeprecated().empty();
 }
 
 }  // namespace
@@ -79,16 +79,17 @@ void DeviceTrustConnectorService::OnConnectorEnabled() {
 void DeviceTrustConnectorService::OnPolicyUpdated() {
   DCHECK(IsDeviceTrustConnectorFeatureEnabled());
 
-  const base::ListValue* url_patterns = GetPolicyUrlPatterns(profile_prefs_);
+  const base::Value* url_patterns = GetPolicyUrlPatterns(profile_prefs_);
 
   if (!matcher_ || !matcher_->IsEmpty()) {
     // Reset the matcher.
     matcher_ = std::make_unique<url_matcher::URLMatcher>();
   }
 
-  if (url_patterns && !url_patterns->GetList().empty()) {
+  if (url_patterns && !url_patterns->GetListDeprecated().empty()) {
     // Add the new endpoints to the conditions.
-    policy::url_util::AddAllowFilters(matcher_.get(), url_patterns);
+    url_matcher::util::AddAllowFilters(
+        matcher_.get(), &base::Value::AsListValue(*url_patterns));
 
     // Call the hook which signals that the connector has been enabled.
     OnConnectorEnabled();

@@ -68,7 +68,7 @@ try:
   from dateutil.relativedelta import relativedelta
 except ImportError:
   logging.error('python-dateutil package required')
-  exit(1)
+  sys.exit(1)
 
 
 class DefaultFormatter(Formatter):
@@ -76,10 +76,11 @@ class DefaultFormatter(Formatter):
     super(DefaultFormatter, self).__init__()
     self.default = default
 
-  def get_value(self, key, args, kwds):
-    if isinstance(key, str) and key not in kwds:
+  def get_value(self, key, args, kwargs):
+    if isinstance(key, str) and key not in kwargs:
       return self.default
-    return Formatter.get_value(self, key, args, kwds)
+    return Formatter.get_value(self, key, args, kwargs)
+
 
 gerrit_instances = [
   {
@@ -168,9 +169,10 @@ def get_week_of(date):
 def get_yes_or_no(msg):
   while True:
     response = gclient_utils.AskForData(msg + ' yes/no [no] ')
-    if response == 'y' or response == 'yes':
+    if response in ('y', 'yes'):
       return True
-    elif not response or response == 'n' or response == 'no':
+
+    if not response or response in ('n', 'no'):
       return False
 
 
@@ -410,7 +412,7 @@ class MyActivity(object):
 
     return [
         issue for issue in issues
-        if issue['author'] == user_str or issue['owner'] == user_str]
+        if user_str in (issue['author'], issue['owner'])]
 
   def monorail_get_issues(self, project, issue_ids):
     return self.monorail_query_issues(project, {
@@ -531,7 +533,7 @@ class MyActivity(object):
     return True
 
   def filter_modified(self, modified):
-    return self.modified_after < modified and modified < self.modified_before
+    return self.modified_after < modified < self.modified_before
 
   def auth_for_changes(self):
     #TODO(cjhopman): Move authentication check for getting changes here.
@@ -686,12 +688,12 @@ class MyActivity(object):
       return output
 
     class PythonObjectEncoder(json.JSONEncoder):
-      def default(self, obj):  # pylint: disable=method-hidden
-        if isinstance(obj, datetime):
-          return obj.isoformat()
-        if isinstance(obj, set):
-          return list(obj)
-        return json.JSONEncoder.default(self, obj)
+      def default(self, o):  # pylint: disable=method-hidden
+        if isinstance(o, datetime):
+          return o.isoformat()
+        if isinstance(o, set):
+          return list(o)
+        return json.JSONEncoder.default(self, o)
 
     output = {
       'reviews': format_for_json_dump(self.reviews),
@@ -918,16 +920,16 @@ def main():
       config = json.load(f)
 
       for item, entries in config.items():
-          if item == 'gerrit_instances':
-            for repo, dic in entries.items():
-              # Use property name as URL
-              dic['url'] = repo
-              gerrit_instances.append(dic)
-          elif item == 'monorail_projects':
-            monorail_projects.append(entries)
-          else:
-            logging.error('Invalid entry in config file.')
-            return 1
+        if item == 'gerrit_instances':
+          for repo, dic in entries.items():
+            # Use property name as URL
+            dic['url'] = repo
+            gerrit_instances.append(dic)
+        elif item == 'monorail_projects':
+          monorail_projects.append(entries)
+        else:
+          logging.error('Invalid entry in config file.')
+          return 1
 
   my_activity = MyActivity(options)
   my_activity.show_progress('Loading data')

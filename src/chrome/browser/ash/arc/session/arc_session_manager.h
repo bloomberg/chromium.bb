@@ -14,13 +14,14 @@
 #include "ash/components/arc/session/arc_stop_reason.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/arc/arc_support_host.h"
 #include "chrome/browser/ash/arc/session/adb_sideloading_availability_delegate_impl.h"
 #include "chrome/browser/ash/arc/session/arc_app_id_provider_impl.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ash/policy/arc/android_management_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/core/common/policy_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -32,9 +33,13 @@ class Profile;
 
 namespace arc {
 
-constexpr const char kGeneratedPropertyFilesPath[] = "/run/arc/host_generated";
-constexpr const char kGeneratedPropertyFilesPathVm[] =
-    "/run/arcvm/host_generated";
+// The file exists only when ARC container is in use.
+constexpr const char kGeneratedBuildPropertyFilePath[] =
+    "/run/arc/host_generated/build.prop";
+
+// The file exists only when ARCVM is in use.
+constexpr const char kGeneratedCombinedPropertyFilePathVm[] =
+    "/run/arcvm/host_generated/combined.prop";
 
 class ArcAndroidManagementChecker;
 class ArcDataRemover;
@@ -52,7 +57,7 @@ enum class ArcStopReason;
 class ArcSessionManager : public ArcSessionRunner::Observer,
                           public ArcSupportHost::ErrorDelegate,
                           public chromeos::SessionManagerClient::Observer,
-                          public chromeos::ConciergeClient::VmObserver,
+                          public ash::ConciergeClient::VmObserver,
                           public policy::PolicyService::Observer {
  public:
   // Represents each State of ARC session.
@@ -236,10 +241,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // A helper function that calls ArcSessionRunner's SetUserInfo.
   void SetUserInfo();
 
-  // Trims VM's memory by moving it to zram. |callback| is called when the
-  // operation is done.
+  // Trims VM's memory by moving it to zram.
+  // When the operation is done |callback| is called.
+  // If nonzero, |page_limit| defines the max number of pages to reclaim.
   using TrimVmMemoryCallback = ArcSessionRunner::TrimVmMemoryCallback;
-  void TrimVmMemory(TrimVmMemoryCallback callback);
+  void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit);
 
   // Returns the time when ARC was pre-started (mini-ARC start), or a null time
   // if ARC has not been pre-started yet.
@@ -288,7 +294,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Invoking StartArc() only for testing, e.g., to emulate accepting Terms of
   // Service then passing Android management check successfully.
-  void StartArcForTesting() { StartArc(); }
+  void StartArcForTesting();
 
   // Invokes OnTermsOfServiceNegotiated as if negotiation is done for testing.
   void OnTermsOfServiceNegotiatedForTesting(bool accepted) {
@@ -308,7 +314,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     property_files_expansion_result_.reset();
   }
 
-  // chromeos::ConciergeClient::VmObserver overrides.
+  // ash::ConciergeClient::VmObserver overrides.
   void OnVmStarted(
       const vm_tools::concierge::VmStartedSignal& vm_signal) override;
   void OnVmStopped(

@@ -18,13 +18,12 @@
 #include "components/performance_manager/graph/process_node_impl_describer.h"
 #include "components/performance_manager/graph/worker_node_impl_describer.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
-#include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/metrics/metrics_collector.h"
 #include "components/performance_manager/v8_memory/v8_context_tracker.h"
 #include "components/performance_manager/v8_memory/web_memory_stress_tester.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "components/performance_manager/public/decorators/site_data_recorder.h"
 #endif
 
@@ -60,12 +59,10 @@ void GraphFeatures::ConfigureGraph(Graph* graph) const {
     Install<ProcessHostedContentTypesAggregator>(graph);
   if (flags_.process_node_impl_describer)
     Install<ProcessNodeImplDescriber>(graph);
-  if (flags_.tab_properties_decorator)
-    Install<TabPropertiesDecorator>(graph);
   if (flags_.worker_node_impl_describer)
     Install<WorkerNodeImplDescriber>(graph);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (flags_.site_data_recorder)
     Install<SiteDataRecorder>(graph);
 #endif

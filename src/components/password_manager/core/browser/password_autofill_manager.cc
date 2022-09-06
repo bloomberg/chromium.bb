@@ -124,10 +124,19 @@ void AppendSuggestionIfMatching(
     bool replaced_username;
     autofill::Suggestion suggestion(
         ReplaceEmptyUsername(field_suggestion, &replaced_username));
-    suggestion.is_value_secondary = replaced_username;
+    suggestion.main_text.is_primary =
+        autofill::Suggestion::Text::IsPrimary(!replaced_username);
     suggestion.label = GetHumanReadableRealm(signon_realm);
     suggestion.additional_label =
         std::u16string(password_length, kPasswordReplacementChar);
+    suggestion.voice_over = l10n_util::GetStringFUTF16(
+        IDS_PASSWORD_MANAGER_PASSWORD_FOR_ACCOUNT, suggestion.main_text.value);
+    if (!suggestion.label.empty()) {
+      // The domainname is only shown for passwords with a common eTLD+1
+      // but different subdomain.
+      *suggestion.voice_over += u", ";
+      *suggestion.voice_over += suggestion.label;
+    }
     if (from_account_store) {
       suggestion.frontend_id =
           is_password_field
@@ -146,7 +155,7 @@ void AppendSuggestionIfMatching(
     suggestion.custom_icon = custom_icon;
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = "globeIcon";
-    suggestion.store_indicator_icon = CreateStoreIcon(from_account_store);
+    suggestion.trailing_icon = CreateStoreIcon(from_account_store);
     suggestions->push_back(suggestion);
   }
 }
@@ -179,7 +188,7 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
 
   std::sort(suggestions->begin() + prefered_match, suggestions->end(),
             [](const autofill::Suggestion& a, const autofill::Suggestion& b) {
-              return a.value < b.value;
+              return a.main_text.value < b.main_text.value;
             });
 
   // Prefix matches should precede other token matches.
@@ -225,6 +234,11 @@ void MaybeAppendManagePasswordsEntry(
           password_manager::features::kEnablePasswordsAccountStorage)) {
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = "settingsIcon";
+  }
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    // The UI code will pick up an icon from the resources based on the string.
+    suggestion.trailing_icon = "googlePasswordManager";
   }
   suggestions->push_back(std::move(suggestion));
 }
@@ -365,8 +379,10 @@ void PasswordAutofillManager::OnPopupHidden() {}
 
 void PasswordAutofillManager::OnPopupSuppressed() {}
 
-void PasswordAutofillManager::DidSelectSuggestion(const std::u16string& value,
-                                                  int frontend_id) {
+void PasswordAutofillManager::DidSelectSuggestion(
+    const std::u16string& value,
+    int frontend_id,
+    const std::string& backend_id) {
   ClearPreviewedForm();
   if (frontend_id == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
       frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY ||
@@ -403,10 +419,11 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
                      autofill_client_->GetReopenPopupArgs()));
 }
 
-void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
-                                                  int frontend_id,
-                                                  const std::string& backend_id,
-                                                  int position) {
+void PasswordAutofillManager::DidAcceptSuggestion(
+    const std::u16string& value,
+    int frontend_id,
+    const autofill::Suggestion::Payload& payload,
+    int position) {
   using metrics_util::PasswordDropdownSelectedOption;
   if (frontend_id == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword(PasswordGenerationType::kAutomatic);
@@ -451,7 +468,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
         PasswordDropdownSelectedOption::kWebAuthn,
         password_client_->IsIncognito());
     password_client_->GetWebAuthnCredentialsDelegate()
-        ->SelectWebAuthnCredential(backend_id);
+        ->SelectWebAuthnCredential(absl::holds_alternative<std::string>(payload)
+                                       ? absl::get<std::string>(payload)
+                                       : std::string());
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
@@ -650,10 +669,9 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   }
 
   // Add WebAuthn credentials suitable for an ongoing request if available.
-  if (show_webauthn_credentials) {
-    WebAuthnCredentialsDelegate* delegate =
-        password_client_->GetWebAuthnCredentialsDelegate();
-    DCHECK(delegate->IsWebAuthnAutofillEnabled());
+  WebAuthnCredentialsDelegate* delegate =
+      password_client_->GetWebAuthnCredentialsDelegate();
+  if (show_webauthn_credentials && delegate->IsWebAuthnAutofillEnabled()) {
     std::vector<autofill::Suggestion> webauthn_suggestions =
         delegate->GetWebAuthnSuggestions();
     suggestions.insert(suggestions.end(), webauthn_suggestions.begin(),

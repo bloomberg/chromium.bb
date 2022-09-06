@@ -67,7 +67,7 @@ class FingerprintSetupScreen : public BaseScreen,
                         bool enroll_session_complete,
                         int percent_complete) override;
   void OnAuthScanDone(
-      device::mojom::ScanResult scan_result,
+      const device::mojom::FingerprintMessagePtr msg,
       const base::flat_map<std::string, std::vector<std::string>>& matches)
       override;
   void OnSessionFailed() override;
@@ -79,7 +79,7 @@ class FingerprintSetupScreen : public BaseScreen,
   bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
  private:
   void StartAddingFinger();

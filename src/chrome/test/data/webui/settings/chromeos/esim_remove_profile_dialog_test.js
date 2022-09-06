@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {setESimManagerRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js';
+import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.js';
+import {FakeESimManagerRemote} from 'chrome://test/cr_components/chromeos/cellular_setup/fake_esim_manager_remote.js';
+import {eventToPromise} from 'chrome://test/test_util.js';
 
-// #import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.m.js';
-// #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
-// #import {setESimManagerRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js';
-// #import {FakeESimManagerRemote} from 'chrome://test/cr_components/chromeos/cellular_setup/fake_esim_manager_remote.m.js';
-// #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {assertEquals, assertTrue} from '../../chai_assert.js';
-// #import {eventToPromise} from 'chrome://test/test_util.js';
-// #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// clang-format on
+import {assertEquals, assertTrue} from '../../chai_assert.js';
 
 suite('EsimRemoveProfileDialog', function() {
   const TEST_CELLULAR_GUID = 'cellular_guid';
@@ -25,11 +21,11 @@ suite('EsimRemoveProfileDialog', function() {
   let mojoApi_;
 
   setup(function() {
-    eSimManagerRemote = new cellular_setup.FakeESimManagerRemote();
-    cellular_setup.setESimManagerRemoteForTesting(eSimManagerRemote);
+    eSimManagerRemote = new FakeESimManagerRemote();
+    setESimManagerRemoteForTesting(eSimManagerRemote);
 
     mojoApi_ = new FakeNetworkConfig();
-    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
+    MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
     mojoApi_.resetForTest();
   });
 
@@ -40,12 +36,12 @@ suite('EsimRemoveProfileDialog', function() {
     esimRemoveProfileDialog.networkState = response.result;
     document.body.appendChild(esimRemoveProfileDialog);
     assertTrue(!!esimRemoveProfileDialog);
+    // TODO(b/214301268): Add interactive test for cancel button focus.
     await flushAsync();
-    assertEquals(esimRemoveProfileDialog.$$('#cancel'), getDeepActiveElement());
   }
 
   function flushAsync() {
-    Polymer.dom.flush();
+    flush();
     // Use setTimeout to wait for the next macrotask.
     return new Promise(resolve => setTimeout(resolve));
   }
@@ -83,7 +79,8 @@ suite('EsimRemoveProfileDialog', function() {
     let foundProfile = await getProfileForIccid(profiles, '1');
     assertTrue(!!foundProfile);
 
-    const removeBtn = esimRemoveProfileDialog.$$('#remove');
+    const removeBtn =
+        esimRemoveProfileDialog.shadowRoot.querySelector('#remove');
     assertTrue(!!removeBtn);
     removeBtn.click();
     await flushAsync();
@@ -95,11 +92,9 @@ suite('EsimRemoveProfileDialog', function() {
     assertFalse(!!foundProfile);
 
     assertEquals(
-        settings.routes.INTERNET_NETWORKS,
-        settings.Router.getInstance().getCurrentRoute());
+        routes.INTERNET_NETWORKS, Router.getInstance().getCurrentRoute());
     assertEquals(
-        'type=Cellular',
-        settings.Router.getInstance().getQueryParameters().toString());
+        'type=Cellular', Router.getInstance().getQueryParameters().toString());
   });
 
   test('Remove esim profile fails', async function() {
@@ -115,12 +110,13 @@ suite('EsimRemoveProfileDialog', function() {
     let foundProfile = await getProfileForIccid(profiles, '1');
     assertTrue(!!foundProfile);
     foundProfile.setEsimOperationResultForTest(
-        chromeos.cellularSetup.mojom.ESimOperationResult.kFailure);
+        ash.cellularSetup.mojom.ESimOperationResult.kFailure);
 
     const showErrorToastPromise =
-        test_util.eventToPromise('show-error-toast', esimRemoveProfileDialog);
+        eventToPromise('show-error-toast', esimRemoveProfileDialog);
 
-    const removeBtn = esimRemoveProfileDialog.$$('#remove');
+    const removeBtn =
+        esimRemoveProfileDialog.shadowRoot.querySelector('#remove');
     assertTrue(!!removeBtn);
 
     removeBtn.click();
@@ -133,11 +129,9 @@ suite('EsimRemoveProfileDialog', function() {
     assertTrue(!!foundProfile);
 
     assertEquals(
-        settings.routes.INTERNET_NETWORKS,
-        settings.Router.getInstance().getCurrentRoute());
+        routes.INTERNET_NETWORKS, Router.getInstance().getCurrentRoute());
     assertEquals(
-        'type=Cellular',
-        settings.Router.getInstance().getQueryParameters().toString());
+        'type=Cellular', Router.getInstance().getQueryParameters().toString());
 
     const showErrorToastEvent = await showErrorToastPromise;
     assertEquals(
@@ -164,7 +158,7 @@ suite('EsimRemoveProfileDialog', function() {
     assertTrue(!!foundProfile);
 
     const showErrorToastPromise =
-        test_util.eventToPromise('show-error-toast', esimRemoveProfileDialog);
+        eventToPromise('show-error-toast', esimRemoveProfileDialog);
 
     document.body.appendChild(esimRemoveProfileDialog);
     assertTrue(!!esimRemoveProfileDialog);
@@ -175,11 +169,9 @@ suite('EsimRemoveProfileDialog', function() {
     assertTrue(!!foundProfile);
 
     assertEquals(
-        settings.routes.INTERNET_NETWORKS,
-        settings.Router.getInstance().getCurrentRoute());
+        routes.INTERNET_NETWORKS, Router.getInstance().getCurrentRoute());
     assertEquals(
-        'type=Cellular',
-        settings.Router.getInstance().getQueryParameters().toString());
+        'type=Cellular', Router.getInstance().getQueryParameters().toString());
 
     const showErrorToastEvent = await showErrorToastPromise;
     assertEquals(
@@ -188,7 +180,8 @@ suite('EsimRemoveProfileDialog', function() {
   });
 
   test('Warning message visibility', function() {
-    const warningMessage = esimRemoveProfileDialog.$$('#warningMessage');
+    const warningMessage =
+        esimRemoveProfileDialog.shadowRoot.querySelector('#warningMessage');
     assertTrue(!!warningMessage);
 
     esimRemoveProfileDialog.showCellularDisconnectWarning = false;

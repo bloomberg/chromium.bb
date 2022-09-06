@@ -35,7 +35,7 @@ id<GREYMatcher> HistoryButton() {
 }
 
 // Matcher for an element with or without the
-// UIAccessibilityTraitSelected accessibility trait depending on |selected|.
+// UIAccessibilityTraitSelected accessibility trait depending on `selected`.
 id<GREYMatcher> ElementIsSelected(BOOL selected) {
   return selected
              ? grey_accessibilityTrait(UIAccessibilityTraitSelected)
@@ -43,7 +43,7 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
 }
 
 // Returns a matcher (which always matches) that records the selection
-// state of matched element in |selected| parameter.
+// state of matched element in `selected` parameter.
 id<GREYMatcher> RecordElementSelectionState(BOOL& selected) {
   GREYMatchesBlock matches = ^BOOL(UIView* view) {
     selected = ([view accessibilityTraits] & UIAccessibilityTraitSelected) != 0;
@@ -129,6 +129,12 @@ using chrome_test_util::WindowWithNumber;
 - (void)testClearBrowsingDataDialogInMultiWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  // TODO(crbug.com/1285974).
+  if ([ChromeEarlGrey isNewOverflowMenuEnabled]) {
+    EARL_GREY_TEST_DISABLED(
+        @"Earl Grey doesn't work properly with SwiftUI and multiwindow");
+  }
 
   [ChromeEarlGrey openNewWindow];
   [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];

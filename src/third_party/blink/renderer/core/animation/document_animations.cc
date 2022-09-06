@@ -33,6 +33,8 @@
 #include <algorithm>
 
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
@@ -45,6 +47,8 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -81,7 +85,7 @@ void DocumentAnimations::AddTimeline(AnimationTimeline& timeline) {
 }
 
 void DocumentAnimations::UpdateAnimationTimingForAnimationFrame() {
-  // https://drafts.csswg.org/web-animations-1/#timelines.
+  // https://w3.org/TR/web-animations-1/#timelines
 
   // 1. Update the current time of all timelines associated with doc passing now
   //    as the timestamp.
@@ -164,9 +168,7 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations(
     const TreeScope& tree_scope) {
   // This method implements the Document::getAnimations method defined in the
   // web-animations-1 spec.
-  // https://drafts.csswg.org/web-animations-1/#dom-document-getanimations
-  // TODO(crbug.com/1046916): refactoring work to create a shared implementation
-  // of getAnimations for Documents and ShadowRoots.
+  // https://w3.org/TR/web-animations-1/#extensions-to-the-documentorshadowroot-interface-mixin
   document_->UpdateStyleAndLayoutTree();
   HeapVector<Member<Animation>> animations;
   if (document_->GetPage())
@@ -185,6 +187,22 @@ void DocumentAnimations::ValidateTimelines() {
   }
 
   unvalidated_timelines_.clear();
+}
+
+void DocumentAnimations::DetachCompositorTimelines() {
+  if (!Platform::Current()->IsThreadedAnimationEnabled() ||
+      !document_->GetSettings()->GetAcceleratedCompositingEnabled() ||
+      !document_->GetPage())
+    return;
+
+  for (auto& timeline : timelines_) {
+    cc::AnimationTimeline* compositor_timeline = timeline->CompositorTimeline();
+    if (!compositor_timeline)
+      continue;
+
+    document_->GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(
+        compositor_timeline, document_->GetFrame());
+  }
 }
 
 void DocumentAnimations::Trace(Visitor* visitor) const {

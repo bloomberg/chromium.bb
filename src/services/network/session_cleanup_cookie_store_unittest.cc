@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -69,8 +68,8 @@ class SessionCleanupCookieStoreTest : public testing::Test {
                  const std::string& path,
                  base::Time creation) {
     store_->AddCookie(*net::CanonicalCookie::CreateUnsafeCookieForTesting(
-        name, value, domain, path, creation, creation, base::Time(), false,
-        false, net::CookieSameSite::NO_RESTRICTION,
+        name, value, domain, path, creation, creation, base::Time(),
+        base::Time(), false, false, net::CookieSameSite::NO_RESTRICTION,
         net::COOKIE_PRIORITY_DEFAULT, false));
   }
 

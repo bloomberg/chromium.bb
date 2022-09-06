@@ -11,6 +11,7 @@
 #include <wrl/client.h>
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -60,13 +61,26 @@ ShortcutProperties::ShortcutProperties(const ShortcutProperties& other) =
 
 ShortcutProperties::~ShortcutProperties() = default;
 
+void ShortcutProperties::set_description(const std::wstring& description_in) {
+  // Size restriction as per MSDN at http://goo.gl/OdNQq.
+  DCHECK_LE(description_in.size(), static_cast<size_t>(INFOTIPSIZE));
+  description = description_in;
+  options |= PROPERTIES_DESCRIPTION;
+}
+
 bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
                                 const ShortcutProperties& properties,
                                 ShortcutOperation operation) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
-  // A target is required unless |operation| is SHORTCUT_UPDATE_EXISTING.
-  if (operation != SHORTCUT_UPDATE_EXISTING &&
+  // Make sure the parent directories exist when creating the shortcut.
+  if (operation == ShortcutOperation::kCreateAlways &&
+      !base::CreateDirectory(shortcut_path.DirName())) {
+    DLOG(ERROR) << "CreateDirectory " << shortcut_path.DirName() << " failed";
+    return false;
+  }
+  // A target is required unless |operation| is kUpdateExisting.
+  if (operation != ShortcutOperation::kUpdateExisting &&
       !(properties.options & ShortcutProperties::PROPERTIES_TARGET)) {
     NOTREACHED();
     return false;
@@ -82,14 +96,14 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
   ComPtr<IShellLink> i_shell_link;
   ComPtr<IPersistFile> i_persist_file;
   switch (operation) {
-    case SHORTCUT_CREATE_ALWAYS:
+    case ShortcutOperation::kCreateAlways:
       InitializeShortcutInterfaces(nullptr, &i_shell_link, &i_persist_file);
       break;
-    case SHORTCUT_UPDATE_EXISTING:
+    case ShortcutOperation::kUpdateExisting:
       InitializeShortcutInterfaces(shortcut_path.value().c_str(), &i_shell_link,
                                    &i_persist_file);
       break;
-    case SHORTCUT_REPLACE_EXISTING:
+    case ShortcutOperation::kReplaceExisting:
       InitializeShortcutInterfaces(shortcut_path.value().c_str(),
                                    &old_i_shell_link, &old_i_persist_file);
       // Confirm |shortcut_path| exists and is a shortcut by verifying
@@ -183,19 +197,14 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
 
   // If we successfully created/updated the icon, notify the shell that we have
   // done so.
-  const bool succeeded = SUCCEEDED(result);
-  if (succeeded) {
-    if (shortcut_existed) {
-      // TODO(gab): SHCNE_UPDATEITEM might be sufficient here; further testing
-      // required.
-      SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
-    } else {
-      SHChangeNotify(SHCNE_CREATE, SHCNF_PATH, shortcut_path.value().c_str(),
-                     nullptr);
-    }
-  }
+  if (!SUCCEEDED(result))
+    return false;
 
-  return succeeded;
+  SHChangeNotify(shortcut_existed ? SHCNE_UPDATEITEM : SHCNE_CREATE,
+                 SHCNF_PATH | SHCNF_FLUSH, shortcut_path.value().c_str(),
+                 nullptr);
+
+  return true;
 }
 
 bool ResolveShortcutProperties(const FilePath& shortcut_path,

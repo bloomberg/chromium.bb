@@ -14,7 +14,7 @@ from py_utils import modules_util
 # DEPRECATED: Do not add new modules to this dict. New external depencencies
 # should be provided via vpython instead. See: crbug.com/777865.
 MODULES = {
-    'cv2': ('2.4.8', '3.0.0'),
+    'cv2': ('4.5.3', None),
     'numpy': ('1.8.0', '1.21.2'),
     'psutil': ('0.5.0', None),
 }
@@ -60,5 +60,5 @@ def ImportOptionalModule(module):
     if 'cannot import name' in str(e):
       print('Possible circular dependency!')
       raise
-    logging.warning('Unable to import %s due to: %s', module, e)
+    logging.info('Unable to import %s due to: %s', module, e)
     return None

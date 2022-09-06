@@ -54,10 +54,26 @@ DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget widget) {
   return std::make_unique<DrmOverlayCandidates>(this, widget);
 }
 
-void DrmOverlayManager::ResetCache() {
-  TRACE_EVENT0("hwoverlays", "DrmOverlayManager::ResetCache");
+void DrmOverlayManager::DisplaysConfigured() {
+  TRACE_EVENT0("hwoverlays", "DrmOverlayManager::DisplaysConfigured");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   widget_cache_map_.clear();
+
+  for (auto& entry : hardware_capabilities_callbacks_) {
+    GetHardwareCapabilities(entry.first, entry.second);
+  }
+}
+
+void DrmOverlayManager::StartObservingHardwareCapabilities(
+    gfx::AcceleratedWidget widget,
+    HardwareCapabilitiesCallback receive_callback) {
+  GetHardwareCapabilities(widget, receive_callback);
+  hardware_capabilities_callbacks_.emplace(widget, std::move(receive_callback));
+}
+
+void DrmOverlayManager::StopObservingHardwareCapabilities(
+    gfx::AcceleratedWidget widget) {
+  hardware_capabilities_callbacks_.erase(widget);
 }
 
 void DrmOverlayManager::CheckOverlaySupport(
@@ -65,6 +81,15 @@ void DrmOverlayManager::CheckOverlaySupport(
     gfx::AcceleratedWidget widget) {
   TRACE_EVENT0("hwoverlays", "DrmOverlayManager::CheckOverlaySupport");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Check if another display has an overlay requirement, and if so do not
+  // allow overlays. Some ChromeOS boards only support one overlay across all
+  // displays so we want the overlay to go somewhere that requires it first vs.
+  // a display that will just be using it as an optimization.
+  if (!widgets_with_required_overlays_.empty() &&
+      !widgets_with_required_overlays_.contains(widget)) {
+    return;
+  }
 
   std::vector<OverlaySurfaceCandidate> result_candidates;
   for (auto& candidate : *candidates) {
@@ -117,7 +142,6 @@ void DrmOverlayManager::CheckOverlaySupport(
     iter = cache.Put(cache_key, std::move(value));
   }
 
-  bool cache_hit = false;
   OverlayValidationCacheValue& value = iter->second;
   if (value.request_num < kThrottleRequestSize) {
     value.request_num++;
@@ -126,7 +150,6 @@ void DrmOverlayManager::CheckOverlaySupport(
     if (value.status.back() == OVERLAY_STATUS_PENDING)
       SendOverlayValidationRequest(result_candidates, widget);
   } else if (value.status.back() != OVERLAY_STATUS_PENDING) {
-    cache_hit = true;
     size_t size = candidates->size();
     const std::vector<OverlayStatus>& status = value.status;
     DCHECK_EQ(size, status.size());
@@ -136,8 +159,15 @@ void DrmOverlayManager::CheckOverlaySupport(
       candidates->at(i).overlay_handled = status[i] == OVERLAY_STATUS_ABLE;
     }
   }
-  UMA_HISTOGRAM_BOOLEAN("Compositing.Display.DrmOverlayManager.CacheHit",
-                        cache_hit);
+}
+
+void DrmOverlayManager::RegisterOverlayRequirement(
+    gfx::AcceleratedWidget widget,
+    bool requires_overlay) {
+  if (requires_overlay)
+    widgets_with_required_overlays_.insert(widget);
+  else
+    widgets_with_required_overlays_.erase(widget);
 }
 
 bool DrmOverlayManager::CanHandleCandidate(

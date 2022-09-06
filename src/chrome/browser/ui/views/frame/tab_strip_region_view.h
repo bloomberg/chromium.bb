@@ -53,6 +53,15 @@ class TabStripRegionView final : public views::AccessiblePaneView {
     return reserved_grab_handle_space_;
   }
 
+  // views::View:
+  bool CanDrop(const OSExchangeData& data) override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
+  void OnDragEntered(const ui::DropTargetEvent& event) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  DropCallback GetDropCallback(const ui::DropTargetEvent& event) override;
+
   // views::AccessiblePaneView:
   void ChildPreferredSizeChanged(views::View* child) override;
   gfx::Size GetMinimumSize() const override;
@@ -61,6 +70,9 @@ class TabStripRegionView final : public views::AccessiblePaneView {
   views::View* GetDefaultFocusableChild() override;
 
   views::FlexLayout* layout_manager_for_testing() { return layout_manager_; }
+  raw_ptr<views::View> GetTabStripContainerForTesting() {
+    return tab_strip_container_;
+  }
 
  private:
   // Updates the border padding for |new_tab_button_|.  This should be called

@@ -9,7 +9,7 @@ title: Chromium Specification Mentors
 *Quick link:* [mentor request
 form](https://docs.google.com/forms/d/e/1FAIpQLSfCYE4U13GkZ11rAWBUjOb3Lza-u4m2k3TklQHXe7Zfn3Qo1g/viewform)
 
-#### Introduction
+## Introduction
 
 Introducing a new feature to the web platform requires writing a specification,
 which is a separate skill set from writing code. It involves API design,
@@ -28,9 +28,9 @@ thus uphold the Chromium project's commitment to an open, interoperable, and
 well-designed web platform. It should also make the process of launching a new
 feature more predictable and less painful for Chromium engineers.
 
-#### How we work
+## How we work
 
-##### Pairing up with your mentor
+### Pairing up with your mentor
 
 Before sending an Intent to Prototype, you are encouraged to find a spec mentor
 to work with. They can review your explainer, as well as the Intent to Prototype
@@ -46,7 +46,7 @@ with the relevant information. In the latter case, we will get back to you with
 a proposed mentor within 2 business days; we want to make sure your Intent to
 Prototype proceeds as quickly as possible.
 
-##### What to expect
+### What to expect
 
 Your mentor will be available for you to ask questions or ask for reviews
 throughout the lifetime of your feature. In particular, if you would like
@@ -58,16 +58,15 @@ There are three specific points at which you'll want to request detailed
 specification review from your mentor, so that they can help ensure that your
 public artifacts are high-quality:
 
-    (Optional) For your explainer and TAG review request, before sending them
-    out in the Intent to Prototype process.
+- (Optional) For your explainer and TAG review request, before sending them
+  out in the Intent to Prototype process.
 
-    For your explainer and specification, before beginning a [Dev
-    Trial](https://docs.google.com/document/d/1_FDhuZA_C6iY5bop-bjlPl3pFiqu8oFvuK1jzAcyWKU/edit)
-    or [Origin Trial](https://github.com/GoogleChrome/OriginTrials), at which
-    point these artifacts will be seen by wide review groups and other browser
-    vendors.
+- For your explainer and specification, before beginning a [Dev Trial](https://docs.google.com/document/d/1_FDhuZA_C6iY5bop-bjlPl3pFiqu8oFvuK1jzAcyWKU/edit)
+  or [Origin Trial](https://github.com/GoogleChrome/OriginTrials), at which
+  point these artifacts will be seen by wide review groups and other browser
+  vendors.
 
-    For your specification, before sending an Intent to Ship.
+- For your specification, before sending an Intent to Ship.
 
 You can also call on your mentor to review the Intents themselves, before you
 send them off to blink-dev and the scrutiny of the API owners and the wider
@@ -97,7 +96,7 @@ of the most-often-problematic parts of the Intent to Ship, such as the the
 Interoperability & Compatibility risks section, and thus smooth the path toward
 API OWNER approval.
 
-#### Can I join?
+## Can I join?
 
 Yes, please do! Becoming proficient in design reviews is a core engineering
 skill, and one of the best ways to do that is to help other Chromium project

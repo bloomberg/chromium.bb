@@ -45,6 +45,52 @@ constexpr {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}};
 {%-   endif %}
 {%- endfor %}
 
+uint32_t {{interface.name}}::MessageToStableIPCHash_(mojo::Message& message) {
+{%- if interface.methods %}
+  switch (message.name()) {
+{%-   for method in interface.methods %}
+    case internal::k{{interface.name}}_{{method.name}}_Name: {
+      constexpr uint32_t value = base::MD5Hash32Constexpr(
+              "(Impl){{namespace_as_string}}::{{interface.name}}::{{method.name}}");
+      return value;
+    }
+{%-   endfor %}
+  }
+{%- endif %}
+  return 0;
+}
+
+
+const char* {{interface.name}}::MessageToMethodName_(mojo::Message& message) {
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+{%- if interface.methods %}
+  bool is_response = message.has_flag(mojo::Message::kFlagIsResponse);
+  if (!is_response) {
+    switch (message.name()) {
+{%-   for method in interface.methods %}
+      case internal::k{{interface.name}}_{{method.name}}_Name:
+            return "Receive {{namespace_as_string}}::{{interface.name}}::{{method.name}}";
+{%-   endfor %}
+    }
+  } else {
+    switch (message.name()) {
+{%-   for method in interface.methods %}
+      case internal::k{{interface.name}}_{{method.name}}_Name:
+            return "Receive reply {{namespace_as_string}}::{{interface.name}}::{{method.name}}";
+{%-   endfor %}
+    }
+  }
+{%- endif %}
+  return "Receive unknown mojo message";
+#else
+  bool is_response = message.has_flag(mojo::Message::kFlagIsResponse);
+  if (is_response) {
+    return "Receive mojo reply";
+  } else {
+    return "Receive mojo message";
+  }
+#endif // BUILDFLAG(MOJO_TRACE_ENABLED)
+}
 
 {%- for method in interface.methods %}
 {%-   if method.sync %}
@@ -135,6 +181,10 @@ bool {{proxy_name}}::{{method.name}}(
                                  method_name=event_name,
                                  parameter_group="input_parameters",
                                  trace_event_type='_BEGIN')}}
+#else
+{#- Output a minimal trace event if MOJO_TRACE_ENABLED is false. #}
+{%-     set event_name = "%s::%s" % (class_name, method.name) %}
+  {{interface_macros.trace_event(method_name=event_name)}}
 #endif
   const bool kExpectsResponse = true;
   const bool kIsSync = true;
@@ -293,10 +343,6 @@ class {{class_name}}_{{method.name}}_ProxyToResponder : public ::mojo::internal:
 
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
     mojo::Message* message) {
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
-  TRACE_EVENT("toplevel", "Receive reply {{namespace_as_string}}::{{class_name}}::{{method.name}}",
-               perfetto::Flow::Global(message->GetTraceId()));
-#endif
 {%-     if method|method_supports_lazy_serialization %}
   if (!message->is_serialized()) {
     auto context =
@@ -361,8 +407,11 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   message.set_request_id(request_id_);
   message.set_trace_nonce(trace_nonce_);
   ::mojo::internal::SendMessage(*responder_, message);
-  // TODO(darin): Accept() returning false indicates a malformed message, and
-  // that may be good reason to close the connection. However, we don't have a
+  // SendMessage fails silently if the responder connection is closed,
+  // or if the message is malformed.
+  //
+  // TODO(darin): If Accept() returns false due to a malformed message, that
+  // may be good reason to close the connection. However, we don't have a
   // way to do that from here. We should add a way.
   responder_ = nullptr;
 }
@@ -421,15 +470,6 @@ bool {{class_name}}StubDispatch::Accept(
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
 {%-     if method.response_parameters == None %}
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
-      TRACE_EVENT(
-          "toplevel",
-          "Receive {{namespace_as_string}}::{{class_name}}::{{method.name}}",
-          perfetto::Flow::Global(message->GetTraceId()));
-#endif
-      static constexpr uint32_t kMessageHash = base::MD5Hash32Constexpr(
-              "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}");
-      base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
         auto context = message->TakeUnserializedContext<
@@ -474,23 +514,13 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
     mojo::Message* message,
     std::unique_ptr<mojo::MessageReceiverWithStatus> responder) {
 {%- if interface.methods %}
-  const bool message_is_sync = message->has_flag(mojo::Message::kFlagIsSync);
-  const uint64_t request_id = message->request_id();
-  ALLOW_UNUSED_LOCAL(message_is_sync);
-  ALLOW_UNUSED_LOCAL(request_id);
+  [[maybe_unused]] const bool message_is_sync =
+      message->has_flag(mojo::Message::kFlagIsSync);
+  [[maybe_unused]] const uint64_t request_id = message->request_id();
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
 {%-     if method.response_parameters != None %}
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
-      TRACE_EVENT(
-          "toplevel",
-          "Receive {{namespace_as_string}}::{{class_name}}::{{method.name}}",
-          perfetto::Flow::Global(message->GetTraceId()));
-#endif
-      static constexpr uint32_t kMessageHash = base::MD5Hash32Constexpr(
-              "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}");
-      base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
         auto context = message->TakeUnserializedContext<

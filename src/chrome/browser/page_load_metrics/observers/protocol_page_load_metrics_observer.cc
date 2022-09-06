@@ -35,9 +35,18 @@ ProtocolPageLoadMetricsObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-ProtocolPageLoadMetricsObserver::OnCommit(
+ProtocolPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    const GURL& currently_committed_url) {
+  // All observing events are preprocessed by PageLoadTracker so that the
+  // outermost page's observer instance sees gathered information. So, the
+  // instance for FencedFrames doesn't need to do anything.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+ProtocolPageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
   protocol_ = page_load_metrics::GetNetworkProtocol(
       navigation_handle->GetConnectionInfo());
   return CONTINUE_OBSERVING;

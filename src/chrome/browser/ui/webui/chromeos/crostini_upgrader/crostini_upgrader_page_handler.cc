@@ -31,6 +31,7 @@ CrostiniUpgraderPageHandler::CrostiniUpgraderPageHandler(
       on_page_closed_{std::move(on_page_closed)},
       launch_callback_{std::move(launch_callback)} {
   upgrader_ui_delegate_->AddObserver(this);
+  upgrader_ui_delegate_->PageOpened();
 }
 
 CrostiniUpgraderPageHandler::~CrostiniUpgraderPageHandler() {
@@ -59,7 +60,7 @@ void CrostiniUpgraderPageHandler::Backup(bool show_file_chooser) {
   CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
       crostini::UpgradeDialogEvent::kDidBackup);
   upgrader_ui_delegate_->Backup(crostini::ContainerId::GetDefault(),
-                                show_file_chooser, web_contents_);
+                                show_file_chooser, web_contents_->GetWeakPtr());
 }
 
 void CrostiniUpgraderPageHandler::StartPrechecks() {
@@ -76,7 +77,7 @@ void CrostiniUpgraderPageHandler::Restore() {
   CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
       crostini::UpgradeDialogEvent::kDidRestore);
   upgrader_ui_delegate_->Restore(crostini::ContainerId::GetDefault(),
-                                 web_contents_);
+                                 web_contents_->GetWeakPtr());
 }
 
 void CrostiniUpgraderPageHandler::Cancel() {
@@ -86,7 +87,9 @@ void CrostiniUpgraderPageHandler::Cancel() {
 }
 
 void CrostiniUpgraderPageHandler::Launch() {
-  std::move(launch_callback_).Run(restart_required_);
+  if (launch_callback_) {
+    std::move(launch_callback_).Run(restart_required_);
+  }
 }
 
 void CrostiniUpgraderPageHandler::CancelBeforeStart() {
@@ -94,16 +97,13 @@ void CrostiniUpgraderPageHandler::CancelBeforeStart() {
       crostini::UpgradeDialogEvent::kNotStarted);
   restart_required_ = false;
   upgrader_ui_delegate_->CancelBeforeStart();
-  if (launch_callback_) {
-    // Running launch closure - no upgrade wanted, no need to restart crostini.
-    Launch();
-  }
+
+  // Running launch closure - no upgrade wanted, no need to restart crostini.
+  Launch();
 }
 
 void CrostiniUpgraderPageHandler::OnPageClosed() {
-  if (launch_callback_) {
-    Launch();
-  }
+  Launch();
   if (on_page_closed_) {
     std::move(on_page_closed_).Run();
   }
@@ -171,6 +171,10 @@ void CrostiniUpgraderPageHandler::OnRestoreFailed() {
 
 void CrostiniUpgraderPageHandler::OnCanceled() {
   page_->OnCanceled();
+}
+
+void CrostiniUpgraderPageHandler::OnLogFileCreated(const base::FilePath& path) {
+  page_->OnLogFileCreated(path.AsUTF8Unsafe());
 }
 
 }  // namespace chromeos

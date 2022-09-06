@@ -11,6 +11,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/reload_type.h"
@@ -29,7 +30,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/tab_groups/tab_group_id.h"
 #endif
@@ -67,7 +68,7 @@ struct OpenURLParams;
 
 // TODO(thestig): Split or ifdef out more fields that are not used on Android.
 struct NavigateParams {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   explicit NavigateParams(
       std::unique_ptr<content::WebContents> contents_to_insert);
 #else
@@ -213,6 +214,9 @@ struct NavigateParams {
     // Show and activate the browser window after navigating.
     SHOW_WINDOW,
     // Show the browser window after navigating but do not activate.
+    // Note: This may cause a space / virtual desktop switch if the window is
+    // being shown on a display which is currently showing a fullscreen app.
+    // (crbug.com/1315749).
     SHOW_WINDOW_INACTIVE
   };
   // Default is NO_ACTION (don't show or activate the window).
@@ -236,7 +240,7 @@ struct NavigateParams {
   };
   PathBehavior path_behavior = RESPECT;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
   //       it is not compatible with the operation being performed. This can be
@@ -290,6 +294,10 @@ struct NavigateParams {
   // possible, i.e. if the is a PWA installed for the target URL.
   bool open_pwa_window_if_possible = false;
 
+  // Indicates that the navigation must happen in a PWA window. If a PWA
+  // window can't be created, the navigation will be cancelled.
+  bool force_open_pwa_window = false;
+
   // The time when the input which led to the navigation occurred. Currently
   // only set when a link is clicked or the navigation takes place from the
   // desktop omnibox.
@@ -322,6 +330,11 @@ struct NavigateParams {
   // TypedNavigationUpgradeThrottle to determine if the navigation should be
   // observed and fall back to using http scheme if necessary.
   bool is_using_https_as_default_scheme = false;
+
+  // Indicates the degree of privacy sensitivity for the navigation.
+  // Can be used to drive privacy decisions.
+  enum class PrivacySensitivity { CROSS_OTR, CROSS_PROFILE, DEFAULT };
+  PrivacySensitivity privacy_sensitivity = PrivacySensitivity::DEFAULT;
 
  private:
   NavigateParams();

@@ -2,12 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '../os_people_page/lock_screen_password_prompt_dialog.js';
+import '../os_people_page/setup_pin_dialog.js';
+
+import {assert} from '//resources/js/assert.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {LockScreenUnlockType, LockStateBehavior} from '../os_people_page/lock_state_behavior.js';
+
 /**
  * @fileoverview
  * Subpage of settings-multidevice-notification-access-setup-dialog for setting
  * up screen lock.
  */
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-multidevice-screen-lock-subpage',
 
   behaviors: [
@@ -38,20 +50,6 @@ Polymer({
     },
 
     /**
-     * writeUma_ is a function that handles writing uma stats. It may be
-     * overridden for tests.
-     *
-     * @type {Function}
-     * @private
-     */
-    writeUma_: {
-      type: Object,
-      value() {
-        return settings.recordLockScreenProgress;
-      },
-    },
-
-    /**
      * True if quick unlock settings are disabled by policy.
      * @private
      */
@@ -62,6 +60,9 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private {boolean} */
+    shouldPromptPasswordDialog_: Boolean,
 
     /** Reflects whether the screen lock is enabled. */
     isScreenLockEnabled: {
@@ -77,14 +78,12 @@ Polymer({
       notify: true,
     },
 
-    /** @private {boolean} */
-    shouldPromptPasswordDialog_: Boolean,
-
-    /** @private */
-    showSetupPinDialog_: Boolean,
-
-    /** @private */
-    showPinAutosubmitDialog_: Boolean,
+    /** Reflects whether the pin dialog should show. */
+    showSetupPinDialog: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
   },
 
   /** @override */
@@ -103,6 +102,14 @@ Polymer({
    * @private
    */
   selectedUnlockTypeChanged_(selected) {
+    const pinNumberEvent = new CustomEvent('pin-number-selected', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        isPinNumberSelected: (selected === LockScreenUnlockType.PIN_PASSWORD)
+      }
+    });
+    this.dispatchEvent(pinNumberEvent);
     if (selected === LockScreenUnlockType.PASSWORD && this.setModes_) {
       // If the user selects PASSWORD only (which sends an asynchronous
       // setModes_.call() to clear the quick unlock capability), indicate to the
@@ -162,19 +169,6 @@ Polymer({
   },
 
   /**
-   * Looks up the translation id, which depends on PIN login support.
-   * @param {boolean} hasPinLogin
-   * @return {string}
-   * @private
-   */
-  selectLockScreenOptionsString(hasPinLogin) {
-    if (hasPinLogin) {
-      return this.i18n('lockScreenOptionsLoginLock');
-    }
-    return this.i18n('lockScreenOptionsLock');
-  },
-
-  /**
    * Returns true if the setup pin section should be shown.
    * @param {!string} selectedUnlockType The current unlock type. Used to let
    *     Polymer know about the dependency.
@@ -184,32 +178,9 @@ Polymer({
     return selectedUnlockType === LockScreenUnlockType.PIN_PASSWORD;
   },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onConfigurePin_(e) {
-    e.preventDefault();
-    this.writeUma_(settings.LockScreenProgress.CHOOSE_PIN_OR_PASSWORD);
-    this.showSetupPinDialog_ = true;
-  },
-
   /** @private */
   onSetupPinDialogClose_() {
-    this.showSetupPinDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('#setupPinButton')));
-  },
-
-  /**
-   * @param {boolean} hasPin
-   * @return {string}
-   * @private
-   */
-  getSetupPinText_(hasPin) {
-    if (hasPin) {
-      return this.i18n('lockScreenChangePinButton');
-    }
-    return this.i18n('lockScreenSetupPinButton');
+    this.showSetupPinDialog = false;
   },
 
 });

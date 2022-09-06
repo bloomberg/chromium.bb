@@ -136,6 +136,16 @@ class Decoder {
     return read_leb<int64_t, validate, kNoTrace, 33>(pc, length, name);
   }
 
+  template <ValidateFlag validate>
+  WasmOpcode read_two_byte_opcode(const byte* pc, uint32_t* length,
+                                  const char* name = "prefixed opcode") {
+    DCHECK(*pc == kGCPrefix);
+    uint32_t index = read_u8<validate>(pc + 1, name);
+    index |= kGCPrefix << 8;
+    *length = 2;
+    return static_cast<WasmOpcode>(index);
+  }
+
   // Convenient overload for callers who don't care about length.
   template <ValidateFlag validate>
   WasmOpcode read_prefixed_opcode(const byte* pc) {
@@ -149,19 +159,25 @@ class Decoder {
   template <ValidateFlag validate>
   WasmOpcode read_prefixed_opcode(const byte* pc, uint32_t* length,
                                   const char* name = "prefixed opcode") {
+    if (*pc == kGCPrefix) {
+      return read_two_byte_opcode<validate>(pc, length, name);
+    }
+
     uint32_t index;
 
     // Prefixed opcodes all use LEB128 encoding.
     index = read_u32v<validate>(pc + 1, length, "prefixed opcode index");
     *length += 1;  // Prefix byte.
-    // Only support opcodes that go up to 0xFF (when decoded). Anything
-    // bigger will need 1 more byte, and the '<< 8' below will be wrong.
-    if (validate && V8_UNLIKELY(index > 0xff)) {
+    // Only support opcodes that go up to 0xFFF (when decoded). Anything
+    // bigger will need more than 2 bytes, and the '<< 12' below will be wrong.
+    if (validate && V8_UNLIKELY(index > 0xfff)) {
       errorf(pc, "Invalid prefixed opcode %d", index);
       // If size validation fails.
       index = 0;
       *length = 0;
     }
+
+    if (index > 0xff) return static_cast<WasmOpcode>((*pc) << 12 | index);
 
     return static_cast<WasmOpcode>((*pc) << 8 | index);
   }
@@ -204,6 +220,15 @@ class Decoder {
     uint32_t length = 0;
     uint64_t result =
         read_leb<uint64_t, kFullValidation, kTrace>(pc_, &length, name);
+    pc_ += length;
+    return result;
+  }
+
+  // Reads a LEB128 variable-length signed 64-bit integer and advances {pc_}.
+  int64_t consume_i64v(const char* name = nullptr) {
+    uint32_t length = 0;
+    int64_t result =
+        read_leb<int64_t, kFullValidation, kTrace>(pc_, &length, name);
     pc_ += length;
     return result;
   }

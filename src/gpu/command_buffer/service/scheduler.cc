@@ -576,7 +576,7 @@ void Scheduler::TryScheduleSequence(Sequence* sequence) {
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("gpu", "Scheduler::Running",
                                         TRACE_ID_LOCAL(this));
       thread_state.running = true;
-      run_next_task_scheduled_ = base::TimeTicks::Now();
+      thread_state.run_next_task_scheduled = base::TimeTicks::Now();
       task_runner->PostTask(FROM_HERE, base::BindOnce(&Scheduler::RunNextTask,
                                                       base::Unretained(this)));
     }
@@ -613,11 +613,18 @@ Scheduler::RebuildSchedulingQueueIfNeeded(
 
 void Scheduler::RunNextTask() {
   base::AutoLock auto_lock(lock_);
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "GPU.Scheduler.ThreadSuspendedTime",
-      base::TimeTicks::Now() - run_next_task_scheduled_, base::Microseconds(10),
-      base::Seconds(30), 100);
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+  auto* thread_state = &per_thread_state_map_[task_runner];
+
+  const bool log_histograms =
+      thread_state->cpu_reduction_experiment_filter.ShouldLogHistograms();
+
+  if (log_histograms) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "GPU.Scheduler.ThreadSuspendedTime",
+        base::TimeTicks::Now() - thread_state->run_next_task_scheduled,
+        base::Microseconds(10), base::Seconds(30), 100);
+  }
 
   SchedulingState state;
   {
@@ -625,7 +632,7 @@ void Scheduler::RunNextTask() {
     if (scheduling_queue.empty()) {
       TRACE_EVENT_NESTABLE_ASYNC_END0("gpu", "Scheduler::Running",
                                       TRACE_ID_LOCAL(this));
-      per_thread_state_map_[task_runner].running = false;
+      thread_state->running = false;
       return;
     }
 
@@ -641,15 +648,17 @@ void Scheduler::RunNextTask() {
   DCHECK(sequence);
   DCHECK_EQ(sequence->task_runner(), task_runner);
 
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "GPU.Scheduler.TaskDependencyTime",
-      sequence->FrontTaskWaitingDependencyDelta(), base::Microseconds(10),
-      base::Seconds(30), 100);
+  if (log_histograms) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "GPU.Scheduler.TaskDependencyTime",
+        sequence->FrontTaskWaitingDependencyDelta(), base::Microseconds(10),
+        base::Seconds(30), 100);
 
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "GPU.Scheduler.TaskSchedulingDelayTime",
-      sequence->FrontTaskSchedulingDelay(), base::Microseconds(10),
-      base::Seconds(30), 100);
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "GPU.Scheduler.TaskSchedulingDelayTime",
+        sequence->FrontTaskSchedulingDelay(), base::Microseconds(10),
+        base::Seconds(30), 100);
+  }
 
   base::OnceClosure closure;
   uint32_t order_num = sequence->BeginTask(&closure);
@@ -662,6 +671,12 @@ void Scheduler::RunNextTask() {
   // Begin/FinishProcessingOrderNumber must be called with the lock released
   // because they can renter the scheduler in Enable/DisableSequence.
   scoped_refptr<SyncPointOrderData> order_data = sequence->order_data();
+
+  // Unset pointers before releasing the lock to prevent accidental data race.
+  thread_state = nullptr;
+  sequence = nullptr;
+
+  base::TimeDelta blocked_time;
   {
     base::AutoUnlock auto_unlock(lock_);
     order_data->BeginProcessingOrderNumber(order_num);
@@ -677,9 +692,8 @@ void Scheduler::RunNextTask() {
           base::ThreadTicks::Now() - thread_time_start;
       base::TimeDelta wall_time_elapsed =
           base::TimeTicks::Now() - wall_time_start;
-      base::TimeDelta blocked_time = wall_time_elapsed - thread_time_elapsed;
 
-      total_blocked_time_ += blocked_time;
+      blocked_time += (wall_time_elapsed - thread_time_elapsed);
     } else {
       std::move(closure).Run();
     }
@@ -688,13 +702,17 @@ void Scheduler::RunNextTask() {
       order_data->FinishProcessingOrderNumber(order_num);
   }
 
-  // Check if sequence hasn't been destroyed.
+  total_blocked_time_ += blocked_time;
+
+  // Reset pointers after reaquiring the lock.
+  thread_state = &per_thread_state_map_[task_runner];
   sequence = GetSequence(state.sequence_id);
+
+  // Check if sequence hasn't been destroyed.
   if (sequence) {
     sequence->FinishTask();
     if (sequence->IsRunnable()) {
-      auto& scheduling_queue =
-          per_thread_state_map_[task_runner].scheduling_queue;
+      auto& scheduling_queue = thread_state->scheduling_queue;
 
       SchedulingState scheduling_state = sequence->SetScheduled();
       scheduling_queue.push_back(scheduling_state);
@@ -703,20 +721,22 @@ void Scheduler::RunNextTask() {
     }
   }
 
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "GPU.Scheduler.RunTaskTime", task_timer.Elapsed(), base::Microseconds(10),
-      base::Seconds(30), 100);
+  if (log_histograms) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "GPU.Scheduler.RunTaskTime", task_timer.Elapsed(),
+        base::Microseconds(10), base::Seconds(30), 100);
+  }
 
   // Avoid scheduling another RunNextTask if we're done with all tasks.
   auto& scheduling_queue = RebuildSchedulingQueueIfNeeded(task_runner);
   if (scheduling_queue.empty()) {
     TRACE_EVENT_NESTABLE_ASYNC_END0("gpu", "Scheduler::Running",
                                     TRACE_ID_LOCAL(this));
-    per_thread_state_map_[task_runner].running = false;
+    thread_state->running = false;
     return;
   }
 
-  run_next_task_scheduled_ = base::TimeTicks::Now();
+  thread_state->run_next_task_scheduled = base::TimeTicks::Now();
   task_runner->PostTask(FROM_HERE, base::BindOnce(&Scheduler::RunNextTask,
                                                   base::Unretained(this)));
 }
@@ -724,6 +744,7 @@ void Scheduler::RunNextTask() {
 base::TimeDelta Scheduler::TakeTotalBlockingTime() {
   if (!blocked_time_collection_enabled_ || !base::ThreadTicks::IsSupported())
     return base::TimeDelta::Min();
+  base::AutoLock auto_lock(lock_);
   base::TimeDelta result;
   std::swap(result, total_blocked_time_);
   return result;

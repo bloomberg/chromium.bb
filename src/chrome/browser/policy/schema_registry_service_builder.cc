@@ -22,7 +22,7 @@
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -36,7 +36,7 @@ namespace {
 DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+  if (ash::ProfileHelper::IsSigninProfile(profile))
     return NULL;
 
   if (!user_manager::UserManager::IsInitialized()) {
@@ -45,7 +45,7 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
   }
 
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return NULL;
 
@@ -87,7 +87,7 @@ std::unique_ptr<SchemaRegistryService> BuildSchemaRegistryServiceForProfile(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* const profile = Profile::FromBrowserContext(context);
-  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
+  if (ash::ProfileHelper::IsSigninProfile(profile)) {
     // Pass the SchemaRegistry of the signin profile to the device policy
     // managers, for being used for fetching the component policies.
     BrowserPolicyConnectorAsh* connector =

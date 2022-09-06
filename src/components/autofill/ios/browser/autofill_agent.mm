@@ -333,7 +333,8 @@ void GetFormField(autofill::FormFieldData* field,
   // -showAutofillPopup:popupDelegate:.
   autofillManager->OnAskForValuesToFill(++_lastQueryID, form, field,
                                         gfx::RectF(),
-                                        /*autoselect_first_suggestion=*/false);
+                                        /*autoselect_first_suggestion=*/false,
+                                        autofill::TouchToFillEligible(false));
 }
 
 - (void)checkIfSuggestionsAvailableForForm:
@@ -581,16 +582,16 @@ void GetFormField(autofill::FormFieldData* field,
       // Value will contain the text to be filled in the selected element while
       // displayDescription will contain a summary of the data to be filled in
       // the other elements.
-      value = SysUTF16ToNSString(popup_suggestion.value);
+      value = SysUTF16ToNSString(popup_suggestion.main_text.value);
       displayDescription = SysUTF16ToNSString(popup_suggestion.label);
     } else if (popup_suggestion.frontend_id ==
                autofill::POPUP_ITEM_ID_CLEAR_FORM) {
       // Show the "clear form" button.
-      value = SysUTF16ToNSString(popup_suggestion.value);
+      value = SysUTF16ToNSString(popup_suggestion.main_text.value);
     } else if (popup_suggestion.frontend_id ==
                autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
       // Show opt-in for showing cards from account.
-      value = SysUTF16ToNSString(popup_suggestion.value);
+      value = SysUTF16ToNSString(popup_suggestion.main_text.value);
     }
 
     if (!value)

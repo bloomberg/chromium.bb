@@ -35,7 +35,8 @@ class BubbleContentsWrapperT<TestWebUIController>
                          int task_manager_string_id,
                          bool webui_resizes_host = true,
                          bool esc_closes_ui = true)
-      : BubbleContentsWrapper(browser_context,
+      : BubbleContentsWrapper(webui_url,
+                              browser_context,
                               task_manager_string_id,
                               webui_resizes_host,
                               esc_closes_ui) {}
@@ -139,6 +140,24 @@ TEST_F(WebUIBubbleManagerTest,
 
   bubble_manager->ResetContentsWrapperForTesting();
   profile_manager()->DeleteTestingProfile(kProfileName);
+}
+
+TEST_F(WebUIBubbleManagerTest, CreateWebUIBubbleDialogWithAnchorProvided) {
+  const char* kProfileName = "Person 1";
+  auto* test_profile = profile_manager()->CreateTestingProfile(kProfileName);
+
+  std::unique_ptr<views::Widget> anchor_widget =
+      CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+  auto bubble_manager =
+      std::make_unique<WebUIBubbleManagerT<TestWebUIController>>(
+          anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
+  bubble_manager->DisableCloseBubbleHelperForTesting();
+
+  gfx::Rect anchor(666, 666, 0, 0);
+  bubble_manager->ShowBubble(anchor);
+  auto bubble_view = bubble_manager->bubble_view_for_testing();
+
+  EXPECT_EQ(bubble_view->GetAnchorRect(), anchor);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)  // No multi-profile on ChromeOS.

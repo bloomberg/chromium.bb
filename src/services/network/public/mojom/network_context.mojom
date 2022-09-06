@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/read_only_file.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "sandbox/policy/mojom/context.mojom";
 import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/url_loader_network_service_observer.mojom";
 import "services/network/public/mojom/cert_verifier_service.mojom";
@@ -20,7 +21,9 @@ import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "services/network/public/mojom/default_credentials.mojom";
 import "services/network/public/mojom/devtools_observer.mojom";
+import "services/network/public/mojom/first_party_sets_access_delegate.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
+import "services/network/public/mojom/http_cache_backend_file_operations.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
@@ -42,6 +45,7 @@ import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
+import "services/network/public/mojom/transferable_directory.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
@@ -137,7 +141,7 @@ interface CustomProxyConfigClient {
   ClearBadProxiesCache();
 };
 
-[EnableIf=is_chromeos_ash]
+[EnableIf=is_chromeos]
 struct AdditionalCertificates {
   // List of all additional certificates.
   array<X509Certificate> all_certificates;
@@ -205,29 +209,30 @@ struct NetworkContextFilePaths {
   // since the sandboxed network service will have full access to this path.
   // This should be a different path for each different network context running
   // inside the network service.
-  mojo_base.mojom.FilePath data_path;
+  TransferableDirectory data_directory;
 
   // Points to a path that might contain existing network service data files and
-  // databases from network contexts created with the same `data_path`.
-  // This parameter must be specified if `perform_migration` is set to true.
+  // databases from network contexts created with the same `data_directory`.
+  // This parameter must be specified if `trigger_migration` is set to true.
   // Once migration has been successful (see below), data is no longer read from
   // this path. Data could continue to be read from this path if migration
   // fails, or if `trigger_migration` has never been set to true.
   // If this parameter is specified then the sandbox will be granted access to
-  // the `data_path` specified above.
+  // the `data_directory` specified above.
   // This parameter, along with `trigger_migration` parameter below will be
   // removed in the future, once migration of network context data to the new
-  // `data_path` has been completed. At this point the sandbox will be granted
-  // access to `data_path` unconditionally.
+  // `data_directory` has been completed. At this point the sandbox will be
+  // granted access to `data_directory` unconditionally.
   mojo_base.mojom.FilePath? unsandboxed_data_path;
 
-  // Points to the cookie database file name inside `data_path`. An in-memory
-  // cookie store is used if it's empty, or if `data_path` is empty.
+  // Points to the cookie database file name inside `data_directory`. An
+  // in-memory cookie store is used if it's empty, or if `data_directory` is
+  // empty.
   mojo_base.mojom.FilePath? cookie_database_name;
 
-  // Points to the Trust Token database file name inside `data_path`. An
-  // in-memory trust token store is used if it's empty, or if `data_path` is
-  // empty, or (through a fallback in the initialization logic; see
+  // Points to the Trust Token database file name inside `data_directory`. An
+  // in-memory trust token store is used if it's empty, or if `data_directory`
+  // is empty, or (through a fallback in the initialization logic; see
   // SQLiteTrustTokenPersister's comments) if initialization fails.
   //
   // Initializing the on-disk database takes place asynchronously, so requests
@@ -235,40 +240,46 @@ struct NetworkContextFilePaths {
   mojo_base.mojom.FilePath? trust_token_database_name;
 
   // The name of the file to store cached server properties (Like HTTP2 and QUIC
-  // support) inside `data_path`. This information is used as a performance
-  // optimization in connection logic. If empty, or if `data_path` is empty, an
-  // in-memory cache will be used instead.
+  // support) inside `data_directory`. This information is used as a performance
+  // optimization in connection logic. If empty, or if `data_directory` is
+  // empty, an in-memory cache will be used instead.
   mojo_base.mojom.FilePath? http_server_properties_file_name;
 
   // The name of the file to store cached transport security properties (like
-  // HSTS) inside `data_path`. If empty, or `data_path` is empty, or the file
-  // can't be opened, an in-memory store will be used instead.
+  // HSTS) inside `data_directory`. If empty, or `data_directory` is empty, or
+  // the file can't be opened, an in-memory store will be used instead.
   mojo_base.mojom.FilePath? transport_security_persister_file_name;
 
-  // Points to a sqlite database contained within `data_path` containing
+  // Points to a sqlite database contained within `data_directory` containing
   // persisted Reporting clients and NEL policies. If Reporting and NEL
   // persistence is disabled, then this field is ignored. If this field is
-  // empty, or `data_path` is empty, then persistence will be disabled
+  // empty, or `data_directory` is empty, then persistence will be disabled
   // regardless. This field should not be used if the ENABLE_REPORTING build
   // flag is false.
   mojo_base.mojom.FilePath? reporting_and_nel_store_database_name;
 
+  // The name of the file to store pending SCT auditing reports inside
+  // `data_directory`. If empty, or `data_directory` is empty, or the file can't
+  // be opened, pending reports will instead be stored in-memory only.
+  mojo_base.mojom.FilePath? sct_auditing_pending_reports_file_name;
+
   // Specifies whether or not a migration of existing data should occur from
-  // `unsandboxed_data_path` to `data_path`. It is not valid to set this to true
-  // if an `unsandboxed_data_path` is not specified.
+  // `unsandboxed_data_path` to `data_directory`. It is not valid to set this
+  // to true if an `unsandboxed_data_path` is not specified.
   // If the migration is successful then network context data will operate from
-  // `data_path`, and the old data will be removed from `unsandboxed_data_path`.
+  // `data_directory`, and the old data will be removed from
+  // `unsandboxed_data_path`.
   // If migration is unsuccessful then data will continue to operate from
   // `unsandboxed_data_path` and migration will be re-attempted the next time
   // `trigger_migration` is set to true.
   // Since migration is a one-way operation, setting `trigger_migration` to
   // false does not move the data back to `unsandboxed_data_path`. The network
-  // context data will be read from `data_path` or `unsandboxed_data_path`
+  // context data will be read from `data_directory` or `unsandboxed_data_path`
   // depending on whether a migration has successfully occurred previously.
   // This parameter, along with `unsandboxed_data_path` parameter above will be
   // removed in the future, once migration of network context data to the new
-  // `data_path` has been completed. At this point the sandbox will be granted
-  // access to `data_path` unconditionally.
+  // `data_directory` has been completed. At this point the sandbox will be
+  // granted access to `data_directory` unconditionally.
   bool trigger_migration = false;
 };
 
@@ -332,7 +343,12 @@ struct NetworkContextParams {
   int32 http_cache_max_size = 0;
   // Points to the HTTP cache directory. Ignored if the cache is disabled.
   // If null and the cache is enabled, an in-memory database is used.
-  mojo_base.mojom.FilePath? http_cache_path;
+  TransferableDirectory? http_cache_directory;
+
+  // A factory to broker file operations needed for the HTTP cache on some
+  // platforms (depending on the sandboxing mechanism the platform provides).
+  pending_remote<HttpCacheBackendFileOperationsFactory>?
+      http_cache_file_operations_factory;
 
   // Enabled protocols. Note that these apply to all fetches, including those
   // used to fetch PAC scripts. Note that currently data URLs are always enabled
@@ -414,13 +430,11 @@ struct NetworkContextParams {
   [EnableIf=is_ct_supported]
   bool enable_expect_ct_reporting = false;
 
-  // Enables SCT auditing, which sends reports for SCTs found in connections
-  // made by this network context. Can also be dynamically configured via
-  // NetworkContext::SetSCTAuditingEnabled(). This must be set to true and
-  // auditing must be enabled and configured globally via
-  // NetworkService::ConfigureSCTAuditing().
+  // The SCT auditing mode. SCT auditing sends reports for SCTs found in
+  // connections made by this network context. Can also be dynamically
+  // configured via NetworkContext::SetSCTAuditingMode().
   [EnableIf=is_ct_supported]
-  bool enable_sct_auditing = false;
+  SCTAuditingMode sct_auditing_mode = SCTAuditingMode.kDisabled;
 
   // The initial CT policy to be used for requests. See
   // NetworkContext.SetCTPolicy() for more.
@@ -432,7 +446,7 @@ struct NetworkContextParams {
 
   // Initial additional certificates that will be used for certificate
   // validation.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=is_chromeos]
   AdditionalCertificates? initial_additional_certificates;
 
   // Parameters for constructing the cookie manager.
@@ -502,12 +516,23 @@ struct NetworkContextParams {
   bool win_permissions_set = false;
 
   // The paths to data files used by this network context, except for the disk
-  // cache which is specified by the `http_cache_path` parameter. If empty then
-  // persistent storage for all of the files within this parameter will be
-  // disabled for the network context and some data may be stored in memory or
-  // disabled. See the above definition of each inner field for details of these
-  // behaviors.
+  // cache which is specified by the `http_cache_directory` parameter.
+  // If empty then persistent storage for all of the files within this
+  // parameter will be disabled for the network context and some data may be
+  // stored in memory or disabled. See the above definition of each inner field
+  // for details of these behaviors.
   NetworkContextFilePaths? file_paths;
+
+  // Is true, Trust Token operations should be blocked.
+  bool block_trust_tokens;
+
+  // Parameters for constructing the FirstPartySetsAccessDelegate.
+  // |first_party_sets_access_delegate_params| is the initial configuration to
+  // use. If nullptr, uses the default configuration. Updated configurations
+  // can be passed in via |first_party_sets_access_delegate_receiver|.
+  FirstPartySetsAccessDelegateParams? first_party_sets_access_delegate_params;
+  pending_receiver<FirstPartySetsAccessDelegate>?
+      first_party_sets_access_delegate_receiver;
 };
 
 struct NetworkConditions {
@@ -595,6 +620,20 @@ struct URLLoaderFactoryOverride {
 enum TrustTokenRedemptionPolicy {
   kForbid,
   kPotentiallyPermit,
+};
+
+[EnableIf=is_ct_supported]
+enum SCTAuditingMode {
+  // SCT auditing is completely disabled.
+  kDisabled,
+
+  // The user has opted-in to ESBR, so sampled SCTs are sent to Google.
+  kEnhancedSafeBrowsingReporting,
+
+  // The user is not opted-in to ESBR, and hashdance auditing is enabled.
+  // Perform a k-anonymous prefix query for sampled SCTs, and upload only if the
+  // SCT is not present in a log.
+  kHashdance,
 };
 
 struct URLLoaderFactoryParams {
@@ -764,7 +803,7 @@ interface NetworkContextClient {
                                    (int32 result, string auth_token);
 
   // Notification that a trust anchor was used for the given user.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=is_chromeos]
   OnTrustAnchorUsed();
 
   // If it's supported by the implementation, attempts to provide a response to
@@ -775,6 +814,20 @@ interface NetworkContextClient {
   // response structs' comments for more information).
   OnTrustTokenIssuanceDivertedToSystem(FulfillTrustTokenIssuanceRequest request)
     => (FulfillTrustTokenIssuanceAnswer response);
+
+  // Checks if a new SCT Auditing report can be sent. The browser maintains a
+  // maximum report count cap for Hashdance clients -- this returns whether the
+  // cap has been exceeded or not (i.e., whether another report can be sent from
+  // this client). Only used for SCT auditing "hashdance" clients; no report cap
+  // is applied for SBER clients.
+  [EnableIf=is_ct_supported]
+  OnCanSendSCTAuditingReport() => (bool allowed);
+
+  // Signal that a new SCT auditing report has been sent, so that the browser
+  // can update its report count. Only used for SCT auditing "hashdance"
+  // clients.
+  [EnableIf=is_ct_supported]
+  OnNewSCTAuditingReportSent();
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -782,7 +835,9 @@ interface NetworkContextClient {
 //
 // NetworkContext is implemented by the network service. It is a trusted
 // interface that must not be sent to an untrusted process like a renderer
-// process. Only the browser process should have access to it.
+// process. Only the browser process or privileged utilities should have access
+// to it.
+[RequireContext=sandbox.mojom.Context.kPrivilegedUtility]
 interface NetworkContext {
   // Sets a client for this network context.
   SetClient(pending_remote<NetworkContextClient> client);
@@ -816,9 +871,6 @@ interface NetworkContext {
   //
   // If |role| == SCRIPT, this interface can be safely handed out to a process
   // that is known to represent the given origin, such as a renderer process.
-  //
-  // |is_service_worker|, |process_id| and |routing_id| will be passed to
-  // NetworkContextClient::OnCookieChange and OnCookiesRead.
   GetRestrictedCookieManager(
       pending_receiver<RestrictedCookieManager> restricted_cookie_manager,
       RestrictedCookieManagerRole role,
@@ -860,6 +912,9 @@ interface NetworkContext {
   // also clears out Redemption Records.
   DeleteStoredTrustTokens(url.mojom.Origin issuer)
       => (DeleteStoredTrustTokensStatus status);
+
+  // Set Trust Token blocking to |block|.
+  SetBlockTrustTokens(bool block);
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| and after |end_time| may be
@@ -920,22 +975,22 @@ interface NetworkContext {
   ClearHttpAuthCache(mojo_base.mojom.Time start_time,
                      mojo_base.mojom.Time end_time) => ();
 
-  // Clears all report entries from the reporting cache. Should not be called if
+  // Clears all report entries from the reporting cache. This has no effect if
   // the ENABLE_REPORTING build flag is false.
   //
   // If a non-null |filter| is specified, will clear only entries matching the
   // filter.
   ClearReportingCacheReports(ClearDataFilter? filter) => ();
 
-  // Clears all client entries from the reporting cache. Should not be called if
+  // Clears all client entries from the reporting cache. This has no effect if
   // the ENABLE_REPORTING build flag is false.
   //
   // If a non-null |filter| is specified, will clear only entries matching the
   // filter.
   ClearReportingCacheClients(ClearDataFilter? filter) => ();
 
-  // Clears policy entries from the NetworkErrorLoggingService. Should not be
-  // called if the ENABLE_REPORTING build flag is false.
+  // Clears policy entries from the NetworkErrorLoggingService. This has no
+  // effect if the ENABLE_REPORTING build flag is false.
   //
   // If a non-null |filter| is specified, will clear only entries matching the
   // filter.
@@ -1037,7 +1092,7 @@ interface NetworkContext {
   SetEnableReferrers(bool enable_referrers);
 
   // Updates the additional trust anchors for certificate verification.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=is_chromeos]
   UpdateAdditionalCertificates(AdditionalCertificates? additional_certificates);
 
   // Updates the CT policy to be used for requests. Only applies if the
@@ -1063,7 +1118,7 @@ interface NetworkContext {
   [EnableIf=is_ct_supported]
   GetExpectCTState(string domain,
                    NetworkIsolationKey network_isolation_key)
-                   => (mojo_base.mojom.DictionaryValue state);
+                   => (mojo_base.mojom.DeprecatedDictionaryValue state);
 
   // Creates a UDP socket. Caller can supply a |listener| interface pointer
   // to listen for incoming datagrams. A null |listener| is acceptable if caller
@@ -1294,7 +1349,9 @@ interface NetworkContext {
                               NetworkIsolationKey network_isolation_key,
                               string ocsp_response,
                               string sct_list) => (int32 error_code,
-                                                   CertVerifyResult cv_result);
+                                                   CertVerifyResult cv_result,
+                                                   bool pkp_bypassed,
+                                                   string pinning_failure_log);
 
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header. Used by tests and implementation of chrome://net-internals.
@@ -1307,7 +1364,8 @@ interface NetworkContext {
 
   // Retrieve values from the HSTS state from the associated contexts
   // transport security state.
-  GetHSTSState(string domain) => (mojo_base.mojom.DictionaryValue state);
+  GetHSTSState(string domain)
+      => (mojo_base.mojom.DeprecatedDictionaryValue state);
 
   // Sets allowed and blocked origins respectively for the URLLoaderFactory
   // consumers to access beyond the same-origin policy. The list is managed per
@@ -1388,7 +1446,6 @@ interface NetworkContext {
   // Enables the checking of static PKP records.
   EnableStaticKeyPinningForTesting() => ();
 
-  [Sync]
   // Verifies the given certificate using the context's CertVerifier.
   VerifyCertificateForTesting(X509Certificate certificate,
                               string hostname,
@@ -1409,9 +1466,9 @@ interface NetworkContext {
   GetOriginPolicyManager(
       pending_receiver<OriginPolicyManager> origin_policy_manager);
 
-  // Set whether SCT auditing is enabled for this NetworkContext.
+  // Set the SCT auditing mode for this NetworkContext.
   [EnableIf=is_ct_supported]
-  SetSCTAuditingEnabled(bool enabled);
+  SetSCTAuditingMode(SCTAuditingMode mode);
 
   // Adds an observer that will receive Reporting Service callbacks. Generates
   // events for Reporting API reports currently stored in the reporting service.

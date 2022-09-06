@@ -37,6 +37,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -57,8 +58,6 @@ import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.WaitForFocusHelper;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -79,10 +78,12 @@ public class SwitchToTabTest {
     private static final long SEARCH_ACTIVITY_MAX_TIME_TO_POLL = 10000L;
 
     private EmbeddedTestServer mTestServer;
+    private OmniboxTestUtils mOmnibox;
 
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+        mOmnibox = new OmniboxTestUtils(mActivityTestRule.getActivity());
     }
 
     @After
@@ -102,8 +103,7 @@ public class SwitchToTabTest {
         final UrlBar urlBar = activity.findViewById(R.id.url_bar);
         Assert.assertNotNull(urlBar);
 
-        WaitForFocusHelper.acquireFocusForView(urlBar);
-        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
+        mOmnibox.requestFocus();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.setText(text); });
     }
@@ -119,7 +119,7 @@ public class SwitchToTabTest {
             LocationBarLayout locationBarLayout, Tab tab) throws InterruptedException {
         typeInOmnibox(activity, ChromeTabUtils.getTitleOnUiThread(tab));
 
-        OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
+        mOmnibox.checkSuggestionsShown();
         // waitForOmniboxSuggestions only wait until one suggestion shows up, we need to wait util
         // autocomplete return more suggestions.
         CriteriaHelper.pollUiThread(() -> {
@@ -259,12 +259,12 @@ public class SwitchToTabTest {
         Assert.assertNotNull("Activity didn't start", searchActivity);
         Assert.assertTrue("Wrong activity started", searchActivity instanceof SearchActivity);
         instrumentation.removeMonitor(searchMonitor);
+        mOmnibox = new OmniboxTestUtils(searchActivity);
         return (SearchActivity) searchActivity;
     }
 
     @Test
     @MediumTest
-    @EnableFeatures("OmniboxTabSwitchSuggestions")
     public void testSwitchToTabSuggestion() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
@@ -292,8 +292,8 @@ public class SwitchToTabTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.N)
-    @EnableFeatures("OmniboxTabSwitchSuggestions")
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
+    @FlakyTest(message = "https://crbug.com/1291136")
     public void testSwitchToTabSuggestionWhenIncognitoTabOnTop() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
@@ -331,7 +331,6 @@ public class SwitchToTabTest {
 
     @Test
     @MediumTest
-    @EnableFeatures("OmniboxTabSwitchSuggestions")
     public void testNoSwitchToIncognitoTabFromNormalModel() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
@@ -348,7 +347,7 @@ public class SwitchToTabTest {
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         // trying to match incognito tab.
         mActivityTestRule.typeInOmnibox("about", false);
-        OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
+        mOmnibox.checkSuggestionsShown();
 
         CriteriaHelper.pollUiThread(() -> {
             AutocompleteMatch matchSuggestion =
@@ -359,7 +358,6 @@ public class SwitchToTabTest {
 
     @Test
     @MediumTest
-    @EnableFeatures("OmniboxTabSwitchSuggestions")
     public void testSwitchToTabInSearchActivity() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),

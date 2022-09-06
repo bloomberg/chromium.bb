@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -15,36 +16,35 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
-#include "components/services/storage/indexed_db/scopes/disjoint_range_lock_manager.h"
+#include "components/services/storage/indexed_db/locks/disjoint_range_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom-test-utils.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
+#include "content/browser/indexed_db/indexed_db_bucket_state.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
-#include "content/browser/indexed_db/indexed_db_storage_key_state.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -52,6 +52,7 @@
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -73,7 +74,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   TestableIndexedDBBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       TransactionalLevelDBFactory* leveldb_factory,
-      const blink::StorageKey& storage_key,
+      const storage::BucketLocator& bucket_locator,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
@@ -84,7 +85,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner)
       : IndexedDBBackingStore(backing_store_mode,
                               leveldb_factory,
-                              storage_key,
+                              bucket_locator,
                               blob_path,
                               std::move(db),
                               blob_storage_context,
@@ -142,7 +143,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
   std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       TransactionalLevelDBFactory* leveldb_factory,
-      const blink::StorageKey& storage_key,
+      const storage::BucketLocator& bucket_locator,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext*,
@@ -156,7 +157,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
     // than the versions that were passed in to this method. This way tests can
     // use a different context from what is stored in the IndexedDBContext.
     return std::make_unique<TestableIndexedDBBackingStore>(
-        backing_store_mode, leveldb_factory, storage_key, blob_path,
+        backing_store_mode, leveldb_factory, bucket_locator, blob_path,
         std::move(db), blob_storage_context_, file_system_access_context_,
         std::move(filesystem_proxy), std::move(blob_files_cleaned),
         std::move(report_outstanding_blobs), std::move(idb_task_runner));
@@ -338,31 +339,32 @@ class IndexedDBBackingStoreTest : public testing::Test {
   void CreateFactoryAndBackingStore() {
     const blink::StorageKey storage_key =
         blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
+    auto bucket_locator = storage::BucketLocator();
+    bucket_locator.storage_key = storage_key;
     idb_factory_ = std::make_unique<TestIDBFactory>(
         idb_context_.get(), blob_context_.get(),
         file_system_access_context_.get());
 
     leveldb::Status s;
-    std::tie(storage_key_state_handle_, s, std::ignore, data_loss_info_,
+    std::tie(bucket_state_handle_, s, std::ignore, data_loss_info_,
              std::ignore) =
-        idb_factory_->GetOrOpenStorageKeyFactory(storage_key,
-                                                 idb_context_->data_path(),
-                                                 /*create_if_missing=*/true);
-    if (!storage_key_state_handle_.IsHeld()) {
+        idb_factory_->GetOrOpenBucketFactory(
+            bucket_locator, idb_context_->GetDataPath(bucket_locator),
+            /*create_if_missing=*/true);
+    if (!bucket_state_handle_.IsHeld()) {
       backing_store_ = nullptr;
       return;
     }
     backing_store_ = static_cast<TestableIndexedDBBackingStore*>(
-        storage_key_state_handle_.storage_key_state()->backing_store());
-    lock_manager_ =
-        storage_key_state_handle_.storage_key_state()->lock_manager();
+        bucket_state_handle_.bucket_state()->backing_store());
+    lock_manager_ = bucket_state_handle_.bucket_state()->lock_manager();
   }
 
-  std::vector<ScopeLock> CreateDummyLock() {
+  std::vector<LeveledLock> CreateDummyLock() {
     base::RunLoop loop;
-    ScopesLocksHolder locks_receiver;
+    LeveledLockHolder locks_receiver;
     bool success = lock_manager_->AcquireLocks(
-        {{0, {"01", "11"}, ScopesLockManager::LockType::kShared}},
+        {{0, {"01", "11"}, LeveledLockManager::LockType::kShared}},
         locks_receiver.AsWeakPtr(),
         base::BindLambdaForTesting([&loop]() { loop.Quit(); }));
     EXPECT_TRUE(success);
@@ -372,7 +374,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
   void DestroyFactoryAndBackingStore() {
-    storage_key_state_handle_.Release();
+    bucket_state_handle_.Release();
     idb_factory_.reset();
     backing_store_ = nullptr;
   }
@@ -382,18 +384,18 @@ class IndexedDBBackingStoreTest : public testing::Test {
     if (idb_context_ && !idb_context_->IsInMemoryContext()) {
       IndexedDBFactoryImpl* factory = idb_context_->GetIDBFactory();
 
-      // Loop through all open origins, and force close them, and request the
+      // Loop through all open buckets, and force close them, and request the
       // deletion of the leveldb state. Once the states are no longer around,
       // delete all of the databases on disk.
-      auto open_factory_storage_keys = factory->GetOpenStorageKeys();
+      auto open_factory_buckets = factory->GetOpenBuckets();
 
-      for (const auto& storage_key : open_factory_storage_keys) {
+      for (const auto& bucket_locator : open_factory_buckets) {
         base::RunLoop loop;
-        IndexedDBStorageKeyState* per_storage_key_factory =
-            factory->GetStorageKeyFactory(storage_key);
+        IndexedDBBucketState* per_bucket_factory =
+            factory->GetBucketFactory(bucket_locator);
 
         auto* leveldb_state =
-            per_storage_key_factory->backing_store()->db()->leveldb_state();
+            per_bucket_factory->backing_store()->db()->leveldb_state();
 
         base::WaitableEvent leveldb_close_event;
         base::WaitableEventWatcher event_watcher;
@@ -404,11 +406,12 @@ class IndexedDBBackingStoreTest : public testing::Test {
                 [&](base::WaitableEvent*) { loop.Quit(); }),
             base::SequencedTaskRunnerHandle::Get());
 
-        idb_context_->ForceCloseSync(
-            storage_key,
-            storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
+        idb_context_->ForceClose(
+            bucket_locator,
+            storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN,
+            base::DoNothing());
         loop.Run();
-        // There is a possible race in |leveldb_close_event| where the signaling
+        // There is a possible race in `leveldb_close_event` where the signaling
         // thread is still in the WaitableEvent::Signal() method. To ensure that
         // the other thread exits their Signal method, any method on the
         // WaitableEvent can be called to acquire the internal lock (which will
@@ -416,10 +419,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
         EXPECT_TRUE(leveldb_close_event.IsSignaled());
       }
       // All leveldb databases are closed, and they can be deleted.
-      for (auto storage_key : idb_context_->GetAllStorageKeys()) {
+      for (auto bucket_locator : idb_context_->GetAllBuckets()) {
         bool success = false;
         storage::mojom::IndexedDBControlAsyncWaiter waiter(idb_context_.get());
-        waiter.DeleteForStorageKey(storage_key, &success);
+        waiter.DeleteForBucket(bucket_locator.storage_key, &success);
         EXPECT_TRUE(success);
       }
     }
@@ -461,7 +464,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   std::unique_ptr<TestIDBFactory> idb_factory_;
   raw_ptr<DisjointRangeLockManager> lock_manager_;
 
-  IndexedDBStorageKeyStateHandle storage_key_state_handle_;
+  IndexedDBBucketStateHandle bucket_state_handle_;
   raw_ptr<TestableIndexedDBBackingStore> backing_store_ = nullptr;
   IndexedDBDataLossInfo data_loss_info_;
 
@@ -471,6 +474,27 @@ class IndexedDBBackingStoreTest : public testing::Test {
   IndexedDBValue value1_;
   IndexedDBValue value2_;
 };
+
+class IndexedDBBackingStoreTestForThirdPartyStoragePartitioning
+    : public testing::WithParamInterface<bool>,
+      public IndexedDBBackingStoreTest {
+ public:
+  IndexedDBBackingStoreTestForThirdPartyStoragePartitioning() {
+    scoped_feature_list_.InitWithFeatureState(
+        blink::features::kThirdPartyStoragePartitioning,
+        IsThirdPartyStoragePartitioningEnabled());
+  }
+
+  bool IsThirdPartyStoragePartitioningEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
+    testing::Bool());
 
 enum class ExternalObjectTestType {
   kOnlyBlobs,
@@ -609,7 +633,7 @@ class IndexedDBBackingStoreTestWithExternalObjects
             EXPECT_EQ(a.last_modified(), b.last_modified());
             return false;
           }
-          FALLTHROUGH;
+          [[fallthrough]];
         case IndexedDBExternalObject::ObjectType::kBlob:
           if (a.type() != b.type()) {
             EXPECT_EQ(a.type(), b.type());
@@ -750,7 +774,7 @@ class IndexedDBBackingStoreTestWithExternalObjects
   }
 
   // Sample keys and values that are consistent. Public so that posted
-  // lambdas passed |this| can access them.
+  // lambdas passed `this` can access them.
   IndexedDBKey key3_;
   IndexedDBValue value3_;
 
@@ -759,7 +783,7 @@ class IndexedDBBackingStoreTestWithExternalObjects
   const std::string kBlobFileData2 = "aaaaaa";
 
  private:
-  // Blob details referenced by |value3_|. The various CheckBlob*() methods
+  // Blob details referenced by `value3_`. The various CheckBlob*() methods
   // can be used to verify the state as a test progresses.
   std::vector<IndexedDBExternalObject> external_objects_;
 
@@ -1009,7 +1033,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRange) {
       IndexedDBKeyRange(keys[1], keys[3], false, true),
       IndexedDBKeyRange(keys[0], keys[3], true, true)};
 
-  for (size_t i = 0; i < base::size(ranges); ++i) {
+  for (size_t i = 0; i < std::size(ranges); ++i) {
     const int64_t database_id = 1;
     const int64_t object_store_id = i + 1;
     const IndexedDBKeyRange& range = ranges[i];
@@ -1104,7 +1128,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRangeEmptyRange) {
       IndexedDBKeyRange(keys[2], keys[1], false, false),
       IndexedDBKeyRange(keys[2], keys[1], true, true)};
 
-  for (size_t i = 0; i < base::size(ranges); ++i) {
+  for (size_t i = 0; i < std::size(ranges); ++i) {
     const int64_t database_id = 1;
     const int64_t object_store_id = i + 1;
     const IndexedDBKeyRange& range = ranges[i];
@@ -1630,25 +1654,34 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
   EXPECT_EQ(db1_name, names[0]);
 }
 
-TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
+TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
+       ReadCorruptionInfoForOpaqueStorageKey) {
   auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
       storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
+  storage::BucketLocator bucket_locator;
+  bucket_locator.storage_key = blink::StorageKey(url::Origin());
 
-  // No |path_base|.
+  // No `path_base`.
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(),
-                                             base::FilePath(),
-                                             StorageKey(Origin()))
+                                             base::FilePath(), bucket_locator)
                   .empty());
+}
 
+TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
+       ReadCorruptionInfoForFirstPartyStorageKey) {
+  auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
+      storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
+  storage::BucketLocator bucket_locator;
   const base::FilePath path_base = temp_dir_.GetPath();
-  const StorageKey storage_key =
-      StorageKey::CreateFromStringForTesting("http://www.google.com/");
+  bucket_locator.storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://www.google.com/");
+  bucket_locator.id = storage::BucketId::FromUnsafeValue(1);
   ASSERT_FALSE(path_base.empty());
   ASSERT_TRUE(PathIsWritable(path_base));
 
   // File not found.
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
 
   const base::FilePath info_path =
@@ -1660,7 +1693,7 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   std::string dummy_data;
   ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
   EXPECT_FALSE(PathExists(info_path));
 
@@ -1668,42 +1701,42 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   dummy_data.resize(5000, 'c');
   ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Random string.
   ASSERT_TRUE(base::WriteFile(info_path, "foo bar"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Not a dictionary.
   ASSERT_TRUE(base::WriteFile(info_path, "[]"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Empty dictionary.
   ASSERT_TRUE(base::WriteFile(info_path, "{}"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, no message key.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"foo\":\"bar\"}"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                             storage_key)
+                                             bucket_locator)
                   .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, message key.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"bar\"}"));
-  std::string message = indexed_db::ReadCorruptionInfo(filesystem_proxy.get(),
-                                                       path_base, storage_key);
+  std::string message = indexed_db::ReadCorruptionInfo(
+      filesystem_proxy.get(), path_base, bucket_locator);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("bar", message);
@@ -1711,7 +1744,97 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   // Dictionary, message key and more.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
   message = indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
-                                           storage_key);
+                                           bucket_locator);
+  EXPECT_FALSE(message.empty());
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_EQ("foo", message);
+}
+
+TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
+       ReadCorruptionInfoForThirdPartyStorageKey) {
+  auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
+      storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
+  storage::BucketLocator bucket_locator;
+  const base::FilePath path_base = temp_dir_.GetPath();
+  bucket_locator.storage_key =
+      blink::StorageKey(url::Origin::Create(GURL("http://www.google.com/")),
+                        url::Origin::Create(GURL("http://www.youtube.com/")));
+  bucket_locator.id = storage::BucketId::FromUnsafeValue(1);
+  ASSERT_FALSE(path_base.empty());
+  ASSERT_TRUE(PathIsWritable(path_base));
+
+  // File not found.
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+
+  base::FilePath info_path =
+      path_base.AppendASCII("http_www.google.com_0.indexeddb.leveldb")
+          .AppendASCII("corruption_info.json");
+  if (IsThirdPartyStoragePartitioningEnabled()) {
+    info_path = path_base.AppendASCII("1")
+                    .AppendASCII("IndexedDB")
+                    .AppendASCII("indexeddb.leveldb")
+                    .AppendASCII("corruption_info.json");
+  }
+  ASSERT_TRUE(CreateDirectory(info_path.DirName()));
+
+  // Empty file.
+  std::string dummy_data;
+  ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+  EXPECT_FALSE(PathExists(info_path));
+
+  // File size > 4 KB.
+  dummy_data.resize(5000, 'c');
+  ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+  EXPECT_FALSE(PathExists(info_path));
+
+  // Random string.
+  ASSERT_TRUE(base::WriteFile(info_path, "foo bar"));
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+  EXPECT_FALSE(PathExists(info_path));
+
+  // Not a dictionary.
+  ASSERT_TRUE(base::WriteFile(info_path, "[]"));
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+  EXPECT_FALSE(PathExists(info_path));
+
+  // Empty dictionary.
+  ASSERT_TRUE(base::WriteFile(info_path, "{}"));
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+  EXPECT_FALSE(PathExists(info_path));
+
+  // Dictionary, no message key.
+  ASSERT_TRUE(base::WriteFile(info_path, "{\"foo\":\"bar\"}"));
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             bucket_locator)
+                  .empty());
+  EXPECT_FALSE(PathExists(info_path));
+
+  // Dictionary, message key.
+  ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"bar\"}"));
+  std::string message = indexed_db::ReadCorruptionInfo(
+      filesystem_proxy.get(), path_base, bucket_locator);
+  EXPECT_FALSE(message.empty());
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_EQ("bar", message);
+
+  // Dictionary, message key and more.
+  ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
+  message = indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                           bucket_locator);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("foo", message);
@@ -1786,7 +1909,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
   // Set the schema to 2, which was before blob support.
   std::unique_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
   const std::string schema_version_key = SchemaVersionKey::Encode();
-  ignore_result(indexed_db::PutInt(write_batch.get(), schema_version_key, 2));
+  std::ignore = indexed_db::PutInt(write_batch.get(), schema_version_key, 2);
   ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
   task_environment_.RunUntilIdle();
 
@@ -1902,7 +2025,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
   // Set the schema to 2, which was before blob support.
   std::unique_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
   const std::string schema_version_key = SchemaVersionKey::Encode();
-  ignore_result(indexed_db::PutInt(write_batch.get(), schema_version_key, 2));
+  std::ignore = indexed_db::PutInt(write_batch.get(), schema_version_key, 2);
   ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
 
   // Clean up on the IDB sequence.

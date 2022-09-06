@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "storage/browser/file_system/obfuscated_file_util.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -14,7 +16,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +23,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/task/thread_pool.h"
+#include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
@@ -33,7 +38,6 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/file_system_usage_cache.h"
-#include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/file_system/sandbox_directory_database.h"
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
@@ -49,6 +53,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
@@ -175,17 +180,25 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
     storage_policy_ = base::MakeRefCounted<MockSpecialStoragePolicy>();
 
+    quota_manager_task_runner_ =
+        base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()});
+
     quota_manager_ = base::MakeRefCounted<QuotaManager>(
-        is_incognito(), data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(),
+        is_incognito(), data_dir_.GetPath(), quota_manager_task_runner_,
         /*quota_change_callback=*/base::DoNothing(), storage_policy_,
         GetQuotaSettingsFunc());
-    QuotaSettings settings;
-    settings.per_host_quota = 25 * 1024 * 1024;
-    settings.pool_size = settings.per_host_quota * 5;
-    settings.must_remain_available = 10 * 1024 * 1024;
-    settings.refresh_interval = base::TimeDelta::Max();
-    quota_manager_->SetQuotaSettings(settings);
+
+    quota_manager_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](const scoped_refptr<QuotaManager>& quota_manager) {
+                         QuotaSettings settings;
+                         settings.per_host_quota = 25 * 1024 * 1024;
+                         settings.pool_size = settings.per_host_quota * 5;
+                         settings.must_remain_available = 10 * 1024 * 1024;
+                         settings.refresh_interval = base::TimeDelta::Max();
+                         quota_manager->SetQuotaSettings(settings);
+                       },
+                       quota_manager_));
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,
@@ -294,19 +307,24 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void GetUsageFromQuotaManager() {
     int64_t quota = -1;
     quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
-        quota_manager_.get(), origin(), sandbox_file_system_.type(), &usage_,
+        quota_manager_->proxy(), origin(), sandbox_file_system_.type(), &usage_,
         &quota);
     EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, quota_status_);
   }
 
   void RevokeUsageCache() {
-    quota_manager_->ResetUsageTracker(sandbox_file_system_.storage_type());
+    quota_manager_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](const scoped_refptr<QuotaManager>& quota_manager,
+                          SandboxFileSystemTestHelper* sandbox_file_system) {
+                         quota_manager->ResetUsageTracker(
+                             sandbox_file_system->storage_type());
+                       },
+                       quota_manager_, &sandbox_file_system_));
     usage_cache()->Delete(sandbox_file_system_.GetUsageCachePath());
   }
 
-  int64_t SizeByQuotaUtil() {
-    return sandbox_file_system_.GetCachedStorageKeyUsage();
-  }
+  int64_t SizeByQuotaUtil() { return sandbox_file_system_.GetCachedUsage(); }
 
   int64_t SizeInUsageFile() {
     task_environment_.RunUntilIdle();
@@ -372,7 +390,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     EXPECT_EQ(!is_incognito(), FileExists(data_path));
 
     const char data[] = "test data";
-    const int length = base::size(data) - 1;
+    const int length = std::size(data) - 1;
 
     base::File file = ofu()->CreateOrOpen(
         context.get(), url, base::File::FLAG_WRITE | base::File::FLAG_OPEN);
@@ -458,8 +476,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
    private:
     void Check() {
-      ASSERT_EQ(expected_usage_,
-                sandbox_file_system_->GetCachedStorageKeyUsage());
+      ASSERT_EQ(expected_usage_, sandbox_file_system_->GetCachedUsage());
     }
 
     std::unique_ptr<FileSystemOperationContext> context_;
@@ -470,7 +487,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   std::unique_ptr<UsageVerifyHelper> AllowUsageIncrease(
       int64_t requested_growth) {
-    int64_t usage = sandbox_file_system_.GetCachedStorageKeyUsage();
+    int64_t usage = sandbox_file_system_.GetCachedUsage();
     return std::make_unique<UsageVerifyHelper>(LimitedContext(requested_growth),
                                                &sandbox_file_system_,
                                                usage + requested_growth, this);
@@ -478,7 +495,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   std::unique_ptr<UsageVerifyHelper> DisallowUsageIncrease(
       int64_t requested_growth) {
-    int64_t usage = sandbox_file_system_.GetCachedStorageKeyUsage();
+    int64_t usage = sandbox_file_system_.GetCachedUsage();
     return std::make_unique<UsageVerifyHelper>(
         LimitedContext(requested_growth - 1), &sandbox_file_system_, usage,
         this);
@@ -804,6 +821,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   base::ScopedTempDir data_dir_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<QuotaManager> quota_manager_;
+  scoped_refptr<base::SingleThreadTaskRunner> quota_manager_task_runner_;
   scoped_refptr<FileSystemContext> file_system_context_;
   blink::StorageKey storage_key_;
   FileSystemType type_;
@@ -1233,6 +1251,12 @@ TEST_P(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
   EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), url));
 }
 
+// TODO(https://crbug.com/702990): Remove this test once last_access_time has
+// been removed after PPAPI has been deprecated. Fuchsia does not support touch,
+// which breaks this test that relies on it. Since PPAPI is being deprecated,
+// this test is excluded from the Fuchsia build.
+// See https://crbug.com/1077456 for details.
+#if !BUILDFLAG(IS_FUCHSIA)
 TEST_P(ObfuscatedFileUtilTest, TestTouch) {
   FileSystemURL url = CreateURLFromUTF8("file");
   std::unique_ptr<FileSystemOperationContext> context = NewContext(nullptr);
@@ -1262,6 +1286,7 @@ TEST_P(ObfuscatedFileUtilTest, TestTouch) {
             ofu()->CreateDirectory(context.get(), url, exclusive, recursive));
   TestTouchHelper(url, false);
 }
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
 TEST_P(ObfuscatedFileUtilTest, TestPathQuotas) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");
@@ -1284,10 +1309,8 @@ TEST_P(ObfuscatedFileUtilTest, TestPathQuotas) {
   bool exclusive = true;
   bool recursive = true;
   url = CreateURLFromUTF8("directory/to/use");
-  std::vector<base::FilePath::StringType> components;
-  url.path().GetComponents(&components);
   path_cost = 0;
-  for (const auto& component : components) {
+  for (const auto& component : url.path().GetComponents()) {
     path_cost +=
         ObfuscatedFileUtil::ComputeFilePathCost(base::FilePath(component));
   }
@@ -1344,7 +1367,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
   const int64_t kSourceLength = 5;
   const int64_t kDestLength = 50;
 
-  for (size_t i = 0; i < base::size(kCopyMoveTestCases); ++i) {
+  for (size_t i = 0; i < std::size(kCopyMoveTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "kCopyMoveTestCase " << i);
     const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
     SCOPED_TRACE(testing::Message()
@@ -1590,7 +1613,7 @@ TEST_P(ObfuscatedFileUtilTest, TestStorageKeyEnumerator) {
   std::set<blink::StorageKey> storage_keys_expected;
   storage_keys_expected.insert(storage_key());
 
-  for (size_t i = 0; i < base::size(kOriginEnumerationTestRecords); ++i) {
+  for (size_t i = 0; i < std::size(kOriginEnumerationTestRecords); ++i) {
     SCOPED_TRACE(testing::Message()
                  << "Validating kOriginEnumerationTestRecords " << i);
     const OriginEnumerationTestRecord& record =
@@ -1804,7 +1827,7 @@ TEST_P(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   EXPECT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::ReadDirectory(file_system_context(),
                                                empty_path, &entries));
-  EXPECT_EQ(base::size(kPath) - 1, entries.size());
+  EXPECT_EQ(std::size(kPath) - 1, entries.size());
 }
 
 TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
@@ -2042,13 +2065,7 @@ TEST_P(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
   EXPECT_EQ(2, count);
 }
 
-// crbug.com/176470
-#if defined(OS_WIN) || defined(OS_ANDROID)
-#define MAYBE_TestQuotaOnCopyFile DISABLED_TestQuotaOnCopyFile
-#else
-#define MAYBE_TestQuotaOnCopyFile TestQuotaOnCopyFile
-#endif
-TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
+TEST_P(ObfuscatedFileUtilTest, TestQuotaOnCopyFile) {
   FileSystemURL from_file(CreateURLFromUTF8("fromfile"));
   FileSystemURL obstacle_file(CreateURLFromUTF8("obstaclefile"));
   FileSystemURL to_file1(CreateURLFromUTF8("tofile1"));

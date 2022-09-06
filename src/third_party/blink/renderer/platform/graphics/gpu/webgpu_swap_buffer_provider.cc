@@ -8,21 +8,24 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 
 namespace blink {
 
 namespace {
 viz::ResourceFormat WGPUFormatToViz(WGPUTextureFormat format) {
-  if (format == WGPUTextureFormat_BGRA8Unorm) {
-    return viz::BGRA_8888;
+  switch (format) {
+    case WGPUTextureFormat_BGRA8Unorm:
+      return viz::BGRA_8888;
+    case WGPUTextureFormat_RGBA8Unorm:
+      return viz::RGBA_8888;
+    case WGPUTextureFormat_RGBA16Float:
+      return viz::RGBA_F16;
+    default:
+      NOTREACHED();
+      return viz::RGBA_8888;
   }
-  if (format == WGPUTextureFormat_RGBA8Unorm) {
-    return viz::RGBA_8888;
-  }
-  NOTREACHED();
-  return viz::RGBA_8888;
 }
 }  // namespace
 
@@ -242,8 +245,8 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
   // other shared image implementation is implemented on OpenGL via some form of
   // eglSurface and eglBindTexImage (on ANGLE or system drivers) so they use the
   // 2D texture target and cannot always be overlay candidates.
-#if defined(OS_MAC)
-  const uint32_t texture_target = GL_TEXTURE_RECTANGLE_ARB;
+#if BUILDFLAG(IS_MAC)
+  const uint32_t texture_target = gpu::GetPlatformSpecificTextureTarget();
   const bool is_overlay_candidate = true;
 #else
   const uint32_t texture_target = GL_TEXTURE_2D;

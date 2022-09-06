@@ -37,6 +37,7 @@
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/cocoa/text_input_host.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/widget_aura_utils.h"
@@ -54,24 +55,24 @@ static base::RepeatingCallback<void(NativeWidgetMac*)>*
 
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
-  // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
-  // parent window still accepts input.
-  // NSFullSizeContentViewWindowMask ensures that calculating the modal's
+  // it has NSWindowStyleMaskTitled. For example, with
+  // NSWindowStyleMaskBorderless, the parent window still accepts input.
+  // NSWindowStyleMaskFullSizeContentView ensures that calculating the modal's
   // content rect doesn't account for a nonexistent title bar.
   if (params.delegate &&
       params.delegate->GetModalType() == ui::MODAL_TYPE_WINDOW)
-    return NSTitledWindowMask | NSFullSizeContentViewWindowMask;
+    return NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
 
   // TODO(tapted): Determine better masks when there are use cases for it.
   if (params.remove_standard_frame)
-    return NSBorderlessWindowMask;
+    return NSWindowStyleMaskBorderless;
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    return NSTitledWindowMask | NSClosableWindowMask |
-           NSMiniaturizableWindowMask | NSResizableWindowMask |
-           NSTexturedBackgroundWindowMask;
+    return NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+           NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable |
+           NSWindowStyleMaskTexturedBackground;
   }
-  return NSBorderlessWindowMask;
+  return NSWindowStyleMaskBorderless;
 }
 
 CGWindowLevel CGWindowLevelForZOrderLevel(ui::ZOrderLevel level,
@@ -407,11 +408,9 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
 }
 
 const gfx::ImageSkia* NativeWidgetMac::GetWindowIcon() {
-  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 const gfx::ImageSkia* NativeWidgetMac::GetWindowAppIcon() {
-  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
@@ -643,15 +642,15 @@ bool NativeWidgetMac::IsMinimized() const {
 void NativeWidgetMac::Restore() {
   if (!GetNSWindowMojo())
     return;
-  GetNSWindowMojo()->SetFullscreen(false);
+  GetNSWindowMojo()->ExitFullscreen();
   GetNSWindowMojo()->SetMiniaturized(false);
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen,
-                                    const base::TimeDelta& delay) {
+                                    int64_t target_display_id) {
   if (!ns_window_host_)
     return;
-  ns_window_host_->SetFullscreen(fullscreen, delay);
+  ns_window_host_->SetFullscreen(fullscreen, target_display_id);
 }
 
 bool NativeWidgetMac::IsFullscreen() const {
@@ -711,9 +710,9 @@ void NativeWidgetMac::ScheduleLayout() {
     compositor->ScheduleDraw();
 }
 
-void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
-  if (GetInProcessNSWindowBridge())
-    GetInProcessNSWindowBridge()->SetCursor(cursor);
+void NativeWidgetMac::SetCursor(const ui::Cursor& cursor) {
+  if (GetNSWindowMojo())
+    GetNSWindowMojo()->SetCursor(cursor);
 }
 
 void NativeWidgetMac::ShowEmojiPanel() {

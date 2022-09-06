@@ -226,7 +226,7 @@ export class TrackContent implements m.ClassComponent<TrackContentAttrs> {
               e.stopPropagation();
             }
             globals.rafScheduler.scheduleRedraw();
-          }
+          },
         },
         node.children);
   }
@@ -248,7 +248,7 @@ class TrackComponent implements m.ClassComponent<TrackComponentAttrs> {
         },
         [
           m(TrackShell, {track: attrs.track, trackState: attrs.trackState}),
-          m(TrackContent, {track: attrs.track})
+          m(TrackContent, {track: attrs.track}),
         ]);
   }
 
@@ -323,6 +323,13 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
   onupdate() {
     if (this.track !== undefined) {
       this.track.onFullRedraw();
+    }
+  }
+
+  onremove() {
+    if (this.track !== undefined) {
+      this.track.onDestroy();
+      this.track = undefined;
     }
   }
 

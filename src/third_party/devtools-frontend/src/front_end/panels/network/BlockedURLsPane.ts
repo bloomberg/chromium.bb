@@ -4,6 +4,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
@@ -72,7 +73,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
     this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
     this.manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, () => {
-      this.update();
+      void this.update();
     }, this);
 
     this.toolbar = new UI.Toolbar.Toolbar('', this.contentElement);
@@ -101,7 +102,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
     this.updateThrottler = new Common.Throttler.Throttler(200);
 
-    this.update();
+    void this.update();
   }
 
   static instance(opts: {
@@ -132,7 +133,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
   private addButtonClicked(): void {
     this.manager.setBlockingEnabled(true);
-    this.list.addNewItem(0, {url: '', enabled: true});
+    this.list.addNewItem(0, {url: Platform.DevToolsPath.EmptyUrlString, enabled: true});
   }
 
   renderItem(pattern: SDK.NetworkManager.BlockedPattern, editable: boolean): Element {
@@ -161,7 +162,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
   private toggleEnabled(): void {
     this.manager.setBlockingEnabled(!this.manager.blockingEnabled());
-    this.update();
+    void this.update();
   }
 
   removeItemRequested(pattern: SDK.NetworkManager.BlockedPattern, index: number): void {
@@ -180,7 +181,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
   commitEdit(
       item: SDK.NetworkManager.BlockedPattern, editor: UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern>,
       isNew: boolean): void {
-    const url = editor.control('url').value;
+    const url = editor.control('url').value as Platform.DevToolsPath.UrlString;
     const patterns = this.manager.blockedPatterns();
     if (isNew) {
       patterns.push({enabled: true, url: url});
@@ -270,7 +271,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
   reset(): void {
     this.blockedCountForUrl.clear();
-    this.updateThrottler.schedule(this.update.bind(this));
+    void this.updateThrottler.schedule(this.update.bind(this));
   }
 
   private onRequestFinished(event: Common.EventTarget.EventTargetEvent<SDK.NetworkRequest.NetworkRequest>): void {
@@ -278,7 +279,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
     if (request.wasBlocked()) {
       const count = this.blockedCountForUrl.get(request.url()) || 0;
       this.blockedCountForUrl.set(request.url(), count + 1);
-      this.updateThrottler.schedule(this.update.bind(this));
+      void this.updateThrottler.schedule(this.update.bind(this));
     }
   }
   wasShown(): void {

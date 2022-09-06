@@ -22,7 +22,7 @@ builder definition its and it must be using a bootstrappable recipe. See
 //recipes.star for more information on bootstrappable recipes.
 """
 
-load("@stdlib//internal/graph.star", "graph")
+load("./nodes.star", "nodes")
 load("//project.star", "settings")
 
 # builder_config.star and orchestrator.star have generators that modify
@@ -31,7 +31,7 @@ load("//project.star", "settings")
 load("./builder_config.star", _ = "builder_config")  # @unused
 load("./orchestrator.star", _2 = "register_orchestrator")  # @unused
 
-PROPERTIES_OPTIONAL = "PROPERTIES_OPTIONAL"
+POLYMORPHIC = "POLYMORPHIC"
 
 _NON_BOOTSTRAPPED_PROPERTIES = [
     # The led_recipes_tester recipe examines the recipe property in the input
@@ -59,19 +59,19 @@ _NON_BOOTSTRAPPED_PROPERTIES = [
     "sheriff_rotations",
 ]
 
-def _recipe_bootstrappability_key(name):
-    return graph.key("@chromium", "", "recipe_bootstrappability", name)
+# Nodes for storing the ability of recipes to be bootstrapped
+_RECIPE_BOOTSTRAPPABILITY = nodes.create_unscoped_node_type("recipe_bootstrappability")
+
+# Nodes for storing bootstrapping information about builders
+_BOOTSTRAP = nodes.create_bucket_scoped_node_type("bootstrap")
 
 def register_recipe_bootstrappability(name, bootstrappability):
-    if bootstrappability not in (False, True, PROPERTIES_OPTIONAL):
-        fail("bootstrap must be one of False, True or PROPERTIES_OPTIONAL")
+    if bootstrappability not in (False, True, POLYMORPHIC):
+        fail("bootstrap must be one of False, True or POLYMORPHIC")
     if bootstrappability:
-        graph.add_node(_recipe_bootstrappability_key(name), props = {
+        _RECIPE_BOOTSTRAPPABILITY.add(name, props = {
             "bootstrappability": bootstrappability,
         })
-
-def _bootstrap_key(bucket_name, builder_name):
-    return graph.key("@chromium", "", "bootstrap", "{}/{}".format(bucket_name, builder_name))
 
 def register_bootstrap(bucket, name, bootstrap, executable):
     """Registers the bootstrap for a builder.
@@ -88,7 +88,7 @@ def register_bootstrap(bucket, name, bootstrap, executable):
     # even if an earlier revision is built (to a certain point). The bootstrap
     # property of the node will determine whether the builder's properties are
     # overwritten to actually use the bootstrapper.
-    graph.add_node(_bootstrap_key(bucket, name), props = {
+    _BOOTSTRAP.add(bucket, name, props = {
         "bootstrap": bootstrap,
         "executable": executable,
     })
@@ -125,20 +125,23 @@ def _bootstrap_properties(ctx):
         bucket_name = bucket.name
         for builder in bucket.swarming.builders:
             builder_name = builder.name
-            bootstrap_node = graph.node(_bootstrap_key(bucket_name, builder_name))
+            bootstrap_node = _BOOTSTRAP.get(bucket_name, builder_name)
             if not bootstrap_node:
                 continue
             executable = bootstrap_node.props.executable
-            recipe_bootstrappability_node = graph.node(_recipe_bootstrappability_key(executable))
+            recipe_bootstrappability_node = _RECIPE_BOOTSTRAPPABILITY.get(executable)
             if not recipe_bootstrappability_node:
                 continue
 
             builder_properties = json.decode(builder.properties)
             bootstrapper_args = []
 
-            if recipe_bootstrappability_node.props.bootstrappability == PROPERTIES_OPTIONAL:
+            if recipe_bootstrappability_node.props.bootstrappability == POLYMORPHIC:
                 non_bootstrapped_properties = builder_properties
-                bootstrapper_args = ["-properties-optional"]
+
+                # TODO(gbeaty) Once all builder specs are migrated src-side,
+                # remove -properties-optional
+                bootstrapper_args = ["-polymorphic", "-properties-optional"]
 
             else:
                 non_bootstrapped_properties = {}

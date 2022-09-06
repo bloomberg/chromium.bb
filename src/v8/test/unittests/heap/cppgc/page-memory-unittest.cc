@@ -115,6 +115,8 @@ TEST(PageMemoryRegionTest, LargePageMemoryRegion) {
   EXPECT_EQ(0u, pm.writeable_region().end()[-1]);
 }
 
+// See the comment in globals.h when setting |kGuardPageSize| for details.
+#if !(defined(V8_TARGET_ARCH_ARM64) && defined(V8_OS_MACOS))
 TEST(PageMemoryRegionTest, PlatformUsesGuardPages) {
   // This tests that the testing allocator actually uses protected guard
   // regions.
@@ -132,6 +134,7 @@ TEST(PageMemoryRegionTest, PlatformUsesGuardPages) {
   EXPECT_TRUE(SupportsCommittingGuardPages(allocator));
 #endif
 }
+#endif  // !(defined(V8_TARGET_ARCH_ARM64) && defined(V8_OS_MACOS))
 
 namespace {
 
@@ -266,7 +269,7 @@ TEST(NormalPageMemoryPool, AddTakeNotFoundDifferentBucket) {
 TEST(PageBackendTest, AllocateNormalUsesPool) {
   v8::base::PageAllocator allocator;
   FatalOutOfMemoryHandler oom_handler;
-  PageBackend backend(allocator, oom_handler);
+  PageBackend backend(allocator, allocator, oom_handler);
   constexpr size_t kBucket = 0;
   Address writeable_base1 = backend.AllocateNormalPageMemory(kBucket);
   EXPECT_NE(nullptr, writeable_base1);
@@ -279,7 +282,7 @@ TEST(PageBackendTest, AllocateNormalUsesPool) {
 TEST(PageBackendTest, AllocateLarge) {
   v8::base::PageAllocator allocator;
   FatalOutOfMemoryHandler oom_handler;
-  PageBackend backend(allocator, oom_handler);
+  PageBackend backend(allocator, allocator, oom_handler);
   Address writeable_base1 = backend.AllocateLargePageMemory(13731);
   EXPECT_NE(nullptr, writeable_base1);
   Address writeable_base2 = backend.AllocateLargePageMemory(9478);
@@ -292,27 +295,33 @@ TEST(PageBackendTest, AllocateLarge) {
 TEST(PageBackendTest, LookupNormal) {
   v8::base::PageAllocator allocator;
   FatalOutOfMemoryHandler oom_handler;
-  PageBackend backend(allocator, oom_handler);
+  PageBackend backend(allocator, allocator, oom_handler);
   constexpr size_t kBucket = 0;
   Address writeable_base = backend.AllocateNormalPageMemory(kBucket);
-  EXPECT_EQ(nullptr, backend.Lookup(writeable_base - kGuardPageSize));
+  if (kGuardPageSize) {
+    EXPECT_EQ(nullptr, backend.Lookup(writeable_base - kGuardPageSize));
+  }
   EXPECT_EQ(nullptr, backend.Lookup(writeable_base - 1));
   EXPECT_EQ(writeable_base, backend.Lookup(writeable_base));
   EXPECT_EQ(writeable_base, backend.Lookup(writeable_base + kPageSize -
                                            2 * kGuardPageSize - 1));
   EXPECT_EQ(nullptr,
             backend.Lookup(writeable_base + kPageSize - 2 * kGuardPageSize));
-  EXPECT_EQ(nullptr,
-            backend.Lookup(writeable_base - kGuardPageSize + kPageSize - 1));
+  if (kGuardPageSize) {
+    EXPECT_EQ(nullptr,
+              backend.Lookup(writeable_base - kGuardPageSize + kPageSize - 1));
+  }
 }
 
 TEST(PageBackendTest, LookupLarge) {
   v8::base::PageAllocator allocator;
   FatalOutOfMemoryHandler oom_handler;
-  PageBackend backend(allocator, oom_handler);
+  PageBackend backend(allocator, allocator, oom_handler);
   constexpr size_t kSize = 7934;
   Address writeable_base = backend.AllocateLargePageMemory(kSize);
-  EXPECT_EQ(nullptr, backend.Lookup(writeable_base - kGuardPageSize));
+  if (kGuardPageSize) {
+    EXPECT_EQ(nullptr, backend.Lookup(writeable_base - kGuardPageSize));
+  }
   EXPECT_EQ(nullptr, backend.Lookup(writeable_base - 1));
   EXPECT_EQ(writeable_base, backend.Lookup(writeable_base));
   EXPECT_EQ(writeable_base, backend.Lookup(writeable_base + kSize - 1));
@@ -323,7 +332,7 @@ TEST(PageBackendDeathTest, DestructingBackendDestroysPageMemory) {
   FatalOutOfMemoryHandler oom_handler;
   Address base;
   {
-    PageBackend backend(allocator, oom_handler);
+    PageBackend backend(allocator, allocator, oom_handler);
     constexpr size_t kBucket = 0;
     base = backend.AllocateNormalPageMemory(kBucket);
   }

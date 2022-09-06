@@ -37,17 +37,26 @@ class DriverContext:
     os.makedirs(f"{self._output_dir}", exist_ok=True)
 
   def __enter__(self):
+
     self._caffeinate_process = subprocess.Popen([
         "caffeinate",
         "-d",  # Prevent the display from sleeping.
-        "-i",  # Prevent the system from idle sleeping. This doesn't really take
-        # effect since the display is forced on.
-        "-u"  # Force user_idle_level to active.
     ])
+
+    # Launch a power_sampler whose job is only to simulate an active user. This
+    # is applicable to both profiling and measuring so should always be done.
+    power_sampler_args = [
+        self._power_sample_path, "--no-samplers", "--simulate-user-active"
+    ]
+    self._power_sampler_process = subprocess.Popen(power_sampler_args,
+                                                   stdout=subprocess.PIPE,
+                                                   stdin=subprocess.PIPE)
+
     return self
 
   def __exit__(self, exc_type, exc_val, exc_tb):
     utils.TerminateProcess(self._caffeinate_process)
+    utils.TerminateProcess(self._power_sampler_process)
 
   def SetMainDisplayBrightness(self, brightness_level: int):
     # This function imitates the open-source "brightness" tool at
@@ -189,6 +198,7 @@ class DriverContext:
           power_sampler_battery_args,
           stdout=subprocess.PIPE,
           stdin=subprocess.PIPE)
+
       power_sampler_args = [
           self._power_sample_path, "--sample-interval=10",
           "--samplers=smc,user_idle_level,main_display",
@@ -239,7 +249,7 @@ class DriverContext:
     self.WriteScenarioSummary(scenario_driver)
 
     dtraces_output_dir = os.path.join(self._output_dir, scenario_driver.name,
-                                      f"dtraces_{profile_mode}")
+                                      "dtraces_stacks")
     os.makedirs(dtraces_output_dir, exist_ok=True)
     scenario_driver.Launch()
     browser_process = scenario_driver.browser.browser_process
@@ -248,54 +258,47 @@ class DriverContext:
     dtrace_env = os.environ.copy()
     dtrace_env["DYLD_SHARED_REGION"] = "avoid"
 
-    pid_to_subprocess: typing.Dict[str, subprocess.Popen] = {}
-
     try:
       with open(
           os.path.join(self._output_dir, scenario_driver.name,
                        f'dtrace_{profile_mode}_log.txt'), "w") as dtrace_log:
-        # Keep looking for child processes as long as the scenario is running.
-        while scenario_driver.IsRunning():
 
-          # Let some time pass to limit the overhead of this script.
-          time.sleep(0.100)
-          logging.debug("Looking for child processes")
+        scripts_dir = os.path.join(os.path.dirname(__file__), "dtrace_scripts")
+        if profile_mode == "wakeups":
+          script = os.path.join(scripts_dir, "iwakeups.d")
+        else:
+          script = os.path.join(scripts_dir, "profile.d")
 
-          # Watch for new processes and follow those too.
-          for process in browser_process.children(
-              recursive=True) + [browser_process]:
-            pid = process.pid
-            if profile_mode == "wakeups":
-              probe_def = \
-                f"mach_kernel::wakeup/pid == {pid}/ " \
-                "{{ @[ustack(64)] = count(); }}"
-            else:
-              probe_def = \
-                f"profile-1001/pid == {pid}/ {{ @[ustack(64)] = count(); }}"
-            output_filename = os.path.join(dtraces_output_dir, f"{pid}.txt")
-            dtrace_args = [
-                'sudo', 'dtrace', '-p', f"{pid}", "-o", output_filename, '-n',
-                probe_def
-            ]
+        pid = browser_process.pid
+        output_filename = os.path.join(dtraces_output_dir, f"{pid}.txt")
 
-            if pid not in pid_to_subprocess:
-              logging.debug(f"Found new child!:{pid}")
-              # No need to add |process| to |self._started_processeds| as it's
-              # explicitly waited on later.
-              process = subprocess.Popen(dtrace_args,
-                                         env=dtrace_env,
-                                         stdout=dtrace_log,
-                                         stderr=dtrace_log)
-              pid_to_subprocess[pid] = process
+        dtrace_args = [
+            'sudo', 'dtrace', '-p', f"{pid}", "-o", output_filename, '-s',
+            script, f"{pid}"
+        ]
 
+        # No need to add |dtrace_process| to |self._started_processeds| as it's
+        # explicitly waited on later.
+        dtrace_process = subprocess.Popen(dtrace_args,
+                                          env=dtrace_env,
+                                          stdout=dtrace_log,
+                                          stderr=dtrace_log)
       scenario_driver.Wait()
 
     finally:
       scenario_driver.TearDown()
 
-      for pid, dtrace_process in pid_to_subprocess.items():
-        logging.debug(f"Waiting for dtrace hooked on {pid} to exit")
-        dtrace_process.wait(30)
+    logging.debug(f"Waiting for dtrace to exit")
+    dtrace_process.wait(30)
+
+  def Trace(self, scenario_driver: scenarios.ScenarioOSADriver):
+    self.WriteScenarioSummary(scenario_driver)
+
+    try:
+      scenario_driver.Launch()
+      scenario_driver.Wait()
+    finally:
+      scenario_driver.TearDown()
 
   def WriteScenarioSummary(
       self, scenario_driver: scenarios.ScenarioWithBrowserOSADriver):

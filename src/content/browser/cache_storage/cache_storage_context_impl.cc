@@ -17,8 +17,8 @@
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "content/browser/cache_storage/blob_storage_context_wrapper.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
-#include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -79,7 +79,7 @@ void CacheStorageContextImpl::Init(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   DCHECK(!cache_manager_);
-  cache_manager_ = LegacyCacheStorageManager::Create(
+  cache_manager_ = CacheStorageManager::Create(
       user_data_directory, std::move(cache_task_runner),
       base::SequencedTaskRunnerHandle::Get(), quota_manager_proxy_,
       base::MakeRefCounted<BlobStorageContextWrapper>(
@@ -104,8 +104,8 @@ void CacheStorageContextImpl::AddReceiver(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  quota_manager_proxy_->GetOrCreateBucket(
-      storage_key, storage::kDefaultBucketName,
+  quota_manager_proxy_->UpdateOrCreateBucket(
+      storage::BucketInitParams::ForDefaultBucket(storage_key),
       base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(&CacheStorageContextImpl::AddReceiverWithBucketInfo,
                      weak_factory_.GetWeakPtr(), cross_origin_embedder_policy,
@@ -156,13 +156,16 @@ void CacheStorageContextImpl::AddReceiverWithBucketInfo(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
     storage::QuotaErrorOr<storage::BucketInfo> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(result.ok());
+
+  const absl::optional<storage::BucketLocator> bucket =
+      result.ok() ? absl::make_optional(result->ToBucketLocator())
+                  : absl::nullopt;
 
   if (!dispatcher_host_)
     dispatcher_host_ = std::make_unique<CacheStorageDispatcherHost>(this);
   dispatcher_host_->AddReceiver(cross_origin_embedder_policy,
-                                std::move(coep_reporter), storage_key, owner,
-                                std::move(receiver));
+                                std::move(coep_reporter), storage_key, bucket,
+                                owner, std::move(receiver));
 }
 
 }  // namespace content

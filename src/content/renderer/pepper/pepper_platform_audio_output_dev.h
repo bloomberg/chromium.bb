@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/base/audio_parameters.h"

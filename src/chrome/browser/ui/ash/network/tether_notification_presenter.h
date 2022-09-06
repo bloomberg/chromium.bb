@@ -8,10 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/tether/notification_presenter.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/network/network_state.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -95,6 +96,7 @@ class TetherNotificationPresenter : public NotificationPresenter {
 
   std::unique_ptr<message_center::Notification> CreateNotification(
       const std::string& id,
+      const ash::NotificationCatalogName& catalog_name,
       const std::u16string& title,
       const std::u16string& message,
       const gfx::ImageSkia& small_image,

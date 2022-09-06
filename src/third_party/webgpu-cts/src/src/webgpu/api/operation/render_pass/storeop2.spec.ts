@@ -1,7 +1,5 @@
 export const description = `
 renderPass store op test that drawn quad is either stored or cleared based on storeop
-
-TODO: is this duplicated with api,operation,render_pass,storeOp?
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
@@ -10,6 +8,12 @@ import { GPUTest } from '../../../gpu_test.js';
 export const g = makeTestGroup(GPUTest);
 
 g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
+  .desc(
+    `
+TODO: is this duplicated with api,operation,render_pass,storeOp?
+TODO: needs review and rename
+`
+  )
   .paramsSimple([
     { storeOp: 'store', _expected: 1 }, //
     { storeOp: 'discard', _expected: 0 },
@@ -23,12 +27,13 @@ g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
 
     // create render pipeline
     const renderPipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32
-              ) -> [[builtin(position)]] vec4<f32> {
+            @vertex fn main(
+              @builtin(vertex_index) VertexIndex : u32
+              ) -> @builtin(position) vec4<f32> {
               var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                   vec2<f32>( 1.0, -1.0),
                   vec2<f32>( 1.0,  1.0),
@@ -42,7 +47,7 @@ g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @fragment fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
             `,
@@ -60,13 +65,14 @@ g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
         {
           view: renderTexture.createView(),
           storeOp: t.params.storeOp,
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
         },
       ],
     });
     pass.setPipeline(renderPipeline);
     pass.draw(3);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     // expect the buffer to be clear

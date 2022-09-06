@@ -5,6 +5,7 @@
 #include "weblayer/app/content_main_delegate_impl.h"
 
 #include <iostream>
+#include <tuple>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -12,7 +13,6 @@
 #include "base/containers/flat_set.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -42,7 +42,7 @@
 #include "weblayer/renderer/content_renderer_client_impl.h"
 #include "weblayer/utility/content_utility_client_impl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
@@ -62,7 +62,7 @@
 #include "weblayer/common/crash_reporter/crash_reporter_client.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #include <initguid.h>
@@ -141,7 +141,7 @@ void ConfigureFeaturesIfNotSet(
 
 ContentMainDelegateImpl::ContentMainDelegateImpl(MainParams params)
     : params_(std::move(params)) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // On non-Android, the application start time is recorded in this constructor,
   // which runs early during application lifetime. On Android, the application
   // start time is sampled when the Java code is entered, and it is retrieved
@@ -167,7 +167,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(::switches::kDisableNotifications);
 
   std::vector<base::Feature> enabled_features = {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Overlay promotion requires some guarantees we don't have on WebLayer
     // (e.g. ensuring fullscreen, no movement of the parent view). Given that
     // we're unsure about the benefits when used embedded in a parent app, we
@@ -177,6 +177,8 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   };
 
   std::vector<base::Feature> disabled_features = {
+    // TODO(crbug.com/1313771): Support Digital Goods API.
+    ::features::kDigitalGoodsApi,
     // TODO(crbug.com/1091212): make Notification triggers work with
     // WebLayer.
     ::features::kNotificationTriggers,
@@ -189,7 +191,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     // TODO(crbug.com/1247836): Enable TFLite/Optimization Guide on WebLayer.
     translate::kTFLiteLanguageDetectionEnabled,
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // TODO(crbug.com/1131016): Support Picture in Picture API on WebLayer.
     media::kPictureInPictureAPI,
 
@@ -201,7 +203,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
 #endif
   };
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_OREO) {
     enabled_features.push_back(
@@ -222,7 +224,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // TODO(crbug.com/1097105): Support Web GPU on WebLayer.
   blink::WebRuntimeFeatures::EnableWebGPU(false);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   content::Compositor::Initialize();
 #endif
 
@@ -233,10 +235,11 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   return false;
 }
 
-bool ContentMainDelegateImpl::ShouldCreateFeatureList() {
-#if defined(OS_ANDROID)
-  // On android WebLayer is in charge of creating its own FeatureList.
-  return false;
+bool ContentMainDelegateImpl::ShouldCreateFeatureList(InvokedIn invoked_in) {
+#if BUILDFLAG(IS_ANDROID)
+  // On android WebLayer is in charge of creating its own FeatureList in the
+  // browser process.
+  return invoked_in == InvokedIn::kChildProcess;
 #else
   // TODO(weblayer-dev): Support feature lists on desktop.
   return true;
@@ -254,8 +257,8 @@ ContentMainDelegateImpl::CreateVariationsIdsProvider() {
 void ContentMainDelegateImpl::PreSandboxStartup() {
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if defined(ARCH_CPU_ARM_FAMILY) &&              \
-    (defined(OS_ANDROID) || defined(OS_LINUX) || \
+#if defined(ARCH_CPU_ARM_FAMILY) &&                  \
+    (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || \
      BUILDFLAG(IS_CHROMEOS_LACROS))
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.
@@ -284,7 +287,7 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
 
   InitializeResourceBundle();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EnableCrashReporter(
       command_line.GetSwitchValueASCII(::switches::kProcessType));
   if (is_browser_process) {
@@ -295,8 +298,9 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
 #endif
 }
 
-void ContentMainDelegateImpl::PostEarlyInitialization(bool is_running_tests) {
-  browser_client_->CreateFeatureListAndFieldTrials();
+void ContentMainDelegateImpl::PostEarlyInitialization(InvokedIn invoked_in) {
+  if (invoked_in != InvokedIn::kChildProcess)
+    browser_client_->CreateFeatureListAndFieldTrials();
 }
 
 absl::variant<int, content::MainFunctionParams>
@@ -307,7 +311,7 @@ ContentMainDelegateImpl::RunProcess(
   if (!process_type.empty())
     return std::move(main_function_params);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // On non-Android, we can return |main_function_params| back and have the
   // caller run BrowserMain() normally.
   return std::move(main_function_params);
@@ -324,7 +328,7 @@ ContentMainDelegateImpl::RunProcess(
       main_runner->Initialize(std::move(main_function_params));
   DCHECK_LT(initialize_exit_code, 0)
       << "BrowserMainRunner::Initialize failed in MainDelegate";
-  ignore_result(main_runner.release());
+  std::ignore = main_runner.release();
   // Return 0 as BrowserMain() should not be called after this, bounce up to
   // the system message loop for ContentShell, and we're already done thanks
   // to the |ui_task| for browser tests.
@@ -333,7 +337,7 @@ ContentMainDelegateImpl::RunProcess(
 }
 
 void ContentMainDelegateImpl::InitializeResourceBundle() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 

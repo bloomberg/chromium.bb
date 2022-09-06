@@ -4,7 +4,6 @@
 
 #include "net/cert/internal/verify_signed_data.h"
 
-#include "base/compiler_specific.h"
 #include "base/numerics/safe_math.h"
 #include "crypto/openssl_util.h"
 #include "net/cert/internal/cert_errors.h"
@@ -22,7 +21,7 @@ namespace net {
 namespace {
 
 // Converts a DigestAlgorithm to an equivalent EVP_MD*.
-WARN_UNUSED_RESULT bool GetDigest(DigestAlgorithm digest, const EVP_MD** out) {
+[[nodiscard]] bool GetDigest(DigestAlgorithm digest, const EVP_MD** out) {
   *out = nullptr;
 
   switch (digest) {
@@ -49,8 +48,8 @@ WARN_UNUSED_RESULT bool GetDigest(DigestAlgorithm digest, const EVP_MD** out) {
 }
 
 // Sets the RSASSA-PSS parameters on |pctx|. Returns true on success.
-WARN_UNUSED_RESULT bool ApplyRsaPssOptions(const RsaPssParameters* params,
-                                           EVP_PKEY_CTX* pctx) {
+[[nodiscard]] bool ApplyRsaPssOptions(const RsaPssParameters* params,
+                                      EVP_PKEY_CTX* pctx) {
   // BoringSSL takes a signed int for the salt length, and interprets
   // negative values in a special manner. Make sure not to silently underflow.
   base::CheckedNumeric<int> salt_length_bytes_int(params->salt_length());
@@ -72,11 +71,8 @@ WARN_UNUSED_RESULT bool ApplyRsaPssOptions(const RsaPssParameters* params,
 // Parses an RSA public key or EC public key from SPKI to an EVP_PKEY. Returns
 // true on success.
 //
-// There are two flavors of RSA public key that this function should recognize
-// from RFC 5912 (however note that pk-rsaSSA-PSS is not supported in the
-// current implementation).
-// TODO(eroman): Support id-RSASSA-PSS and its associated parameters. See
-// https://crbug.com/522232
+// This function only recognizes the "pk-rsa" (rsaEncryption) flavor of RSA
+// public key from RFC 5912.
 //
 //     pk-rsa PUBLIC-KEY ::= {
 //      IDENTIFIER rsaEncryption
@@ -86,34 +82,6 @@ WARN_UNUSED_RESULT bool ApplyRsaPssOptions(const RsaPssParameters* params,
 //      CERT-KEY-USAGE {digitalSignature, nonRepudiation,
 //      keyEncipherment, dataEncipherment, keyCertSign, cRLSign}
 //     }
-//
-//  ...
-//
-//     pk-rsaSSA-PSS PUBLIC-KEY ::= {
-//         IDENTIFIER id-RSASSA-PSS
-//         KEY RSAPublicKey
-//         PARAMS TYPE RSASSA-PSS-params ARE optional
-//          -- Private key format not in this module --
-//         CERT-KEY-USAGE { nonRepudiation, digitalSignature,
-//                              keyCertSign, cRLSign }
-//     }
-//
-// Any RSA signature algorithm can accept a "pk-rsa" (rsaEncryption). However a
-// "pk-rsaSSA-PSS" key is only accepted if the signature algorithm was for PSS
-// mode:
-//
-//     sa-rsaSSA-PSS SIGNATURE-ALGORITHM ::= {
-//         IDENTIFIER id-RSASSA-PSS
-//         PARAMS TYPE RSASSA-PSS-params ARE required
-//         HASHES { mda-sha1 | mda-sha224 | mda-sha256 | mda-sha384
-//                      | mda-sha512 }
-//         PUBLIC-KEYS { pk-rsa | pk-rsaSSA-PSS }
-//         SMIME-CAPS { IDENTIFIED BY id-RSASSA-PSS }
-//     }
-//
-// Moreover, if a "pk-rsaSSA-PSS" key was used and it optionally provided
-// parameters for the algorithm, they must match those of the signature
-// algorithm.
 //
 // COMPATIBILITY NOTE: RFC 5912 and RFC 3279 are in disagreement on the value
 // of parameters for rsaEncryption. Whereas RFC 5912 says they must be absent,
@@ -170,9 +138,6 @@ bool ParsePublicKey(const der::Input& public_key_spki,
   // Parse the SPKI to an EVP_PKEY.
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  // TODO(eroman): This is not strict enough. It accepts BER, other RSA
-  // OIDs, and does not check id-rsaEncryption parameters.
-  // See https://crbug.com/522228 and https://crbug.com/522232
   CBS cbs;
   CBS_init(&cbs, public_key_spki.UnsafeData(), public_key_spki.Length());
   public_key->reset(EVP_parse_public_key(&cbs));

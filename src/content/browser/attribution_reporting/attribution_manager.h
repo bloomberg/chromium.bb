@@ -8,11 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/compiler_specific.h"
-#include "base/observer_list_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_storage.h"
-#include "content/browser/attribution_reporting/sent_report.h"
 
 namespace base {
 class Time;
@@ -24,51 +20,27 @@ class Origin;
 
 namespace content {
 
-class AttributionPolicy;
-class StorableTrigger;
+class AttributionDataHostManager;
+class AttributionObserver;
+class AttributionTrigger;
 class StorableSource;
+class StoredSource;
 class WebContents;
 
 // Interface that mediates data flow between the network, storage layer, and
 // blink.
 class AttributionManager {
  public:
-  // Provides access to a AttributionManager implementation. This layer of
-  // abstraction is to allow tests to mock out the AttributionManager without
-  // injecting a manager explicitly.
-  class Provider {
-   public:
-    virtual ~Provider() = default;
-
-    // Gets the AttributionManager that should be used for handling attributions
-    // that occur in the given |web_contents|. Returns nullptr if attribution
-    // reporting is not enabled in the given |web_contents|, e.g. when the
-    // browser context is off the record.
-    virtual AttributionManager* GetManager(WebContents* web_contents) const = 0;
-  };
-
-  class Observer : public base::CheckedObserver {
-   public:
-    ~Observer() override = default;
-
-    virtual void OnSourcesChanged() {}
-
-    virtual void OnReportsChanged() {}
-
-    virtual void OnSourceDeactivated(
-        const AttributionStorage::DeactivatedSource& source) {}
-
-    virtual void OnReportSent(const SentReport& info) {}
-
-    virtual void OnReportDropped(
-        const AttributionStorage::CreateReportResult& result) {}
-  };
+  static AttributionManager* FromWebContents(WebContents* web_contents);
 
   virtual ~AttributionManager() = default;
 
-  virtual void AddObserver(Observer* observer) = 0;
+  virtual void AddObserver(AttributionObserver* observer) = 0;
 
-  virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(AttributionObserver* observer) = 0;
+
+  // Gets manager responsible for tracking pending data hosts targeting `this`.
+  virtual AttributionDataHostManager* GetDataHostManager() = 0;
 
   // Persists the given |source| to storage. Called when a navigation
   // originating from a source tag finishes.
@@ -76,26 +48,25 @@ class AttributionManager {
 
   // Process a newly registered trigger. Will create and log any new
   // reports to storage.
-  virtual void HandleTrigger(StorableTrigger trigger) = 0;
+  virtual void HandleTrigger(AttributionTrigger trigger) = 0;
 
   // Get all sources that are currently stored in this partition. Used for
   // populating WebUI.
   virtual void GetActiveSourcesForWebUI(
-      base::OnceCallback<void(std::vector<StorableSource>)> callback) = 0;
+      base::OnceCallback<void(std::vector<StoredSource>)> callback) = 0;
 
   // Get all pending reports that are currently stored in this partition. Used
-  // for populating WebUI.
-  virtual void GetPendingReportsForWebUI(
+  // for populating WebUI and simulator.
+  virtual void GetPendingReportsForInternalUse(
+      AttributionReport::ReportTypes report_types,
+      int limit,
       base::OnceCallback<void(std::vector<AttributionReport>)> callback) = 0;
 
-  // Sends all pending reports immediately, and runs |done| once they have all
+  // Sends the given reports immediately, and runs |done| once they have all
   // been sent.
-  virtual void SendReportsForWebUI(base::OnceClosure done) = 0;
-
-  // Returns the AttributionPolicy that is used to control API policies such
-  // as noise.
-  virtual const AttributionPolicy& GetAttributionPolicy() const
-      WARN_UNUSED_RESULT = 0;
+  virtual void SendReportsForWebUI(
+      const std::vector<AttributionReport::Id>& ids,
+      base::OnceClosure done) = 0;
 
   // Deletes all data in storage for URLs matching |filter|, between
   // |delete_begin| and |delete_end| time.
@@ -105,6 +76,7 @@ class AttributionManager {
       base::Time delete_begin,
       base::Time delete_end,
       base::RepeatingCallback<bool(const url::Origin&)> filter,
+      bool delete_rate_limit_data,
       base::OnceClosure done) = 0;
 };
 

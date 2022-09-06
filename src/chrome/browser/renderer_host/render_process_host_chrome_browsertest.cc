@@ -40,9 +40,9 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "content/public/browser/browser_child_process_host.h"
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 using content::RenderViewHost;
 using content::RenderWidgetHost;
@@ -73,7 +73,7 @@ WebContents* FindFirstDevToolsContents() {
 
 // TODO(rvargas) crbug.com/417532: Remove this code.
 base::Process ProcessFromHandle(base::ProcessHandle handle) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (handle == GetCurrentProcess())
     return base::Process::Current();
 
@@ -83,7 +83,7 @@ base::Process ProcessFromHandle(base::ProcessHandle handle) {
     return base::Process();
   }
   handle = out_handle;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   return base::Process(handle);
 }
 
@@ -176,7 +176,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
 
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
-    rph1 = tab1->GetMainFrame()->GetProcess();
+    rph1 = tab1->GetPrimaryMainFrame()->GetProcess();
     EXPECT_EQ(omnibox, tab1->GetURL());
     EXPECT_EQ(host_count, RenderProcessHostCount());
 
@@ -191,7 +191,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
-    rph2 = tab1->GetMainFrame()->GetProcess();
+    rph2 = tab1->GetPrimaryMainFrame()->GetProcess();
     EXPECT_EQ(tab1->GetURL(), page1);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_NE(rph1, rph2);
@@ -211,9 +211,9 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     EXPECT_EQ(tab2->GetURL(), page2);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     if (content::AreAllSitesIsolatedForTesting())
-      EXPECT_NE(tab2->GetMainFrame()->GetProcess(), rph2);
+      EXPECT_NE(tab2->GetPrimaryMainFrame()->GetProcess(), rph2);
     else
-      EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph2);
+      EXPECT_EQ(tab2->GetPrimaryMainFrame()->GetProcess(), rph2);
 
     // Create another WebUI tab.  Each WebUI tab should get a separate process
     // because of origin locking.
@@ -230,7 +230,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), GURL(history));
     EXPECT_EQ(host_count, RenderProcessHostCount());
-    EXPECT_NE(tab2->GetMainFrame()->GetProcess(), rph1);
+    EXPECT_NE(tab2->GetPrimaryMainFrame()->GetProcess(), rph1);
 
     // Create an extension tab.  It should be in its own process.
     GURL extension_url("chrome-extension://" + extension->id());
@@ -242,7 +242,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
-    rph3 = tab1->GetMainFrame()->GetProcess();
+    rph3 = tab1->GetPrimaryMainFrame()->GetProcess();
     EXPECT_EQ(tab1->GetURL(), extension_url);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_NE(rph1, rph3);
@@ -270,7 +270,7 @@ class ChromeRenderProcessHostTestWithCommandLine
 };
 
 // TODO(crbug.com/1241506): Enable this test on macOS after the issue is fixed.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_ProcessPerTab DISABLED_ProcessPerTab
 #else
 #define MAYBE_ProcessPerTab ProcessPerTab
@@ -364,13 +364,13 @@ class ChromeRenderProcessHostBackgroundingTest
 
   void VerifyProcessIsBackgrounded(WebContents* web_contents) {
     constexpr bool kExpectedIsBackground = true;
-    VerifyProcessPriority(web_contents->GetMainFrame()->GetProcess(),
+    VerifyProcessPriority(web_contents->GetPrimaryMainFrame()->GetProcess(),
                           kExpectedIsBackground);
   }
 
   void VerifyProcessIsForegrounded(WebContents* web_contents) {
     constexpr bool kExpectedIsBackground = false;
-    VerifyProcessPriority(web_contents->GetMainFrame()->GetProcess(),
+    VerifyProcessPriority(web_contents->GetPrimaryMainFrame()->GetProcess(),
                           kExpectedIsBackground);
   }
 
@@ -387,7 +387,7 @@ class ChromeRenderProcessHostBackgroundingTest
     if (base::Process::CanBackgroundProcesses()) {
       base::Process p = ProcessFromHandle(process->GetProcess().Handle());
       ASSERT_TRUE(p.IsValid());
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       base::PortProvider* port_provider =
           content::BrowserChildProcessHost::GetPortProvider();
       EXPECT_EQ(expected_is_backgrounded,
@@ -412,7 +412,7 @@ class ChromeRenderProcessHostBackgroundingTest
   } while (0);
 
 // Flaky on Mac: https://crbug.com/888308
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_MultipleTabs DISABLED_MultipleTabs
 #else
 #define MAYBE_MultipleTabs MultipleTabs
@@ -437,8 +437,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
   WebContents* tab2 = ShowSingletonTab(page2);
   {
     SCOPED_TRACE("TEST STEP: 2nd tab opened in foreground");
-    EXPECT_NE(tab1->GetMainFrame()->GetProcess(),
-              tab2->GetMainFrame()->GetProcess());
+    EXPECT_NE(tab1->GetPrimaryMainFrame()->GetProcess(),
+              tab2->GetPrimaryMainFrame()->GetProcess());
     EXPECT_PROCESS_IS_BACKGROUNDED(tab1);
     EXPECT_PROCESS_IS_FOREGROUNDED(tab2);
   }
@@ -449,10 +449,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
   WebContents* tab3 = OpenBackgroundTab(page3);
   {
     SCOPED_TRACE("TEST STEP: 3rd tab opened in background");
-    EXPECT_NE(tab1->GetMainFrame()->GetProcess(),
-              tab3->GetMainFrame()->GetProcess());
-    EXPECT_NE(tab2->GetMainFrame()->GetProcess(),
-              tab3->GetMainFrame()->GetProcess());
+    EXPECT_NE(tab1->GetPrimaryMainFrame()->GetProcess(),
+              tab3->GetPrimaryMainFrame()->GetProcess());
+    EXPECT_NE(tab2->GetPrimaryMainFrame()->GetProcess(),
+              tab3->GetPrimaryMainFrame()->GetProcess());
     EXPECT_PROCESS_IS_BACKGROUNDED(tab1);
     EXPECT_PROCESS_IS_FOREGROUNDED(tab2);
     EXPECT_PROCESS_IS_BACKGROUNDED(tab3);
@@ -617,10 +617,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   nav_observer.Wait();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(wc1->GetMainFrame()->GetLastCommittedURL(),
-            wc2->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(wc1->GetMainFrame()->GetProcess(),
-            wc2->GetMainFrame()->GetProcess());
+  EXPECT_EQ(wc1->GetPrimaryMainFrame()->GetLastCommittedURL(),
+            wc2->GetPrimaryMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(wc1->GetPrimaryMainFrame()->GetProcess(),
+            wc2->GetPrimaryMainFrame()->GetProcess());
 
   // Create an object that will close the window on a process crash.
   WindowDestroyer destroyer(wc1, browser()->tab_strip_model());
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // method to be called. Alternatively, RenderProcessHost::OnChannelError can
   // be called to directly force a call to ProcessDied.
   content::ScopedAllowRendererCrashes allow_renderer_crashes(wc1);
-  wc1->GetMainFrame()->GetProcess()->Shutdown(-1);
+  wc1->GetPrimaryMainFrame()->GetProcess()->Shutdown(-1);
 
   destroyer.Wait();
 }
@@ -679,19 +679,20 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
 
     // Create a new tab for the no audio page and confirm that the process of
     // each tab is different and that both are valid.
-    audio_process_ = ProcessFromHandle(audio_tab_web_contents_->GetMainFrame()
-                                           ->GetProcess()
-                                           ->GetProcess()
-                                           .Handle());
+    audio_process_ =
+        ProcessFromHandle(audio_tab_web_contents_->GetPrimaryMainFrame()
+                              ->GetProcess()
+                              ->GetProcess()
+                              .Handle());
     WebContents* wc = ShowSingletonTab(no_audio_url_);
     no_audio_process_ = ProcessFromHandle(
-        wc->GetMainFrame()->GetProcess()->GetProcess().Handle());
+        wc->GetPrimaryMainFrame()->GetProcess()->GetProcess().Handle());
     ASSERT_NE(audio_process_.Pid(), no_audio_process_.Pid());
     ASSERT_TRUE(no_audio_process_.IsValid());
     ASSERT_TRUE(audio_process_.IsValid());
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     port_provider_ = content::BrowserChildProcessHost::GetPortProvider();
-#endif  //  defined(OS_MAC)
+#endif  //  BUILDFLAG(IS_MAC)
   }
 
  protected:
@@ -716,14 +717,14 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
 
  private:
   bool IsProcessBackgrounded(const base::Process& process) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     return process.IsProcessBackgrounded(port_provider_);
 #else
     return process.IsProcessBackgrounded();
 #endif
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   base::PortProvider* port_provider_;
 #endif
 };

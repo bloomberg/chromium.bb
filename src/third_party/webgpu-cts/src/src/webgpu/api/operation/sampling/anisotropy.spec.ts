@@ -6,7 +6,7 @@ Note that anisotropic filtering is never guaranteed to occur, but we might be ab
 things. If there are no guarantees we can issue warnings instead of failures. Ideas:
   - No *more* than the provided maxAnisotropy samples are used, by testing how many unique
     sample values come out of the sample operation.
-  - Check anisotropy is done in the correct direciton (by having a 2D gradient and checking we get
+  - Check anisotropy is done in the correct direction (by having a 2D gradient and checking we get
     more of the color in the correct direction).
 `;
 
@@ -55,16 +55,17 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
     await super.init();
 
     this.pipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
             struct Outputs {
-              [[builtin(position)]] Position : vec4<f32>;
-              [[location(0)]] fragUV : vec2<f32>;
+              @builtin(position) Position : vec4<f32>,
+              @location(0) fragUV : vec2<f32>,
             };
 
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32) -> Outputs {
+            @vertex fn main(
+              @builtin(vertex_index) VertexIndex : u32) -> Outputs {
               var position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
                 vec3<f32>(-0.5, 0.5, -0.5),
                 vec3<f32>(0.5, 0.5, -0.5),
@@ -99,13 +100,13 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[group(0), binding(0)]] var sampler0 : sampler;
-            [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
+            @group(0) @binding(0) var sampler0 : sampler;
+            @group(0) @binding(1) var texture0 : texture_2d<f32>;
 
-            [[stage(fragment)]] fn main(
-              [[builtin(position)]] FragCoord : vec4<f32>,
-              [[location(0)]] fragUV: vec2<f32>)
-              -> [[location(0)]] vec4<f32> {
+            @fragment fn main(
+              @builtin(position) FragCoord : vec4<f32>,
+              @location(0) fragUV: vec2<f32>)
+              -> @location(0) vec4<f32> {
                 return textureSample(texture0, sampler0, fragUV);
             }
             `,
@@ -143,14 +144,15 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
         {
           view: colorAttachmentView,
           storeOp: 'store',
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
         },
       ],
     });
     pass.setPipeline(this.pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.draw(6);
-    pass.endPass();
+    pass.end();
     this.device.queue.submit([encoder.finish()]);
 
     return colorAttachment;
@@ -299,7 +301,7 @@ g.test('anisotropic_filter_mipmap_color')
       if (entry.expected instanceof Uint8Array) {
         // equal exactly one color
         t.expectSinglePixelIn2DTexture(colorAttachment, kColorAttachmentFormat, entry.coord, {
-          exp: entry.expected as Uint8Array,
+          exp: entry.expected,
           generateWarningOnly: t.params._generateWarningOnly,
         });
       } else {

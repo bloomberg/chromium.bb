@@ -6,14 +6,20 @@ import {assert} from 'chai';
 
 import {click} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {getDisplayedEventListenerNames, getFirstNodeForEventListener, loadEventListenersAndSelectButtonNode, openEventListenersPaneAndWaitForListeners} from '../helpers/event-listeners-helpers.js';
+import {
+  getDisplayedEventListenerNames,
+  getFirstNodeForEventListener,
+  loadEventListenersAndSelectButtonNode,
+  openEventListenersPaneAndWaitForListeners,
+} from '../helpers/event-listeners-helpers.js';
 
 describe('Removing event listeners in the elements sidebar', async () => {
   beforeEach(async () => {
     await loadEventListenersAndSelectButtonNode();
   });
 
-  it('shows "Remove" by each node for a given event', async () => {
+  // TODO: crbug.com/1325790 flaky test.
+  it.skipOnPlatforms(['mac'], '[crbug.com/1325790] shows "Remove" by each node for a given event', async () => {
     await openEventListenersPaneAndWaitForListeners();
     const {
       firstListenerText,

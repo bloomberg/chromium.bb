@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/check.h"
+#include "base/dcheck_is_on.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/process/process.h"
@@ -125,7 +127,9 @@ TestRunner::TestRunner(JobLevel job_level,
 }
 
 TestRunner::TestRunner()
-    : TestRunner(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN) {}
+    : TestRunner(JobLevel::kLockdown,
+                 USER_RESTRICTED_SAME_ACCESS,
+                 USER_LOCKDOWN) {}
 
 TargetPolicy* TestRunner::GetPolicy() {
   return policy_.get();
@@ -226,14 +230,22 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
       return SBOX_ERROR_GENERIC;
     }
   } else {
-    result = broker_->SpawnTarget(prog_name, arguments.c_str(), policy_,
-                                  &warning_result, &last_error, &target);
+    result =
+        broker_->SpawnTarget(prog_name, arguments.c_str(), std::move(policy_),
+                             &warning_result, &last_error, &target);
   }
-  if (release_policy_in_run_)
-    policy_ = nullptr;
 
   if (SBOX_ALL_OK != result)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
+
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  // Can never fail. If it does, then something really bad has happened.
+  CHECK(::GetProcessTimes(target.hProcess, &creation_time, &exit_time,
+                          &kernel_time, &user_time));
+
+  // Execution times should be zero. If not, something has changed in Windows.
+  CHECK_EQ(0, base::TimeDelta::FromFileTime(user_time).InMicroseconds());
+  CHECK_EQ(0, base::TimeDelta::FromFileTime(kernel_time).InMicroseconds());
 
   ::ResumeThread(target.hThread);
 

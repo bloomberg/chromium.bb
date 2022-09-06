@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/values.h"
 
@@ -35,12 +36,10 @@ class DummySampleCountIterator : public SampleCountIterator {
 
 class DummyHistogramSamples : public HistogramSamples {
  public:
-  DummyHistogramSamples() : HistogramSamples(0, new LocalMetadata()) {}
+  DummyHistogramSamples()
+      : HistogramSamples(0, std::make_unique<LocalMetadata>()) {}
   DummyHistogramSamples(const DummyHistogramSamples&) = delete;
   DummyHistogramSamples& operator=(const DummyHistogramSamples&) = delete;
-  ~DummyHistogramSamples() override {
-    delete static_cast<LocalMetadata*>(meta());
-  }
 
   // HistogramSamples:
   void Accumulate(HistogramBase::Sample value,
@@ -78,7 +77,7 @@ HistogramType DummyHistogram::GetHistogramType() const {
 bool DummyHistogram::HasConstructionArguments(
     Sample expected_minimum,
     Sample expected_maximum,
-    uint32_t expected_bucket_count) const {
+    size_t expected_bucket_count) const {
   return true;
 }
 

@@ -24,7 +24,7 @@
 #include "ui/aura/window_targeter.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
@@ -37,7 +37,7 @@ constexpr int kElevation = 16;
 
 struct WidgetEventPair {
   views::Widget* widget;
-  ui::MouseEvent event;
+  std::unique_ptr<ui::MouseEvent> event;
 };
 
 WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
@@ -47,24 +47,26 @@ WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
   // forwarding.
   views::Widget* this_widget = this_view->GetWidget();
   views::Widget* parent_widget = this_widget->parent();
+  std::unique_ptr<ui::MouseEvent> event(
+      static_cast<ui::MouseEvent*>(ui::Event::Clone(*this_event).release()));
   if (!parent_widget)
-    return {nullptr, *this_event};
+    return {nullptr, std::move(event)};
 
   views::Widget* top_level = parent_widget->GetTopLevelWidgetForNativeView(
       parent_widget->GetNativeView());
   DCHECK_NE(this_widget, top_level);
   if (!top_level)
-    return {nullptr, *this_event};
+    return {nullptr, std::move(event)};
 
   gfx::Point event_location = this_event->location();
   views::View::ConvertPointToScreen(this_view, &event_location);
   views::View::ConvertPointFromScreen(top_level->GetRootView(),
                                       &event_location);
 
-  ui::MouseEvent top_level_event(*this_event);
-  top_level_event.set_location(event_location);
+  // Convert location to top level widget coordinate.
+  event->set_location(event_location);
 
-  return {top_level, top_level_event};
+  return {top_level, std::move(event)};
 }
 
 #endif  // !USE_AURA
@@ -121,29 +123,29 @@ class TopBackgroundView : public views::View {
   void OnMouseMoved(const ui::MouseEvent& event) override {
     auto pair = GetParentWidgetAndEvent(this, &event);
     if (pair.widget)
-      pair.widget->OnMouseEvent(&pair.event);
+      pair.widget->OnMouseEvent(pair.event.get());
   }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     auto pair = GetParentWidgetAndEvent(this, event);
     if (pair.widget)
-      pair.widget->OnMouseEvent(&pair.event);
+      pair.widget->OnMouseEvent(pair.event.get());
 
     // If the original event isn't marked as "handled" then it will propagate up
     // the view hierarchy and might be double-handled. https://crbug.com/870341
     event->SetHandled();
   }
 
-  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
+  ui::Cursor GetCursor(const ui::MouseEvent& event) override {
     auto pair = GetParentWidgetAndEvent(this, &event);
     if (pair.widget) {
       views::View* omnibox_view =
           pair.widget->GetRootView()->GetEventHandlerForPoint(
-              pair.event.location());
-      return omnibox_view->GetCursor(pair.event);
+              pair.event->location());
+      return omnibox_view->GetCursor(*pair.event);
     }
 
-    return nullptr;
+    return ui::Cursor();
   }
 #endif  // !USE_AURA
 
@@ -156,8 +158,8 @@ END_METADATA
 
 // Insets used to position |contents_| within |contents_host_|.
 gfx::Insets GetContentInsets() {
-  return gfx::Insets(RoundedOmniboxResultsFrame::GetNonResultSectionHeight(), 0,
-                     0, 0);
+  return gfx::Insets::TLBR(
+      RoundedOmniboxResultsFrame::GetNonResultSectionHeight(), 0, 0, 0);
 }
 
 }  // namespace
@@ -185,7 +187,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   // Initialize the shadow.
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::Arrow::NONE,
-      views::BubbleBorder::Shadow::STANDARD_SHADOW, gfx::kPlaceholderColor);
+      views::BubbleBorder::Shadow::STANDARD_SHADOW);
   border->SetCornerRadius(corner_radius);
   border->set_md_shadow_elevation(kElevation);
   SetBorder(std::move(border));
@@ -199,7 +201,7 @@ RoundedOmniboxResultsFrame::~RoundedOmniboxResultsFrame() = default;
 void RoundedOmniboxResultsFrame::OnBeforeWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, use an Aura window instead of a native window, because the
   // native window does not support clicking through translucent shadows to the
   // underyling content. Linux and ChromeOS do not need this because they
@@ -224,8 +226,9 @@ int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
 
 // static
 gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
-  return ui::TouchUiController::Get()->touch_ui() ? gfx::Insets(6, 1, 5, 1)
-                                                  : gfx::Insets(4, 6);
+  return ui::TouchUiController::Get()->touch_ui()
+             ? gfx::Insets::TLBR(6, 1, 5, 1)
+             : gfx::Insets::VH(4, 6);
 }
 
 // static
@@ -274,13 +277,13 @@ void RoundedOmniboxResultsFrame::AddedToWidget() {
 void RoundedOmniboxResultsFrame::OnMouseMoved(const ui::MouseEvent& event) {
   auto pair = GetParentWidgetAndEvent(this, &event);
   if (pair.widget)
-    pair.widget->OnMouseEvent(&pair.event);
+    pair.widget->OnMouseEvent(pair.event.get());
 }
 
 void RoundedOmniboxResultsFrame::OnMouseEvent(ui::MouseEvent* event) {
   auto pair = GetParentWidgetAndEvent(this, event);
   if (pair.widget)
-    pair.widget->OnMouseEvent(&pair.event);
+    pair.widget->OnMouseEvent(pair.event.get());
 }
 
 #endif  // !USE_AURA

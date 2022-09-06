@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -91,6 +92,17 @@ bool ShouldIncludeNetworkInList(const NetworkState* network_state,
     // Tether network should not be included since they should only be shown
     // to the user as Tether networks.
     return false;
+  }
+
+  if (network_state->type() == shill::kTypeVPN) {
+    if (network_state->GetVpnProviderType() == shill::kProviderIKEv2 &&
+        !base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
+      return false;
+    }
+    if (network_state->GetVpnProviderType() == shill::kProviderWireGuard &&
+        !base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
+      return false;
+    }
   }
 
   return true;
@@ -256,6 +268,10 @@ void NetworkStateHandler::AddObserver(NetworkStateHandlerObserver* observer,
       base::StringPrintf("NetworkStateHandler::AddObserver: 0x%p", observer));
 }
 
+void NetworkStateHandler::AddObserver(NetworkStateHandlerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
 void NetworkStateHandler::RemoveObserver(NetworkStateHandlerObserver* observer,
                                          const base::Location& from_here) {
   observers_.RemoveObserver(observer);
@@ -264,6 +280,11 @@ void NetworkStateHandler::RemoveObserver(NetworkStateHandlerObserver* observer,
       device_event_log::LOG_TYPE_NETWORK, device_event_log::LOG_LEVEL_DEBUG,
       base::StringPrintf("NetworkStateHandler::RemoveObserver: 0x%p",
                          observer));
+}
+
+void NetworkStateHandler::RemoveObserver(
+    NetworkStateHandlerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool NetworkStateHandler::HasObserver(NetworkStateHandlerObserver* observer) {
@@ -322,9 +343,8 @@ void NetworkStateHandler::SetTechnologyEnabled(
                        << "DeviceState, but the current state was: "
                        << tether_technology_state_;
         network_handler::RunErrorCallback(
-            std::move(error_callback), kTetherDevicePath,
-            NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable,
-            "");
+            std::move(error_callback),
+            NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable);
         continue;
       }
 
@@ -1081,7 +1101,7 @@ void NetworkStateHandler::UpdateBlockedNetworksInternal(
     const NetworkTypePattern& network_type) {
   for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
     NetworkState* network = (*iter)->AsNetworkState();
-    if (!network->Matches(network_type))
+    if (!TypeMatches(network, network_type))
       continue;
     if (UpdateBlockedByPolicy(network))
       NotifyNetworkPropertiesUpdated(network);
@@ -1268,11 +1288,13 @@ void NetworkStateHandler::SetDeviceStateUpdatedForTest(
 // ShillPropertyHandler::Delegate overrides
 
 void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
-                                            const base::ListValue& entries) {
+                                            const base::Value& entries) {
   CHECK(!notifying_network_observers_);
+  DCHECK(entries.is_list());
+
   ManagedStateList* managed_list = GetManagedList(type);
   NET_LOG(DEBUG) << "UpdateManagedList: " << ManagedState::TypeToString(type)
-                 << ": " << entries.GetList().size();
+                 << ": " << entries.GetListDeprecated().size();
   // Create a map of existing entries. Assumes all entries in |managed_list|
   // are unique.
   std::map<std::string, std::unique_ptr<ManagedState>> managed_map;
@@ -1285,7 +1307,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   managed_list->clear();
   // Updates managed_list and request updates for new entries.
   std::set<std::string> list_entries;
-  for (const auto& iter : entries.GetList()) {
+  for (const auto& iter : entries.GetListDeprecated()) {
     const std::string* path = iter.GetIfString();
     if (!path)
       continue;
@@ -1319,7 +1341,9 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   }
 
   UpdateManagedWifiNetworkAvailable();
-
+  if (features::IsESimPolicyEnabled()) {
+    UpdateBlockedCellularNetworks();
+  }
   if (type != ManagedState::ManagedType::MANAGED_TYPE_NETWORK)
     return;
 
@@ -1351,6 +1375,15 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
     if (tether_network)
       tether_network->set_tether_guid(std::string());
   }
+}
+
+void NetworkStateHandler::UpdateBlockedCellularNetworks() {
+  DeviceState* device =
+      GetModifiableDeviceStateByType(NetworkTypePattern::Cellular());
+  if (!device || !device->update_received())
+    return;  // May be null in tests.
+
+  UpdateBlockedNetworksInternal(NetworkTypePattern::Cellular());
 }
 
 void NetworkStateHandler::ProfileListChanged(const base::Value& profile_list) {
@@ -1573,6 +1606,10 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
 
     if (device->type() == shill::kTypeWifi && !device->scanning())
       UpdateManagedWifiNetworkAvailable();
+    if (device->type() == shill::kTypeCellular && !device->scanning() &&
+        features::IsESimPolicyEnabled()) {
+      UpdateBlockedCellularNetworks();
+    }
   }
   if (key == shill::kEapAuthenticationCompletedProperty) {
     // Notify a change for each Ethernet service using this device.
@@ -1659,6 +1696,8 @@ void NetworkStateHandler::ManagedStateListChanged(
       UpdateNetworkStats();
       NotifyIfActiveNetworksChanged();
       NotifyNetworkListChanged();
+      if (features::IsESimPolicyEnabled())
+        UpdateBlockedCellularNetworks();
       UpdateManagedWifiNetworkAvailable();
       // ManagedStateListChanged only gets executed if all pending updates have
       // completed. Profile networks are loaded if a user is logged in and all
@@ -2161,10 +2200,9 @@ void NetworkStateHandler::LogPropertyUpdated(const ManagedState* state,
                                              const std::string& key,
                                              const base::Value& value) {
   std::string type_str =
-      state->managed_type() == ManagedState::MANAGED_TYPE_DEVICE
-          ? "Device"
-          : state->path() == default_network_path_ ? "DefaultNetwork"
-                                                   : "Network";
+      state->managed_type() == ManagedState::MANAGED_TYPE_DEVICE ? "Device"
+      : state->path() == default_network_path_ ? "DefaultNetwork"
+                                               : "Network";
   device_event_log::LogLevel log_level = device_event_log::LOG_LEVEL_EVENT;
   if (key == shill::kSignalStrengthProperty && !state->IsActive())
     log_level = device_event_log::LOG_LEVEL_DEBUG;
@@ -2222,7 +2260,7 @@ void NetworkStateHandler::ProcessIsUserLoggedIn(
   }
   // The profile list contains the shared profile on the login screen. Once the
   // user is logged in there is more than one profile in the profile list.
-  is_user_logged_in_ = profile_list.GetList().size() > 1;
+  is_user_logged_in_ = profile_list.GetListDeprecated().size() > 1;
 }
 
 }  // namespace chromeos

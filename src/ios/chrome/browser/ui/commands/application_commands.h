@@ -15,6 +15,7 @@ class GURL;
 @class ShowSigninCommand;
 @class StartVoiceSearchCommand;
 @class UIViewController;
+enum class DefaultBrowserPromoSource;
 namespace syncer {
 enum class TrustedVaultUserActionTriggerForUMA;
 }  // namespace syncer
@@ -49,7 +50,8 @@ enum class TrustedVaultUserActionTriggerForUMA;
 
 // Shows the list of saved passwords in the settings.
 - (void)showSavedPasswordsSettingsFromViewController:
-    (UIViewController*)baseViewController;
+            (UIViewController*)baseViewController
+                                    showCancelButton:(BOOL)showCancelButton;
 
 // Shows the list of saved passwords in the settings. Automatically starts
 // password check.
@@ -61,13 +63,23 @@ enum class TrustedVaultUserActionTriggerForUMA;
     (UIViewController*)baseViewController;
 
 // Shows the list of credit cards in the settings.
-- (void)showCreditCardSettingsFromViewController:
-    (UIViewController*)baseViewController;
+- (void)showCreditCardSettings;
 
 // Shows the settings page informing the user how to set Chrome as the default
 // browser.
 - (void)showDefaultBrowserSettingsFromViewController:
-    (UIViewController*)baseViewController;
+            (UIViewController*)baseViewController
+                                        sourceForUMA:
+                                            (DefaultBrowserPromoSource)source;
+
+// Shows the settings page allowing the user to clear their browsing data.
+- (void)showClearBrowsingDataSettings;
+
+// Shows the Safety Check page and start Safety Check.
+- (void)showSafetyCheckSettingsAndStartSafetyCheck;
+
+// Shows the Safe Browsing page.
+- (void)showSafeBrowsingSettings;
 
 @end
 

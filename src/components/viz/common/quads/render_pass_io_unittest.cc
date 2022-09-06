@@ -22,6 +22,7 @@
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_surface_id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 namespace gl {
 struct HDRMetadata;
@@ -346,15 +347,17 @@ TEST(RenderPassIOTest, CompositorRenderPassList) {
   // 'intersects_damage_under' in its CompositorRenderPassDrawQuad, I'm
   // removing the field on dict1 for the exact comparison to work.
   base::Value* list = dict1.FindListKey("render_pass_list");
-  for (size_t i = 0; i < list->GetList().size(); ++i) {
-    base::Value* quad_list = list->GetList()[i].FindListKey("quad_list");
+  for (size_t i = 0; i < list->GetListDeprecated().size(); ++i) {
+    base::Value* quad_list =
+        list->GetListDeprecated()[i].FindListKey("quad_list");
 
-    for (size_t ii = 0; ii < quad_list->GetList().size(); ++ii) {
+    for (size_t ii = 0; ii < quad_list->GetListDeprecated().size(); ++ii) {
       if (const base::Value* extra_value =
-              quad_list->GetList()[ii].FindKey("intersects_damage_under")) {
+              quad_list->GetListDeprecated()[ii].FindKey(
+                  "intersects_damage_under")) {
         EXPECT_FALSE(extra_value->GetBool());
-        ASSERT_TRUE(
-            quad_list->GetList()[ii].RemoveKey("intersects_damage_under"));
+        ASSERT_TRUE(quad_list->GetListDeprecated()[ii].RemoveKey(
+            "intersects_damage_under"));
       }
     }
   }

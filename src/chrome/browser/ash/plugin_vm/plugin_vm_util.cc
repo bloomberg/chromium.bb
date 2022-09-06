@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_drive_image_download_service.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
@@ -32,6 +32,7 @@
 
 namespace plugin_vm {
 
+const char kPitaDlc[] = "pita";
 const char kPluginVmShelfAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 const char kPluginVmName[] = "PvmDefault";
 const char kChromeOSBaseDirectoryDisplayText[] = "Network \u203a ChromeOS";
@@ -76,9 +77,9 @@ void SetFakePluginVmPolicy(Profile* profile,
                            const std::string& license_key) {
   DictionaryPrefUpdate update(profile->GetPrefs(),
                               plugin_vm::prefs::kPluginVmImage);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetPath(prefs::kPluginVmImageUrlKeyName, base::Value(image_url));
-  dict->SetPath(prefs::kPluginVmImageHashKeyName, base::Value(image_hash));
+  base::Value* dict = update.Get();
+  dict->SetStringPath(prefs::kPluginVmImageUrlKeyName, image_url);
+  dict->SetStringPath(prefs::kPluginVmImageHashKeyName, image_hash);
   plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
       ->SkipLicenseCheckForTesting();  // IN-TEST
   MutableFakeLicenseKey() = license_key;

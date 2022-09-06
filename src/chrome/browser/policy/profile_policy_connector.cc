@@ -24,7 +24,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
-#include "components/policy/core/common/legacy_chrome_policy_migrator.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -194,8 +193,15 @@ void ProfilePolicyConnector::Init(
     policy_providers_.push_back(connector->command_line_policy_provider());
 #endif
 
-  if (configuration_policy_provider)
+  if (configuration_policy_provider) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    AppendPolicyProviderWithSchemaTracking(configuration_policy_provider,
+                                           schema_registry);
+    configuration_policy_provider_ = wrapped_policy_providers_.back().get();
+#else
     policy_providers_.push_back(configuration_policy_provider);
+#endif
+  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!user) {
@@ -223,20 +229,12 @@ void ProfilePolicyConnector::Init(
 #endif
 
   std::vector<std::unique_ptr<PolicyMigrator>> migrators;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   migrators.push_back(
       std::make_unique<browser_switcher::BrowserSwitcherPolicyMigrator>());
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
-      policy::key::kDeviceNativePrinters, policy::key::kDevicePrinters));
-  migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
-      policy::key::kDeviceUserWhitelist, policy::key::kDeviceUserAllowlist));
-  migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
-      policy::key::kNativePrintersBulkConfiguration,
-      policy::key::kPrintersBulkConfiguration));
-
   ConfigurationPolicyProvider* user_policy_delegate_candidate =
       configuration_policy_provider ? configuration_policy_provider
                                     : special_user_policy_provider_.get();

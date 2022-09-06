@@ -100,7 +100,7 @@ perfetto_build_standalone =
 
 # Only relevant for GN builds. Sets the path where perfetto lives. This is //
 # for standalone builds and //third_party/perfetto/ in embedders. The embedder
-# can ovverride it in its GN files.
+# can override it in its GN files.
 if (perfetto_build_standalone || is_perfetto_build_generator) {
   perfetto_root_path = "//"
   import("//gn/standalone/android.gni")  # For android_api_level
@@ -147,9 +147,8 @@ declare_args() {
   # For now the IPC layer is conservatively not enabled on Chromium+Windows
   # builds.
   enable_perfetto_ipc =
-      !is_fuchsia && !is_nacl &&
-      (perfetto_build_standalone || perfetto_build_with_android ||
-       (build_with_chromium && !is_win))
+      !is_nacl && (perfetto_build_standalone || perfetto_build_with_android ||
+                   (build_with_chromium && !is_win) || is_fuchsia)
 
   # Makes the heap profiling daemon target reachable. It works only on Android,
   # but is built on Linux as well for test/compiler coverage.
@@ -160,7 +159,6 @@ declare_args() {
        (is_linux || (is_android && android_api_level >= 26)))
 
   # Build the perf event profiler (traced_perf).
-  # TODO(b/144281346): under development.
   # TODO(rsavitski): figure out how to make the android-core dependencies build
   # under gcc (_Atomic and other issues).
   enable_perfetto_traced_perf =
@@ -211,7 +209,7 @@ declare_args() {
   # On Windows we default to monolithic executables, because pairing
   # dllexport/import adds extra complexity for little benefit. Te only reason
   # for monolithic_binaries=false is saving binary size, which matters mainly on
-  # Android. See also comments on PERFETTO_EXPORTED_ENTRYPOINT in compiler.h.
+  # Android. See also comments on PERFETTO_EXPORT_ENTRYPOINT in compiler.h.
   monolithic_binaries = is_win
 
   # Whether DLOG should be enabled on debug builds (""), all builds ("on"), or
@@ -289,12 +287,19 @@ declare_args() {
   # Enables Zlib support. This is used both by the "perfetto" cmdline client
   # (for compressing traces) and by trace processor (for compressed traces).
   enable_perfetto_zlib =
-      enable_perfetto_trace_processor || enable_perfetto_platform_services
+      (enable_perfetto_trace_processor && !build_with_chromium) ||
+      enable_perfetto_platform_services
+
+  # Enables function name demangling using sources from llvm. Otherwise
+  # trace_processor falls back onto using the c++ runtime demangler, which
+  # typically handles only itanium mangling.
+  enable_perfetto_llvm_demangle =
+      enable_perfetto_trace_processor && perfetto_build_standalone
 }
 
 declare_args() {
-  # Enables the trace_to_text tool.
-  enable_perfetto_tools_trace_to_text =
+  # Enables the traceconv tool.
+  enable_perfetto_traceconv =
       enable_perfetto_tools && enable_perfetto_trace_processor_sqlite
 
   # Allows to build the UI (TypeScript/ HTML / WASM)

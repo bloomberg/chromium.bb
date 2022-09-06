@@ -2,28 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import {MultiDeviceBrowserProxyImpl, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// #import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.m.js';
-// #import {MultiDeviceSettingsMode, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {TestOsResetBrowserProxy} from './test_os_reset_browser_proxy.m.js';
-// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {TestMultideviceBrowserProxy, createFakePageContentData, HOST_DEVICE} from './test_multidevice_browser_proxy.m.js';
-// #import {isChildVisible, waitAfterNextRender} from 'chrome://test/test_util.js';
-// import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// clang-format on
+import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+
+import {createFakePageContentData, TestMultideviceBrowserProxy} from './test_multidevice_browser_proxy.js';
 
 suite('Multidevice', function() {
   let smartLockItem = null;
   let browserProxy = null;
 
-  /** @type {Array<settings.MultiDeviceSettingsMode>} */
+  /** @type {Array<MultiDeviceSettingsMode>} */
   let ALL_MODES;
 
-  /** @type {!settings.Route} */
+  /** @type {!Route} */
   let initialRoute;
 
   /**
@@ -31,26 +25,26 @@ suite('Multidevice', function() {
    * @param {!MultiDevicePageContentData}
    */
   function setPageContentData(newPageContentData) {
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'settings.updateMultidevicePageContentData', newPageContentData);
-    Polymer.dom.flush();
+    flush();
   }
 
   /**
    * Sets pageContentData to the specified mode. If it is a mode corresponding
    * to a set host, it will set the hostDeviceName to the provided name or else
-   * default to multidevice.HOST_DEVICE.
-   * @param {settings.MultiDeviceSettingsMode} newMode
+   * default to HOST_DEVICE.
+   * @param {MultiDeviceSettingsMode} newMode
    * @param {string=} opt_newHostDeviceName Overrides default if |newMode|
    *     corresponds to a set host.
    */
   function setHostData(newMode, opt_newHostDeviceName) {
     setPageContentData(
-        multidevice.createFakePageContentData(newMode, opt_newHostDeviceName));
+        createFakePageContentData(newMode, opt_newHostDeviceName));
   }
 
   /**
-   * @param {settings.MultiDeviceFeatureState} newState
+   * @param {MultiDeviceFeatureState} newState
    */
   function setSmartLockState(newState) {
     setPageContentData(Object.assign(
@@ -58,7 +52,7 @@ suite('Multidevice', function() {
   }
 
   /**
-   * @param {settings.MultiDeviceFeatureState} newState
+   * @param {MultiDeviceFeatureState} newState
    */
   function setBetterTogetherState(newState) {
     setPageContentData(Object.assign(
@@ -69,18 +63,17 @@ suite('Multidevice', function() {
    * Clicks an element, and asserts that the route has changed to
    * |expectedRoute|, then navigates back to |initialRoute|.
    * @param {HTMLElement} element. Target of click.
-   * @param {?settings.Route} expectedRoute. The expected current route after
+   * @param {?Route} expectedRoute. The expected current route after
    * clicking |element|. If null, then the |initialRoute| is expected.
    */
   function expectRouteOnClick(element, expectedRoute) {
     element.click();
-    Polymer.dom.flush();
+    flush();
     if (expectedRoute) {
-      assertEquals(
-          expectedRoute, settings.Router.getInstance().getCurrentRoute());
-      settings.Router.getInstance().navigateTo(initialRoute);
+      assertEquals(expectedRoute, Router.getInstance().getCurrentRoute());
+      Router.getInstance().navigateTo(initialRoute);
     }
-    assertEquals(initialRoute, settings.Router.getInstance().getCurrentRoute());
+    assertEquals(initialRoute, Router.getInstance().getCurrentRoute());
   }
 
   /**
@@ -102,7 +95,7 @@ suite('Multidevice', function() {
     smartLockItem.fire(
         'feature-toggle-clicked',
         {feature: MultiDeviceFeature.SMART_LOCK, enabled: enabled});
-    Polymer.dom.flush();
+    flush();
 
     return browserProxy.whenCalled('setFeatureEnabledState').then(params => {
       assertEquals(MultiDeviceFeature.SMART_LOCK, params[0]);
@@ -115,42 +108,55 @@ suite('Multidevice', function() {
     });
   }
 
-  suiteSetup(function() {
-    ALL_MODES = Object.values(settings.MultiDeviceSettingsMode);
-  });
-
-  setup(function() {
+  /**
+   * @param {?boolean} isSmartLockSignInRemoved Whether to enable or disable the
+   *     isSmartLockSignInRemoved flag.
+   * @private
+   * TODO(b/227674947): When Sign in with Smart Lock is removed, this function
+   * can be replaced with a normal setup() function that will automatically run
+   * before each test and not require a param.
+   */
+  function initializeElement(isSmartLockSignInRemoved) {
+    loadTimeData.overrideValues(
+        {'isSmartLockSignInRemoved': !!isSmartLockSignInRemoved});
     PolymerTest.clearBody();
-    browserProxy = new multidevice.TestMultideviceBrowserProxy();
-    settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy = new TestMultideviceBrowserProxy();
+    MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
 
     smartLockItem =
         document.createElement('settings-multidevice-smartlock-item');
     assertTrue(!!smartLockItem);
 
     document.body.appendChild(smartLockItem);
-    Polymer.dom.flush();
+    flush();
 
-    initialRoute = settings.routes.LOCK_SCREEN;
-    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-    setBetterTogetherState(settings.MultiDeviceFeatureState.ENABLED_BY_USER);
-    setSmartLockState(settings.MultiDeviceFeatureState.ENABLED_BY_USER);
+    initialRoute = routes.LOCK_SCREEN;
+    setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    setBetterTogetherState(MultiDeviceFeatureState.ENABLED_BY_USER);
+    setSmartLockState(MultiDeviceFeatureState.ENABLED_BY_USER);
 
     return browserProxy.whenCalled('getPageContentData');
+  }
+
+  suiteSetup(function() {
+    ALL_MODES = Object.values(MultiDeviceSettingsMode);
   });
 
   teardown(function() {
-    smartLockItem.remove();
-    settings.Router.getInstance().resetRouteForTesting();
+    if (smartLockItem) {
+      smartLockItem.remove();
+    }
+    Router.getInstance().resetRouteForTesting();
   });
 
   test('settings row visibile only if host is verified', function() {
+    initializeElement();
     for (const mode of ALL_MODES) {
       setHostData(mode);
-      setBetterTogetherState(settings.MultiDeviceFeatureState.ENABLED_BY_USER);
-      setSmartLockState(settings.MultiDeviceFeatureState.ENABLED_BY_USER);
+      setBetterTogetherState(MultiDeviceFeatureState.ENABLED_BY_USER);
+      setSmartLockState(MultiDeviceFeatureState.ENABLED_BY_USER);
       const featureItem = smartLockItem.$$('#smartLockItem');
-      if (mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED) {
+      if (mode === MultiDeviceSettingsMode.HOST_SET_VERIFIED) {
         assertTrue(!!featureItem);
       } else {
         assertFalse(!!featureItem);
@@ -159,17 +165,17 @@ suite('Multidevice', function() {
   });
 
   test('settings row visibile only if feature is supported', function() {
+    initializeElement();
     let featureItem = smartLockItem.$$('#smartLockItem');
     assertTrue(!!featureItem);
 
-    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-    setSmartLockState(
-        settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK);
+    setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    setSmartLockState(MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK);
     featureItem = smartLockItem.$$('#smartLockItem');
     assertFalse(!!featureItem);
 
-    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-    setSmartLockState(settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_PHONE);
+    setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    setSmartLockState(MultiDeviceFeatureState.NOT_SUPPORTED_BY_PHONE);
     featureItem = smartLockItem.$$('#smartLockItem');
     assertFalse(!!featureItem);
   });
@@ -177,24 +183,34 @@ suite('Multidevice', function() {
   test(
       'settings row visibile only if better together suite is enabled',
       function() {
+        initializeElement();
         let featureItem = smartLockItem.$$('#smartLockItem');
         assertTrue(!!featureItem);
-        setBetterTogetherState(
-            settings.MultiDeviceFeatureState.DISABLED_BY_USER);
+        setBetterTogetherState(MultiDeviceFeatureState.DISABLED_BY_USER);
         featureItem = smartLockItem.$$('#smartLockItem');
         assertFalse(!!featureItem);
       });
 
+  // TODO(b/227674947): Delete this test case when Sign in with Smart Lock is
+  // removed.
   test('clicking item with verified host opens subpage', function() {
+    initializeElement();
     const featureItem = smartLockItem.$$('#smartLockItem');
     assertTrue(!!featureItem);
-    expectRouteOnClick(
-        featureItem.$$('#linkWrapper'), settings.routes.SMART_LOCK);
+    expectRouteOnClick(featureItem.$$('#linkWrapper'), routes.SMART_LOCK);
   });
 
   test('feature toggle click event handled', function() {
+    initializeElement();
     simulateFeatureStateChangeRequest(false).then(function() {
       simulateFeatureStateChangeRequest(true);
     });
+  });
+
+  test('SmartLockSignInRemoved flag removes subpage', function() {
+    initializeElement(/*isSmartLockSignInRemoved=*/ true);
+    const featureItem = smartLockItem.$$('#smartLockItem');
+    assertTrue(!!featureItem);
+    assertEquals(undefined, featureItem.subpageRoute);
   });
 });

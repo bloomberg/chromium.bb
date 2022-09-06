@@ -4,6 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/multidevice_internals/multidevice_internals_phone_hub_handler.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/camera_roll_item.h"
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/components/phonehub/notification.h"
@@ -14,7 +20,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -66,26 +71,28 @@ const SkBitmap ImageTypeToBitmap(ImageType image_type_num, int size) {
 
 phonehub::Notification::AppMetadata DictToAppMetadata(
     const base::DictionaryValue* app_metadata_dict) {
-  std::u16string visible_app_name;
-  CHECK(app_metadata_dict->GetString("visibleAppName", &visible_app_name));
+  const std::string* visible_app_name_ptr =
+      app_metadata_dict->GetDict().FindString("visibleAppName");
+  CHECK(visible_app_name_ptr);
+  std::u16string visible_app_name = base::UTF8ToUTF16(*visible_app_name_ptr);
 
-  std::string package_name;
-  CHECK(app_metadata_dict->GetString("packageName", &package_name));
+  const std::string* package_name =
+      app_metadata_dict->GetDict().FindString("packageName");
+  CHECK(package_name);
 
   absl::optional<int> icon_image_type_as_int =
-      app_metadata_dict->FindIntKey("icon");
+      app_metadata_dict->GetDict().FindInt("icon");
   CHECK(icon_image_type_as_int);
 
   auto icon_image_type = static_cast<ImageType>(*icon_image_type_as_int);
   gfx::Image icon = gfx::Image::CreateFrom1xBitmap(
       ImageTypeToBitmap(icon_image_type, kIconSize));
 
-  int user_id;
-  if (!app_metadata_dict->GetInteger("userId", &user_id))
-    user_id = 0;
+  int user_id = app_metadata_dict->GetDict().FindInt("userId").value_or(0);
 
-  return phonehub::Notification::AppMetadata(visible_app_name, package_name,
-                                             icon, user_id);
+  return phonehub::Notification::AppMetadata(
+      visible_app_name, *package_name, icon, /*icon_color=*/absl::nullopt,
+      /*icon_is_monochrome=*/false, user_id);
 }
 
 void TryAddingMetadata(
@@ -97,22 +104,23 @@ void TryAddingMetadata(
   if (!browser_tab_status_dict->GetDictionary(key, &browser_tab_metadata))
     return;
 
-  std::string url;
-  if (!browser_tab_metadata->GetString("url", &url) || url.empty())
+  const std::string* url = browser_tab_metadata->GetDict().FindString("url");
+  if (!url || url->empty())
     return;
 
-  std::u16string title;
-  if (!browser_tab_metadata->GetString("title", &title) || title.empty())
+  const std::string* title =
+      browser_tab_metadata->GetDict().FindString("title");
+  if (!title)
     return;
 
   // JavaScript time stamps don't fit in int.
   absl::optional<double> last_accessed_timestamp =
-      browser_tab_metadata->FindDoubleKey("lastAccessedTimeStamp");
+      browser_tab_metadata->GetDict().FindDouble("lastAccessedTimeStamp");
   if (!last_accessed_timestamp)
     return;
 
   int favicon_image_type_as_int =
-      browser_tab_metadata->FindIntKey("favicon").value_or(0);
+      browser_tab_metadata->GetDict().FindInt("favicon").value_or(0);
   if (!favicon_image_type_as_int)
     return;
 
@@ -121,8 +129,8 @@ void TryAddingMetadata(
       ImageTypeToBitmap(favicon_image_type, kIconSize));
 
   auto metadata = phonehub::BrowserTabsModel::BrowserTabMetadata(
-      GURL(url), title, base::Time::FromJsTime(*last_accessed_timestamp),
-      favicon);
+      GURL(*url), base::UTF8ToUTF16(*title),
+      base::Time::FromJsTime(*last_accessed_timestamp), favicon);
 
   metadatas.push_back(metadata);
 }
@@ -209,20 +217,15 @@ void MultidevicePhoneHubHandler::RegisterMessages() {
           base::Unretained(this)));
 
   web_ui()->RegisterDeprecatedMessageCallback(
-      "resetHasNotificationSetupUiBeenDismissed",
-      base::BindRepeating(&MultidevicePhoneHubHandler::
-                              HandleResetHasNotificationSetupUiBeenDismissed,
-                          base::Unretained(this)));
+      "resetHasMultideviceFeatureSetupUiBeenDismissed",
+      base::BindRepeating(
+          &MultidevicePhoneHubHandler::
+              HandleResetHasMultideviceFeatureSetupUiBeenDismissed,
+          base::Unretained(this)));
 
   web_ui()->RegisterDeprecatedMessageCallback(
-      "resetCameraRollOnboardingUiDismissed",
-      base::BindRepeating(&MultidevicePhoneHubHandler::
-                              HandleResetCameraRollOnboardingUiDismissed,
-                          base::Unretained(this)));
-
-  web_ui()->RegisterDeprecatedMessageCallback(
-      "setCameraRoll",
-      base::BindRepeating(&MultidevicePhoneHubHandler::HandleSetCameraRoll,
+      "setFakeCameraRoll",
+      base::BindRepeating(&MultidevicePhoneHubHandler::HandleSetFakeCameraRoll,
                           base::Unretained(this)));
 }
 
@@ -241,6 +244,8 @@ void MultidevicePhoneHubHandler::AddObservers() {
       fake_phone_hub_manager_->fake_tether_controller());
   onboarding_ui_tracker_observation_.Observe(
       fake_phone_hub_manager_->fake_onboarding_ui_tracker());
+  camera_roll_manager_observation_.Observe(
+      fake_phone_hub_manager_->fake_camera_roll_manager());
 }
 
 void MultidevicePhoneHubHandler::RemoveObservers() {
@@ -249,6 +254,7 @@ void MultidevicePhoneHubHandler::RemoveObservers() {
   find_my_device_controller_observation_.Reset();
   tether_controller_observation_.Reset();
   onboarding_ui_tracker_observation_.Reset();
+  camera_roll_manager_observation_.Reset();
 }
 
 void MultidevicePhoneHubHandler::OnNotificationsRemoved(
@@ -290,8 +296,16 @@ void MultidevicePhoneHubHandler::OnShouldShowOnboardingUiChanged() {
                     base::Value(should_show_onboarding_ui));
 }
 
+void MultidevicePhoneHubHandler::OnCameraRollViewUiStateUpdated() {
+  base::Value camera_roll_dict(base::Value::Type::DICTIONARY);
+  camera_roll_dict.GetDict().Set(
+      "isCameraRollEnabled", fake_phone_hub_manager_->fake_camera_roll_manager()
+                                 ->is_camera_roll_enabled());
+  FireWebUIListener("camera-roll-ui-view-state-updated", camera_roll_dict);
+}
+
 void MultidevicePhoneHubHandler::HandleEnableDnd(const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK(!list.empty());
   const bool enabled = list[0].GetBool();
   PA_LOG(VERBOSE) << "Setting Do Not Disturb state to " << enabled;
@@ -302,7 +316,7 @@ void MultidevicePhoneHubHandler::HandleEnableDnd(const base::ListValue* args) {
 
 void MultidevicePhoneHubHandler::HandleSetFindMyDeviceStatus(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_GE(list.size(), 1u);
   int status_as_int = list[0].GetInt();
 
@@ -315,7 +329,7 @@ void MultidevicePhoneHubHandler::HandleSetFindMyDeviceStatus(
 
 void MultidevicePhoneHubHandler::HandleSetTetherStatus(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_GE(list.size(), 1u);
   int status_as_int = list[0].GetInt();
 
@@ -341,7 +355,10 @@ void MultidevicePhoneHubHandler::EnableRealPhoneHubManager() {
 }
 
 void MultidevicePhoneHubHandler::EnableFakePhoneHubManager() {
-  DCHECK(!fake_phone_hub_manager_);
+  // Don't create FakePhoneHubManager if it already exists to prevent UAF.
+  if (fake_phone_hub_manager_)
+    return;
+
   PA_LOG(VERBOSE) << "Setting fake Phone Hub Manager";
   fake_phone_hub_manager_ = std::make_unique<phonehub::FakePhoneHubManager>();
   ash::SystemTray::Get()->SetPhoneHubManager(fake_phone_hub_manager_.get());
@@ -351,7 +368,7 @@ void MultidevicePhoneHubHandler::EnableFakePhoneHubManager() {
 void MultidevicePhoneHubHandler::HandleEnableFakePhoneHubManager(
     const base::ListValue* args) {
   AllowJavascript();
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK(!list.empty());
   const bool enabled = list[0].GetBool();
   if (enabled) {
@@ -363,7 +380,7 @@ void MultidevicePhoneHubHandler::HandleEnableFakePhoneHubManager(
 
 void MultidevicePhoneHubHandler::HandleSetFeatureStatus(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_GE(list.size(), 1u);
   int feature_as_int = list[0].GetInt();
 
@@ -374,7 +391,7 @@ void MultidevicePhoneHubHandler::HandleSetFeatureStatus(
 
 void MultidevicePhoneHubHandler::HandleSetShowOnboardingFlow(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK(!list.empty());
   const bool show_onboarding_flow = list[0].GetBool();
   PA_LOG(VERBOSE) << "Setting show onboarding flow to " << show_onboarding_flow;
@@ -384,7 +401,7 @@ void MultidevicePhoneHubHandler::HandleSetShowOnboardingFlow(
 
 void MultidevicePhoneHubHandler::HandleSetFakePhoneName(
     const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
+  base::Value::ConstListView args_list = args->GetListDeprecated();
   CHECK_GE(args_list.size(), 1u);
   std::u16string phone_name = base::UTF8ToUTF16(args_list[0].GetString());
   fake_phone_hub_manager_->mutable_phone_model()->SetPhoneName(phone_name);
@@ -393,17 +410,17 @@ void MultidevicePhoneHubHandler::HandleSetFakePhoneName(
 
 void MultidevicePhoneHubHandler::HandleSetFakePhoneStatus(
     const base::ListValue* args) {
-  const base::Value& phones_status_value = args->GetList()[0];
+  const base::Value& phones_status_value = args->GetListDeprecated()[0];
   CHECK(phones_status_value.is_dict());
 
   absl::optional<int> mobile_status_as_int =
-      phones_status_value.FindIntKey("mobileStatus");
+      phones_status_value.GetDict().FindInt("mobileStatus");
   CHECK(mobile_status_as_int);
   auto mobile_status = static_cast<phonehub::PhoneStatusModel::MobileStatus>(
       *mobile_status_as_int);
 
   absl::optional<int> signal_strength_as_int =
-      phones_status_value.FindIntKey("signalStrength");
+      phones_status_value.GetDict().FindInt("signalStrength");
   CHECK(signal_strength_as_int);
 
   auto signal_strength =
@@ -412,24 +429,26 @@ void MultidevicePhoneHubHandler::HandleSetFakePhoneStatus(
 
   const base::DictionaryValue* phones_status_dict =
       static_cast<const base::DictionaryValue*>(&phones_status_value);
-  std::u16string mobile_provider;
-  CHECK(phones_status_dict->GetString("mobileProvider", &mobile_provider));
+  const std::string* mobile_provider_ptr =
+      phones_status_dict->GetDict().FindString("mobileProvider");
+  CHECK(mobile_provider_ptr);
+  std::u16string mobile_provider = base::UTF8ToUTF16(*mobile_provider_ptr);
 
   absl::optional<int> charging_state_as_int =
-      phones_status_value.FindIntKey("chargingState");
+      phones_status_value.GetDict().FindInt("chargingState");
   CHECK(charging_state_as_int);
   auto charging_state = static_cast<phonehub::PhoneStatusModel::ChargingState>(
       *charging_state_as_int);
 
   absl::optional<int> battery_saver_state_as_int =
-      phones_status_value.FindIntKey("batterySaverState");
+      phones_status_value.GetDict().FindInt("batterySaverState");
   CHECK(battery_saver_state_as_int);
   auto battery_saver_state =
       static_cast<phonehub::PhoneStatusModel::BatterySaverState>(
           *battery_saver_state_as_int);
 
   absl::optional<int> battery_percentage =
-      phones_status_value.FindIntKey("batteryPercentage");
+      phones_status_value.GetDict().FindInt("batteryPercentage");
   CHECK(battery_percentage);
 
   phonehub::PhoneStatusModel::MobileConnectionMetadata connection_metadata = {
@@ -453,12 +472,12 @@ void MultidevicePhoneHubHandler::HandleSetFakePhoneStatus(
 
 void MultidevicePhoneHubHandler::HandleSetBrowserTabs(
     const base::ListValue* args) {
-  const base::Value& browser_tab_status_value = args->GetList()[0];
+  const base::Value& browser_tab_status_value = args->GetListDeprecated()[0];
   CHECK(browser_tab_status_value.is_dict());
   const base::DictionaryValue* browser_tab_status_dict =
       static_cast<const base::DictionaryValue*>(&browser_tab_status_value);
   bool is_tab_sync_enabled =
-      browser_tab_status_dict->FindBoolKey("isTabSyncEnabled").value();
+      browser_tab_status_dict->GetDict().FindBool("isTabSyncEnabled").value();
 
   if (!is_tab_sync_enabled) {
     fake_phone_hub_manager_->mutable_phone_model()->SetBrowserTabsModel(
@@ -489,10 +508,10 @@ void MultidevicePhoneHubHandler::HandleSetBrowserTabs(
 
 void MultidevicePhoneHubHandler::HandleSetNotification(
     const base::ListValue* args) {
-  const base::Value& notification_data_value = args->GetList()[0];
+  const base::Value& notification_data_value = args->GetListDeprecated()[0];
   CHECK(notification_data_value.is_dict());
 
-  absl::optional<int> id = notification_data_value.FindIntKey("id");
+  absl::optional<int> id = notification_data_value.GetDict().FindInt("id");
   CHECK(id);
 
   const base::DictionaryValue* notification_data_dict =
@@ -505,36 +524,36 @@ void MultidevicePhoneHubHandler::HandleSetNotification(
 
   // JavaScript time stamps don't fit in int.
   absl::optional<double> js_timestamp =
-      notification_data_value.FindDoubleKey("timestamp");
+      notification_data_value.GetDict().FindDouble("timestamp");
   CHECK(js_timestamp);
   auto timestamp = base::Time::FromJsTime(*js_timestamp);
 
   absl::optional<int> importance_as_int =
-      notification_data_value.FindIntKey("importance");
+      notification_data_value.GetDict().FindInt("importance");
   CHECK(importance_as_int);
   auto importance =
       static_cast<phonehub::Notification::Importance>(*importance_as_int);
 
   absl::optional<int> inline_reply_id =
-      notification_data_value.FindIntKey("inlineReplyId");
+      notification_data_value.GetDict().FindInt("inlineReplyId");
   CHECK(inline_reply_id);
 
   absl::optional<std::u16string> opt_title;
-  std::u16string title;
-  if (notification_data_dict->GetString("title", &title) && !title.empty()) {
-    opt_title = title;
-  }
+  const std::string* title =
+      notification_data_dict->GetDict().FindString("title");
+  if (title && !title->empty())
+    opt_title = base::UTF8ToUTF16(*title);
 
   absl::optional<std::u16string> opt_text_content;
-  std::u16string text_content;
-  if (notification_data_dict->GetString("textContent", &text_content) &&
-      !text_content.empty()) {
-    opt_text_content = text_content;
+  if (const std::string* text_content =
+          notification_data_dict->GetDict().FindString("textContent")) {
+    if (!text_content->empty())
+      opt_text_content = base::UTF8ToUTF16(*text_content);
   }
 
   absl::optional<gfx::Image> opt_shared_image;
   int shared_image_type_as_int =
-      notification_data_value.FindIntKey("sharedImage").value_or(0);
+      notification_data_value.GetDict().FindInt("sharedImage").value_or(0);
   if (shared_image_type_as_int) {
     auto shared_image_type = static_cast<ImageType>(shared_image_type_as_int);
     opt_shared_image = gfx::Image::CreateFrom1xBitmap(
@@ -543,7 +562,7 @@ void MultidevicePhoneHubHandler::HandleSetNotification(
 
   absl::optional<gfx::Image> opt_contact_image;
   int contact_image_type_as_int =
-      notification_data_value.FindIntKey("contactImage").value_or(0);
+      notification_data_value.GetDict().FindInt("contactImage").value_or(0);
   if (contact_image_type_as_int) {
     auto shared_contact_image_type =
         static_cast<ImageType>(contact_image_type_as_int);
@@ -565,7 +584,7 @@ void MultidevicePhoneHubHandler::HandleSetNotification(
 
 void MultidevicePhoneHubHandler::HandleRemoveNotification(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_GE(list.size(), 1u);
   int notification_id = list[0].GetInt();
   fake_phone_hub_manager_->fake_notification_manager()->RemoveNotification(
@@ -580,38 +599,48 @@ void MultidevicePhoneHubHandler::HandleResetShouldShowOnboardingUi(
   PA_LOG(VERBOSE) << "Reset kHideOnboardingUi pref";
 }
 
-void MultidevicePhoneHubHandler::HandleResetHasNotificationSetupUiBeenDismissed(
-    const base::ListValue* args) {
+void MultidevicePhoneHubHandler::
+    HandleResetHasMultideviceFeatureSetupUiBeenDismissed(
+        const base::ListValue* args) {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   prefs->SetBoolean(phonehub::prefs::kHasDismissedSetupRequiredUi, false);
   PA_LOG(VERBOSE) << "Reset kHasDismissedSetupRequiredUi pref";
 }
 
-void MultidevicePhoneHubHandler::HandleResetCameraRollOnboardingUiDismissed(
+void MultidevicePhoneHubHandler::HandleSetFakeCameraRoll(
     const base::ListValue* args) {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  prefs->SetBoolean(
-      chromeos::phonehub::prefs::kHasDismissedCameraRollOnboardingUi, false);
-  PA_LOG(VERBOSE) << "Reset kHasDismissedCameraRollOnboardingUi pref";
-}
-
-void MultidevicePhoneHubHandler::HandleSetCameraRoll(
-    const base::ListValue* args) {
-  const base::Value& camera_roll_dict = args->GetList()[0];
+  const base::Value& camera_roll_dict = args->GetListDeprecated()[0];
   CHECK(camera_roll_dict.is_dict());
 
+  absl::optional<bool> is_camera_roll_enabled =
+      camera_roll_dict.GetDict().FindBool("isCameraRollEnabled");
+  CHECK(is_camera_roll_enabled);
+
+  fake_phone_hub_manager_->fake_camera_roll_manager()
+      ->SetIsCameraRollAvailableToBeEnabled(!*is_camera_roll_enabled);
+
+  absl::optional<bool> is_file_access_granted =
+      camera_roll_dict.GetDict().FindBool("isFileAccessGranted");
+  CHECK(is_file_access_granted);
+
+  fake_phone_hub_manager_->fake_camera_roll_manager()
+      ->SetIsAndroidStorageGranted(*is_file_access_granted);
+
   absl::optional<int> number_of_thumbnails =
-      camera_roll_dict.FindIntKey("numberOfThumbnails");
+      camera_roll_dict.GetDict().FindInt("numberOfThumbnails");
   CHECK(number_of_thumbnails);
 
   absl::optional<int> file_type_as_int =
-      camera_roll_dict.FindIntKey("fileType");
+      camera_roll_dict.GetDict().FindInt("fileType");
   CHECK(file_type_as_int);
   const char* file_type;
+  const char* file_ext;
   if (*file_type_as_int == 0) {
     file_type = "image/jpeg";
+    file_ext = ".jpg";
   } else {
     file_type = "video/mp4";
+    file_ext = ".mp4";
   }
 
   if (*number_of_thumbnails == 0) {
@@ -625,7 +654,7 @@ void MultidevicePhoneHubHandler::HandleSetCameraRoll(
       metadata.set_mime_type(file_type);
       metadata.set_last_modified_millis(1577865600 + i);
       metadata.set_file_size_bytes(123456);
-      metadata.set_file_name("fake_file_" + base::NumberToString(i) + ".jpg");
+      metadata.set_file_name("fake_file_" + base::NumberToString(i) + file_ext);
 
       gfx::Image thumbnail = gfx::Image::CreateFrom1xBitmap(RGB_Bitmap(
           255 - i * 192 / *number_of_thumbnails,
@@ -636,8 +665,46 @@ void MultidevicePhoneHubHandler::HandleSetCameraRoll(
     fake_phone_hub_manager_->fake_camera_roll_manager()->SetCurrentItems(items);
   }
 
-  PA_LOG(VERBOSE) << "Setting Camera Roll to " << *number_of_thumbnails
-                  << " thumbnails\nFile Type: " << file_type;
+  absl::optional<int> download_result_as_int =
+      camera_roll_dict.GetDict().FindInt("downloadResult");
+  CHECK(download_result_as_int);
+  const char* download_result;
+  if (*download_result_as_int == 0) {
+    download_result = "Download Success";
+    fake_phone_hub_manager_->fake_camera_roll_manager()
+        ->SetSimulatedDownloadError(false);
+  } else {
+    ash::phonehub::CameraRollManager::Observer::DownloadErrorType error_type;
+    switch (*download_result_as_int) {
+      case 1:
+        download_result = "Generic Error";
+        error_type = ash::phonehub::CameraRollManager::Observer::
+            DownloadErrorType::kGenericError;
+        break;
+      case 2:
+        download_result = "Storage Error";
+        error_type = ash::phonehub::CameraRollManager::Observer::
+            DownloadErrorType::kInsufficientStorage;
+        break;
+      case 3:
+      default:
+        download_result = "Network Error";
+        error_type = ash::phonehub::CameraRollManager::Observer::
+            DownloadErrorType::kNetworkConnection;
+        break;
+    }
+    fake_phone_hub_manager_->fake_camera_roll_manager()
+        ->SetSimulatedDownloadError(true);
+    fake_phone_hub_manager_->fake_camera_roll_manager()->SetSimulatedErrorType(
+        error_type);
+  }
+
+  PA_LOG(VERBOSE) << "Setting fake Camera Roll to:\n  Feature enabled: "
+                  << *is_camera_roll_enabled
+                  << "\n  Access granted: " << *is_file_access_granted
+                  << "\n  Number of thumbnails: " << *number_of_thumbnails
+                  << "\n  File type: " << file_type
+                  << "\n  Download result: " << download_result;
 }
 
 }  // namespace multidevice

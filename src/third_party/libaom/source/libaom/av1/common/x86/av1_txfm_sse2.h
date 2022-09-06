@@ -42,7 +42,7 @@ static INLINE void btf_16_w4_sse2(
 }
 
 #define btf_16_4p_sse2(w0, w1, in0, in1, out0, out1) \
-  {                                                  \
+  do {                                               \
     __m128i t0 = _mm_unpacklo_epi16(in0, in1);       \
     __m128i u0 = _mm_madd_epi16(t0, w0);             \
     __m128i v0 = _mm_madd_epi16(t0, w1);             \
@@ -55,10 +55,10 @@ static INLINE void btf_16_w4_sse2(
                                                      \
     out0 = _mm_packs_epi32(c0, c0);                  \
     out1 = _mm_packs_epi32(d0, d0);                  \
-  }
+  } while (0)
 
 #define btf_16_sse2(w0, w1, in0, in1, out0, out1) \
-  {                                               \
+  do {                                            \
     __m128i t0 = _mm_unpacklo_epi16(in0, in1);    \
     __m128i t1 = _mm_unpackhi_epi16(in0, in1);    \
     __m128i u0 = _mm_madd_epi16(t0, w0);          \
@@ -78,7 +78,7 @@ static INLINE void btf_16_w4_sse2(
                                                   \
     out0 = _mm_packs_epi32(c0, c1);               \
     out1 = _mm_packs_epi32(d0, d1);               \
-  }
+  } while (0)
 
 static INLINE __m128i load_16bit_to_16bit(const int16_t *a) {
   return _mm_load_si128((const __m128i *)a);

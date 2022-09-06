@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
@@ -16,11 +17,11 @@
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #include "chrome/services/file_util/public/cpp/sandboxed_document_analyzer.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 #endif
@@ -67,7 +68,7 @@ class FileAnalyzer {
     // For executables, information about the file headers.
     ClientDownloadRequest::ImageHeaders image_headers;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // For DMG files, the signature of the DMG.
     std::vector<uint8_t> disk_image_signature;
 
@@ -104,14 +105,14 @@ class FileAnalyzer {
   void StartExtractRarFeatures();
   void OnRarAnalysisFinished(const ArchiveAnalyzerResults& archive_results);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void StartExtractDmgFeatures();
   void ExtractFileOrDmgFeatures(bool download_file_has_koly_signature);
   void OnDmgAnalysisFinished(
       const safe_browsing::ArchiveAnalyzerResults& archive_results);
 #endif
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   void StartExtractDocumentFeatures();
   void OnDocumentAnalysisFinished(
       const DocumentAnalyzerResults& document_results);
@@ -127,11 +128,11 @@ class FileAnalyzer {
 
   scoped_refptr<SandboxedRarAnalyzer> rar_analyzer_;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   scoped_refptr<SandboxedDMGAnalyzer> dmg_analyzer_;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   scoped_refptr<SandboxedDocumentAnalyzer> document_analyzer_;
   base::TimeTicks document_analysis_start_time_;
 #endif

@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/page_size.h"
 #include "base/memory/ptr_util.h"
@@ -25,15 +26,15 @@
 #include "third_party/perfetto/protos/perfetto/trace/memory_graph.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include <mach/vm_page_size.h>
 #endif
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <sys/mman.h>
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>  // Must be in front of other Windows header files
 
 #include <Psapi.h>
@@ -73,7 +74,7 @@ bool ProcessMemoryDump::is_black_hole_non_fatal_for_testing_ = false;
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 // static
 size_t ProcessMemoryDump::GetSystemPageSize() {
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   // On iOS, getpagesize() returns the user page sizes, but for allocating
   // arrays for mincore(), kernel page sizes is needed. Use vm_kernel_page_size
   // as recommended by Apple, https://forums.developer.apple.com/thread/47532/.
@@ -81,7 +82,7 @@ size_t ProcessMemoryDump::GetSystemPageSize() {
   return vm_kernel_page_size;
 #else
   return base::GetPageSize();
-#endif  // defined(OS_IOS)
+#endif  // BUILDFLAG(IS_IOS)
 }
 
 // static
@@ -102,21 +103,24 @@ absl::optional<size_t> ProcessMemoryDump::CountResidentBytes(
   const size_t kMaxChunkSize = 8 * 1024 * 1024;
   size_t max_vec_size =
       GetSystemPageCount(std::min(mapped_size, kMaxChunkSize), page_size);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::unique_ptr<PSAPI_WORKING_SET_EX_INFORMATION[]> vec(
       new PSAPI_WORKING_SET_EX_INFORMATION[max_vec_size]);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   std::unique_ptr<char[]> vec(new char[max_vec_size]);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   std::unique_ptr<unsigned char[]> vec(new unsigned char[max_vec_size]);
 #endif
 
   while (offset < mapped_size) {
-    uintptr_t chunk_start = (start_pointer + offset);
+    // TODO(fuchsia): Port and remove [[maybe_unused]], see
+    // https://crbug.com/706592.
+    [[maybe_unused]] uintptr_t chunk_start = (start_pointer + offset);
     const size_t chunk_size = std::min(mapped_size - offset, kMaxChunkSize);
-    const size_t page_count = GetSystemPageCount(chunk_size, page_size);
+    [[maybe_unused]] const size_t page_count =
+        GetSystemPageCount(chunk_size, page_size);
     size_t resident_page_count = 0;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     for (size_t i = 0; i < page_count; i++) {
       vec[i].VirtualAddress =
           reinterpret_cast<void*>(chunk_start + i * page_size);
@@ -127,23 +131,21 @@ absl::optional<size_t> ProcessMemoryDump::CountResidentBytes(
 
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i].VirtualAttributes.Valid;
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
     // TODO(fuchsia): Port, see https://crbug.com/706592.
-    ALLOW_UNUSED_LOCAL(chunk_start);
-    ALLOW_UNUSED_LOCAL(page_count);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
     // mincore in MAC does not fail with EAGAIN.
     failure =
         !!mincore(reinterpret_cast<void*>(chunk_start), chunk_size, vec.get());
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i] & MINCORE_INCORE ? 1 : 0;
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
     int error_counter = 0;
     int result = 0;
     // HANDLE_EINTR tries for 100 times. So following the same pattern.
     do {
       result =
-#if defined(OS_AIX)
+#if BUILDFLAG(IS_AIX)
           mincore(reinterpret_cast<char*>(chunk_start), chunk_size,
                   reinterpret_cast<char*>(vec.get()));
 #else
@@ -175,12 +177,25 @@ absl::optional<size_t> ProcessMemoryDump::CountResidentBytes(
 absl::optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
     void* start_address,
     size_t mapped_size) {
-#if defined(OS_MAC)
+  // `MapAt()` performs some internal arithmetic to allow non-page-aligned
+  // offsets, but the memory accounting still expects to work with page-aligned
+  // allocations.
+  //
+  // TODO(dcheng): one peculiarity here is that the shmem implementation uses
+  // `base::SysInfo::VMAllocationGranularity()` while this file uses
+  // `GetSystemPageSize()`. It'd be nice not to have two names for the same
+  // thing...
+  uint8_t* aligned_start_address = base::bits::AlignDown(
+      static_cast<uint8_t*>(start_address), GetSystemPageSize());
+  size_t adjusted_size = mapped_size + (static_cast<uint8_t*>(start_address) -
+                                        aligned_start_address);
+
+#if BUILDFLAG(IS_MAC)
   // On macOS, use mach_vm_region instead of mincore for performance
   // (crbug.com/742042).
   mach_vm_size_t dummy_size = 0;
   mach_vm_address_t address =
-      reinterpret_cast<mach_vm_address_t>(start_address);
+      reinterpret_cast<mach_vm_address_t>(aligned_start_address);
   vm_region_top_info_data_t info;
   MachVMRegionResult result =
       GetTopInfo(mach_task_self(), &dummy_size, &address, &info);
@@ -222,9 +237,9 @@ absl::optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
   // Sanity check in case the mapped size is less than the total size of the
   // region.
   size_t pages_to_fault =
-      std::min(resident_pages, (mapped_size + PAGE_SIZE - 1) / PAGE_SIZE);
+      std::min(resident_pages, (adjusted_size + PAGE_SIZE - 1) / PAGE_SIZE);
 
-  volatile char* base_address = static_cast<char*>(start_address);
+  volatile uint8_t* base_address = const_cast<uint8_t*>(aligned_start_address);
   for (size_t i = 0; i < pages_to_fault; ++i) {
     // Reading from a volatile is a visible side-effect for the purposes of
     // optimization. This guarantees that the optimizer will not kill this line.
@@ -233,8 +248,8 @@ absl::optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
 
   return resident_pages * PAGE_SIZE;
 #else
-  return CountResidentBytes(start_address, mapped_size);
-#endif  // defined(OS_MAC)
+  return CountResidentBytes(aligned_start_address, adjusted_size);
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)

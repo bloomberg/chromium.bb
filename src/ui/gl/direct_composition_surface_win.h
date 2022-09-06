@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/mojom/dxgi_info.mojom.h"
 #include "ui/gl/child_window_win.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -41,6 +42,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   struct Settings {
     bool disable_nv12_dynamic_textures = false;
     bool disable_vp_scaling = false;
+    bool disable_vp_super_resolution = false;
     size_t max_pending_frames = 2;
     bool use_angle_texture_offset = false;
     bool force_root_surface_full_damage = false;
@@ -49,6 +51,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   };
 
   DirectCompositionSurfaceWin(
+      GLDisplayEGL* display,
       HWND parent_window,
       VSyncCallback vsync_callback,
       const DirectCompositionSurfaceWin::Settings& settings);
@@ -56,6 +59,12 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   DirectCompositionSurfaceWin(const DirectCompositionSurfaceWin&) = delete;
   DirectCompositionSurfaceWin& operator=(const DirectCompositionSurfaceWin&) =
       delete;
+
+  static void InitializeOneOff(GLDisplayEGL* display);
+  static void ShutdownOneOff();
+
+  static const Microsoft::WRL::ComPtr<IDCompositionDevice2>&
+  GetDirectCompositionDevice();
 
   // Returns true if direct composition is supported.  We prefer to use direct
   // composition even without hardware overlays, because it allows us to bypass
@@ -105,7 +114,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   static UINT GetOverlaySupportFlags(DXGI_FORMAT format);
 
   // Returns true if there is an HDR capable display connected.
-  static bool IsHDRSupported();
+  static gfx::mojom::DXGIInfoPtr GetDXGIInfo();
 
   // Returns true if swap chain tearing is supported.
   static bool IsSwapChainTearingSupported();
@@ -217,9 +226,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
 
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
-
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
-  Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
 };
 
 }  // namespace gl

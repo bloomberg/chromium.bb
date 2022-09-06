@@ -83,7 +83,7 @@ using bookmarks::BookmarkNode;
 // The browser for this ViewController.
 @property(nonatomic, readonly) Browser* browser;
 
-// Reloads the model and the updates |self.tableView| to reflect any model
+// Reloads the model and the updates `self.tableView` to reflect any model
 // changes.
 - (void)reloadModel;
 
@@ -240,15 +240,16 @@ using bookmarks::BookmarkNode;
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
-  switch ([self.tableViewModel sectionIdentifierForSection:indexPath.section]) {
+  switch ([self.tableViewModel
+      sectionIdentifierForSectionIndex:indexPath.section]) {
     case SectionIdentifierAddFolder:
       [self pushFolderAddViewController];
       break;
 
     case SectionIdentifierBookmarkFolders: {
       int folderIndex = indexPath.row;
-      // If |shouldShowDefaultSection| is YES, the first cell on this section
-      // should call |pushFolderAddViewController|.
+      // If `shouldShowDefaultSection` is YES, the first cell on this section
+      // should call `pushFolderAddViewController`.
       if ([self shouldShowDefaultSection]) {
         NSInteger itemType =
             [self.tableViewModel itemTypeForIndexPath:indexPath];
@@ -256,8 +257,8 @@ using bookmarks::BookmarkNode;
           [self pushFolderAddViewController];
           return;
         }
-        // If |shouldShowDefaultSection| is YES we need to offset by 1 to get
-        // the right BookmarkNode from |self.folders|.
+        // If `shouldShowDefaultSection` is YES we need to offset by 1 to get
+        // the right BookmarkNode from `self.folders`.
         folderIndex--;
       }
       const BookmarkNode* folder = self.folders[folderIndex];

@@ -11,14 +11,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
 #include "chrome/browser/policy/messaging_layer/upload/fake_upload_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
+#include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
+#include "chrome/browser/policy/messaging_layer/util/test_response_payload.h"
+#include "chromeos/ash/components/dbus/services/service_provider_test_helper.h"
 #include "chromeos/dbus/missive/missive_client.h"
-#include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "components/reporting/proto/interface.pb.h"
+#include "components/reporting/proto/synced/interface.pb.h"
+#include "content/public/test/browser_task_environment.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,53 +54,6 @@ MATCHER_P(EqualsProto,
     return false;
   }
   return true;
-}
-
-// Helper function composes JSON represented as base::Value from Sequence
-// information in request.
-base::Value ValueFromSucceededSequenceInfo(
-    const absl::optional<base::Value> request,
-    bool force_confirm_flag) {
-  EXPECT_TRUE(request.has_value());
-  EXPECT_TRUE(request.value().is_dict());
-  base::Value response(base::Value::Type::DICTIONARY);
-
-  // Retrieve and process data
-  const base::Value* const encrypted_record_list =
-      request.value().FindListKey("encryptedRecord");
-  EXPECT_NE(encrypted_record_list, nullptr);
-  EXPECT_FALSE(encrypted_record_list->GetList().empty());
-
-  // Retrieve and process sequence information
-  const base::Value* seq_info =
-      encrypted_record_list->GetList().rbegin()->FindDictKey(
-          "sequenceInformation");
-  EXPECT_TRUE(seq_info != nullptr);
-  response.SetPath("lastSucceedUploadedRecord", seq_info->Clone());
-
-  // If forceConfirm confirm is expected, set it.
-  if (force_confirm_flag) {
-    response.SetPath("forceConfirm", base::Value(true));
-  }
-
-  // If attach_encryption_settings it true, process that.
-  const auto attach_encryption_settings =
-      request.value().FindBoolKey("attachEncryptionSettings");
-  if (attach_encryption_settings.has_value() &&
-      attach_encryption_settings.value()) {
-    base::Value encryption_settings{base::Value::Type::DICTIONARY};
-    std::string public_key;
-    base::Base64Encode("PUBLIC KEY", &public_key);
-    encryption_settings.SetStringKey("publicKey", public_key);
-    encryption_settings.SetIntKey("publicKeyId", 12345);
-    std::string public_key_signature;
-    base::Base64Encode("PUBLIC KEY SIG", &public_key_signature);
-    encryption_settings.SetStringKey("publicKeySignature",
-                                     public_key_signature);
-    response.SetPath("encryptionSettings", std::move(encryption_settings));
-  }
-
-  return response;
 }
 
 // CloudPolicyClient and UploadClient are not usable outside of a managed
@@ -206,7 +161,7 @@ class EncryptedReportingServiceProviderTest : public ::testing::Test {
   }
 
   // Must be initialized before any other class member.
-  base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
 
   policy::MockCloudPolicyClient cloud_policy_client_;
   reporting::EncryptedRecord record_;
@@ -222,13 +177,10 @@ TEST_F(EncryptedReportingServiceProviderTest, SuccessfullyUploadsRecord) {
   EXPECT_CALL(*this, ReportSuccessfulUpload(
                          EqualsProto(record_.sequence_information()), _))
       .Times(1);
-  EXPECT_CALL(cloud_policy_client_, UploadEncryptedReport(_, _, _))
-      .WillOnce(WithArgs<0, 2>(
-          Invoke([](base::Value request,
-                    policy::CloudPolicyClient::ResponseCallback response_cb) {
-            std::move(response_cb)
-                .Run(ValueFromSucceededSequenceInfo(std::move(request), false));
-          })));
+  EXPECT_CALL(
+      cloud_policy_client_,
+      UploadEncryptedReport(::reporting::IsDataUploadRequestValid(), _, _))
+      .WillOnce(::reporting::MakeUploadEncryptedReportAction());
 
   reporting::UploadEncryptedRecordRequest request;
   request.add_encrypted_record()->CheckTypeAndMergeFrom(record_);

@@ -421,7 +421,7 @@ template< typename MatrixType_, typename Preconditioner_>
 Index DGMRES<MatrixType_, Preconditioner_>::dgmresComputeDeflationData(const MatrixType& mat, const Preconditioner& precond, const Index& it, StorageIndex& neig) const
 {
   // First, find the Schur form of the Hessenberg matrix H
-  typename internal::conditional<NumTraits<Scalar>::IsComplex, ComplexSchur<DenseMatrix>, RealSchur<DenseMatrix> >::type schurofH; 
+  std::conditional_t<NumTraits<Scalar>::IsComplex, ComplexSchur<DenseMatrix>, RealSchur<DenseMatrix> > schurofH;
   bool computeU = true;
   DenseMatrix matrixQ(it,it); 
   matrixQ.setIdentity();

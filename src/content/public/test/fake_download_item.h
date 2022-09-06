@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
@@ -72,11 +73,12 @@ class FakeDownloadItem : public download::DownloadItem {
   bool IsPaused() const override;
   bool AllowMetered() const override;
   bool IsTemporary() const override;
+  bool RequireSafetyChecks() const override;
   bool CanResume() const override;
   int64_t GetBytesWasted() const override;
   int32_t GetAutoResumeCount() const override;
   const GURL& GetReferrerUrl() const override;
-  const GURL& GetSiteUrl() const override;
+  const std::string& GetSerializedEmbedderDownloadData() const override;
   const GURL& GetTabUrl() const override;
   const GURL& GetTabReferrerUrl() const override;
   const absl::optional<url::Origin>& GetRequestInitiator() const override;
@@ -100,7 +102,6 @@ class FakeDownloadItem : public download::DownloadItem {
   const download::DownloadItemRerouteInfo& GetRerouteInfo() const override;
   bool IsDangerous() const override;
   bool IsMixedContent() const override;
-  bool ShouldShowIncognitoWarning() const override;
   download::DownloadDangerType GetDangerType() const override;
   download::DownloadItem::MixedContentStatus GetMixedContentStatus()
       const override;
@@ -129,7 +130,6 @@ class FakeDownloadItem : public download::DownloadItem {
       download::DownloadInterruptReason reason) override;
   void ValidateDangerousDownload() override;
   void ValidateMixedContentDownload() override;
-  void AcceptIncognitoWarning() override;
   void StealDangerousDownload(bool delete_file_afterward,
                               AcquireFileCallback callback) override;
   void Rename(const base::FilePath& name,
@@ -219,6 +219,7 @@ class FakeDownloadItem : public download::DownloadItem {
 
   // The members below are to be returned by methods, which return by reference.
   GURL dummy_url;
+  std::string serialized_embedder_download_data;
   absl::optional<url::Origin> dummy_origin;
   base::FilePath dummy_file_path;
 };

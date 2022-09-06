@@ -33,14 +33,13 @@ class GeolocationPermissionContext : public PermissionContextBase {
     // Allows the delegate to override the context's DecidePermission() logic.
     // If this returns true, the base context's DecidePermission() will not be
     // called.
-    virtual bool DecidePermission(content::WebContents* web_contents,
-                                  const PermissionRequestID& id,
+    virtual bool DecidePermission(const PermissionRequestID& id,
                                   const GURL& requesting_origin,
                                   bool user_gesture,
                                   BrowserPermissionCallback* callback,
                                   GeolocationPermissionContext* context) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Returns whether or not this |web_contents| is interactable.
     virtual bool IsInteractable(content::WebContents* web_contents) = 0;
 
@@ -50,11 +49,6 @@ class GeolocationPermissionContext : public PermissionContextBase {
     // Returns whether |requesting_origin| is the default search engine.
     virtual bool IsRequestingOriginDSE(content::BrowserContext* browser_context,
                                        const GURL& requesting_origin) = 0;
-
-    // Called after NotifyPermissionSet() has been called from this context.
-    virtual void FinishNotifyPermissionSet(const PermissionRequestID& id,
-                                           const GURL& requesting_origin,
-                                           const GURL& embedding_origin) = 0;
 #endif
   };
 
@@ -67,8 +61,7 @@ class GeolocationPermissionContext : public PermissionContextBase {
 
   ~GeolocationPermissionContext() override;
 
-  void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
+  void DecidePermission(const PermissionRequestID& id,
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,

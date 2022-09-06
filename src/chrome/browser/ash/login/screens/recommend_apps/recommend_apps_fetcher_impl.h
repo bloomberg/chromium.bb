@@ -13,12 +13,14 @@
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/device_configuration.pb.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace base {
 class Value;
@@ -137,7 +139,9 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   //  {"title_" : "title of second app",
   //   "packageName_": "second package name.",
   //  }]
-  absl::optional<base::Value> ParseResponse(base::StringPiece response);
+  absl::optional<base::Value> ParseResponse(const base::Value& parsed_json);
+
+  void OnJsonParsed(data_decoder::DataDecoder::ValueOrError result);
 
   device_configuration::DeviceConfigurationProto device_config_;
 

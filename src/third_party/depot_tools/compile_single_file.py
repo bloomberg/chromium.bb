@@ -23,7 +23,7 @@ def path_to_source_root(path):
   # to break when we rename directories.
   fingerprints = ['chrome', 'net', 'v8', 'build', 'skia']
   while candidate and not all(
-      [os.path.isdir(os.path.join(candidate, fp)) for fp in fingerprints]):
+      os.path.isdir(os.path.join(candidate, fp)) for fp in fingerprints):
     new_candidate = os.path.dirname(candidate)
     if new_candidate == candidate:
       raise Exception("Couldn't find source-dir from %s" % path)

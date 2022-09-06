@@ -48,22 +48,16 @@ public class CachedFeatureFlags {
      */
     private static Map<String, Boolean> sDefaults =
             ImmutableMap.<String, Boolean>builder()
-                    .put(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET, false)
+                    .put(ChromeFeatureList.ANONYMOUS_UPDATE_CHECKS, true)
                     .put(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID, false)
                     .put(ChromeFeatureList.LENS_CAMERA_ASSISTED_SEARCH, false)
-                    .put(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD, true)
-                    .put(ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH, true)
                     .put(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED, false)
                     .put(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE, true)
-                    .put(ChromeFeatureList.EARLY_LIBRARY_LOAD, false)
+                    .put(ChromeFeatureList.EARLY_LIBRARY_LOAD, true)
                     .put(ChromeFeatureList.ELASTIC_OVERSCROLL, true)
-                    .put(ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS,
-                            false)
-                    .put(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP, false)
-                    .put(ChromeFeatureList
-                                    .GIVE_JAVA_UI_THREAD_DEFAULT_TASK_TRAITS_USER_BLOCKING_PRIORITY,
-                            false)
+                    .put(ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS, true)
                     .put(ChromeFeatureList.IMMERSIVE_UI_MODE, false)
+                    .put(ChromeFeatureList.OMNIBOX_ANDROID_AUXILIARY_SEARCH, false)
                     .put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true)
                     .put(ChromeFeatureList.START_SURFACE_ANDROID, false)
                     .put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false)
@@ -77,32 +71,36 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, false)
                     .put(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA, false)
                     .put(ChromeFeatureList.DYNAMIC_COLOR_ANDROID, true)
+                    .put(ChromeFeatureList.DYNAMIC_COLOR_BUTTONS_ANDROID, false)
                     .put(ChromeFeatureList.INSTANT_START, false)
                     .put(ChromeFeatureList.TAB_TO_GTS_ANIMATION, true)
                     .put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false)
                     .put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true)
                     .put(ChromeFeatureList.INTEREST_FEED_V2, true)
-                    .put(ChromeFeatureList.THEME_REFACTOR_ANDROID, true)
                     .put(ChromeFeatureList.USE_CHIME_ANDROID_SDK, false)
                     .put(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY, false)
                     .put(ChromeFeatureList.READ_LATER, false)
                     .put(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS, true)
-                    .put(ChromeFeatureList.OFFLINE_MEASUREMENTS_BACKGROUND_TASK, false)
                     .put(ChromeFeatureList.CCT_INCOGNITO, true)
                     .put(ChromeFeatureList.EXPERIMENTS_FOR_AGSA, true)
                     .put(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION, false)
                     .put(ChromeFeatureList.OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false)
-                    .put(ChromeFeatureList.APP_TO_WEB_ATTRIBUTION, false)
                     .put(ChromeFeatureList.NEW_WINDOW_APP_MENU, true)
                     .put(ChromeFeatureList.CCT_RESIZABLE_90_MAXIMUM_HEIGHT, false)
                     .put(ChromeFeatureList.CCT_RESIZABLE_ALLOW_RESIZE_BY_USER_GESTURE, false)
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_FIRST_PARTIES, true)
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES, false)
+                    .put(ChromeFeatureList.CCT_TOOLBAR_CUSTOMIZATIONS, true)
                     .put(ChromeFeatureList.INSTANCE_SWITCHER, true)
                     .put(ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT, true)
                     .put(ChromeFeatureList.FEED_LOADING_PLACEHOLDER, false)
                     .put(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS, false)
                     .put(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS, false)
+                    .put(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS, false)
+                    .put(ChromeFeatureList.BACK_GESTURE_REFACTOR, false)
+                    .put(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_PERMISSION_DELEGATION,
+                            true)
+                    .put(ChromeFeatureList.CREATE_SAFEBROWSING_ON_STARTUP, false)
                     .build();
 
     /**
@@ -113,12 +111,6 @@ public class CachedFeatureFlags {
      */
     private static final Map<String, String> sNonDynamicPrefKeys =
             ImmutableMap.<String, String>builder()
-                    .put(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD,
-                            ChromePreferenceKeys
-                                    .FLAGS_CACHED_SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION)
-                    .put(ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH,
-                            ChromePreferenceKeys
-                                    .FLAGS_CACHED_SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH)
                     .put(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
                             ChromePreferenceKeys.FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED)
                     .put(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,
@@ -179,12 +171,16 @@ public class CachedFeatureFlags {
                 return flag;
             }
 
-            SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
-            if (prefs.contains(preferenceName)) {
-                flag = prefs.readBoolean(preferenceName, false);
-            } else {
-                flag = sDefaults.get(featureName);
+            flag = sSafeMode.isEnabled(featureName, preferenceName);
+            if (flag == null) {
+                SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+                if (prefs.contains(preferenceName)) {
+                    flag = prefs.readBoolean(preferenceName, false);
+                } else {
+                    flag = sDefaults.get(featureName);
+                }
             }
+
             sValuesReturned.boolValues.put(preferenceName, flag);
         }
         return flag;
@@ -371,16 +367,22 @@ public class CachedFeatureFlags {
             return sValuesOverridden.getBool(preferenceName, defaultValue);
         }
 
-        Boolean flag;
+        Boolean value;
         synchronized (sValuesReturned.boolValues) {
-            flag = sValuesReturned.boolValues.get(preferenceName);
-            if (flag == null) {
-                flag = SharedPreferencesManager.getInstance().readBoolean(
-                        preferenceName, defaultValue);
-                sValuesReturned.boolValues.put(preferenceName, flag);
+            value = sValuesReturned.boolValues.get(preferenceName);
+            if (value != null) {
+                return value;
             }
+
+            value = sSafeMode.getBooleanFieldTrialParam(preferenceName, defaultValue);
+            if (value == null) {
+                value = SharedPreferencesManager.getInstance().readBoolean(
+                        preferenceName, defaultValue);
+            }
+
+            sValuesReturned.boolValues.put(preferenceName, value);
         }
-        return flag;
+        return value;
     }
 
     @AnyThread
@@ -394,11 +396,17 @@ public class CachedFeatureFlags {
         String value;
         synchronized (sValuesReturned.stringValues) {
             value = sValuesReturned.stringValues.get(preferenceName);
+            if (value != null) {
+                return value;
+            }
+
+            value = sSafeMode.getStringFieldTrialParam(preferenceName, defaultValue);
             if (value == null) {
                 value = SharedPreferencesManager.getInstance().readString(
                         preferenceName, defaultValue);
-                sValuesReturned.stringValues.put(preferenceName, value);
             }
+
+            sValuesReturned.stringValues.put(preferenceName, value);
         }
         return value;
     }
@@ -414,11 +422,17 @@ public class CachedFeatureFlags {
         Integer value;
         synchronized (sValuesReturned.intValues) {
             value = sValuesReturned.intValues.get(preferenceName);
+            if (value != null) {
+                return value;
+            }
+
+            value = sSafeMode.getIntFieldTrialParam(preferenceName, defaultValue);
             if (value == null) {
                 value = SharedPreferencesManager.getInstance().readInt(
                         preferenceName, defaultValue);
-                sValuesReturned.intValues.put(preferenceName, value);
             }
+
+            sValuesReturned.intValues.put(preferenceName, value);
         }
         return value;
     }
@@ -434,11 +448,17 @@ public class CachedFeatureFlags {
         Double value;
         synchronized (sValuesReturned.doubleValues) {
             value = sValuesReturned.doubleValues.get(preferenceName);
+            if (value != null) {
+                return value;
+            }
+
+            value = sSafeMode.getDoubleFieldTrialParam(preferenceName, defaultValue);
             if (value == null) {
                 value = SharedPreferencesManager.getInstance().readDouble(
                         preferenceName, defaultValue);
-                sValuesReturned.doubleValues.put(preferenceName, value);
             }
+
+            sValuesReturned.doubleValues.put(preferenceName, value);
         }
         return value;
     }

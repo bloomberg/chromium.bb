@@ -59,7 +59,7 @@ class NativeExtensionBindingsSystem {
   // |filtering_info| in the given |context|.
   void DispatchEventInContext(
       const std::string& event_name,
-      const base::ListValue* event_args,
+      const base::Value::List& event_args,
       const mojom::EventFilteringInfoPtr& filtering_info,
       ScriptContext* context);
 
@@ -71,7 +71,7 @@ class NativeExtensionBindingsSystem {
   // Handles the response associated with the given |request_id|.
   void HandleResponse(int request_id,
                       bool success,
-                      const base::ListValue& response,
+                      const base::Value::List& response,
                       const std::string& error);
 
   // Returns the associated IPC message sender.
@@ -115,6 +115,12 @@ class NativeExtensionBindingsSystem {
   static void BindingAccessor(v8::Local<v8::Name> name,
                               const v8::PropertyCallbackInfo<v8::Value>& info);
 
+  // Callback for accessing a restricted extension API. Access to the API is
+  // restricted to the developer mode only.
+  static void ThrowDeveloperModeRestrictedError(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+
   // Creates and returns the API binding for the given |name|.
   static v8::Local<v8::Object> GetAPIHelper(v8::Local<v8::Context> context,
                                             v8::Local<v8::String> name);
@@ -141,6 +147,10 @@ class NativeExtensionBindingsSystem {
   // Invalidates the cached feature availability for |extension|; called when
   // bindings availability has changed (such as after a permissions change).
   void InvalidateFeatureCache(const ExtensionId& extension_id);
+
+  // Creates the parameters objects inside chrome.scripting, if |context| is for
+  // content scripts running in an isolated world.
+  void SetScriptingParams(ScriptContext* context);
 
   std::unique_ptr<IPCMessageSender> ipc_message_sender_;
 

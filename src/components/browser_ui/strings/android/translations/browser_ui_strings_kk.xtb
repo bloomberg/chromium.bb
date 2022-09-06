@@ -16,6 +16,7 @@
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> сайты қосылды</translation>
 <translation id="1383876407941801731">Іздеу</translation>
 <translation id="1384959399684842514">Жүктеу кідіртілді</translation>
+<translation id="1409426117486808224">Ашық қойындылардың қарапайым көрінісі</translation>
 <translation id="1415402041810619267">URL қысқартылды</translation>
 <translation id="1446450296470737166">MIDI толық бақылауға рұқсат беру</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -49,10 +50,13 @@
 <translation id="2212565012507486665">Cookie файлдарына рұқсат беру</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> браузері камераны пайдалануы үшін, <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оны да қосыңыз.</translation>
 <translation id="2241634353105152135">Бір-ақ рет</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> элементін жою</translation>
 <translation id="2289270750774289114">Сайт маңайдағы Bluetooth құрылғыларын анықтағысы келген кезде, рұқсат сұралсын (ұсынылады).</translation>
 <translation id="2315043854645842844">Операциялық жүйе клиенттік сертификатты таңдауға қолдау көрсетпейді.</translation>
+<translation id="2321958826496381788">Сырғытпаны оқу ыңғайлы болғанға дейін сүйреңіз. Абзацты екі рет басқан кезде, мәтіннің үлкендігі осындай болуы керек.</translation>
 <translation id="2359808026110333948">Жалғастыру</translation>
-<translation id="2379925928934107488">Chrome қараңғы тақырып қолданғанда, сайттарға да мүмкіндігінше қараңғы тақырып қолданыңыз.</translation>
+<translation id="2379925928934107488">Chrome қараңғы режим қолданғанда, сайттарға да мүмкіндігінше қараңғы режим қолданыңыз.</translation>
+<translation id="2387895666653383613">Мәтін масштабтау</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> және тағы <ph name="NUM_MORE" /> қызметті пайдалануға рұқсат етілген.}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> және тағы <ph name="NUM_MORE" /> қызметті пайдалануға рұқсат етілген.}}</translation>
 <translation id="2434158240863470628"><ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /> жүктеп алынды</translation>
@@ -66,13 +70,14 @@
 <translation id="2570922361219980984">Бұл құрылғыда да орынды анықтау қызметі өшірулі. Оны <ph name="BEGIN_LINK" />Android параметрлері<ph name="END_LINK" /> арқылы қосыңыз.</translation>
 <translation id="257931822824936280">Жайылған – жию үшін басыңыз.</translation>
 <translation id="2586657967955657006">Буфер</translation>
-<translation id="2597457036804169544">Сайттарға қараңғы тақырып қолданылмайды.</translation>
+<translation id="2597457036804169544">Сайттарға қараңғы режим қолданылмайды.</translation>
 <translation id="2621115761605608342">Белгілі бір сайт үшін JavaScript бағдарламасына рұқсат беру.</translation>
 <translation id="2653659639078652383">Жіберу</translation>
 <translation id="2677748264148917807">Шығу</translation>
 <translation id="2687403674020088961">Барлық cookie файлын бөгеу (ұсынылмайды)</translation>
 <translation id="2704606927547763573">Көшірілген</translation>
 <translation id="2717722538473713889">электрондық пошта мекенжайлары</translation>
+<translation id="2750481671343847896">Сайттар идентификация қызметтері жіберген аккаунтқа кіру хабарларын көрсетуі мүмкін.</translation>
 <translation id="2785051990912111074"><ph name="WEBSITE" /> веб-сайтының cookie файлдары жойылады.</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> үшін барлық сайт рұқсаттары шынымен бастапқы күйіне қайтарылсын ба?</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -89,12 +94,14 @@
 <translation id="3115898365077584848">Ақпаратты көрсету</translation>
 <translation id="3123473560110926937">Кейбір сайттарда тыйым салынған</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сақталған деректері</translation>
+<translation id="3203366800380907218">Интернеттен</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> браузерінен хабарландырулар алу үшін <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оларды да қосыңыз.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Сайттардың датчиктерді пайдалануына рұқсат ету (ұсынылады)</translation>
 <translation id="3295602654194328831">Ақпаратты жасыру</translation>
 <translation id="3328801116991980348">Сайт ақпараты</translation>
 <translation id="3333961966071413176">Барлық контакт</translation>
+<translation id="3362437373201486687">Bluetooth құрылғылары сканерленуде</translation>
 <translation id="3386292677130313581">Сайттар орналасқан орныңызды анықтау үшін рұқсат сұрайды (ұсынылады)</translation>
 <translation id="3538390592868664640">Сайттарға айналаңыздың 3D картасын жасауға немесе камера орнын бақылауға тыйым салу</translation>
 <translation id="3551268116566418498">Инкогнито режимінен шығасыз ба?</translation>
@@ -105,19 +112,25 @@
 <translation id="3600792891314830896">Сайттардың дыбысы өшірілді</translation>
 <translation id="3744111561329211289">Фондық синхрондау</translation>
 <translation id="3763247130972274048">10 секунд уақытты өткізіп жіберу үшін бейнені солға немесе оңға қарай екі рет түртіңіз.</translation>
-<translation id="3797520601150691162">Белгілі бір сайтқа қараңғы тақырып қолданылмайды.</translation>
+<translation id="3797520601150691162">Белгілі бір сайтқа қараңғы режим қолданылмайды.</translation>
 <translation id="381841723434055211">Телефон нөмірлері</translation>
+<translation id="3826050100957962900">Үшінші тараптың кіруі</translation>
 <translation id="3835233591525155343">Құрылғыны пайдалануыңыз</translation>
 <translation id="385051799172605136">Артқа</translation>
 <translation id="3859306556332390985">Алға</translation>
+<translation id="3895926599014793903">Масштабтауды мәжбүрлі түрде қосу</translation>
 <translation id="3955193568934677022">Сайттарға қорғалған мазмұнды ойнатуға рұқсат беру (ұсынылады)</translation>
 <translation id="3967822245660637423">Жүктеп алынды</translation>
 <translation id="3987993985790029246">Сілтемені көшіру</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
+<translation id="3992684624889376114">Осы бет туралы ақпарат</translation>
 <translation id="4002066346123236978">Тақырып</translation>
 <translation id="4008040567710660924">Белгілі бір сайт үшін cookie файлдарына рұқсат беріңіз.</translation>
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
+<translation id="4149994727733219643">Веб-беттердің қарапайым көрінісі</translation>
 <translation id="4165986682804962316">Сайт параметрлері</translation>
+<translation id="4169549551965910670">USB құрылғысына жалғанды.</translation>
+<translation id="4194328954146351878">Сайттардың NFC құрылғылары туралы ақпаратты көруіне және өзгертуіне рұқсат бермес бұрын сізден сұрау (ұсынылады)</translation>
 <translation id="4200726100658658164">Орналасу параметрлерін ашу</translation>
 <translation id="4226663524361240545">Хабарландыру келіп түскенде, құрылғы дірілдейді</translation>
 <translation id="4259722352634471385">Навигация тыйылған: <ph name="URL" /></translation>
@@ -126,6 +139,7 @@
 <translation id="42981349822642051">Жаю</translation>
 <translation id="4336434711095810371">Барлық деректерді өшіру</translation>
 <translation id="4402755511846832236">Сайттарды бөгеу арқылы олардың құрылғыны қашан белсенді пайдаланғаныңыз туралы ақпаратты алуына жол берілмейді.</translation>
+<translation id="4428065317363009941">Жарнаманы жекелендіру</translation>
 <translation id="4434045419905280838">Қалқымалы терезе және бағыттау</translation>
 <translation id="445467742685312942">Сайттарға қорғалған мазмұнды ойнатуға рұқсат беру</translation>
 <translation id="4468959413250150279">Белгілі бір сайтта дыбысты өшіру.</translation>
@@ -134,11 +148,11 @@
 <translation id="4534723447064627427"><ph name="APP_NAME" /> браузері микрофонды пайдалануы үшін, <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оны да қосыңыз.</translation>
 <translation id="4570913071927164677">Мәліметтер</translation>
 <translation id="4645575059429386691">Ата-ана басқарады</translation>
-<translation id="4670064810192446073">Виртуалды шындық</translation>
+<translation id="4670064810192446073">Виртуалдық шындық</translation>
 <translation id="4751476147751820511">Қозғалыс не жарық датчиктері</translation>
 <translation id="4836046166855586901">Сайт сіз құрылғыңызды қашан белсенді пайдаланатыныңыз туралы білгісі келгенде, рұқсат сұралады.</translation>
 <translation id="4883854917563148705">Басқарылатын параметрлер бастапқы күйге қайтарылмайды.</translation>
-<translation id="4887024562049524730">Cайттарға виртуалды шындық құрылғыңызды немесе деректерді пайдалануға рұқсат беру алдында сұрау (ұсынылады)</translation>
+<translation id="4887024562049524730">Cайттарға виртуалдық шындық құрылғыңызды немесе деректерді пайдалануға рұқсат беру алдында сұрау (ұсынылады)</translation>
 <translation id="4962975101802056554">Құрылғыға арналған барлық рұқсаттардың күші жойылсын.</translation>
 <translation id="497421865427891073">Алға өту</translation>
 <translation id="4976702386844183910">Cоңғы кіру: <ph name="DATE" /></translation>
@@ -156,6 +170,7 @@
 <translation id="5186036860380548585">Опциялар экранның жоғарғы жағында тұрады</translation>
 <translation id="5197729504361054390">Сіз таңдаған контактілер <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> сайтымен бөлісіледі.</translation>
 <translation id="5216942107514965959">Соңғы кіру: бүгін</translation>
+<translation id="5264323282659631142">"<ph name="CHIP_LABEL" />" өшіру</translation>
 <translation id="528192093759286357">Толық экраннан шығу үшін үстіңгі жақтан сүйреп, "Артқа" түймесін түртіңіз.</translation>
 <translation id="5300589172476337783">Көрсету</translation>
 <translation id="5301954838959518834">Жарайды, түсінікті</translation>
@@ -166,6 +181,7 @@
 <translation id="5354152178998424783">Сайттарда сақталған <ph name="DATASIZE" /> деректер мен cookie файлдары өшіріледі.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(Тағы 1)}other{(Тағы #)}}</translation>
 <translation id="5403592356182871684">Атаулары</translation>
+<translation id="5412236728747081950">Бұл сайт сәйкес жарнамаларды көрсету үшін қызығушылықтарыңыз туралы ақпаратты Chrome браузерінен алады.</translation>
 <translation id="5438097262470833822"><ph name="WEBSITE" /> веб-сайтына арналған рұқсаттар бастапқы күйіне қайтарылады.</translation>
 <translation id="5489227211564503167">Өткен уақыт: <ph name="ELAPSED_TIME" />/<ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Мазалайтын не жалған ақпаратты жарнамалар берілетін сайттарда жарнамаларды бөгеу</translation>
@@ -177,10 +193,10 @@
 <translation id="5556459405103347317">Қайта жүктеу</translation>
 <translation id="5596627076506792578">Қосымша опциялар</translation>
 <translation id="5649053991847567735">Автоматты жүктеулер</translation>
+<translation id="5668404140385795438">Веб-сайттардың үлкейтуге тыйым салу туралы сұрауларын елемеу</translation>
 <translation id="5677928146339483299">Тыйым салынған</translation>
 <translation id="5689516760719285838">Локация</translation>
 <translation id="5690795753582697420">Камера Android параметрлерінде өшірілген.</translation>
-<translation id="5710871682236653961">NFC функциясы бар құрылғыларды түрткенде, сайттар үшін ақпарат алмасу рұқсатын сұрау (ұсынылады).</translation>
 <translation id="5719847187258001597">Негізгі экрандағы <ph name="ORIGIN" /> сайты мен қолданбада сақталған барлық деректер мен cookie файлдары өшіріледі.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> үшін тыйым салынған.</translation>
 <translation id="5804241973901381774">Рұқсаттар</translation>
@@ -210,7 +226,7 @@
 <translation id="6320088164292336938">Діріл</translation>
 <translation id="6388207532828177975">Тазарту және қалпына келтіру</translation>
 <translation id="6398765197997659313">Толық экраннан шығу</translation>
-<translation id="6439114592976064011">Сайттардың виртуалды шындық құрылғыңызды және деректеріңізді пайдалануына тыйым салу</translation>
+<translation id="6439114592976064011">Сайттардың виртуалдық шындық құрылғыңызды және деректеріңізді пайдалануына тыйым салу</translation>
 <translation id="6447842834002726250">Cookie файлдары</translation>
 <translation id="6527303717912515753">Бөлісу</translation>
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
@@ -224,25 +240,27 @@
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="6689172468748959065">Профиль фотосуреттері</translation>
 <translation id="6697925417670533197">Жүктеп алынып жатқандар</translation>
+<translation id="6722828510648505498">Идентификация қызметтері жіберген аккаунтқа кіру хабарлары бөгеледі.</translation>
 <translation id="6746124502594467657">Төмен қарай жылжыту</translation>
 <translation id="6749077623962119521">Рұқсаттар бастапқы күйіне қайтарылсын ба?</translation>
 <translation id="6766622839693428701">Жабу үшін төмен сырғытыңыз.</translation>
 <translation id="6790428901817661496">Ойнату</translation>
 <translation id="6818926723028410516">Элементтерді таңдаңыз</translation>
 <translation id="6864395892908308021">Бұл құрылғы NFC сигналын оқи алмайды</translation>
-<translation id="6910211073230771657">Жойылды</translation>
 <translation id="6912998170423641340">Сайттардың буфердегі мәтіндер мен кескіндерді оқуына тыйым салу</translation>
 <translation id="6945221475159498467">Таңдау</translation>
 <translation id="6965382102122355670">Жарайды</translation>
+<translation id="6981982820502123353">Арнайы мүмкіндіктер</translation>
 <translation id="6992289844737586249">Сайттар микрофонды пайдалану үшін рұқсат сұрайды (ұсынылады)</translation>
 <translation id="7000754031042624318">Android параметрлері ішінде өшірілді</translation>
 <translation id="7016516562562142042">Ағымдағы іздеу жүйесіне рұқсат берілген</translation>
+<translation id="702463548815491781">TalkBack не Ауыстырғышпен кіру қосулы кезде пайдалануға ұсынылады</translation>
 <translation id="7053983685419859001">Бөгеу</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 таңдалды}other{# таңдалды}}</translation>
-<translation id="7070090581017165256">Осы сайт туралы</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> таңдалды. Опциялар экранның жоғарғы жағында тұр</translation>
 <translation id="7141896414559753902">Сайттардың қалқымалы терезе көрсетуіне және бағыттауына тыйым салу (ұсынылады)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
+<translation id="7180611975245234373">Жаңарту</translation>
 <translation id="723171743924126238">Кескіндерді таңдау</translation>
 <translation id="7243308994586599757">Опциялар экранның төменгі жағында тұрады</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> таңдалды</translation>
@@ -250,12 +268,13 @@
 <translation id="7302486331832100261">Әдетте хабарландыруларға тыйым саласыз. Рұқсат беру үшін "Мәліметтер" түймесін түртіңіз.</translation>
 <translation id="7423098979219808738">Алдымен сұрау</translation>
 <translation id="7423538860840206698">Буфердегі мазмұнды оқуға тыйым салынған</translation>
-<translation id="7425915948813553151">Сайттар үшін қараңғы тақырып</translation>
+<translation id="7425915948813553151">Сайттар үшін қараңғы режим</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Сайт микрофонды пайдаланып жатыр.</translation>
 <translation id="7561196759112975576">Әрқашан</translation>
-<translation id="7572498721684305250">NFC функциясы бар құрылғыларды түрткенде, сайттарға ақпарат алмасуға тыйым салу</translation>
 <translation id="757524316907819857">Сайттардың қорғалған мазмұнды ойнатуына тыйым салу</translation>
+<translation id="7577900504646297215">Қызығушылықтарды басқару</translation>
+<translation id="7594634374516752650">Bluetooth құрылғысына жалғанды</translation>
 <translation id="7649070708921625228">Анықтама</translation>
 <translation id="7658239707568436148">Бас тарту</translation>
 <translation id="7781829728241885113">Кеше</translation>
@@ -288,6 +307,7 @@
 <translation id="8211406090763984747">Қауіпсіз байланыс</translation>
 <translation id="8249310407154411074">Басына жылжыту</translation>
 <translation id="8261506727792406068">Жою</translation>
+<translation id="8284326494547611709">Титрлер</translation>
 <translation id="8300705686683892304">Қолданба басқарады</translation>
 <translation id="8324158725704657629">Қайта сұралмасын</translation>
 <translation id="8372893542064058268">Белгілі бір сайт үшін фондық синхрондауға рұқсат беру.</translation>
@@ -295,7 +315,9 @@
 <translation id="83792324527827022">Сайт камера мен микрофонды пайдаланып жатыр.</translation>
 <translation id="8380167699614421159">Бұл сайтта мазалайтын немесе жалған ақпаратты жарнамалар көрсетіледі</translation>
 <translation id="8394832520002899662">Сайтқа оралу үшін түртіңіз.</translation>
+<translation id="8409345997656833551">Мақала үшін қарапайым көрініс қолжетімді болған кезде хабарлау</translation>
 <translation id="8425213833346101688">Өзгерту</translation>
+<translation id="8428213095426709021">Параметрлер</translation>
 <translation id="8441146129660941386">Артқа</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> браузері геодерегіңізді пайдалануы үшін, <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оны да қосыңыз.</translation>
 <translation id="8447861592752582886">Құрылғыға кіру рұқсатының күшін жою</translation>
@@ -321,6 +343,7 @@
 <translation id="8903921497873541725">Үлкейту</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Бұл құрылғыда NFC функциясы өшірілген. Оны <ph name="BEGIN_LINK" />Android параметрлерінен<ph name="END_LINK" /> қосыңыз.</translation>
+<translation id="8928445016601307354">Сайттардың NFC құрылғылары туралы ақпаратты көруіне және өзгертуіне тыйым салу</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Белгілі бір сайт үшін cookie файлдарына тыйым салыңыз.</translation>
 <translation id="8959122750345127698"><ph name="URL" /> мекенжайына өту мүмкін емес</translation>

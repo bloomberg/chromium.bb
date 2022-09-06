@@ -86,6 +86,7 @@ process_template() (
     -e "s#@@BUILDDIR@@#${OUTPUTDIR}#g" \
     -e "s#@@STAGEDIR@@#${STAGEDIR}#g" \
     -e "s#@@SCRIPTDIR@@#${SCRIPTDIR}#g" \
+    -e "s#@@ENROLLMENTDIR@@#${ENROLLMENTDIR}#g" \
     -e "s#@@MENUNAME@@#${MENUNAME}#g" \
     -e "s#@@PRODUCTURL@@#${PRODUCTURL}#g" \
     -e "s#@@PREDEPENDS@@#${PREDEPENDS}#g" \
@@ -145,6 +146,11 @@ stage_install_common() {
   # crashpad
   strippedfile="${OUTPUTDIR}/chrome_crashpad_handler.stripped"
   install -m 755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/chrome_crashpad_handler"
+
+  # Final permissions for the chrome-management-service will be set in
+  # postinst chrome_management_service_setup().
+  strippedfile="${OUTPUTDIR}/chrome_management_service.stripped"
+  install -m 755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/chrome-management-service"
 
   # resources
   install -m 644 "${OUTPUTDIR}/resources.pak" "${STAGEDIR}/${INSTALLDIR}/"
@@ -226,15 +232,6 @@ stage_install_common() {
     install -m 755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
   fi
 
-  # SwiftShader ES
-  if [ -f "${OUTPUTDIR}/swiftshader/libEGL.so" ]; then
-    install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/swiftshader/"
-    for file in libEGL.so libGLESv2.so; do
-      strippedfile="${OUTPUTDIR}/swiftshader/${file}.stripped"
-      install -m ${SHLIB_PERMS} "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/swiftshader/${file}"
-    done
-  fi
-
   # SwiftShader VK
   if [ -f "${OUTPUTDIR}/libvk_swiftshader.so" ]; then
     install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/"
@@ -243,6 +240,20 @@ stage_install_common() {
     install -m ${SHLIB_PERMS} "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
     # Install the ICD json file to point ANGLE to libvk_swiftshader.so
     install -m 644 "${OUTPUTDIR}/vk_swiftshader_icd.json" "${STAGEDIR}/${INSTALLDIR}/"
+  fi
+
+  # Optimization Guide Internal
+  if [ -f "${OUTPUTDIR}/liboptimization_guide_internal.so" ]; then
+    file="liboptimization_guide_internal.so"
+    strippedfile="${OUTPUTDIR}/${file}.stripped"
+    install -m ${SHLIB_PERMS} "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
+  fi
+
+  # QT shim
+  if [ -f "${OUTPUTDIR}/libqt5_shim.so" ]; then
+    file="libqt5_shim.so"
+    strippedfile="${OUTPUTDIR}/${file}.stripped"
+    install -m ${SHLIB_PERMS} "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
   fi
 
   # libc++
@@ -404,6 +415,8 @@ stage_install_common() {
         exit 1
       fi
       local expected_perms=777
+    elif [ "${base_name}" = "chrome-management-service" ]; then
+      local expected_perms=755
     elif [ "${base_name}" = "chrome-sandbox" ]; then
       local expected_perms=4755
     elif [[ "${base_name}" = "nacl_irt_"*".nexe" ]]; then

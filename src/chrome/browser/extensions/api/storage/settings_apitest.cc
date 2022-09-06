@@ -8,7 +8,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -206,8 +205,9 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
       // May be NULL to imply not loading the extension.
       const std::string* extension_dir,
       bool is_final_action) {
-    ExtensionTestMessageListener listener("waiting", true);
-    ExtensionTestMessageListener listener_incognito("waiting_incognito", true);
+    ExtensionTestMessageListener listener("waiting", ReplyBehavior::kWillReply);
+    ExtensionTestMessageListener listener_incognito("waiting_incognito",
+                                                    ReplyBehavior::kWillReply);
 
     // Only load the extension after the listeners have been set up, to avoid
     // initialisation race conditions.
@@ -232,9 +232,9 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
                             const std::string& action,
                             bool is_final_action) {
     base::DictionaryValue message;
-    message.SetString("namespace", StorageAreaToString(storage_area));
-    message.SetString("action", action);
-    message.SetBoolean("isFinalAction", is_final_action);
+    message.SetStringKey("namespace", StorageAreaToString(storage_area));
+    message.SetStringKey("action", action);
+    message.SetBoolKey("isFinalAction", is_final_action);
     std::string message_json;
     base::JSONWriter::Write(message, &message_json);
     return message_json;
@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
   registry->AddObserver(&observer);
 
   // Install a managed extension.
-  ExtensionTestMessageListener listener("ready", false);
+  ExtensionTestMessageListener listener("ready");
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("settings/managed_storage_schemas"));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -751,7 +751,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
           .Build();
   SetPolicies(*policy);
 
-  ExtensionTestMessageListener ready_listener("ready", false);
+  ExtensionTestMessageListener ready_listener("ready");
   // Load the extension to install the event listener and wait for the
   // extension's registration to be stored since it must persist after
   // this PRE_ step exits. Otherwise, the test will be flaky, since the

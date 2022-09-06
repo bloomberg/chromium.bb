@@ -57,6 +57,9 @@
     }
   }
 </style>
+<iron-media-query query="(prefers-color-scheme: dark)"
+    query-matches="{{isDarkModeActive_}}">
+</iron-media-query>
 <settings-section page-title="$i18n{aboutOsPageTitle}" section="about">
   <settings-animated-pages id="pages" section="about"
       focus-config="[[focusConfig_]]">
@@ -80,7 +83,9 @@
               icon$="[[getUpdateStatusIcon_(
                   hasEndOfLife_, currentUpdateStatusEvent_)]]"
               src="[[getThrobberSrcIfUpdating_(
-                  hasEndOfLife_, currentUpdateStatusEvent_)]]">
+                  isDarkModeActive_,
+                  hasEndOfLife_,
+                  currentUpdateStatusEvent_)]]">
           </iron-icon>
         </div>
         <div class="start padded">
@@ -157,7 +162,6 @@
 </if>
       <cr-link-row class="hr" id="diagnostics"
           on-click="onDiagnosticsClick_"
-          hidden$="[[!showDiagnosticsApp_]]"
           label="$i18n{aboutDiagnostics}" external
           deep-link-focus-id$="[[Setting.kDiagnostics]]">
       </cr-link-row>
@@ -181,7 +185,8 @@
       <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">
         <settings-detailed-build-info
             eol-message-with-month-and-year=
-                "[[eolMessageWithMonthAndYear_]]">
+                "[[eolMessageWithMonthAndYear_]]"
+            prefs="{{prefs}}">
         </settings-detailed-build-info>
       </settings-subpage>
     </template>

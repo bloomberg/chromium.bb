@@ -37,8 +37,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 
 /**
  * Tests logic in the OverlayPanelBase.
@@ -56,10 +55,8 @@ public class OverlayPanelBaseTest {
     private static final int MOCK_TOOLBAR_HEIGHT = 100;
 
     @ClassRule
-    public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
-    @ClassRule
-    public static BaseActivityTestRule<DummyUiActivity> activityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public static BaseActivityTestRule<BlankUiTestActivity> activityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -133,11 +130,6 @@ public class OverlayPanelBaseTest {
         public float getThresholdToNextState() {
             return 0.3f;
         }
-
-        @Override
-        protected boolean isSupportedState(@PanelState int state) {
-            return state != PanelState.EXPANDED;
-        }
     }
 
     @BeforeClass
@@ -165,42 +157,6 @@ public class OverlayPanelBaseTest {
     }
 
     // Start OverlayPanelBase test suite.
-
-    /**
-     * Tests that a panel with the EXPANDED state disabled and a lower movement threshold will move
-     * to the correct state based on current position and swipe velocity.
-     */
-    @Test
-    @MediumTest
-    @Feature({"OverlayPanelBase"})
-    @UiThreadTest
-    public void testNonExpandingPanelMovesToCorrectState() {
-        final float threshold = mNoExpandPanel.getThresholdToNextState();
-        final float height = MOCK_MAXIMIZED_HEIGHT - MOCK_PEEKED_HEIGHT;
-        final float peekToMaxBound = threshold * height + MOCK_PEEKED_HEIGHT;
-        final float maxToPeekBound = (1.0f - threshold) * height + MOCK_PEEKED_HEIGHT;
-
-        // Between PEEKING and MAXIMIZED past the threshold in the up direction.
-        @PanelState
-        int nextState =
-                mNoExpandPanel.findNearestPanelStateFromHeight(peekToMaxBound + 1, UPWARD_VELOCITY);
-        Assert.assertTrue(nextState == PanelState.MAXIMIZED);
-
-        // Between PEEKING and MAXIMIZED before the threshold in the up direction.
-        nextState = mNoExpandPanel.findNearestPanelStateFromHeight(
-                peekToMaxBound - 1, UPWARD_VELOCITY);
-        Assert.assertTrue(nextState == PanelState.PEEKED);
-
-        // Between PEEKING and MAXIMIZED before the threshold in the down direction.
-        nextState = mNoExpandPanel.findNearestPanelStateFromHeight(
-                maxToPeekBound + 1, DOWNWARD_VELOCITY);
-        Assert.assertTrue(nextState == PanelState.MAXIMIZED);
-
-        // Between PEEKING and MAXIMIZED past the threshold in the down direction.
-        nextState = mNoExpandPanel.findNearestPanelStateFromHeight(
-                maxToPeekBound - 1, DOWNWARD_VELOCITY);
-        Assert.assertTrue(nextState == PanelState.PEEKED);
-    }
 
     /**
      * Tests that a panel will move to the correct state based on current position and swipe

@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -24,6 +24,7 @@
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/metrics/metrics_data_validation.h"
+#include "components/metrics/system_memory_stats_recorder.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
@@ -114,6 +115,14 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"blink_gc", "BlinkGC.AllocatedObjects", MetricSize::kLarge,
      kAllocatedObjectsSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetBlinkGC_AllocatedObjects},
+    {"blink_gc", "BlinkGC.Fragmentation", MetricSize::kPercentage,
+     "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
+    {"blink_gc/main", "BlinkGC.Main.Heap", MetricSize::kLarge, kEffectiveSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"blink_gc/main", "BlinkGC.Main.Heap.AllocatedObjects", MetricSize::kLarge,
+     kAllocatedObjectsSize, EmitTo::kSizeInUmaOnly, nullptr},
+    {"blink_gc/main", "BlinkGC.Main.Heap.Fragmentation",
+     MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"blink_objects/Document", "NumberOfDocuments", MetricSize::kTiny,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmAndSizeInUma,
      &Memory_Experimental::SetNumberOfDocuments},
@@ -207,6 +216,12 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      ImageSizeMetricRange},
     {"history", "History", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetHistory},
+#if BUILDFLAG(IS_MAC)
+    {"iosurface", "IOSurface", MetricSize::kLarge, kSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"iosurface", "IOSurface.DirtyMemory", MetricSize::kLarge,
+     "resident_swapped", EmitTo::kSizeInUmaOnly, nullptr},
+#endif
     {"java_heap", "JavaHeap", MetricSize::kLarge, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetJavaHeap},
     {"leveldatabase", "LevelDatabase", MetricSize::kSmall, kEffectiveSize,
@@ -216,6 +231,18 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"malloc/allocated_objects", "Malloc.AllocatedObjects", MetricSize::kLarge,
      kEffectiveSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetMalloc_AllocatedObjects},
+    {"malloc/allocated_objects", "Malloc.AllocatedObjects.ObjectCount",
+     MetricSize::kTiny, MemoryAllocatorDump::kNameObjectCount,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/original", "Malloc.Original.ObjectCount",
+     MetricSize::kTiny, MemoryAllocatorDump::kNameObjectCount,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/aligned", "Malloc.Aligned.ObjectCount",
+     MetricSize::kTiny, MemoryAllocatorDump::kNameObjectCount,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator", "Malloc.Allocator.ObjectCount",
+     MetricSize::kTiny, MemoryAllocatorDump::kNameObjectCount,
+     EmitTo::kSizeInUmaOnly, nullptr},
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
     // TODO(keishi): Add brp_quarantined metrics for the Blink partitions.
     {"malloc/partitions/allocator", "Malloc.BRPQuarantined", MetricSize::kSmall,
@@ -235,6 +262,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      "wasted", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.Fragmentation",
      MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc", "Malloc.SyscallsPerMinute", MetricSize::kTiny,
+     "syscalls_per_minute", EmitTo::kSizeInUmaOnly, nullptr},
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     {"mojo", "NumberOfMojoHandles", MetricSize::kSmall,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmOnly,
@@ -477,6 +506,58 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetWebCache_OtherResources},
 };
 
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+// Metrics specific to PartitionAlloc's address space stats (cf.
+// kAllocatorDumpNamesForMetrics above). All of these metrics come in
+// three variants: bare, after 1 hour, and after 24 hours. These metrics
+// are only recorded in UMA.
+const Metric kPartitionAllocAddressSpaceMetrics[] = {
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace.BlocklistSize",
+        .metric_size = MetricSize::kTiny,
+        .metric = "blocklist_size",
+    },
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace.BlocklistHitCount",
+        .metric_size = MetricSize::kTiny,
+        .metric = "blocklist_hit_count",
+    },
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace."
+                    "RegularPoolLargestAvailableReservation",
+        .metric_size = MetricSize::kLarge,
+        .metric = "regular_pool_largest_reservation",
+    },
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace.RegularPoolUsage",
+        .metric_size = MetricSize::kLarge,
+        .metric = "regular_pool_usage",
+    },
+    Metric{
+        .uma_name =
+            "PartitionAlloc.AddressSpace.BRPPoolLargestAvailableReservation",
+        .metric_size = MetricSize::kLarge,
+        .metric = "brp_pool_largest_reservation",
+    },
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace.BRPPoolUsage",
+        .metric_size = MetricSize::kLarge,
+        .metric = "brp_pool_usage",
+    },
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace."
+                    "ConfigurablePoolLargestAvailableReservation",
+        .metric_size = MetricSize::kLarge,
+        .metric = "configurable_pool_largest_reservation",
+    },
+    Metric{
+        .uma_name = "PartitionAlloc.AddressSpace.ConfigurablePoolUsage",
+        .metric_size = MetricSize::kLarge,
+        .metric = "configurable_pool_usage",
+    },
+};
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
 #define EXPERIMENTAL_UMA_PREFIX "Memory.Experimental."
 #define VERSION_SUFFIX_PERCENT "2."
 #define VERSION_SUFFIX_NORMAL "2."
@@ -622,6 +703,53 @@ void EmitMallocStats(const GlobalMemoryDump::ProcessDump& pmd,
   }
 }
 
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+void EmitPartitionAllocAddressSpaceStatVariants(
+    const Metric& metric,
+    const uint64_t metric_value,
+    HistogramProcessType process_type,
+    const absl::optional<base::TimeDelta>& uptime) {
+  // Emit the bare metric.
+  EmitProcessUma(process_type, metric, metric_value);
+
+  // These address space stats also come in variants for "after 1H"
+  // and "after 24H." If the time is right, we emit those too.
+  if (!uptime.has_value()) {
+    return;
+  }
+  static constexpr int kRecordHours[] = {1, 24};
+  for (int hours : kRecordHours) {
+    if (uptime.value() <= base::Hours(hours)) {
+      continue;
+    }
+    const std::string uma_name_with_time =
+        base::StringPrintf("%s.After%dH", metric.uma_name, hours);
+    EmitProcessUma(process_type,
+                   // Lazily populated only with applicable members.
+                   Metric{
+                       .uma_name = uma_name_with_time.c_str(),
+                       .metric_size = metric.metric_size,
+                   },
+                   metric_value);
+  }
+}
+
+void EmitPartitionAllocAddressSpaceStats(
+    const GlobalMemoryDump::ProcessDump& pmd,
+    HistogramProcessType process_type,
+    const absl::optional<base::TimeDelta>& uptime) {
+  for (const auto& metric : kPartitionAllocAddressSpaceMetrics) {
+    absl::optional<uint64_t> metric_value =
+        pmd.GetMetric("partition_alloc/address_space", metric.metric);
+    if (!metric_value.has_value()) {
+      continue;
+    }
+    EmitPartitionAllocAddressSpaceStatVariants(metric, metric_value.value(),
+                                               process_type, uptime);
+  }
+}
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
 void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
                           HistogramProcessType process_type,
                           const absl::optional<base::TimeDelta>& uptime,
@@ -658,14 +786,14 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
     }
   }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // Resident set is not populated on Mac.
   builder->SetResident(pmd.os_dump().resident_set_kb / kKiB);
 #endif
 
   builder->SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / kKiB);
   builder->SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / kKiB);
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   builder->SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
                                    kKiB);
 #endif
@@ -675,7 +803,7 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
     return;
 
   const char* process_name = HistogramProcessTypeToString(process_type);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Resident set is not populated on Mac.
   DCHECK_EQ(pmd.os_dump().resident_set_kb, 0U);
 #else
@@ -685,25 +813,21 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 #endif
   MEMORY_METRICS_HISTOGRAM_MB(GetPrivateFootprintHistogramName(process_type),
                               pmd.os_dump().private_footprint_kb / kKiB);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (process_type == HistogramProcessType::kBrowser && profile_manager &&
-      profile_manager->HasZombieProfile()) {
-    // Measure impact of the DestroyProfileOnBrowserClose experiment.
-    MEMORY_METRICS_HISTOGRAM_MB(
-        GetPrivateFootprintHistogramName(process_type) + ".HasZombieProfile",
-        pmd.os_dump().private_footprint_kb / kKiB);
-  }
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".SharedMemoryFootprint",
                               pmd.os_dump().shared_footprint_kb / kKiB);
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".PrivateSwapFootprint",
                               pmd.os_dump().private_footprint_swap_kb / kKiB);
 #endif
 
-  if (record_uma)
+  if (record_uma) {
     EmitMallocStats(pmd, process_type, uptime);
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    EmitPartitionAllocAddressSpaceStats(pmd, process_type, uptime);
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  }
 }
 
 void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
@@ -723,7 +847,7 @@ void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
                              &Memory_Experimental::SetGpuMemory};
 
   uint64_t total = 0;
-  for (size_t i = 0; i < base::size(gpu_categories); ++i) {
+  for (size_t i = 0; i < std::size(gpu_categories); ++i) {
     total +=
         pmd.GetMetric(gpu_categories[i], synthetic_metric.metric).value_or(0);
   }
@@ -839,6 +963,9 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
     std::vector<std::string> mad_list;
     for (const auto& metric : kAllocatorDumpNamesForMetrics)
       mad_list.push_back(metric.dump_name);
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    mad_list.push_back("partition_alloc/address_space");
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     if (pid_scope_ != base::kNullProcessId) {
       instrumentation->RequestGlobalDumpForPid(pid_scope_, mad_list,
                                                std::move(callback));
@@ -953,7 +1080,7 @@ int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
 }
 
 absl::optional<base::TimeDelta> ProcessMemoryMetricsEmitter::GetProcessUptime(
-    const base::Time& now,
+    base::TimeTicks now,
     base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -985,7 +1112,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 
   TabFootprintAggregator per_tab_metrics;
 
-  base::Time now = base::Time::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   for (const auto& pmd : global_dump_->process_dumps()) {
     uint32_t process_pmf_kb = pmd.os_dump().private_footprint_kb;
     private_footprint_total_kb += process_pmf_kb;
@@ -1067,9 +1194,9 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
       }
       case memory_instrumentation::mojom::ProcessType::PLUGIN:
-        FALLTHROUGH;
+        [[fallthrough]];
       case memory_instrumentation::mojom::ProcessType::ARC:
-        FALLTHROUGH;
+        [[fallthrough]];
       case memory_instrumentation::mojom::ProcessType::OTHER:
         break;
     }
@@ -1106,7 +1233,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
         private_footprint_total_kb / kKiB);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Resident set is not populated on Mac.
     DCHECK_EQ(resident_set_total_kb, 0U);
 #else
@@ -1116,13 +1243,6 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 #endif
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                   private_footprint_total_kb / kKiB);
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    if (profile_manager && profile_manager->HasZombieProfile()) {
-      // Measure impact of the DestroyProfileOnBrowserClose experiment.
-      UMA_HISTOGRAM_MEMORY_LARGE_MB(
-          "Memory.Total.PrivateMemoryFootprint.HasZombieProfile",
-          private_footprint_total_kb / kKiB);
-    }
     // The pseudo metric of Memory.Total.PrivateMemoryFootprint. Only used to
     // assess field trial data quality.
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
@@ -1144,6 +1264,17 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     // Renderer metrics-by-tab only make sense if we're visiting all render
     // processes.
     per_tab_metrics.RecordPmfs(GetUkmRecorder());
+
+#if BUILDFLAG(IS_CHROMEOS)
+    base::SystemMemoryInfoKB system_meminfo;
+    if (base::GetSystemMemoryInfo(&system_meminfo)) {
+      int mem_used_mb =
+          (system_meminfo.total - system_meminfo.available) / 1024;
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.System.MemAvailableMB",
+                                    system_meminfo.available / 1024);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.System.MemUsedMB", mem_used_mb);
+    }
+#endif
   }
 
   global_dump_ = nullptr;

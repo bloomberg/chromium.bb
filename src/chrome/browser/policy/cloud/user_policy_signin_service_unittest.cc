@@ -57,7 +57,7 @@
 #include "chromeos/lacros/lacros_test_helper.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
@@ -154,6 +154,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     profile_ = IdentityTestEnvironmentProfileAdaptor::
         CreateProfileForIdentityTestEnvironment(builder);
 
+    UserPolicySigninServiceFactory::GetForProfile(profile_.get())
+        ->set_profile_can_be_managed_for_testing(true);
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
@@ -193,10 +195,13 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_CALL(*mock_store_, Clear());
 
     // Let the SigninService know that the profile has been created.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_ADDED,
-        content::Source<Profile>(profile_.get()),
-        content::NotificationService::NoDetails());
+#if BUILDFLAG(IS_ANDROID)
+    UserPolicySigninServiceFactory::GetForProfile(profile_.get())
+        ->OnProfileAdded(profile_.get());
+#else
+    UserPolicySigninServiceFactory::GetForProfile(profile_.get())
+        ->OnProfileReady(profile_.get());
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   bool IsRequestActive() {
@@ -320,10 +325,13 @@ class UserPolicySigninServiceSignedInTest : public UserPolicySigninServiceTest {
                                            signin::ConsentLevel::kSync);
 
     // Let the SigninService know that the profile has been created.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_ADDED,
-        content::Source<Profile>(profile_.get()),
-        content::NotificationService::NoDetails());
+#if BUILDFLAG(IS_ANDROID)
+    UserPolicySigninServiceFactory::GetForProfile(profile_.get())
+        ->OnProfileAdded(profile_.get());
+#else
+    UserPolicySigninServiceFactory::GetForProfile(profile_.get())
+        ->OnProfileReady(profile_.get());
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 };
 
@@ -336,7 +344,10 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
   ASSERT_FALSE(manager_->core()->service());
 }
 
-#if !defined(OS_ANDROID)
+// TODO(crbug.com/1312544): Extend the test coverage by merging tests from
+// ios/chrome/browser/policy/cloud/user_policy_signin_service_unittest.mm here.
+
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   // Make sure user is not signed in.
   ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(
@@ -363,12 +374,12 @@ TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   EXPECT_EQ(mock_store_->signin_account_id(), test_account_id_);
   ASSERT_TRUE(IsRequestActive());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // TODO(joaodasilva): these tests rely on issuing the OAuth2 login refresh
 // token after signin. Revisit this after figuring how to handle that on
 // Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 TEST_F(UserPolicySigninServiceSignedInTest, InitWhileSignedIn) {
   // UserCloudPolicyManager should be initialized.
@@ -529,7 +540,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
             job_type);
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(UserPolicySigninServiceSignedInTest, SignOutAfterInit) {
   // UserCloudPolicyManager should be initialized.

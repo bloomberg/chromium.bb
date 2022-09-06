@@ -26,7 +26,6 @@
 #include <base/location.h>
 #include <base/logging.h>
 #include <base/rand_util.h>
-#include <base/task/post_task.h>
 #include <base/time/time.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
@@ -42,9 +41,9 @@ const int kApprovedStreamTimeToLiveSeconds = 10;
 
 std::string GenerateRandomStreamId() {
   char buffer[kStreamIdLengthBytes];
-  base::RandBytes(buffer, base::size(buffer));
+  base::RandBytes(buffer, std::size(buffer));
   std::string result;
-  base::Base64Encode(base::StringPiece(buffer, base::size(buffer)),
+  base::Base64Encode(base::StringPiece(buffer, std::size(buffer)),
                      &result);
   return result;
 }
@@ -100,8 +99,8 @@ std::string DesktopStreamsRegistry::RegisterStream(
   stream.device = blink::MediaStreamDevice(
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, source.ToString(), source.ToString());
 
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindRepeating(&DesktopStreamsRegistry::CleanupStream,
                           base::Unretained(this), id),
       base::Seconds(kApprovedStreamTimeToLiveSeconds));

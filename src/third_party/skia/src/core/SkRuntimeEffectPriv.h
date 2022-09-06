@@ -16,6 +16,13 @@
 
 #ifdef SK_ENABLE_SKSL
 
+namespace SkSL {
+class Variable;
+class Context;
+}
+
+struct SkColorSpaceXformSteps;
+
 class SkRuntimeEffectPriv {
 public:
     // Helper function when creating an effect for a GrSkSLFP that verifies an effect will
@@ -30,9 +37,22 @@ public:
         return options;
     }
 
-    static void EnableFragCoord(SkRuntimeEffect::Options* options) {
-        options->allowFragCoord = true;
+    static void UsePrivateRTShaderModule(SkRuntimeEffect::Options* options) {
+        options->usePrivateRTShaderModule = true;
     }
+
+    static SkRuntimeEffect::Uniform VarAsUniform(const SkSL::Variable&,
+                                                 const SkSL::Context&,
+                                                 size_t* offset);
+
+    // If there are layout(color) uniforms then this performs color space transformation on the
+    // color values and returns a new SkData. Otherwise, the original data is returned.
+    static sk_sp<const SkData> TransformUniforms(SkSpan<const SkRuntimeEffect::Uniform> uniforms,
+                                                 sk_sp<const SkData> originalData,
+                                                 const SkColorSpaceXformSteps&);
+    static sk_sp<const SkData> TransformUniforms(SkSpan<const SkRuntimeEffect::Uniform> uniforms,
+                                                 sk_sp<const SkData> originalData,
+                                                 const SkColorSpace* dstCS);
 };
 
 // These internal APIs for creating runtime effects vary from the public API in two ways:
@@ -57,7 +77,7 @@ inline sk_sp<SkRuntimeEffect> SkMakeRuntimeEffect(
         SkRuntimeEffect::Result (*make)(SkString, const SkRuntimeEffect::Options&),
         const char* sksl,
         SkRuntimeEffect::Options options = SkRuntimeEffect::Options{}) {
-    SkRuntimeEffectPriv::EnableFragCoord(&options);
+    SkRuntimeEffectPriv::UsePrivateRTShaderModule(&options);
     auto result = make(SkString{sksl}, options);
     SkASSERTF(result.effect, "%s", result.errorText.c_str());
     return result.effect;

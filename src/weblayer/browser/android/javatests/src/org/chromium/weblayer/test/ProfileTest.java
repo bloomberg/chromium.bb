@@ -15,8 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Callback;
 import org.chromium.weblayer.CookieManager;
@@ -152,8 +152,7 @@ public class ProfileTest {
 
         Assert.assertTrue(Arrays.asList(enumerateAllProfileNames()).contains(profileName));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> activity.finish());
-        CriteriaHelper.pollUiThread(activity::isDestroyed);
+        ApplicationTestUtils.finishActivity(activity);
         final CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> profile.destroyAndDeleteDataFromDisk(callbackHelper::notifyCalled));
@@ -163,15 +162,14 @@ public class ProfileTest {
     }
 
     private Profile launchAndDestroyActivity(
-            String profileName, ValueCallback<InstrumentationActivity> callback) {
+            String profileName, ValueCallback<InstrumentationActivity> callback) throws Exception {
         final InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
         final Profile profile = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> activity.getBrowser().getProfile());
 
         callback.onReceiveValue(activity);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> activity.finish());
-        CriteriaHelper.pollUiThread(activity::isDestroyed);
+        ApplicationTestUtils.finishActivity(activity);
         return profile;
     }
 

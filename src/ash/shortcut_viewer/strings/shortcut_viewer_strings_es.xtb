@@ -14,7 +14,7 @@
 <translation id="1477442857810932985">Ir al final de la línea</translation>
 <translation id="1499072997694708844">Cerrar todas las ventanas de búsqueda abiertas o detener la carga de la página actual</translation>
 <translation id="1510238584712386396">Menú de aplicaciones</translation>
-<translation id="1516966594427080024">Abrir una ventana nueva en modo de incógnito</translation>
+<translation id="1516966594427080024">Abrir una ventana nueva en modo Incógnito</translation>
 <translation id="152892567002884378">Subir el volumen</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="ESC" /></translation>
 <translation id="1586324912145647027">Va a un escritorio del 1 al 8</translation>
@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">Activar barra de direcciones</translation>
 <translation id="3256109297135787951">Dejar de destacar un elemento de la estantería</translation>
 <translation id="3288816184963444640">Cerrar la ventana actual</translation>
+<translation id="3322797428033495633">Enfocar la ventana de imagen en imagen</translation>
 <translation id="3350805006883559974">Traer una ventana al frente</translation>
 <translation id="3407560819924487926">Abrir el administrador de tareas</translation>
 <translation id="3417835166382867856">Buscar pestañas</translation>
@@ -157,6 +158,7 @@
 <translation id="6445033640292336367">Volver a colocar la pestaña en su posición original</translation>
 <translation id="6474744297082284761">Reducir (si la lupa fijada o la lupa de pantalla completa están habilitadas)</translation>
 <translation id="649811797655257835">Selecciona el archivo y pulsa <ph name="SPACE" /></translation>
+<translation id="6515089016094047210">Abre o cierra el widget del calendario.</translation>
 <translation id="6551886416582667425">Hacer una captura/grabación de pantalla parcial</translation>
 <translation id="6556040137485212400">Abrir la ventana que lleva más tiempo sin usarse</translation>
 <translation id="666343722268997814">Abrir el menú del botón derecho del elemento destacado</translation>

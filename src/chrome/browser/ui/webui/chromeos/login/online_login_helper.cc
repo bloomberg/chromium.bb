@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/online_login_helper.h"
 
+#include "ash/components/login/auth/challenge_response/cert_utils.h"
+#include "ash/components/login/auth/cryptohome_key_constants.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
@@ -13,9 +15,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/login/auth/challenge_response/cert_utils.h"
-#include "chromeos/login/auth/cryptohome_key_constants.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -72,10 +71,11 @@ void SetCookieForPartition(
 
   std::string gaps_cookie_value(kGAPSCookie);
   gaps_cookie_value += "=" + context.gaps_cookie;
-  const GURL& gaia_url = GaiaUrls::GetInstance()->gaia_url();
+  const GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       gaia_url, gaps_cookie_value, base::Time::Now(),
-      absl::nullopt /* server_time */, net::CookiePartitionKey::Todo()));
+      absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   if (!cc)
     return;
 
@@ -173,7 +173,7 @@ OnlineLoginHelper::OnlineLoginHelper(
       on_cookie_timeout_callback_(std::move(on_cookie_timeout_callback)),
       complete_login_callback_(std::move(complete_login_callback)) {}
 
-OnlineLoginHelper::~OnlineLoginHelper() {}
+OnlineLoginHelper::~OnlineLoginHelper() = default;
 
 void OnlineLoginHelper::SetUserContext(
     std::unique_ptr<UserContext> pending_user_context) {
@@ -245,18 +245,18 @@ void OnlineLoginHelper::OnGetCookiesForCompleteAuthentication(
   }
 
   DCHECK(pending_user_context_);
-  UserContext user_context = *pending_user_context_;
+  auto user_context = std::move(pending_user_context_);
   pending_user_context_.reset();
   oauth_code_listener_.reset();
   cookie_waiting_timer_.reset();
 
-  user_context.SetAuthCode(auth_code);
+  user_context->SetAuthCode(auth_code);
   if (!gaps_cookie.empty())
-    user_context.SetGAPSCookie(gaps_cookie);
+    user_context->SetGAPSCookie(gaps_cookie);
   if (!rapt.empty())
-    user_context.SetReauthProofToken(rapt);
+    user_context->SetReauthProofToken(rapt);
 
-  std::move(complete_login_callback_).Run(user_context);
+  std::move(complete_login_callback_).Run(std::move(user_context));
 }
 
 }  // namespace chromeos

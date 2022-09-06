@@ -8,12 +8,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -24,7 +28,6 @@ namespace {
 
 const char kHttpsUrl[] = "https://www.foo.com";
 const char kHttpsUrl2[] = "https://www.bar.com";
-const char kHttpUrl[] = "http://www.foo.com";
 
 class FakeSendTabToSelfModel : public TestSendTabToSelfModel {
  public:
@@ -33,6 +36,9 @@ class FakeSendTabToSelfModel : public TestSendTabToSelfModel {
 
   void SetIsReady(bool is_ready) { is_ready_ = is_ready; }
   void SetHasValidTargetDevice(bool has_valid_target_device) {
+    if (has_valid_target_device) {
+      DCHECK(is_ready_) << "Target devices are only known if the model's ready";
+    }
     has_valid_target_device_ = has_valid_target_device;
   }
 
@@ -55,90 +61,70 @@ class FakeSendTabToSelfSyncService : public SendTabToSelfSyncService {
   FakeSendTabToSelfModel model_;
 };
 
-class SendTabToSelfUtilTest : public testing::Test {
- public:
-  FakeSendTabToSelfSyncService* service() { return &service_; }
-
- private:
-  FakeSendTabToSelfSyncService service_;
-};
-
-TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureIfModelNotReady) {
-  service()->GetSendTabToSelfModel()->SetIsReady(false);
-  service()->GetSendTabToSelfModel()->SetHasValidTargetDevice(true);
-
-  EXPECT_FALSE(ShouldOfferToShareUrl(service(), GURL(kHttpsUrl)));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureIfHasNoValidTargetDevice) {
-  service()->GetSendTabToSelfModel()->SetIsReady(true);
-  service()->GetSendTabToSelfModel()->SetHasValidTargetDevice(false);
-
-  EXPECT_FALSE(ShouldOfferToShareUrl(service(), GURL(kHttpsUrl)));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOnlyOfferFeatureIfHttpOrHttps) {
-  service()->GetSendTabToSelfModel()->SetIsReady(true);
-  service()->GetSendTabToSelfModel()->SetHasValidTargetDevice(true);
-
-  EXPECT_TRUE(ShouldOfferToShareUrl(service(), GURL(kHttpsUrl)));
-  EXPECT_TRUE(ShouldOfferToShareUrl(service(), GURL(kHttpUrl)));
-  EXPECT_FALSE(ShouldOfferToShareUrl(service(), GURL("192.168.0.0")));
-  EXPECT_FALSE(
-      ShouldOfferToShareUrl(service(), GURL("chrome-untrusted://url")));
-  EXPECT_FALSE(ShouldOfferToShareUrl(service(), GURL("chrome://flags")));
-  EXPECT_FALSE(ShouldOfferToShareUrl(service(), GURL("tel:07399999999")));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureInIncognitoMode) {
-  // Note: if changing this, audit profile-finding logic in the feature.
-  // For example, NotificationManager.java in the Android code assumes
-  // incognito is not supported.
-  EXPECT_FALSE(ShouldOfferToShareUrl(/*send_tab_to_self_sync_service=*/nullptr,
-                                     GURL(kHttpsUrl)));
-}
-
 std::unique_ptr<KeyedService> BuildFakeSendTabToSelfSyncService(
     content::BrowserContext*) {
-  auto service = std::make_unique<FakeSendTabToSelfSyncService>();
-  service->GetSendTabToSelfModel()->SetIsReady(true);
-  service->GetSendTabToSelfModel()->SetHasValidTargetDevice(true);
-  return service;
+  return std::make_unique<FakeSendTabToSelfSyncService>();
 }
 
-class SendTabToSelfUtilTestWithWindow : public BrowserWithTestWindowTest {
+std::unique_ptr<KeyedService> BuildTestSyncService(content::BrowserContext*) {
+  return std::make_unique<syncer::TestSyncService>();
+}
+
+class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    // RegisterCreateServicesCallbackForTesting() should ideally be used
-    // here instead, but doesn't seem to work with BrowserWithTestWindowTest.
-    SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), base::BindRepeating(&BuildFakeSendTabToSelfSyncService));
+    AddTab(browser(), GURL("about:blank"));
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{SendTabToSelfSyncServiceFactory::GetInstance(),
+             base::BindRepeating(&BuildFakeSendTabToSelfSyncService)},
+            {SyncServiceFactory::GetInstance(),
+             base::BindRepeating(&BuildTestSyncService)}};
+  }
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  FakeSendTabToSelfSyncService* service() {
+    return static_cast<FakeSendTabToSelfSyncService*>(
+        SendTabToSelfSyncServiceFactory::GetForProfile(profile()));
+  }
+
+  void SignIn() {
+    CoreAccountInfo account;
+    account.gaia = "gaia_id";
+    account.email = "email@test.com";
+    account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+    static_cast<syncer::TestSyncService*>(
+        SyncServiceFactory::GetForProfile(profile()))
+        ->SetAccountInfo(account);
   }
 };
 
-TEST_F(SendTabToSelfUtilTestWithWindow,
-       ShouldNotOfferFeatureInOmniboxWhileNavigating) {
-  AddTab(browser(), GURL(kHttpsUrl));
+TEST_F(SendTabToSelfUtilTest, ShouldHideEntryPointInOmniboxWhileNavigating) {
+  SignIn();
+  service()->GetSendTabToSelfModel()->SetIsReady(true);
+  service()->GetSendTabToSelfModel()->SetHasValidTargetDevice(true);
+  NavigateAndCommitActiveTab(GURL(kHttpsUrl));
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  ASSERT_FALSE(web_contents->IsWaitingForResponse());
-  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents));
+  ASSERT_FALSE(web_contents()->IsWaitingForResponse());
+  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents()));
 
   std::unique_ptr<content::NavigationSimulator> simulator =
       content::NavigationSimulator::CreateRendererInitiated(
-          GURL(kHttpsUrl2), web_contents->GetMainFrame());
+          GURL(kHttpsUrl2), web_contents()->GetPrimaryMainFrame());
   simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
   simulator->Start();
-  ASSERT_TRUE(web_contents->IsWaitingForResponse());
-  EXPECT_FALSE(ShouldOfferOmniboxIcon(web_contents));
+  ASSERT_TRUE(web_contents()->IsWaitingForResponse());
+  EXPECT_FALSE(ShouldOfferOmniboxIcon(web_contents()));
 
   simulator->Commit();
-  ASSERT_FALSE(web_contents->IsWaitingForResponse());
-  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents));
+  ASSERT_FALSE(web_contents()->IsWaitingForResponse());
+  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents()));
 }
 
 }  // namespace

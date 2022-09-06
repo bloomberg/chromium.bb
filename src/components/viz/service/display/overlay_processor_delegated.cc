@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -37,6 +38,8 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/ozone/public/overlay_manager_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace {
 DBG_FLAG_FBOOL("delegated.fd.usage", usage_every_frame)
@@ -86,19 +89,30 @@ OverlayProcessorDelegated::OverlayProcessorDelegated(
     gpu::SharedImageInterface* shared_image_interface)
     : OverlayProcessorOzone(std::move(overlay_candidates),
                             available_strategies,
-                            shared_image_interface) {}
+                            shared_image_interface) {
+  // TODO(msisov, petermcneeley): remove this once Wayland uses only delegated
+  // context. May be null in tests.
+  if (ui::OzonePlatform::GetInstance()->GetOverlayManager())
+    ui::OzonePlatform::GetInstance()
+        ->GetOverlayManager()
+        ->SetContextDelegated();
+}
 
 OverlayProcessorDelegated::~OverlayProcessorDelegated() = default;
 
+DBG_FLAG_FBOOL("delegated.enable.quad_split", quad_split)
+
 bool OverlayProcessorDelegated::DisableSplittingQuads() const {
-  // If there is quads to split these will happen delegee side.
-  return true;
+  // This determines if we will split quads on delegation or on delegee side.
+  return !quad_split();
 }
 
-constexpr size_t kTooManyQuads = 128;
+constexpr size_t kTooManyQuads = 64;
+
+DBG_FLAG_FBOOL("delegated.disable.delegation", disable_delegation)
 
 bool OverlayProcessorDelegated::AttemptWithStrategies(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -113,16 +127,20 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
   constexpr bool is_delegated_context = true;
   delegated_status_ = DelegationStatus::kCompositedOther;
 
+  if (disable_delegation())
+    return false;
+
   if (quad_list->size() >= kTooManyQuads ||
       !render_pass_backdrop_filters.empty())
     return false;
 
-  // Wayland overlay forwarding mechanism does not (yet) support putting the
-  // same buffer on multiple surfaces. We use this |candidate_ids| for best
-  // effort service and simply skip duplicate resource id quads.
-  std::set<ResourceId> candidate_ids;
-  std::vector<QuadList::Iterator> candidate_quads;
+  OverlayCandidateFactory candidate_factory = OverlayCandidateFactory(
+      render_pass, resource_provider, surface_damage_rect_list,
+      &output_color_matrix, GetPrimaryPlaneDisplayRect(primary_plane),
+      is_delegated_context);
 
+  std::vector<QuadList::Iterator> candidate_quads;
+  int num_quads_skipped = 0;
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     auto& transform = it->shared_quad_state->quad_to_target_transform;
@@ -133,53 +151,25 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
         gfx::Vector2dF(display_rect.origin().x(), display_rect.origin().y()),
         base::StringPrintf("m=%d rid=%d", static_cast<int>(it->material),
                            it->resources.begin()->value()));
-    auto candidate_status = OverlayCandidate::FromDrawQuad(
-        resource_provider, surface_damage_rect_list, output_color_matrix, *it,
-        GetPrimaryPlaneDisplayRect(primary_plane), &candidate,
-        is_delegated_context);
+    auto candidate_status = candidate_factory.FromDrawQuad(*it, candidate);
     if (candidate_status == OverlayCandidate::CandidateStatus::kSuccess) {
-      // Setting the |uv_rect| will eventually result in setting the
-      // |crop_rect_| in wayland. If this results in an empty pixel scale the
-      // wayland connection will be terminated. See: wayland_surface.cc
-      // 'UpdateBufferDamageRegion'
-      auto viewport_src = gfx::ToEnclosedRect(gfx::ScaleRect(
-          candidate.uv_rect, candidate.resource_size_in_pixels.width(),
-          candidate.resource_size_in_pixels.height()));
-
       if (it->material == DrawQuad::Material::kSolidColor) {
         DBG_DRAW_RECT("delegated.overlay.color", candidate.display_rect);
-        candidates->push_back(candidate);
-        candidate_quads.push_back(it);
-        continue;
-      }
-
-      if (it->material == DrawQuad::Material::kAggregatedRenderPass) {
+      } else if (it->material == DrawQuad::Material::kAggregatedRenderPass) {
         DBG_DRAW_RECT("delegated.overlay.aggregated", candidate.display_rect);
-        candidates->push_back(candidate);
-        candidate_quads.push_back(it);
-        continue;
-      }
-
-      // Because of the device scale factor (2) we check against a rounded empty
-      // rect.
-      // TODO(https://crbug.com/1218678) : Move and generalize this fix in
-      // wayland host.
-      if (viewport_src.width() <= 2 || viewport_src.height() <= 2) {
-        DBG_DRAW_RECT("delegated.overlay.subpixelskip", candidate.display_rect);
-        continue;
-      }
-
-      if (candidate_ids.find(candidate.resource_id) == candidate_ids.end()) {
-        candidate_ids.insert(candidate.resource_id);
-        DBG_DRAW_RECT("delegated.overlay.candidate", candidate.display_rect);
-        candidates->push_back(candidate);
-        candidate_quads.push_back(it);
       } else {
-        DBG_DRAW_RECT("delegated.overlay.dupskip", candidate.display_rect);
+        DBG_DRAW_RECT("delegated.overlay.candidate", candidate.display_rect);
       }
-
+      candidates->push_back(candidate);
+      candidate_quads.push_back(it);
     } else {
-      DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
+      if (candidate_status == OverlayCandidate::CandidateStatus::kFailVisible) {
+        // This quad can be intentionally skipped.
+        num_quads_skipped++;
+      } else {
+        DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
+        DBG_LOG("delegated.overlay.failed", "error code %d", candidate_status);
+      }
 
       if (candidate_status ==
           OverlayCandidate::CandidateStatus::kFailNotAxisAligned) {
@@ -191,7 +181,8 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
     }
   }
 
-  if (candidates->empty() || candidates->size() != quad_list->size()) {
+  if (candidates->empty() ||
+      (candidates->size() + num_quads_skipped) != quad_list->size()) {
     candidates->clear();
     return false;
   }
@@ -202,12 +193,15 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
   }
 
   // Check for support.
-  this->CheckOverlaySupport(primary_plane, candidates);
+  this->CheckOverlaySupport(nullptr, candidates);
 
   for (auto&& each : *candidates) {
     if (!each.overlay_handled) {
       candidates->clear();
       delegated_status_ = DelegationStatus::kCompositedCheckOverlayFail;
+      DBG_DRAW_RECT("delegated.handled.failed", each.display_rect);
+      DBG_LOG("delegated.handled.failed", "Handled failed %s",
+              each.display_rect.ToString().c_str());
       return false;
     }
   }
@@ -229,7 +223,7 @@ gfx::RectF OverlayProcessorDelegated::GetPrimaryPlaneDisplayRect(
 void OverlayProcessorDelegated::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_passes,
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
@@ -241,7 +235,7 @@ void OverlayProcessorDelegated::ProcessForOverlays(
   DCHECK(candidates->empty());
   auto* render_pass = render_passes->back().get();
   bool success = false;
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
   RecordFDUsageUMA();
 #endif
 
@@ -296,6 +290,8 @@ void OverlayProcessorDelegated::AdjustOutputSurfaceOverlay(
   // remove the primary plan entirely in the case of full delegation.
   // In that case we will do "output_surface_plane->reset()" like the existing
   // fullscreen overlay code.
+  if (delegated_status_ == DelegationStatus::kFullDelegation)
+    output_surface_plane->reset();
 }
 
 }  // namespace viz

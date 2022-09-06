@@ -32,14 +32,20 @@ enum class State {
   // Task has completed with errors.
   kError,
 
+  // Task has failed to finish due to missing password.
+  kNeedPassword,
+
   // Task has been canceled without finishing.
   kCancelled,
 };
 
 enum class OperationType {
   kCopy,
-  kMove,
   kDelete,
+  kExtract,
+  kMove,
+  kRestore,
+  kTrash,
   kZip,
 };
 
@@ -71,6 +77,9 @@ struct ProgressStatus {
   // Allow ProgressStatus to be moved.
   ProgressStatus(ProgressStatus&& other);
   ProgressStatus& operator=(ProgressStatus&& other);
+
+  // True if the task is in a terminal state and won't receive further updates.
+  bool IsCompleted() const;
 
   // Task state.
   State state;

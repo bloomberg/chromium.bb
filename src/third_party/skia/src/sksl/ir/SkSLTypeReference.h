@@ -8,8 +8,14 @@
 #ifndef SKSL_TYPEREFERENCE
 #define SKSL_TYPEREFERENCE
 
+#include "include/sksl/SkSLPosition.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLType.h"
+
+#include <memory>
+#include <string>
 
 namespace SkSL {
 
@@ -21,16 +27,17 @@ class TypeReference final : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kTypeReference;
 
-    TypeReference(const Context& context, int line, const Type* value)
-        : TypeReference(line, value, context.fTypes.fInvalid.get()) {}
+    TypeReference(const Context& context, Position pos, const Type* value)
+        : TypeReference(pos, value, context.fTypes.fInvalid.get()) {}
 
     // Creates a reference to an SkSL type; uses the ErrorReporter to report errors.
     static std::unique_ptr<TypeReference> Convert(const Context& context,
-                                                  int line,
+                                                  Position pos,
                                                   const Type* type);
 
     // Creates a reference to an SkSL type; reports errors via ASSERT.
-    static std::unique_ptr<TypeReference> Make(const Context& context, int line, const Type* type);
+    static std::unique_ptr<TypeReference> Make(const Context& context, Position pos,
+            const Type* type);
 
     const Type& value() const {
         return fValue;
@@ -40,17 +47,17 @@ public:
         return false;
     }
 
-    String description() const override {
-        return String(this->value().name());
+    std::string description() const override {
+        return std::string(this->value().name());
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<Expression>(new TypeReference(fLine, &this->value(), &this->type()));
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::unique_ptr<Expression>(new TypeReference(pos, &this->value(), &this->type()));
     }
 
 private:
-    TypeReference(int line, const Type* value, const Type* type)
-        : INHERITED(line, kExpressionKind, type)
+    TypeReference(Position pos, const Type* value, const Type* type)
+        : INHERITED(pos, kExpressionKind, type)
         , fValue(*value) {}
 
     const Type& fValue;

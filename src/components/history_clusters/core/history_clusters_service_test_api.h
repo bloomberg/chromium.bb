@@ -58,11 +58,12 @@ class HistoryClustersServiceTestApi {
     history_clusters_service_->short_keyword_cache_timestamp_ = time;
   }
 
-  void FlushPostProcessingTaskRunner() {
-    base::RunLoop loop;
-    history_clusters_service_->post_processing_task_runner_->PostTask(
-        FROM_HERE, loop.QuitClosure());
-    loop.Run();
+  void SetAllKeywordsCache(HistoryClustersService::KeywordMap cache) {
+    history_clusters_service_->all_keywords_cache_ = cache;
+  }
+
+  void SetAllUrlKeywordsCache(HistoryClustersService::URLKeywordSet cache) {
+    history_clusters_service_->all_url_keywords_cache_ = cache;
   }
 
   HistoryClustersService* const history_clusters_service_;
@@ -71,6 +72,10 @@ class HistoryClustersServiceTestApi {
 
 // Fetches two hardcoded test visits.
 std::vector<history::AnnotatedVisit> GetHardcodedTestVisits();
+
+// Fetches the hardcoded `ClusterVisit` with ID `visit_id`.
+history::ClusterVisit GetHardcodedClusterVisit(history::VisitID visit_id,
+                                               float score = 0.5);
 
 }  // namespace history_clusters
 

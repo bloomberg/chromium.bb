@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/stringprintf.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 
-#include "base/cxx17_backports.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "content/public/renderer/render_frame.h"
@@ -54,105 +54,11 @@ namespace autofill {
 namespace form_util {
 namespace {
 
-struct AutofillFieldLabelSourceCase {
-  const char* html;
-  const FormFieldData::LabelSource label_source;
-};
-
 struct AutofillFieldUtilCase {
   const char* description;
   const char* html;
   const char16_t* expected_label;
 };
-
-const char kElevenChildren[] =
-    "<div id='target'>"
-    "<div>child0</div>"
-    "<div>child1</div>"
-    "<div>child2</div>"
-    "<div>child3</div>"
-    "<div>child4</div>"
-    "<div>child5</div>"
-    "<div>child6</div>"
-    "<div>child7</div>"
-    "<div>child8</div>"
-    "<div>child9</div>"
-    "<div>child10</div>"
-    "</div>";
-const char16_t kElevenChildrenExpected[] =
-    u"child0child1child2child3child4child5child6child7child8";
-
-const char kElevenChildrenNested[] =
-    "<div id='target'>"
-    "<div>child0"
-    "<div>child1"
-    "<div>child2"
-    "<div>child3"
-    "<div>child4"
-    "<div>child5"
-    "<div>child6"
-    "<div>child7"
-    "<div>child8"
-    "<div>child9"
-    "<div>child10"
-    "</div></div></div></div></div></div></div></div></div></div></div></div>";
-// Take 10 elements -1 for target element, -1 as text is a leaf element.
-const char16_t kElevenChildrenNestedExpected[] =
-    u"child0child1child2child3child4";
-
-const char kSkipElement[] =
-    "<div id='target'>"
-    "<div>child0</div>"
-    "<div class='skip'>child1</div>"
-    "<div>child2</div>"
-    "</div>";
-// TODO(crbug.com/796918): Should be child0child2
-const char16_t kSkipElementExpected[] = u"child0";
-
-const char kDivTableExample1[] =
-    "<div>"
-    "<div>label</div><div><input id='target'/></div>"
-    "</div>";
-const char16_t kDivTableExample1Expected[] = u"label";
-
-const char kDivTableExample2[] =
-    "<div>"
-    "<div>label</div>"
-    "<div>should be skipped<input/></div>"
-    "<div><input id='target'/></div>"
-    "</div>";
-const char16_t kDivTableExample2Expected[] = u"label";
-
-const char kDivTableExample3[] =
-    "<div>"
-    "<div>should be skipped<input/></div>"
-    "<div>label</div>"
-    "<div><input id='target'/></div>"
-    "</div>";
-const char16_t kDivTableExample3Expected[] = u"label";
-
-const char kDivTableExample4[] =
-    "<div>"
-    "<div>should be skipped<input/></div>"
-    "label"
-    "<div><input id='target'/></div>"
-    "</div>";
-// TODO(crbug.com/796918): Should be label
-const char16_t kDivTableExample4Expected[] = u"";
-
-const char kDivTableExample5[] =
-    "<div>"
-    "<div>label<div><input id='target'/></div>behind</div>"
-    "</div>";
-// TODO(crbug.com/796918): Should be label
-const char16_t kDivTableExample5Expected[] = u"labelbehind";
-
-const char kDivTableExample6[] =
-    "<div>"
-    "<div>label<div><div>-<div><input id='target'/></div></div>"
-    "</div>";
-// TODO(crbug.com/796918): Should be "label" or "label-"
-const char16_t kDivTableExample6Expected[] = u"";
 
 void VerifyButtonTitleCache(const WebFormElement& form_target,
                             const ButtonTitleList& expected_button_titles,
@@ -184,14 +90,43 @@ TEST_F(FormAutofillUtilsTest, FindChildTextTest) {
       {"simple test", "<div id='target'>test</div>", u"test"},
       {"Concatenate test", "<div id='target'><span>one</span>two</div>",
        u"onetwo"},
-      // TODO(crbug.com/796918): should be "onetwo"
+      // Test that "two" is not inferred, because for the purpose of label
+      // extraction, we only care about text before the input element.
       {"Ignore input", "<div id='target'>one<input value='test'/>two</div>",
        u"one"},
       {"Trim", "<div id='target'>   one<span>two  </span></div>", u"onetwo"},
-      {"eleven children", kElevenChildren, kElevenChildrenExpected},
-      // TODO(crbug.com/796918): Depth is only 5 elements
-      {"eleven children nested", kElevenChildrenNested,
-       kElevenChildrenNestedExpected},
+      {"eleven children",
+       "<div id='target'>"
+       "<div>child0</div>"
+       "<div>child1</div>"
+       "<div>child2</div>"
+       "<div>child3</div>"
+       "<div>child4</div>"
+       "<div>child5</div>"
+       "<div>child6</div>"
+       "<div>child7</div>"
+       "<div>child8</div>"
+       "<div>child9</div>"
+       "<div>child10</div>",
+       u"child0child1child2child3child4child5child6child7child8"},
+      // TODO(crbug.com/796918): Depth is only 5 elements instead of 10. This
+      // happens because every div and every text node decrease the depth.
+      {"eleven children nested",
+       "<div id='target'>"
+       "<div>child0"
+       "<div>child1"
+       "<div>child2"
+       "<div>child3"
+       "<div>child4"
+       "<div>child5"
+       "<div>child6"
+       "<div>child7"
+       "<div>child8"
+       "<div>child9"
+       "<div>child10"
+       "</div></div></div></div></div></div></div></div></div></div></div></"
+       "div>",
+       u"child0child1child2child3child4"},
   };
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.description);
@@ -205,7 +140,14 @@ TEST_F(FormAutofillUtilsTest, FindChildTextTest) {
 
 TEST_F(FormAutofillUtilsTest, FindChildTextSkipElementTest) {
   static const AutofillFieldUtilCase test_cases[] = {
-      {"Skip div element", kSkipElement, kSkipElementExpected},
+      // Test that everything after the "skip" div is discarded.
+      {"Skip div element", R"(
+       <div id=target>
+         <div>child0</div>
+         <div class=skip>child1</div>
+         <div>child2</div>
+       </div>)",
+       u"child0"},
   };
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.description);
@@ -227,12 +169,48 @@ TEST_F(FormAutofillUtilsTest, FindChildTextSkipElementTest) {
 
 TEST_F(FormAutofillUtilsTest, InferLabelForElementTest) {
   static const AutofillFieldUtilCase test_cases[] = {
-      {"DIV table test 1", kDivTableExample1, kDivTableExample1Expected},
-      {"DIV table test 2", kDivTableExample2, kDivTableExample2Expected},
-      {"DIV table test 3", kDivTableExample3, kDivTableExample3Expected},
-      {"DIV table test 4", kDivTableExample4, kDivTableExample4Expected},
-      {"DIV table test 5", kDivTableExample5, kDivTableExample5Expected},
-      {"DIV table test 6", kDivTableExample6, kDivTableExample6Expected},
+      {"DIV table test 1", R"(
+       <div>
+         <div>label</div><div><input id=target></div>
+       </div>)",
+       u"label"},
+      {"DIV table test 2", R"(
+       <div>
+         <div>label</div>
+         <div>should be skipped<input></div>
+         <div><input id=target></div>
+       </div>)",
+       u"label"},
+      {"DIV table test 3", R"(
+       <div>
+         <div>should be skipped<input></div>
+         <div>label</div>
+         <div><input id=target></div>
+       </div>)",
+       u"label"},
+      // TODO(crbug.com/796918): Should be label
+      {"DIV table test 4", R"(
+       <div>
+         <div>should be skipped<input></div>
+         label
+         <div><input id=target></div>
+       </div>)",
+       u""},
+      // TODO(crbug.com/796918): Should be label
+      {"DIV table test 5",
+       "<div>"
+       "<div>label<div><input id='target'/></div>behind</div>"
+       "</div>",
+       u"labelbehind"},
+      {"DIV table test 6", R"(
+       <div>
+         label
+         <div>-</div>
+         <div><input id='target'></div>
+       </div>)",
+       // TODO(crbug.com/796918): Should be "label" or "label-". This happens
+       // because "-" is inferred, but discarded because `!IsLabelValid()`.
+       u""},
   };
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.description);
@@ -245,12 +223,16 @@ TEST_F(FormAutofillUtilsTest, InferLabelForElementTest) {
     FormFieldData::LabelSource label_source =
         FormFieldData::LabelSource::kUnknown;
     std::u16string label;
-    InferLabelForElementForTesting(form_target, &label, &label_source);
+    InferLabelForElementForTesting(form_target, label, label_source);
     EXPECT_EQ(test_case.expected_label, label);
   }
 }
 
 TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
+  struct AutofillFieldLabelSourceCase {
+    const char* html;
+    const FormFieldData::LabelSource label_source;
+  };
   const char16_t kLabelSourceExpectedLabel[] = u"label";
   static const AutofillFieldLabelSourceCase test_cases[] = {
       {"<div><div>label</div><div><input id='target'/></div></div>",
@@ -287,7 +269,7 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
         FormFieldData::LabelSource::kUnknown;
     std::u16string label;
     EXPECT_TRUE(autofill::form_util::InferLabelForElementForTesting(
-        form_target, &label, &label_source));
+        form_target, label, label_source));
     EXPECT_EQ(kLabelSourceExpectedLabel, label);
     EXPECT_EQ(test_case.label_source, label_source);
   }
@@ -332,13 +314,11 @@ TEST_F(FormAutofillUtilsTest, GetButtonTitles) {
 }
 
 TEST_F(FormAutofillUtilsTest, GetButtonTitles_TooLongTitle) {
-  std::string title;
-  for (int i = 0; i < 300; ++i)
-    title += "a";
   std::string kFormHtml = "<form id='target'>";
   for (int i = 0; i < 10; i++) {
-    std::string kFieldHtml =
-        "<input type='button' value='" + base::NumberToString(i) + title + "'>";
+    std::string kFieldHtml = "<input type='button' value='" +
+                             base::NumberToString(i) + std::string(300, 'a') +
+                             "'>";
     kFormHtml += kFieldHtml;
   }
   kFormHtml += "</form>";
@@ -354,9 +334,9 @@ TEST_F(FormAutofillUtilsTest, GetButtonTitles_TooLongTitle) {
       GetButtonTitles(form_target, web_frame->GetDocument(), &cache);
 
   int total_length = 0;
-  for (auto button_title : actual) {
-    EXPECT_GE(30u, button_title.first.length());
-    total_length += button_title.first.length();
+  for (const auto& [title, title_type] : actual) {
+    EXPECT_GE(30u, title.length());
+    total_length += title.length();
   }
   EXPECT_EQ(200, total_length);
 }
@@ -456,7 +436,7 @@ TEST_F(FormAutofillUtilsTest, IsEnabled) {
       {u"name3", true},
       {u"name4", false},
   };
-  const size_t number_of_cases = base::size(kExpectedFields);
+  const size_t number_of_cases = std::size(kExpectedFields);
   ASSERT_EQ(number_of_cases, target.fields.size());
   for (size_t i = 0; i < number_of_cases; ++i) {
     EXPECT_EQ(kExpectedFields[i].name, target.fields[i].name);
@@ -498,7 +478,7 @@ TEST_F(FormAutofillUtilsTest, IsReadonly) {
       {u"name3", false},
       {u"name4", true},
   };
-  const size_t number_of_cases = base::size(kExpectedFields);
+  const size_t number_of_cases = std::size(kExpectedFields);
   ASSERT_EQ(number_of_cases, target.fields.size());
   for (size_t i = 0; i < number_of_cases; ++i) {
     EXPECT_EQ(kExpectedFields[i].name, target.fields[i].name);
@@ -522,8 +502,8 @@ TEST_F(FormAutofillUtilsTest, IsFocusable) {
   control_elements.push_back(
       GetFormControlElementById(web_frame->GetDocument(), "name2"));
 
-  EXPECT_TRUE(autofill::form_util::IsWebElementVisible(control_elements[0]));
-  EXPECT_FALSE(autofill::form_util::IsWebElementVisible(control_elements[1]));
+  EXPECT_TRUE(autofill::form_util::IsWebElementFocusable(control_elements[0]));
+  EXPECT_FALSE(autofill::form_util::IsWebElementFocusable(control_elements[1]));
 
   std::vector<WebElement> iframe_elements;
 
@@ -551,26 +531,6 @@ TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {
   EXPECT_TRUE(FindFormByUniqueRendererId(doc, non_existing_id).IsNull());
 }
 
-// Tests FindFormControlElementByUniqueRendererId().
-// TODO(crbug/1201875): Delete once
-// `features::kAutofillUseUnassociatedListedElements` is enabled.
-TEST_F(FormAutofillUtilsTest,
-       FindFormControlElementByUniqueRendererId_WithoutFeature) {
-  LoadHTML(
-      "<body><form id='form1'><input id='i1'></form><input id='i2'></body>");
-  WebDocument doc = GetMainFrame()->GetDocument();
-  auto input1 = GetFormControlElementById(doc, "i1");
-  auto input2 = GetFormControlElementById(doc, "i2");
-  FieldRendererId non_existing_id(input2.UniqueRendererFormControlId() + 1000);
-
-  EXPECT_EQ(input1, FindFormControlElementByUniqueRendererId(
-                        doc, GetFieldRendererId(input1)));
-  EXPECT_EQ(input2, FindFormControlElementByUniqueRendererId(
-                        doc, GetFieldRendererId(input2)));
-  EXPECT_TRUE(
-      FindFormControlElementByUniqueRendererId(doc, non_existing_id).IsNull());
-}
-
 // Used in ParameterizedFindFormControlByRendererIdTest.
 struct FindFormControlTestParam {
   std::string queried_field;
@@ -578,20 +538,10 @@ struct FindFormControlTestParam {
   bool expectation;
 };
 
-// Tests FindFormControlElementByUniqueRendererId() with
-// `features::kAutofillUseUnassociatedListedElements` enabled.
+// Tests FindFormControlElementByUniqueRendererId().
 class ParameterizedFindFormControlByRendererIdTest
     : public FormAutofillUtilsTest,
-      public testing::WithParamInterface<FindFormControlTestParam> {
- public:
-  ParameterizedFindFormControlByRendererIdTest() {
-    scoped_features_.InitAndEnableFeature(
-        features::kAutofillUseUnassociatedListedElements);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
+      public testing::WithParamInterface<FindFormControlTestParam> {};
 
 TEST_P(ParameterizedFindFormControlByRendererIdTest,
        FindFormControlElementByUniqueRendererId) {
@@ -987,6 +937,9 @@ TEST_F(FormAutofillUtilsTest, NotExtractDataList) {
 }
 
 // Tests the visibility detection of iframes.
+// This test checks many scenarios. It's intentionally not a parameterized test
+// for performance reasons.
+// This test is very similar to the IsWebElementVisibleTest test.
 TEST_F(FormAutofillUtilsTest, IsVisibleIframeTest) {
   // Test cases of <iframe> elements with different styles.
   //
@@ -1000,10 +953,10 @@ TEST_F(FormAutofillUtilsTest, IsVisibleIframeTest) {
   // IsVisibleIframe() but invisible to the human).
   //
   // The `data-false="{POSITIVE,NEGATIVE}"` attribute indicates whether the test
-  // case to be a false positive/negative compared to human visibility
-  // perception. In such a case, not meeting the expectation actually indicates
-  // an improvement of IsVisibleIframe(), as it means a false positive/negative
-  // has been fixed.
+  // case is a false positive/negative compared to human visibility perception.
+  // In such a case, not meeting the expectation actually indicates an
+  // improvement of IsVisibleIframe(), as it means a false positive/negative has
+  // been fixed.
   //
   // The sole purpose of the `data-false` attribute is to document this and to
   // print a message when such a test fails.
@@ -1037,7 +990,7 @@ TEST_F(FormAutofillUtilsTest, IsVisibleIframeTest) {
         <iframe srcdoc="<input>" data-visible   style="width: 100px; height: 100px; position: absolute; right:  -200px;" data-false="POSITIVE"></iframe>
         <iframe srcdoc="<input>" data-visible   style="width: 100px; height: 100px; position: absolute; bottom: -200px;" data-false="POSITIVE"></iframe>
 
-        <iframe srcdoc="<input>" data-visible   style=""></iframe> <!-- Finish with a visible frame to make sure all <iframe>s have been closed -->
+        <iframe srcdoc="<input>" data-visible   style=""></iframe> <!-- Finish with a visible frame to make sure all <iframe> tags have been closed -->
 
         <div style="width: 10000; height: 10000"></div>
       </body>)");
@@ -1055,7 +1008,7 @@ TEST_F(FormAutofillUtilsTest, IsVisibleIframeTest) {
     }
     return result;
   }();
-  ASSERT_GE(iframes.size(), 16u);
+  ASSERT_GE(iframes.size(), 23u);
 
   auto RunTestCases = [](const std::vector<WebElement>& iframes) {
     for (WebElement iframe : iframes) {
@@ -1085,6 +1038,125 @@ TEST_F(FormAutofillUtilsTest, IsVisibleIframeTest) {
     content::RunAllTasksUntilIdle();
     SCOPED_TRACE(testing::Message() << "Scrolled to bottom right");
     RunTestCases(iframes);
+  }
+}
+
+// Tests the visibility detection of iframes.
+// This test checks many scenarios. It's intentionally not a parameterized test
+// for performance reasons.
+// This test is very similar to the IsVisibleIframeTest test.
+TEST_F(FormAutofillUtilsTest, IsWebElementVisibleTest) {
+  // Test cases of <input> elements with different types and styles.
+  //
+  // The `data-[in]visible` attribute represents whether IsWebElementVisible()
+  // is expected to classify the input as [in]visible.
+  //
+  // Since IsWebElementVisible() falls short of what the human user will
+  // consider visible or invisible, there are false positives and false
+  // negatives. For example, IsWebElementVisible() does not check opacity, so
+  // <input style="opacity: 0.0"> is a false positive (it's visible to
+  // IsWebElementVisible() but invisible to the human).
+  //
+  // The `data-false="{POSITIVE,NEGATIVE}"` attribute indicates whether the test
+  // case is a false positive/negative compared to human visibility perception.
+  // In such a case, not meeting the expectation actually indicates an
+  // improvement of IsWebElementVisible(), as it means a false positive/negative
+  // has been fixed.
+  //
+  // The sole purpose of the `data-false` attribute is to document this and to
+  // print a message when such a test fails.
+  LoadHTML(R"(
+      <body>
+        <input type="text" data-visible   style="">
+        <input type="text" data-visible   style="display: block;">
+        <input type="text" data-visible   style="visibility: visible;">
+
+        <input type="text" data-invisible style="display: none;">
+        <input type="text" data-invisible style="visibility: hidden;">
+        <div style="display: none;">     <input type="text" data-invisible></div>
+        <div style="visibility: hidden;"><input type="text" data-invisible></div>
+
+        <input type="text" data-visible   style="width: 15px; height: 15px;">
+        <input type="text" data-invisible style="width: 15px; height:  5px;">
+        <input type="text" data-invisible style="width:  5px; height: 15px;">
+        <input type="text" data-invisible style="width:  5px; height:  5px;">
+
+        <input type="text" data-invisible style="width: 1px; height: 1px;">
+        <input type="text" data-invisible style="width: 1px; height: 1px; overflow: visible;" data-false="NEGATIVE">
+
+        <input type="text" data-visible   style="opacity: 0.0;" data-false="POSITIVE">
+        <input type="text" data-visible   style="opacity: 0.0;" data-false="POSITIVE">
+        <input type="text" data-visible   style="position: absolute; clip: rect(0,0,0,0);" data-false="POSITIVE">
+
+        <input type="text" data-visible   style="width: 100px; position: absolute; left:    -75px;">
+        <input type="text" data-visible   style="width: 100px; position: absolute; top:     -75px;">
+        <input type="text" data-visible   style="width: 100px; position: absolute; left:   -200px;" data-false="POSITIVE">
+        <input type="text" data-visible   style="width: 100px; position: absolute; top:    -200px;" data-false="POSITIVE">
+        <input type="text" data-visible   style="width: 100px; position: absolute; right:  -200px;" data-false="POSITIVE">
+        <input type="text" data-visible   style="width: 100px; position: absolute; bottom: -200px;" data-false="POSITIVE">
+
+        <input type="checkbox" data-visible   style="">
+        <input type="checkbox" data-invisible style="display: none;">
+        <input type="checkbox" data-invisible style="visibility: hidden;">
+        <input type="checkbox" data-visible   style="width: 15px; height: 15px;">
+        <input type="checkbox" data-visible   style="width: 15px; height:  5px;">
+        <input type="checkbox" data-visible   style="width:  5px; height: 15px;">
+        <input type="checkbox" data-visible   style="width:  5px; height:  5px;">
+
+        <input type="radio" data-visible   style="">
+        <input type="radio" data-invisible style="display: none;">
+        <input type="radio" data-invisible style="visibility: hidden;">
+        <input type="radio" data-visible   style="width: 15px; height: 15px;">
+        <input type="radio" data-visible   style="width: 15px; height:  5px;">
+        <input type="radio" data-visible   style="width:  5px; height: 15px;">
+        <input type="radio" data-visible   style="width:  5px; height:  5px;">
+
+        <div style="width: 10000; height: 10000"></div>
+      </body>)");
+
+  // Ensure that Android runs at default page scale.
+  web_view_->SetPageScaleFactor(1.0);
+
+  std::vector<WebElement> inputs = [this] {
+    WebDocument doc = GetMainFrame()->GetDocument();
+    std::vector<WebElement> result;
+    WebElementCollection inputs = doc.GetElementsByHTMLTagName("input");
+    for (WebElement input = inputs.FirstItem(); !input.IsNull();
+         input = inputs.NextItem()) {
+      result.push_back(input);
+    }
+    return result;
+  }();
+  ASSERT_GE(inputs.size(), 36u);
+
+  auto RunTestCases = [](const std::vector<WebElement>& inputs) {
+    for (WebElement input : inputs) {
+      gfx::Rect bounds = input.BoundsInViewport();
+      bool expectation = input.HasAttribute("data-visible");
+      SCOPED_TRACE(
+          testing::Message()
+          << "Iframe with style \n  " << input.GetAttribute("style").Ascii()
+          << "\nwith dimensions w=" << bounds.width()
+          << ",h=" << bounds.height() << " and position x=" << bounds.x()
+          << ",y=" << bounds.y()
+          << (input.HasAttribute("data-false") ? "\nwhich used to be a FALSE "
+                                               : "")
+          << input.GetAttribute("data-false").Ascii());
+      ASSERT_TRUE(input.HasAttribute("data-visible") !=
+                  input.HasAttribute("data-invisible"));
+      EXPECT_EQ(IsWebElementVisible(input), expectation);
+    }
+  };
+
+  RunTestCases(inputs);
+
+  {
+    ExecuteJavaScriptForTests(
+        "window.scrollTo(document.body.scrollWidth,document.body.scrollHeight)"
+        ";");
+    content::RunAllTasksUntilIdle();
+    SCOPED_TRACE(testing::Message() << "Scrolled to bottom right");
+    RunTestCases(inputs);
   }
 }
 
@@ -1217,29 +1289,10 @@ class FieldFramesTest
   ~FieldFramesTest() override = default;
 };
 
-// Test getting the unowned form control elements from the WebDocument with the
-// old or the new version of GetUnownedFormFieldElements().
-// TODO(crbug.com/1201875): Remove when the
-// kAutofillUseUnassociatedListedElements feature is deleted.
-class FormAutofillUtilsTestUnownedFormFields
-    : public FormAutofillUtilsTest,
-      public testing::WithParamInterface<bool> {
- public:
-  FormAutofillUtilsTestUnownedFormFields() {
-    bool use_new_get_unowned_form_field_elements = GetParam();
-    scoped_features_.InitWithFeatureState(
-        features::kAutofillUseUnassociatedListedElements,
-        use_new_get_unowned_form_field_elements);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
-
 // Check if the unowned form control elements are properly extracted.
 // Form control elements are button, fieldset, input, textarea, output and
 // select elements.
-TEST_P(FormAutofillUtilsTestUnownedFormFields, GetUnownedFormFieldElements) {
+TEST_F(FormAutofillUtilsTest, GetUnownedFormFieldElements) {
   LoadHTML(R"(
     <button id='unowned_button'>Unowned button</button>
     <fieldset id='unowned_fieldset'>
@@ -1285,10 +1338,6 @@ TEST_P(FormAutofillUtilsTestUnownedFormFields, GetUnownedFormFieldElements) {
   EXPECT_THAT(unowned_fieldsets,
               ElementsAre(GetFormControlElementById(doc, "unowned_fieldset")));
 }
-
-INSTANTIATE_TEST_SUITE_P(FormAutofillUtilsTest,
-                         FormAutofillUtilsTestUnownedFormFields,
-                         testing::Bool());
 
 // Tests that FormData::fields and FormData::child_frames are extracted fully
 // and in the correct relative order.
@@ -1536,6 +1585,61 @@ TEST_F(FormAutofillUtilsTestWithIframesEnabled,
     EXPECT_TRUE(form_data.fields.empty());
     EXPECT_TRUE(form_data.child_frames.empty());
   }
+}
+
+// Fills a form, resets the form using <input type=reset>, and fills it again.
+// Tests that the form is actually filled on the second fill
+// (crbug.com/1291619).
+TEST_F(FormAutofillUtilsTest, FillAndResetAndFillAgainForm) {
+  LoadHTML(R"(
+    <body>
+      <form id="f">
+        <input id="f0">
+        <select id="f1">
+          <option value="Bar">Bar</option>
+          <option value="Foo">Foo</option>
+          <option value="Zoo">Zoo</option>
+        </select>
+        <input id="reset" type="reset">
+      </form>
+    </body>
+  )");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto field_manager = base::MakeRefCounted<FieldDataManager>();
+
+  FormData form;
+  ExtractFormData(GetFormElementById(doc, "f"), *field_manager, &form);
+  ASSERT_EQ(form.fields.size(), 2u);
+  form.fields[0].value = u"Foo";
+  form.fields[1].value = u"Foo";
+  form.fields[0].is_autofilled = true;
+  form.fields[1].is_autofilled = true;
+
+  // First fill of the form.
+  FillOrPreviewForm(form, GetFormControlElementById(doc, "f0"),
+                    mojom::RendererFormDataAction::kFill);
+  // Autofilling f0 leaves f0.UserHasEditedTheField() == false.
+  // TODO(crbug.com/1291619): Is this desired?
+  EXPECT_TRUE(GetFormControlElementById(doc, "f1").UserHasEditedTheField());
+  EXPECT_EQ(GetFormControlElementById(doc, "f0").Value().Ascii(), "Foo");
+  EXPECT_EQ(GetFormControlElementById(doc, "f1").Value().Ascii(), "Foo");
+
+  // Click reset button.
+  GetFormControlElementById(doc, "reset").SimulateClick();
+  content::RunAllTasksUntilIdle();
+  EXPECT_FALSE(GetFormControlElementById(doc, "f0").UserHasEditedTheField());
+  EXPECT_FALSE(GetFormControlElementById(doc, "f1").UserHasEditedTheField());
+  EXPECT_EQ(GetFormControlElementById(doc, "f0").Value().Ascii(), "");
+  EXPECT_EQ(GetFormControlElementById(doc, "f1").Value().Ascii(), "Bar");
+
+  // Fill form again.
+  FillOrPreviewForm(form, GetFormControlElementById(doc, "f0"),
+                    mojom::RendererFormDataAction::kFill);
+  // Autofilling f0 leaves f0.UserHasEditedTheField() == false.
+  // TODO(crbug.com/1291619): Is this desired?
+  EXPECT_TRUE(GetFormControlElementById(doc, "f1").UserHasEditedTheField());
+  EXPECT_EQ(GetFormControlElementById(doc, "f0").Value().Ascii(), "Foo");
+  EXPECT_EQ(GetFormControlElementById(doc, "f1").Value().Ascii(), "Foo");
 }
 
 }  // namespace

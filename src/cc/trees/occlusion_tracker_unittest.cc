@@ -207,7 +207,7 @@ class OcclusionTrackerTest : public testing::Test {
     effect_node->render_surface_reason = RenderSurfaceReason::kCopyRequest;
     effect_node->has_copy_request = true;
     effect_node->closest_ancestor_with_copy_request_id = effect_node->id;
-    auto& effect_tree = GetPropertyTrees(layer)->effect_tree;
+    auto& effect_tree = GetPropertyTrees(layer)->effect_tree_mutable();
     effect_tree.AddCopyRequest(effect_node->id,
                                viz::CopyOutputRequest::CreateStubForTesting());
     // TODO(wangxianzhu): Let EffectTree::UpdateEffects() handle this.
@@ -1423,16 +1423,16 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackdropFilter
       gfx::Rect expected_occlusion = occlusion_rect;
       switch (i) {
         case LEFT:
-          expected_occlusion.Inset(0, 0, 30, 0);
+          expected_occlusion.Inset(gfx::Insets::TLBR(0, 0, 0, 30));
           break;
         case RIGHT:
-          expected_occlusion.Inset(30, 0, 0, 0);
+          expected_occlusion.Inset(gfx::Insets::TLBR(0, 30, 0, 0));
           break;
         case TOP:
-          expected_occlusion.Inset(0, 0, 0, 30);
+          expected_occlusion.Inset(gfx::Insets::TLBR(0, 0, 30, 0));
           break;
         case BOTTOM:
-          expected_occlusion.Inset(0, 30, 0, 0);
+          expected_occlusion.Inset(gfx::Insets::TLBR(30, 0, 0, 0));
           break;
       }
 

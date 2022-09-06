@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -60,8 +61,6 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       blink::mojom::ServiceWorkerObjectInfoPtr service_worker_info,
       FetchHandlerExistence fetch_handler_existence,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories,
       mojo::PendingReceiver<blink::mojom::ReportingObserver>
           reporting_observer_receiver) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
@@ -134,6 +133,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   void SetIdleDelay(base::TimeDelta delay) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
+  void ExecuteScriptForTest(const std::u16string& script,
+                            bool wants_result,
+                            ExecuteScriptForTestCallback callback) override;
 
   virtual void OnConnectionError();
 

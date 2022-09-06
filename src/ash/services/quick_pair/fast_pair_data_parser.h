@@ -16,12 +16,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace {
-
-constexpr int kEncryptedDataByteSize = 16;
-constexpr int kAesBlockByteSize = 16;
-
-}  // namespace
+inline constexpr int kEncryptedDataByteSize = 16;
+inline constexpr int kAesBlockByteSize = 16;
 
 namespace ash {
 namespace quick_pair {
@@ -57,8 +53,11 @@ class FastPairDataParser : public mojom::FastPairDataParser {
       ParseDecryptedPasskeyCallback callback) override;
 
   // Attempts to parse a 'Not Discoverable' advertisement from |service_data|.
+  // If the advertisement does not contain information about salt, use the
+  // |address| as salt instead.
   void ParseNotDiscoverableAdvertisement(
       const std::vector<uint8_t>& service_data,
+      const std::string& address,
       ParseNotDiscoverableAdvertisementCallback callback) override;
 
   // Attempts to parse MessageStreamMessage instances from |message_bytes| and

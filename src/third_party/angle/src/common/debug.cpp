@@ -232,7 +232,7 @@ void Trace(LogSeverity severity, const char *message)
     }
 
     if (severity == LOG_FATAL || severity == LOG_ERR || severity == LOG_WARN ||
-#if defined(ANGLE_ENABLE_TRACE_ANDROID_LOGCAT)
+#if defined(ANGLE_ENABLE_TRACE_ANDROID_LOGCAT) || defined(ANGLE_ENABLE_TRACE_EVENTS)
         severity == LOG_EVENT ||
 #endif
         severity == LOG_INFO)
@@ -333,14 +333,14 @@ std::string LogMessage::getMessage() const
 }
 
 #if defined(ANGLE_PLATFORM_WINDOWS)
-priv::FmtHexHelper<HRESULT> FmtHR(HRESULT value)
+priv::FmtHexHelper<HRESULT, char> FmtHR(HRESULT value)
 {
-    return priv::FmtHexHelper<HRESULT>("HRESULT: ", value);
+    return priv::FmtHexHelper<HRESULT, char>("HRESULT: ", value);
 }
 
-priv::FmtHexHelper<DWORD> FmtErr(DWORD value)
+priv::FmtHexHelper<DWORD, char> FmtErr(DWORD value)
 {
-    return priv::FmtHexHelper<DWORD>("error: ", value);
+    return priv::FmtHexHelper<DWORD, char>("error: ", value);
 }
 #endif  // defined(ANGLE_PLATFORM_WINDOWS)
 

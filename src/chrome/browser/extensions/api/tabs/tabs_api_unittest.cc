@@ -33,19 +33,18 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/display/test/scoped_screen_override.h"
-#include "ui/display/test/test_screen.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_window_builder.h"
-#include "chrome/browser/ash/policy/dlp/mock_dlp_content_manager.h"
 #include "chrome/browser/ui/ash/window_pin_util.h"
 #endif
 
-namespace extensions {
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
+#endif
 
-using display::test::ScopedScreenOverride;
+namespace extensions {
 
 namespace {
 
@@ -124,13 +123,15 @@ class TabsApiUnitTest : public ExtensionServiceTestBase {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::AshTestHelper test_helper_;
-#else
-  display::test::TestScreen test_screen_;
-  std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;
 #endif
 };
 
 void TabsApiUnitTest::SetUp() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::AshTestHelper::InitParams ash_params;
+  ash_params.start_session = true;
+  test_helper_.SetUp(std::move(ash_params));
+#endif
   // Force TabManager/TabLifecycleUnitSource creation.
   g_browser_process->GetTabManager();
 
@@ -142,14 +143,6 @@ void TabsApiUnitTest::SetUp() {
   params.type = Browser::TYPE_NORMAL;
   params.window = browser_window_.get();
   browser_.reset(Browser::Create(params));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::AshTestHelper::InitParams ash_params;
-  ash_params.start_session = true;
-  test_helper_.SetUp(std::move(ash_params));
-#else
-  scoped_screen_override_ =
-      std::make_unique<ScopedScreenOverride>(&test_screen_);
-#endif
 }
 
 void TabsApiUnitTest::TearDown() {
@@ -281,8 +274,8 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  content::WebContents* web_contentses[base::size(tab_urls)];
-  for (size_t i = 0; i < base::size(tab_urls); ++i) {
+  content::WebContents* web_contentses[std::size(tab_urls)];
+  for (size_t i = 0; i < std::size(tab_urls); ++i) {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     content::WebContents* raw_web_contents = web_contents.get();
@@ -306,7 +299,7 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   std::unique_ptr<base::ListValue> tabs_list_without_permission(
       RunTabsQueryFunction(browser(), extension.get(), kTitleAndURLQueryInfo));
   ASSERT_TRUE(tabs_list_without_permission);
-  EXPECT_EQ(0u, tabs_list_without_permission->GetList().size());
+  EXPECT_EQ(0u, tabs_list_without_permission->GetListDeprecated().size());
 
   // An extension with "tabs" permission however will see the third tab.
   scoped_refptr<const Extension> extension_with_permission =
@@ -323,9 +316,10 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
       RunTabsQueryFunction(browser(), extension_with_permission.get(),
                            kTitleAndURLQueryInfo));
   ASSERT_TRUE(tabs_list_with_permission);
-  ASSERT_EQ(1u, tabs_list_with_permission->GetList().size());
+  ASSERT_EQ(1u, tabs_list_with_permission->GetListDeprecated().size());
 
-  const base::Value& third_tab_info = tabs_list_with_permission->GetList()[0];
+  const base::Value& third_tab_info =
+      tabs_list_with_permission->GetListDeprecated()[0];
   ASSERT_TRUE(third_tab_info.is_dict());
   absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
   EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
@@ -341,8 +335,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  content::WebContents* web_contentses[base::size(tab_urls)];
-  for (size_t i = 0; i < base::size(tab_urls); ++i) {
+  content::WebContents* web_contentses[std::size(tab_urls)];
+  for (size_t i = 0; i < std::size(tab_urls); ++i) {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     content::WebContents* raw_web_contents = web_contents.get();
@@ -379,9 +373,10 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
         RunTabsQueryFunction(browser(), extension_with_permission.get(),
                              kTitleAndURLQueryInfo));
     ASSERT_TRUE(tabs_list_with_permission);
-    ASSERT_EQ(1u, tabs_list_with_permission->GetList().size());
+    ASSERT_EQ(1u, tabs_list_with_permission->GetListDeprecated().size());
 
-    const base::Value& third_tab_info = tabs_list_with_permission->GetList()[0];
+    const base::Value& third_tab_info =
+        tabs_list_with_permission->GetListDeprecated()[0];
     ASSERT_TRUE(third_tab_info.is_dict());
     absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
     EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
@@ -394,11 +389,13 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
         RunTabsQueryFunction(browser(), extension_with_permission.get(),
                              kURLQueryInfo));
     ASSERT_TRUE(tabs_list_with_permission);
-    ASSERT_EQ(2u, tabs_list_with_permission->GetList().size());
+    ASSERT_EQ(2u, tabs_list_with_permission->GetListDeprecated().size());
 
-    const base::Value& first_tab_info = tabs_list_with_permission->GetList()[0];
+    const base::Value& first_tab_info =
+        tabs_list_with_permission->GetListDeprecated()[0];
     ASSERT_TRUE(first_tab_info.is_dict());
-    const base::Value& third_tab_info = tabs_list_with_permission->GetList()[1];
+    const base::Value& third_tab_info =
+        tabs_list_with_permission->GetListDeprecated()[1];
     ASSERT_TRUE(third_tab_info.is_dict());
 
     std::vector<int> expected_tabs_ids;
@@ -686,6 +683,8 @@ TEST_F(TabsApiUnitTest, TabsMoveAcrossWindows) {
 // Test that the tabs.group() function correctly rearranges sets of tabs within
 // a single window before grouping.
 TEST_F(TabsApiUnitTest, TabsGroupWithinWindow) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("GroupWithinWindowTest").Build();
 
@@ -738,6 +737,8 @@ TEST_F(TabsApiUnitTest, TabsGroupWithinWindow) {
 // Test that the tabs.group() function correctly groups tabs even when given
 // out-of-order or duplicate tab IDs.
 TEST_F(TabsApiUnitTest, TabsGroupMixedTabIds) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("GroupMixedTabIdsTest").Build();
 
@@ -791,6 +792,8 @@ TEST_F(TabsApiUnitTest, TabsGroupMixedTabIds) {
 // Test that the tabs.group() function throws an error if both createProperties
 // and groupId are specified.
 TEST_F(TabsApiUnitTest, TabsGroupParamsError) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("GroupParamsErrorTest").Build();
 
@@ -836,6 +839,8 @@ TEST_F(TabsApiUnitTest, TabsGroupParamsError) {
 // Test that the tabs.group() function correctly rearranges sets of tabs across
 // windows before grouping.
 TEST_F(TabsApiUnitTest, TabsGroupAcrossWindows) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("GroupAcrossWindowsTest").Build();
 
@@ -911,6 +916,8 @@ TEST_F(TabsApiUnitTest, TabsGroupAcrossWindows) {
 // Test that the tabs.ungroup() function correctly ungroups tabs from a single
 // group and deletes it.
 TEST_F(TabsApiUnitTest, TabsUngroupSingleGroup) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("UngroupSingleGroupTest").Build();
 
@@ -959,6 +966,9 @@ TEST_F(TabsApiUnitTest, TabsUngroupSingleGroup) {
 // Test that the tabs.ungroup() function correctly ungroups tabs from several
 // different groups and deletes any empty ones.
 TEST_F(TabsApiUnitTest, TabsUngroupFromMultipleGroups) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("UngroupFromMultipleGroupsTest").Build();
 
@@ -975,16 +985,14 @@ TEST_F(TabsApiUnitTest, TabsUngroupFromMultipleGroups) {
         sessions::SessionTabHelper::IdForTab(contents.get()).id());
     web_contentses.push_back(contents.get());
 
-    browser()->tab_strip_model()->AppendWebContents(std::move(contents),
-                                                    /* foreground */ true);
+    tab_strip_model->AppendWebContents(std::move(contents),
+                                       /* foreground */ true);
   }
-  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+  ASSERT_EQ(kNumTabs, tab_strip_model->count());
 
   // Add tabs 1, 2, and 3 to a group1, and tab 4 to group2.
-  tab_groups::TabGroupId group1 =
-      browser()->tab_strip_model()->AddToNewGroup({1, 2, 3});
-  tab_groups::TabGroupId group2 =
-      browser()->tab_strip_model()->AddToNewGroup({4});
+  tab_groups::TabGroupId group1 = tab_strip_model->AddToNewGroup({1, 2, 3});
+  tab_groups::TabGroupId group2 = tab_strip_model->AddToNewGroup({4});
 
   // Use the TabsUngroupFunction to ungroup tabs 2, 3, and 4.
   auto function = base::MakeRefCounted<TabsUngroupFunction>();
@@ -996,8 +1004,7 @@ TEST_F(TabsApiUnitTest, TabsUngroupFromMultipleGroups) {
       function.get(), args, browser(), api_test_utils::NONE));
 
   // Expect group2 to be deleted because all tabs were ungrouped from it.
-  TabStripModel* tab_strip_model = browser()->tab_strip_model();
-  EXPECT_EQ(group1, tab_strip_model->GetTabGroupForTab(1).value());
+  EXPECT_EQ(group1, tab_strip_model->GetTabGroupForTab(1));
   EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(2));
   EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(3));
   EXPECT_FALSE(tab_strip_model->GetTabGroupForTab(4));
@@ -1005,7 +1012,7 @@ TEST_F(TabsApiUnitTest, TabsUngroupFromMultipleGroups) {
   EXPECT_FALSE(tab_strip_model->group_model()->ContainsTabGroup(group2));
 
   // Clean up.
-  browser()->tab_strip_model()->CloseAllTabs();
+  tab_strip_model->CloseAllTabs();
 }
 
 TEST_F(TabsApiUnitTest, TabsGoForwardNoSelectedTabError) {
@@ -1165,28 +1172,7 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
   base::RunLoop().RunUntilIdle();
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
-  scoped_refptr<const Extension> extension_with_tabs_permission =
-      CreateTabsExtension();
-
-  ash::TestWindowBuilder builder;
-  std::unique_ptr<aura::Window> window =
-      builder.SetTestWindowDelegate().AllowAllWindowStates().Build();
-  browser_window()->SetNativeWindow(window.get());
-
-  auto function = base::MakeRefCounted<TabsCreateFunction>();
-
-  function->set_extension(extension_with_tabs_permission.get());
-
-  // In locked fullscreen mode we should not be able to create any tabs.
-  PinWindow(browser_window()->GetNativeWindow(), /*trusted=*/true);
-
-  EXPECT_EQ(tabs_constants::kLockedFullscreenModeNewTabError,
-            extension_function_test_utils::RunFunctionAndReturnError(
-                function.get(), "[{}]", browser(), api_test_utils::NONE));
-}
-
+#if BUILDFLAG(IS_CHROMEOS)
 // Ensure tabs.captureVisibleTab respects any Data Leak Prevention restrictions.
 TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
   // Setup the function and extension.
@@ -1209,7 +1195,7 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
 
   // Setup Data Leak Prevention restriction.
   policy::MockDlpContentManager mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerForTesting scoped_dlp_content_manager_(
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_observer_(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, IsScreenshotApiRestricted(testing::_))
       .Times(1)
@@ -1222,6 +1208,29 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
 
   // Clean up.
   browser()->tab_strip_model()->CloseAllTabs();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
+  scoped_refptr<const Extension> extension_with_tabs_permission =
+      CreateTabsExtension();
+
+  ash::TestWindowBuilder builder;
+  std::unique_ptr<aura::Window> window =
+      builder.SetTestWindowDelegate().AllowAllWindowStates().Build();
+  browser_window()->SetNativeWindow(window.get());
+
+  auto function = base::MakeRefCounted<TabsCreateFunction>();
+
+  function->set_extension(extension_with_tabs_permission.get());
+
+  // In locked fullscreen mode we should not be able to create any tabs.
+  PinWindow(browser_window()->GetNativeWindow(), /*trusted=*/true);
+
+  EXPECT_EQ(tabs_constants::kLockedFullscreenModeNewTabError,
+            extension_function_test_utils::RunFunctionAndReturnError(
+                function.get(), "[{}]", browser(), api_test_utils::NONE));
 }
 
 // Screenshot should return an error when disabled in user profile preferences.

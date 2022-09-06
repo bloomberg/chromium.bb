@@ -7,7 +7,7 @@ import 'chrome://resources/cr_components/chromeos/network/network_icon.m.js';
 import 'chrome://resources/cr_components/chromeos/network/network_shared_css.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
+import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './strings.m.js';
 
@@ -110,8 +110,9 @@ Polymer({
    * @private
    */
   getError_() {
-    if (this.i18nExists(this.error_))
+    if (this.i18nExists(this.error_)) {
       return this.i18n(this.error_);
+    }
     return this.i18n('networkErrorUnknown');
   },
 

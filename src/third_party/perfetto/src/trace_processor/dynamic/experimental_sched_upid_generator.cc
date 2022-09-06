@@ -18,6 +18,16 @@
 
 namespace perfetto {
 namespace trace_processor {
+namespace tables {
+#define PERFETTO_TP_SCHED_UPID_TABLE_DEF(NAME, PARENT, C)     \
+  NAME(ExperimentalSchedUpidTable, "experimental_sched_upid") \
+  PARENT(PERFETTO_TP_SCHED_SLICE_TABLE_DEF, C)                \
+  C(base::Optional<UniquePid>, upid)
+
+PERFETTO_TP_TABLE(PERFETTO_TP_SCHED_UPID_TABLE_DEF);
+
+ExperimentalSchedUpidTable::~ExperimentalSchedUpidTable() = default;
+}  // namespace tables
 
 ExperimentalSchedUpidGenerator::ExperimentalSchedUpidGenerator(
     const tables::SchedSliceTable& sched,
@@ -26,35 +36,33 @@ ExperimentalSchedUpidGenerator::ExperimentalSchedUpidGenerator(
 ExperimentalSchedUpidGenerator::~ExperimentalSchedUpidGenerator() = default;
 
 Table::Schema ExperimentalSchedUpidGenerator::CreateSchema() {
-  Table::Schema schema = tables::SchedSliceTable::Schema();
-  schema.columns.emplace_back(
-      Table::Schema::Column{"upid", SqlValue::Type::kLong, false /* is_id */,
-                            false /* is_sorted */, false /* is_hidden */});
-  return schema;
+  return tables::ExperimentalSchedUpidTable::Schema();
 }
 
 std::string ExperimentalSchedUpidGenerator::TableName() {
-  return "experimental_sched_upid";
+  return tables::ExperimentalSchedUpidTable::Name();
 }
 
 uint32_t ExperimentalSchedUpidGenerator::EstimateRowCount() {
   return sched_slice_table_->row_count();
 }
 
-util::Status ExperimentalSchedUpidGenerator::ValidateConstraints(
+base::Status ExperimentalSchedUpidGenerator::ValidateConstraints(
     const QueryConstraints&) {
-  return util::OkStatus();
+  return base::OkStatus();
 }
 
-std::unique_ptr<Table> ExperimentalSchedUpidGenerator::ComputeTable(
+base::Status ExperimentalSchedUpidGenerator::ComputeTable(
     const std::vector<Constraint>&,
-    const std::vector<Order>&) {
-  if (!upid_column_) {
-    upid_column_.reset(new NullableVector<uint32_t>(ComputeUpidColumn()));
+    const std::vector<Order>&,
+    const BitVector&,
+    std::unique_ptr<Table>& table_return) {
+  if (!sched_upid_table_) {
+    sched_upid_table_ = tables::ExperimentalSchedUpidTable::ExtendParent(
+        *sched_slice_table_, ComputeUpidColumn());
   }
-  return std::unique_ptr<Table>(new Table(sched_slice_table_->ExtendWithColumn(
-      "upid", upid_column_.get(),
-      TypedColumn<base::Optional<uint32_t>>::default_flags())));
+  table_return.reset(new Table(sched_upid_table_->Copy()));
+  return base::OkStatus();
 }
 
 NullableVector<uint32_t> ExperimentalSchedUpidGenerator::ComputeUpidColumn() {

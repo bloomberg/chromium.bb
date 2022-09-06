@@ -42,8 +42,6 @@ class RectF;
 
 namespace blink {
 
-class FloatQuad;
-class FloatRect;
 class TransformationMatrix;
 
 #define IDENTITY_TRANSFORM \
@@ -76,10 +74,7 @@ class PLATFORM_EXPORT AffineTransform {
   gfx::Rect MapRect(const gfx::Rect&) const;
 
   gfx::RectF MapRect(const gfx::RectF&) const;
-  FloatRect MapRect(const FloatRect&) const;
-
   gfx::QuadF MapQuad(const gfx::QuadF&) const;
-  FloatQuad MapQuad(const FloatQuad&) const;
 
   bool IsIdentity() const;
 
@@ -168,6 +163,12 @@ class PLATFORM_EXPORT AffineTransform {
 
   static AffineTransform Translation(double x, double y) {
     return AffineTransform(1, 0, 0, 1, x, y);
+  }
+  static AffineTransform MakeScale(double s) {
+    return MakeScaleNonUniform(s, s);
+  }
+  static AffineTransform MakeScaleNonUniform(double sx, double sy) {
+    return AffineTransform(sx, 0, 0, sy, 0, 0);
   }
 
   // decompose the matrix into its component parts

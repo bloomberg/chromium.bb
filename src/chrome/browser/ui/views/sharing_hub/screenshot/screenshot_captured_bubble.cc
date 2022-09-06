@@ -4,14 +4,27 @@
 
 #include "chrome/browser/ui/views/sharing_hub/screenshot/screenshot_captured_bubble.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
+#include "chrome/browser/image_editor/image_editor_component_info.h"
+#include "chrome/browser/image_editor/screenshot_flow.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,13 +34,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/table_layout_view.h"
 #include "ui/views/view.h"
 
@@ -36,10 +50,15 @@ namespace {
 // Rendered image size, pixels.
 constexpr int kImageWidthPx = 336;
 constexpr int kImageHeightPx = 252;
-
 }  // namespace
 
 namespace sharing_hub {
+
+bool IsEditorInstalled() {
+  return base::FeatureList::IsEnabled(share::kSharingDesktopScreenshotsEdit) &&
+         image_editor::ImageEditorComponentInfo::GetInstance()
+             ->IsImageEditorAvailable();
+}
 
 ScreenshotCapturedBubble::ScreenshotCapturedBubble(
     views::View* anchor_view,
@@ -58,6 +77,20 @@ ScreenshotCapturedBubble::ScreenshotCapturedBubble(
 
 ScreenshotCapturedBubble::~ScreenshotCapturedBubble() = default;
 
+void ScreenshotCapturedBubble::OnThemeChanged() {
+  LocationBarBubbleDelegateView::OnThemeChanged();
+
+  const int border_radius = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
+  const auto* const color_provider = GetColorProvider();
+  image_view_->SetBorder(views::CreateRoundedRectBorder(
+      /*thickness=*/2, border_radius,
+      color_provider->GetColor(kColorScreenshotCapturedImageBorder)));
+  image_view_->SetBackground(views::CreateRoundedRectBackground(
+      color_provider->GetColor(kColorScreenshotCapturedImageBackground),
+      border_radius, 2));
+}
+
 void ScreenshotCapturedBubble::Show() {
   ShowForReason(USER_GESTURE);
 }
@@ -70,9 +103,7 @@ bool ScreenshotCapturedBubble::ShouldShowCloseButton() const {
   return true;
 }
 
-void ScreenshotCapturedBubble::WindowClosing() {
-  NOTIMPLEMENTED();
-}
+void ScreenshotCapturedBubble::WindowClosing() {}
 
 void ScreenshotCapturedBubble::Init() {
   auto* layout_provider = ChromeLayoutProvider::Get();
@@ -105,44 +136,37 @@ void ScreenshotCapturedBubble::Init() {
                   .AddPaddingColumn(views::TableLayout::kFixedSize,
                                     width_padding)
                   .AddRows(1, views::TableLayout::kFixedSize, 0)
-                  .AddChild(
-                      views::Builder<views::ImageView>()
-                          .SetBorder(views::CreateRoundedRectBorder(
-                              /*thickness=*/2, border_radius,
-                              gfx::kGoogleGrey200))
-                          .SetHorizontalAlignment(Alignment::kCenter)
-                          .SetVerticalAlignment(Alignment::kCenter)
-                          .SetImageSize(GetImageSize())
-                          .SetPreferredSize(
-                              GetImageSize() +
-                              gfx::Size(border_radius, border_radius))
-                          .SetBackground(views::CreateRoundedRectBackground(
-                              SK_ColorWHITE, border_radius))
-                          .SetImage(image_.ToImageSkia())
-                          .SetVisible(true)));
+                  .AddChild(views::Builder<views::ImageView>()
+                                .SetHorizontalAlignment(Alignment::kCenter)
+                                .SetVerticalAlignment(Alignment::kCenter)
+                                .SetImageSize(GetImageSize())
+                                .SetPreferredSize(
+                                    GetImageSize() +
+                                    gfx::Size(border_radius, border_radius))
+                                .SetImage(image_.ToImageSkia())
+                                .SetVisible(true)
+                                .CopyAddressTo(&image_view_)));
   auto edit_button =
       views::Builder<views::MdTextButton>()
           .SetCallback(
               base::BindRepeating(&ScreenshotCapturedBubble::EditButtonPressed,
-                                  base::Unretained(this)))
+                                  weak_factory_.GetWeakPtr()))
           .SetText(l10n_util::GetStringUTF16(
               IDS_BROWSER_SHARING_SCREENSHOT_DIALOG_EDIT_BUTTON_LABEL))
-          .SetHorizontalAlignment(gfx::ALIGN_LEFT)
           .Build();
 
   auto download_button =
       views::Builder<views::MdTextButton>()
           .SetCallback(base::BindRepeating(
               &ScreenshotCapturedBubble::DownloadButtonPressed,
-              base::Unretained(this)))
+              weak_factory_.GetWeakPtr()))
           .SetText(l10n_util::GetStringUTF16(
               IDS_BROWSER_SHARING_SCREENSHOT_DIALOG_DOWNLOAD_BUTTON_LABEL))
-          .SetHorizontalAlignment(gfx::ALIGN_RIGHT)
           .SetProminent(true)
           .Build();
 
   auto download_row = views::Builder<views::TableLayoutView>();
-  if (base::FeatureList::IsEnabled(share::kSharingDesktopScreenshotsEdit)) {
+  if (IsEditorInstalled()) {
     const int kPaddingEditDownloadButtonPx =
         kImageWidthPx - edit_button->CalculatePreferredSize().width() -
         download_button->CalculatePreferredSize().width();
@@ -161,7 +185,7 @@ void ScreenshotCapturedBubble::Init() {
                  1.0, views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
       .AddRows(1, views::TableLayout::kFixedSize, 0);
 
-  if (base::FeatureList::IsEnabled(share::kSharingDesktopScreenshotsEdit)) {
+  if (IsEditorInstalled()) {
     download_row.AddChild(
         views::Builder<views::MdTextButton>(std::move(edit_button))
             .CopyAddressTo(&edit_button_));
@@ -231,12 +255,51 @@ void ScreenshotCapturedBubble::DownloadButtonPressed() {
       "SharingDesktopScreenshot.ScreenshotSavedViaBubble"));
 }
 
+static base::FilePath WriteTemporaryFile(
+    const std::vector<unsigned char>& image_bytes) {
+  base::FilePath file_path;
+  base::CreateTemporaryFile(&file_path);
+  if (!file_path.empty()) {
+    if (!base::WriteFile(file_path, base::make_span(image_bytes.data(),
+                                                    image_bytes.size()))) {
+      file_path.clear();
+    }
+  }
+  return file_path;
+}
+
 void ScreenshotCapturedBubble::EditButtonPressed() {
+  base::RecordAction(
+      base::UserMetricsAction("SharingDesktopScreenshot.ScreenshotEdited"));
+  const gfx::ImageSkia& image_ref = image_view_->GetImage();
+  const gfx::ImageSkiaRep& image_rep = image_ref.GetRepresentation(1.0f);
+  const SkBitmap& captured_skbitmap = image_rep.GetBitmap();
+
+  std::vector<unsigned char> image_bytes;
+  gfx::PNGCodec::EncodeBGRASkBitmap(captured_skbitmap, false, &image_bytes);
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&WriteTemporaryFile, image_bytes),
+      base::BindOnce(&ScreenshotCapturedBubble::NavigateToImageEditor,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ScreenshotCapturedBubble::NavigateToImageEditor(
+    const base::FilePath& screenshot_file_path) {
+  auto screenshot_data =
+      std::make_unique<image_editor::ScreenshotCapturedData>();
+  screenshot_data->screenshot_filepath = screenshot_file_path;
+  profile_->SetUserData(image_editor::ScreenshotCapturedData::kDataKey,
+                        std::move(screenshot_data));
+
   GURL url(chrome::kChromeUIImageEditorURL);
   NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.window_action = NavigateParams::SHOW_WINDOW;
-  std::move(edit_callback_).Run(&params);
+  if (edit_callback_) {
+    std::move(edit_callback_).Run(&params);
+  }
 }
 
 // Calculates the size of the image with padding.

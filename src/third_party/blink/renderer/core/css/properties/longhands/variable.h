@@ -9,6 +9,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHANDS_VARIABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHANDS_VARIABLE_H_
 
+#include "base/notreached.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
 
 namespace blink {
@@ -36,7 +38,8 @@ class CORE_EXPORT Variable : public Longhand {
   explicit constexpr Variable(CSSProperty::Flags flags)
       : Longhand(CSSPropertyID::kVariable,
                  kProperty | kValidForFirstLetter | kValidForFirstLine |
-                     kValidForMarker | kValidForHighlight | flags,
+                     kValidForMarker | kValidForHighlightLegacy |
+                     kValidForHighlight | flags,
                  '\0') {}
 };
 

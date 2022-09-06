@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
 <translation id="3256109297135787951">अपने शेल्फ़ पर मौजूद किसी आइटम से हाइलाइट हटाएं</translation>
 <translation id="3288816184963444640">अभी वाली विंडो बंद करें</translation>
+<translation id="3322797428033495633">पिक्चर में पिक्चर विंडो पर फ़ोकस करना</translation>
 <translation id="3350805006883559974">सबसे ऊपर फ़्लोट एक्टिव विंडो</translation>
 <translation id="3407560819924487926">काम का मैनेजर सामने लाएं</translation>
 <translation id="3417835166382867856">टैब खोजें</translation>
@@ -157,6 +158,7 @@
 <translation id="6445033640292336367">टैब को उसकी मूल जगह पर वापस ले जाएं</translation>
 <translation id="6474744297082284761">ज़ूम घटाएं (डॉक किए जाने या फ़ुलस्क्रीन मैग्निफ़ायर चालू किए जाने पर)</translation>
 <translation id="649811797655257835">फ़ाइल चुनें, फिर <ph name="SPACE" /> दबाएं</translation>
+<translation id="6515089016094047210">कैलेंडर विजेट खोलें या बंद करें.</translation>
 <translation id="6551886416582667425">पार्शियल (कुछ हिस्सों का) स्क्रीनशॉट लें/पार्शियल (कुछ हिस्सों की) रिकॉर्डिंग करें</translation>
 <translation id="6556040137485212400">उस विंडो को खोलें जिसका सबसे लंबे समय से इस्तेमाल नहीं किया गया है</translation>
 <translation id="666343722268997814">हाइलाइट किए गए आइटम के लिए राइट-क्लिक मेन्यू खोलें</translation>
@@ -190,7 +192,7 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="SPACE" /> या <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ब्राउज़र में फ़ाइल खोलें</translation>
 <translation id="7952165122793773711">टैब 1 से 8 तक जाएं</translation>
-<translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
+<translation id="8026334261755873520">ब्राउज़िंग डेटा मिटाएं</translation>
 <translation id="8130528849632411619">दस्‍तावेज़ की शुरुआत में जाएं</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> या <ph name="E" /></translation>
 <translation id="8234414138295101081">स्‍क्रीन को 90 डिग्री पर घुमाएं</translation>

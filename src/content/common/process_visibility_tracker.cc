@@ -4,6 +4,8 @@
 
 #include "content/common/process_visibility_tracker.h"
 
+#include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
 
 namespace content {

@@ -7,16 +7,16 @@
 
 #include <string>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -163,6 +163,6 @@ class ActiveHost {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_ACTIVE_HOST_H_

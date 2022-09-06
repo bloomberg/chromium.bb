@@ -73,10 +73,14 @@ void ClearDamageForAllSurfaces(LayerImpl* root) {
 }
 
 void SetCopyRequest(LayerImpl* root) {
-  auto* root_node = root->layer_tree_impl()->property_trees()->effect_tree.Node(
-      root->effect_tree_index());
+  auto* root_node =
+      root->layer_tree_impl()->property_trees()->effect_tree_mutable().Node(
+          root->effect_tree_index());
   root_node->has_copy_request = true;
-  root->layer_tree_impl()->property_trees()->effect_tree.set_needs_update(true);
+  root->layer_tree_impl()
+      ->property_trees()
+      ->effect_tree_mutable()
+      .set_needs_update(true);
 }
 
 class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
@@ -250,7 +254,8 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
     // consideration.
     root->layer_tree_impl()
         ->property_trees()
-        ->effect_tree.Node(child1_->effect_tree_index())
+        ->effect_tree_mutable()
+        .Node(child1_->effect_tree_index())
         ->backdrop_filters.Append(
             FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
 
@@ -1074,7 +1079,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
   // Blur outset is 9px for a 3px blur, scaled up by DSF.
   int blur_outset = 9 * device_scale_factor;
   gfx::Rect expected_child_damage_rect(60, 60);
-  expected_child_damage_rect.Inset(-blur_outset, -blur_outset);
+  expected_child_damage_rect.Inset(-blur_outset);
   gfx::Rect expected_root_damage_rect(child_damage_rect);
   expected_root_damage_rect.Offset(200, 200);
   EXPECT_EQ(expected_root_damage_rect, root_damage_rect);

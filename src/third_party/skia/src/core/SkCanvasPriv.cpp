@@ -101,14 +101,23 @@ void SkCanvasPriv::GetDstClipAndMatrixCounts(const SkCanvas::ImageSetEntry set[]
     *totalMatrixCount = maxMatrixIndex + 1;
 }
 
+#ifdef SK_ENABLE_SKSL
+void SkCanvasPriv::DrawMesh(SkCanvas* canvas,
+                            const SkMesh& mesh,
+                            sk_sp<SkBlender> blender,
+                            const SkPaint& paint) {
+    canvas->drawMesh(mesh, std::move(blender), paint);
+}
+#endif
+
 #if GR_TEST_UTILS
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/BaseDevice.h"
+#include "src/gpu/ganesh/BaseDevice.h"
 
 #if SK_GPU_V1
 skgpu::v1::SurfaceDrawContext* SkCanvasPriv::TopDeviceSurfaceDrawContext(SkCanvas* canvas) {
-    if (auto gpuDevice = canvas->topDevice()->asGpuDevice()) {
+    if (auto gpuDevice = canvas->topDevice()->asGaneshDevice()) {
         return gpuDevice->surfaceDrawContext();
     }
 
@@ -117,7 +126,7 @@ skgpu::v1::SurfaceDrawContext* SkCanvasPriv::TopDeviceSurfaceDrawContext(SkCanva
 #endif // SK_GPU_V1
 
 skgpu::SurfaceFillContext* SkCanvasPriv::TopDeviceSurfaceFillContext(SkCanvas* canvas) {
-    if (auto gpuDevice = canvas->topDevice()->asGpuDevice()) {
+    if (auto gpuDevice = canvas->topDevice()->asGaneshDevice()) {
         return gpuDevice->surfaceFillContext();
     }
 
@@ -141,10 +150,10 @@ skgpu::SurfaceFillContext* SkCanvasPriv::TopDeviceSurfaceFillContext(SkCanvas* c
 #endif // GR_TEST_UTILS
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/BaseDevice.h"
+#include "src/gpu/ganesh/BaseDevice.h"
 
 GrRenderTargetProxy* SkCanvasPriv::TopDeviceTargetProxy(SkCanvas* canvas) {
-    if (auto gpuDevice = canvas->topDevice()->asGpuDevice()) {
+    if (auto gpuDevice = canvas->topDevice()->asGaneshDevice()) {
         return gpuDevice->targetProxy();
     }
 
@@ -158,3 +167,15 @@ GrRenderTargetProxy* SkCanvasPriv::TopDeviceTargetProxy(SkCanvas* canvas) {
 }
 
 #endif // SK_SUPPORT_GPU
+
+#if GRAPHITE_TEST_UTILS
+#include "src/gpu/graphite/Device.h"
+
+skgpu::graphite::TextureProxy* SkCanvasPriv::TopDeviceGraphiteTargetProxy(SkCanvas* canvas) {
+    if (auto gpuDevice = canvas->topDevice()->asGraphiteDevice()) {
+        return gpuDevice->proxy();
+    }
+    return nullptr;
+}
+
+#endif // GRAPHITE_TEST_UTILS

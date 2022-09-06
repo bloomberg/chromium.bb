@@ -23,7 +23,7 @@ const char kAndroid[] =
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s.0.0.0 %s"
     "Safari/537.36";
 const char kUnifiedPlatformAndroid[] = "Linux; Android 10; K";
-const char kUnifiedPlatformCrOS[] = "X11; CrOS x86_64";
+const char kUnifiedPlatformCrOS[] = "X11; CrOS x86_64 14541.0.0";
 const char kUnifiedPlatformLinux[] = "X11; Linux x86_64";
 const char kUnifiedPlatformMacOS[] = "Macintosh; Intel Mac OS X 10_15_7";
 const char kUnifiedPlatformWindows[] = "Windows NT 10.0; Win64; x64";
@@ -45,11 +45,11 @@ CONTENT_EXPORT std::string BuildCpuInfo();
 
 // Takes the cpu info (see BuildCpuInfo()) and extracts the architecture for
 // most common cases.
-CONTENT_EXPORT std::string GetLowEntropyCpuArchitecture();
+CONTENT_EXPORT std::string GetCpuArchitecture();
 
 // Takes the cpu info (see BuildCpuInfo()) and extracts the CPU bitness for
 // most common cases.
-CONTENT_EXPORT std::string GetLowEntropyCpuBitness();
+CONTENT_EXPORT std::string GetCpuBitness();
 
 // Builds a User-agent compatible string that describes the OS and CPU type.
 // On Android, the string will only include the build number and model if
@@ -89,7 +89,7 @@ CONTENT_EXPORT std::string BuildUserAgentFromProduct(
 // if on a codenamed (i.e. not a release) build of an Android.
 CONTENT_EXPORT std::string BuildModelInfo();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Helper function to generate a full user agent string given a short
 // product name and some extra text to be added to the OS info.
 // This is currently only used for Android Web View.
@@ -109,6 +109,10 @@ CONTENT_EXPORT std::string GetAndroidOSInfo(
 CONTENT_EXPORT std::string BuildUserAgentFromOSAndProduct(
     const std::string& os_info,
     const std::string& product);
+
+// Returns true if the binary was built in 32-bit mode and is running on 64-bit
+// Windows; returns false otherwise.
+CONTENT_EXPORT bool IsWoW64();
 
 }  // namespace content
 

@@ -9,6 +9,7 @@
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "net/http/http_request_headers.h"
 
 namespace safe_browsing {
@@ -44,7 +45,6 @@ class WebApiHandshakeChecker::CheckerOnIO
         std::move(delegate_getter_).Run();
     bool skip_checks =
         !url_checker_delegate ||
-        !url_checker_delegate->GetDatabaseManager()->IsSupported() ||
         url_checker_delegate->ShouldSkipRequestCheck(
             url, frame_tree_node_id_,
             /*render_process_id=*/content::ChildProcessHost::kInvalidUniqueID,

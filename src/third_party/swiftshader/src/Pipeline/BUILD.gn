@@ -24,6 +24,7 @@ swiftshader_source_set("Pipeline_headers") {
     "SetupRoutine.hpp",
     "ShaderCore.hpp",
     "SpirvBinary.hpp",
+    "SpirvProfiler.hpp",
     "SpirvShader.hpp",
     "SpirvShaderDebug.hpp",
     "VertexProgram.hpp",
@@ -41,6 +42,7 @@ swiftshader_source_set("Pipeline") {
     "SetupRoutine.cpp",
     "ShaderCore.cpp",
     "SpirvBinary.cpp",
+    "SpirvProfiler.cpp",
     "SpirvShader.cpp",
     "SpirvShaderArithmetic.cpp",
     "SpirvShaderControlFlow.cpp",
@@ -60,11 +62,15 @@ swiftshader_source_set("Pipeline") {
     "..",
     "../../include",
     "../../third_party/SPIRV-Headers/include",
-    "${swiftshader_spirv_tools_dir}/include",
+    "../../third_party/SPIRV-Tools/include",
+  ]
+
+  defines = [
+     "SWIFTSHADER_LEGACY_PRECISION=true",  # TODO(chromium:1299047)
   ]
 
   deps = [
-    "${swiftshader_spirv_tools_dir}:spvtools_headers",
+    "../../third_party/SPIRV-Tools:spvtools_headers",
     "../../third_party/marl:Marl_headers",
     "../Device:Device_headers",
     "../System:System_headers",

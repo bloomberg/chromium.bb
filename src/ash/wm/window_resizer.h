@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/wm/drag_details.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/weak_ptr.h"
@@ -27,6 +26,7 @@ class GestureEvent;
 }
 
 namespace ash {
+class PresentationTimeRecorder;
 
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
 // or resizing a window. All coordinates passed to this are in the parent
@@ -89,6 +89,9 @@ class ASH_EXPORT WindowResizer {
   // Call during an active resize to change the bounds of the window. This
   // should not be called as the result of a revert.
   void SetBoundsDuringResize(const gfx::Rect& bounds);
+
+  void SetPresentationTimeRecorder(
+      std::unique_ptr<PresentationTimeRecorder> recorder);
 
   // WindowState of the drag target.
   WindowState* window_state_;

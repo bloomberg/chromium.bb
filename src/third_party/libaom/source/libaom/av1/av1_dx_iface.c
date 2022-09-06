@@ -121,12 +121,9 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
     aom_free(pbi->common.tpl_mvs);
     pbi->common.tpl_mvs = NULL;
     av1_remove_common(&frame_worker_data->pbi->common);
-    av1_free_cdef_buffers(&pbi->common, &pbi->cdef_worker, &pbi->cdef_sync,
-                          pbi->num_workers);
+    av1_free_cdef_buffers(&pbi->common, &pbi->cdef_worker, &pbi->cdef_sync);
     av1_free_cdef_sync(&pbi->cdef_sync);
-#if !CONFIG_REALTIME_ONLY
     av1_free_restoration_buffers(&pbi->common);
-#endif
     av1_decoder_remove(pbi);
     aom_free(frame_worker_data);
 #if CONFIG_MULTITHREAD

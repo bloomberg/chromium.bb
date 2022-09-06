@@ -13,12 +13,12 @@
 #include "include/gpu/GrTypes.h"
 #ifdef SK_GL
 #include "include/gpu/gl/GrGLTypes.h"
-#include "include/private/GrGLTypesPriv.h"
+#include "include/private/gpu/ganesh/GrGLTypesPriv.h"
 #endif
 #include "include/gpu/mock/GrMockTypes.h"
 #ifdef SK_VULKAN
 #include "include/gpu/vk/GrVkTypes.h"
-#include "include/private/GrVkTypesPriv.h"
+#include "include/private/gpu/ganesh/GrVkTypesPriv.h"
 #endif
 
 #ifdef SK_DAWN
@@ -31,7 +31,7 @@ class GrGLTextureParameters;
 class GrColorFormatDesc;
 
 #ifdef SK_DAWN
-#include "dawn/webgpu_cpp.h"
+#include "webgpu/webgpu_cpp.h"
 #endif
 
 #ifdef SK_METAL
@@ -39,7 +39,7 @@ class GrColorFormatDesc;
 #endif
 
 #ifdef SK_DIRECT3D
-#include "include/private/GrD3DTypesMinimal.h"
+#include "include/private/gpu/ganesh/GrD3DTypesMinimal.h"
 class GrD3DResourceState;
 #endif
 
@@ -137,6 +137,8 @@ public:
      * GrGLFormat::kUnknown.
      */
     GrGLFormat asGLFormat() const;
+
+    GrGLenum asGLFormatEnum() const;
 #endif
 
 #ifdef SK_VULKAN
@@ -640,4 +642,3 @@ private:
 #endif
 
 #endif
-

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
@@ -46,15 +47,23 @@
 
 namespace blink {
 
+namespace {
+
 // Number of AudioContexts still alive.  It's incremented when an
 // AudioContext is created and decremented when the context is closed.
-static unsigned g_hardware_context_count = 0;
+unsigned hardware_context_count = 0;
 
 // A context ID that is incremented for each context that is created.
 // This initializes the internal id for the context.
-static unsigned g_context_id = 0;
+unsigned context_id = 0;
 
-namespace {
+// When the client does not have enough permission, the outputLatency property
+// is quantized by 8ms to reduce the precision for privacy concerns.
+constexpr double kOutputLatencyQuatizingFactor = 0.008;
+
+// When the client has enough permission, the outputLatency property gets
+// 1ms precision.
+constexpr double kOutputLatencyMaxPrecisionFactor = 0.001;
 
 const char* LatencyCategoryToString(
     WebAudioLatencyHint::AudioContextLatencyCategory category) {
@@ -87,6 +96,22 @@ String GetAudioContextLogString(const WebAudioLatencyHint& latency_hint,
   return builder.ToString();
 }
 
+bool IsAudible(const AudioBus* rendered_data) {
+  // Compute the energy in each channel and sum up the energy in each channel
+  // for the total energy.
+  float energy = 0;
+
+  uint32_t data_size = rendered_data->length();
+  for (uint32_t k = 0; k < rendered_data->NumberOfChannels(); ++k) {
+    const float* data = rendered_data->Channel(k)->Data();
+    float channel_energy;
+    vector_math::Vsvesq(data, 1, &channel_energy, data_size);
+    energy += channel_energy;
+  }
+
+  return energy > 0;
+}
+
 }  // namespace
 
 AudioContext* AudioContext::Create(Document& document,
@@ -96,7 +121,7 @@ AudioContext* AudioContext::Create(Document& document,
 
   if (document.IsDetached()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot create AudioContext on a detached document.");
     return nullptr;
   }
@@ -149,7 +174,7 @@ AudioContext* AudioContext::Create(Document& document,
   SCOPED_UMA_HISTOGRAM_TIMER("WebAudio.AudioContext.CreateTime");
   AudioContext* audio_context =
       MakeGarbageCollected<AudioContext>(document, latency_hint, sample_rate);
-  ++g_hardware_context_count;
+  ++hardware_context_count;
   audio_context->UpdateStateIfNeeded();
 
   // This starts the audio thread. The destination node's
@@ -167,7 +192,7 @@ AudioContext* AudioContext::Create(Document& document,
   }
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
-          audio_context, audio_context->context_id_, g_hardware_context_count);
+          audio_context, audio_context->context_id_, hardware_context_count);
 #endif
 
   base::UmaHistogramSparse("WebAudio.AudioContext.MaxChannelsAvailable",
@@ -182,8 +207,10 @@ AudioContext::AudioContext(Document& document,
                            const WebAudioLatencyHint& latency_hint,
                            absl::optional<float> sample_rate)
     : BaseAudioContext(&document, kRealtimeContext),
-      context_id_(g_context_id++),
-      audio_context_manager_(document.GetExecutionContext()) {
+      context_id_(context_id++),
+      audio_context_manager_(document.GetExecutionContext()),
+      permission_service_(document.GetExecutionContext()),
+      permission_receiver_(this, document.GetExecutionContext()) {
   SendLogMessage(GetAudioContextLogString(latency_hint, sample_rate));
   destination_node_ =
       RealtimeAudioDestinationNode::Create(this, latency_hint, sample_rate);
@@ -194,8 +221,13 @@ AudioContext::AudioContext(Document& document,
     case AutoplayPolicy::Type::kUserGestureRequired:
       // kUserGestureRequire policy only applies to cross-origin iframes for Web
       // Audio.
+      // TODO(crbug.com/1318055): With MPArch there may be multiple main frames
+      // so we should use IsCrossOriginToOutermostMainFrame when we intend to
+      // check if any embedded frame (eg, iframe or fenced frame) is
+      // cross-origin with respect to the outermost main frame. Follow up to
+      // confirm correctness.
       if (document.GetFrame() &&
-          document.GetFrame()->IsCrossOriginToMainFrame()) {
+          document.GetFrame()->IsCrossOriginToOutermostMainFrame()) {
         autoplay_status_ = AutoplayStatus::kFailed;
         user_gesture_required_ = true;
       }
@@ -214,7 +246,7 @@ AudioContext::AudioContext(Document& document,
   //
   // TODO(hongchan): Due to the incompatible constructor between
   // AudioDestinationNode and RealtimeAudioDestinationNode, casting directly
-  // from |destination()| is impossible. This is a temporary workaround until
+  // from `destination()` is impossible. This is a temporary workaround until
   // the refactoring is completed.
   RealtimeAudioDestinationHandler& destination_handler =
       static_cast<RealtimeAudioDestinationHandler&>(
@@ -223,13 +255,25 @@ AudioContext::AudioContext(Document& document,
                   static_cast<double>(sampleRate());
   SendLogMessage(String::Format("%s => (base latency=%.3f seconds))", __func__,
                                 base_latency_));
+
+  // Perform the initial permission check for the output latency precision.
+  ExecutionContext* execution_context = document.GetExecutionContext();
+  auto microphone_permission_name = mojom::blink::PermissionName::AUDIO_CAPTURE;
+  ConnectToPermissionService(
+      execution_context,
+      permission_service_.BindNewPipeAndPassReceiver(
+          execution_context->GetTaskRunner(TaskType::kPermission)));
+  permission_service_->HasPermission(
+      CreatePermissionDescriptor(microphone_permission_name),
+      WTF::Bind(&AudioContext::DidInitialPermissionCheck, WrapPersistent(this),
+                CreatePermissionDescriptor(microphone_permission_name)));
 }
 
 void AudioContext::Uninitialize() {
   DCHECK(IsMainThread());
-  DCHECK_NE(g_hardware_context_count, 0u);
+  DCHECK_NE(hardware_context_count, 0u);
   SendLogMessage(String::Format("%s", __func__));
-  --g_hardware_context_count;
+  --hardware_context_count;
   StopRendering();
   DidClose();
   RecordAutoplayMetrics();
@@ -239,7 +283,7 @@ void AudioContext::Uninitialize() {
 AudioContext::~AudioContext() {
   // TODO(crbug.com/945379) Disable this DCHECK for now.  It's not terrible if
   // the autoplay metrics aren't recorded in some odd situations.  haraken@ said
-  // that we shouldn't get here without also calling |Uninitialize()|, but it
+  // that we shouldn't get here without also calling `Uninitialize()`, but it
   // can happen.  Until that is fixed, disable this DCHECK.
 
   // DCHECK(!autoplay_status_.has_value());
@@ -252,44 +296,43 @@ AudioContext::~AudioContext() {
 void AudioContext::Trace(Visitor* visitor) const {
   visitor->Trace(close_resolver_);
   visitor->Trace(audio_context_manager_);
+  visitor->Trace(permission_service_);
+  visitor->Trace(permission_receiver_);
   BaseAudioContext::Trace(visitor);
 }
 
-ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
+ScriptPromise AudioContext::suspendContext(ScriptState* script_state,
+                                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   if (ContextState() == kClosed) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot suspend a context that has been closed"));
-  } else {
-    suspended_by_user_ = true;
-
-    // Stop rendering now.
-    if (destination())
-      SuspendRendering();
-
-    // Since we don't have any way of knowing when the hardware actually stops,
-    // we'll just resolve the promise now.
-    resolver->Resolve();
-
-    // Probe reports the suspension only when the promise is resolved.
-    probe::DidSuspendAudioContext(GetDocument());
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot suspend a closed AudioContext.");
+    return ScriptPromise();
   }
 
-  return promise;
+  suspended_by_user_ = true;
+
+  // Stop rendering now.
+  if (destination()) {
+    SuspendRendering();
+  }
+
+  // Probe reports the suspension only when the promise is resolved.
+  probe::DidSuspendAudioContext(GetDocument());
+
+  // Since we don't have any way of knowing when the hardware actually stops,
+  // we'll just resolve the promise now.
+  return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (IsContextCleared()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
-                                      "cannot resume a closed AudioContext");
+  if (ContextState() == kClosed) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot resume a closed AudioContext.");
     return ScriptPromise();
   }
 
@@ -330,8 +373,9 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
 bool AudioContext::IsPullingAudioGraph() const {
   DCHECK(IsMainThread());
 
-  if (!destination())
+  if (!destination()) {
     return false;
+  }
 
   RealtimeAudioDestinationHandler& destination_handler =
       static_cast<RealtimeAudioDestinationHandler&>(
@@ -348,8 +392,9 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
 
   DCHECK(IsMainThread());
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  if (!window)
+  if (!window) {
     return result;
+  }
 
   if (!destination()) {
     result->setContextTime(0.0);
@@ -370,8 +415,9 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
 
   double performance_time = performance->MonotonicTimeToDOMHighResTimeStamp(
       base::TimeTicks() + base::Seconds(position.timestamp));
-  if (performance_time < 0.0)
+  if (performance_time < 0.0) {
     performance_time = 0.0;
+  }
 
   result->setContextTime(position.position);
   result->setPerformanceTime(performance_time);
@@ -380,14 +426,12 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
 
 ScriptPromise AudioContext::closeContext(ScriptState* script_state,
                                          ExceptionState& exception_state) {
-  if (IsContextCleared()) {
+  if (ContextState() == kClosed) {
     // We've already closed the context previously, but it hasn't yet been
     // resolved, so just throw a DOM exception to trigger a promise rejection
     // and return an empty promise.
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot close a context that is being closed or has already been "
-        "closed.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot close a closed AudioContext.");
     return ScriptPromise();
   }
 
@@ -408,8 +452,9 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state,
 void AudioContext::DidClose() {
   SetContextState(kClosed);
 
-  if (close_resolver_)
+  if (close_resolver_) {
     close_resolver_->Resolve();
+  }
 }
 
 bool AudioContext::IsContextCleared() const {
@@ -420,8 +465,9 @@ void AudioContext::StartRendering() {
   DCHECK(IsMainThread());
   SendLogMessage(String::Format("%s", __func__));
 
-  if (!keep_alive_)
+  if (!keep_alive_) {
     keep_alive_ = this;
+  }
   BaseAudioContext::StartRendering();
 }
 
@@ -459,6 +505,16 @@ double AudioContext::baseLatency() const {
   return base_latency_;
 }
 
+double AudioContext::outputLatency() const {
+  DCHECK(IsMainThread());
+  DCHECK(destination());
+
+  GraphAutoLocker locker(this);
+
+  double factor = GetOutputLatencyQuantizingFactor();
+  return std::round(output_position_.hardware_output_latency / factor) * factor;
+}
+
 MediaElementAudioSourceNode* AudioContext::createMediaElementSource(
     HTMLMediaElement* media_element,
     ExceptionState& exception_state) {
@@ -488,9 +544,15 @@ MediaStreamAudioDestinationNode* AudioContext::createMediaStreamDestination(
 void AudioContext::NotifySourceNodeStart() {
   DCHECK(IsMainThread());
 
-  source_node_started_ = true;
-  if (!user_gesture_required_)
+  // Do nothing when the context is already closed. (crbug.com/1292101)
+  if (ContextState() == AudioContextState::kClosed) {
     return;
+  }
+
+  source_node_started_ = true;
+  if (!user_gesture_required_) {
+    return;
+  }
 
   MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kSourceNodeStart);
 
@@ -512,7 +574,7 @@ AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
           AutoplayPolicy::Type::kDocumentUserActivationRequired &&
       RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
 // When ignored, the policy is different on Android compared to Desktop.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     return AutoplayPolicy::Type::kUserGestureRequired;
 #else
     // Force no user gesture required on desktop.
@@ -540,8 +602,9 @@ bool AudioContext::AreAutoplayRequirementsFulfilled() const {
 }
 
 void AudioContext::MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType type) {
-  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
+  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled()) {
     return;
+  }
 
   DCHECK(!autoplay_status_.has_value() ||
          autoplay_status_ != AutoplayStatus::kSucceeded);
@@ -554,8 +617,9 @@ void AudioContext::MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType type) {
 }
 
 bool AudioContext::IsAllowedToStart() const {
-  if (!user_gesture_required_)
+  if (!user_gesture_required_) {
     return true;
+  }
 
   LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
   DCHECK(window);
@@ -566,7 +630,7 @@ bool AudioContext::IsAllowedToStart() const {
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
       DCHECK(window->GetFrame());
-      DCHECK(window->GetFrame()->IsCrossOriginToMainFrame());
+      DCHECK(window->GetFrame()->IsCrossOriginToOutermostMainFrame());
       window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
@@ -586,8 +650,9 @@ bool AudioContext::IsAllowedToStart() const {
 }
 
 void AudioContext::RecordAutoplayMetrics() {
-  if (!autoplay_status_.has_value() || !GetDocument())
+  if (!autoplay_status_.has_value() || !GetDocument()) {
     return;
+  }
 
   ukm::UkmRecorder* ukm_recorder = GetDocument()->UkmRecorder();
   DCHECK(ukm_recorder);
@@ -602,8 +667,12 @@ void AudioContext::RecordAutoplayMetrics() {
   // Record autoplay_status_ value.
   base::UmaHistogramEnumeration("WebAudio.Autoplay", autoplay_status_.value());
 
+  // TODO(crbug.com/1318055): With MPArch there may be multiple main frames so
+  // we should use IsCrossOriginToOutermostMainFrame when we intend to check if
+  // any embedded frame (eg, iframe or fenced frame) is cross-origin with
+  // respect to the outermost main frame. Follow up to confirm correctness.
   if (GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->IsCrossOriginToMainFrame()) {
+      GetDocument()->GetFrame()->IsCrossOriginToOutermostMainFrame()) {
     base::UmaHistogramEnumeration("WebAudio.Autoplay.CrossOrigin",
                                   autoplay_status_.value());
   }
@@ -620,6 +689,7 @@ void AudioContext::RecordAutoplayMetrics() {
 }
 
 void AudioContext::ContextDestroyed() {
+  permission_receiver_.reset();
   Uninitialize();
 }
 
@@ -628,7 +698,9 @@ bool AudioContext::HasPendingActivity() const {
   // as having activity even though they are basically idle with nothing going
   // on.  However, they can be resumed at any time, so we don't want contexts
   // going away prematurely.
-  return (ContextState() != kClosed) && BaseAudioContext::HasPendingActivity();
+  return
+      ((ContextState() != kClosed) && BaseAudioContext::HasPendingActivity()) ||
+      permission_receiver_.is_bound();
 }
 
 bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,
@@ -665,8 +737,9 @@ void AudioContext::NotifyAudibleAudioStarted() {
   DCHECK(IsMainThread());
 
   EnsureAudioContextManagerService();
-  if (audio_context_manager_.is_bound())
+  if (audio_context_manager_.is_bound()) {
     audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
+  }
 }
 
 void AudioContext::HandlePostRenderTasks() {
@@ -686,22 +759,6 @@ void AudioContext::HandlePostRenderTasks() {
 
     unlock();
   }
-}
-
-static bool IsAudible(const AudioBus* rendered_data) {
-  // Compute the energy in each channel and sum up the energy in each channel
-  // for the total energy.
-  float energy = 0;
-
-  uint32_t data_size = rendered_data->length();
-  for (uint32_t k = 0; k < rendered_data->NumberOfChannels(); ++k) {
-    const float* data = rendered_data->Channel(k)->Data();
-    float channel_energy;
-    vector_math::Vsvesq(data, 1, &channel_energy, data_size);
-    energy += channel_energy;
-  }
-
-  return energy > 0;
 }
 
 void AudioContext::HandleAudibility(AudioBus* destination_bus) {
@@ -756,13 +813,15 @@ void AudioContext::NotifyAudibleAudioStopped() {
   DCHECK(IsMainThread());
 
   EnsureAudioContextManagerService();
-  if (audio_context_manager_.is_bound())
+  if (audio_context_manager_.is_bound()) {
     audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
+  }
 }
 
 void AudioContext::EnsureAudioContextManagerService() {
-  if (audio_context_manager_.is_bound() || !GetDocument())
+  if (audio_context_manager_.is_bound() || !GetDocument()) {
     return;
+  }
 
   GetDocument()->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       mojo::GenericPendingReceiver(
@@ -792,6 +851,45 @@ AudioCallbackMetric AudioContext::GetCallbackMetric() const {
   // creating a copy is acceptable here.
   GraphAutoLocker locker(this);
   return callback_metric_;
+}
+
+void AudioContext::OnPermissionStatusChange(
+    mojom::blink::PermissionStatus status) {
+  microphone_permission_status_ = status;
+}
+
+void AudioContext::DidInitialPermissionCheck(
+    mojom::blink::PermissionDescriptorPtr descriptor,
+    mojom::blink::PermissionStatus status) {
+  if (descriptor->name == mojom::blink::PermissionName::AUDIO_CAPTURE &&
+      status == mojom::blink::PermissionStatus::GRANTED) {
+    // If the initial permission check is successful, the current implementation
+    // avoids listening the future permission change in this AudioContext's
+    // lifetime. This is acceptable because the current UI pattern asks to
+    // reload the page when the permission is taken away.
+    microphone_permission_status_ = status;
+    permission_receiver_.reset();
+    return;
+  }
+
+  // The initial permission check failed, start listening the future permission
+  // change.
+  DCHECK(permission_service_.is_bound());
+  mojo::PendingRemote<mojom::blink::PermissionObserver> observer;
+  permission_receiver_.Bind(
+      observer.InitWithNewPipeAndPassReceiver(),
+      GetExecutionContext()->GetTaskRunner(TaskType::kPermission));
+  permission_service_->AddPermissionObserver(
+      CreatePermissionDescriptor(mojom::blink::PermissionName::AUDIO_CAPTURE),
+      microphone_permission_status_,
+      std::move(observer));
+}
+
+double AudioContext::GetOutputLatencyQuantizingFactor() const {
+  return microphone_permission_status_ ==
+      mojom::blink::PermissionStatus::GRANTED
+      ? kOutputLatencyMaxPrecisionFactor
+      : kOutputLatencyQuatizingFactor;
 }
 
 }  // namespace blink

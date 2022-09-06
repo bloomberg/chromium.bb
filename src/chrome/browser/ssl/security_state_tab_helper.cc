@@ -51,10 +51,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/policy/networking/policy_cert_service.h"
+#include "chrome/browser/policy/networking/policy_cert_service_factory.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -122,8 +122,6 @@ void SecurityStateTabHelper::DidStartNavigation(
   UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
                             GetSecurityLevel(),
                             security_state::SECURITY_LEVEL_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.FormSubmission",
-                            GetVisibleSecurityState()->safety_tip_info.status);
   if (navigation_handle->IsInMainFrame() &&
       !security_state::IsSchemeCryptographic(GetVisibleSecurityState()->url)) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -142,20 +140,10 @@ void SecurityStateTabHelper::DidStartNavigation(
   }
 }
 
-void SecurityStateTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore non-primary FrameTree navigations, subframe navigations,
-  // same-document navigations, and navigations that did not commit (e.g.
-  // HTTP/204 or file downloads).
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      navigation_handle->IsSameDocument() ||
-      !navigation_handle->HasCommitted()) {
-    return;
-  }
-
+void SecurityStateTabHelper::PrimaryPageChanged(content::Page& page) {
   net::CertStatus cert_status = GetVisibleSecurityState()->cert_status;
   if (net::IsCertStatusError(cert_status) &&
-      !navigation_handle->IsErrorPage()) {
+      !page.GetMainDocument().IsErrorDocument()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for
     // interstitial.ssl.did_user_revoke_decision2 in order to determine how
@@ -168,7 +156,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   policy::PolicyCertService* service =
       policy::PolicyCertServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
@@ -216,7 +204,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
               MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
         }
 #endif
-        FALLTHROUGH;
+        [[fallthrough]];
       case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
@@ -226,7 +214,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
               MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
         }
 #endif
-        FALLTHROUGH;
+        [[fallthrough]];
       case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::

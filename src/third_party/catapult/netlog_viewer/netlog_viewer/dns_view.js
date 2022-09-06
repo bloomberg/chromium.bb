@@ -11,6 +11,8 @@
  *   - Shows the parameters used to construct the host cache (capacity, ttl).
  */
 
+'use strict';
+
 // TODO(mmenke):  Add links for each address entry to the corresponding NetLog
 //                source.  This could either be done by adding NetLog source ids
 //                to cache entries, or tracking sources based on their type and
@@ -42,10 +44,13 @@ var DnsView = (function() {
   // IDs for special HTML elements in dns_view.html
   DnsView.MAIN_BOX_ID = 'dns-view-tab-content';
 
-  DnsView.INTERNAL_DNS_ENABLED_SPAN_ID = 'dns-view-internal-dns-enabled';
-  DnsView.INTERNAL_DNS_INVALID_CONFIG_SPAN_ID =
-      'dns-view-internal-dns-invalid-config';
+  DnsView.INTERNAL_DNS_ENABLED_FOR_INSECURE_SPAN_ID =
+      'dns-view-internal-dns-enabled-for-insecure';
+  DnsView.INTERNAL_DNS_ENABLED_FOR_SECURE_SPAN_ID =
+      'dns-view-internal-dns-enabled-for-secure';
   DnsView.INTERNAL_DNS_CONFIG_TBODY_ID = 'dns-view-internal-dns-config-tbody';
+  DnsView.INTERNAL_DISABLED_DOH_PROVIDERS_UL_ID =
+      'dns-view-internal-disabled-doh-providers';
 
   DnsView.CAPACITY_SPAN_ID = 'dns-view-cache-capacity';
 
@@ -61,10 +66,12 @@ var DnsView = (function() {
     __proto__: superClass.prototype,
 
     onLoadLogFinish: function(data) {
-      return this.onHostResolverInfoChanged(data.hostResolverInfo);
+      return this.onHostResolverInfoChanged(
+          data.hostResolverInfo, data.dohProvidersDisabledDueToFeature);
     },
 
-    onHostResolverInfoChanged: function(hostResolverInfo) {
+    onHostResolverInfoChanged: function(
+        hostResolverInfo, dohProvidersDisabledDueToFeature) {
       // Clear the existing values.
       $(DnsView.CAPACITY_SPAN_ID).innerHTML = '';
       $(DnsView.CACHE_TBODY_ID).innerHTML = '';
@@ -73,7 +80,8 @@ var DnsView = (function() {
       $(DnsView.NETWORK_SPAN_ID).innerHTML = '0';
 
       // Update fields containing async DNS configuration information.
-      displayAsyncDnsConfig_(hostResolverInfo);
+      displayAsyncDnsConfig_(
+          hostResolverInfo, dohProvidersDisabledDueToFeature);
 
       // No info.
       if (!hostResolverInfo || !hostResolverInfo.cache)
@@ -82,8 +90,7 @@ var DnsView = (function() {
       // Fill in the basic cache information.
       var hostResolverCache = hostResolverInfo.cache;
       $(DnsView.CAPACITY_SPAN_ID).innerText = hostResolverCache.capacity;
-      $(DnsView.NETWORK_SPAN_ID).innerText =
-          valueOrDefault(hostResolverCache.network_changes, '');
+      $(DnsView.NETWORK_SPAN_ID).innerText = hostResolverCache.network_changes;
 
       var expiredEntries = 0;
       // Date the cache was logged.  This will be either now, when actively
@@ -96,8 +103,7 @@ var DnsView = (function() {
       }
 
       // Fill in the cache contents table.
-      for (var i = 0; i < hostResolverCache.entries.length; ++i) {
-        var e = hostResolverCache.entries[i];
+      for (const e of hostResolverCache.entries) {
         var tr = addNode($(DnsView.CACHE_TBODY_ID), 'tr');
         var expired = false;
 
@@ -109,21 +115,23 @@ var DnsView = (function() {
 
         var addressesCell = addNode(tr, 'td');
 
-        // In M87, "error" was replaced with "net_error".
-        // TODO(https://crbug.com/1122054): Remove this once M87 hits stable.
-        if (e.error != undefined)
-          e.net_error = e.error;
-
         if (e.net_error != undefined) {
           var errorText = e.error + ' (' + netErrorToString(e.error) + ')';
           var errorNode = addTextNode(addressesCell, 'error: ' + errorText);
           addressesCell.classList.add('warning-text');
         } else {
-          addListToNode_(addNode(addressesCell, 'div'), e.addresses);
+          // Concatenate the legacy `addresses` and `ip_endpoints`.
+          let addresses = [];
+          if ('addresses' in e)
+            addresses = addresses.concat(e.addresses);
+          if ('ip_endpoints' in e)
+            addresses = addresses.concat(e.ip_endpoints.map(JSON.stringify));
+          if (addresses.length > 0)
+            addListToNode_(addNode(addressesCell, 'div'), addresses);
         }
 
         var ttlCell = addNode(tr, 'td');
-        addTextNode(ttlCell, valueOrDefault(e.ttl, ''));
+        addTextNode(ttlCell, e.ttl);
 
         var expiresDate = timeutil.convertTimeTicksToDate(e.expiration);
         var expiresCell = addNode(tr, 'td');
@@ -144,7 +152,7 @@ var DnsView = (function() {
         // they were created. If more network changes have happened since an
         // entry was created, the entry is expired.
         var networkChangesCell = addNode(tr, 'td');
-        addTextNode(networkChangesCell, valueOrDefault(e.network_changes, ''));
+        addTextNode(networkChangesCell, e.network_changes);
         if (e.network_changes < hostResolverCache.network_changes) {
           expired = true;
           var expiredSpan = addNode(networkChangesCell, 'span');
@@ -168,42 +176,62 @@ var DnsView = (function() {
    * Displays information corresponding to the current async DNS configuration.
    * @param {Object} hostResolverInfo The host resolver information.
    */
-  function displayAsyncDnsConfig_(hostResolverInfo) {
-    // Clear the table.
+  function displayAsyncDnsConfig_(
+      hostResolverInfo, dohProvidersDisabledDueToFeature) {
+    // Clear the existing values.
+    $(DnsView.INTERNAL_DISABLED_DOH_PROVIDERS_UL_ID).innerHTML = '';
     $(DnsView.INTERNAL_DNS_CONFIG_TBODY_ID).innerHTML = '';
 
-    // Figure out if the internal DNS resolver is disabled or has no valid
-    // configuration information, and update display accordingly.
-    var enabled = hostResolverInfo && hostResolverInfo.dns_config !== undefined;
-    var noConfig =
-        enabled && hostResolverInfo.dns_config.nameservers === undefined;
-    $(DnsView.INTERNAL_DNS_ENABLED_SPAN_ID).innerText = enabled;
-    setNodeDisplay($(DnsView.INTERNAL_DNS_INVALID_CONFIG_SPAN_ID), noConfig);
+    // Determine whether the async resolver is enabled for both Do53 and DoH.
+    // Update the display accordingly.
+    const enabled_for_insecure =
+        hostResolverInfo && hostResolverInfo.dns_config &&
+        hostResolverInfo.dns_config.can_use_insecure_dns_transactions;
+    const enabled_for_secure =
+        hostResolverInfo && hostResolverInfo.dns_config &&
+        hostResolverInfo.dns_config.can_use_secure_dns_transactions;
+    $(DnsView.INTERNAL_DNS_ENABLED_FOR_INSECURE_SPAN_ID).innerText =
+        enabled_for_insecure;
+    $(DnsView.INTERNAL_DNS_ENABLED_FOR_SECURE_SPAN_ID).innerText =
+        enabled_for_secure;
 
-    // If the internal DNS resolver is disabled or has no valid configuration,
-    // we're done.
-    if (!enabled || noConfig)
+    // Show the list of disabled DoH providers.
+    if (dohProvidersDisabledDueToFeature) {
+      for (let disabledProvider of dohProvidersDisabledDueToFeature) {
+        addNodeWithText(
+            $(DnsView.INTERNAL_DISABLED_DOH_PROVIDERS_UL_ID), 'li',
+            disabledProvider);
+      }
+    }
+
+    // Attempt to display the async resolver's DNS configuration. It may be
+    // relevant if there were any DoH queries.
+    const dnsConfig = hostResolverInfo && hostResolverInfo.dns_config;
+    if (!dnsConfig)
       return;
 
-    var dnsConfig = hostResolverInfo.dns_config;
+    // Decide the display order for the keys of `dnsConfig`.
+    let keys = Object.keys(dnsConfig).sort();
+    const keysToDrop = [
+      // Nameservers will be re-added at the front later.
+      'nameservers',
+      // These keys have already been rendered outside of the table.
+      'can_use_insecure_dns_transactions',
+      'can_use_secure_dns_transactions',
+    ];
+    keys = keys.filter((k) => !keysToDrop.includes(k));
+    keys.unshift('nameservers');  // Push 'nameservers' to the front.
 
-    // Display nameservers first.
-    var nameserverRow = addNode($(DnsView.INTERNAL_DNS_CONFIG_TBODY_ID), 'tr');
-    addNodeWithText(nameserverRow, 'th', 'nameservers');
-    addListToNode_(addNode(nameserverRow, 'td'), dnsConfig.nameservers);
-
-    // Add everything else in |dnsConfig| to the table.
-    for (var key in dnsConfig) {
-      if (key == 'nameservers')
-        continue;
-      var tr = addNode($(DnsView.INTERNAL_DNS_CONFIG_TBODY_ID), 'tr');
+    // Add selected keys from `dnsConfig` to the table.
+    for (const key of keys) {
+      const tr = addNode($(DnsView.INTERNAL_DNS_CONFIG_TBODY_ID), 'tr');
       addNodeWithText(tr, 'th', key);
-      var td = addNode(tr, 'td');
+      const td = addNode(tr, 'td');
 
       // For lists, display each list entry on a separate line.
-      if (typeof dnsConfig[key] == 'object' &&
-          dnsConfig[key].constructor == Array) {
-        addListToNode_(td, dnsConfig[key]);
+      if (Array.isArray(dnsConfig[key])) {
+        const strings = dnsConfig[key].map(JSON.stringify);
+        addListToNode_(td, strings);
         continue;
       }
 
@@ -220,14 +248,6 @@ var DnsView = (function() {
   function addListToNode_(node, list) {
     for (var i = 0; i < list.length; ++i)
       addNodeWithText(node, 'div', list[i]);
-  }
-
-  // TODO(mgersh): The |ttl| and |network_changes| properties were introduced in
-  // M59 and may not exist when loading older logs. This can be removed in M62.
-  function valueOrDefault(value, defaultValue) {
-    if (value != undefined)
-      return value;
-    return defaultValue;
   }
 
   return DnsView;

@@ -11,7 +11,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/check.h"
 #include "base/debug/debugger.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -40,13 +42,13 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 #include <unistd.h>
 
 #include "base/files/file_descriptor_watcher_posix.h"
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #endif
 
@@ -361,7 +363,7 @@ TEST_F(TaskEnvironmentTest, MainThreadType) {
   EXPECT_FALSE(CurrentIOThread::IsSet());
 }
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 TEST_F(TaskEnvironmentTest, SupportsFileDescriptorWatcherOnIOMainThread) {
   TaskEnvironment task_environment(TaskEnvironment::MainThreadType::IO);
 
@@ -403,7 +405,7 @@ TEST_F(TaskEnvironmentTest,
   // fast-forward-time when idle).
   run_loop.Run();
 }
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
 // Verify that the TickClock returned by
 // |TaskEnvironment::GetMockTickClock| gets updated when the
@@ -780,7 +782,10 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
       TaskEnvironment::TimeSource::MOCK_TIME,
       TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
-  int count = 0;
+  // Atomic because it's updated from concurrent tasks in the ThreadPool
+  // (could use std::memory_order_releaxed on all accesses but keeping implicit
+  // operators because the test reads better that way).
+  std::atomic_int count = 0;
   const TimeTicks start_time = task_environment.NowTicks();
 
   RunLoop run_loop;
@@ -846,7 +851,7 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
   EXPECT_EQ(expected_value, count);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Regression test to ensure that TaskEnvironment enables the MTA in the
 // thread pool (so that the test environment matches that of the browser process
 // and com_init_util.h's assertions are happy in unit tests).
@@ -856,7 +861,7 @@ TEST_F(TaskEnvironmentTest, ThreadPoolPoolAllowsMTA) {
                                            win::ComApartmentType::MTA));
   task_environment.RunUntilIdle();
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(TaskEnvironmentTest, SetsDefaultRunTimeout) {
   const RunLoop::RunLoopTimeout* old_run_timeout =
@@ -876,11 +881,19 @@ TEST_F(TaskEnvironmentTest, SetsDefaultRunTimeout) {
       EXPECT_LT(run_timeout->timeout, TestTimeouts::test_launcher_timeout());
     }
     static auto& static_on_timeout_cb = run_timeout->on_timeout;
+#if defined(__clang__) && defined(_MSC_VER)
+    EXPECT_FATAL_FAILURE(
+        static_on_timeout_cb.Run(FROM_HERE),
+        "RunLoop::Run() timed out. Timeout set at "
+        // We don't test the line number but it would be present.
+        "TaskEnvironment@base\\test\\task_environment.cc:");
+#else
     EXPECT_FATAL_FAILURE(
         static_on_timeout_cb.Run(FROM_HERE),
         "RunLoop::Run() timed out. Timeout set at "
         // We don't test the line number but it would be present.
         "TaskEnvironment@base/test/task_environment.cc:");
+#endif
   }
 
   EXPECT_EQ(ScopedRunLoopTimeout::GetTimeoutForCurrentThread(),
@@ -1321,7 +1334,7 @@ TEST_F(TaskEnvironmentTest, SingleThreadMockTime) {
   EXPECT_EQ(TimeTicks::Now(), start_time + kDelay);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 namespace {
 
 enum class ApartmentType {
@@ -1372,7 +1385,173 @@ TEST_F(TaskEnvironmentTest, NoCOMEnvironment) {
   InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::NONE,
                         ApartmentType::kSTA);
 }
+#endif  // BUILDFLAG(IS_WIN)
+
+// TODO(crbug.com/1318840): Re-enable this test
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+#define MAYBE_ParallelExecutionFence DISABLED_ParallelExecutionFence
+#else
+#define MAYBE_ParallelExecutionFence ParallelExecutionFence
 #endif
+TEST_F(TaskEnvironmentTest, MAYBE_ParallelExecutionFence) {
+  TaskEnvironment task_environment;
+
+  constexpr int kNumParallelTasks =
+      TaskEnvironment::kNumForegroundThreadPoolThreads;
+
+  TestWaitableEvent resume_main_thread;
+  TestWaitableEvent all_runs_done;
+  // Counters, all accessed/modified with memory_order_relaxed as no memory
+  // ordering is necessary between operations.
+  std::atomic_int completed_runs{0};
+  std::atomic_int next_run{1};
+
+  // Each task will repost itself until run 500. Run #50 will signal
+  // |resume_main_thread|.
+  RepeatingClosure task = BindLambdaForTesting([&]() {
+    int this_run = next_run.fetch_add(1, std::memory_order_relaxed);
+
+    if (this_run == 50)
+      resume_main_thread.Signal();
+
+    // Sleep after signaling to increase the likelihood the main thread installs
+    // the fence during this run and must wait on this task.
+    if (this_run >= 50 && this_run < 50 + kNumParallelTasks)
+      PlatformThread::Sleep(Milliseconds(5));
+
+    // Repost self until the last kNumParallelTasks.
+    if (this_run <= 500 - kNumParallelTasks)
+      ThreadPool::PostTask(task);
+
+    completed_runs.fetch_add(1, std::memory_order_relaxed);
+
+    if (this_run == 500)
+      all_runs_done.Signal();
+  });
+  for (int i = 0; i < kNumParallelTasks; ++i)
+    ThreadPool::PostTask(task);
+
+  resume_main_thread.Wait();
+  ASSERT_GE(next_run.load(std::memory_order_relaxed), 50);
+
+  {
+    // Confirm that no run happens while the fence is up.
+    TaskEnvironment::ParallelExecutionFence fence;
+
+    // All runs are complete.
+    const int completed_runs1 = completed_runs.load(std::memory_order_relaxed);
+    const int next_run1 = next_run.load(std::memory_order_relaxed);
+    EXPECT_EQ(completed_runs1, next_run1 - 1);
+
+    // Given a bit more time, no additional run starts nor completes.
+    PlatformThread::Sleep(Milliseconds(30));
+    const int completed_runs2 = completed_runs.load(std::memory_order_relaxed);
+    const int next_run2 = next_run.load(std::memory_order_relaxed);
+    EXPECT_EQ(completed_runs1, completed_runs2);
+    EXPECT_EQ(next_run1, next_run2);
+  }
+
+  // Runs resume automatically after taking down the fence (without needing to
+  // call RunUntilIdle()).
+  all_runs_done.Wait();
+  ASSERT_EQ(completed_runs.load(std::memory_order_relaxed), 500);
+  ASSERT_EQ(next_run.load(std::memory_order_relaxed), 501);
+}
+
+TEST_F(TaskEnvironmentTest, ParallelExecutionFenceWithoutTaskEnvironment) {
+  // Noops (doesn't crash) without a TaskEnvironment.
+  TaskEnvironment::ParallelExecutionFence fence;
+}
+
+TEST_F(TaskEnvironmentTest,
+       ParallelExecutionFenceWithSingleThreadTaskEnvironment) {
+  SingleThreadTaskEnvironment task_environment;
+  // Noops (doesn't crash), with a SingleThreadTaskEnvironment/
+  TaskEnvironment::ParallelExecutionFence fence;
+}
+
+// Android doesn't support death tests, see base/test/gtest_util.h
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(TaskEnvironmentTest, ParallelExecutionFenceNonMainThreadDeath) {
+  TaskEnvironment task_environment;
+
+  ThreadPool::PostTask(BindOnce([]() {
+#if CHECK_WILL_STREAM()
+    const char kFailureLog[] = "ParallelExecutionFence invoked from worker";
+#else
+    const char kFailureLog[] = "";
+#endif
+    EXPECT_DEATH_IF_SUPPORTED(
+        { TaskEnvironment::ParallelExecutionFence fence(kFailureLog); },
+        kFailureLog);
+  }));
+
+  task_environment.RunUntilIdle();
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+namespace {
+bool FailOnTaskEnvironmentLog(int severity,
+                              const char* file,
+                              int line,
+                              size_t message_start,
+                              const std::string& str) {
+  StringPiece file_str(file);
+  if (file_str.find("task_environment.cc") != StringPiece::npos) {
+    ADD_FAILURE() << str;
+    return true;
+  }
+  return false;
+}
+}  // namespace
+
+// Regression test for crbug.com/1293931
+TEST_F(TaskEnvironmentTest, DisallowRunTasksRetriesForFullTimeout) {
+  TaskEnvironment task_environment;
+
+  // Verify that steps below can let 1 second pass without generating logs.
+  auto previous_handler = logging::GetLogMessageHandler();
+  logging::SetLogMessageHandler(&FailOnTaskEnvironmentLog);
+
+  TestWaitableEvent worker_running;
+  TestWaitableEvent resume_worker_task;
+
+  ThreadPool::PostTask(BindLambdaForTesting([&]() {
+    worker_running.Signal();
+    resume_worker_task.Wait();
+  }));
+
+  // Churn on this task so that TestTaskTracker::task_completed_cv_ gets
+  // signaled a bunch and reproduces the bug's conditions
+  // (TestTaskTracker::DisallowRunTasks gets early chances to quit).
+  RepeatingClosure infinite_repost = BindLambdaForTesting([&]() {
+    if (!resume_worker_task.IsSignaled())
+      ThreadPool::PostTask(infinite_repost);
+  });
+  ThreadPool::PostTask(infinite_repost);
+
+  // Allow ThreadPool quiescence after 1 second of test.
+  ThreadPool::PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&TestWaitableEvent::Signal, Unretained(&resume_worker_task)),
+      Seconds(1));
+
+  worker_running.Wait();
+  {
+    // Attempt to instantiate a ParallelExecutionFence. Without the fix to
+    // crbug.com/1293931, this would result in quickly exiting DisallowRunTasks
+    // without waiting for the intended 5 seconds timeout and would emit
+    // erroneous WARNING logs about slow tasks. This test passses if it doesn't
+    // trip FailOnTaskEnvironmentLog().
+    TaskEnvironment::ParallelExecutionFence fence;
+  }
+
+  // Flush the last |infinite_repost| task to avoid a UAF on
+  // |resume_worker_task|.
+  task_environment.RunUntilIdle();
+
+  logging::SetLogMessageHandler(previous_handler);
+}
 
 }  // namespace test
 }  // namespace base

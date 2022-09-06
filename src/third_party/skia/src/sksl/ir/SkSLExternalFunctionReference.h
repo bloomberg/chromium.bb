@@ -22,8 +22,8 @@ class ExternalFunctionReference final : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kExternalFunctionReference;
 
-    ExternalFunctionReference(int line, const ExternalFunction* ef)
-        : INHERITED(line, kExpressionKind, &ef->type())
+    ExternalFunctionReference(Position pos, const ExternalFunction* ef)
+        : INHERITED(pos, kExpressionKind, &ef->type())
         , fFunction(*ef) {}
 
     const ExternalFunction& function() const {
@@ -34,12 +34,12 @@ public:
         return property == Property::kSideEffects;
     }
 
-    String description() const override {
-        return String(this->function().name());
+    std::string description() const override {
+        return std::string(this->function().name());
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<ExternalFunctionReference>(fLine, &this->function());
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<ExternalFunctionReference>(pos, &this->function());
     }
 
 private:

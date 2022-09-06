@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -170,9 +171,9 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
 
   const base::ListValue* entries;
   ASSERT_TRUE(dict->GetList("entries", &entries));
-  ASSERT_EQ(1u, entries->GetList().size());
+  ASSERT_EQ(1u, entries->GetListDeprecated().size());
 
-  const base::Value& entry_value = entries->GetList()[0u];
+  const base::Value& entry_value = entries->GetListDeprecated()[0u];
   ASSERT_TRUE(entry_value.is_dict());
   const base::DictionaryValue& entry =
       base::Value::AsDictionaryValue(entry_value);

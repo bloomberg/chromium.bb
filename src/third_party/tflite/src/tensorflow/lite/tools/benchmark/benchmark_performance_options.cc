@@ -18,6 +18,7 @@ limitations under the License.
 #include <algorithm>
 #include <iomanip>
 #include <memory>
+#include <random>
 #include <sstream>
 #include <utility>
 
@@ -32,11 +33,6 @@ limitations under the License.
 #include "tensorflow/lite/tools/benchmark/benchmark_utils.h"
 #include "tensorflow/lite/tools/command_line_flags.h"
 #include "tensorflow/lite/tools/logging.h"
-
-#if (defined(ANDROID) || defined(__ANDROID__)) && \
-    (defined(__arm__) || defined(__aarch64__))
-#define TFLITE_ENABLE_HEXAGON
-#endif
 
 namespace tflite {
 namespace benchmark {
@@ -328,7 +324,9 @@ void BenchmarkPerformanceOptions::Run() {
   CreatePerformanceOptions();
 
   if (params_.Get<bool>("random_shuffle_benchmark_runs")) {
-    std::random_shuffle(all_run_params_.begin(), all_run_params_.end());
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::shuffle(all_run_params_.begin(), all_run_params_.end(), generator);
   }
 
   // We need to clean *internally* created benchmark listeners, like the

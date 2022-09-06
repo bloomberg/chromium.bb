@@ -27,11 +27,12 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,9 +59,11 @@ class WebAppIconManagerTest : public WebAppTest {
         std::make_unique<FakeWebAppRegistryController>();
     fake_registry_controller_->SetUp(profile());
 
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
+
     file_utils_ = base::MakeRefCounted<TestFileUtils>();
-    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), registrar(),
-                                                        file_utils_);
+    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), file_utils_);
+    icon_manager_->SetSubsystems(&registrar(), &install_manager());
 
     controller().Init();
   }
@@ -159,7 +162,7 @@ class WebAppIconManagerTest : public WebAppTest {
         app_id, purposes, min_icon_size,
         base::BindLambdaForTesting([&](IconPurpose purpose, SkBitmap bitmap) {
           result.purpose = purpose;
-          result.bitmap = bitmap;
+          result.bitmap = std::move(bitmap);
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -172,7 +175,7 @@ class WebAppIconManagerTest : public WebAppTest {
     base::RunLoop run_loop;
     icon_manager().ReadSmallestIconAny(
         app_id, min_icon_size, base::BindLambdaForTesting([&](SkBitmap bitmap) {
-          result = bitmap;
+          result = std::move(bitmap);
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -239,6 +242,7 @@ class WebAppIconManagerTest : public WebAppTest {
   }
 
   WebAppRegistrar& registrar() { return controller().registrar(); }
+  WebAppInstallManager& install_manager() { return *install_manager_; }
   WebAppSyncBridge& sync_bridge() { return controller().sync_bridge(); }
   WebAppIconManager& icon_manager() { return *icon_manager_; }
   TestFileUtils& file_utils() {
@@ -249,6 +253,7 @@ class WebAppIconManagerTest : public WebAppTest {
  private:
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
+  std::unique_ptr<WebAppInstallManager> install_manager_;
   scoped_refptr<TestFileUtils> file_utils_;
 };
 
@@ -1351,7 +1356,7 @@ TEST_F(WebAppIconManagerTest, CacheNewAppFavicon) {
       }));
 
   controller().RegisterApp(std::move(web_app));
-  registrar().NotifyWebAppInstalled(app_id);
+  install_manager().NotifyWebAppInstalled(app_id);
 
   run_loop.Run();
 
@@ -1550,16 +1555,8 @@ TEST_F(WebAppIconManagerTest,
   EXPECT_FALSE(image_skia.HasRepresentation(3.0f));
 }
 
-class WebAppIconManagerTest_NotificationIconAndTitle
-    : public WebAppIconManagerTest {
- public:
-  WebAppIconManagerTest_NotificationIconAndTitle() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDesktopPWAsNotificationIconAndTitle);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+#if BUILDFLAG(IS_CHROMEOS)
+using WebAppIconManagerTest_NotificationIconAndTitle = WebAppIconManagerTest;
 
 TEST_F(WebAppIconManagerTest_NotificationIconAndTitle,
        CacheAppMonochromeFavicon_NoMissingIcons) {
@@ -1636,7 +1633,7 @@ TEST_F(WebAppIconManagerTest_NotificationIconAndTitle,
       }));
 
   controller().RegisterApp(std::move(web_app));
-  registrar().NotifyWebAppInstalled(app_id);
+  install_manager().NotifyWebAppInstalled(app_id);
 
   run_loop.Run();
 
@@ -1706,5 +1703,6 @@ TEST_F(WebAppIconManagerTest_NotificationIconAndTitle,
   gfx::ImageSkia monochrome_image = icon_manager().GetMonochromeFavicon(app_id);
   EXPECT_TRUE(monochrome_image.isNull());
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace web_app

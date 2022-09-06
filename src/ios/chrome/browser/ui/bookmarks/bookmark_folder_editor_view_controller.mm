@@ -77,7 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
-// |bookmarkModel| must not be NULL and must be loaded.
+// `bookmarkModel` must not be NULL and must be loaded.
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
     NS_DESIGNATED_INITIALIZER;
 
@@ -247,6 +247,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(self.folder);
   std::set<const BookmarkNode*> editedNodes;
   editedNodes.insert(self.folder);
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.dispatcher
       showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
                               editedNodes, self.bookmarkModel,
@@ -273,6 +275,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       base::AutoReset<BOOL> autoReset(&_ignoresOwnMove, YES);
       std::set<const BookmarkNode*> editedNodes;
       editedNodes.insert(self.folder);
+      // TODO(crbug.com/1323778): This will need to be called on the
+      // SnackbarCommands handler.
       [self.dispatcher
           showSnackbarMessage:bookmark_utils_ios::MoveBookmarksWithUndoToast(
                                   editedNodes, self.bookmarkModel,

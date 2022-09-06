@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
@@ -32,7 +31,7 @@ void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations) {
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
   wchar_t exe_file[MAX_PATH] = {};
-  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
+  CHECK(::GetModuleFileName(nullptr, exe_file, std::size(exe_file)));
   std::wstring product_name, version, special_build, channel_name;
   crash_reporter_client->GetProductNameAndVersion(
       exe_file, &product_name, &version, &special_build, &channel_name);
@@ -76,6 +75,8 @@ bool PlatformCrashpadInitialization(
 
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
 
+  bool initialized = false;
+
   if (initial_client) {
     std::wstring database_path_str;
     if (crash_reporter_client->GetCrashDumpLocation(&database_path_str))
@@ -100,7 +101,7 @@ bool PlatformCrashpadInitialization(
     if (exe_file.empty()) {
       wchar_t exe_file_path[MAX_PATH] = {};
       CHECK(::GetModuleFileName(nullptr, exe_file_path,
-                                base::size(exe_file_path)));
+                                std::size(exe_file_path)));
 
       exe_file = base::FilePath(exe_file_path);
     }
@@ -141,21 +142,27 @@ bool PlatformCrashpadInitialization(
     arguments.push_back(std::string("--monitor-self-annotation=ptype=") +
                         switches::kCrashpadHandler);
 
-    GetCrashpadClient().StartHandler(exe_file, *database_path, metrics_path,
-                                     url, process_annotations, arguments, false,
-                                     false);
+    initialized = GetCrashpadClient().StartHandler(
+        exe_file, *database_path, metrics_path, url, process_annotations,
+        arguments, /*restartable=*/false, /*asynchronous_start=*/false);
 
-    // If we're the browser, push the pipe name into the environment so child
-    // processes can connect to it. If we inherited another crashpad_handler's
-    // pipe name, we'll overwrite it here.
-    env->SetVar(kPipeNameVar,
-                base::WideToUTF8(GetCrashpadClient().GetHandlerIPCPipe()));
+    if (initialized) {
+      // If we're the browser, push the pipe name into the environment so child
+      // processes can connect to it. If we inherited another crashpad_handler's
+      // pipe name, we'll overwrite it here.
+      env->SetVar(kPipeNameVar,
+                  base::WideToUTF8(GetCrashpadClient().GetHandlerIPCPipe()));
+    }
   } else {
     std::string pipe_name_utf8;
     if (env->GetVar(kPipeNameVar, &pipe_name_utf8)) {
-      GetCrashpadClient().SetHandlerIPCPipe(base::UTF8ToWide(pipe_name_utf8));
+      initialized = GetCrashpadClient().SetHandlerIPCPipe(
+          base::UTF8ToWide(pipe_name_utf8));
     }
   }
+
+  if (!initialized)
+    return false;
 
   if (crash_reporter_client->GetShouldDumpLargerDumps()) {
     const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;

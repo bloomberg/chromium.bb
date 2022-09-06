@@ -51,6 +51,9 @@ class VirtualConnectionRouter final : public CastSocket::Client {
    public:
     virtual void OnClose(CastSocket* socket) = 0;
     virtual void OnError(CastSocket* socket, Error error) = 0;
+
+   protected:
+    virtual ~SocketErrorHandler();
   };
 
   VirtualConnectionRouter();

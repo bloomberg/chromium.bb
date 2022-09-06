@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/intents/OpenInChromeIncognitoIntent.h"
 #import "ios/chrome/common/intents/OpenInChromeIntent.h"
@@ -225,7 +224,7 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
     std::vector<GURL> URLs;
 
     if ([intent.url isKindOfClass:[NSURL class]]) {
-      // Old intent version where |url| is of type NSURL rather than an array.
+      // Old intent version where `url` is of type NSURL rather than an array.
       GURL webpageGURL(
           net::GURLWithNSURL(base::mac::ObjCCastStrict<NSURL>(intent.url)));
       if (!webpageGURL.is_valid())
@@ -358,8 +357,8 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
   BOOL dismissOmnibox = [[connectionInformation startupParameters]
                             postOpeningAction] != FOCUS_OMNIBOX;
 
-  // Using a weak reference to |connectionInformation| to solve a memory leak
-  // issue. |tabOpener| and |connectionInformation| are the same object in
+  // Using a weak reference to `connectionInformation` to solve a memory leak
+  // issue. `tabOpener` and `connectionInformation` are the same object in
   // some cases (SceneController). This retains the object while the block
   // exists. Then this block is passed around and in some cases it ends up
   // stored in BrowserViewController. This results in a memory leak that looks
@@ -515,7 +514,7 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
 
     // The app is already active so the applicationDidBecomeActive: method
     // will never be called. Open the requested URL after all modal UIs have
-    // been dismissed. |_startupParameters| must be retained until all deferred
+    // been dismissed. `_startupParameters` must be retained until all deferred
     // modal UIs are dismissed and tab opened with requested URL.
     ApplicationModeForTabOpening targetMode =
         [[connectionInformation startupParameters] applicationMode];
@@ -523,8 +522,8 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
     GURL virtualURL;
     GURL completeURL = connectionInformation.startupParameters.completeURL;
     if (completeURL.SchemeIsFile()) {
-      // External URL will be loaded by WebState, which expects |completeURL|.
-      // Omnibox however suppose to display |externalURL|, which is used as
+      // External URL will be loaded by WebState, which expects `completeURL`.
+      // Omnibox however suppose to display `externalURL`, which is used as
       // virtual URL.
       URL = completeURL;
       virtualURL = externalURL;
@@ -652,7 +651,7 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
     WebStateList* webStateList = browser->GetWebStateList();
     for (int index = 0; index < webStateList->count(); ++index) {
       web::WebState* webState = webStateList->GetWebStateAt(index);
-      NSString* currentTabID = TabIdTabHelper::FromWebState(webState)->tab_id();
+      NSString* currentTabID = webState->GetStableIdentifier();
       if ([currentTabID isEqualToString:tabID]) {
         U2FTabHelper::FromWebState(webState)->EvaluateU2FResult(URL);
         return;

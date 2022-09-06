@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
@@ -19,8 +19,7 @@
       "--patch_ref",
       "https://chromium.googlesource.com/v8/v8@refs/changes/124/45/6",
       "--revision",
-      "src@HEAD",
-      "--disable-syntax-validation"
+      "src@HEAD"
     ],
     "env": {
       "DEPOT_TOOLS_COLLECT_METRICS": "0",
@@ -116,7 +115,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",

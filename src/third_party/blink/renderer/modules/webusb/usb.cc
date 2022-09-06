@@ -209,9 +209,16 @@ USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
   mojo::PendingRemote<UsbDevice> pipe;
   service_->GetDevice(guid, pipe.InitWithNewPipeAndPassReceiver());
   USBDevice* device = MakeGarbageCollected<USBDevice>(
-      std::move(device_info), std::move(pipe), GetExecutionContext());
+      this, std::move(device_info), std::move(pipe), GetExecutionContext());
   device_cache_.insert(guid, device);
   return device;
+}
+
+void USB::ForgetDevice(
+    const String& device_guid,
+    mojom::blink::WebUsbService::ForgetDeviceCallback callback) {
+  EnsureServiceConnection();
+  service_->ForgetDevice(device_guid, std::move(callback));
 }
 
 void USB::OnGetDevices(ScriptPromiseResolver* resolver,
@@ -255,8 +262,9 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
   if (it != device_cache_.end()) {
     device = it->value;
   } else {
-    device = MakeGarbageCollected<USBDevice>(
-        std::move(device_info), mojo::NullRemote(), GetExecutionContext());
+    device = MakeGarbageCollected<USBDevice>(this, std::move(device_info),
+                                             mojo::NullRemote(),
+                                             GetExecutionContext());
   }
   DispatchEvent(
       *USBConnectionEvent::Create(event_type_names::kDisconnect, device));
@@ -267,18 +275,17 @@ void USB::OnServiceConnectionError() {
   service_.reset();
   client_receiver_.reset();
 
-  // Move the set to a local variable to prevent script execution in Resolve()
-  // from invalidating the iterator used by the loop.
+  // This loop is resolving promises with a value and so it is possible for
+  // script to be executed in the process of determining if the value is a
+  // thenable. Move the set to a local variable to prevent such execution from
+  // invalidating the iterator used by the loop.
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests;
   get_devices_requests.swap(get_devices_requests_);
   for (auto& resolver : get_devices_requests)
     resolver->Resolve(HeapVector<Member<USBDevice>>(0));
 
-  // Move the set to a local variable to prevent script execution in Reject()
-  // from invalidating the iterator used by the loop.
-  HeapHashSet<Member<ScriptPromiseResolver>> get_permission_requests;
-  get_permission_requests.swap(get_permission_requests_);
-  for (auto& resolver : get_permission_requests) {
+  // Similar protection is unnecessary when rejecting a promise.
+  for (auto& resolver : get_permission_requests_) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }

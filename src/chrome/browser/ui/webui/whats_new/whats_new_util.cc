@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -48,23 +50,49 @@ void DisableRemoteContentForTests() {
   g_is_remote_content_disabled = true;
 }
 
+void LogStartupType(StartupType type) {
+  base::UmaHistogramEnumeration("WhatsNew.StartupType", type);
+}
+
 bool IsRemoteContentDisabled() {
   return g_is_remote_content_disabled;
 }
 
-bool ShouldShowForState(PrefService* local_state) {
-  if (!local_state)
-    return false;
+bool ShouldShowForState(PrefService* local_state,
+                        bool promotional_tabs_enabled) {
+  LogStartupType(StartupType::kCalledShouldShow);
 
-  if (!base::FeatureList::IsEnabled(features::kChromeWhatsNewUI))
+  if (!promotional_tabs_enabled) {
+    whats_new::LogStartupType(whats_new::StartupType::kPromotionalTabsDisabled);
     return false;
+  }
+
+  if (!local_state ||
+      !local_state->FindPreference(prefs::kLastWhatsNewVersion)) {
+    LogStartupType(StartupType::kInvalidState);
+    return false;
+  }
+
+  // Allow disabling the What's New experience in tests using the standard
+  // kNoFirstRun switch. This behavior can be overridden using the
+  // kForceWhatsNew switch for the What's New experience integration tests.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if ((command_line->HasSwitch(switches::kNoFirstRun) &&
+       !command_line->HasSwitch(switches::kForceWhatsNew)) ||
+      !base::FeatureList::IsEnabled(features::kChromeWhatsNewUI)) {
+    LogStartupType(StartupType::kFeatureDisabled);
+    return false;
+  }
 
   int last_version = local_state->GetInteger(prefs::kLastWhatsNewVersion);
 
   // Don't show What's New if it's already been shown for the current major
   // milestone.
-  if (CHROME_VERSION_MAJOR <= last_version)
+  if (CHROME_VERSION_MAJOR <= last_version) {
+    LogStartupType(StartupType::kAlreadyShown);
     return false;
+  }
 
   // Set the last version here to indicate that What's New should not attempt
   // to display again for this milestone. This prevents the page from

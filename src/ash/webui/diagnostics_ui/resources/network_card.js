@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import './diagnostics_card.js';
-import './diagnostics_fonts_css.js';
 import './diagnostics_network_icon.js';
 import './diagnostics_shared_css.js';
 import './ip_config_info_drawer.js';
@@ -198,12 +197,6 @@ Polymer({
         this.unableToObtainIpAddress_ = true;
       }, this.timeoutInMs_);
     }
-  },
-
-  /** @protected */
-  onTroubleConnectingClicked_() {
-    // TODO(michaelcheco): Add correct URL.
-    window.open('https://support.google.com/chromebook?p=diagnostics_');
   },
 
   /**

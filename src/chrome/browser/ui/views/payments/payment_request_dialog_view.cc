@@ -95,6 +95,9 @@ void PaymentRequestDialogView::OnDialogClosed() {
   RemoveChildViewT(view_stack_.get());
   controller_map_.clear();
   request_->OnUserCancelled();
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnDialogClosed();
 }
 
 bool PaymentRequestDialogView::ShouldShowCloseButton() const {
@@ -216,6 +219,11 @@ void PaymentRequestDialogView::RetryDialog() {
 
 void PaymentRequestDialogView::ConfirmPaymentForTesting() {
   Pay();
+}
+
+bool PaymentRequestDialogView::ClickOptOutForTesting() {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void PaymentRequestDialogView::OnStartUpdating(
@@ -367,7 +375,7 @@ void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
     const autofill::CreditCard& credit_card,
     base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
         result_delegate,
-    content::WebContents* web_contents) {
+    content::RenderFrameHost* render_frame_host) {
   if (!request_->spec())
     return;
 
@@ -375,7 +383,7 @@ void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
                         std::make_unique<CvcUnmaskViewController>(
                             request_->spec(), request_->state(),
                             weak_ptr_factory_.GetWeakPtr(), credit_card,
-                            result_delegate, web_contents),
+                            result_delegate, render_frame_host),
                         &controller_map_),
                     /* animate = */ true);
   if (observer_for_testing_)
@@ -508,8 +516,6 @@ PaymentRequestDialogView::PaymentRequestDialogView(
   }
 
   ShowInitialPaymentSheet();
-
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::PAYMENT_REQUEST);
 }
 
 PaymentRequestDialogView::~PaymentRequestDialogView() = default;
@@ -547,8 +553,8 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   throbber_overlay_->SetVisible(false);
   // The throbber overlay has to have a solid white background to hide whatever
   // would be under it.
-  throbber_overlay_->SetBackground(views::CreateThemedSolidBackground(
-      throbber_overlay_, ui::kColorDialogBackground));
+  throbber_overlay_->SetBackground(
+      views::CreateThemedSolidBackground(ui::kColorDialogBackground));
 
   views::BoxLayout* layout =
       throbber_overlay_->SetLayoutManager(std::make_unique<views::BoxLayout>(

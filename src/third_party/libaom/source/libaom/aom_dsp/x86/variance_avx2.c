@@ -186,21 +186,21 @@ static INLINE void variance128_avx2(const uint8_t *src, const int src_stride,
     return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
   }
 
-AOM_VAR_NO_LOOP_AVX2(16, 8, 7, 512);
-AOM_VAR_NO_LOOP_AVX2(16, 16, 8, 512);
-AOM_VAR_NO_LOOP_AVX2(16, 32, 9, 512);
+AOM_VAR_NO_LOOP_AVX2(16, 8, 7, 512)
+AOM_VAR_NO_LOOP_AVX2(16, 16, 8, 512)
+AOM_VAR_NO_LOOP_AVX2(16, 32, 9, 512)
 
-AOM_VAR_NO_LOOP_AVX2(32, 16, 9, 512);
-AOM_VAR_NO_LOOP_AVX2(32, 32, 10, 1024);
-AOM_VAR_NO_LOOP_AVX2(32, 64, 11, 2048);
+AOM_VAR_NO_LOOP_AVX2(32, 16, 9, 512)
+AOM_VAR_NO_LOOP_AVX2(32, 32, 10, 1024)
+AOM_VAR_NO_LOOP_AVX2(32, 64, 11, 2048)
 
-AOM_VAR_NO_LOOP_AVX2(64, 32, 11, 2048);
+AOM_VAR_NO_LOOP_AVX2(64, 32, 11, 2048)
 
 #if !CONFIG_REALTIME_ONLY
-AOM_VAR_NO_LOOP_AVX2(64, 16, 10, 1024);
-AOM_VAR_NO_LOOP_AVX2(32, 8, 8, 512);
-AOM_VAR_NO_LOOP_AVX2(16, 64, 10, 1024);
-AOM_VAR_NO_LOOP_AVX2(16, 4, 6, 512);
+AOM_VAR_NO_LOOP_AVX2(64, 16, 10, 1024)
+AOM_VAR_NO_LOOP_AVX2(32, 8, 8, 512)
+AOM_VAR_NO_LOOP_AVX2(16, 64, 10, 1024)
+AOM_VAR_NO_LOOP_AVX2(16, 4, 6, 512)
 #endif
 
 #define AOM_VAR_LOOP_AVX2(bw, bh, bits, uh)                                   \
@@ -222,10 +222,10 @@ AOM_VAR_NO_LOOP_AVX2(16, 4, 6, 512);
     return *sse - (unsigned int)(((int64_t)sum * sum) >> bits);               \
   }
 
-AOM_VAR_LOOP_AVX2(64, 64, 12, 32);    // 64x32 * ( 64/32)
-AOM_VAR_LOOP_AVX2(64, 128, 13, 32);   // 64x32 * (128/32)
-AOM_VAR_LOOP_AVX2(128, 64, 13, 16);   // 128x16 * ( 64/16)
-AOM_VAR_LOOP_AVX2(128, 128, 14, 16);  // 128x16 * (128/16)
+AOM_VAR_LOOP_AVX2(64, 64, 12, 32)    // 64x32 * ( 64/32)
+AOM_VAR_LOOP_AVX2(64, 128, 13, 32)   // 64x32 * (128/32)
+AOM_VAR_LOOP_AVX2(128, 64, 13, 16)   // 128x16 * ( 64/16)
+AOM_VAR_LOOP_AVX2(128, 128, 14, 16)  // 128x16 * (128/16)
 
 unsigned int aom_mse16x16_avx2(const uint8_t *src, int src_stride,
                                const uint8_t *ref, int ref_stride,
@@ -276,20 +276,20 @@ unsigned int aom_sub_pixel_avg_variance32xh_avx2(
     return sse - (unsigned int)(((int64_t)se * se) >> (wlog2 + hlog2));       \
   }
 
-AOM_SUB_PIXEL_VAR_AVX2(128, 128, 32, 7, 7);
-AOM_SUB_PIXEL_VAR_AVX2(128, 64, 32, 7, 6);
-AOM_SUB_PIXEL_VAR_AVX2(64, 128, 32, 6, 7);
-AOM_SUB_PIXEL_VAR_AVX2(64, 64, 32, 6, 6);
-AOM_SUB_PIXEL_VAR_AVX2(64, 32, 32, 6, 5);
-AOM_SUB_PIXEL_VAR_AVX2(32, 64, 32, 5, 6);
-AOM_SUB_PIXEL_VAR_AVX2(32, 32, 32, 5, 5);
-AOM_SUB_PIXEL_VAR_AVX2(32, 16, 32, 5, 4);
-AOM_SUB_PIXEL_VAR_AVX2(16, 32, 16, 4, 5);
-AOM_SUB_PIXEL_VAR_AVX2(16, 16, 16, 4, 4);
-AOM_SUB_PIXEL_VAR_AVX2(16, 8, 16, 4, 3);
+AOM_SUB_PIXEL_VAR_AVX2(128, 128, 32, 7, 7)
+AOM_SUB_PIXEL_VAR_AVX2(128, 64, 32, 7, 6)
+AOM_SUB_PIXEL_VAR_AVX2(64, 128, 32, 6, 7)
+AOM_SUB_PIXEL_VAR_AVX2(64, 64, 32, 6, 6)
+AOM_SUB_PIXEL_VAR_AVX2(64, 32, 32, 6, 5)
+AOM_SUB_PIXEL_VAR_AVX2(32, 64, 32, 5, 6)
+AOM_SUB_PIXEL_VAR_AVX2(32, 32, 32, 5, 5)
+AOM_SUB_PIXEL_VAR_AVX2(32, 16, 32, 5, 4)
+AOM_SUB_PIXEL_VAR_AVX2(16, 32, 16, 4, 5)
+AOM_SUB_PIXEL_VAR_AVX2(16, 16, 16, 4, 4)
+AOM_SUB_PIXEL_VAR_AVX2(16, 8, 16, 4, 3)
 #if !CONFIG_REALTIME_ONLY
-AOM_SUB_PIXEL_VAR_AVX2(16, 64, 16, 4, 6);
-AOM_SUB_PIXEL_VAR_AVX2(16, 4, 16, 4, 2);
+AOM_SUB_PIXEL_VAR_AVX2(16, 64, 16, 4, 6)
+AOM_SUB_PIXEL_VAR_AVX2(16, 4, 16, 4, 2)
 #endif
 
 #define AOM_SUB_PIXEL_AVG_VAR_AVX2(w, h, wf, wlog2, hlog2)                \
@@ -324,14 +324,14 @@ AOM_SUB_PIXEL_VAR_AVX2(16, 4, 16, 4, 2);
     return sse - (unsigned int)(((int64_t)se * se) >> (wlog2 + hlog2));   \
   }
 
-AOM_SUB_PIXEL_AVG_VAR_AVX2(128, 128, 32, 7, 7);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(128, 64, 32, 7, 6);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 128, 32, 6, 7);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 64, 32, 6, 6);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 32, 32, 6, 5);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(32, 64, 32, 5, 6);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(32, 32, 32, 5, 5);
-AOM_SUB_PIXEL_AVG_VAR_AVX2(32, 16, 32, 5, 4);
+AOM_SUB_PIXEL_AVG_VAR_AVX2(128, 128, 32, 7, 7)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(128, 64, 32, 7, 6)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 128, 32, 6, 7)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 64, 32, 6, 6)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 32, 32, 6, 5)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(32, 64, 32, 5, 6)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(32, 32, 32, 5, 5)
+AOM_SUB_PIXEL_AVG_VAR_AVX2(32, 16, 32, 5, 4)
 
 static INLINE __m256i mm256_loadu2(const uint8_t *p0, const uint8_t *p1) {
   const __m256i d =
@@ -643,4 +643,87 @@ uint64_t aom_mse_wxh_16bit_avx2(uint8_t *dst, int dstride, uint16_t *src,
     case 8: return aom_mse_8xh_16bit_avx2(dst, dstride, src, sstride, h);
     default: assert(0 && "unsupported width"); return -1;
   }
+}
+
+static INLINE void sum_final_256bit_avx2(__m256i sum_8x16[2], int *const sum) {
+  const __m256i sum_result_0 = _mm256_hadd_epi16(sum_8x16[0], sum_8x16[1]);
+  const __m256i sum_result_1 =
+      _mm256_add_epi16(_mm256_srli_si256(sum_result_0, 4), sum_result_0);
+  const __m256i sum_result_2 =
+      _mm256_add_epi16(_mm256_srli_si256(sum_result_1, 2), sum_result_1);
+  const __m128i sum_128_high = _mm256_extractf128_si256(sum_result_2, 1);
+  const __m128i sum_result_3 =
+      _mm_unpacklo_epi16(_mm256_castsi256_si128(sum_result_2), sum_128_high);
+  const __m128i sum_result_4 =
+      _mm_unpackhi_epi16(_mm256_castsi256_si128(sum_result_2), sum_128_high);
+  const __m128i sum_result_5 = _mm_unpacklo_epi32(sum_result_3, sum_result_4);
+
+  _mm_storeu_si128((__m128i *)sum, _mm_cvtepi16_epi32(sum_result_5));
+}
+
+static INLINE void calc_sum_sse_for_8x32_block_avx2(const uint8_t *src,
+                                                    const uint8_t *ref,
+                                                    __m256i sse_8x16[2],
+                                                    __m256i sum_8x16[2]) {
+  const __m256i s0_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)src));
+  const __m256i r0_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)ref));
+  const __m256i s1_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)(src + 16)));
+  const __m256i r1_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)(ref + 16)));
+  const __m256i diff0 = _mm256_sub_epi16(s0_256, r0_256);
+  const __m256i diff1 = _mm256_sub_epi16(s1_256, r1_256);
+
+  sse_8x16[0] = _mm256_add_epi32(sse_8x16[0], _mm256_madd_epi16(diff0, diff0));
+  sse_8x16[1] = _mm256_add_epi32(sse_8x16[1], _mm256_madd_epi16(diff1, diff1));
+  sum_8x16[0] = _mm256_add_epi16(sum_8x16[0], diff0);
+  sum_8x16[1] = _mm256_add_epi16(sum_8x16[1], diff1);
+}
+
+static INLINE void get_sse_sum_8x8_quad_avx2(const uint8_t *src,
+                                             const int src_stride,
+                                             const uint8_t *ref,
+                                             const int ref_stride, const int h,
+                                             unsigned int *const sse,
+                                             int *const sum) {
+  assert(h <= 128);  // May overflow for larger height.
+  __m256i sse_8x16[2], sum_8x16[2];
+  sum_8x16[0] = _mm256_setzero_si256();
+  sse_8x16[0] = _mm256_setzero_si256();
+  sum_8x16[1] = sum_8x16[0];
+  sse_8x16[1] = sse_8x16[0];
+
+  for (int i = 0; i < h; i += 2) {
+    // Process 8x32 block of first row.
+    calc_sum_sse_for_8x32_block_avx2(src, ref, sse_8x16, sum_8x16);
+
+    // Process 8x32 block of second row.
+    calc_sum_sse_for_8x32_block_avx2(src + src_stride, ref + ref_stride,
+                                     sse_8x16, sum_8x16);
+
+    src += src_stride << 1;
+    ref += ref_stride << 1;
+  }
+
+  // Add sse registers appropriately to get each 8x8 block sse separately.
+  const __m256i sse_result_1 = _mm256_hadd_epi32(sse_8x16[0], sse_8x16[1]);
+  const __m256i sse_result_2 =
+      _mm256_hadd_epi32(sse_result_1, _mm256_setzero_si256());
+  const __m256i sse_result_3 = _mm256_permute4x64_epi64(sse_result_2, 0xd8);
+
+  _mm_storeu_si128(
+      (__m128i *)sse,
+      _mm_shuffle_epi32(_mm256_castsi256_si128(sse_result_3), 0xd8));
+
+  // Add sum registers appropriately to get each 8x8 block sum separately.
+  sum_final_256bit_avx2(sum_8x16, sum);
+}
+
+void aom_get_sse_sum_8x8_quad_avx2(const uint8_t *src_ptr, int src_stride,
+                                   const uint8_t *ref_ptr, int ref_stride,
+                                   unsigned int *sse, int *sum) {
+  get_sse_sum_8x8_quad_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 8, sse,
+                            sum);
 }

@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
 #include "base/win/shortcut.h"
@@ -296,10 +297,8 @@ void CollectMatchingPaths(const base::FilePath& root_path,
   DCHECK(matches);
 
   if (PathContainsWildcards(root_path)) {
-    std::vector<base::FilePath::StringType> components;
-    root_path.GetComponents(&components);
-    base::FilePath empty_path;
-    CollectMatchingPathsRecursive(empty_path, components, 0, matches);
+    CollectMatchingPathsRecursive(base::FilePath(), root_path.GetComponents(),
+                                  0, matches);
   } else if (base::PathExists(root_path)) {
     matches->push_back(root_path);
   }
@@ -336,7 +335,7 @@ bool PathHasActiveExtension(const base::FilePath& file_path) {
 
 void InitializeDiskUtil() {
   // Only do this once.
-  static bool init_once = []() -> bool {
+  [[maybe_unused]] static bool init_once = []() -> bool {
     // Initialize the binary extension, so it can be used from different threads
     // without the initial creation race.
     DCHECK(g_active_extensions.empty());
@@ -346,7 +345,6 @@ void InitializeDiskUtil() {
     DCHECK(!g_active_extensions.empty());
     return true;
   }();
-  ANALYZER_ALLOW_UNUSED(init_once);
 }
 
 bool ExpandEnvPath(const base::FilePath& path, base::FilePath* expanded_path) {
@@ -622,7 +620,7 @@ void GetLayeredServiceProviders(const LayeredServiceProviderAPI& lsp_api,
 
   for (int i = 0; i < num_service_providers; ++i) {
     wchar_t path[MAX_PATH];
-    int path_length = base::size(path);
+    int path_length = std::size(path);
     if (0 == lsp_api.GetProviderPath(&service_providers[i].ProviderId, path,
                                      &path_length, &error)) {
       std::pair<LSPPathToGUIDs::iterator, bool> inserted =
@@ -648,7 +646,7 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
       L"%SystemRoot%\\System32\\rundll32.exe";
   wchar_t rundll32[MAX_PATH] = {};
   DWORD size =
-      ExpandEnvironmentStrings(kRunDll32Path, rundll32, base::size(rundll32));
+      ExpandEnvironmentStrings(kRunDll32Path, rundll32, std::size(rundll32));
   if (!size || size >= MAX_PATH)
     return false;
 
@@ -827,7 +825,7 @@ bool OverwriteZoneIdentifier(const base::FilePath& path) {
 
   static const char kIdentifier[] = "[ZoneTransfer]\r\nZoneId=0\r\n";
   // Don't include trailing null in data written.
-  static const DWORD kIdentifierSize = base::size(kIdentifier) - 1;
+  static const DWORD kIdentifierSize = std::size(kIdentifier) - 1;
   DWORD written = 0;
   BOOL result =
       WriteFile(file, kIdentifier, kIdentifierSize, &written, nullptr);

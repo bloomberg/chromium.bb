@@ -4,10 +4,14 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/bubble/bubble_constants.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/time/calendar_metrics.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/tray/tray_utils.h"
@@ -20,51 +24,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/event.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-
-namespace {
-
-// Container view of UnifiedSystemTrayView to return fake preferred size for
-// animation optimization. See UnifiedSystemTrayBubble::UpdateTransform().
-// The fake size is specific to the structure of TrayBubbleView, so it is better
-// to keep it separate from UnifiedSystemTrayView.
-class ContainerView : public views::View {
- public:
-  explicit ContainerView(UnifiedSystemTrayView* unified_view)
-      : unified_view_(unified_view) {
-    AddChildView(unified_view);
-  }
-
-  ContainerView(const ContainerView&) = delete;
-  ContainerView& operator=(const ContainerView&) = delete;
-
-  ~ContainerView() override = default;
-
-  // views::View:
-  void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
-  const char* GetClassName() const override { return "ContainerView"; }
-
-  gfx::Size CalculatePreferredSize() const override {
-    // If transform is used, always return the maximum expanded height.
-    // Otherwise, return the actual height.
-    // Note that transforms are currently only supported when there are not
-    // notifications, so we only consider the system tray height (excluding the
-    // message center) for now.
-    return gfx::Size(kTrayMenuWidth, unified_view_->GetCurrentHeight());
-  }
-
-  void ChildPreferredSizeChanged(views::View* child) override {
-    PreferredSizeChanged();
-  }
-
- private:
-  UnifiedSystemTrayView* const unified_view_;
-};
-
-}  // namespace
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
     : controller_(std::make_unique<UnifiedSystemTrayController>(tray->model(),
@@ -82,8 +46,6 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
   init_params.insets = GetTrayBubbleInsets();
-  init_params.corner_radius = kUnifiedTrayCornerRadius;
-  init_params.has_shadow = false;
   init_params.close_on_deactivate = false;
   init_params.reroute_event_handler = true;
   init_params.translucent = true;
@@ -108,13 +70,15 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
   // Notify accessibility features that the status tray has opened.
   NotifyAccessibilityEvent(ax::mojom::Event::kShow, true);
 
-  tray->tray_event_filter()->AddBubble(this);
-  tray->shelf()->AddObserver(this);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->activation_client()->AddObserver(this);
+  // Explicitly close the app list in clamshell mode.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    Shell::Get()->app_list_controller()->DismissAppList();
 }
 
 UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
+  if (controller_->showing_calendar_view())
+    tray_->NotifyLeavingCalendarView();
+
   Shell::Get()->activation_client()->RemoveObserver(this);
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
@@ -133,6 +97,13 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
   }
 
   CHECK(!IsInObserverList());
+}
+
+void UnifiedSystemTrayBubble::InitializeObservers() {
+  tray_->tray_event_filter()->AddBubble(this);
+  tray_->shelf()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 }
 
 gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
@@ -189,13 +160,20 @@ void UnifiedSystemTrayBubble::ShowAudioDetailedView() {
   controller_->ShowAudioDetailedView();
 }
 
-void UnifiedSystemTrayBubble::ShowCalendarView() {
+void UnifiedSystemTrayBubble::ShowCalendarView(
+    calendar_metrics::CalendarViewShowSource show_source,
+    calendar_metrics::CalendarEventSource event_source) {
   if (!bubble_widget_)
     return;
 
+  if (event_source == calendar_metrics::CalendarEventSource::kKeyboard) {
+    bubble_view_->SetCanActivate(true);
+    bubble_widget_->Activate();
+  }
+
   DCHECK(unified_view_);
   DCHECK(controller_);
-  controller_->ShowCalendarView();
+  controller_->ShowCalendarView(show_source, event_source);
 }
 
 void UnifiedSystemTrayBubble::ShowNetworkDetailedView(bool force) {
@@ -242,7 +220,7 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
       WorkAreaInsets::ForWindow(tray_->shelf()->GetWindow()->GetRootWindow());
   int free_space_height_above_anchor =
       bottom - work_area->user_work_area_bounds().y();
-  return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
+  return free_space_height_above_anchor - kBubbleMenuPadding * 2;
 }
 
 bool UnifiedSystemTrayBubble::FocusOut(bool reverse) {
@@ -277,6 +255,10 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
                                                 aura::Window* gained_active,
                                                 aura::Window* lost_active) {
   if (!gained_active || !bubble_widget_)
+    return;
+
+  // Check for the CloseBubble() lock.
+  if (!TrayBackgroundView::ShouldCloseBubbleOnWindowActivated())
     return;
 
   // Don't close the bubble if a transient child is gaining or losing
@@ -345,15 +327,6 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
     tray_->message_center_bubble()->UpdatePosition();
 }
 
-void UnifiedSystemTrayBubble::OnAnimationFinished() {
-  bubble_widget_->GetNativeWindow()->layer()->SetClipRect(gfx::Rect());
-}
-
-void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
-  DCHECK(bubble_widget_);
-  bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
-}
-
 void UnifiedSystemTrayBubble::NotifyAccessibilityEvent(ax::mojom::Event event,
                                                        bool send_native_event) {
   bubble_view_->NotifyAccessibilityEvent(event, send_native_event);
@@ -361,6 +334,10 @@ void UnifiedSystemTrayBubble::NotifyAccessibilityEvent(ax::mojom::Event event,
 
 bool UnifiedSystemTrayBubble::ShowingAudioDetailedView() const {
   return bubble_widget_ && controller_->showing_audio_detailed_view();
+}
+
+bool UnifiedSystemTrayBubble::ShowingCalendarView() const {
+  return bubble_widget_ && controller_->showing_calendar_view();
 }
 
 }  // namespace ash

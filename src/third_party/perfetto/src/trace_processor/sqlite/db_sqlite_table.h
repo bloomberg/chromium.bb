@@ -17,7 +17,9 @@
 #ifndef SRC_TRACE_PROCESSOR_SQLITE_DB_SQLITE_TABLE_H_
 #define SRC_TRACE_PROCESSOR_SQLITE_DB_SQLITE_TABLE_H_
 
+#include "src/trace_processor/containers/bit_vector.h"
 #include "src/trace_processor/db/table.h"
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/sqlite/query_cache.h"
 #include "src/trace_processor/sqlite/sqlite_table.h"
 
@@ -34,38 +36,6 @@ class DbSqliteTable : public SqliteTable {
 
     // Mode when table is dynamically computed at filter time.
     kDynamic,
-  };
-
-  // Interface which can be subclassed to allow generation of tables dynamically
-  // at filter time.
-  // This class is used to implement table-valued functions and other similar
-  // tables.
-  class DynamicTableGenerator {
-   public:
-    virtual ~DynamicTableGenerator();
-
-    // Returns the schema of the table that will be returned by ComputeTable.
-    virtual Table::Schema CreateSchema() = 0;
-
-    // Returns the name of the dynamic table.
-    // This will be used to register the table with SQLite.
-    virtual std::string TableName() = 0;
-
-    // Returns the estimated number of rows the table would generate.
-    virtual uint32_t EstimateRowCount() = 0;
-
-    // Checks that the constraint set is valid.
-    //
-    // Returning util::OkStatus means that the required constraints are present
-    // in |qc| for dynamically computing the table (e.g. any required
-    // constraints on hidden columns for table-valued functions are present).
-    virtual util::Status ValidateConstraints(const QueryConstraints& qc) = 0;
-
-    // Dynamically computes the table given the constraints and order by
-    // vectors.
-    virtual std::unique_ptr<Table> ComputeTable(
-        const std::vector<Constraint>& cs,
-        const std::vector<Order>& ob) = 0;
   };
 
   class Cursor : public SqliteTable::Cursor {
@@ -164,7 +134,7 @@ class DbSqliteTable : public SqliteTable {
   virtual ~DbSqliteTable() override;
 
   // Table implementation.
-  util::Status Init(int,
+  base::Status Init(int,
                     const char* const*,
                     SqliteTable::Schema*) override final;
   std::unique_ptr<SqliteTable::Cursor> CreateCursor() override;

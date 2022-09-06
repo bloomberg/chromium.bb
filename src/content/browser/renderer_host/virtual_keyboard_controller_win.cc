@@ -47,7 +47,7 @@ void VirtualKeyboardControllerWin::OnKeyboardVisible(
   // should be set so we don't call TryShow API again.
   virtual_keyboard_shown_ = true;
   if (!host_view_->ShouldVirtualKeyboardOverlayContent()) {
-    host_view_->SetInsets(gfx::Insets(
+    host_view_->SetInsets(gfx::Insets::TLBR(
         0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
   } else {
     host_view_->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
@@ -76,7 +76,7 @@ void VirtualKeyboardControllerWin::ShowVirtualKeyboard() {
   if (auto* controller = input_method_->GetVirtualKeyboardController()) {
     if (!virtual_keyboard_shown_) {
       virtual_keyboard_shown_ = true;
-      input_method_->ShowVirtualKeyboardIfEnabled();
+      input_method_->SetVirtualKeyboardVisibilityIfEnabled(true);
     }
   }
 }

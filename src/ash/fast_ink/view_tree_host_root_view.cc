@@ -108,8 +108,7 @@ class ViewTreeHostRootView::LayerTreeViewTreeFrameSinkHolder
                  gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
-                                               /*hit_test_data_changed=*/true,
-                                               /*show_hit_test_borders=*/false);
+                                               /*hit_test_data_changed=*/true);
 
     // Delete sink holder immediately if not waiting for exported resources to
     // be reclaimed.
@@ -140,8 +139,7 @@ class ViewTreeHostRootView::LayerTreeViewTreeFrameSinkHolder
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
     frame.metadata.frame_token = ++next_frame_token_;
     frame_sink_->SubmitCompositorFrame(std::move(frame),
-                                       /*hit_test_data_changed=*/true,
-                                       /*show_hit_test_borders=*/false);
+                                       /*hit_test_data_changed=*/true);
   }
 
   void DamageExportedResources() {
@@ -346,7 +344,7 @@ void ViewTreeHostRootView::Paint() {
   int stride = resource->gpu_memory_buffer->stride(0);
   std::unique_ptr<SkCanvas> canvas =
       SkCanvas::MakeRasterDirect(info, data, stride);
-  canvas->setMatrix(static_cast<SkMatrix>(rotate_transform_.matrix()));
+  canvas->setMatrix(rotate_transform_.matrix().asM33());
   display_item_list->Raster(canvas.get());
 
   {

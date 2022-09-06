@@ -6,7 +6,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/media_player.mojom-blink.h"
@@ -86,7 +85,7 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(GetNetworkState, NetworkState());
   MOCK_CONST_METHOD0(WouldTaintOrigin, bool());
   MOCK_METHOD1(SetLatencyHint, void(double));
-  MOCK_METHOD1(SetAutoplayInitiated, void(bool));
+  MOCK_METHOD1(SetWasPlayedWithUserActivation, void(bool));
   MOCK_METHOD1(EnabledAudioTracksChanged, void(const WebVector<TrackId>&));
   MOCK_METHOD1(SelectedVideoTrackChanged, void(TrackId*));
   MOCK_METHOD4(
@@ -297,7 +296,8 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   HTMLMediaElement* Media() const { return media_.Get(); }
   void SetCurrentSrc(const AtomicString& src) {
     KURL url(src);
-    Media()->current_src_ = url;
+    Media()->current_src_.SetSource(
+        url, HTMLMediaElement::SourceMetadata::SourceVisibility::kVisibleToApp);
   }
 
   MockWebMediaPlayer* MockMediaPlayer() { return media_player_; }
@@ -564,7 +564,6 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToEnded) {
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
   // Playback can only end once the ready state is above kHaveMetadata.
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_FALSE(Media()->paused());
   EXPECT_FALSE(Media()->ended());
@@ -590,7 +589,6 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
   EXPECT_NE(mock_wmpi, nullptr);
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveMetadata);
   EXPECT_FALSE(Media()->paused());
   EXPECT_FALSE(Media()->ended());
@@ -633,7 +631,6 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataInfiniteStreamNeverEnds) {
   EXPECT_CALL(*MockMediaPlayer(), CurrentTime())
       .WillRepeatedly(Return(std::numeric_limits<double>::infinity()));
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveMetadata);
   EXPECT_FALSE(Media()->paused());
   EXPECT_FALSE(Media()->ended());
@@ -782,7 +779,6 @@ TEST_P(HTMLMediaElementTest, DefaultTracksAreEnabled) {
 
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   ASSERT_EQ(1u, Media()->audioTracks().length());
@@ -798,7 +794,6 @@ TEST_P(HTMLMediaElementTest, VisibilityObserverCreatedForLazyLoad) {
 
   EXPECT_CALL(*MockMediaPlayer(), DidLazyLoad()).WillRepeatedly(Return(true));
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_EQ(HasLazyLoadObserver(), GetParam() == MediaTestParam::kVideo);
 }
@@ -812,7 +807,6 @@ TEST_P(HTMLMediaElementTest, ContextPaused) {
   Media()->Play();
 
   test::RunPendingTasks();
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   EXPECT_FALSE(Media()->paused());
@@ -850,7 +844,6 @@ TEST_P(HTMLMediaElementTest, GcMarkingNoAllocHasActivity) {
   Media()->Play();
 
   test::RunPendingTasks();
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   SetError(MakeGarbageCollected<MediaError>(MediaError::kMediaErrDecode, ""));
 
@@ -871,10 +864,9 @@ TEST_P(HTMLMediaElementTest, CapturesRedirectedSrc) {
   // Should start at the original.
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
 
-  GURL redirected_url("https://redirected.com");
+  KURL redirected_url("https://redirected.com");
   EXPECT_CALL(*MockMediaPlayer(), GetSrcAfterRedirects())
-      .WillRepeatedly(Return(redirected_url));
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
+      .WillRepeatedly(Return(GURL(redirected_url)));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   EXPECT_EQ(Media()->downloadURL(), redirected_url);
@@ -887,7 +879,6 @@ TEST_P(HTMLMediaElementTest, EmptyRedirectedSrcUsesOriginal) {
   Media()->Play();
   test::RunPendingTasks();
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
 }
@@ -962,11 +953,9 @@ TEST_P(HTMLMediaElementTest, OnTimeUpdate_ReadyState) {
   EXPECT_CALL(*MockMediaPlayer(), GetSrcAfterRedirects)
       .WillRepeatedly(Return(GURL()));
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveCurrentData);
   testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 }
@@ -981,7 +970,6 @@ TEST_P(HTMLMediaElementTest, OnTimeUpdate_Seeking) {
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveCurrentData);
 
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
@@ -1002,7 +990,6 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_InitiallyTrue) {
 
   EXPECT_TRUE(Media()->IsShowPosterFlagSet());
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -1014,7 +1001,6 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterPlay) {
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -1030,7 +1016,6 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterSeek) {
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -1048,7 +1033,6 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterAutoPlay) {
   Media()->SetBooleanAttribute(html_names::kAutoplayAttr, true);
   test::RunPendingTasks();
 
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -1079,7 +1063,6 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterPlayBeforeReady) {
   EXPECT_FALSE(Media()->IsShowPosterFlagSet());
 
   // Pretend we have data to begin playback
-  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   // We should have data, be playing, and the show poster flag should be unset
@@ -1223,9 +1206,8 @@ TEST_P(HTMLMediaElementTest,
 TEST_P(HTMLMediaElementTest,
        DestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfReuseIsNotEnabled) {
   // Ensure that the WebMediaPlayer is destroyed when moving to a same-origin
-  // document, if `kReuseMediaPlayer` is not enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(media::kReuseMediaPlayer);
+  // document, if `kPictureInPictureV2` is not enabled.
+  ScopedPictureInPictureV2ForTest scoped_feature(false);
   MoveElementAndTestPlayerDestruction("https://a.com", "https://a.com",
                                       /*should_destroy=*/true);
 }
@@ -1234,9 +1216,8 @@ TEST_P(
     HTMLMediaElementTest,
     DestroyMediaPlayerWhenSwitchingDifferentOriginDocumentsIfReuseIsNotEnabled) {
   // Ensure that the WebMediaPlayer is destroyed when moving to a new origin
-  // document, if `kReuseMediaPlayer` is not enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(media::kReuseMediaPlayer);
+  // document, if `kPictureInPictureV2` is not enabled.
+  ScopedPictureInPictureV2ForTest scoped_feature(false);
   MoveElementAndTestPlayerDestruction("https://a.com", "https://b.com",
                                       /*should_destroy=*/true);
 }
@@ -1245,8 +1226,9 @@ TEST_P(
     HTMLMediaElementTest,
     DoNotDestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfReuseIsEnabled) {
   // Ensure that the WebMediaPlayer is re-used when moving to a same-origin
-  // document, if `kReuseMediaPlayer` is enabled.
-  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+  // document, if `kPictureInPictureV2` is enabled.
+  ScopedPictureInPictureAPIForTest scoped_dependency(true);
+  ScopedPictureInPictureV2ForTest scoped_feature(true);
   MoveElementAndTestPlayerDestruction("https://a.com", "https://a.com",
                                       /*should_destroy=*/false);
 }
@@ -1255,9 +1237,10 @@ TEST_P(
     HTMLMediaElementTest,
     DestroyMediaPlayerWhenSwitchingDifferentOriginDocumentsIfReuseIsEnabled) {
   // Ensure that the WebMediaPlayer is destroyed when moving to a new origin
-  // document, if `kReuseMediaPlayer` is enabled.  Re-use should only occur if
-  // it's a same-orign document.
-  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+  // document, if `kPictureInPictureV2` is enabled. Re-use should only occur if
+  // it's a same-origin document.
+  ScopedPictureInPictureAPIForTest scoped_dependency(true);
+  ScopedPictureInPictureV2ForTest scoped_feature(true);
   MoveElementAndTestPlayerDestruction("https://a.com", "https://b.com",
                                       /*should_destroy=*/true);
 }
@@ -1266,8 +1249,8 @@ TEST_P(HTMLMediaElementTest,
        DestroyMediaPlayerWhenUnloadingOpenerIfReuseIsEnabled) {
   // Ensure that the WebMediaPlayer is re-used, that navigating the opener away
   // causes the player to be destroyed.
-  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
-
+  ScopedPictureInPictureAPIForTest scoped_dependency(true);
+  ScopedPictureInPictureV2ForTest scoped_feature(true);
   const char* origin = "https://a.com";
   SetSecurityOrigin(origin);
   WaitForPlayer();
@@ -1281,7 +1264,8 @@ TEST_P(HTMLMediaElementTest,
 
 TEST_P(HTMLMediaElementTest,
        CreateMediaPlayerAfterMovingElementUsesOpenerFrameIfReuseIsEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+  ScopedPictureInPictureAPIForTest scoped_dependency(true);
+  ScopedPictureInPictureV2ForTest scoped_feature(true);
   // Move the element before creating the player.
   const char* origin = "https://a.com";
   SetSecurityOrigin(origin);
@@ -1296,8 +1280,7 @@ TEST_P(HTMLMediaElementTest,
 
 TEST_P(HTMLMediaElementTest,
        CreateMediaPlayerAfterMovingElementUsesNewFrameIfReuseIsNotEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(media::kReuseMediaPlayer);
+  ScopedPictureInPictureV2ForTest scoped_feature(false);
   // Move the element before creating the player.
   const char* origin = "https://a.com";
   SetSecurityOrigin(origin);
@@ -1308,6 +1291,41 @@ TEST_P(HTMLMediaElementTest,
   new_document.adoptNode(Media(), ASSERT_NO_EXCEPTION);
   // The element should no longer use the original frame.
   EXPECT_NE(old_frame, Media()->LocalFrameForPlayer());
+}
+
+TEST_P(HTMLMediaElementTest, PlayedWithoutUserActivation) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  EXPECT_CALL(*MockMediaPlayer(), SetWasPlayedWithUserActivation(false));
+  Media()->Play();
+}
+
+TEST_P(HTMLMediaElementTest, PlayedWithUserActivation) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  LocalFrame::NotifyUserActivation(
+      Media()->GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
+
+  EXPECT_CALL(*MockMediaPlayer(), SetWasPlayedWithUserActivation(true));
+  Media()->Play();
+}
+
+TEST_P(HTMLMediaElementTest, PlayedWithUserActivationBeforeLoad) {
+  LocalFrame::NotifyUserActivation(
+      Media()->GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
+
+  EXPECT_CALL(*MockMediaPlayer(), SetWasPlayedWithUserActivation(_)).Times(0);
+  Media()->Play();
 }
 
 }  // namespace blink

@@ -62,7 +62,7 @@ static void aom_once(void (*func)(void)) {
 #define INCL_DOS
 #include <os2.h>
 static void aom_once(void (*func)(void)) {
-  static int done;
+  static volatile int done;
 
   /* If the initialization is complete, return early. */
   if (done) return;
@@ -92,7 +92,7 @@ static void aom_once(void (*func)(void)) {
 /* Default version that performs no synchronization. */
 
 static void aom_once(void (*func)(void)) {
-  static int done;
+  static volatile int done;
 
   if (!done) {
     func();

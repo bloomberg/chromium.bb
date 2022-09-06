@@ -4,7 +4,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
@@ -26,17 +25,18 @@ void CopyNaClCommandLineArguments(base::CommandLine* cmd_line) {
     switches::kEnableLogging,
     switches::kDisableLogging,
     switches::kLoggingLevel,
+    switches::kVerboseLoggingInNacl,
     switches::kNoErrorDialogs,
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     switches::kDisableHighResTimer,
     switches::kRaiseTimerFrequency,
 #endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                             base::size(kSwitchNames));
+                             std::size(kSwitchNames));
 }
 
 }  // namespace nacl

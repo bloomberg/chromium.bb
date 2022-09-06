@@ -5,6 +5,7 @@
 #ifndef MEDIA_MOJO_SERVICES_PLAYBACK_EVENTS_RECORDER_H_
 #define MEDIA_MOJO_SERVICES_PLAYBACK_EVENTS_RECORDER_H_
 
+#include "base/time/time.h"
 #include "media/mojo/mojom/playback_events_recorder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -33,7 +34,7 @@ class MEDIA_MOJO_EXPORT PlaybackEventsRecorder final
   void OnEnded() final;
   void OnBuffering() final;
   void OnBufferingComplete() final;
-  void OnError(PipelineStatus status) final;
+  void OnError(const PipelineStatus& status) final;
   void OnNaturalSizeChanged(const gfx::Size& size) final;
   void OnPipelineStatistics(const PipelineStatistics& stats) final;
 

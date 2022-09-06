@@ -69,8 +69,8 @@ class AXImageMapLink final : public AXNodeObject {
   // For an <area>, return an <img> that should be used as its parent, or null.
   static AXObject* GetAXObjectForImageMap(AXObjectCacheImpl& cache, Node* area);
   void GetRelativeBounds(AXObject** out_container,
-                         FloatRect& out_bounds_in_container,
-                         skia::Matrix44& out_container_transform,
+                         gfx::RectF& out_bounds_in_container,
+                         gfx::Transform& out_container_transform,
                          bool* clips_children = nullptr) const override;
 
  private:

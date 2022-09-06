@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 
 namespace cryptohome {
 class Identification;
@@ -37,9 +37,9 @@ class ArcClientAdapter {
    public:
     virtual ~DemoModeDelegate() = default;
 
-    // Ensures that the demo session offline resources are loaded, if demo mode
+    // Ensures that the demo session resources are loaded, if demo mode
     // is enabled. This must be called before GetDemoAppsPath().
-    virtual void EnsureOfflineResourcesLoaded(base::OnceClosure callback) = 0;
+    virtual void EnsureResourcesLoaded(base::OnceClosure callback) = 0;
 
     // Gets the path of the image containing demo session Android apps. Returns
     // an empty path if demo mode is not enabled.
@@ -78,11 +78,12 @@ class ArcClientAdapter {
   // apps path.
   virtual void SetDemoModeDelegate(DemoModeDelegate* delegate) = 0;
 
-  // Trims VM's memory by moving it to zram. |callback| is called when the
-  // operation is done.
+  // Trims VM's memory by moving it to zram.
+  // When the operation is done |callback| is called.
+  // If nonzero, |page_limit| defines the max number of pages to reclaim.
   using TrimVmMemoryCallback =
       base::OnceCallback<void(bool success, const std::string& failure_reason)>;
-  virtual void TrimVmMemory(TrimVmMemoryCallback callback) = 0;
+  virtual void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

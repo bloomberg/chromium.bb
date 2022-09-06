@@ -60,6 +60,8 @@ class TestSelectionDeviceManager : public GlobalObject {
   TestSelectionDevice* device() { return device_; }
   TestSelectionSource* source() { return source_; }
 
+  void set_source(TestSelectionSource* source) { source_ = source; }
+
   // Protocol object requests:
   static void CreateSource(wl_client* client,
                            wl_resource* manager_resource,
@@ -112,6 +114,7 @@ class TestSelectionSource : public ServerObject {
   struct Delegate {
     virtual void SendSend(const std::string& mime_type,
                           base::ScopedFD write_fd) = 0;
+    virtual void SendFinished() = 0;
     virtual void SendCancelled() = 0;
     virtual void OnDestroying() = 0;
 
@@ -125,6 +128,7 @@ class TestSelectionSource : public ServerObject {
   using ReadDataCallback = base::OnceCallback<void(std::vector<uint8_t>&&)>;
   void ReadData(const std::string& mime_type, ReadDataCallback callback);
 
+  void OnFinished();
   void OnCancelled();
 
   const std::vector<std::string>& mime_types() const { return mime_types_; }
@@ -163,14 +167,22 @@ class TestSelectionDevice : public ServerObject {
   TestSelectionOffer* OnDataOffer();
   void OnSelection(TestSelectionOffer* offer);
 
+  void set_manager(TestSelectionDeviceManager* manager) { manager_ = manager; }
+
   // Protocol object requests:
   static void SetSelection(struct wl_client* client,
                            struct wl_resource* resource,
                            struct wl_resource* source,
                            uint32_t serial);
 
+  uint32_t selection_serial() const { return selection_serial_; }
+
  private:
   Delegate* const delegate_;
+
+  uint32_t selection_serial_ = 0;
+
+  TestSelectionDeviceManager* manager_ = nullptr;
 };
 
 }  // namespace wl

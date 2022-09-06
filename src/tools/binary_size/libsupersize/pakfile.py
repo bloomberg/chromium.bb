@@ -11,10 +11,12 @@ import sys
 import zipfile
 import zlib
 
+import archive_util
+import file_format
 import models
 import path_util
 
-sys.path.insert(1, os.path.join(path_util.TOOLS_SRC_ROOT, 'tools', 'grit'))
+sys.path.insert(1, path_util.FromToolsSrcRoot('tools', 'grit'))
 from grit.format import data_pack
 
 _UNCOMPRESSED_COMPRESSION_RATIO_THRESHOLD = 0.9
@@ -135,14 +137,8 @@ def _FinalizeSymbols(symbols_by_id, pak_id_map):
       raw_symbols.append(new_sym)
 
   # Pre-sort to make final sort faster.
-  # Note: _SECTION_SORT_ORDER[] for pak symbols matches section_name ordering.
-  raw_symbols.sort(key=lambda s: (s.section_name, s.address, s.object_path))
+  file_format.SortSymbols(raw_symbols)
   return raw_symbols
-
-
-def _ExtendSectionRange(section_range_by_name, section_name, delta_size):
-  prev_address, prev_size = section_range_by_name.get(section_name, (0, 0))
-  section_range_by_name[section_name] = (prev_address, prev_size + delta_size)
 
 
 def CreatePakSymbolsFromApk(section_ranges, apk_path, apk_pak_paths,
@@ -161,7 +157,8 @@ def CreatePakSymbolsFromApk(section_ranges, apk_path, apk_pak_paths,
             zip_info.filename)
       section_name = _CreateSymbolsFromFile(zip_info.filename, contents,
                                             res_info, symbols_by_id)
-      _ExtendSectionRange(section_ranges, section_name, zip_info.compress_size)
+      archive_util.ExtendSectionRange(section_ranges, section_name,
+                                      zip_info.compress_size)
   return _FinalizeSymbols(symbols_by_id, pak_id_map)
 
 
@@ -179,5 +176,6 @@ def CreatePakSymbolsFromFiles(section_ranges, pak_paths, pak_info_path,
     section_name = _CreateSymbolsFromFile(
         os.path.relpath(pak_path, output_directory), contents, res_info,
         symbols_by_id)
-    _ExtendSectionRange(section_ranges, section_name, os.path.getsize(pak_path))
+    archive_util.ExtendSectionRange(section_ranges, section_name,
+                                    os.path.getsize(pak_path))
   return _FinalizeSymbols(symbols_by_id, pak_id_map)

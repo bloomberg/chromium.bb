@@ -10,6 +10,7 @@
 #include "cc/paint/filter_operation.h"
 
 #include "base/cxx17_backports.h"
+#include "base/notreached.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -321,7 +322,7 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
       break;
     case FilterOperation::COLOR_MATRIX: {
       value->BeginArray("matrix");
-      for (size_t i = 0; i < base::size(matrix_); ++i)
+      for (size_t i = 0; i < std::size(matrix_); ++i)
         value->AppendDouble(matrix_[i]);
       value->EndArray();
       break;
@@ -382,7 +383,7 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
       float spread_x = std::abs(spread.x()) * sign;
       float spread_y = std::abs(spread.y()) * sign;
       gfx::RectF result(rect);
-      result.Inset(spread_x, spread_y, spread_x, spread_y);
+      result.Inset(gfx::InsetsF::VH(spread_y, spread_x));
       return gfx::ToEnclosingRect(result);
     }
     case FilterOperation::DROP_SHADOW: {
@@ -390,7 +391,7 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
       float spread_x = std::abs(spread.x());
       float spread_y = std::abs(spread.y());
       gfx::RectF result(rect);
-      result.Inset(-spread_x, -spread_y, -spread_x, -spread_y);
+      result.Inset(gfx::InsetsF::VH(-spread_y, -spread_x));
 
       gfx::Point drop_shadow_offset = op.drop_shadow_offset();
       SkVector mapped_drop_shadow_offset;

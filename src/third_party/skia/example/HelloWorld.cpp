@@ -8,10 +8,21 @@
 #include "example/HelloWorld.h"
 
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
 #include "include/core/SkFont.h"
+#include "include/core/SkFontTypes.h"
 #include "include/core/SkGraphics.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkString.h"
 #include "include/core/SkSurface.h"
+#include "include/core/SkTileMode.h"
 #include "include/effects/SkGradientShader.h"
+#include "tools/sk_app/DisplayParams.h"
+
+#include <string.h>
 
 using namespace sk_app;
 
@@ -20,8 +31,16 @@ Application* Application::Create(int argc, char** argv, void* platformData) {
 }
 
 HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
-        : fBackendType(Window::kNativeGL_BackendType)
-        , fRotationAngle(0) {
+#if defined(SK_GL)
+        : fBackendType(Window::kNativeGL_BackendType),
+#elif defined(SK_VULKAN)
+        : fBackendType(Window::kVulkan_BackendType),
+#elif defined(SK_DAWN)
+        : fBackendType(Window::kDawn_BackendType),
+#else
+        : fBackendType(Window::kRaster_BackendType),
+#endif
+        fRotationAngle(0) {
     SkGraphics::Init();
 
     fWindow = Window::CreateNativeWindow(platformData);
@@ -39,12 +58,25 @@ HelloWorld::~HelloWorld() {
 }
 
 void HelloWorld::updateTitle() {
-    if (!fWindow || fWindow->sampleCount() <= 1) {
+    if (!fWindow) {
         return;
     }
 
     SkString title("Hello World ");
-    title.append(Window::kRaster_BackendType == fBackendType ? "Raster" : "OpenGL");
+    if (Window::kRaster_BackendType == fBackendType) {
+        title.append("Raster");
+    } else {
+#if defined(SK_GL)
+        title.append("GL");
+#elif defined(SK_VULKAN)
+        title.append("Vulkan");
+#elif defined(SK_DAWN)
+        title.append("Dawn");
+#else
+        title.append("Unknown GPU backend");
+#endif
+    }
+
     fWindow->setTitle(title.c_str());
 }
 
@@ -88,7 +120,7 @@ void HelloWorld::onPaint(SkSurface* surface) {
     paint.setColor(SK_ColorBLACK);
 
     canvas->save();
-    static const char message[] = "Hello World";
+    static const char message[] = "Hello World ";
 
     // Translate and rotate
     canvas->translate(300, 300);
@@ -105,14 +137,26 @@ void HelloWorld::onPaint(SkSurface* surface) {
 }
 
 void HelloWorld::onIdle() {
-    // Just re-paint continously
+    // Just re-paint continuously
     fWindow->inval();
 }
 
 bool HelloWorld::onChar(SkUnichar c, skui::ModifierKey modifiers) {
     if (' ' == c) {
-        fBackendType = Window::kRaster_BackendType == fBackendType ? Window::kNativeGL_BackendType
-                                                                   : Window::kRaster_BackendType;
+        if (Window::kRaster_BackendType == fBackendType) {
+#if defined(SK_GL)
+            fBackendType = Window::kNativeGL_BackendType;
+#elif defined(SK_VULKAN)
+            fBackendType = Window::kVulkan_BackendType;
+#elif defined(SK_DAWN)
+            fBackendType = Window::kDawn_BackendType;
+#else
+            SkDebugf("No GPU backend configured\n");
+            return true;
+#endif
+        } else {
+            fBackendType = Window::kRaster_BackendType;
+        }
         fWindow->detach();
         fWindow->attach(fBackendType);
     }

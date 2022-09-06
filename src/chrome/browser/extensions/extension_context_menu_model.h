@@ -13,7 +13,6 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-class GURL;
 class Profile;
 
 namespace content {
@@ -42,6 +41,8 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     PAGE_ACCESS_RUN_ON_SITE,
     PAGE_ACCESS_RUN_ON_ALL_SITES,
     PAGE_ACCESS_LEARN_MORE,
+    PAGE_ACCESS_ALL_EXTENSIONS_GRANTED,
+    PAGE_ACCESS_ALL_EXTENSIONS_BLOCKED,
     // NOTE: If you update this, you probably need to update the
     // ContextMenuAction enum below.
   };
@@ -68,6 +69,9 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     kPageAccessLearnMore = 11,
     kMaxValue = kPageAccessLearnMore,
   };
+
+  // Location where the context menu is open from.
+  enum class ContextMenuSource { kToolbarAction = 0, kMenuItem = 1 };
 
   // The current visibility of the extension; this affects the "pin" / "unpin"
   // strings in the menu.
@@ -103,7 +107,8 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
                             Browser* browser,
                             ButtonVisibility visibility,
                             PopupDelegate* delegate,
-                            bool can_show_icon_in_toolbar);
+                            bool can_show_icon_in_toolbar,
+                            ContextMenuSource source);
 
   ExtensionContextMenuModel(const ExtensionContextMenuModel&) = delete;
   ExtensionContextMenuModel& operator=(const ExtensionContextMenuModel&) =
@@ -124,16 +129,15 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   }
 
  private:
-  void InitMenu(const Extension* extension, ButtonVisibility button_visibility);
+  void InitMenu(const Extension* extension, bool can_show_icon_in_toolbar);
 
-  void CreatePageAccessSubmenu(const Extension* extension);
-
-  MenuEntries GetCurrentPageAccess(const Extension* extension,
-                                   content::WebContents* web_contents) const;
+  // Adds the page access items based on the current site setting pointed by
+  // `web_contents`.
+  void CreatePageAccessItems(const Extension* extension,
+                             content::WebContents* web_contents);
 
   // Returns true if the given page access command is enabled in the menu.
   bool IsPageAccessCommandEnabled(const Extension& extension,
-                                  const GURL& url,
                                   int command_id) const;
 
   void HandlePageAccessCommand(int command_id,
@@ -173,8 +177,6 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   // The visibility of the button at the time the menu opened.
   ButtonVisibility button_visibility_;
 
-  const bool can_show_icon_in_toolbar_;
-
   // Menu matcher for context menu items specified by the extension.
   std::unique_ptr<ContextMenuMatcher> extension_items_;
 
@@ -183,6 +185,8 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   // The action taken by the menu. Has a valid value when the menu is being
   // shown.
   absl::optional<ContextMenuAction> action_taken_;
+
+  ContextMenuSource source_;
 };
 
 }  // namespace extensions

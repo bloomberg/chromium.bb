@@ -24,6 +24,8 @@
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_system_provider/service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -31,14 +33,14 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
-#include "chromeos/dbus/seneschal/fake_seneschal_client.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -87,17 +89,23 @@ class GuestOsSharePathTest : public testing::Test {
       const base::FilePath& container_path,
       bool success,
       const std::string& failure_reason) {
-    const base::DictionaryValue* prefs =
+    const base::Value* prefs =
         profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
     EXPECT_NE(prefs->FindKey(shared_path_.value()), nullptr);
-    EXPECT_EQ(prefs->FindKey(shared_path_.value())->GetList().size(), 1U);
-    EXPECT_EQ(prefs->FindKey(shared_path_.value())->GetList()[0].GetString(),
+    EXPECT_EQ(prefs->FindKey(shared_path_.value())->GetListDeprecated().size(),
+              1U);
+    EXPECT_EQ(prefs->FindKey(shared_path_.value())
+                  ->GetListDeprecated()[0]
+                  .GetString(),
               crostini::kCrostiniDefaultVmName);
     if (expected_persist == Persist::YES) {
       EXPECT_EQ(prefs->DictSize(), 2U);
       EXPECT_NE(prefs->FindKey(share_path_.value()), nullptr);
-      EXPECT_EQ(prefs->FindKey(share_path_.value())->GetList().size(), 1U);
-      EXPECT_EQ(prefs->FindKey(share_path_.value())->GetList()[0].GetString(),
+      EXPECT_EQ(prefs->FindKey(share_path_.value())->GetListDeprecated().size(),
+                1U);
+      EXPECT_EQ(prefs->FindKey(share_path_.value())
+                    ->GetListDeprecated()[0]
+                    .GetString(),
                 expected_vm_name);
     } else {
       EXPECT_EQ(prefs->DictSize(), 1U);
@@ -172,7 +180,7 @@ class GuestOsSharePathTest : public testing::Test {
       const std::string& expected_failure_reason,
       bool success,
       const std::string& failure_reason) {
-    const base::DictionaryValue* prefs =
+    const base::Value* prefs =
         profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
     if (expected_persist == Persist::YES) {
       EXPECT_NE(prefs->FindKey(path.value()), nullptr);
@@ -216,21 +224,21 @@ class GuestOsSharePathTest : public testing::Test {
             TestingBrowserProcess::GetGlobal())),
         browser_part_(g_browser_process->platform_part()) {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
 
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
-    fake_seneschal_client_ = chromeos::FakeSeneschalClient::Get();
+    fake_concierge_client_ = ash::FakeConciergeClient::Get();
+    fake_seneschal_client_ = ash::FakeSeneschalClient::Get();
   }
 
   GuestOsSharePathTest(const GuestOsSharePathTest&) = delete;
   GuestOsSharePathTest& operator=(const GuestOsSharePathTest&) = delete;
 
   ~GuestOsSharePathTest() override {
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -249,7 +257,7 @@ class GuestOsSharePathTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(shared_path_));
     DictionaryPrefUpdate update(profile()->GetPrefs(),
                                 prefs::kGuestOSPathsSharedToVms);
-    base::DictionaryValue* shared_paths = update.Get();
+    base::Value* shared_paths = update.Get();
     base::Value termina(base::Value::Type::LIST);
     termina.Append(base::Value(crostini::kCrostiniDefaultVmName));
     shared_paths->SetKey(shared_path_.value(), std::move(termina));
@@ -285,6 +293,11 @@ class GuestOsSharePathTest : public testing::Test {
     profile()->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
     drivefs_ =
         base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980");
+
+    // Setup for a fake wayland server (needed when CrostiniManager makes a VM).
+    guest_os::GuestOsService::GetForProfile(profile())
+        ->WaylandServer()
+        ->OverrideServerForTesting(vm_tools::launch::TERMINA, nullptr, {});
 
     // Create 'vm-running' VM instance which is running.
     crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
@@ -329,8 +342,8 @@ class GuestOsSharePathTest : public testing::Test {
   base::FilePath drivefs_;
   std::unique_ptr<file_manager::Volume> volume_downloads_;
 
-  chromeos::FakeSeneschalClient* fake_seneschal_client_;
-  chromeos::FakeConciergeClient* fake_concierge_client_;
+  ash::FakeSeneschalClient* fake_seneschal_client_;
+  ash::FakeConciergeClient* fake_concierge_client_;
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -718,24 +731,24 @@ TEST_F(GuestOsSharePathTest, RegisterPersistedPaths) {
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
 
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
-  const base::DictionaryValue* prefs =
+  const base::Value* prefs =
       profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   EXPECT_EQ(prefs->DictSize(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v1");
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated()[0].GetString(), "v1");
 
   // Adding the same path again for same VM should not cause any changes.
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
   prefs = profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   EXPECT_EQ(prefs->DictSize(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 1U);
 
   // Adding the same path for a new VM adds to the vm list.
   guest_os_share_path_->RegisterPersistedPath("v2", base::FilePath("/a/a/a"));
   EXPECT_EQ(prefs->DictSize(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 2U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v1");
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[1].GetString(), "v2");
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 2U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated()[0].GetString(), "v1");
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated()[1].GetString(), "v2");
 
   // Add more paths.
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/b"));
@@ -743,52 +756,52 @@ TEST_F(GuestOsSharePathTest, RegisterPersistedPaths) {
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/b/a"));
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/b/a/a"));
   EXPECT_EQ(prefs->DictSize(), 5U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 2U);
-  EXPECT_EQ(prefs->FindKey("/a/a/b")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/c")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/b/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/b/a/a")->GetList().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 2U);
+  EXPECT_EQ(prefs->FindKey("/a/a/b")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/c")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/b/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/b/a/a")->GetListDeprecated().size(), 1U);
 
   // Adding /a/a should remove /a/a/a, /a/a/b, /a/a/c.
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a"));
   EXPECT_EQ(prefs->DictSize(), 4U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v2");
-  EXPECT_EQ(prefs->FindKey("/a/b/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/b/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a")->GetList()[0].GetString(), "v1");
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated()[0].GetString(), "v2");
+  EXPECT_EQ(prefs->FindKey("/a/b/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/b/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a")->GetListDeprecated()[0].GetString(), "v1");
 
   // Adding /a should remove /a/a, /a/b/a.
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a"));
   EXPECT_EQ(prefs->DictSize(), 3U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v2");
-  EXPECT_EQ(prefs->FindKey("/b/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a")->GetList()[0].GetString(), "v1");
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated()[0].GetString(), "v2");
+  EXPECT_EQ(prefs->FindKey("/b/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a")->GetListDeprecated()[0].GetString(), "v1");
 
   // Adding / should remove all others.
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/"));
   EXPECT_EQ(prefs->DictSize(), 2U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v2");
-  EXPECT_EQ(prefs->FindKey("/")->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey("/")->GetList()[0].GetString(), "v1");
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/a/a/a")->GetListDeprecated()[0].GetString(), "v2");
+  EXPECT_EQ(prefs->FindKey("/")->GetListDeprecated().size(), 1U);
+  EXPECT_EQ(prefs->FindKey("/")->GetListDeprecated()[0].GetString(), "v1");
 
   // Add / for v2.
   guest_os_share_path_->RegisterPersistedPath("v2", base::FilePath("/"));
   EXPECT_EQ(prefs->DictSize(), 1U);
-  EXPECT_EQ(prefs->FindKey("/")->GetList().size(), 2U);
-  EXPECT_EQ(prefs->FindKey("/")->GetList()[0].GetString(), "v1");
-  EXPECT_EQ(prefs->FindKey("/")->GetList()[1].GetString(), "v2");
+  EXPECT_EQ(prefs->FindKey("/")->GetListDeprecated().size(), 2U);
+  EXPECT_EQ(prefs->FindKey("/")->GetListDeprecated()[0].GetString(), "v1");
+  EXPECT_EQ(prefs->FindKey("/")->GetListDeprecated()[1].GetString(), "v2");
 }
 
 TEST_F(GuestOsSharePathTest, UnsharePathSuccess) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value("vm-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -815,7 +828,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathVmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value("vm-not-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -832,7 +845,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathPluginVmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value("PvmDefault"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -850,7 +863,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathArcvmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value(arc::kArcVmName));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -1061,6 +1074,8 @@ TEST_F(GuestOsSharePathTest, RegisterPathThenUnshare) {
 
 TEST_F(GuestOsSharePathTest, IsPathShared) {
   SetUpVolume();
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
   // shared_path_ and children paths are shared for 'termina'.
   for (auto& path : {shared_path_, shared_path_.Append("a.txt"),
                      shared_path_.Append("a"), shared_path_.Append("a/b")}) {

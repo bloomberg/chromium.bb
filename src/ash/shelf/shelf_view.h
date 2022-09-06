@@ -20,10 +20,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shell_observer.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -54,6 +56,7 @@ class Separator;
 }  // namespace views
 
 namespace ash {
+class GhostImageView;
 class ShelfAppButton;
 class ShelfButton;
 class ShelfModel;
@@ -71,11 +74,11 @@ enum ShelfAlignmentUmaEnumValue {
 
 // ShelfView contains the shelf items visible within an active user session.
 // ShelfView and LoginShelfView should never be shown together.
-
 class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ShelfButtonDelegate,
                              public ShelfModelObserver,
                              public ShellObserver,
+                             public ShelfObserver,
                              public views::ContextMenuController,
                              public views::BoundsAnimatorObserver,
                              public ApplicationDragAndDropHost,
@@ -165,6 +168,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   void OnMouseEvent(ui::MouseEvent* event) override;
   const char* GetClassName() const override;
   void OnThemeChanged() override;
+  void ViewHierarchyChanged(
+      const views::ViewHierarchyChangedDetails& details) override;
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
@@ -316,6 +321,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   ShelfMenuModelAdapter* shelf_menu_model_adapter_for_testing() {
     return shelf_menu_model_adapter_.get();
   }
+
+  int current_ghost_view_index() const { return current_ghost_view_index_; }
 
  private:
   friend class ShelfViewTestAPI;
@@ -471,7 +478,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Overridden from ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window,
                                ShelfAlignment old_alignment) override;
-  void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
+
+  // ShelfObserver:
+  void OnShelfAutoHideBehaviorChanged() override;
 
   // Shows a shelf context menu with the given |model|, or a default menu.
   void ShowShelfContextMenu(const ShelfID& shelf_id,
@@ -543,11 +552,17 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // this function causes the items that were partying to reappear on the shelf.
   void HandleShelfParty();
 
+  // Removes and reset |current_ghost_view| and |last_ghost_view|.
+  void RemoveGhostView();
+
+  // Resets the data members related to the app item context menu model request.
+  void ResetActiveMenuModelRequest();
+
   // The model; owned by Launcher.
-  ShelfModel* model_;
+  ShelfModel* const model_;
 
   // The shelf controller; owned by RootWindowController.
-  Shelf* shelf_;
+  Shelf* const shelf_;
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.
@@ -698,6 +713,14 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // The app item icon proxy created for drag operation.
   std::unique_ptr<AppDragIconProxy> drag_icon_proxy_;
+
+  // Placeholder ghost icon to show where an app will drop on the shelf.
+  GhostImageView* current_ghost_view_ = nullptr;
+  // The latest ghost icon shown set to be replaced by |current_ghost_view_|.
+  GhostImageView* last_ghost_view_ = nullptr;
+
+  // The index in the shelf app icons where the |current_ghost_view_| will show.
+  int current_ghost_view_index_ = -1;
 
   // When the scrollable shelf is enabled, |shelf_button_delegate_| should
   // be ScrollableShelfView.

@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/system/diagnostics/telemetry_log.h"
 #include "ash/webui/diagnostics_ui/backend/cpu_usage_data.h"
 #include "ash/webui/diagnostics_ui/backend/power_manager_client_conversions.h"
-#include "ash/webui/diagnostics_ui/backend/telemetry_log.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,10 +21,9 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
-#include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "chromeos/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,8 +56,8 @@ void SetProbeTelemetryInfoResponse(healthd_mojom::BatteryInfoPtr battery_info,
         healthd_mojom::CpuResult::NewCpuInfo(std::move(cpu_info));
   }
 
-  cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetProbeTelemetryInfoResponseForTesting(info);
+  cros_healthd::FakeCrosHealthd::Get()->SetProbeTelemetryInfoResponseForTesting(
+      info);
 }
 
 void SetCrosHealthdSystemInfoResponse(const std::string& board_name,
@@ -487,13 +486,13 @@ class SystemDataProviderTest : public testing::Test {
  public:
   SystemDataProviderTest() {
     chromeos::PowerManagerClient::InitializeFake();
-    chromeos::CrosHealthdClient::InitializeFake();
+    cros_healthd::FakeCrosHealthd::Initialize();
     system_data_provider_ = std::make_unique<SystemDataProvider>();
   }
 
   ~SystemDataProviderTest() override {
     system_data_provider_.reset();
-    chromeos::CrosHealthdClient::Shutdown();
+    cros_healthd::FakeCrosHealthd::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     base::RunLoop().RunUntilIdle();
   }
@@ -1031,6 +1030,128 @@ TEST_F(SystemDataProviderTest, ResetReceiverOnDisconnect) {
   // will reset the receiver to its unbound state.
   system_data_provider_->BindInterface(remote.BindNewPipeAndPassReceiver());
   ASSERT_TRUE(system_data_provider_->ReceiverIsBound());
+}
+
+TEST_F(SystemDataProviderTest, BatteryInfoPtrDataValidation) {
+  // Setup Timer
+  auto timer = std::make_unique<base::MockRepeatingTimer>();
+  auto* timer_ptr = timer.get();
+  system_data_provider_->SetBatteryHealthTimerForTesting(std::move(timer));
+
+  const std::string vendor = "fake_vendor";
+  healthd_mojom::BatteryInfoPtr battery_info_all_zero =
+      CreateCrosHealthdBatteryInfoResponse(vendor, /*charge_full_design*/ 0);
+  SetProbeTelemetryInfoResponse(std::move(battery_info_all_zero),
+                                /*cpu_info=*/nullptr,
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+  // Registering as an observer should trigger one update.
+  FakeBatteryHealthObserver health_observer;
+  system_data_provider_->ObserveBatteryHealth(
+      health_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1ul, health_observer.updates.size());
+  auto* battery_health_one = health_observer.updates[0].get();
+  EXPECT_EQ(0, battery_health_one->battery_wear_percentage);
+  EXPECT_FALSE(isnan(battery_health_one->battery_wear_percentage));
+  EXPECT_FALSE(isnan(battery_health_one->charge_full_now_milliamp_hours));
+  EXPECT_FALSE(isnan(battery_health_one->charge_full_design_milliamp_hours));
+
+  healthd_mojom::BatteryInfoPtr battery_info_not_a_number =
+      CreateCrosHealthdBatteryInfoResponse(vendor, /*charge_full_design*/ NAN);
+  SetProbeTelemetryInfoResponse(std::move(battery_info_not_a_number),
+                                /*cpu_info=*/nullptr,
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+  // Trigger timer to update data.
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2ul, health_observer.updates.size());
+  auto* battery_health_two = health_observer.updates[0].get();
+  EXPECT_EQ(0, battery_health_two->battery_wear_percentage);
+  EXPECT_FALSE(isnan(battery_health_two->battery_wear_percentage));
+  EXPECT_FALSE(isnan(battery_health_two->charge_full_now_milliamp_hours));
+  EXPECT_FALSE(isnan(battery_health_two->charge_full_design_milliamp_hours));
+
+  healthd_mojom::BatteryInfoPtr battery_info_charge_full_nan =
+      CreateCrosHealthdBatteryInfoResponse(vendor, /*charge_full_design*/ 1);
+  battery_info_charge_full_nan->charge_full = NAN;
+  SetProbeTelemetryInfoResponse(std::move(battery_info_charge_full_nan),
+                                /*cpu_info=*/nullptr,
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+
+  // Trigger timer to update data.
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(3ul, health_observer.updates.size());
+  auto* battery_health_three = health_observer.updates[2].get();
+  EXPECT_EQ(0, battery_health_three->battery_wear_percentage);
+  EXPECT_FALSE(isnan(battery_health_three->battery_wear_percentage));
+  EXPECT_FALSE(isnan(battery_health_three->charge_full_now_milliamp_hours));
+  EXPECT_FALSE(isnan(battery_health_three->charge_full_design_milliamp_hours));
+}
+
+TEST_F(SystemDataProviderTest, CpuUsagePtrDataValidation) {
+  // Setup Timer
+  auto timer = std::make_unique<base::MockRepeatingTimer>();
+  auto* timer_ptr = timer.get();
+  system_data_provider_->SetCpuUsageTimerForTesting(std::move(timer));
+
+  FakeCpuUsageObserver cpu_usage_observer;
+  system_data_provider_->ObserveCpuUsage(
+      cpu_usage_observer.receiver.BindNewPipeAndPassRemote());
+
+  // Simulate receiving a nullptr for CpuInfo.
+  SetProbeTelemetryInfoResponse(/*battery_info=*/nullptr, nullptr,
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, cpu_usage_observer.updates.size());
+  EXPECT_EQ(0u, cpu_usage_observer.updates[0]->average_cpu_temp_celsius);
+  EXPECT_EQ(0u, cpu_usage_observer.updates[0]->scaling_current_frequency_khz);
+
+  // Simulate receiving a CpuInfo with no data set.
+  healthd_mojom::CpuInfoPtr cpu_info_no_data = healthd_mojom::CpuInfo::New();
+  SetProbeTelemetryInfoResponse(/*battery_info=*/nullptr,
+                                std::move(cpu_info_no_data),
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+
+  // Trigger timer to update data.
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2u, cpu_usage_observer.updates.size());
+  EXPECT_EQ(0u, cpu_usage_observer.updates[1]->average_cpu_temp_celsius);
+  EXPECT_EQ(0u, cpu_usage_observer.updates[1]->scaling_current_frequency_khz);
+
+  // Simulate receiving a CpuInfo with and empty temperature channel and empty
+  // logical cpu.
+  std::vector<healthd_mojom::PhysicalCpuInfoPtr> physical_cpus;
+  physical_cpus.emplace_back(healthd_mojom::PhysicalCpuInfo::New());
+  std::vector<healthd_mojom::CpuTemperatureChannelPtr> temperature_channels;
+  healthd_mojom::CpuInfoPtr cpu_info_no_temperatures =
+      healthd_mojom::CpuInfo::New(/*num_total_threads=*/0u,
+                                  healthd_mojom::CpuArchitectureEnum::kUnknown,
+                                  std::move(physical_cpus),
+                                  std::move(temperature_channels), nullptr);
+  SetProbeTelemetryInfoResponse(/*battery_info=*/nullptr,
+                                std::move(cpu_info_no_temperatures),
+                                /*memory_info=*/nullptr,
+                                /*system_info=*/nullptr);
+
+  // Trigger timer to update data.
+  timer_ptr->Fire();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(3u, cpu_usage_observer.updates.size());
+  EXPECT_EQ(0u, cpu_usage_observer.updates[2]->average_cpu_temp_celsius);
+  EXPECT_EQ(0u, cpu_usage_observer.updates[2]->scaling_current_frequency_khz);
 }
 
 }  // namespace diagnostics

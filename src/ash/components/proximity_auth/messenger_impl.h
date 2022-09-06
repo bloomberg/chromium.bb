@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "ash/components/proximity_auth/messenger.h"
+#include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +21,7 @@ namespace proximity_auth {
 
 // Concrete implementation of the Messenger interface.
 class MessengerImpl : public Messenger,
-                      public chromeos::secure_channel::ClientChannel::Observer {
+                      public ash::secure_channel::ClientChannel::Observer {
  public:
   // Constructs a messenger that sends and receives messages.
   //
@@ -29,7 +29,7 @@ class MessengerImpl : public Messenger,
   //
   // The messenger begins observing messages as soon as it is constructed.
   explicit MessengerImpl(
-      std::unique_ptr<chromeos::secure_channel::ClientChannel> channel);
+      std::unique_ptr<ash::secure_channel::ClientChannel> channel);
 
   MessengerImpl(const MessengerImpl&) = delete;
   MessengerImpl& operator=(const MessengerImpl&) = delete;
@@ -42,7 +42,7 @@ class MessengerImpl : public Messenger,
   void DispatchUnlockEvent() override;
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;
-  chromeos::secure_channel::ClientChannel* GetChannel() const override;
+  ash::secure_channel::ClientChannel* GetChannel() const override;
 
  private:
   // Internal data structure to represent a pending message that either hasn't
@@ -79,7 +79,7 @@ class MessengerImpl : public Messenger,
   // response.
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
 
-  // chromeos::secure_channel::ClientChannel::Observer:
+  // ash::secure_channel::ClientChannel::Observer:
   void OnDisconnected() override;
   void OnMessageReceived(const std::string& payload) override;
 
@@ -92,7 +92,7 @@ class MessengerImpl : public Messenger,
 
   // Authenticated end-to-end channel used to communicate with the remote
   // device.
-  std::unique_ptr<chromeos::secure_channel::ClientChannel> channel_;
+  std::unique_ptr<ash::secure_channel::ClientChannel> channel_;
 
   // The registered observers of |this_| messenger.
   base::ObserverList<MessengerObserver>::Unchecked observers_;

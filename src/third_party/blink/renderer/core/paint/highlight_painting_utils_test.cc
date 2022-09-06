@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 
@@ -40,7 +41,7 @@ TEST_F(HighlightPaintingUtilsTest, CachedPseudoStylesWindowInactive) {
 
   auto* body = GetDocument().body();
   auto* text_node = body->firstChild();
-  GlobalPaintFlags flags{0};
+  PaintFlags flags = PaintFlag::kNoFlag;
 
   Compositor().BeginFrame();
 
@@ -59,14 +60,14 @@ TEST_F(HighlightPaintingUtilsTest, CachedPseudoStylesWindowInactive) {
   EXPECT_FALSE(GetPage().IsActive());
   EXPECT_EQ(Color(255, 0, 0), HighlightPaintingUtils::HighlightForegroundColor(
                                   GetDocument(), text_style, text_node,
-                                  kPseudoIdSelection, flags));
+                                  Color::kBlack, kPseudoIdSelection, flags));
 
   // Focus the window.
   GetPage().SetActive(true);
   Compositor().BeginFrame();
   EXPECT_EQ(Color(0, 128, 0), HighlightPaintingUtils::HighlightForegroundColor(
                                   GetDocument(), text_style, text_node,
-                                  kPseudoIdSelection, flags));
+                                  Color::kBlack, kPseudoIdSelection, flags));
   const ComputedStyle* active_style =
       body_style.GetCachedPseudoElementStyle(kPseudoIdSelection);
   EXPECT_TRUE(active_style);
@@ -76,7 +77,7 @@ TEST_F(HighlightPaintingUtilsTest, CachedPseudoStylesWindowInactive) {
   Compositor().BeginFrame();
   EXPECT_EQ(Color(255, 0, 0), HighlightPaintingUtils::HighlightForegroundColor(
                                   GetDocument(), text_style, text_node,
-                                  kPseudoIdSelection, flags));
+                                  Color::kBlack, kPseudoIdSelection, flags));
   EXPECT_EQ(active_style,
             body_style.GetCachedPseudoElementStyle(kPseudoIdSelection));
 }
@@ -99,7 +100,7 @@ TEST_F(HighlightPaintingUtilsTest, CachedPseudoStylesNoWindowInactive) {
 
   auto* body = GetDocument().body();
   auto* text_node = body->firstChild();
-  GlobalPaintFlags flags{0};
+  PaintFlags flags = PaintFlag::kNoFlag;
 
   Compositor().BeginFrame();
 
@@ -121,14 +122,14 @@ TEST_F(HighlightPaintingUtilsTest, CachedPseudoStylesNoWindowInactive) {
   EXPECT_FALSE(GetPage().IsActive());
   EXPECT_EQ(Color(0, 128, 0), HighlightPaintingUtils::HighlightForegroundColor(
                                   GetDocument(), text_style, text_node,
-                                  kPseudoIdSelection, flags));
+                                  Color::kBlack, kPseudoIdSelection, flags));
 
   // Focus the window.
   GetPage().SetActive(true);
   Compositor().BeginFrame();
   EXPECT_EQ(Color(0, 128, 0), HighlightPaintingUtils::HighlightForegroundColor(
                                   GetDocument(), text_style, text_node,
-                                  kPseudoIdSelection, flags));
+                                  Color::kBlack, kPseudoIdSelection, flags));
   EXPECT_EQ(active_style,
             body_style.GetCachedPseudoElementStyle(kPseudoIdSelection));
 
@@ -137,7 +138,7 @@ TEST_F(HighlightPaintingUtilsTest, CachedPseudoStylesNoWindowInactive) {
   Compositor().BeginFrame();
   EXPECT_EQ(Color(0, 128, 0), HighlightPaintingUtils::HighlightForegroundColor(
                                   GetDocument(), text_style, text_node,
-                                  kPseudoIdSelection, flags));
+                                  Color::kBlack, kPseudoIdSelection, flags));
   EXPECT_EQ(active_style,
             body_style.GetCachedPseudoElementStyle(kPseudoIdSelection));
 }
@@ -170,8 +171,7 @@ TEST_F(HighlightPaintingUtilsTest, SelectedTextInputShadow) {
   std::unique_ptr<PaintController> controller{
       std::make_unique<PaintController>()};
   GraphicsContext context(*controller);
-  PaintInfo paint_info(context, CullRect(), PaintPhase::kForeground,
-                       kGlobalPaintNormalPhase, 0 /* paint_flags */);
+  PaintInfo paint_info(context, CullRect(), PaintPhase::kForeground);
   TextPaintStyle paint_style;
 
   paint_style = HighlightPaintingUtils::HighlightPaintingStyle(

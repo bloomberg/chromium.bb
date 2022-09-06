@@ -10,6 +10,7 @@
 #include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -28,7 +29,7 @@
 // Usage of BUILDFLAG(USE_DAWN) needs to be after the include for
 // ui/gl/buildflags.h
 #if BUILDFLAG(USE_DAWN)
-#include <dawn_native/MetalBackend.h>
+#include <dawn/native/MetalBackend.h>
 #endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
@@ -96,7 +97,7 @@ class SharedImageRepresentationDawnIOSurface
         io_surface_(std::move(io_surface)),
         device_(device),
         wgpu_format_(wgpu_format),
-        dawn_procs_(dawn_native::GetProcs()) {
+        dawn_procs_(dawn::native::GetProcs()) {
     DCHECK(device_);
     DCHECK(io_surface_);
 
@@ -120,21 +121,25 @@ class SharedImageRepresentationDawnIOSurface
     texture_descriptor.mipLevelCount = 1;
     texture_descriptor.sampleCount = 1;
 
-    // We need to have an internal usage of CopySrc in order to use
-    // CopyTextureToTextureInternal.
+    // We need to have internal usages of CopySrc for copies. If texture is not
+    // for video frame import, which has bi-planar format, we also need
+    // RenderAttachment usage for clears.
     WGPUDawnTextureInternalUsageDescriptor internalDesc = {};
     internalDesc.chain.sType = WGPUSType_DawnTextureInternalUsageDescriptor;
     internalDesc.internalUsage = WGPUTextureUsage_CopySrc;
+    if (this->usage() & gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE)
+      internalDesc.internalUsage |= WGPUTextureUsage_RenderAttachment;
+
     texture_descriptor.nextInChain =
         reinterpret_cast<WGPUChainedStruct*>(&internalDesc);
 
-    dawn_native::metal::ExternalImageDescriptorIOSurface descriptor;
+    dawn::native::metal::ExternalImageDescriptorIOSurface descriptor;
     descriptor.cTextureDescriptor = &texture_descriptor;
     descriptor.isInitialized = IsCleared();
     descriptor.ioSurface = io_surface_.get();
     descriptor.plane = 0;
 
-    texture_ = dawn_native::metal::WrapIOSurface(device_, &descriptor);
+    texture_ = dawn::native::metal::WrapIOSurface(device_, &descriptor);
     return texture_;
   }
 
@@ -143,7 +148,7 @@ class SharedImageRepresentationDawnIOSurface
       return;
     }
 
-    if (dawn_native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
+    if (dawn::native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
       SetCleared();
     }
 
@@ -159,7 +164,7 @@ class SharedImageRepresentationDawnIOSurface
     // scheduling races between commands using the IOSurface on different APIs.
     // This is a blocking call but should be almost instant.
     TRACE_EVENT0("gpu", "SharedImageRepresentationDawnIOSurface::EndAccess");
-    dawn_native::metal::WaitForCommandsToBeScheduled(device_);
+    dawn::native::metal::WaitForCommandsToBeScheduled(device_);
 
     dawn_procs_.textureRelease(texture_);
     texture_ = nullptr;
@@ -220,6 +225,12 @@ SharedImageBackingFactoryIOSurface::ProduceDawn(
   auto io_surface = GetIOSurfaceFromImage(image);
   if (!io_surface)
     return nullptr;
+
+  // TODO(crbug.com/1293514): Remove this if condition after using single
+  // multiplanar mailbox and actual_format could report multiplanar format
+  // correctly.
+  if (IOSurfaceGetPixelFormat(io_surface) == '420v')
+    actual_format = viz::YUV_420_BIPLANAR;
 
   absl::optional<WGPUTextureFormat> wgpu_format =
       viz::ToWGPUFormat(actual_format);

@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/document_service.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
@@ -57,12 +57,13 @@ class LiveCaptionSpeechRecognitionHost
   void OnLanguageIdentificationEvent(
       media::mojom::LanguageIdentificationEventPtr event) override;
   void OnSpeechRecognitionError() override;
+  void OnSpeechRecognitionStopped() override;
 
  protected:
   // Mac and ChromeOS move the fullscreened window into a new workspace. When
   // the WebContents associated with this RenderFrameHost goes fullscreen,
   // ensure that the Live Caption bubble moves to the new workspace.
-#if defined(OS_MAC) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
 #endif
 

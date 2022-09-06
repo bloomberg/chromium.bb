@@ -11,7 +11,7 @@
 #include "build/chromeos_buildflags.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/devicetype.h"
+#include "chromeos/constants/devicetype.h"  // nogncheck
 #endif
 
 namespace syncer {
@@ -39,8 +39,9 @@ std::string GetPersonalizableDeviceNameInternal() {
   return GetChromeOSDeviceNameFromType();
 #else
   char hostname[HOST_NAME_MAX];
-  if (gethostname(hostname, HOST_NAME_MAX) == 0)  // Success.
+  if (gethostname(hostname, HOST_NAME_MAX) == 0) {  // Success.
     return hostname;
+  }
   return base::GetLinuxDistro();
 #endif
 }

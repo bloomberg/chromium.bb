@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/services/cros_dbus_service.h"
+#include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
 namespace dbus {
@@ -43,6 +43,12 @@ class DlpFilesPolicyServiceProvider
   // org.chromium.DlpFilesPolicyService.IsDlpPolicyMatched implementation.
   void IsDlpPolicyMatched(dbus::MethodCall* method_call,
                           dbus::ExportedObject::ResponseSender response_sender);
+
+  // org.chromium.DlpFilesPolicyService.IsFilesTransferRestricted
+  // implementation.
+  void IsFilesTransferRestricted(
+      dbus::MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender);
 
   base::WeakPtrFactory<DlpFilesPolicyServiceProvider> weak_ptr_factory_{this};
 };

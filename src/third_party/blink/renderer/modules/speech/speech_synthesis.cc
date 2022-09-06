@@ -25,7 +25,8 @@
 
 #include "third_party/blink/renderer/modules/speech/speech_synthesis.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "build/build_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
@@ -37,7 +38,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_speech_synthesis_error_event_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_speech_synthesis_event_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
@@ -59,13 +60,13 @@ SpeechSynthesis* SpeechSynthesis::speechSynthesis(LocalDOMWindow& window) {
   if (!synthesis) {
     synthesis = MakeGarbageCollected<SpeechSynthesis>(window);
     ProvideTo(window, synthesis);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // On Android devices we lazily initialize |mojom_synthesis_| to avoid
     // needlessly binding to the TTS service, see https://crbug.com/811929.
     // TODO(crbug/811929): Consider moving this logic into the Android-
     // specific backend implementation.
 #else
-    ignore_result(synthesis->TryEnsureMojomSynthesis());
+    std::ignore = synthesis->TryEnsureMojomSynthesis();
 #endif
   }
   return synthesis;
@@ -97,7 +98,7 @@ void SpeechSynthesis::OnSetVoiceList(
 
 const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
   // Kick off initialization here to ensure voice list gets populated.
-  ignore_result(TryEnsureMojomSynthesis());
+  std::ignore = TryEnsureMojomSynthesis();
   RecordVoicesForIdentifiability();
   return voice_list_;
 }
@@ -106,7 +107,7 @@ void SpeechSynthesis::RecordVoicesForIdentifiability() const {
   constexpr IdentifiableSurface surface = IdentifiableSurface::FromTypeAndToken(
       IdentifiableSurface::Type::kWebFeature,
       WebFeature::kSpeechSynthesis_GetVoices_Method);
-  if (!IdentifiabilityStudySettings::Get()->ShouldSample(surface))
+  if (!IdentifiabilityStudySettings::Get()->ShouldSampleSurface(surface))
     return;
   if (!GetSupplementable()->GetFrame())
     return;

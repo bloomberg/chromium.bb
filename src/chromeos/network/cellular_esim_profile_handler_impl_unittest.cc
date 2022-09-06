@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
@@ -30,6 +31,8 @@ const char kDefaultCellularDevicePath[] = "stub_cellular_device";
 const char kTestEuiccBasePath[] = "/org/chromium/Hermes/Euicc/";
 const char kTestProfileBasePath[] = "/org/chromium/Hermes/Profile/";
 const char kTestBaseEid[] = "12345678901234567890123456789012";
+const char kDisableProfileResultHistogram[] =
+    "Network.Cellular.ESim.DisableProfile.Result";
 
 std::string CreateTestEuiccPath(int euicc_num) {
   return base::StringPrintf("%s%d", kTestEuiccBasePath, euicc_num);
@@ -149,8 +152,14 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
   }
 
   bool HasAutoRefreshedEuicc(int euicc_num) {
-    return handler_->HasRefreshedProfilesForEuicc(CreateTestEid(euicc_num));
+    // Check both variants of HasRefreshedProfilesForEuicc using EID and EUICC
+    // Path.
+    return handler_->HasRefreshedProfilesForEuicc(CreateTestEid(euicc_num)) &&
+           handler_->HasRefreshedProfilesForEuicc(
+               dbus::ObjectPath(CreateTestEuiccPath(euicc_num)));
   }
+
+  void DisableActiveESimProfile() { handler_->DisableActiveESimProfile(); }
 
   size_t NumObserverEvents() const { return observer_.num_updates(); }
 
@@ -183,6 +192,10 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
     handler_->RefreshProfileList(
         dbus::ObjectPath(CreateTestEuiccPath(euicc_num)), std::move(callback),
         std::move(inhibit_lock));
+  }
+
+  bool GetLastRefreshProfilesRestoreSlotArg() {
+    return helper_.hermes_euicc_test()->GetLastRefreshProfilesRestoreSlotArg();
   }
 
   base::Value GetEuiccListFromPrefs() {
@@ -358,6 +371,7 @@ TEST_F(CellularESimProfileHandlerImplTest, Persistent) {
             run_loop.Quit();
           }));
   run_loop.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
 
   // Because the list was refreshed, we now expect GetESimProfiles() to return
   // an empty list.
@@ -381,6 +395,7 @@ TEST_F(CellularESimProfileHandlerImplTest,
             run_loop.Quit();
           }));
   run_loop.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,
@@ -404,6 +419,7 @@ TEST_F(CellularESimProfileHandlerImplTest,
           }),
       std::move(inhibit_lock));
   run_loop.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
 }
 
 TEST_F(CellularESimProfileHandlerImplTest, RefreshProfileList_Failure) {
@@ -425,6 +441,7 @@ TEST_F(CellularESimProfileHandlerImplTest, RefreshProfileList_Failure) {
             run_loop.Quit();
           }));
   run_loop.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,
@@ -454,7 +471,9 @@ TEST_F(CellularESimProfileHandlerImplTest,
           }));
 
   run_loop1.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
   run_loop2.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,
@@ -465,24 +484,25 @@ TEST_F(CellularESimProfileHandlerImplTest,
   Init();
   base::Value euicc_paths_from_prefs = GetEuiccListFromPrefs();
   EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_TRUE(euicc_paths_from_prefs.GetList().empty());
+  EXPECT_TRUE(euicc_paths_from_prefs.GetListDeprecated().empty());
 
   // Set device prefs; a new auto-refresh should have started but not yet
   // completed.
   SetDevicePrefs();
   euicc_paths_from_prefs = GetEuiccListFromPrefs();
   EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_TRUE(euicc_paths_from_prefs.GetList().empty());
+  EXPECT_TRUE(euicc_paths_from_prefs.GetListDeprecated().empty());
   EXPECT_FALSE(HasAutoRefreshedEuicc(/*euicc_num=*/1));
 
   FastForwardProfileRefreshDelay();
   base::RunLoop().RunUntilIdle();
   euicc_paths_from_prefs = GetEuiccListFromPrefs();
   EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_EQ(1u, euicc_paths_from_prefs.GetList().size());
+  EXPECT_EQ(1u, euicc_paths_from_prefs.GetListDeprecated().size());
   EXPECT_EQ(CreateTestEuiccPath(/*euicc_num=*/1),
-            euicc_paths_from_prefs.GetList()[0].GetString());
+            euicc_paths_from_prefs.GetListDeprecated()[0].GetString());
   EXPECT_TRUE(HasAutoRefreshedEuicc(/*euicc_num=*/1));
+  EXPECT_TRUE(GetLastRefreshProfilesRestoreSlotArg());
 }
 
 TEST_F(CellularESimProfileHandlerImplTest, IgnoresESimProfilesWithNoIccid) {
@@ -525,16 +545,56 @@ TEST_F(CellularESimProfileHandlerImplTest,
   // Verify that no EUICCs exist in pref.
   base::Value euicc_paths_from_prefs = GetEuiccListFromPrefs();
   EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_TRUE(euicc_paths_from_prefs.GetList().empty());
+  EXPECT_TRUE(euicc_paths_from_prefs.GetListDeprecated().empty());
 
   // Verify that EUICCs are refreshed after the cellular device is added.
   AddCellularDevice();
   FastForwardProfileRefreshDelay();
   euicc_paths_from_prefs = GetEuiccListFromPrefs();
   EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_EQ(1u, euicc_paths_from_prefs.GetList().size());
+  EXPECT_EQ(1u, euicc_paths_from_prefs.GetListDeprecated().size());
   EXPECT_EQ(CreateTestEuiccPath(/*euicc_num=*/1),
-            euicc_paths_from_prefs.GetList()[0].GetString());
+            euicc_paths_from_prefs.GetListDeprecated()[0].GetString());
+}
+
+TEST_F(CellularESimProfileHandlerImplTest, DisableActiveESimProfile) {
+  AddCellularDevice();
+  AddEuicc(/*euicc_num=*/1);
+  Init();
+  SetDevicePrefs();
+  base::HistogramTester histogram_tester;
+  // Add one active profile and another inactive profiles.
+  AddProfile(
+      /*euicc_num=*/1, hermes::profile::State::kActive,
+      /*activation_code=*/std::string());
+  AddProfile(
+      /*euicc_num=*/1, hermes::profile::State::kInactive,
+      /*activation_code=*/std::string());
+  std::vector<CellularESimProfile> profiles = GetESimProfiles();
+  EXPECT_EQ(2u, profiles.size());
+  EXPECT_EQ(CellularESimProfile::State::kActive, profiles[0].state());
+  EXPECT_EQ(CellularESimProfile::State::kInactive, profiles[1].state());
+  DisableActiveESimProfile();
+
+  // Now, refresh the list.
+  base::RunLoop run_loop;
+  RefreshProfileList(
+      /*euicc_num=*/1,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock) {
+            EXPECT_TRUE(inhibit_lock);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  EXPECT_FALSE(GetLastRefreshProfilesRestoreSlotArg());
+
+  profiles = GetESimProfiles();
+  EXPECT_EQ(2u, profiles.size());
+  EXPECT_EQ(CellularESimProfile::State::kInactive, profiles[0].state());
+  EXPECT_EQ(CellularESimProfile::State::kInactive, profiles[1].state());
+  histogram_tester.ExpectBucketCount(kDisableProfileResultHistogram,
+                                     HermesResponseStatus::kSuccess,
+                                     /*expected_count=*/1);
 }
 
 }  // namespace chromeos

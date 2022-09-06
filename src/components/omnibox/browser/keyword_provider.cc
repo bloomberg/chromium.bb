@@ -11,6 +11,8 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/escape.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -25,9 +27,9 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -84,9 +86,10 @@ void ScopedEndExtensionKeywordMode::StayInKeywordMode() {
 KeywordProvider::KeywordProvider(AutocompleteProviderClient* client,
                                  AutocompleteProviderListener* listener)
     : AutocompleteProvider(AutocompleteProvider::TYPE_KEYWORD),
-      listener_(listener),
       model_(client->GetTemplateURLService()),
-      extensions_delegate_(client->GetKeywordExtensionsDelegate(this)) {}
+      extensions_delegate_(client->GetKeywordExtensionsDelegate(this)) {
+  AddListener(listener);
+}
 
 // static
 std::u16string KeywordProvider::SplitKeywordFromInput(
@@ -175,21 +178,37 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
   return nullptr;
 }
 
+// static
+AutocompleteInput KeywordProvider::AdjustInputForStarterPackEngines(
+    const AutocompleteInput& input,
+    TemplateURLService* model) {
+  DCHECK(model);
+
+  // If we're in a starter pack scope, we want to run the provider with only
+  // the user text AFTER the keyword.  i.e. if the input is "@history text",
+  // set the autocomplete input to just "text".
+  AutocompleteInput keyword_input = input;
+  const TemplateURL* keyword_provider =
+      KeywordProvider::GetSubstitutingTemplateURLForInput(model,
+                                                          &keyword_input);
+  if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
+      input.prefer_keyword() && keyword_provider &&
+      keyword_provider->starter_pack_id() > 0) {
+    return keyword_input;
+  }
+  return input;
+}
+
 std::u16string KeywordProvider::GetKeywordForText(
     const std::u16string& text) const {
   TemplateURLService* url_service = GetTemplateURLService();
   if (!url_service)
     return std::u16string();
 
-  std::u16string keyword;
-  if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled()) {
-    // We want the Search button to persist as long as the input begins with a
-    // keyword. This is found by taking the input until the first white space.
-    keyword = CleanUserInputKeyword(url_service,
-                                    SplitKeywordFromInput(text, true, nullptr));
-  } else {
-    keyword = CleanUserInputKeyword(url_service, text);
-  }
+  // We want the Search button to persist as long as the input begins with a
+  // keyword. This is found by taking the input until the first white space.
+  std::u16string keyword = CleanUserInputKeyword(
+      url_service, SplitKeywordFromInput(text, true, nullptr));
 
   if (keyword.empty())
     return u"";
@@ -217,6 +236,13 @@ std::u16string KeywordProvider::GetKeywordForText(
       template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION &&
       template_url->prepopulate_id() == 0 &&
       template_url->is_active() != TemplateURLData::ActiveStatus::kTrue) {
+    return std::u16string();
+  }
+
+  // Don't provide a keyword if it's a starter pack engine and the starter pack
+  // feature flag is not enabled.
+  if (!OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
+      template_url->starter_pack_id() != 0) {
     return std::u16string();
   }
 
@@ -573,33 +599,31 @@ std::u16string KeywordProvider::CleanUserInputKeyword(
 
   // If keyword is not found, try removing a "http" or "https" scheme if any.
   url::Component scheme_component;
-  if (url::ExtractScheme(base::UTF16ToUTF8(result).c_str(),
-                         static_cast<int>(result.length()),
-                         &scheme_component) &&
-      (!result.compare(0, scheme_component.end(),
-                       base::ASCIIToUTF16(url::kHttpScheme)) ||
-       !result.compare(0, scheme_component.end(),
-                       base::ASCIIToUTF16(url::kHttpsScheme)))) {
-    // Remove the scheme and the trailing ':'.
-    result.erase(0, scheme_component.end() + 1);
-    if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
-      return result;
-    // Many schemes usually have "//" after them, so strip it too.
-    const std::u16string after_scheme(u"//");
-    if (result.compare(0, after_scheme.length(), after_scheme) == 0)
-      result.erase(0, after_scheme.length());
-    if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
-      return result;
+  if (url::ExtractScheme(result.c_str(), static_cast<int>(result.length()),
+                         &scheme_component)) {
+    const base::StringPiece16 scheme = base::StringPiece16(result).substr(
+        scheme_component.begin, scheme_component.len);
+    if (scheme == url::kHttpScheme16 || scheme == url::kHttpsScheme16) {
+      // Remove the scheme and the trailing ':'.
+      result.erase(0, scheme_component.end() + 1);
+      if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
+        return result;
+      // Many schemes usually have "//" after them, so strip it too.
+      constexpr base::StringPiece16 kAfterScheme(u"//");
+      if (base::StartsWith(result, kAfterScheme))
+        result.erase(0, kAfterScheme.length());
+      if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
+        return result;
+    }
   }
 
   // Remove leading "www.", if any, and again try to find a matching keyword.
   // The 'www.' stripping is done directly here instead of calling
   // url_formatter::StripWWW because we're not assuming that the keyword is a
   // hostname.
-  const std::u16string kWww(u"www.");
-  constexpr size_t kWwwLength = 4;
+  constexpr base::StringPiece16 kWww(u"www.");
   result = base::StartsWith(result, kWww, base::CompareCase::SENSITIVE)
-               ? result.substr(kWwwLength)
+               ? result.substr(kWww.length())
                : result;
   if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
     return result;

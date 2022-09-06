@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -16,6 +17,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cert/ct_serialization.h"
@@ -28,6 +30,7 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/report_sender.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
@@ -129,10 +132,9 @@ void MakeTestSCTAndStatus(
 // in |chain|.
 void CheckReportCertificateChain(
     const scoped_refptr<net::X509Certificate>& expected_cert,
-    const base::ListValue& chain) {
+    const base::Value::List& chain_list) {
   std::vector<std::string> pem_encoded_chain;
   expected_cert->GetPEMEncodedChain(&pem_encoded_chain);
-  base::Value::ConstListView chain_list = chain.GetList();
   ASSERT_EQ(pem_encoded_chain.size(), chain_list.size());
 
   for (size_t i = 0; i < pem_encoded_chain.size(); i++) {
@@ -160,44 +162,43 @@ net::ct::SignedCertificateTimestamp::Origin SCTOriginStringToOrigin(
 ::testing::AssertionResult FindSCTInReportList(
     const scoped_refptr<net::ct::SignedCertificateTimestamp>& expected_sct,
     net::ct::SCTVerifyStatus expected_status,
-    const base::ListValue& report_list) {
+    const base::Value::List& report_list) {
   std::string expected_serialized_sct;
   if (!net::ct::EncodeSignedCertificateTimestamp(expected_sct,
                                                  &expected_serialized_sct)) {
     return ::testing::AssertionFailure() << "Failed to serialize SCT";
   }
 
-  for (const base::Value& report_sct_value : report_list.GetList()) {
+  for (const base::Value& report_sct_value : report_list) {
     if (!report_sct_value.is_dict()) {
       return ::testing::AssertionFailure()
              << "Failed to get dictionary value from report SCT list";
     }
-    const base::DictionaryValue& report_sct =
-        base::Value::AsDictionaryValue(report_sct_value);
-    std::string serialized_sct;
-    EXPECT_TRUE(report_sct.GetString("serialized_sct", &serialized_sct));
+    const base::Value::Dict& report_sct = report_sct_value.GetDict();
+    const std::string* serialized_sct = report_sct.FindString("serialized_sct");
+    EXPECT_TRUE(serialized_sct);
     std::string decoded_serialized_sct;
-    EXPECT_TRUE(base::Base64Decode(serialized_sct, &decoded_serialized_sct));
+    EXPECT_TRUE(base::Base64Decode(*serialized_sct, &decoded_serialized_sct));
     if (decoded_serialized_sct != expected_serialized_sct)
       continue;
 
-    std::string source;
-    EXPECT_TRUE(report_sct.GetString("source", &source));
-    EXPECT_EQ(expected_sct->origin, SCTOriginStringToOrigin(source));
+    const std::string* source = report_sct.FindString("source");
+    EXPECT_TRUE(source);
+    EXPECT_EQ(expected_sct->origin, SCTOriginStringToOrigin(*source));
 
-    std::string report_status;
-    EXPECT_TRUE(report_sct.GetString("status", &report_status));
+    const std::string* report_status = report_sct.FindString("status");
+    EXPECT_TRUE(report_status);
     switch (expected_status) {
       case net::ct::SCT_STATUS_LOG_UNKNOWN:
-        EXPECT_EQ("unknown", report_status);
+        EXPECT_EQ("unknown", *report_status);
         break;
       case net::ct::SCT_STATUS_INVALID_SIGNATURE:
       case net::ct::SCT_STATUS_INVALID_TIMESTAMP: {
-        EXPECT_EQ("invalid", report_status);
+        EXPECT_EQ("invalid", *report_status);
         break;
       }
       case net::ct::SCT_STATUS_OK: {
-        EXPECT_EQ("valid", report_status);
+        EXPECT_EQ("valid", *report_status);
         break;
       }
       case net::ct::SCT_STATUS_NONE:
@@ -213,8 +214,8 @@ net::ct::SignedCertificateTimestamp::Origin SCTOriginStringToOrigin(
 // from an Expect CT report.
 void CheckReportSCTs(
     const net::SignedCertificateTimestampAndStatusList& expected_scts,
-    const base::ListValue& scts) {
-  EXPECT_EQ(expected_scts.size(), scts.GetList().size());
+    const base::Value::List& scts) {
+  EXPECT_EQ(expected_scts.size(), scts.size());
   for (const auto& expected_sct : expected_scts) {
     ASSERT_TRUE(
         FindSCTInReportList(expected_sct.sct, expected_sct.status, scts));
@@ -229,44 +230,41 @@ void CheckExpectCTReport(const std::string& serialized_report,
                          const net::HostPortPair& host_port,
                          const std::string& expiration,
                          const net::SSLInfo& ssl_info) {
-  std::unique_ptr<base::Value> value(
-      base::JSONReader::ReadDeprecated(serialized_report));
+  absl::optional<base::Value> value(base::JSONReader::Read(serialized_report));
   ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_dict());
 
-  base::DictionaryValue* outer_report_dict;
-  ASSERT_TRUE(value->GetAsDictionary(&outer_report_dict));
+  base::Value::Dict* outer_report_dict = value->GetIfDict();
+  ASSERT_TRUE(outer_report_dict);
 
-  base::DictionaryValue* report_dict;
-  ASSERT_TRUE(
-      outer_report_dict->GetDictionary("expect-ct-report", &report_dict));
+  base::Value::Dict* report_dict =
+      outer_report_dict->FindDict("expect-ct-report");
+  ASSERT_TRUE(report_dict);
 
-  std::string report_hostname;
-  EXPECT_TRUE(report_dict->GetString("hostname", &report_hostname));
-  EXPECT_EQ(host_port.host(), report_hostname);
-  int report_port;
-  EXPECT_TRUE(report_dict->GetInteger("port", &report_port));
+  std::string* report_hostname = report_dict->FindString("hostname");
+  EXPECT_TRUE(report_hostname);
+  EXPECT_EQ(host_port.host(), *report_hostname);
+  absl::optional<int> report_port = report_dict->FindInt("port");
   EXPECT_EQ(host_port.port(), report_port);
 
-  std::string report_expiration;
-  EXPECT_TRUE(
-      report_dict->GetString("effective-expiration-date", &report_expiration));
-  EXPECT_EQ(expiration, report_expiration);
+  std::string* report_expiration =
+      report_dict->FindString("effective-expiration-date");
+  EXPECT_TRUE(report_expiration);
+  EXPECT_EQ(expiration, *report_expiration);
 
-  const base::ListValue* report_served_certificate_chain = nullptr;
-  ASSERT_TRUE(report_dict->GetList("served-certificate-chain",
-                                   &report_served_certificate_chain));
+  const base::Value::List* report_served_certificate_chain =
+      report_dict->FindList("served-certificate-chain");
+  ASSERT_TRUE(report_served_certificate_chain);
   ASSERT_NO_FATAL_FAILURE(CheckReportCertificateChain(
       ssl_info.unverified_cert, *report_served_certificate_chain));
 
-  const base::ListValue* report_validated_certificate_chain = nullptr;
-  ASSERT_TRUE(report_dict->GetList("validated-certificate-chain",
-                                   &report_validated_certificate_chain));
+  const base::Value::List* report_validated_certificate_chain =
+      report_dict->FindList("validated-certificate-chain");
+  ASSERT_TRUE(report_validated_certificate_chain);
   ASSERT_NO_FATAL_FAILURE(CheckReportCertificateChain(
       ssl_info.cert, *report_validated_certificate_chain));
 
-  const base::ListValue* report_scts = nullptr;
-  ASSERT_TRUE(report_dict->GetList("scts", &report_scts));
+  const base::Value::List* report_scts = report_dict->FindList("scts");
+  ASSERT_TRUE(report_scts);
 
   ASSERT_NO_FATAL_FAILURE(
       CheckReportSCTs(ssl_info.signed_certificate_timestamps, *report_scts));
@@ -324,11 +322,11 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
   ExpectCTReporterWaitTest& operator=(const ExpectCTReporterWaitTest&) = delete;
 
   void SetUp() override {
-    // Initializes URLRequestContext after the thread is set up.
-    context_ = std::make_unique<net::TestURLRequestContext>(
-        true /* delay_initialization */);
-    context_->set_network_delegate(&network_delegate_);
-    context_->Init();
+    auto context_builder = net::CreateTestURLRequestContextBuilder();
+    context_builder->set_network_delegate(
+        std::make_unique<TestExpectCTNetworkDelegate>());
+
+    context_ = context_builder->Build();
     net::URLRequestFailedJob::AddUrlHandler();
   }
 
@@ -336,7 +334,12 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
-  net::TestURLRequestContext* context() { return context_.get(); }
+  net::URLRequestContext* context() { return context_.get(); }
+  TestExpectCTNetworkDelegate* network_delegate() {
+    // This is safe as we provided a TestExpectCTNetworkDelegate in SetUp().
+    return static_cast<TestExpectCTNetworkDelegate*>(
+        context_->network_delegate());
+  }
 
  protected:
   void SendReport(ExpectCTReporter* reporter,
@@ -345,7 +348,7 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
                   base::Time expiration,
                   const net::SSLInfo& ssl_info) {
     base::RunLoop run_loop;
-    network_delegate_.set_url_request_destroyed_callback(
+    network_delegate()->set_url_request_destroyed_callback(
         run_loop.QuitClosure());
     reporter->OnExpectCTFailed(
         host_port, report_uri, expiration, ssl_info.cert.get(),
@@ -355,8 +358,7 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
   }
 
  private:
-  TestExpectCTNetworkDelegate network_delegate_;
-  std::unique_ptr<net::TestURLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
   base::test::TaskEnvironment task_environment_;
 };
 
@@ -415,6 +417,40 @@ class ExpectCTReporterTest : public ::testing::Test {
 
  protected:
   net::EmbeddedTestServer& test_server() { return report_server_; }
+
+  // Tests that reports are sent when the CORS preflight request returns the
+  // header field |preflight_header_name| with value given by
+  // |preflight_header_good_value|.
+  void TestForReportPreflightSuccess(
+      ExpectCTReporter* reporter,
+      TestCertificateReportSender* sender,
+      const net::SSLInfo& ssl_info,
+      const std::string& preflight_header_name,
+      const std::string& preflight_header_good_value) {
+    const std::string report_path = "/report";
+    std::map<std::string, std::string> cors_headers = kGoodCorsHeaders;
+    if (preflight_header_good_value.empty()) {
+      cors_headers.erase(preflight_header_name);
+    } else {
+      cors_headers[preflight_header_name] = preflight_header_good_value;
+    }
+    base::RunLoop cors_run_loop;
+    test_server().RegisterRequestHandler(
+        base::BindRepeating(&HandleReportPreflightForPath, report_path,
+                            cors_headers, cors_run_loop.QuitClosure()));
+    ASSERT_TRUE(test_server().Start());
+    const GURL report_uri = test_server().GetURL(report_path);
+    reporter->OnExpectCTFailed(
+        net::HostPortPair::FromURL(report_uri), report_uri, base::Time::Now(),
+        ssl_info.cert.get(), ssl_info.unverified_cert.get(),
+        ssl_info.signed_certificate_timestamps, net::NetworkIsolationKey());
+    // A CORS preflight request should be sent before the actual report.
+    cors_run_loop.Run();
+    sender->WaitForReport(report_uri);
+
+    EXPECT_EQ(report_uri, sender->latest_report_uri());
+    EXPECT_FALSE(sender->latest_serialized_report().empty());
+  }
 
   // Tests that reports are not sent when the CORS preflight request returns the
   // header field |preflight_header_name| with value given by
@@ -489,8 +525,9 @@ TEST_F(ExpectCTReporterTest, FeatureDisabled) {
   ASSERT_TRUE(test_server().Start());
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -538,8 +575,9 @@ TEST_F(ExpectCTReporterTest, FeatureDisabled) {
 // Test that no report is sent if the report URI is empty.
 TEST_F(ExpectCTReporterTest, EmptyReportURI) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -578,8 +616,9 @@ TEST_F(ExpectCTReporterWaitTest, SendReportFailureCallback) {
 // Test that a sent report has the right format.
 TEST_F(ExpectCTReporterTest, SendReport) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -685,8 +724,9 @@ TEST_F(ExpectCTReporterTest, SendReportSuccessCallback) {
 
   base::RunLoop run_loop;
 
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, run_loop.QuitClosure(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), run_loop.QuitClosure(),
                             base::NullCallback());
 
   net::SSLInfo ssl_info;
@@ -738,12 +778,12 @@ TEST_F(ExpectCTReporterTest, PreflightUsesNetworkIsolationKey) {
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
 
-  TestExpectCTNetworkDelegate network_delegate;
-  net::TestURLRequestContext context(true /* delay_initialization*/);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto& network_delegate = *context_builder->set_network_delegate(
+      std::make_unique<TestExpectCTNetworkDelegate>());
+  auto context = context_builder->Build();
 
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -782,18 +822,10 @@ TEST_F(ExpectCTReporterTest, PreflightUsesNetworkIsolationKey) {
 
 // Test that report preflight responses can contain whitespace.
 TEST_F(ExpectCTReporterTest, PreflightContainsWhitespace) {
-  const std::string report_path = "/report";
-  std::map<std::string, std::string> cors_headers = kGoodCorsHeaders;
-  cors_headers["Access-Control-Allow-Methods"] = "GET, POST";
-  base::RunLoop cors_run_loop;
-  test_server().RegisterRequestHandler(
-      base::BindRepeating(&HandleReportPreflightForPath, report_path,
-                          cors_headers, cors_run_loop.QuitClosure()));
-  ASSERT_TRUE(test_server().Start());
-
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -805,26 +837,62 @@ TEST_F(ExpectCTReporterTest, PreflightContainsWhitespace) {
   ssl_info.unverified_cert = net::ImportCertFromFile(
       net::GetTestCertsDirectory(), "localhost_cert.pem");
 
-  const GURL report_uri = test_server().GetURL(report_path);
-  reporter.OnExpectCTFailed(
-      net::HostPortPair::FromURL(report_uri), report_uri, base::Time::Now(),
-      ssl_info.cert.get(), ssl_info.unverified_cert.get(),
-      ssl_info.signed_certificate_timestamps, net::NetworkIsolationKey());
+  ASSERT_NO_FATAL_FAILURE(TestForReportPreflightSuccess(
+      &reporter, sender, ssl_info, "Access-Control-Allow-Methods",
+      "GET, POST"));
+}
 
-  // A CORS preflight request should be sent before the actual report.
-  cors_run_loop.Run();
-  sender->WaitForReport(report_uri);
+// Test that report preflight responses can contain
+// "Access-Control-Allow-Methods: *"
+TEST_F(ExpectCTReporterTest, PreflightMethodsContainsWildcard) {
+  TestCertificateReportSender* sender = new TestCertificateReportSender();
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
+                            base::NullCallback());
+  reporter.report_sender_.reset(sender);
+  EXPECT_TRUE(sender->latest_report_uri().is_empty());
+  EXPECT_TRUE(sender->latest_serialized_report().empty());
 
-  EXPECT_EQ(report_uri, sender->latest_report_uri());
-  EXPECT_FALSE(sender->latest_serialized_report().empty());
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  ASSERT_NO_FATAL_FAILURE(TestForReportPreflightSuccess(
+      &reporter, sender, ssl_info, "Access-Control-Allow-Methods", "*"));
+}
+
+// Test that report preflight responses can contain
+// "Access-Control-Allow-Headers: *"
+TEST_F(ExpectCTReporterTest, PreflightHeadersContainsWildcard) {
+  TestCertificateReportSender* sender = new TestCertificateReportSender();
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
+                            base::NullCallback());
+  reporter.report_sender_.reset(sender);
+  EXPECT_TRUE(sender->latest_report_uri().is_empty());
+  EXPECT_TRUE(sender->latest_serialized_report().empty());
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  ASSERT_NO_FATAL_FAILURE(TestForReportPreflightSuccess(
+      &reporter, sender, ssl_info, "Access-Control-Allow-Headers", "*"));
 }
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Origin.
 TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseOrigin) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -844,12 +912,13 @@ TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseOrigin) {
       "Access-Control-Allow-Origin", "https://another-origin.test", "null"));
 }
 
-// Test that no report is sent when the CORS preflight returns an invalid
-// Access-Control-Allow-Methods.
-TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseMethods) {
+// Test that report is sent when the CORS preflight does not include an
+// Access-Control-Allow-Methods header.
+TEST_F(ExpectCTReporterTest, CorsPreflightWithNoAllowMethods) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
@@ -861,20 +930,40 @@ TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseMethods) {
   ssl_info.unverified_cert = net::ImportCertFromFile(
       net::GetTestCertsDirectory(), "localhost_cert.pem");
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
+  ASSERT_NO_FATAL_FAILURE(TestForReportPreflightSuccess(
+      &reporter, sender, ssl_info, "Access-Control-Allow-Methods", ""));
+}
+
+// Test that report is sent when the CORS preflight returns an invalid
+// Access-Control-Allow-Methods.
+TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseMethods) {
+  TestCertificateReportSender* sender = new TestCertificateReportSender();
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
+                            base::NullCallback());
+  reporter.report_sender_.reset(sender);
+  EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
-  ASSERT_NO_FATAL_FAILURE(TestForReportPreflightFailure(
-      &reporter, sender, net::HostPortPair("example.test", 443), ssl_info,
-      "Access-Control-Allow-Methods", "GET,HEAD,POSSSST", "POST"));
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  ASSERT_NO_FATAL_FAILURE(TestForReportPreflightSuccess(
+      &reporter, sender, ssl_info, "Access-Control-Allow-Methods",
+      "GET,HEAD,POSSSST"));
 }
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Headers.
 TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseHeaders) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
-  net::TestURLRequestContext context;
-  ExpectCTReporter reporter(&context, base::NullCallback(),
+  auto context_builder = net::CreateTestURLRequestContextBuilder();
+  auto context = context_builder->Build();
+  ExpectCTReporter reporter(context.get(), base::NullCallback(),
                             base::NullCallback());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());

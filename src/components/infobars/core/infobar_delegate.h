@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -20,7 +21,7 @@ namespace blocked_content {
 class PopupBlockedInfoBarDelegate;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 namespace offline_pages {
 class OfflinePageInfoBarDelegate;
 }
@@ -132,12 +133,12 @@ class InfoBarDelegate {
     DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 61,
     // Removed: DESKTOP_SEARCH_REDIRECTION_INFOBAR_DELEGATE = 62,
     UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE = 63,
-    DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
+    // Removed: DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
     AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_DELEGATE_ANDROID = 65,
     ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID = 66,
     INSTANT_APPS_INFOBAR_DELEGATE_ANDROID = 67,
     // Removed: DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE = 68,
-    SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID = 69,
+    // Removed: SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID = 69,
     GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID = 70,
     OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID = 71,
     SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID = 72,
@@ -151,7 +152,7 @@ class InfoBarDelegate {
     INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE = 80,
     // Removed: PAGE_LOAD_CAPPING_INFOBAR_DELEGATE = 81,
     DOWNLOAD_PROGRESS_INFOBAR_ANDROID = 82,
-    AR_CORE_UPGRADE_ANDROID = 83,
+    // Removed: AR_CORE_UPGRADE_ANDROID = 83,
     BLOATED_RENDERER_INFOBAR_DELEGATE = 84,
     // Removed: SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE = 85,
     NEAR_OOM_REDUCTION_INFOBAR_ANDROID = 86,
@@ -176,6 +177,10 @@ class InfoBarDelegate {
     AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE = 105,
     AUTOFILL_ADDRESS_PROFILE_INFOBAR_DELEGATE_IOS = 106,
     ADD_TO_READING_LIST_IOS = 107,
+    IOS_PERMISSIONS_INFOBAR_DELEGATE = 108,
+    SUPPORTED_LINKS_INFOBAR_DELEGATE_CHROMEOS = 109,
+    AUTOFILL_VIRTUAL_CARD_ENROLLMENT_INFOBAR_DELEGATE_MOBILE = 110,
+    BASIC_PRINT_DEPRECATED_ACCELERATOR_DELEGATE = 111,
   };
 
   // Describes navigation events, used to decide whether infobars should be
@@ -225,7 +230,7 @@ class InfoBarDelegate {
   // Most subclasses should not override this; override GetIconId() instead
   // unless the infobar needs to show an image from somewhere other than the
   // resource bundle as its icon.
-  virtual gfx::Image GetIcon() const;
+  virtual ui::ImageModel GetIcon() const;
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // an empty string.
@@ -275,7 +280,7 @@ class InfoBarDelegate {
   AsPopupBlockedInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual offline_pages::OfflinePageInfoBarDelegate*
   AsOfflinePageInfoBarDelegate();
 #endif

@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
-#include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/values_test_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -36,6 +37,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/page_info/core/features.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -233,6 +235,9 @@ class PageInfoBubbleViewTestApi {
   }
 
   // Simulates recreating the dialog with a new PermissionInfoList.
+  // It ignores `source` field and assumes that user is the source. It's because
+  // in the actual UI, permission's state can be changed only if the source is
+  // user.
   void SetPermissionInfo(const PermissionInfoList& list) {
     for (const PageInfo::PermissionInfo& info : list) {
       presenter_->OnSitePermissionChanged(info.type, info.setting,
@@ -284,6 +289,8 @@ class PageInfoBubbleViewTestApi {
 }  // namespace test
 
 namespace {
+
+using ::base::test::ParseJson;
 
 constexpr char kTestUserEmail[] = "user@example.com";
 
@@ -391,13 +398,6 @@ class PageInfoBubbleViewTest : public testing::Test {
   std::unique_ptr<test::PageInfoBubbleViewTestApi> api_;
 };
 
-base::Value ReadJson(base::StringPiece json) {
-  base::JSONReader::ValueWithError result =
-      base::JSONReader::ReadAndReturnValueWithError(json);
-  EXPECT_TRUE(result.value) << result.error_message;
-  return result.value ? std::move(*result.value) : base::Value();
-}
-
 views::Label* GetChosenObjectTitle(const views::View::Views& children) {
   views::View* labels_container = children[1];
   return static_cast<views::Label*>(labels_container->children()[0]);
@@ -430,7 +430,6 @@ TEST_F(PageInfoBubbleViewTest, NotificationPermissionRevokeUkm) {
 
   PermissionInfoList list(1);
   list.back().type = ContentSettingsType::NOTIFICATIONS;
-  list.back().source = content_settings::SETTING_SOURCE_USER;
 
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->SetPermissionInfo(list);
@@ -460,7 +459,6 @@ TEST_F(PageInfoBubbleViewTest, NotificationPermissionRevokeUkm) {
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   PermissionInfoList list(1);
   list.back().type = ContentSettingsType::GEOLOCATION;
-  list.back().source = content_settings::SETTING_SOURCE_USER;
   list.back().setting = CONTENT_SETTING_BLOCK;
 
   // Initially, no permissions are shown because they are all set to default.
@@ -529,7 +527,6 @@ TEST_F(PageInfoBubbleViewOffTheRecordTest, ResetBlockedInIncognitoPermission) {
 
   PermissionInfoList list(1);
   list.back().type = ContentSettingsType::NOTIFICATIONS;
-  list.back().source = content_settings::SETTING_SOURCE_POLICY;
   list.back().setting = CONTENT_SETTING_BLOCK;
 
   // Initially, no permissions are shown because they are all set to default.
@@ -556,7 +553,6 @@ TEST_F(PageInfoBubbleViewOffTheRecordTest, ResetBlockedInIncognitoPermission) {
   window_placement_permission.type = ContentSettingsType::WINDOW_PLACEMENT;
   window_placement_permission.setting = CONTENT_SETTING_ALLOW;
   window_placement_permission.default_setting = CONTENT_SETTING_ASK;
-  window_placement_permission.source = content_settings::SETTING_SOURCE_USER;
   list.push_back(window_placement_permission);
 
   num_expected_children = list.size();
@@ -587,7 +583,7 @@ TEST_F(PageInfoBubbleViewOffTheRecordTest, ResetBlockedInIncognitoPermission) {
   // Show state label for user managed permission, indicating that permission
   // is in the default ask state now. Autoblocked permission doesn't change.
   EXPECT_FALSE(api_->GetStateLabelAt(0));
-  EXPECT_EQ(u"Can ask to open and place windows on your screens",
+  EXPECT_EQ(u"Can ask to use info about your screens",
             api_->GetStateLabelAt(1)->GetText());
 
   // In the ask state, the toggle is in the off state, indicating that
@@ -701,7 +697,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_->profile();
   profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                           ReadJson(kWebUsbPolicySetting));
+                           ParseJson(kWebUsbPolicySetting));
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
 
   auto objects = store->GetGrantedObjects(origin);
@@ -744,7 +740,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_->profile();
   profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                           ReadJson(kWebUsbPolicySetting));
+                           ParseJson(kWebUsbPolicySetting));
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
@@ -815,7 +811,6 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   PermissionInfoList list(1);
   list.back().type = ContentSettingsType::USB_GUARD;
-  list.back().source = content_settings::SETTING_SOURCE_USER;
   list.back().setting = CONTENT_SETTING_ASK;
 
   // Initially, no permissions are shown because they are all set to default.
@@ -851,7 +846,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicySerialPorts) {
 
   // Add the policy setting to prefs.
   web_contents_helper_->local_state()->Set(
-      prefs::kManagedSerialAllowUsbDevicesForUrls, ReadJson(R"([
+      prefs::kManagedSerialAllowUsbDevicesForUrls, ParseJson(R"([
                {
                  "devices": [{ "vendor_id": 6353, "product_id": 5678 }],
                  "urls": [ "http://www.example.com" ]
@@ -887,11 +882,15 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicySerialPorts) {
 // Test that updating the number of cookies used by the current page doesn't add
 // any extra views to Page Info.
 TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
-  constexpr size_t kExpectedChildren = 6;
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VR)
+  size_t kExpectedChildren = 6;
 #else
-  constexpr size_t kExpectedChildren = 5;
+  size_t kExpectedChildren = 5;
 #endif
+  if (page_info::IsAboutThisSiteFeatureEnabled(
+          g_browser_process->GetApplicationLocale())) {
+    ++kExpectedChildren;
+  }
 
   EXPECT_EQ(kExpectedChildren, api_->current_view()->children().size());
 
@@ -930,7 +929,7 @@ TEST_F(PageInfoBubbleViewTest, OpenPageInfoBubbleAfterNavigationStart) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(
           GURL(kSecureUrl),
-          web_contents_helper_->web_contents()->GetMainFrame());
+          web_contents_helper_->web_contents()->GetPrimaryMainFrame());
   navigation->Start();
   api_->CreateView();
   EXPECT_EQ(kHostname, api_->GetWindowTitle());
@@ -994,7 +993,7 @@ TEST_F(PageInfoBubbleViewTest, CertificateButtonShowsEvCertDetails) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(
           GURL(kSecureUrl),
-          web_contents_helper_->web_contents()->GetMainFrame());
+          web_contents_helper_->web_contents()->GetPrimaryMainFrame());
   navigation->Start();
   api_->CreateView();
 
@@ -1044,7 +1043,7 @@ TEST_F(PageInfoBubbleViewTest, EvDetailsShowForCertWithStateButNoLocality) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(
           GURL(kSecureUrl),
-          web_contents_helper_->web_contents()->GetMainFrame());
+          web_contents_helper_->web_contents()->GetPrimaryMainFrame());
   navigation->Start();
   api_->CreateView();
 

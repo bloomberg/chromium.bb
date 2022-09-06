@@ -30,10 +30,10 @@ class PeripheralDataAccessHandler : public ::settings::SettingsPageUIHandler {
 
  private:
   // Handles checking if thunderbolt is supported in this device.
-  void HandleThunderboltSupported(const base::ListValue* args);
+  void HandleThunderboltSupported(const base::Value::List& args);
 
   // Handles returning the policy state.
-  void HandleGetPolicyState(const base::ListValue* args);
+  void HandleGetPolicyState(const base::Value::List& args);
 
   // Observer for the CrosSetting.
   void OnPeripheralDataAccessProtectionChanged();

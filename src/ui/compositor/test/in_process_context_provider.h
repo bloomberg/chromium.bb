@@ -19,12 +19,14 @@
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "ipc/raster_in_process_context.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
 class GLInProcessContext;
 class GpuMemoryBufferManager;
 class ImageFactory;
+class ImplementationBase;
 }
 
 namespace skia_bindings {
@@ -33,24 +35,20 @@ class GrContextForGLES2Interface;
 
 namespace ui {
 
+// TODO(crbug.com/1292507): Merge into viz::TestInProcessContextProvider once
+// on-screen context support is no longer needed.
 class InProcessContextProvider
     : public base::RefCountedThreadSafe<InProcessContextProvider>,
       public viz::ContextProvider,
       public viz::RasterContextProvider {
  public:
-  static scoped_refptr<InProcessContextProvider> Create(
-      const gpu::ContextCreationAttribs& attribs,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      gpu::ImageFactory* image_factory,
-      gpu::SurfaceHandle window,
-      const std::string& debug_name,
-      bool support_locking);
-
-  // Uses default attributes for creating an offscreen context.
+  // Uses default attributes for creating an offscreen context. If `is_worker`
+  // is true then the context will support locking and OOP-R (through
+  // RasterInterface) and won't support GLES2 or GrContext.
   static scoped_refptr<InProcessContextProvider> CreateOffscreen(
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
-      bool support_locking);
+      bool is_worker);
 
   InProcessContextProvider(const InProcessContextProvider&) = delete;
   InProcessContextProvider& operator=(const InProcessContextProvider&) = delete;
@@ -85,38 +83,30 @@ class InProcessContextProvider
       const gpu::ContextCreationAttribs& attribs,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
-      gpu::SurfaceHandle window,
-      const std::string& debug_name,
       bool support_locking);
   ~InProcessContextProvider() override;
 
-  void CheckValidThreadOrLockAcquired() const {
-#if DCHECK_IS_ON()
-    if (support_locking_) {
-      context_lock_.AssertAcquired();
-    } else {
-      DCHECK(context_thread_checker_.CalledOnValidThread());
-    }
-#endif
-  }
+  void CheckValidThreadOrLockAcquired() const;
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  std::unique_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::GLInProcessContext> gles2_context_;
+  std::unique_ptr<gpu::RasterInProcessContext> raster_context_;
+  raw_ptr<gpu::ImplementationBase> impl_base_ = nullptr;
+
+  // Initialized only when `gles2_context_` is used.
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
-  std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
+  std::unique_ptr<gpu::raster::RasterInterface> gles2_raster_impl_;
+
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
-  const bool support_locking_ ALLOW_UNUSED_TYPE;
+  const bool support_locking_;
   bool bind_tried_ = false;
   gpu::ContextResult bind_result_;
 
   gpu::ContextCreationAttribs attribs_;
-  raw_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   raw_ptr<gpu::ImageFactory> image_factory_;
-  gpu::SurfaceHandle window_;
-  std::string debug_name_;
 
   base::Lock context_lock_;
 

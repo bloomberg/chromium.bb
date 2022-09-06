@@ -440,7 +440,7 @@ const uint8_t ALIGN(dav1d_sgr_x_by_x[256], 64) = {
       0
 };
 
-const int8_t ALIGN(dav1d_mc_subpel_filters[5+ARCH_X86_64][15][8], 8) = {
+const int8_t ALIGN(dav1d_mc_subpel_filters[6][15][8], 8) = {
     [DAV1D_FILTER_8TAP_REGULAR] = {
         {   0,   1,  -3,  63,   4,  -1,   0,   0 },
         {   0,   1,  -5,  61,   9,  -2,   0,   0 },
@@ -522,7 +522,6 @@ const int8_t ALIGN(dav1d_mc_subpel_filters[5+ARCH_X86_64][15][8], 8) = {
         {   0,   0,   2,  20,  31,  11,   0,   0 },
         {   0,   0,   2,  18,  31,  13,   0,   0 },
         {   0,   0,   1,  17,  31,  15,   0,   0 }
-#if ARCH_X86_64
     /* Bilin scaled being very rarely used, add a new table entry
      * and use the put/prep_8tap_scaled code, thus acting as a
      * scaled bilinear filter. */
@@ -542,7 +541,6 @@ const int8_t ALIGN(dav1d_mc_subpel_filters[5+ARCH_X86_64][15][8], 8) = {
         {   0,   0,   0, 12,  52,   0,   0,   0 },
         {   0,   0,   0,  8,  56,   0,   0,   0 },
         {   0,   0,   0,  4,  60,   0,   0,   0 }
-#endif
     }
 };
 
@@ -758,7 +756,7 @@ const uint16_t dav1d_dr_intra_derivative[44] = {
     [1*idx+32] = f4, [1*idx+40] = f5,      \
     [1*idx+48] = f6
 #endif
-const int8_t ALIGN(dav1d_filter_intra_taps[5][64], 16) = {
+const int8_t ALIGN(dav1d_filter_intra_taps[5][64], 64) = {
     {
         F( 0,  -6, 10,  0,  0,  0, 12,  0 ),
         F( 1,  -5,  2, 10,  0,  0,  9,  0 ),

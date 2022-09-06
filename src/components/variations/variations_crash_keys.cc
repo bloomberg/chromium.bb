@@ -11,6 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "components/crash/core/common/crash_key.h"
@@ -204,7 +206,7 @@ void VariationsCrashKeys::OnSyntheticTrialsChanged(
   // not be too many synthetic trials, this is not too big of an issue.
   synthetic_trials_string_.clear();
   for (const auto& synthetic_trial : synthetic_trials) {
-    synthetic_trials_string_ += ActiveGroupToString(synthetic_trial.id);
+    synthetic_trials_string_ += ActiveGroupToString(synthetic_trial.id());
   }
   num_synthetic_trials_ = synthetic_trials.size();
 

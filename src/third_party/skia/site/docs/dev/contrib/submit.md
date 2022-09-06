@@ -31,7 +31,7 @@ If your branch gets out of date, you will need to update it:
 <!--?prettify lang=sh?-->
 
     git pull
-    python2 tools/git-sync-deps
+    python3 tools/git-sync-deps
 
 ## Adding a unit test
 
@@ -47,6 +47,11 @@ an automated way to verify the results, consider writing a GM test. Also, if
 your change is in the GPU code, you may not be able to write it as part of the
 standard unit test suite, but there are GPU-specific testing paths you can
 extend.
+
+## Updating BUILD.bazel files
+
+If you added or removed files, or changed #includes, you will need to...
+TODO(kjlubick)
 
 ## Submitting a patch
 

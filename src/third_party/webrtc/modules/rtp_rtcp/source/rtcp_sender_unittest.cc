@@ -21,6 +21,7 @@
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_impl2.h"
 #include "rtc_base/rate_limiter.h"
+#include "rtc_base/thread.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/mock_transport.h"
@@ -131,6 +132,7 @@ class RtcpSenderTest : public ::testing::Test {
     return rtp_rtcp_impl_->GetFeedbackState();
   }
 
+  rtc::AutoThread main_thread_;
   SimulatedClock clock_;
   TestTransport test_transport_;
   std::unique_ptr<ReceiveStatistics> receive_statistics_;
@@ -252,11 +254,18 @@ TEST_F(RtcpSenderTest, DoNotSendCompundBeforeRtp) {
 
 TEST_F(RtcpSenderTest, SendRr) {
   auto rtcp_sender = CreateRtcpSender(GetDefaultConfig());
-  rtcp_sender->SetRTCPStatus(RtcpMode::kReducedSize);
+  rtcp_sender->SetRTCPStatus(RtcpMode::kCompound);
   EXPECT_EQ(0, rtcp_sender->SendRTCP(feedback_state(), kRtcpRr));
   EXPECT_EQ(1, parser()->receiver_report()->num_packets());
   EXPECT_EQ(kSenderSsrc, parser()->receiver_report()->sender_ssrc());
   EXPECT_EQ(0U, parser()->receiver_report()->report_blocks().size());
+}
+
+TEST_F(RtcpSenderTest, DoesntSendEmptyRrInReducedSizeMode) {
+  auto rtcp_sender = CreateRtcpSender(GetDefaultConfig());
+  rtcp_sender->SetRTCPStatus(RtcpMode::kReducedSize);
+  rtcp_sender->SendRTCP(feedback_state(), kRtcpRr);
+  EXPECT_EQ(parser()->receiver_report()->num_packets(), 0);
 }
 
 TEST_F(RtcpSenderTest, SendRrWithOneReportBlock) {
@@ -415,7 +424,7 @@ TEST_F(RtcpSenderTest, SendLossNotificationBufferingAllowed) {
 
 TEST_F(RtcpSenderTest, RembNotIncludedBeforeSet) {
   auto rtcp_sender = CreateRtcpSender(GetDefaultConfig());
-  rtcp_sender->SetRTCPStatus(RtcpMode::kReducedSize);
+  rtcp_sender->SetRTCPStatus(RtcpMode::kCompound);
 
   rtcp_sender->SendRTCP(feedback_state(), kRtcpRr);
 
@@ -427,7 +436,7 @@ TEST_F(RtcpSenderTest, RembNotIncludedAfterUnset) {
   const int64_t kBitrate = 261011;
   const std::vector<uint32_t> kSsrcs = {kRemoteSsrc, kRemoteSsrc + 1};
   auto rtcp_sender = CreateRtcpSender(GetDefaultConfig());
-  rtcp_sender->SetRTCPStatus(RtcpMode::kReducedSize);
+  rtcp_sender->SetRTCPStatus(RtcpMode::kCompound);
   rtcp_sender->SetRemb(kBitrate, kSsrcs);
   rtcp_sender->SendRTCP(feedback_state(), kRtcpRr);
   ASSERT_EQ(1, parser()->receiver_report()->num_packets());

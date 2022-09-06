@@ -77,6 +77,10 @@ found in the LICENSE file.
         height: 100vh;
       }
 
+      #triple_height_section {
+        height: 300vh;
+      }
+
       #touch_area_two {
         position: absolute;
       }
@@ -195,6 +199,14 @@ found in the LICENSE file.
     section.
     -->
     <div id="full_height_section">
+      <p>Blank Section</p>
+    </div>
+
+    <!--
+    This section is as tall as 3 viewports, this ensures the center is not
+    visible if we just scroll until one side of it is visible.
+    -->
+    <div id="triple_height_section">
       <p>Blank Section</p>
     </div>
 
@@ -320,6 +332,9 @@ found in the LICENSE file.
     <iframe id="iframeExternal" name="test_iframe_external" width="100%" height="500" src=
         "http://localhost:8081/autofill_assistant_external_iframe.html"></iframe>
 
+    <iframe id="iframeRedirecting" name="redirecting_iframe" width="100%" height="500" src=
+        "autofill_assistant_target_website_redirecting_iframe.html"></iframe>
+
     <input type="checkbox" id="terms-and-conditions" />
     <label for="terms-and-conditions" >
       <a href="#">I have read and understood <br />the terms and conditions</a>
@@ -427,6 +442,21 @@ found in the LICENSE file.
         document.addEventListener('duplexweb', onDuplexwebEvent);
       </script>
     </div>
+
+    <div class="dynamic less-than-2-seconds">Dynamic element</div>
+    <script>
+      setTimeout(() => {
+        const el = document.querySelector('.dynamic');
+        el.classList.remove('less-than-2-seconds');
+        el.classList.add('about-2-seconds');
+        setTimeout(() => {
+          el.classList.remove('about-2-seconds');
+          el.classList.add('more-than-2-seconds');
+        }, 200);
+      }, 2000);
+    </script>
+
+    <textarea id="textarea1">Initial textarea value.</textarea>
 
   </body>
 </html>

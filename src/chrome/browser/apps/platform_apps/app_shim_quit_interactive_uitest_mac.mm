@@ -56,7 +56,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
 
   void SetUpAppShim() {
     ASSERT_EQ(0u, [[NSApp windows] count]);
-    ExtensionTestMessageListener launched_listener("Launched", false);
+    ExtensionTestMessageListener launched_listener("Launched");
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
     ASSERT_EQ(1u, [[NSApp windows] count]);
 
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(AppShimQuitTest, QuitWithKeyEvent) {
   // Simulate a Cmd+Q event.
   NSWindow* window = [[NSApp windows] objectAtIndex:0];
   NSEvent* event = cocoa_test_event_utils::KeyEventWithKeyCode(
-      0, 'q', NSKeyDown, NSCommandKeyMask);
+      0, 'q', NSEventTypeKeyDown, NSEventModifierFlagCommand);
   [window postEvent:event atStart:NO];
 
   // This will time out if the event above does not terminate Chrome.

@@ -17,7 +17,7 @@ export type ProfileState = {
   userName: string,
   isManaged: boolean,
   avatarIcon: string,
-  // <if expr="lacros">
+  // <if expr="chromeos_lacros">
   isPrimaryLacrosProfile: boolean,
   // </if>
 };
@@ -49,7 +49,7 @@ export type UserThemeChoice = {
   color?: number,
 };
 
-// <if expr="lacros">
+// <if expr="chromeos_lacros">
 /**
  * This is a data structure sent from C++ to JS, representing accounts present
  * in the ChromeOS system, but not in any Lacros profile.
@@ -114,11 +114,9 @@ export interface ManageProfilesBrowserProxy {
   removeProfile(profilePath: string): void;
 
   /**
-   * Loads Google sign in page (and silently creates a profile with the
-   * specified color and account, if specified).
+   * Select an account to be added in Chrome.
    */
-  loadSignInProfileCreationFlow(profileColor: number|null, gaiaId: string):
-      void;
+  selectAccountLacros(profileColor: number|null, gaiaId: string): void;
 
   /**
    * Retrieves custom avatar list for the select avatar dialog.
@@ -156,7 +154,7 @@ export interface ManageProfilesBrowserProxy {
    */
   cancelProfileSwitch(): void;
 
-  // <if expr="lacros">
+  // <if expr="chromeos_lacros">
   /** Gets the available accounts, through WebUIListener. */
   getAvailableAccounts(): void;
 
@@ -205,8 +203,8 @@ export class ManageProfilesBrowserProxyImpl {
     chrome.send('getProfileStatistics', [profilePath]);
   }
 
-  loadSignInProfileCreationFlow(profileColor: number|null, gaiaId: string) {
-    chrome.send('loadSignInProfileCreationFlow', [profileColor, gaiaId]);
+  selectAccountLacros(profileColor: number|null, gaiaId: string) {
+    chrome.send('selectAccountLacros', [profileColor, gaiaId]);
   }
 
   getAvailableIcons() {
@@ -241,7 +239,7 @@ export class ManageProfilesBrowserProxyImpl {
     chrome.send('cancelProfileSwitch');
   }
 
-  // <if expr="lacros">
+  // <if expr="chromeos_lacros">
   getAvailableAccounts() {
     chrome.send('getAvailableAccounts');
   }

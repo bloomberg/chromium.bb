@@ -4,7 +4,7 @@
 
 import './strings.m.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {isTabElement, TabElement} from './tab.js';
@@ -51,9 +51,11 @@ function getDefaultTabData(): Tab {
     title: '',
     url: {url: ''},
 
-    // Remove once Mojo can produce proper TypeScript or TypeScript definitions,
-    // so that these properties are recognized as optional.
+    // TODO(crbug.com/1293911): Remove once Mojo can produce proper TypeScript
+    // or TypeScript definitions, so that these properties are recognized as
+    // optional.
     faviconUrl: undefined,
+    activeFaviconUrl: undefined,
     groupId: undefined,
   };
 }
@@ -120,7 +122,7 @@ class DragSession {
       delegate: DragManagerDelegateElement, event: DragEvent): DragSession
       |null {
     if (event.dataTransfer!.types.includes(getTabIdDataType())) {
-      const isPinned = event.dataTransfer!.types.includes('pinned');
+      const isPinned = event.dataTransfer!.types.includes(PINNED_DATA_TYPE);
       const placeholderTabElement = document.createElement('tabstrip-tab');
       placeholderTabElement.tab = Object.assign(
           getDefaultTabData(), {id: PLACEHOLDER_TAB_ID, pinned: isPinned});
@@ -280,7 +282,7 @@ class DragSession {
     let scaleFactor = 1;
     let verticalOffset = 0;
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     // Touch on ChromeOS automatically scales drag images by 1.2 and adds a
     // vertical offset of 25px. See //ash/drag_drop/drag_drop_controller.cc.
     scaleFactor = 1.2;
@@ -314,7 +316,8 @@ class DragSession {
           getTabIdDataType(), tabElement.tab.id.toString());
 
       if (tabElement.tab.pinned) {
-        event.dataTransfer!.setData('pinned', tabElement.tab.pinned.toString());
+        event.dataTransfer!.setData(
+            PINNED_DATA_TYPE, tabElement.tab.pinned.toString());
       }
     } else if (isTabGroupElement(this.element_)) {
       event.dataTransfer!.setData(
@@ -343,7 +346,7 @@ class DragSession {
   private updateForTabGroupElement_(event: DragEvent) {
     const tabGroupElement = this.element_ as TabGroupElement;
     const composedPath = event.composedPath() as Element[];
-    if (composedPath.includes(assert(this.element_))) {
+    if (composedPath.includes(this.element_)) {
       // Dragging over itself or a child of itself.
       return;
     }

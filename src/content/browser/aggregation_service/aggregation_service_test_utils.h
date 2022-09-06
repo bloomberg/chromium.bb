@@ -7,24 +7,24 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
-#include "content/browser/aggregation_service/aggregation_service_key_fetcher.h"
 #include "content/browser/aggregation_service/aggregation_service_key_storage.h"
 #include "content/browser/aggregation_service/aggregation_service_storage_context.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
-#include "url/origin.h"
 
 namespace base {
 class Clock;
+class FilePath;
+class Time;
 }  // namespace base
 
 namespace content {
@@ -57,16 +57,10 @@ testing::AssertionResult SharedInfoEqual(
     const AggregatableReportSharedInfo& expected,
     const AggregatableReportSharedInfo& actual);
 
-std::vector<url::Origin> GetExampleProcessingOrigins();
-
-// Returns an example report request, using the given parameters. If the first
-// signature is used, example processing origins will be used.
+// Returns an example report request, using the given parameters.
 AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type =
-        AggregationServicePayloadContents::ProcessingType::kTwoParty);
-AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type,
-    std::vector<url::Origin> processing_origins);
+    AggregationServicePayloadContents::AggregationMode aggregation_mode =
+        AggregationServicePayloadContents::AggregationMode::kDefault);
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request);
@@ -75,6 +69,17 @@ AggregatableReport CloneAggregatableReport(const AggregatableReport& report);
 // Generates a public-private key pair for HPKE and also constructs a PublicKey
 // object for use in assembler methods.
 TestHpkeKey GenerateKey(std::string key_id = "example_id");
+
+absl::optional<PublicKeyset> ReadAndParsePublicKeys(
+    const base::FilePath& file,
+    base::Time now,
+    std::string* error_msg = nullptr);
+
+// Returns empty vector in the case of an error.
+std::vector<uint8_t> DecryptPayloadWithHpke(
+    base::span<const uint8_t> payload,
+    const EVP_HPKE_KEY& key,
+    const std::string& expected_serialized_shared_info);
 
 }  // namespace aggregation_service
 
@@ -101,78 +106,19 @@ class TestAggregationServiceStorageContext
   base::SequenceBound<content::AggregationServiceKeyStorage> storage_;
 };
 
-class TestAggregationServiceKeyFetcher : public AggregationServiceKeyFetcher {
- public:
-  TestAggregationServiceKeyFetcher();
-  ~TestAggregationServiceKeyFetcher() override;
-
-  // AggregationServiceKeyFetcher:
-  void GetPublicKey(const url::Origin& origin, FetchCallback callback) override;
-
-  // Triggers a response for each fetch for `origin`, throwing an error if no
-  // such fetches exist.
-  void TriggerPublicKeyResponse(const url::Origin& origin,
-                                absl::optional<PublicKey> key,
-                                PublicKeyFetchStatus status);
-
-  void TriggerPublicKeyResponseForAllOrigins(absl::optional<PublicKey> key,
-                                             PublicKeyFetchStatus status);
-
-  bool HasPendingCallbacks();
-
- private:
-  std::map<url::Origin, std::vector<FetchCallback>> callbacks_;
-};
-
-// A simple class for mocking CreateFromRequestAndPublicKeys().
-class TestAggregatableReportProvider : public AggregatableReport::Provider {
- public:
-  TestAggregatableReportProvider();
-  ~TestAggregatableReportProvider() override;
-
-  absl::optional<AggregatableReport> CreateFromRequestAndPublicKeys(
-      AggregatableReportRequest report_request,
-      std::vector<PublicKey> public_keys) const override;
-
-  int num_calls() const { return num_calls_; }
-
-  const AggregatableReportRequest& PreviousRequest() const {
-    EXPECT_TRUE(previous_request_.has_value());
-    return previous_request_.value();
-  }
-  const std::vector<PublicKey>& PreviousPublicKeys() const {
-    EXPECT_TRUE(previous_request_.has_value());
-    return previous_public_keys_;
-  }
-
-  void set_report_to_return(
-      absl::optional<AggregatableReport> report_to_return) {
-    report_to_return_ = std::move(report_to_return);
-  }
-
- private:
-  absl::optional<AggregatableReport> report_to_return_;
-
-  // The following are mutable to allow `CreateFromRequestAndPublicKeys()` to be
-  // const.
-
-  // Number of times `CreateFromRequestAndPublicKeys()` is called.
-  mutable int num_calls_ = 0;
-
-  // `absl::nullopt` iff `num_calls_` is 0.
-  mutable absl::optional<AggregatableReportRequest> previous_request_;
-
-  // Empty if `num_calls_` is 0.
-  mutable std::vector<PublicKey> previous_public_keys_;
-};
-
 // Only used for logging in tests.
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::Operation& operation);
+    AggregationServicePayloadContents::Operation operation);
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::ProcessingType& processing_type);
+    AggregationServicePayloadContents::AggregationMode aggregation_mode);
+std::ostream& operator<<(std::ostream& out,
+                         AggregatableReportSharedInfo::DebugMode debug_mode);
+
+bool operator==(const PublicKey& a, const PublicKey& b);
+
+bool operator==(const AggregatableReport& a, const AggregatableReport& b);
 
 }  // namespace content
 

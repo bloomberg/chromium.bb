@@ -7,13 +7,12 @@
 
 #include <set>
 
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/http/http_request_info.h"
 #include "net/spdy/spdy_session_key.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -72,16 +71,17 @@ class NET_EXPORT Http2PushPromiseIndex {
   // same entry before |delegate| is destroyed.
   // Returns true if there is no unclaimed pushed stream with the same URL for
   // the same Delegate, in which case the stream is registered.
-  bool RegisterUnclaimedPushedStream(const GURL& url,
-                                     spdy::SpdyStreamId stream_id,
-                                     Delegate* delegate) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool RegisterUnclaimedPushedStream(const GURL& url,
+                                                   spdy::SpdyStreamId stream_id,
+                                                   Delegate* delegate);
 
   // Tries to unregister a Delegate with an unclaimed pushed stream for |url|
   // with given |stream_id|.
   // Returns true if this exact entry is found, in which case it is removed.
-  bool UnregisterUnclaimedPushedStream(const GURL& url,
-                                       spdy::SpdyStreamId stream_id,
-                                       Delegate* delegate) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool UnregisterUnclaimedPushedStream(
+      const GURL& url,
+      spdy::SpdyStreamId stream_id,
+      Delegate* delegate);
 
   // Returns the number of pushed streams registered for |delegate|.
   size_t CountStreamsForSession(const Delegate* delegate) const;

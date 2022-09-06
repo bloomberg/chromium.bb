@@ -281,8 +281,8 @@ PeerScenarioClient::PeerScenarioClient(
   pc_factory_->SetOptions(pc_options);
 
   PeerConnectionDependencies pc_deps(observer_.get());
-  pc_deps.allocator =
-      std::make_unique<cricket::BasicPortAllocator>(manager->network_manager());
+  pc_deps.allocator = std::make_unique<cricket::BasicPortAllocator>(
+      manager->network_manager(), manager->packet_socket_factory());
   pc_deps.allocator->set_flags(pc_deps.allocator->flags() |
                                cricket::PORTALLOCATOR_DISABLE_TCP);
   peer_connection_ =
@@ -306,7 +306,7 @@ PeerScenarioClient::AudioSendTrack PeerScenarioClient::CreateAudio(
   RTC_DCHECK_RUN_ON(signaling_thread_);
   AudioSendTrack res;
   auto source = pc_factory_->CreateAudioSource(options);
-  auto track = pc_factory_->CreateAudioTrack(track_id, source);
+  auto track = pc_factory_->CreateAudioTrack(track_id, source.get());
   res.track = track;
   res.sender = peer_connection_->AddTrack(track, {kCommonStreamId}).value();
   return res;
@@ -321,12 +321,12 @@ PeerScenarioClient::VideoSendTrack PeerScenarioClient::CreateVideo(
                                                  config.generator);
   res.capturer = capturer.get();
   capturer->Init();
-  res.source =
-      new rtc::RefCountedObject<FrameGeneratorCapturerVideoTrackSource>(
-          std::move(capturer), config.screencast);
-  auto track = pc_factory_->CreateVideoTrack(track_id, res.source);
-  res.track = track;
-  res.sender = peer_connection_->AddTrack(track, {kCommonStreamId}).MoveValue();
+  res.source = rtc::make_ref_counted<FrameGeneratorCapturerVideoTrackSource>(
+      std::move(capturer), config.screencast);
+  auto track = pc_factory_->CreateVideoTrack(track_id, res.source.get());
+  res.track = track.get();
+  res.sender =
+      peer_connection_->AddTrack(track, {kCommonStreamId}).MoveValue().get();
   return res;
 }
 
@@ -356,7 +356,8 @@ void PeerScenarioClient::CreateAndSetSdp(
                     [sdp_offer, offer_handler](RTCError) {
                       offer_handler(sdp_offer);
                     }));
-          }),
+          })
+          .get(),
       PeerConnectionInterface::RTCOfferAnswerOptions());
 }
 
@@ -364,9 +365,8 @@ void PeerScenarioClient::SetSdpOfferAndGetAnswer(
     std::string remote_offer,
     std::function<void(std::string)> answer_handler) {
   if (!signaling_thread_->IsCurrent()) {
-    signaling_thread_->PostTask(RTC_FROM_HERE, [=] {
-      SetSdpOfferAndGetAnswer(remote_offer, answer_handler);
-    });
+    signaling_thread_->PostTask(
+        [=] { SetSdpOfferAndGetAnswer(remote_offer, answer_handler); });
     return;
   }
   RTC_DCHECK_RUN_ON(signaling_thread_);
@@ -387,7 +387,8 @@ void PeerScenarioClient::SetSdpOfferAndGetAnswer(
                           [answer_handler, sdp_answer](RTCError) {
                             answer_handler(sdp_answer);
                           }));
-                }),
+                })
+                .get(),
             PeerConnectionInterface::RTCOfferAnswerOptions());
       }));
 }
@@ -397,7 +398,7 @@ void PeerScenarioClient::SetSdpAnswer(
     std::function<void(const SessionDescriptionInterface&)> done_handler) {
   if (!signaling_thread_->IsCurrent()) {
     signaling_thread_->PostTask(
-        RTC_FROM_HERE, [=] { SetSdpAnswer(remote_answer, done_handler); });
+        [=] { SetSdpAnswer(remote_answer, done_handler); });
     return;
   }
   RTC_DCHECK_RUN_ON(signaling_thread_);

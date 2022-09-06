@@ -11,6 +11,28 @@
 #include "components/autofill_assistant/browser/field_formatter.h"
 
 namespace autofill_assistant {
+namespace {
+
+bool IsValidCssSelectorProto(const SelectorProto& proto) {
+  for (const SelectorProto::Filter& filter : proto.filters()) {
+    switch (filter.filter_case()) {
+      case SelectorProto::Filter::FILTER_NOT_SET:
+        // There must not be any unknown or invalid filters.
+        return false;
+
+      case SelectorProto::Filter::kCssSelector:
+        // There must be at least one CSS selector, since it's the only
+        // way we have of expanding the set of matches.
+        return true;
+
+      default:
+        break;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 // Comparison operations are in the autofill_assistant scope, even though
 // they're not shared outside of this module, for them to be visible to
@@ -111,6 +133,7 @@ bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
 
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kLabelled:
+    case SelectorProto::Filter::kParent:
       return false;
 
     case SelectorProto::Filter::kMatchCssSelector:
@@ -192,10 +215,10 @@ Selector::Selector(const SelectorProto& selector_proto)
 
 Selector::~Selector() = default;
 
-Selector::Selector(Selector&& other) = default;
+Selector::Selector(Selector&& other) noexcept = default;
 Selector::Selector(const Selector& other) = default;
 Selector& Selector::operator=(const Selector& other) = default;
-Selector& Selector::operator=(Selector&& other) = default;
+Selector& Selector::operator=(Selector&& other) noexcept = default;
 
 bool Selector::operator<(const Selector& other) const {
   return proto.filters() < other.proto.filters();
@@ -216,24 +239,12 @@ Selector& Selector::MustBeVisible() {
 }
 
 bool Selector::empty() const {
-  bool has_css_selector = false;
-  for (const SelectorProto::Filter& filter : proto.filters()) {
-    switch (filter.filter_case()) {
-      case SelectorProto::Filter::FILTER_NOT_SET:
-        // There must not be any unknown or invalid filters.
-        return true;
-
-      case SelectorProto::Filter::kCssSelector:
-        // There must be at least one CSS selector, since it's the only
-        // way we have of expanding the set of matches.
-        has_css_selector = true;
-        break;
-
-      default:
-        break;
-    }
+  bool is_valid_css = IsValidCssSelectorProto(proto);
+  if (proto.has_semantic_information()) {
+    return proto.semantic_information().check_matches_css_element() &&
+           !is_valid_css;
   }
-  return !has_css_selector;
+  return !is_valid_css;
 }
 
 std::ostream& operator<<(std::ostream& out, const Selector& selector) {
@@ -379,6 +390,10 @@ std::ostream& operator<<(std::ostream& out, const SelectorProto::Filter& f) {
 
     case SelectorProto::Filter::kProperty:
       out << f.property();
+      return out;
+
+    case SelectorProto::Filter::kParent:
+      out << "parent";
       return out;
 
     case SelectorProto::Filter::FILTER_NOT_SET:

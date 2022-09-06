@@ -24,14 +24,14 @@ class GURL;
 class WebOmniboxEditController;
 struct AutocompleteMatch;
 @class OmniboxTextFieldIOS;
-@class OmniboxTextFieldPasteDelegate;
 @protocol OmniboxCommands;
 
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
 class OmniboxViewIOS : public OmniboxView,
                        public OmniboxPopupViewSuggestionsDelegate,
-                       public OmniboxTextChangeDelegate {
+                       public OmniboxTextChangeDelegate,
+                       public OmniboxTextAcceptDelegate {
  public:
   // Retains |field|.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
@@ -45,12 +45,6 @@ class OmniboxViewIOS : public OmniboxView,
   void SetPopupProvider(OmniboxPopupProvider* provider) {
     popup_provider_ = provider;
   }
-
-  // Returns a color representing |security_level|, adjusted based on whether
-  // the browser is in Incognito mode.
-  static UIColor* GetSecureTextColor(
-      security_state::SecurityLevel security_level,
-      bool in_dark_mode);
 
   void OnReceiveClipboardURLForOpenMatch(
       const AutocompleteMatch& match,
@@ -140,11 +134,13 @@ class OmniboxViewIOS : public OmniboxView,
   void OnDidChange(bool processing_user_input) override;
   void OnWillEndEditing() override;
   void EndEditing() override;
-  void OnAccept() override;
   void OnCopy() override;
   void ClearText() override;
   void WillPaste() override;
   void OnDeleteBackward() override;
+
+  // OmniboxTextAcceptDelegate methods
+  void OnAccept() override;
 
   // OmniboxPopupViewSuggestionsDelegate methods
 
@@ -161,8 +157,6 @@ class OmniboxViewIOS : public OmniboxView,
                                  const GURL& alternate_nav_url,
                                  const std::u16string& pasted_text,
                                  size_t index) override;
-
-  ChromeBrowserState* browser_state() { return browser_state_; }
 
   // Updates this edit view to show the proper text, highlight and images.
   void UpdateAppearance();
@@ -193,26 +187,11 @@ class OmniboxViewIOS : public OmniboxView,
   void SetEmphasis(bool emphasize, const gfx::Range& range) override {}
   void UpdateSchemeStyle(const gfx::Range& scheme_range) override {}
 
-  // Calculates text attributes according to |display_text| and
-  // returns them in an autoreleased object.
-  NSAttributedString* ApplyTextAttributes(const std::u16string& text);
-
   // Removes the query refinement chip from the omnibox.
   void RemoveQueryRefinementChip();
 
-  // Returns true if user input should currently be ignored.  On iOS7,
-  // modifying the contents of a text field while Siri is pending leads to a
-  // UIKit crash.  In order to sidestep that crash, OmniboxViewIOS checks that
-  // voice search is not pending before attempting to process user actions that
-  // may modify text field contents.
-  // TODO(crbug.com/303212): Remove this workaround once the crash is fixed.
-  bool ShouldIgnoreUserInputDueToPendingVoiceSearch();
-
-  ChromeBrowserState* browser_state_;
-
   OmniboxTextFieldIOS* field_;
 
-  OmniboxTextFieldPasteDelegate* paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
   __weak id<OmniboxLeftImageConsumer> left_image_consumer_;
   // Focuser, used to transition the location bar to focused/defocused state as
@@ -229,10 +208,6 @@ class OmniboxViewIOS : public OmniboxView,
   // underlying problem, which is that textDidChange: is called when closing the
   // popup, and then remove this hack.  b/5877366.
   BOOL ignore_popup_updates_;
-
-  // Temporary pointer to the attributed display string, stored as color and
-  // other emphasis attributes are applied by the superclass.
-  NSMutableAttributedString* attributing_display_string_;
 
   OmniboxPopupProvider* popup_provider_;  // weak
 

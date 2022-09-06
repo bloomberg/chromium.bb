@@ -21,6 +21,7 @@
  */
 
 #include "config.h"
+#include "config_components.h"
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -47,6 +48,7 @@
 #endif
 #include "internal.h"
 #include "isom.h"
+#include "mux.h"
 #include "os_support.h"
 #include "url.h"
 #include "vpcc.h"
@@ -859,7 +861,7 @@ static int write_adaptation_set(AVFormatContext *s, AVIOContext *out, int as_ind
             avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"audio/%s\" codecs=\"%s\"%s audioSamplingRate=\"%d\">\n",
                 i, os->format_name, os->codec_str, bandwidth_str, s->streams[i]->codecpar->sample_rate);
             avio_printf(out, "\t\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"%d\" />\n",
-                s->streams[i]->codecpar->channels);
+                s->streams[i]->codecpar->ch_layout.nb_channels);
         }
         if (!final && c->write_prft && os->producer_reference_time_str[0]) {
             avio_printf(out, "\t\t\t\t<ProducerReferenceTime id=\"%d\" inband=\"true\" type=\"%s\" wallClockTime=\"%s\" presentationTime=\"%"PRId64"\">\n",
@@ -1546,6 +1548,7 @@ static int dash_init(AVFormatContext *s)
         ctx->interrupt_callback    = s->interrupt_callback;
         ctx->opaque                = s->opaque;
         ctx->io_close              = s->io_close;
+        ctx->io_close2             = s->io_close2;
         ctx->io_open               = s->io_open;
         ctx->strict_std_compliance = s->strict_std_compliance;
 
@@ -2333,19 +2336,19 @@ static int dash_write_trailer(AVFormatContext *s)
     return 0;
 }
 
-static int dash_check_bitstream(struct AVFormatContext *s, const AVPacket *avpkt)
+static int dash_check_bitstream(AVFormatContext *s, AVStream *st,
+                                const AVPacket *avpkt)
 {
     DASHContext *c = s->priv_data;
-    OutputStream *os = &c->streams[avpkt->stream_index];
+    OutputStream *os = &c->streams[st->index];
     AVFormatContext *oc = os->ctx;
     if (oc->oformat->check_bitstream) {
+        AVStream *const ost = oc->streams[0];
         int ret;
-        AVPacket pkt = *avpkt;
-        pkt.stream_index = 0;
-        ret = oc->oformat->check_bitstream(oc, &pkt);
+        ret = oc->oformat->check_bitstream(oc, ost, avpkt);
         if (ret == 1) {
-            FFStream *const  sti = ffstream(s->streams[avpkt->stream_index]);
-            FFStream *const osti = ffstream(oc->streams[0]);
+            FFStream *const  sti = ffstream(st);
+            FFStream *const osti = ffstream(ost);
              sti->bsfc = osti->bsfc;
             osti->bsfc = NULL;
         }

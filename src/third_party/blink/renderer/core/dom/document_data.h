@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_DATA_H_
 
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
-#include "third_party/blink/public/mojom/federated_learning/floc.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
@@ -24,13 +24,10 @@ namespace blink {
 class DocumentData final : public GarbageCollected<DocumentData> {
  public:
   explicit DocumentData(ExecutionContext* context)
-      : permission_service_(context),
-        floc_service_(context),
-        has_trust_tokens_answerer_(context) {}
+      : permission_service_(context), has_trust_tokens_answerer_(context) {}
 
   void Trace(Visitor* visitor) const {
     visitor->Trace(permission_service_);
-    visitor->Trace(floc_service_);
     visitor->Trace(has_trust_tokens_answerer_);
     visitor->Trace(pending_has_trust_tokens_resolvers_);
     visitor->Trace(email_regexp_);
@@ -40,9 +37,6 @@ class DocumentData final : public GarbageCollected<DocumentData> {
   // Mojo remote used to determine if the document has permission to access
   // storage or not.
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
-
-  // Mojo remote used to query the floc (i.e. interestCohort).
-  HeapMojoRemote<mojom::blink::FlocService> floc_service_;
 
   // Mojo remote used to answer API calls asking whether the user has trust
   // tokens (https://github.com/wicg/trust-token-api). The other endpoint
@@ -62,6 +56,18 @@ class DocumentData final : public GarbageCollected<DocumentData> {
 
   // To do email regex checks.
   Member<ScriptRegexp> email_regexp_;
+
+  // The total number of per-page ad frames that are eligible for the LazyAds
+  // interventions by AutomaticLazyFrameLoadingToAds. This is used to report
+  // UKM.
+  int64_t lazy_ads_frame_count_ = 0;
+  // The total number of per-page frames that are eligible for the LazyEmbeds
+  // interventions by AutomaticLazyFrameLoadingToEmbeds. This is used to report
+  // UKM.
+  int64_t lazy_embeds_frame_count_ = 0;
+  // |Document::Shutdown()| is called multiple times. The following flag
+  // prevents sending UKM multiple times.
+  bool already_sent_automatic_lazy_load_frame_ukm_ = false;
 
   friend class Document;
 };

@@ -1,9 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2021 The Khronos Group Inc.
-# Copyright (c) 2015-2021 Valve Corporation
-# Copyright (c) 2015-2021 LunarG, Inc.
-# Copyright (c) 2015-2021 Google Inc.
+# Copyright (c) 2015-2022 The Khronos Group Inc.
+# Copyright (c) 2015-2022 Valve Corporation
+# Copyright (c) 2015-2022 LunarG, Inc.
+# Copyright (c) 2015-2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -242,19 +242,23 @@ class ParameterValidationOutputGenerator(OutputGenerator):
             'vkCmdTraceRaysKHR',
             'vkCmdTraceRaysNV',
             'vkCmdTraceRaysIndirectKHR',
+            'vkCmdTraceRaysIndirect2KHR',
             'vkCmdBuildAccelerationStructureIndirectKHR',
             'vkGetDeviceAccelerationStructureCompatibilityKHR',
             'vkCmdSetViewportWithCountEXT',
+            'vkCmdSetViewportWithCount',
             'vkCmdSetScissorWithCountEXT',
+            'vkCmdSetScissorWithCount',
             'vkCmdBindVertexBuffers2EXT',
+            'vkCmdBindVertexBuffers2',
             'vkCmdCopyBuffer2KHR',
+            'vkCmdCopyBuffer2',
             'vkCmdBuildAccelerationStructuresKHR',
             'vkCmdBuildAccelerationStructuresIndirectKHR',
             'vkBuildAccelerationStructuresKHR',
             'vkGetAccelerationStructureBuildSizesKHR',
             'vkCmdWriteAccelerationStructuresPropertiesNV',
             'vkCreateDisplayModeKHR',
-            'vkCreatePrivateDataSlotEXT',
             'vkCmdSetVertexInputEXT',
             'vkCmdPushConstants',
             'vkMergePipelineCaches',
@@ -266,6 +270,14 @@ class ParameterValidationOutputGenerator(OutputGenerator):
             'vkCmdSetDiscardRectangleEXT',
             'vkGetQueryPoolResults',
             'vkCmdBeginConditionalRenderingEXT',
+            'vkGetDeviceImageMemoryRequirementsKHR',
+            'vkGetDeviceImageSparseMemoryRequirementsKHR',
+            'vkCreateWin32SurfaceKHR',
+            'vkGetPhysicalDeviceSurfaceFormatsKHR',
+            'vkGetPhysicalDeviceSurfacePresentModesKHR',
+            'vkGetPhysicalDeviceSurfaceCapabilities2KHR',
+            'vkGetPhysicalDeviceSurfaceFormats2KHR',
+            'vkGetPhysicalDeviceSurfacePresentModes2EXT',
             ]
 
         # Commands to ignore
@@ -328,9 +340,9 @@ class ParameterValidationOutputGenerator(OutputGenerator):
         copyright  = '/* *** THIS FILE IS GENERATED - DO NOT EDIT! ***\n'
         copyright += ' * See parameter_validation_generator.py for modifications\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2015-2021 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2021 LunarG, Inc.\n'
-        copyright += ' * Copyright (C) 2015-2021 Google Inc.\n'
+        copyright += ' * Copyright (c) 2015-2022 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2022 LunarG, Inc.\n'
+        copyright += ' * Copyright (C) 2015-2022 Google Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -469,7 +481,7 @@ class ParameterValidationOutputGenerator(OutputGenerator):
             api_func += '    bool skip = false;\n'
             api_func += '    if (api_version < promoted_version) {\n'
             api_func += '        skip = LogError(instance,\n'
-            api_func += '                        kVUID_PVError_ApiVersionViolation, "Attemped to call %s() with an effective API version of %s"\n'
+            api_func += '                        kVUID_PVError_ApiVersionViolation, "Attempted to call %s() with an effective API version of %s"\n'
             api_func += '                        "but this API was not promoted until version %s.", api_name, StringAPIVersion(api_version).c_str(),\n'
             api_func += '                        StringAPIVersion(promoted_version).c_str());\n'
             api_func += '    }\n'
@@ -482,7 +494,7 @@ class ParameterValidationOutputGenerator(OutputGenerator):
             api_func += '        auto effective_api_version = std::min(target_pdev->second->apiVersion, api_version);\n'
             api_func += '        if (effective_api_version < promoted_version) {\n'
             api_func += '            skip = LogError(instance,\n'
-            api_func += '                            kVUID_PVError_ApiVersionViolation, "Attemped to call %s() with an effective API version of %s, "\n'
+            api_func += '                            kVUID_PVError_ApiVersionViolation, "Attempted to call %s() with an effective API version of %s, "\n'
             api_func += '                            "which is the minimum of version requested in pApplicationInfo (%s) and supported by this physical device (%s), "\n'
             api_func += '                            "but this API was not promoted until version %s.", api_name, StringAPIVersion(effective_api_version).c_str(),\n'
             api_func += '                            StringAPIVersion(api_version).c_str(), StringAPIVersion(target_pdev->second->apiVersion).c_str(),\n'
@@ -586,7 +598,7 @@ class ParameterValidationOutputGenerator(OutputGenerator):
 
             ext_template  = 'bool StatelessValidation::OutputExtensionError(const std::string &api_name, const std::string &extension_name) const {\n'
             ext_template += '    return LogError(instance,\n'
-            ext_template += '                    kVUID_PVError_ExtensionNotEnabled, "Attemped to call %s() but its required extension %s has not been enabled\\n",\n'
+            ext_template += '                    kVUID_PVError_ExtensionNotEnabled, "Attempted to call %s() but its required extension %s has not been enabled\\n",\n'
             ext_template += '                    api_name.c_str(), extension_name.c_str());\n'
             ext_template += '}\n'
             write(ext_template, file=self.outFile)
@@ -616,7 +628,10 @@ class ParameterValidationOutputGenerator(OutputGenerator):
         # Get base list of extension dependencies for all items in this extension
         base_required_extensions = []
         if "VK_VERSION_1" not in self.featureName:
-            nameElem = interface[0][1]
+            index = 0
+            while interface[0][index].tag == 'comment':
+                index += 1
+            nameElem = interface[0][index + 1]
             name = nameElem.get('name')
             # Save Name Define to get correct enable name later
             self.extension_names[self.featureName] = name
@@ -642,6 +657,13 @@ class ParameterValidationOutputGenerator(OutputGenerator):
         # And note if this is an Instance or Device extension
         self.extension_type = interface.get('type')
         if interface.tag == 'extension':
+            index = 0
+            while interface[0][index].tag == 'comment':
+                index += 1
+            name_elem = interface[0][index + 1]
+            name_definition = name_elem.get('name')
+            if 'EXTENSION_NAME' not in name_definition:
+                print("Error in vk.xml file -- extension name is not available")
             if interface.get('type') == 'instance':
                 self.instance_extension_list += '%s, ' % GetNameDefine(interface)
             else:

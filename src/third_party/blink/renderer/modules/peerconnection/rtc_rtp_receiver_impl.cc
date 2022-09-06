@@ -180,8 +180,8 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
   }
 
   Vector<std::unique_ptr<RTCRtpSource>> GetSources() {
-    // The webrtc_recever_ is a proxy, so this is a blocking call to the webrtc
-    // signalling thread.
+    // The `webrtc_recever_` is a PROXY and GetSources block-invokes to its
+    // secondary thread, which is the WebRTC worker thread.
     auto webrtc_sources = webrtc_receiver_->GetSources();
     Vector<std::unique_ptr<RTCRtpSource>> sources(
         static_cast<WTF::wtf_size_t>(webrtc_sources.size()));
@@ -230,7 +230,8 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
       RTCStatsReportCallback callback,
       const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
-        webrtc_receiver_.get(),
+        rtc::scoped_refptr<webrtc::RtpReceiverInterface>(
+            webrtc_receiver_.get()),
         CreateRTCStatsCollectorCallback(main_task_runner_, std::move(callback),
                                         exposed_group_ids));
   }
@@ -392,11 +393,6 @@ RTCRtpReceiverOnlyTransceiver::Sender() const {
 std::unique_ptr<RTCRtpReceiverPlatform>
 RTCRtpReceiverOnlyTransceiver::Receiver() const {
   return receiver_->ShallowCopy();
-}
-
-bool RTCRtpReceiverOnlyTransceiver::Stopped() const {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 webrtc::RtpTransceiverDirection RTCRtpReceiverOnlyTransceiver::Direction()

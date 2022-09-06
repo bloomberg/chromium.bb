@@ -69,6 +69,7 @@ template <int bitdepth, typename SrcPixel, typename DstPixel>
 class InverseTransformTestBase : public testing::TestWithParam<TransformSize>,
                                  public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   InverseTransformTestBase() {
     switch (tx_size_) {
       case kNumTransformSizes:
@@ -148,6 +149,7 @@ template <int bitdepth, typename Pixel, typename DstPixel>
 class InverseTransformTest
     : public InverseTransformTestBase<bitdepth, Pixel, DstPixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   InverseTransformTest() = default;
   InverseTransformTest(const InverseTransformTest&) = delete;
   InverseTransformTest& operator=(const InverseTransformTest&) = delete;
@@ -532,6 +534,19 @@ INSTANTIATE_TEST_SUITE_P(NEON, InverseTransformTest10bpp,
                          testing::ValuesIn(kTransformSizesAll));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using InverseTransformTest12bpp = InverseTransformTest<12, int32_t, uint16_t>;
+
+TEST_P(InverseTransformTest12bpp, Random) { TestRandomValues(1); }
+
+TEST_P(InverseTransformTest12bpp, DISABLED_Speed) { TestRandomValues(12000); }
+
+TEST_P(InverseTransformTest12bpp, DcRandom) { TestDcOnlyRandomValue(1); }
+
+INSTANTIATE_TEST_SUITE_P(C, InverseTransformTest12bpp,
+                         testing::ValuesIn(kTransformSizesAll));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

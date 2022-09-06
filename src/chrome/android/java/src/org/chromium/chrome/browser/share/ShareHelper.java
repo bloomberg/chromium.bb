@@ -60,7 +60,6 @@ public class ShareHelper extends org.chromium.components.browser_ui.share.ShareH
      */
     public static void shareDirectly(
             @NonNull ShareParams params, @NonNull ComponentName component) {
-        recordShareSource(ShareSourceAndroid.DIRECT_SHARE);
         Intent intent = getShareLinkIntent(params);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
@@ -79,6 +78,7 @@ public class ShareHelper extends org.chromium.components.browser_ui.share.ShareH
         ComponentName component = getLastShareComponentName();
         if (component == null) return;
         assert params.getCallback() == null;
+        recordShareSource(ShareSourceAndroid.DIRECT_SHARE);
         shareDirectly(params, component);
     }
 
@@ -196,7 +196,7 @@ public class ShareHelper extends org.chromium.components.browser_ui.share.ShareH
         SharedPreferencesManager.getInstance().writeString(
                 ChromePreferenceKeys.SHARING_LAST_SHARED_COMPONENT_NAME,
                 component.flattenToString());
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_USAGE_RANKING) && profile != null) {
+        if (profile != null) {
             ShareHistoryBridge.addShareEntry(profile, component.flattenToString());
         }
     }

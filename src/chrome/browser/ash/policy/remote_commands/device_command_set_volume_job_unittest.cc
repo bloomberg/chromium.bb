@@ -12,15 +12,16 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
-namespace em = enterprise_management;
-
 namespace {
+
+namespace em = ::enterprise_management;
 
 const RemoteCommandJob::UniqueIDType kUniqueID = 123456789;
 
@@ -30,13 +31,12 @@ const char kVolumeFieldName[] = "volume";
 em::RemoteCommand GenerateSetVolumeCommandProto(base::TimeDelta age_of_command,
                                                 int volume) {
   em::RemoteCommand command_proto;
-  command_proto.set_type(
-      enterprise_management::RemoteCommand_Type_DEVICE_SET_VOLUME);
+  command_proto.set_type(em::RemoteCommand_Type_DEVICE_SET_VOLUME);
   command_proto.set_command_id(kUniqueID);
   command_proto.set_age_of_command(age_of_command.InMilliseconds());
   std::string payload;
   base::DictionaryValue root_dict;
-  root_dict.SetInteger(kVolumeFieldName, volume);
+  root_dict.SetIntKey(kVolumeFieldName, volume);
   base::JSONWriter::Write(root_dict, &payload);
   command_proto.set_payload(payload);
   return command_proto;

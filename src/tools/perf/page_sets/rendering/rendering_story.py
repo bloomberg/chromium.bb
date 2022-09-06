@@ -34,6 +34,7 @@ class RenderingStory(six.with_metaclass(_MetaRenderingStory, page.Page)):
   TAGS =[]
   PLATFORM_SPECIFIC = False
   YEAR = None
+  DISABLE_TRACING = False
 
   def __init__(self,
                page_set,
@@ -61,3 +62,7 @@ class RenderingStory(six.with_metaclass(_MetaRenderingStory, page.Page)):
         make_javascript_deterministic=make_javascript_deterministic,
         base_dir=base_dir,
         perform_final_navigation=perform_final_navigation)
+
+  def WillStartTracing(self, chrome_trace_config):
+    chrome_trace_config.category_filter.AddIncludedCategory('benchmark')
+    chrome_trace_config.category_filter.AddIncludedCategory('v8')

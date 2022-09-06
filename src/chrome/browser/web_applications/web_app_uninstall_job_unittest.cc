@@ -19,9 +19,13 @@
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -40,10 +44,14 @@ class WebAppUninstallJobTest : public WebAppTest {
         std::make_unique<FakeWebAppRegistryController>();
 
     controller().SetUp(profile());
+
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
+
     file_utils_wrapper_ =
         base::MakeRefCounted<testing::StrictMock<MockFileUtilsWrapper>>();
-    icon_manager_ = std::make_unique<WebAppIconManager>(
-        profile(), controller().registrar(), file_utils_wrapper_);
+    icon_manager_ =
+        std::make_unique<WebAppIconManager>(profile(), file_utils_wrapper_);
+    icon_manager_->SetSubsystems(&controller().registrar(), &install_manager());
   }
 
   void TearDown() override {
@@ -55,7 +63,15 @@ class WebAppUninstallJobTest : public WebAppTest {
     return *fake_registry_controller_;
   }
 
+  WebAppInstallManager& install_manager() const { return *install_manager_; }
+
+  WebAppInstallFinalizer& install_finalizer() const {
+    return *install_finalizer_;
+  }
+
   testing::StrictMock<MockOsIntegrationManager> os_integration_manager_;
+  std::unique_ptr<WebAppInstallManager> install_manager_;
+  std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
   scoped_refptr<testing::StrictMock<MockFileUtilsWrapper>> file_utils_wrapper_;
@@ -63,8 +79,8 @@ class WebAppUninstallJobTest : public WebAppTest {
 
 TEST_F(WebAppUninstallJobTest, SimpleUninstall) {
   Registry registry;
-  auto web_app =
-      test::CreateWebApp(GURL("https://www.example.com"), Source::kSync);
+  auto web_app = test::CreateWebApp(GURL("https://www.example.com"),
+                                    WebAppManagement::kSync);
   AppId id = web_app->app_id();
   registry.emplace(id, std::move(web_app));
   controller().database_factory().WriteRegistry(registry);
@@ -72,6 +88,8 @@ TEST_F(WebAppUninstallJobTest, SimpleUninstall) {
 
   WebAppUninstallJob task(&os_integration_manager_, &controller().sync_bridge(),
                           icon_manager_.get(), &controller().registrar(),
+                          &install_manager(), &install_finalizer(),
+                          &controller().translation_manager(),
                           profile()->GetPrefs());
 
   OsHooksErrors result;
@@ -86,9 +104,8 @@ TEST_F(WebAppUninstallJobTest, SimpleUninstall) {
 
   base::RunLoop loop;
   task.Start(id, url::Origin(), webapps::WebappUninstallSource::kAppMenu,
-             WebAppUninstallJob::ModifyAppRegistry::kYes,
-             base::BindLambdaForTesting([&](WebAppUninstallJobResult result) {
-               EXPECT_EQ(WebAppUninstallJobResult::kSuccess, result);
+             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+               EXPECT_EQ(webapps::UninstallResultCode::kSuccess, code);
                loop.Quit();
              }));
   loop.Run();
@@ -98,8 +115,8 @@ TEST_F(WebAppUninstallJobTest, SimpleUninstall) {
 
 TEST_F(WebAppUninstallJobTest, FailedDataDelete) {
   Registry registry;
-  auto web_app =
-      test::CreateWebApp(GURL("https://www.example.com"), Source::kSync);
+  auto web_app = test::CreateWebApp(GURL("https://www.example.com"),
+                                    WebAppManagement::kSync);
   AppId id = web_app->app_id();
   registry.emplace(id, std::move(web_app));
   controller().database_factory().WriteRegistry(registry);
@@ -107,6 +124,8 @@ TEST_F(WebAppUninstallJobTest, FailedDataDelete) {
 
   WebAppUninstallJob task(&os_integration_manager_, &controller().sync_bridge(),
                           icon_manager_.get(), &controller().registrar(),
+                          &install_manager(), &install_finalizer(),
+                          &controller().translation_manager(),
                           profile()->GetPrefs());
 
   OsHooksErrors result;
@@ -121,9 +140,8 @@ TEST_F(WebAppUninstallJobTest, FailedDataDelete) {
 
   base::RunLoop loop;
   task.Start(id, url::Origin(), webapps::WebappUninstallSource::kAppMenu,
-             WebAppUninstallJob::ModifyAppRegistry::kYes,
-             base::BindLambdaForTesting([&](WebAppUninstallJobResult result) {
-               EXPECT_EQ(WebAppUninstallJobResult::kError, result);
+             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+               EXPECT_EQ(webapps::UninstallResultCode::kError, code);
                loop.Quit();
              }));
   loop.Run();
@@ -133,8 +151,8 @@ TEST_F(WebAppUninstallJobTest, FailedDataDelete) {
 
 TEST_F(WebAppUninstallJobTest, FailedOsHooks) {
   Registry registry;
-  auto web_app =
-      test::CreateWebApp(GURL("https://www.example.com"), Source::kSync);
+  auto web_app = test::CreateWebApp(GURL("https://www.example.com"),
+                                    WebAppManagement::kSync);
   AppId id = web_app->app_id();
   registry.emplace(id, std::move(web_app));
   controller().database_factory().WriteRegistry(registry);
@@ -142,6 +160,8 @@ TEST_F(WebAppUninstallJobTest, FailedOsHooks) {
 
   WebAppUninstallJob task(&os_integration_manager_, &controller().sync_bridge(),
                           icon_manager_.get(), &controller().registrar(),
+                          &install_manager(), &install_finalizer(),
+                          &controller().translation_manager(),
                           profile()->GetPrefs());
 
   OsHooksErrors result;
@@ -157,9 +177,8 @@ TEST_F(WebAppUninstallJobTest, FailedOsHooks) {
 
   base::RunLoop loop;
   task.Start(id, url::Origin(), webapps::WebappUninstallSource::kAppMenu,
-             WebAppUninstallJob::ModifyAppRegistry::kYes,
-             base::BindLambdaForTesting([&](WebAppUninstallJobResult result) {
-               EXPECT_EQ(WebAppUninstallJobResult::kError, result);
+             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+               EXPECT_EQ(webapps::UninstallResultCode::kError, code);
                loop.Quit();
              }));
   loop.Run();

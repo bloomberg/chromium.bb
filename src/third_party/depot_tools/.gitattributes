@@ -10,8 +10,8 @@
 /*.sh  recipes
 
 # vpython specs
-/.vpython*      recipes
-/gsutil.vpython recipes
+/.vpython*       recipes
+/gsutil.vpython3 recipes
 
 # Extensionless tools we want and support scripts.
 /autoninja*                   recipes
@@ -28,6 +28,11 @@
 /repo_launcher                recipes
 /roll-dep*                    recipes
 /yapf*                        recipes
+
+# Additional files for cipd_bin_setup.{sh, bat},
+# including cipd/cipd.bat, cipd_client_version* and cipd_manifest*.
+/cipd*          recipes
+/.cipd_impl.ps1 recipes
 
 # Symlinks
 /cbuildbot      recipes

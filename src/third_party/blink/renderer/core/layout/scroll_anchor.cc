@@ -41,7 +41,7 @@ bool IsNGBlockFragmentationRoot(const LayoutNGBlockFlow* block_flow) {
 }  // anonymous namespace
 
 // With 100 unique strings, a 2^12 slot table has a false positive rate of ~2%.
-using ClassnameFilter = BloomFilter<12>;
+using ClassnameFilter = CountingBloomFilter<12>;
 using Corner = ScrollAnchor::Corner;
 
 ScrollAnchor::ScrollAnchor()
@@ -130,10 +130,11 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
     NOTREACHED();
   }
 
-  LayoutRect relative_bounds = LayoutRect(
-      scroller
-          ->LocalToVisibleContentQuad(FloatRect(local_bounds), layout_object)
-          .BoundingBox());
+  LayoutRect relative_bounds =
+      LayoutRect(scroller
+                     ->LocalToVisibleContentQuad(
+                         gfx::QuadF(gfx::RectF(local_bounds)), layout_object)
+                     .BoundingBox());
 
   return relative_bounds;
 }
@@ -249,6 +250,12 @@ static const String ComputeUniqueSelector(Node* anchor_node) {
   // of the DOM and can't be used as part of a selector. We fail in this case;
   // success isn't possible.
   if (anchor_node->IsPseudoElement()) {
+    return String();
+  }
+
+  // When the scroll anchor is a shadow DOM element, the selector may be applied
+  // to the top document. We fail in this case.
+  if (anchor_node->IsInShadowTree()) {
     return String();
   }
 
@@ -730,7 +737,7 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
     // and attempt to re-find the anchor. The user-visible effect should end up
     // roughly the same.
     ScrollOffset current_offset = scroller_->GetScrollOffset();
-    FloatRect bounding_box = anchor_object->AbsoluteBoundingBoxFloatRect();
+    gfx::RectF bounding_box = anchor_object->AbsoluteBoundingBoxRectF();
     gfx::PointF location_point =
         anchor_object->Style()->IsFlippedBlocksWritingMode()
             ? bounding_box.top_right()
@@ -739,7 +746,8 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
 
     ScrollOffset desired_offset = desired_point.OffsetFromOrigin();
     ScrollOffset delta =
-        ScrollOffset(ToRoundedVector2d(serialized_anchor.relative_offset));
+        ScrollOffset(serialized_anchor.relative_offset.X().ToFloat(),
+                     serialized_anchor.relative_offset.Y().ToFloat());
     desired_offset -= delta;
     scroller_->SetScrollOffset(desired_offset,
                                mojom::blink::ScrollType::kAnchoring);

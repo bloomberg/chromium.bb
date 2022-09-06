@@ -18,7 +18,6 @@ template<typename MatrixType> void real_qz(const MatrixType& m)
      RealQZ.h
   */
   using std::abs;
-  typedef typename MatrixType::Scalar Scalar;
   
   Index dim = m.cols();
   
@@ -52,17 +51,18 @@ template<typename MatrixType> void real_qz(const MatrixType& m)
   bool all_zeros = true;
   for (Index i=0; i<A.cols(); i++)
     for (Index j=0; j<i; j++) {
-      if (abs(qz.matrixT()(i,j))!=Scalar(0.0))
+      if (!numext::is_exactly_zero(abs(qz.matrixT()(i, j))))
       {
         std::cerr << "Error: T(" << i << "," << j << ") = " << qz.matrixT()(i,j) << std::endl;
         all_zeros = false;
       }
-      if (j<i-1 && abs(qz.matrixS()(i,j))!=Scalar(0.0))
+      if (j<i-1 && !numext::is_exactly_zero(abs(qz.matrixS()(i, j))))
       {
         std::cerr << "Error: S(" << i << "," << j << ") = " << qz.matrixS()(i,j) << std::endl;
         all_zeros = false;
       }
-      if (j==i-1 && j>0 && abs(qz.matrixS()(i,j))!=Scalar(0.0) && abs(qz.matrixS()(i-1,j-1))!=Scalar(0.0))
+      if (j==i-1 && j>0 && !numext::is_exactly_zero(abs(qz.matrixS()(i, j))) &&
+              !numext::is_exactly_zero(abs(qz.matrixS()(i - 1, j - 1))))
       {
         std::cerr << "Error: S(" << i << "," << j << ") = " << qz.matrixS()(i,j)  << " && S(" << i-1 << "," << j-1 << ") = " << qz.matrixS()(i-1,j-1) << std::endl;
         all_zeros = false;

@@ -8,11 +8,12 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.thatMatchesFirst;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,14 +55,14 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 
 /**
  *  Unit tests for {@link ImageDescriptionsDialog}
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class ImageDescriptionsDialogTest extends DummyUiActivityTestCase {
+public class ImageDescriptionsDialogTest extends BlankUiTestActivityTestCase {
     @Rule
     public JniMocker mJniMocker = new JniMocker();
 
@@ -175,7 +176,8 @@ public class ImageDescriptionsDialogTest extends DummyUiActivityTestCase {
     @SmallTest
     public void testHeaderAndButtonContent() {
         showDialog();
-        onView(thatMatchesFirst(withId(org.chromium.chrome.R.id.title)))
+        onView(allOf(isDescendantOfA(withId(org.chromium.chrome.R.id.title_container)),
+                       withId(org.chromium.chrome.R.id.title)))
                 .check(matches(withText("Get image descriptions?")));
         onView(withId(R.id.image_descriptions_dialog_content))
                 .check(matches(

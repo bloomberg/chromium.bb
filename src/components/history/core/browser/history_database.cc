@@ -9,11 +9,11 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,12 +22,13 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/sync/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "base/mac/backup_util.h"
 #endif
 
@@ -38,7 +39,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 51;
+const int kCurrentVersionNumber = 55;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -92,7 +93,9 @@ HistoryDatabase::HistoryDatabase(
            // Set the cache size. The page size, plus a little extra, times this
            // value, tells us how much memory the cache will use maximum.
            // 1000 * 4kB = 4MB
-           .cache_size = 1000}) {}
+           .cache_size = 1000}),
+      typed_url_metadata_db_(&db_, &meta_table_),
+      history_metadata_db_(&db_, &meta_table_) {}
 
 HistoryDatabase::~HistoryDatabase() = default;
 
@@ -108,7 +111,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!committer.Begin())
     return LogInitFailure(InitStep::TRANSACTION_BEGIN);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Exclude the history file from backups.
   base::mac::SetBackupExclusion(history_name);
 #endif
@@ -122,8 +125,14 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
     return LogInitFailure(InitStep::META_TABLE_INIT);
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
-      !InitSegmentTables() || !InitSyncTable() || !InitVisitAnnotationsTables())
+      !InitSegmentTables() || !typed_url_metadata_db_.Init() ||
+      !InitVisitAnnotationsTables()) {
     return LogInitFailure(InitStep::CREATE_TABLES);
+  }
+  if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType) &&
+      !history_metadata_db_.Init()) {
+    return LogInitFailure(InitStep::CREATE_TABLES);
+  }
   CreateMainURLIndex();
 
   // TODO(benjhayden) Remove at some point.
@@ -262,7 +271,7 @@ int HistoryDatabase::CountUniqueDomainsVisited(base::Time begin_time,
 
 void HistoryDatabase::BeginExclusiveMode() {
   // We need to use a PRAGMA statement here as the DB has already been created.
-  ignore_result(db_.Execute("PRAGMA locking_mode=EXCLUSIVE"));
+  std::ignore = db_.Execute("PRAGMA locking_mode=EXCLUSIVE");
 }
 
 // static
@@ -315,7 +324,7 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
 void HistoryDatabase::Vacuum() {
   DCHECK_EQ(0, db_.transaction_nesting()) <<
       "Can not have a transaction when vacuuming.";
-  ignore_result(db_.Execute("VACUUM"));
+  std::ignore = db_.Execute("VACUUM");
 }
 
 void HistoryDatabase::TrimMemory() {
@@ -372,12 +381,16 @@ void HistoryDatabase::UpdateEarlyExpirationThreshold(base::Time threshold) {
   cached_early_expiration_threshold_ = threshold;
 }
 
-sql::Database& HistoryDatabase::GetDB() {
-  return db_;
+TypedURLSyncMetadataDatabase* HistoryDatabase::GetTypedURLMetadataDB() {
+  return &typed_url_metadata_db_;
 }
 
-sql::MetaTable& HistoryDatabase::GetMetaTable() {
-  return meta_table_;
+HistorySyncMetadataDatabase* HistoryDatabase::GetHistoryMetadataDB() {
+  return &history_metadata_db_;
+}
+
+sql::Database& HistoryDatabase::GetDB() {
+  return db_;
 }
 
 // Migration -------------------------------------------------------------------
@@ -403,7 +416,7 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   }
 
   if (cur_version == 16) {
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     // In this version we bring the time format on Mac & Linux in sync with the
     // Windows version so that profiles can be moved between computers.
     MigrateTimeEpoch();
@@ -447,7 +460,7 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
 
   if (cur_version == 21) {
     // The android_urls table's data schemal was changed in version 21.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     if (!MigrateToVersion22())
       return LogMigrationFailure(21);
 #endif
@@ -591,7 +604,7 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
     std::vector<URLID> visited_url_rowids_sorted;
     if (!GetAllVisitedURLRowidsForMigrationToVersion40(
             &visited_url_rowids_sorted) ||
-        !CleanTypedURLOrphanedMetadataForMigrationToVersion40(
+        !typed_url_metadata_db_.CleanOrphanedMetadataForMigrationToVersion40(
             visited_url_rowids_sorted)) {
       return LogMigrationFailure(40);
     }
@@ -667,6 +680,34 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
     meta_table_.SetVersionNumber(cur_version);
   }
 
+  if (cur_version == 51) {
+    if (!MigrateEmbedderDownloadData())
+      return LogMigrationFailure(51);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 52) {
+    if (!MigrateContentAnnotationsAddSearchMetadata())
+      return LogMigrationFailure(52);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 53) {
+    if (!MigrateContentAnnotationsAddAlternativeTitle())
+      return LogMigrationFailure(53);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 54) {
+    if (!MigrateVisitsAutoincrementIdAndAddOriginatorColumns())
+      return LogMigrationFailure(54);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
   // =========================       ^^ new migration code goes here ^^
   // ADDING NEW MIGRATION CODE
   // =========================
@@ -691,21 +732,21 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   return sql::INIT_OK;
 }
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 void HistoryDatabase::MigrateTimeEpoch() {
   // Update all the times in the URLs and visits table in the main database.
-  ignore_result(db_.Execute(
+  std::ignore = db_.Execute(
       "UPDATE urls "
       "SET last_visit_time = last_visit_time + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);"));
-  ignore_result(db_.Execute(
+      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);");
+  std::ignore = db_.Execute(
       "UPDATE visits "
       "SET visit_time = visit_time + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);"));
-  ignore_result(db_.Execute(
+      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);");
+  std::ignore = db_.Execute(
       "UPDATE segment_usage "
       "SET time_slot = time_slot + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);"));
+      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);");
 }
 #endif
 

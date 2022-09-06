@@ -22,9 +22,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -460,6 +460,13 @@ void FakeBluetoothDeviceClient::Connect(const dbus::ObjectPath& object_path,
   }
 
   AddInputDeviceIfNeeded(object_path, properties);
+}
+
+void FakeBluetoothDeviceClient::ConnectClassic(
+    const dbus::ObjectPath& object_path,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  Connect(object_path, std::move(callback), std::move(error_callback));
 }
 
 void FakeBluetoothDeviceClient::ConnectLE(const dbus::ObjectPath& object_path,

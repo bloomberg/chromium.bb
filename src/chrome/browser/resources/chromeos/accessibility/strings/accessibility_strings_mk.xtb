@@ -537,6 +537,7 @@
 <translation id="4601367666219428522">таб. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Се игнорира следното притискање на копче</translation>
 <translation id="4623097797855662355">Отпечаток</translation>
+<translation id="4624970070706497034">TalkBack веќе не обезбедува приспособување за уредите Chromebook. Сѐ уште може да ја користите, но користете ги стандардните кратенки од тастатура на TalkBack. Притиснете „Пребарување“ + A, а потоа K за да ги видите достапните кратенки. Ако сепак сакате да ја користите TalkBack, повторно притиснете ја наредбата.</translation>
 <translation id="463135993322337640">Притиснете ChromeVox o, n за да дознаете што има ново</translation>
 <translation id="4649220074413114917">Допирањето на екранот со два прста може да се користи за запирање тековен говор. Ова е корисно ако не сакате ChromeVox да прочита нешто. За да продолжите, допрете го екранот со два прста.</translation>
 <translation id="4660783501463101648">Верзијата Classic е остранета. Копчето на тастатурата за повторно префрлање на ChromeVox Classic е отстрането.</translation>
@@ -619,7 +620,6 @@
 <translation id="5170206230005240598">Овозможени се описи со брајово писмо</translation>
 <translation id="5183440668879371625">Претходен брајов ред</translation>
 <translation id="5189244881767082992">Линија</translation>
-<translation id="5234747236692380506">напиши <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Боја на коса од пченка</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Крај</translation>
@@ -667,6 +667,7 @@
 <translation id="5522423213731659107">Брзата ориентација заврши!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Сива „Гејнзборо“</translation>
+<translation id="554893713779400387">Вклучи/исклучи диктат</translation>
 <translation id="5549179427201066174">Вклучување или исклучување на звучни повратни информации (звучни сигнали)</translation>
 <translation id="556042886152191864">Копче</translation>
 <translation id="5561345396546889625">Следен список</translation>
@@ -685,6 +686,8 @@
 <translation id="5623842676595125836">Дневник</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Графички симбол</translation>
+<translation id="5648939288050772726">Честитки! Ги научивте основните работи за успешно користење на ChromeVox. Запомнете дека може да го отворите менито со наредби на ChromeVox во секое време, така што ќе притиснете „Пребарување + Точка“. За да дознаете повеќе за ChromeVox и Chrome OS, одете на следниве статии.
+    Ако завршивте со упатството, употребете го ChromeVox за навигација до копчето „Затвори“ и кликнете на него.</translation>
 <translation id="5653397561111110475">Користете ги функциите за пристапност на екранот на допир на Chromebook</translation>
 <translation id="5655682562155942719">Скокни наредби</translation>
 <translation id="56637627897541303">Место за текст</translation>
@@ -794,6 +797,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{колона}one{# колона}other{# колони}}</translation>
 <translation id="6444046323172968959">Дијалог за предупредување</translation>
 <translation id="6452403590345320472">Содржина</translation>
+<translation id="6457542714329819968">напиши</translation>
 <translation id="6468049171101508116">Копче „Следно“</translation>
 <translation id="646954774886932461">Индекс</translation>
 <translation id="6475604559827479857">Боја за нагласени зборови:</translation>
@@ -966,8 +970,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Природен глас</translation>
 <translation id="7714340021005120797">Нема следно комбинирано поле</translation>
-<translation id="772146615414628379">Честитки! Ги научивте основните работи за успешно користење на ChromeVox. Запомнете дека може да го отворите менито со наредби на ChromeVox во секое време, така што ќе притиснете „Пребарување + Точка“. За да дознаете повеќе за ChromeVox и Chrome OS, одете на следниве статии.
-    Ако завршивте со упатството, употребете го ChromeVox за навигација до копчето „Затвори“ и кликнете на него.</translation>
 <translation id="7724603315864178912">Исечи</translation>
 <translation id="7731785449856576010">Нема следен виџет за аудиовизуелни содржини</translation>
 <translation id="7735498529470878067">„Истражувај со допир“ може да ви помогне брзо да ги разгледате работите на екранот.</translation>
@@ -1169,6 +1171,7 @@
 <translation id="9223032053830369045">Темноцрвена</translation>
 <translation id="923331726185079994">ChromeVox е ажуриран</translation>
 <translation id="93384979447910801">Темна морскозелена</translation>
+<translation id="937605981140327129">TalkBack не е инсталирана во моментов. Инсталирајте ја Android AccessibilitySuite преку Play Store и обидете се повторно.</translation>
 <translation id="948171205378458592">Намали брзина на говор</translation>
 <translation id="957570623732056069">Повлечете налево или надесно со еден прст за да се движите низ лекцијава</translation>
 <translation id="958854023026327378">Повлечете надолу со еден прст</translation>

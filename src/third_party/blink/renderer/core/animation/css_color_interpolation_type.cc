@@ -111,10 +111,36 @@ Color CSSColorInterpolationType::GetRGBA(const InterpolableValue& value) {
   // Prevent dividing 0
   if (color[kAlpha] == 0)
     return Color::kTransparent;
-  return Color(MakeRGBA(std::round(color[kRed] / color[kAlpha]),
-                        std::round(color[kGreen] / color[kAlpha]),
-                        std::round(color[kBlue] / color[kAlpha]),
-                        color[kAlpha]));
+
+  return Color(MakeRGBA(ClampTo<int>(std::round(color[kRed] / color[kAlpha])),
+                        ClampTo<int>(std::round(color[kGreen] / color[kAlpha])),
+                        ClampTo<int>(std::round(color[kBlue] / color[kAlpha])),
+                        ClampTo<int>(color[kAlpha])));
+}
+
+bool CSSColorInterpolationType::IsRGBA(const InterpolableValue& value) {
+  if (!value.IsList())
+    return false;
+
+  const InterpolableList& list = To<InterpolableList>(value);
+  if (list.length() != kInterpolableColorIndexCount)
+    return false;
+
+  for (wtf_size_t i = 0; i < list.length(); i++) {
+    if (!list.Get(i)->IsNumber())
+      return false;
+  }
+
+  // Values stored outside of the RGBA range of indices indicate fractional
+  // blending amounts and are important for resolving the color. If any of these
+  // store a non-zero value, then the interpolated color is not the same as the
+  // color produced by simply looking at the RGBA values.
+  for (wtf_size_t i = kCurrentcolor; i < list.length(); i++) {
+    if (To<InterpolableNumber>(*(list.Get(i))).Value() != 0)
+      return false;
+  }
+
+  return true;
 }
 
 static void AddPremultipliedColor(double& red,

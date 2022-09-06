@@ -52,12 +52,8 @@ InstWrapper& InstWrapper::operator=(InstWrapper&& other) noexcept {
     return *this;
 }
 
-testing::AssertionResult InstWrapper::CheckCreate(VkResult result_to_check) {
-    VkResult res = functions->vkCreateInstance(create_info.get(), callbacks, &inst);
-    if (res == result_to_check)
-        return testing::AssertionSuccess();
-    else
-        return testing::AssertionFailure() << " Expected VkCreateInstance to return " << result_to_check << " but got " << res;
+void InstWrapper::CheckCreate(VkResult result_to_check) {
+    ASSERT_EQ(result_to_check, functions->vkCreateInstance(create_info.get(), callbacks, &inst));
 }
 
 std::vector<VkPhysicalDevice> InstWrapper::GetPhysDevs(uint32_t phys_dev_count, VkResult result_to_check) {
@@ -69,12 +65,34 @@ std::vector<VkPhysicalDevice> InstWrapper::GetPhysDevs(uint32_t phys_dev_count, 
     return physical_devices;
 }
 
+std::vector<VkPhysicalDevice> InstWrapper::GetPhysDevs(VkResult result_to_check) {
+    uint32_t physical_count = 0;
+    VkResult res = functions->vkEnumeratePhysicalDevices(inst, &physical_count, nullptr);
+    std::vector<VkPhysicalDevice> physical_devices;
+    physical_devices.resize(physical_count);
+    res = functions->vkEnumeratePhysicalDevices(inst, &physical_count, physical_devices.data());
+    EXPECT_EQ(result_to_check, res);
+    return physical_devices;
+}
+
 VkPhysicalDevice InstWrapper::GetPhysDev(VkResult result_to_check) {
     uint32_t physical_count = 1;
     VkPhysicalDevice physical_device = VK_NULL_HANDLE;
     VkResult res = this->functions->vkEnumeratePhysicalDevices(inst, &physical_count, &physical_device);
     EXPECT_EQ(result_to_check, res);
     return physical_device;
+}
+
+std::vector<VkExtensionProperties> EnumerateDeviceExtensions(InstWrapper const& inst, VkPhysicalDevice physical_device) {
+    uint32_t ext_count = 1;
+    VkResult res = inst.functions->vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &ext_count, nullptr);
+    EXPECT_EQ(VK_SUCCESS, res);
+    std::vector<VkExtensionProperties> extensions;
+    extensions.resize(ext_count);
+    res = inst.functions->vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &ext_count, extensions.data());
+    EXPECT_EQ(VK_SUCCESS, res);
+    extensions.resize(ext_count);
+    return extensions;
 }
 
 DeviceWrapper::DeviceWrapper(InstWrapper& inst_wrapper, VkAllocationCallbacks* callbacks) noexcept
@@ -111,33 +129,33 @@ VkResult CreateDebugUtilsMessenger(DebugUtilsWrapper& debug_utils) {
 
 void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsLogger& logger) {
     create_info.add_extension("VK_EXT_debug_utils");
-    create_info.inst_info.pNext = logger.get();
+    create_info.instance_info.pNext = logger.get();
 }
 void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsWrapper& wrapper) {
     create_info.add_extension("VK_EXT_debug_utils");
-    create_info.inst_info.pNext = wrapper.get();
+    create_info.instance_info.pNext = wrapper.get();
 }
 
-PlatformShimWrapper::PlatformShimWrapper(DebugMode debug_mode) noexcept : debug_mode(debug_mode) {
+PlatformShimWrapper::PlatformShimWrapper() noexcept {
 #if defined(WIN32) || defined(__APPLE__)
     shim_library = LibraryWrapper(SHIM_LIBRARY_NAME);
-    auto get_platform_shim_func = shim_library.get_symbol<PFN_get_platform_shim>(GET_PLATFORM_SHIM_STR);
+    PFN_get_platform_shim get_platform_shim_func = shim_library.get_symbol(GET_PLATFORM_SHIM_STR);
     assert(get_platform_shim_func != NULL && "Must be able to get \"platform_shim\"");
     platform_shim = get_platform_shim_func();
 #elif defined(__linux__) || defined(__FreeBSD__)
     platform_shim = get_platform_shim();
 #endif
-    platform_shim->reset(debug_mode);
+    platform_shim->reset();
 
     // leave it permanently on at full blast
     set_env_var("VK_LOADER_DEBUG", "all");
 }
-PlatformShimWrapper::~PlatformShimWrapper() noexcept { platform_shim->reset(debug_mode); }
+PlatformShimWrapper::~PlatformShimWrapper() noexcept { platform_shim->reset(); }
 
 TestICDHandle::TestICDHandle() noexcept {}
 TestICDHandle::TestICDHandle(fs::path const& icd_path) noexcept : icd_library(icd_path) {
-    proc_addr_get_test_icd = icd_library.get_symbol<GetNewTestICDFunc>(GET_TEST_ICD_FUNC_STR);
-    proc_addr_reset_icd = icd_library.get_symbol<GetNewTestICDFunc>(RESET_ICD_FUNC_STR);
+    proc_addr_get_test_icd = icd_library.get_symbol(GET_TEST_ICD_FUNC_STR);
+    proc_addr_reset_icd = icd_library.get_symbol(RESET_ICD_FUNC_STR);
 }
 TestICD& TestICDHandle::get_test_icd() noexcept {
     assert(proc_addr_get_test_icd != NULL && "symbol must be loaded before use");
@@ -148,11 +166,12 @@ TestICD& TestICDHandle::reset_icd() noexcept {
     return *proc_addr_reset_icd();
 }
 fs::path TestICDHandle::get_icd_full_path() noexcept { return icd_library.lib_path; }
+fs::path TestICDHandle::get_icd_manifest_path() noexcept { return manifest_path; }
 
 TestLayerHandle::TestLayerHandle() noexcept {}
 TestLayerHandle::TestLayerHandle(fs::path const& layer_path) noexcept : layer_library(layer_path) {
-    proc_addr_get_test_layer = layer_library.get_symbol<GetNewTestLayerFunc>(GET_TEST_LAYER_FUNC_STR);
-    proc_addr_reset_layer = layer_library.get_symbol<GetNewTestLayerFunc>(RESET_LAYER_FUNC_STR);
+    proc_addr_get_test_layer = layer_library.get_symbol(GET_TEST_LAYER_FUNC_STR);
+    proc_addr_reset_layer = layer_library.get_symbol(RESET_LAYER_FUNC_STR);
 }
 TestLayer& TestLayerHandle::get_test_layer() noexcept {
     assert(proc_addr_get_test_layer != NULL && "symbol must be loaded before use");
@@ -163,111 +182,316 @@ TestLayer& TestLayerHandle::reset_layer() noexcept {
     return *proc_addr_reset_layer();
 }
 fs::path TestLayerHandle::get_layer_full_path() noexcept { return layer_library.lib_path; }
+fs::path TestLayerHandle::get_layer_manifest_path() noexcept { return manifest_path; }
 
-FrameworkEnvironment::FrameworkEnvironment(DebugMode debug_mode) noexcept
-    : platform_shim(debug_mode),
-      null_folder(FRAMEWORK_BUILD_DIRECTORY, "null_dir", debug_mode),
-      icd_folder(FRAMEWORK_BUILD_DIRECTORY, "icd_manifests", debug_mode),
-      explicit_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "explicit_layer_manifests", debug_mode),
-      implicit_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "implicit_layer_manifests", debug_mode),
+FrameworkEnvironment::FrameworkEnvironment() noexcept
+    : platform_shim(),
+      null_folder(FRAMEWORK_BUILD_DIRECTORY, "null_dir"),
+      icd_folder(FRAMEWORK_BUILD_DIRECTORY, "icd_manifests"),
+      icd_env_vars_folder(FRAMEWORK_BUILD_DIRECTORY, "icd_env_vars_manifests"),
+      explicit_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "explicit_layer_manifests"),
+      explicit_env_var_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "explicit_env_var_layer_folder"),
+      explicit_add_env_var_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "explicit_add_env_var_layer_folder"),
+      implicit_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "implicit_layer_manifests"),
+      override_layer_folder(FRAMEWORK_BUILD_DIRECTORY, "override_layer_manifests"),
       vulkan_functions() {
     platform_shim->redirect_all_paths(null_folder.location());
-
     platform_shim->set_path(ManifestCategory::icd, icd_folder.location());
     platform_shim->set_path(ManifestCategory::explicit_layer, explicit_layer_folder.location());
     platform_shim->set_path(ManifestCategory::implicit_layer, implicit_layer_folder.location());
 }
 
-void FrameworkEnvironment::AddICD(TestICDDetails icd_details, const std::string& json_name) noexcept {
-    ManifestICD icd_manifest;
-    icd_manifest.lib_path = fs::fixup_backslashes_in_path(icd_details.icd_path);
-    icd_manifest.api_version = icd_details.api_version;
-    auto driver_loc = icd_folder.write(json_name, icd_manifest);
-    platform_shim->add_manifest(ManifestCategory::icd, driver_loc);
-}
-void FrameworkEnvironment::AddImplicitLayer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
-    for (auto& layer : layer_manifest.layers) {
-        if (!layer.lib_path.str().empty()) {
-            std::string new_layer_name = layer.name + "_" + layer.lib_path.filename().str();
-
-            auto new_layer_location = implicit_layer_folder.copy_file(layer.lib_path, new_layer_name);
-            layer.lib_path = new_layer_location;
-        }
+void FrameworkEnvironment::add_icd(TestICDDetails icd_details) noexcept {
+    size_t cur_icd_index = icds.size();
+    fs::FolderManager* folder = &icd_folder;
+    if (icd_details.discovery_type == ManifestDiscoveryType::env_var ||
+        icd_details.discovery_type == ManifestDiscoveryType::add_env_var) {
+        folder = &icd_env_vars_folder;
     }
+    if (!icd_details.is_fake) {
+        fs::path new_driver_name = fs::path(icd_details.icd_manifest.lib_path).stem() + "_" + std::to_string(cur_icd_index) +
+                                   fs::path(icd_details.icd_manifest.lib_path).extension();
 
-    auto layer_loc = implicit_layer_folder.write(json_name, layer_manifest);
-    platform_shim->add_manifest(ManifestCategory::implicit_layer, layer_loc);
-}
-void FrameworkEnvironment::AddExplicitLayer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
-    for (auto& layer : layer_manifest.layers) {
-        if (!layer.lib_path.str().empty()) {
-            std::string new_layer_name = layer.name + "_" + layer.lib_path.filename().str();
-
-            auto new_layer_location = explicit_layer_folder.copy_file(layer.lib_path, new_layer_name);
-            layer.lib_path = new_layer_location;
-        }
-    }
-
-    auto layer_loc = explicit_layer_folder.write(json_name, layer_manifest);
-    platform_shim->add_manifest(ManifestCategory::explicit_layer, layer_loc);
-}
-
-EnvVarICDOverrideShim::EnvVarICDOverrideShim(DebugMode debug_mode) noexcept : FrameworkEnvironment(debug_mode) {}
-
-void EnvVarICDOverrideShim::SetEnvOverrideICD(const char* icd_path, const char* manifest_name) noexcept {
-    ManifestICD icd_manifest;
-    icd_manifest.lib_path = icd_path;
-    icd_manifest.api_version = VK_MAKE_VERSION(1, 0, 0);
-
-    icd_folder.write(manifest_name, icd_manifest);
-    set_env_var("VK_ICD_FILENAMES", (icd_folder.location() / manifest_name).str());
-
-    driver_wrapper = LibraryWrapper(fs::path(icd_path));
-
-    reset_icd = driver_wrapper.get_symbol<GetNewTestICDFunc>(RESET_ICD_FUNC_STR);
-}
-
-SingleICDShim::SingleICDShim(TestICDDetails icd_details, DebugMode debug_mode) noexcept : FrameworkEnvironment(debug_mode) {
-    icd_handle = TestICDHandle(icd_details.icd_path);
-    icd_handle.reset_icd();
-
-    AddICD(icd_details, "test_icd.json");
-}
-TestICD& SingleICDShim::get_test_icd() noexcept { return icd_handle.get_test_icd(); }
-TestICD& SingleICDShim::reset_icd() noexcept { return icd_handle.reset_icd(); }
-fs::path SingleICDShim::get_test_icd_path() noexcept { return icd_handle.get_icd_full_path(); }
-
-MultipleICDShim::MultipleICDShim(std::vector<TestICDDetails> icd_details_vector, DebugMode debug_mode) noexcept
-    : FrameworkEnvironment(debug_mode) {
-    uint32_t i = 0;
-    for (auto& test_icd_detail : icd_details_vector) {
-        fs::path new_driver_name =
-            fs::path(test_icd_detail.icd_path).stem() + "_" + std::to_string(i) + fs::path(test_icd_detail.icd_path).extension();
-
-        auto new_driver_location = icd_folder.copy_file(test_icd_detail.icd_path, new_driver_name.str());
+        auto new_driver_location = folder->copy_file(icd_details.icd_manifest.lib_path, new_driver_name.str());
 
         icds.push_back(TestICDHandle(new_driver_location));
         icds.back().reset_icd();
-        test_icd_detail.icd_path = new_driver_location.c_str();
-        AddICD(test_icd_detail, std::string("test_icd_") + std::to_string(i) + ".json");
-        i++;
+        icd_details.icd_manifest.lib_path = new_driver_location.str();
+    }
+    std::string full_json_name = icd_details.json_name + "_" + std::to_string(cur_icd_index) + ".json";
+
+    icds.back().manifest_path = folder->write_manifest(full_json_name, icd_details.icd_manifest.get_manifest_str());
+    switch (icd_details.discovery_type) {
+        default:
+        case (ManifestDiscoveryType::generic):
+            platform_shim->add_manifest(ManifestCategory::icd, icds.back().manifest_path);
+            break;
+        case (ManifestDiscoveryType::env_var):
+            if (!env_var_vk_icd_filenames.empty()) {
+                env_var_vk_icd_filenames += OS_ENV_VAR_LIST_SEPARATOR;
+            }
+            env_var_vk_icd_filenames += (folder->location() / full_json_name).str();
+            set_env_var("VK_DRIVER_FILES", env_var_vk_icd_filenames);
+            break;
+        case (ManifestDiscoveryType::add_env_var):
+            if (!add_env_var_vk_icd_filenames.empty()) {
+                add_env_var_vk_icd_filenames += OS_ENV_VAR_LIST_SEPARATOR;
+            }
+            add_env_var_vk_icd_filenames += (folder->location() / full_json_name).str();
+            set_env_var("VK_ADD_DRIVER_FILES", add_env_var_vk_icd_filenames);
+            break;
+        case (ManifestDiscoveryType::none):
+            break;
     }
 }
-TestICD& MultipleICDShim::get_test_icd(int index) noexcept { return icds[index].get_test_icd(); }
-TestICD& MultipleICDShim::reset_icd(int index) noexcept { return icds[index].reset_icd(); }
-fs::path MultipleICDShim::get_test_icd_path(int index) noexcept { return icds[index].get_icd_full_path(); }
 
-FakeBinaryICDShim::FakeBinaryICDShim(TestICDDetails read_icd_details, TestICDDetails fake_icd_details,
-                                     DebugMode debug_mode) noexcept
-    : FrameworkEnvironment(debug_mode) {
-    real_icd = TestICDHandle(read_icd_details.icd_path);
-    real_icd.reset_icd();
-
-    // Must use name that isn't a substring of eachother, otherwise loader removes the other ICD
-    // EX test_icd.json is fully contained in fake_test_icd.json, causing test_icd.json to not be loaded
-    AddICD(fake_icd_details, "test_fake_icd.json");
-    AddICD(read_icd_details, "test_icd.json");
+void FrameworkEnvironment::add_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    add_layer_impl(TestLayerDetails{layer_manifest, json_name}, ManifestCategory::implicit_layer);
 }
-TestICD& FakeBinaryICDShim::get_test_icd() noexcept { return real_icd.get_test_icd(); }
-TestICD& FakeBinaryICDShim::reset_icd() noexcept { return real_icd.reset_icd(); }
-fs::path FakeBinaryICDShim::get_test_icd_path() noexcept { return real_icd.get_icd_full_path(); }
+void FrameworkEnvironment::add_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    add_layer_impl(TestLayerDetails{layer_manifest, json_name}, ManifestCategory::explicit_layer);
+}
+void FrameworkEnvironment::add_fake_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    add_layer_impl(TestLayerDetails{layer_manifest, json_name}.set_is_fake(true), ManifestCategory::implicit_layer);
+}
+void FrameworkEnvironment::add_fake_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    add_layer_impl(TestLayerDetails{layer_manifest, json_name}.set_is_fake(true), ManifestCategory::explicit_layer);
+}
+void FrameworkEnvironment::add_implicit_layer(TestLayerDetails layer_details) noexcept {
+    add_layer_impl(layer_details, ManifestCategory::implicit_layer);
+}
+void FrameworkEnvironment::add_explicit_layer(TestLayerDetails layer_details) noexcept {
+    add_layer_impl(layer_details, ManifestCategory::explicit_layer);
+}
+
+void FrameworkEnvironment::add_layer_impl(TestLayerDetails layer_details, ManifestCategory category) {
+    fs::FolderManager* fs_ptr = &explicit_layer_folder;
+    switch (layer_details.discovery_type) {
+        default:
+        case (ManifestDiscoveryType::generic):
+            if (category == ManifestCategory::implicit_layer) fs_ptr = &implicit_layer_folder;
+            break;
+        case (ManifestDiscoveryType::env_var):
+            fs_ptr = &explicit_env_var_layer_folder;
+            if (!env_var_vk_layer_paths.empty()) {
+                env_var_vk_layer_paths += OS_ENV_VAR_LIST_SEPARATOR;
+            }
+            env_var_vk_layer_paths += explicit_env_var_layer_folder.location().str();
+            set_env_var("VK_LAYER_PATH", env_var_vk_layer_paths);
+            break;
+        case (ManifestDiscoveryType::add_env_var):
+            fs_ptr = &explicit_add_env_var_layer_folder;
+            if (!add_env_var_vk_layer_paths.empty()) {
+                add_env_var_vk_layer_paths += OS_ENV_VAR_LIST_SEPARATOR;
+            }
+            add_env_var_vk_layer_paths += explicit_add_env_var_layer_folder.location().str();
+            set_env_var("VK_ADD_LAYER_PATH", add_env_var_vk_layer_paths);
+            break;
+        case (ManifestDiscoveryType::override_folder):
+            fs_ptr = &override_layer_folder;
+            break;
+        case (ManifestDiscoveryType::none):
+            break;
+    }
+    auto& folder = *fs_ptr;
+    size_t new_layers_start = layers.size();
+    for (auto& layer : layer_details.layer_manifest.layers) {
+        size_t cur_layer_index = layers.size();
+        if (!layer.lib_path.str().empty()) {
+            std::string new_layer_name = layer.name + "_" + std::to_string(cur_layer_index) + "_" + layer.lib_path.filename().str();
+
+            auto new_layer_location = folder.copy_file(layer.lib_path, new_layer_name);
+
+            // Don't load the layer binary if using any of the wrap objects layers, since it doesn't export the same interface
+            // functions
+            if (!layer_details.is_fake &&
+                layer.lib_path.stem().str().find(fs::path(TEST_LAYER_WRAP_OBJECTS).stem().str()) == std::string::npos) {
+                layers.push_back(TestLayerHandle(new_layer_location));
+                layers.back().reset_layer();
+            }
+            layer.lib_path = new_layer_location;
+        }
+    }
+    if (layer_details.discovery_type != ManifestDiscoveryType::none) {
+        auto layer_loc = folder.write_manifest(layer_details.json_name, layer_details.layer_manifest.get_manifest_str());
+        platform_shim->add_manifest(category, layer_loc);
+        for (size_t i = new_layers_start; i < layers.size(); i++) {
+            layers.at(i).manifest_path = layer_loc;
+        }
+    }
+}
+
+TestICD& FrameworkEnvironment::get_test_icd(size_t index) noexcept { return icds[index].get_test_icd(); }
+TestICD& FrameworkEnvironment::reset_icd(size_t index) noexcept { return icds[index].reset_icd(); }
+fs::path FrameworkEnvironment::get_test_icd_path(size_t index) noexcept { return icds[index].get_icd_full_path(); }
+fs::path FrameworkEnvironment::get_icd_manifest_path(size_t index) noexcept { return icds[index].get_icd_manifest_path(); }
+
+TestLayer& FrameworkEnvironment::get_test_layer(size_t index) noexcept { return layers[index].get_test_layer(); }
+TestLayer& FrameworkEnvironment::reset_layer(size_t index) noexcept { return layers[index].reset_layer(); }
+fs::path FrameworkEnvironment::get_test_layer_path(size_t index) noexcept { return layers[index].get_layer_full_path(); }
+fs::path FrameworkEnvironment::get_layer_manifest_path(size_t index) noexcept { return layers[index].get_layer_manifest_path(); }
+
+void setup_WSI_in_ICD(TestICD& icd) {
+    icd.enable_icd_wsi = true;
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_KHR_android_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_EXT_directfb_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_FUCHSIA_imagepipe_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_GGP
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_GGP_stream_descriptor_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_IOS_MVK
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_MVK_ios_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_MVK_macos_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_METAL_EXT
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_EXT_metal_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_QNX_screen_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_VI_NN
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_NN_vi_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_XCB_KHR
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_KHR_xcb_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_KHR_xlib_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_WAYLAND_KHR
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_KHR_wayland_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    icd.add_instance_extensions({"VK_KHR_surface", "VK_KHR_win32_surface"});
+#endif
+}
+void setup_WSI_in_create_instance(InstWrapper& inst) {
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_KHR_android_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_EXT_directfb_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_FUCHSIA_imagepipe_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_GGP
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_GGP_stream_descriptor_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_IOS_MVK
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_MVK_ios_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_MVK_macos_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_METAL_EXT
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_EXT_metal_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_QNX_screen_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_VI_NN
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_NN_vi_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_XCB_KHR
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_KHR_xcb_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_KHR_xlib_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_WAYLAND_KHR
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_KHR_wayland_surface"});
+#endif
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    inst.create_info.add_extensions({"VK_KHR_surface", "VK_KHR_win32_surface"});
+#endif
+}
+VkSurfaceKHR create_surface(InstWrapper& inst, const char* api_selection) {
+    VkSurfaceKHR surface{};
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+    PFN_vkCreateAndroidSurfaceKHR pfn_CreateSurface = inst.load("vkCreateAndroidSurfaceKHR");
+    VkAndroidSurfaceCreateInfoKHR surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    PFN_vkCreateDirectFBSurfaceEXT pfn_CreateSurface = inst.load("vkCreateDirectFBSurfaceEXT");
+    VkDirectFBSurfaceCreateInfoEXT surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    PFN_vkCreateImagePipeSurfaceFUCHSIA pfn_CreateSurface = inst.load("vkCreateImagePipeSurfaceFUCHSIA");
+    VkImagePipeSurfaceCreateInfoFUCHSIA surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_GGP
+    PFN__vkCreateStreamDescriptorSurfaceGGP pfn_CreateSurface = inst.load("vkCreateStreamDescriptorSurfaceGGP");
+    VkStreamDescriptorSurfaceCreateInfoGGP surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_IOS_MVK
+    PFN_vkCreateIOSSurfaceMVK pfn_CreateSurface = inst.load("vkCreateIOSSurfaceMVK");
+    VkIOSSurfaceCreateInfoMVK surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+    if (string_eq(api_selection, "VK_USE_PLATFORM_MACOS_MVK")) {
+        PFN_vkCreateMacOSSurfaceMVK pfn_CreateSurface = inst.load("vkCreateMacOSSurfaceMVK");
+        VkMacOSSurfaceCreateInfoMVK surf_create_info{};
+        EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+    }
+#endif
+#ifdef VK_USE_PLATFORM_METAL_EXT
+    if (string_eq(api_selection, "VK_USE_PLATFORM_METAL_EXT")) {
+        PFN_vkCreateMetalSurfaceEXT pfn_CreateSurface = inst.load("vkCreateMetalSurfaceEXT");
+        VkMetalSurfaceCreateInfoEXT surf_create_info{};
+        EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+    }
+#endif
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+    PFN_vkCreateScreenSurfaceQNX pfn_CreateSurface = inst.load("vkCreateScreenSurfaceQNX");
+    VkScreenSurfaceCreateInfoQNX surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_VI_NN
+    PFN_vkCreateViSurfaceNN pfn_CreateSurface = inst.load("vkCreateViSurfaceNN");
+    VkViSurfaceCreateInfoNN surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    PFN_vkCreateWin32SurfaceKHR pfn_CreateSurface = inst.load("vkCreateWin32SurfaceKHR");
+    VkWin32SurfaceCreateInfoKHR surf_create_info{};
+    EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+#endif
+
+#ifdef VK_USE_PLATFORM_XCB_KHR
+    if (string_eq(api_selection, "VK_USE_PLATFORM_XCB_KHR")) {
+        PFN_vkCreateXcbSurfaceKHR pfn_CreateSurface = inst.load("vkCreateXcbSurfaceKHR");
+        VkXcbSurfaceCreateInfoKHR surf_create_info{};
+        EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+    }
+#endif
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+    if (string_eq(api_selection, "VK_USE_PLATFORM_XLIB_KHR")) {
+        PFN_vkCreateXlibSurfaceKHR pfn_CreateSurface = inst.load("vkCreateXlibSurfaceKHR");
+        VkXlibSurfaceCreateInfoKHR surf_create_info{};
+        EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+    }
+#endif
+#ifdef VK_USE_PLATFORM_WAYLAND_KHR
+    if (string_eq(api_selection, "VK_USE_PLATFORM_WAYLAND_KHR")) {
+        PFN_vkCreateWaylandSurfaceKHR pfn_CreateSurface = inst.load("vkCreateWaylandSurfaceKHR");
+        VkWaylandSurfaceCreateInfoKHR surf_create_info{};
+        EXPECT_EQ(VK_SUCCESS, pfn_CreateSurface(inst, &surf_create_info, nullptr, &surface));
+    }
+#endif
+
+    return surface;
+}

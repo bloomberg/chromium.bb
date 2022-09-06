@@ -89,7 +89,6 @@ tf_python_pybind_extension(
     name = "pywrap_tensor_test_util",
     testonly = True,
     srcs = ["pywrap_tensor_test_util.cc"],
-    module_name = "pywrap_tensor_test_util",
     deps = [
         ":pywrap_tfe_lib",
         "//tensorflow/c:tf_status_helper",
@@ -226,7 +225,6 @@ tf_python_pybind_extension(
     name = "custom_device_testutil",
     testonly = True,
     srcs = ["custom_device_testutil.cc"],
-    module_name = "custom_device_testutil",
     deps = [
         "//tensorflow/c:c_api",
         "//tensorflow/c:tf_status_helper",
@@ -426,7 +424,6 @@ cuda_py_test(
     srcs = ["core_test.py"],
     python_version = "PY3",
     tags = [
-        "no_oss_py310",  # TODO(b/209160947)
         "notsan",  # TODO(b/183962087)
     ],
     deps = [
@@ -508,7 +505,6 @@ cuda_py_test(
         ":context",
         ":def_function",
         ":function",
-        ":function_cache",
         ":test",
         "//tensorflow/python:clip_ops",
         "//tensorflow/python:constant_op",
@@ -532,46 +528,6 @@ cuda_py_test(
         "//tensorflow/python:tensor_spec",
         "//tensorflow/python:test_ops",
         "@absl_py//absl/testing:parameterized",
-    ],
-)
-
-cuda_py_test(
-    name = "function_trace_type_test",
-    size = "medium",
-    srcs = ["function_trace_type_test.py"],
-    python_version = "PY3",
-    deps = [
-        ":function",
-        ":function_trace_type",
-        "//tensorflow/python:array_ops",
-        "//tensorflow/python:nn_ops",
-        "//tensorflow/python:resource_variable_ops",
-        "//tensorflow/python:variables",
-        "//tensorflow/python/compat:v2_compat",
-        "//tensorflow/python/data/ops:dataset_ops",
-        "//tensorflow/python/data/ops:iterator_ops",
-        "//tensorflow/python/framework:combinations",
-        "//tensorflow/python/framework:dtypes",
-        "//tensorflow/python/framework:errors",
-        "//tensorflow/python/framework:tensor_spec",
-        "//tensorflow/python/framework:test_lib",
-        "//tensorflow/python/ops/ragged:ragged_tensor",
-        "//tensorflow/python/platform:client_testlib",
-        "//tensorflow/python/types",
-        "@absl_py//absl/testing:parameterized",
-    ],
-)
-
-cuda_py_test(
-    name = "function_cache_test",
-    size = "medium",
-    srcs = ["function_cache_test.py"],
-    python_version = "PY3",
-    deps = [
-        ":function_cache",
-        ":function_trace_type",
-        "//tensorflow/python:array_ops",
-        "//tensorflow/python/platform:client_testlib",
     ],
 )
 
@@ -645,35 +601,20 @@ py_library(
 )
 
 py_library(
-    name = "function_trace_type",
-    srcs = ["function_trace_type.py"],
+    name = "function_spec",
+    srcs = ["function_spec.py"],
     srcs_version = "PY3",
     visibility = ["//tensorflow:internal"],
     deps = [
-        "//tensorflow/python:pywrap_tfe",
         "//tensorflow/python:resource_variable_ops",
         "//tensorflow/python/framework:composite_tensor",
+        "//tensorflow/python/framework:constant_op",
         "//tensorflow/python/framework:ops",
         "//tensorflow/python/framework:tensor_spec",
-        "//tensorflow/python/types",
-        "//third_party/py/numpy",
-    ],
-)
-
-py_library(
-    name = "function_cache",
-    srcs = ["function_cache.py"],
-    srcs_version = "PY3",
-    visibility = ["//tensorflow:internal"],
-    deps = [
-        ":context",
-        ":function_trace_type",
-        "//tensorflow/python:control_flow_ops",
-        "//tensorflow/python/framework:device",
-        "//tensorflow/python/framework:func_graph",
-        "//tensorflow/python/framework:ops",
-        "//tensorflow/python/saved_model:save_context",
         "//tensorflow/python/util",
+        "//tensorflow/python/util:tf_decorator",
+        "//third_party/py/numpy",
+        "@six_archive//:six",
     ],
 )
 
@@ -687,9 +628,12 @@ py_library(
         ":core",
         ":execute",
         ":forwardprop_util",
-        ":function_cache",
+        ":function_context",
+        ":function_saved_model_utils",
+        ":function_spec",
         ":graph_only_ops",
         ":tape",
+        "//tensorflow/core/function/polymorphism:function_cache",
         "//tensorflow/python:dtypes",
         "//tensorflow/python:errors",
         "//tensorflow/python:framework_ops",
@@ -705,10 +649,39 @@ py_library(
     ],
 )
 
+py_library(
+    name = "function_context",
+    srcs = ["function_context.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorflow:internal"],
+    deps = [
+        ":context",
+        "//tensorflow/core/function/polymorphism:function_cache",
+        "//tensorflow/core/function/trace_type",
+        "//tensorflow/python:control_flow_ops",
+        "//tensorflow/python/framework:device",
+        "//tensorflow/python/framework:func_graph",
+        "//tensorflow/python/framework:ops",
+        "//tensorflow/python/saved_model:save_context",
+    ],
+)
+
+py_library(
+    name = "function_saved_model_utils",
+    srcs = ["function_saved_model_utils.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorflow:internal"],
+    deps = [
+        "//tensorflow/python:constant_op",
+        "//tensorflow/python/training/tracking:asset",
+        "//tensorflow/python/training/tracking:base",
+        "//tensorflow/python/training/tracking:resource",
+    ],
+)
+
 pybind_extension(
     name = "_concrete_function",
     srcs = ["function.cc"],
-    module_name = "_concrete_function",
     deps = [
         "//third_party/python_runtime:headers",
         "@pybind11",
@@ -966,6 +939,7 @@ py_library(
     deps = [
         ":context",
         ":function",
+        ":function_spec",
         ":lift_to_graph",
         "//tensorflow/python:cond_v2",  # TODO(b/118513001): Imported via control_flow_ops; remove.
         "//tensorflow/python:control_flow_ops",
@@ -1055,7 +1029,6 @@ tf_xla_py_test(
     python_version = "PY3",
     tags = [
         "no_mac",
-        "no_oss_py310",  # TODO(b/209163877)
         "no_pip",
         "no_tfrt",  # TODO(b/185944215)
         "no_windows",
@@ -1271,12 +1244,20 @@ cuda_py_test(
     ],
 )
 
-py_binary(
+py_library(
     name = "gradient_input_output_exclusions",
     srcs = ["gradient_input_output_exclusions.py"],
-    python_version = "PY3",
     srcs_version = "PY3",
     deps = [
+        "//tensorflow:tensorflow_py",
+    ],
+)
+
+py_binary(
+    name = "gen_gradient_input_output_exclusions",
+    srcs = ["gen_gradient_input_output_exclusions.py"],
+    deps = [
+        ":gradient_input_output_exclusions",
         "//tensorflow:tensorflow_py",
     ],
 )

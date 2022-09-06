@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.lang.annotation.Retention;
@@ -234,7 +235,27 @@ public class SubscriptionsManagerImpl implements SubscriptionsManager {
         });
     }
 
-    private void unsubscribe(List<CommerceSubscription> subscriptions, Callback<Integer> callback) {
+    /**
+     * Called when user account is cleared or updated.
+     */
+    void onIdentityChanged() {
+        mStorage.deleteAll();
+        // If the feature is still eligible to work, we should re-init and fetch the fresh data.
+        if (PriceTrackingFeatures.isPriceDropNotificationEligible()) {
+            initTypes((status) -> { assert status == SubscriptionsManager.StatusCode.OK; });
+            queryAndUpdateWaaEnabled();
+        }
+    }
+
+    /**
+     * Query whether web and app activity is enabled on the server and update the local pref value.
+     */
+    public void queryAndUpdateWaaEnabled() {
+        mServiceProxy.queryAndUpdateWaaEnabled();
+    }
+
+    @Override
+    public void unsubscribe(List<CommerceSubscription> subscriptions, Callback<Integer> callback) {
         String type = subscriptions.get(0).getType();
         if (subscriptions == null || !isSubscriptionTypeSupported(type)) {
             callback.onResult(SubscriptionsManager.StatusCode.INVALID_ARGUMENT);

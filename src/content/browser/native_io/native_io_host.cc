@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
@@ -242,15 +241,15 @@ base::File::Error DoDeleteAllData(const base::FilePath& storage_key_dir) {
 
 NativeIOHost::NativeIOHost(const blink::StorageKey& storage_key,
                            base::FilePath root_path,
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
                            bool allow_set_length_ipc,
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
                            NativeIOManager* manager)
     : storage_key_(storage_key),
       root_path_(std::move(root_path)),
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       allow_set_length_ipc_(allow_set_length_ipc),
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
       manager_(manager),
       file_task_runner_(CreateFileTaskRunner()) {
   DCHECK(manager != nullptr);
@@ -561,13 +560,14 @@ void NativeIOHost::DidOpenFile(
   // NotifyStorageModified.
   manager_->quota_manager_proxy()->NotifyStorageModified(
       storage::QuotaClientType::kNativeIO, storage_key(),
-      blink::mojom::StorageType::kTemporary, 0, base::Time::Now());
+      blink::mojom::StorageType::kTemporary, 0, base::Time::Now(),
+      base::SequencedTaskRunnerHandle::Get(), base::DoNothing());
 
   open_file_hosts_.insert({
     name, std::make_unique<NativeIOFileHost>(this, name,
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
                                              allow_set_length_ipc_,
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
                                              std::move(file_host_receiver))
   });
 
@@ -589,7 +589,8 @@ void NativeIOHost::DidDeleteFile(
 
   manager_->quota_manager_proxy()->NotifyStorageModified(
       storage::QuotaClientType::kNativeIO, storage_key(),
-      blink::mojom::StorageType::kTemporary, 0, base::Time::Now());
+      blink::mojom::StorageType::kTemporary, 0, base::Time::Now(),
+      base::SequencedTaskRunnerHandle::Get(), base::DoNothing());
 
   std::move(callback).Run(std::move(delete_result.first), delete_result.second);
   return;
@@ -610,7 +611,8 @@ void NativeIOHost::DidRenameFile(const std::string& old_name,
 
   manager_->quota_manager_proxy()->NotifyStorageModified(
       storage::QuotaClientType::kNativeIO, storage_key(),
-      blink::mojom::StorageType::kTemporary, 0, base::Time::Now());
+      blink::mojom::StorageType::kTemporary, 0, base::Time::Now(),
+      base::SequencedTaskRunnerHandle::Get(), base::DoNothing());
 
   std::move(callback).Run(std::move(rename_error));
   return;

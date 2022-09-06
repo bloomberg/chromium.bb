@@ -32,15 +32,19 @@
 #include "net/cert/x509_util_nss.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/ash/policy/networking/user_network_configuration_updater.h"
-#include "chrome/browser/ash/policy/networking/user_network_configuration_updater_factory.h"
-#include "chromeos/network/onc/certificate_scope.h"
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/certificate_provider/certificate_provider.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/policy/networking/user_network_configuration_updater.h"
+#include "chrome/browser/policy/networking/user_network_configuration_updater_factory.h"
 #include "chromeos/network/policy_certificate_provider.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/policy/networking/user_network_configuration_updater_ash.h"
+#include "chromeos/components/onc/certificate_scope.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::BrowserThread;
 
@@ -77,12 +81,12 @@ std::string GetCertificateOrg(CERTCertificate* cert) {
   return org;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 // Log message for an operation that can not be performed on a certificate of a
 // given source.
 constexpr char kOperationNotPermitted[] =
     "Operation not permitted on a certificate. Source: ";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
@@ -284,7 +288,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource,
   base::WeakPtrFactory<CertsSourcePlatformNSS> weak_ptr_factory_{this};
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 // Provides certificates installed through enterprise policy.
 class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
                           chromeos::PolicyCertificateProvider::Observer {
@@ -453,8 +457,7 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
   base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_{this};
 };
-
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
@@ -501,11 +504,10 @@ void CertificateManagerModel::Create(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<Params> params = std::make_unique<Params>();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::UserNetworkConfigurationUpdater* user_network_configuration_updater =
+#if BUILDFLAG(IS_CHROMEOS)
+  params->policy_certs_provider =
       policy::UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(
           browser_context);
-  params->policy_certs_provider = user_network_configuration_updater;
 
   chromeos::CertificateProviderService* certificate_provider_service =
       chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
@@ -536,7 +538,7 @@ CertificateManagerModel::CertificateManagerModel(
   base::RepeatingClosure certs_source_updated_callback = base::BindRepeating(
       &CertificateManagerModel::OnCertsSourceUpdated, base::Unretained(this));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Certificates installed and web trusted by enterprise policy is the highest
   // priority CertsSource.
   // UserNetworkConfigurationUpdater is only available for the primary user's
@@ -552,7 +554,7 @@ CertificateManagerModel::CertificateManagerModel(
   certs_sources_.push_back(std::make_unique<CertsSourcePlatformNSS>(
       certs_source_updated_callback, nss_cert_database));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Certificates installed by enterprise policy without web trust are lower
   // priority than the main NSS DB based CertsSource.
   // Rationale: The user should be able to add trust to policy-provided

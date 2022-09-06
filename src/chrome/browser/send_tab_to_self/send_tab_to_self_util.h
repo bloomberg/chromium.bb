@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 
-class GURL;
+#include "components/send_tab_to_self/entry_point_display_reason.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class WebContents;
@@ -13,15 +14,12 @@ class WebContents;
 
 namespace send_tab_to_self {
 
-class SendTabToSelfSyncService;
+// |web_contents| can be null.
+absl::optional<EntryPointDisplayReason> GetEntryPointDisplayReason(
+    content::WebContents* web_contents);
 
-// Returns true if the feature should be offered in menus.
-bool ShouldOfferFeature(content::WebContents* web_contents);
-
-// |send_tab_to_self_sync_service| can be null (in incognito or guest profile).
-bool ShouldOfferToShareUrl(
-    SendTabToSelfSyncService* send_tab_to_self_sync_service,
-    const GURL& url);
+// Returns true if the entry point should be shown.
+bool ShouldDisplayEntryPoint(content::WebContents* web_contents);
 
 // Returns true if the omnibox icon for the feature should be offered.
 bool ShouldOfferOmniboxIcon(content::WebContents* web_contents);

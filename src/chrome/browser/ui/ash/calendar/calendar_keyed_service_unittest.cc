@@ -10,6 +10,7 @@
 #include "ash/calendar/calendar_controller.h"
 #include "ash/shell.h"
 #include "base/test/bind.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -66,7 +67,7 @@ class CalendarKeyedServiceTest : public BrowserWithTestWindowTest {
         kSecondaryProfileName,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         u"Test profile",
-        /*avatar_id=*/1, std::string() /*supervised_user_id*/,
+        /*avatar_id=*/1,
         /*testing_factories=*/{});
   }
 

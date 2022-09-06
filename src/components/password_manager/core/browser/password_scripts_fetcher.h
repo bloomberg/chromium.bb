@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SCRIPTS_FETCHER_H_
 
 #include "base/callback_forward.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace url {
@@ -18,6 +19,19 @@ namespace password_manager {
 class PasswordScriptsFetcher : public KeyedService {
  public:
   using ResponseCallback = base::OnceCallback<void(bool)>;
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class CacheState {
+    // Cache is ready.
+    kReady = 0,
+    // Cache was set but it is stale. Re-fetch needed.
+    kStale = 1,
+    // Cache was never set,
+    kNeverSet = 2,
+    // Cache is waiting for an in-flight request.
+    kWaiting = 3,
+    kMaxValue = kWaiting,
+  };
   // Triggers pre-fetching the list of scripts. Should be called from UI
   // preceding Bulk Check.
   virtual void PrewarmCache() = 0;
@@ -44,6 +58,13 @@ class PasswordScriptsFetcher : public KeyedService {
   // use |FetchScriptAvailability| instead because |IsScriptAvailable| may
   // return stale data.
   virtual bool IsScriptAvailable(const url::Origin& origin) const = 0;
+
+  // Return high-level state summary of the PasswordScriptsFetcher in form
+  // of a `base::Value::Dict` for display on chrome://apc-internals.
+  virtual base::Value::Dict GetDebugInformationForInternals() const = 0;
+
+  // Return a list of all entries currently held in the cache.
+  virtual base::Value::List GetCacheEntries() const = 0;
 };
 
 }  // namespace password_manager

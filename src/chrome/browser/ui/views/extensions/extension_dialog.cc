@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -136,8 +136,6 @@ ExtensionDialog::ExtensionDialog(
   process_manager_observation_.Observe(
       extensions::ProcessManager::Get(host_->browser_context()));
 
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
-
   SetModalType(ui::MODAL_TYPE_WINDOW);
   SetShowTitle(!init_params.title.empty());
   SetTitle(init_params.title);
@@ -147,7 +145,8 @@ ExtensionDialog::ExtensionDialog(
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
-  extension_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  extension_view_->SetBackground(
+      views::CreateThemedSolidBackground(kColorExtensionDialogBackground));
   extension_view_->SetPreferredSize(init_params.size);
   extension_view_->SetMinimumSize(init_params.min_size);
   extension_view_->SetVisible(true);
@@ -197,6 +196,11 @@ ExtensionDialog::ExtensionDialog(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   aura::Window* native_view = window->GetNativeWindow();
+  const bool should_track_default_frame_colors =
+      !(init_params.title_color || init_params.title_inactive_color);
+  native_view->SetProperty(chromeos::kTrackDefaultFrameColors,
+                           should_track_default_frame_colors);
+
   if (init_params.title_color) {
     // Frame active color changes the title color when dialog is active.
     native_view->SetProperty(chromeos::kFrameActiveColorKey,

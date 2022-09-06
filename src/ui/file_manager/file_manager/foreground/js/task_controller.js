@@ -6,6 +6,7 @@ import {assert, assertInstanceof, assertNotReached} from 'chrome://resources/js/
 import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
+import {startIOTask} from '../../common/js/api.js';
 import {DialogType} from '../../common/js/dialog_type.js';
 import {strf, util} from '../../common/js/util.js';
 import {Crostini} from '../../externs/background/crostini.js';
@@ -150,6 +151,12 @@ export class TaskController {
     this.tasksEntries_ = [];
 
     /**
+     * Map used to track extract IOTasks in progress.
+     * @private @const {Map}
+     */
+    this.extractTasks_ = new Map();
+
+    /**
      * Selected entries from the last time onSelectionChanged_ was called.
      * @private {!Array<!Entry>}
      */
@@ -236,7 +243,7 @@ export class TaskController {
         })
         .catch(error => {
           if (error) {
-            console.error(error.stack || error);
+            console.warn(error.stack || error);
           }
         });
   }
@@ -267,7 +274,7 @@ export class TaskController {
                 })
                 .catch(error => {
                   if (error) {
-                    console.error(error.stack || error);
+                    console.warn(error.stack || error);
                   }
                 });
           }
@@ -303,7 +310,7 @@ export class TaskController {
         })
         .catch(error => {
           if (error) {
-            console.error(error.stack || error);
+            console.warn(error.stack || error);
           }
         });
   }
@@ -340,6 +347,9 @@ export class TaskController {
    * @private
    */
   onSelectionChanged_() {
+    if (window.IN_TEST) {
+      this.ui_.taskMenuButton.removeAttribute('get-tasks-completed');
+    }
     const selection = this.selectionHandler_.selection;
     // Caller of update context menu task items.
     // FileSelectionHandler.EventType.CHANGE
@@ -369,14 +379,21 @@ export class TaskController {
           .then(tasks => {
             tasks.display(this.ui_.taskMenuButton);
             this.updateContextMenuTaskItems_(tasks.getOpenTaskItems());
+            if (window.IN_TEST) {
+              this.ui_.taskMenuButton.toggleAttribute(
+                  'get-tasks-completed', true);
+            }
           })
           .catch(error => {
             if (error) {
-              console.error(error.stack || error);
+              console.warn(error.stack || error);
             }
           });
     } else {
       this.ui_.taskMenuButton.hidden = true;
+      if (window.IN_TEST) {
+        this.ui_.taskMenuButton.toggleAttribute('get-tasks-completed', true);
+      }
     }
   }
 
@@ -443,25 +460,28 @@ export class TaskController {
   updateContextMenuTaskItems_(openTasks) {
     const defaultTask = FileTasks.getDefaultTask(openTasks, this.taskHistory_);
     if (defaultTask) {
-      this.ui_.defaultTaskMenuItem.removeAttribute('file-type-icon');
+      const menuItem = this.ui_.defaultTaskMenuItem;
+      /**
+       * Menu icon can be controlled by either `iconEndImage` or
+       * `iconEndFileType`, since the default task menu item DOM is shared,
+       * before updating it, we should remove the previous one, e.g. reset both
+       * `iconEndImage` and `iconEndFileType`.
+       */
+      menuItem.iconEndImage = '';
+      menuItem.removeIconEndFileType();
+
+      menuItem.setIconEndHidden(false);
       if (defaultTask.iconType) {
-        this.ui_.defaultTaskMenuItem.style.backgroundImage = '';
-        this.ui_.defaultTaskMenuItem.setAttribute(
-            'file-type-icon', defaultTask.iconType);
-        this.ui_.defaultTaskMenuItem.style.marginInlineEnd = '28px';
+        menuItem.iconEndFileType = defaultTask.iconType;
       } else if (defaultTask.iconUrl) {
-        this.ui_.defaultTaskMenuItem.style.backgroundImage =
-            'url(' + defaultTask.iconUrl + ')';
-        this.ui_.defaultTaskMenuItem.style.marginInlineEnd = '28px';
+        menuItem.iconEndImage = 'url(' + defaultTask.iconUrl + ')';
       } else {
-        this.ui_.defaultTaskMenuItem.style.backgroundImage = '';
-        this.ui_.defaultTaskMenuItem.style.marginInlineEnd = '';
+        menuItem.setIconEndHidden(true);
       }
 
-      this.ui_.defaultTaskMenuItem.label =
-          defaultTask.label || defaultTask.title;
-      this.ui_.defaultTaskMenuItem.disabled = !!defaultTask.disabled;
-      this.ui_.defaultTaskMenuItem.descriptor = defaultTask.descriptor;
+      menuItem.label = defaultTask.label || defaultTask.title;
+      menuItem.disabled = !!defaultTask.disabled;
+      menuItem.descriptor = defaultTask.descriptor;
     }
 
     this.canExecuteDefaultTask_ = defaultTask != null;
@@ -496,5 +516,82 @@ export class TaskController {
     this.getEntryFileTasks(entry).then(tasks => {
       tasks.executeDefault();
     });
+  }
+
+  /**
+   * Stores the task ID and parameters for an extract archive task.
+   */
+  storeExtractTaskDetails(taskId, selectionEntries, parameters) {
+    this.extractTasks_.set(
+        taskId, {'entries': selectionEntries, 'params': parameters});
+  }
+
+  /**
+   * Removes information about an extract archive task.
+   */
+  deleteExtractTaskDetails(taskId) {
+    this.extractTasks_.delete(taskId);
+  }
+
+  /**
+   * Starts extraction for a single entry and stores the task details.
+   * @private
+   */
+  async startExtractTask_(entry, params) {
+    let taskId;
+    try {
+      taskId = await startIOTask(
+          chrome.fileManagerPrivate.IOTaskType.EXTRACT, [entry], params);
+      this.storeExtractTaskDetails(taskId, [entry], params);
+    } catch (e) {
+      console.warn('Error getting extract taskID', e);
+    }
+  }
+
+  /**
+   * Triggers a password dialog and starts an extract task with the
+   * password (unless cancel is clicked on the dialog).
+   * @private
+   */
+  async startGetPasswordThenExtractTask_(entry, params) {
+    /** @type {?string} */ let password = null;
+    // Ask for password.
+    try {
+      password = await this.ui_.passwordDialog.askForPassword(
+          entry.fullPath, password);
+    } catch (error) {
+      console.warn('User cancelled password fetch ', error);
+      return;
+    }
+
+    params['password'] = password;
+    await this.startExtractTask_(entry, params);
+  }
+
+  /**
+   * If an extract operation has finished due to missing password,
+   * see if we have the operation stored and if so, pop up a password
+   * dialog and try to restart another IO operation for it.
+   */
+  handleMissingPassword(taskId) {
+    const existingOperation = this.extractTasks_.get(taskId);
+    if (existingOperation) {
+      // If we have multiple entries (from a multi-select extract) then
+      // we need to start a new task for each of them individually so
+      // that the password dialog is presented once for every file
+      // that's encrypted.
+      const selectionEntries = existingOperation['entries'];
+      const params = existingOperation['params'];
+      if (selectionEntries.length == 1) {
+        this.startGetPasswordThenExtractTask_(
+            existingOperation['entries'][0], params);
+      } else {
+        for (const entry of selectionEntries) {
+          this.startExtractTask_(entry, params);
+        }
+      }
+    }
+    // Remove the failed operation reference since it's finished.
+    this.deleteExtractTaskDetails(taskId);
   }
 }

@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/device_service.h"
-#include "content/public/browser/permission_type.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
 using device::mojom::SensorType;
@@ -36,11 +36,8 @@ SensorProviderProxyImpl::SensorProviderBinder& GetBinderOverride() {
 }  // namespace
 
 SensorProviderProxyImpl::SensorProviderProxyImpl(
-    PermissionControllerImpl* permission_controller,
     RenderFrameHost* render_frame_host)
-    : permission_controller_(permission_controller),
-      render_frame_host_(render_frame_host) {
-  DCHECK(permission_controller);
+    : render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host);
 }
 
@@ -76,16 +73,17 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
       GetDeviceService().BindSensorProvider(std::move(receiver));
   }
 
-  permission_controller_->RequestPermission(
-      PermissionType::SENSORS, render_frame_host_,
-      render_frame_host_->GetLastCommittedURL().DeprecatedGetOriginAsURL(),
-      false,
-      base::BindOnce(&SensorProviderProxyImpl::OnPermissionRequestCompleted,
-                     weak_factory_.GetWeakPtr(), type, std::move(callback)));
+  render_frame_host_->GetBrowserContext()
+      ->GetPermissionController()
+      ->RequestPermissionFromCurrentDocument(
+          blink::PermissionType::SENSORS, render_frame_host_, false,
+          base::BindOnce(&SensorProviderProxyImpl::OnPermissionRequestCompleted,
+                         weak_factory_.GetWeakPtr(), type,
+                         std::move(callback)));
 }
 
 void SensorProviderProxyImpl::OnPermissionRequestCompleted(
-    device::mojom::SensorType type,
+    SensorType type,
     GetSensorCallback callback,
     blink::mojom::PermissionStatus status) {
   if (status != blink::mojom::PermissionStatus::GRANTED || !sensor_provider_) {

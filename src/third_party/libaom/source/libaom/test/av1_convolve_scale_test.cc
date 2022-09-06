@@ -282,6 +282,7 @@ class ConvolveScaleTestBase : public ::testing::Test {
 
     delete image_;
     image_ = new TestImage<SrcPixel>(width_, height_, bd_);
+    ASSERT_NE(image_, nullptr);
   }
 
   void SetConvParamOffset(int i, int j, int is_compound, int do_average,

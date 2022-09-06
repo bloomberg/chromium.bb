@@ -104,6 +104,7 @@ class OutputDeviceMixerImpl final : public OutputDeviceMixer {
   using Listeners = std::set<Listener*>;
 
   // Operations delegated by MixableOutputStream.
+  bool OpenStream(MixTrack* mix_track);
   void StartStream(MixTrack* mix_track,
                    media::AudioOutputStream::AudioSourceCallback* callback);
   void StopStream(MixTrack* mix_track);
@@ -122,6 +123,8 @@ class OutputDeviceMixerImpl final : public OutputDeviceMixer {
 
   // Helpers to manage audio playback.
   bool HasListeners() const;
+  bool MixingInProgress() const { return !!mixing_session_stats_; }
+  void EnsureMixingGraphOutputStreamOpen();
   void StartMixingGraphPlayback();
   void StopMixingGraphPlayback(MixingError mixing_error);
   void SwitchToUnmixedPlaybackTimerHelper();
@@ -159,11 +162,13 @@ class OutputDeviceMixerImpl final : public OutputDeviceMixer {
 
   // Delays switching to unmixed playback in case a new listener is coming
   // soon (within kSwitchToIndependentPlaybackDelay).
-  base::OneShotTimer switch_to_unmixed_playback_delay_timer_;
+  base::OneShotTimer switch_to_unmixed_playback_delay_timer_
+      GUARDED_BY_CONTEXT(owning_sequence_);
 
   // Non-null when the playback is being mixed. Collects mixing statistics.
-  // Logs them upon the destruction when mixing stops.
-  std::unique_ptr<MixingStats> mixing_stats_;
+  // Logs them upon the destruction when mixing stops. Non-null while mixing
+  // is in progress, and is used as an indicator of that.
+  std::unique_ptr<MixingStats> mixing_session_stats_;
 
 #if DCHECK_IS_ON()
   bool device_changed_ = false;

@@ -21,7 +21,7 @@
         --settings-collapse-separator-line: var(--cr-separator-line);
       }
 
-      settings-privacy-review-page {
+      settings-privacy-guide-page {
         background-color: var(--cr-card-background-color);
         border-radius: var(--cr-card-border-radius);
         box-shadow: var(--cr-card-shadow);
@@ -34,8 +34,13 @@
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
-          on-close="onDialogClosed_">
+          on-close="onCbdDialogClosed_">
       </settings-clear-browsing-data-dialog>
+    </template>
+    <template is="dom-if" if="[[showPrivacyGuideDialog_]]" restamp>
+      <settings-privacy-guide-dialog id="privacyGuideDialog" prefs="{{prefs}}"
+          on-close="onPrivacyGuideDialogClosed_">
+      </settings-privacy-guide-dialog>
     </template>
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
@@ -51,12 +56,12 @@
             sub-label="Experimental button, click to show a test IPH bubble"
             on-click="onShowIPHBubbleTap_">
         </cr-link-row>
-        <template is="dom-if" if="[[enablePrivacyReview_]]">
-          <cr-link-row id="privacyReviewLinkRow" class="hr"
-              start-icon="settings20:explore"
-              label="$i18n{privacyReviewLabel}"
-              sub-label="$i18n{privacyReviewSublabel}"
-              on-click="onPrivacyReviewClick_"
+        <template is="dom-if" if="[[enablePrivacyGuide_]]">
+          <cr-link-row id="privacyGuideLinkRow" class="hr"
+              start-icon="settings20:wind-rose"
+              label="$i18n{privacyGuideLabel}"
+              sub-label="$i18n{privacyGuideSublabel}"
+              on-click="onPrivacyGuideClick_"
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
@@ -80,19 +85,21 @@
             sub-label="$i18n{permissionsPageDescription}"
             on-click="onPermissionsPageClick_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-        <cr-link-row id="privacySandboxLinkRow"
-            start-icon="settings20:experiment"
-            class="hr"
-            label="$i18n{privacySandboxTitle}"
-            sub-label="[[computePrivacySandboxSublabel_(
-                prefs.privacy_sandbox.apis_enabled.*)]]"
-            on-click="onPrivacySandboxClick_"
-            external
-            role-description="$i18n{subpageArrowRoleDescription}">
-        </cr-link-row>
-        <a id="privacySandboxLink" href="privacySandbox"
-            target="_blank" tabindex="-1" aria-disabled="true"
-            role="none"></a>
+        <template is="dom-if" if="[[!isPrivacySandboxRestricted_]]">
+          <cr-link-row id="privacySandboxLinkRow"
+              start-icon="settings20:experiment"
+              class="hr"
+              label="$i18n{privacySandboxTitle}"
+              sub-label="[[computePrivacySandboxSublabel_(
+                  prefs.privacy_sandbox.*)]]"
+              on-click="onPrivacySandboxClick_"
+              external
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+          <a id="privacySandboxLink" href="privacySandbox"
+              target="_blank" tabindex="-1" aria-disabled="true"
+              role="none"></a>
+        </template>
       </div>
 
 <if expr="use_nss_certs">
@@ -112,6 +119,13 @@
             <security-keys-subpage></security-keys-subpage>
           </settings-subpage>
         </template>
+      </template>
+
+      <template is="dom-if" route-path="/securityKeys/phones">
+        <settings-subpage associated-control="[[$$('#securityLinkRow')]]"
+            page-title="$i18n{securityKeysPhonesManage}">
+          <security-keys-phones-subpage></security-keys-phones-subpage>
+        </settings-subpage>
       </template>
 
       <template is="dom-if" route-path="/content">
@@ -224,15 +238,15 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enablePrivacyReview_]]">
-        <template is="dom-if" route-path="/privacy/review">
-          <settings-subpage id="privacy-review"
+      <template is="dom-if" if="[[enablePrivacyGuidePage_]]">
+        <template is="dom-if" route-path="/privacy/guide">
+          <settings-subpage id="privacy-guide"
               class="multi-card"
-              page-title="$i18n{privacyReviewLabel}"
-              associated-control="[[$$('#privacyReviewLinkRow')]]">
-            <settings-privacy-review-page prefs="{{prefs}}"
+              page-title="$i18n{privacyGuideLabel}"
+              associated-control="[[$$('#privacyGuideLinkRow')]]">
+            <settings-privacy-guide-page id="privacyGuidePage" prefs="{{prefs}}"
                 focus-config="[[focusConfig_]]">
-            </settings-privacy-review-page>
+            </settings-privacy-guide-page>
           </settings-subpage>
         </template>
       </template>
@@ -302,6 +316,36 @@
               search-filter="[[searchFilter_]]">
           </category-setting-exceptions>
         </settings-subpage>
+      </template>
+      <template is="dom-if" if="[[enableFederatedIdentityApiContentSetting_]]">
+        <template is="dom-if" route-path="/content/federatedIdentityApi"
+            no-search>
+          <settings-subpage
+              page-title="$i18n{siteSettingsCategoryFederatedIdentityApi}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsFederatedIdentityApiDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.FEDERATED_IDENTITY_API]]"
+                allow-option-label=
+                    "$i18n{siteSettingsFederatedIdentityApiAllowed}"
+                allow-option-icon="settings:federated-identity-api"
+                block-option-label=
+                    "$i18n{siteSettingsFederatedIdentityApiBlocked}"
+                block-option-icon="settings:federated-identity-api-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[contentSettingsTypesEnum_.FEDERATED_IDENTITY_API]]"
+                allow-header=
+                    "$i18n{siteSettingsFederatedIdentityApiAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsFederatedIdentityApiBlockedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
       </template>
       <template is="dom-if" route-path="/content/location" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}"
@@ -723,10 +767,10 @@
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/protectedContent" no-search>
-<if expr="not chromeos and not is_win">
+<if expr="not chromeos_ash and not chromeos_lacros and not is_win">
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}">
 </if>
-<if expr="chromeos or is_win">
+<if expr="chromeos_ash or chromeos_lacros or is_win">
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
@@ -760,7 +804,7 @@
               </settings-collapse-radio-button>
             </settings-radio-group>
           </div>
-<if expr="chromeos or is_win">
+<if expr="chromeos_ash or chromeos_lacros or is_win">
           <settings-category-default-radio-group
             header="$i18n{siteSettingsProtectedContentIdentifiers}"
             description=
@@ -773,6 +817,10 @@
             block-option-icon="settings:protected-content-off"
             allow-option-label=
                 "$i18n{siteSettingsProtectedContentIdentifiersAllowed}"
+<if expr="is_win and _google_chrome">
+            allow-option-sub-label=
+                "$i18n{siteSettingsProtectedContentIdentifiersAllowedSubLabel}"
+</if>
             allow-option-icon="settings:protected-content"
             disabled$="[[isGuest_]]">
           </settings-category-default-radio-group>
@@ -932,21 +980,25 @@
         <settings-subpage page-title="$i18n{siteSettingsWindowPlacement}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
-          <category-default-setting
-              toggle-off-label="$i18n{siteSettingsWindowPlacementBlock}"
-              toggle-on-label=
-                  "$i18n{siteSettingsWindowPlacementAskRecommended}"
-              category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]">
-          </category-default-setting>
+          <div class="content-settings-header secondary">
+            $i18n{siteSettingsWindowPlacementDescription}
+          </div>
+          <settings-category-default-radio-group
+              category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]"
+              allow-option-label="$i18n{siteSettingsWindowPlacementAsk}"
+              allow-option-icon="settings:window-placement"
+              block-option-label="$i18n{siteSettingsWindowPlacementBlocked}"
+              block-option-icon="settings:window-placement-off">
+          </settings-category-default-radio-group>
           <category-setting-exceptions
               category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]"
-              block-header="$i18n{siteSettingsBlock}"
-              allow-header="$i18n{siteSettingsAllow}"
+              allow-header="$i18n{siteSettingsWindowPlacementAskExceptions}"
+              block-header="$i18n{siteSettingsWindowPlacementBlockedExceptions}"
               search-filter="[[searchFilter_]]">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/content/fontAccess" no-search>
+      <template is="dom-if" route-path="/content/localFonts" no-search>
         <settings-subpage page-title="$i18n{fonts}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
@@ -954,14 +1006,14 @@
             $i18n{siteSettingsFontsDescription}
           </div>
           <settings-category-default-radio-group
-              category="[[contentSettingsTypesEnum_.FONT_ACCESS]]"
+              category="[[contentSettingsTypesEnum_.LOCAL_FONTS]]"
               allow-option-label="$i18n{siteSettingsFontsAllowed}"
-              allow-option-icon="settings:font-access"
+              allow-option-icon="settings:local-fonts"
               block-option-label="$i18n{siteSettingsFontsBlocked}"
-              block-option-icon="settings:font-access-off">
+              block-option-icon="settings:local-fonts-off">
           </settings-category-default-radio-group>
           <category-setting-exceptions
-              category="[[contentSettingsTypesEnum_.FONT_ACCESS]]"
+              category="[[contentSettingsTypesEnum_.LOCAL_FONTS]]"
               block-header="$i18n{siteSettingsFontsBlockedExceptions}"
               allow-header="$i18n{siteSettingsFontsAllowedExceptions}"
               search-filter="[[searchFilter_]]">

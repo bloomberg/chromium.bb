@@ -79,8 +79,8 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
 
     scoped_refptr<base::RefCountedMemory> dummy_data =
         base::MakeRefCounted<base::RefCountedStaticMemory>(
-            &kDummyData, base::size(kDummyData));
-    StartPrint(u"dummy-job-title", /*settings=*/base::Value(), dummy_data,
+            &kDummyData, std::size(kDummyData));
+    StartPrint(u"dummy-job-title", /*settings=*/base::Value::Dict(), dummy_data,
                base::DoNothing());
     run_loop_->Run();
     return true;

@@ -19,8 +19,10 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/language_code.h"
@@ -75,19 +77,43 @@ class FormStructure {
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       LogManager* log_manager);
 
-  // Encodes the proto |upload| request from this FormStructure, and stores
-  // the (single) FormSignature and the signatures of the fields to be uploaded
-  // in |encoded_signatures|.
-  // In some cases, a |login_form_signature| is included as part of the upload.
-  // This field is empty when sending upload requests for non-login forms.
-  bool EncodeUploadRequest(
+  // Encodes this FormStructure as a vector of protobufs.
+  //
+  // On success, the returned vector is non-empty. The first element encodes the
+  // entire FormStructure. In some cases, a |login_form_signature| is included
+  // as part of the upload. This field is empty when sending upload requests for
+  // non-login forms.
+  //
+  // If the FormStructure is a frame-transcending form, there may be additional
+  // AutofillUploadContents elements in the vector, which encode the renderer
+  // forms (see below for an explanation). These elements omit the renderer
+  // form's metadata because retrieving this would require significant plumbing
+  // from ContentAutofillRouter.
+  //
+  // The renderer forms are the forms that constitute a frame-transcending form.
+  // ContentAutofillRouter receives these forms from the renderer and flattens
+  // them into a single fresh form. Only the latter form is exposed to the rest
+  // of the browser process. For server predictions, however, we want to query
+  // and upload also votes also for the signatures of the renderer forms. For
+  // example, the frame-transcending form
+  //   <form id=1>
+  //     <input autocomplete="cc-name">
+  //     <iframe>
+  //       #document
+  //         <form id=2>
+  //           <input autocomplete="cc-number">
+  //         </form>
+  //     </iframe>
+  //   </form>
+  // is flattened into a single form that contains the cc-name and cc-number
+  // fields. We want to vote for this flattened form as well as for the original
+  // form signatures of forms 1 and 2.
+  std::vector<AutofillUploadContents> EncodeUploadRequest(
       const ServerFieldTypeSet& available_field_types,
       bool form_was_autofilled,
-      const std::string& login_form_signature,
+      const base::StringPiece& login_form_signature,
       bool observed_submission,
-      bool is_raw_metadata_uploading_enabled,
-      autofill::AutofillUploadContents* upload,
-      std::vector<FormSignature>* encoded_signatures) const;
+      bool is_raw_metadata_uploading_enabled) const;
 
   // Encodes the proto |query| request for the list of |forms| and their fields
   // that are valid. The queried FormSignatures and FieldSignatures are stored
@@ -96,7 +122,7 @@ class FormStructure {
   // included in |query| and |queried_form_signatures|.
   static bool EncodeQueryRequest(
       const std::vector<FormStructure*>& forms,
-      autofill::AutofillPageQueryRequest* query,
+      AutofillPageQueryRequest* query,
       std::vector<FormSignature>* queried_form_signatures);
 
   // Parses `payload` as AutofillQueryResponse proto and calls
@@ -183,7 +209,8 @@ class FormStructure {
       const base::TimeTicks& submission_time,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       bool did_show_suggestions,
-      bool observed_submission) const;
+      bool observed_submission,
+      const FormInteractionCounts& form_interaction_counts) const;
 
   // Log the quality of the heuristics and server predictions for this form
   // structure, if autocomplete attributes are present on the fields (they are
@@ -191,6 +218,8 @@ class FormStructure {
   void LogQualityMetricsBasedOnAutocomplete(
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger)
       const;
+
+  void LogDetermineHeuristicTypesMetrics();
 
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's
@@ -201,6 +230,10 @@ class FormStructure {
   // Fills |has_author_specified_sections_| with |true| if the attribute
   // specifies a section for at least one field.
   void ParseFieldTypesFromAutocompleteAttributes();
+
+  // Classifies each field in |fields_| using the regular expressions.
+  void ParseFieldTypesWithPatterns(PatternSource pattern_source,
+                                   LogManager* log_manager);
 
   // Returns the values that can be filled into the form structure for the
   // given type. For example, there's no way to fill in a value of "The Moon"
@@ -213,7 +246,7 @@ class FormStructure {
 
   // Rationalize phone number fields in a given section, that is only fill
   // the fields that are considered composing a first complete phone number.
-  void RationalizePhoneNumbersInSection(std::string section);
+  void RationalizePhoneNumbersInSection(const std::string& section);
 
   // Overrides server predictions with specific heuristic predictions:
   // * NAME_LAST_SECOND heuristic predictions are unconditionally used.
@@ -239,6 +272,7 @@ class FormStructure {
   std::vector<std::unique_ptr<AutofillField>>::const_iterator begin() const {
     return fields_.begin();
   }
+
   std::vector<std::unique_ptr<AutofillField>>::const_iterator end() const {
     return fields_.end();
   }
@@ -343,7 +377,7 @@ class FormStructure {
   void set_overall_field_type_for_testing(size_t field_index,
                                           ServerFieldType type) {
     if (field_index < fields_.size() && type > 0 && type < MAX_VALID_FIELD_TYPE)
-      fields_[field_index]->set_heuristic_type(type);
+      fields_[field_index]->set_heuristic_type(GetActivePatternSource(), type);
   }
   // Set the server field type for |fields_[field_index]| to |type| for testing
   // purposes.
@@ -404,19 +438,7 @@ class FormStructure {
 
   FormGlobalId global_id() const { return {host_frame_, unique_renderer_id_}; }
 
-  bool ShouldSkipFieldVisibleForTesting(const FormFieldData& field) const {
-    return ShouldSkipField(field);
-  }
-
-  static void ProcessQueryResponseForTesting(
-      const AutofillQueryResponse& response,
-      const std::vector<FormStructure*>& forms,
-      const std::vector<FormSignature>& queried_form_signatures,
-      AutofillMetrics::FormInteractionsUkmLogger*
-          form_interactions_ukm_logger) {
-    ProcessQueryResponse(response, forms, queried_form_signatures,
-                         form_interactions_ukm_logger, nullptr);
-  }
+  FormVersion version() const { return version_; }
 
   void set_single_username_data(
       AutofillUploadContents::SingleUsernameData single_username_data) {
@@ -428,15 +450,7 @@ class FormStructure {
   }
 
  private:
-  friend class AutofillMergeTest;
-  friend class FormStructureTestImpl;
-  friend class ParameterizedFormStructureTest;
-  FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl, FindLongestCommonPrefix);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl, FindLongestCommonAffixLength);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl, IsValidParseableName);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTestImpl,
-                           RationalizePhoneNumber_RunsOncePerSection);
+  friend class FormStructureTestApi;
 
   // This class wraps a vector of vectors of field indices. The indices of a
   // vector belong to the same group.
@@ -460,6 +474,11 @@ class FormStructure {
   // lone credit card fields in an otherwise non-credit-card related form is
   // unlikely to be correct, the function will override that prediction.
   void RationalizeCreditCardFieldPredictions(LogManager* log_manager);
+
+  // A function to rewrite sequences of (street address, address_line2) into
+  // (address_line1, address_line2) as server predictions sometimes introduce
+  // wrong street address predictions.
+  void RationalizeStreetAddressAndAddressLine(LogManager* log_manager);
 
   // The rationalization is based on the visible fields, but should be applied
   // to the hidden select fields. This is because hidden 'select' fields are
@@ -524,10 +543,16 @@ class FormStructure {
                           std::vector<FormSignature>* queried_form_signatures,
                           std::set<FormSignature>* processed_forms) const;
 
-  void EncodeFormForUpload(
+  // Encodes the fields of `this` in the in-out parameter `upload`.
+  // Helper function for EncodeUploadRequest().
+  //
+  // If `filter_renderer_form_id` is non-nullopt, only fields that originate
+  // from the given renderer form are encoded. See EncodeUploadRequest() for
+  // details.
+  void EncodeFormFieldsForUpload(
       bool is_raw_metadata_uploading_enabled,
-      autofill::AutofillUploadContents* upload,
-      std::vector<FormSignature>* encoded_signatures) const;
+      absl::optional<FormGlobalId> filter_renderer_form_id,
+      AutofillUploadContents* upload) const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
@@ -589,6 +614,9 @@ class FormStructure {
   GURL target_url_;
 
   // The origin of the main frame of this form.
+  // |main_frame_origin| represents the main frame (not necessarily primary
+  // main frame) of the form's frame tree as described by MPArch nested frame
+  // trees. For details, see RenderFrameHost::GetMainFrame().
   url::Origin main_frame_origin_;
 
   // The number of fields able to be auto-filled.
@@ -679,6 +707,10 @@ class FormStructure {
   // A unique identifier of the containing frame.
   // This value must not be leaked to other renderer processes.
   LocalFrameToken host_frame_;
+
+  // A monotonically increasing counter that indicates the generation of the
+  // form.
+  FormVersion version_;
 
   // An identifier of the form that is unique among the forms from the same
   // frame.

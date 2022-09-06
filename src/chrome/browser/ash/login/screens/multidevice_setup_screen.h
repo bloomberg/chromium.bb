@@ -12,10 +12,12 @@
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 
 namespace ash {
+
+namespace multidevice_setup {
+class MultiDeviceSetupClient;
+}
 
 class MultiDeviceSetupScreen : public BaseScreen {
  public:
@@ -52,7 +54,7 @@ class MultiDeviceSetupScreen : public BaseScreen {
   bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
  private:
   friend class MultiDeviceSetupScreenTest;

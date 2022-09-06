@@ -17,15 +17,15 @@
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 
+using ::chromeos::machine_learning::mojom::
+    REMOVED_TextSuggestSelectionRequestPtr;
 using ::chromeos::machine_learning::mojom::TextAnnotationRequestPtr;
 using ::chromeos::machine_learning::mojom::TextClassifier;
 using ::chromeos::machine_learning::mojom::TextLanguage;
 using ::chromeos::machine_learning::mojom::TextLanguagePtr;
-using ::chromeos::machine_learning::mojom::TextSuggestSelectionRequestPtr;
 
 TextLanguagePtr DefaultLanguage() {
   return TextLanguage::New("en", /*confidence=*/1);
@@ -42,9 +42,6 @@ class FakeTextClassifier
   // chromeos::machine_learning::mojom::TextClassifier:
   void Annotate(TextAnnotationRequestPtr request,
                 AnnotateCallback callback) override {}
-
-  void SuggestSelection(TextSuggestSelectionRequestPtr request,
-                        SuggestSelectionCallback callback) override {}
 
   void FindLanguages(const std::string& text,
                      FindLanguagesCallback callback) override {
@@ -63,6 +60,9 @@ class FakeTextClassifier
   void RegisterDetectionResult(std::string text, TextLanguagePtr language) {
     detection_results_[text] = std::move(language);
   }
+
+  void REMOVED_1(REMOVED_TextSuggestSelectionRequestPtr request,
+                 REMOVED_1Callback callback) override {}
 
  private:
   std::map<std::string, TextLanguagePtr> detection_results_;
@@ -172,4 +172,3 @@ TEST_F(LanguageDetectorTest, DetectLanguageLowConfidence) {
 }
 
 }  // namespace quick_answers
-}  // namespace ash

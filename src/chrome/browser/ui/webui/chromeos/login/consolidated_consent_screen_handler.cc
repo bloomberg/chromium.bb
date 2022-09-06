@@ -20,10 +20,10 @@ ConsolidatedConsentScreenView::ScreenConfig::~ScreenConfig() = default;
 
 constexpr StaticOobeScreenId ConsolidatedConsentScreenView::kScreenId;
 
-ConsolidatedConsentScreenHandler::ConsolidatedConsentScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.ConsolidatedConsentScreen.userActed");
+ConsolidatedConsentScreenHandler::ConsolidatedConsentScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.ConsolidatedConsentScreen.userActed");
 }
 
 ConsolidatedConsentScreenHandler::~ConsolidatedConsentScreenHandler() {
@@ -51,35 +51,42 @@ void ConsolidatedConsentScreenHandler::DeclareLocalizedValues(
   builder->Add("consolidatedConsentUsageOptInTitle",
                IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_TITLE);
   builder->Add("consolidatedConsentUsageOptIn",
-               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN);
+               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_OWNER);
   builder->Add("consolidatedConsentUsageOptInChild",
-               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_CHILD);
+               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_CHILD_OWNER);
   builder->Add("consolidatedConsentUsageOptInArcDisabled",
-               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_ARC_DISABLED);
+               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_ARC_DISABLED_OWNER);
+  builder->Add("consolidatedConsentUsageOptInLearnMoreLink",
+               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_LINK);
   builder->Add("consolidatedConsentBackupOptInTitle",
                IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_TITLE);
   builder->Add("consolidatedConsentBackupOptIn",
                IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN);
   builder->Add("consolidatedConsentBackupOptInChild",
                IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_CHILD);
+  builder->Add("consolidatedConsenttBackupOptInLearnMoreLink",
+               IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_LEARN_MORE_LINK);
   builder->Add("consolidatedConsentLocationOptInTitle",
                IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_TITLE);
   builder->Add("consolidatedConsentLocationOptIn",
                IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN);
   builder->Add("consolidatedConsentLocationOptInChild",
                IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_CHILD);
+  builder->Add("consolidatedConsenttLocationOptInLearnMoreLink",
+               IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE_LINK);
   builder->Add("consolidatedConsentFooter", IDS_CONSOLIDATED_CONSENT_FOOTER);
   builder->Add("consolidatedConsentFooterChild",
                IDS_CONSOLIDATED_CONSENT_FOOTER_CHILD);
   builder->Add("consolidatedConsentUsageOptInLearnMore",
-               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE);
+               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_OWNER);
   builder->Add("consolidatedConsentUsageOptInLearnMoreChild",
-               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_CHILD);
-  builder->Add("consolidatedConsentUsageOptInLearnMoreArcDisabled",
-               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED);
+               IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_CHILD_OWNER);
+  builder->Add(
+      "consolidatedConsentUsageOptInLearnMoreArcDisabled",
+      IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_OWNER);
   builder->Add(
       "consolidatedConsentUsageOptInLearnMoreArcDisabledChild",
-      IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_CHILD);
+      IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_CHILD_OWNER);
   builder->Add("consolidatedConsentBackupOptInLearnMore",
                IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_LEARN_MORE);
   builder->Add("consolidatedConsentBackupOptInLearnMoreChild",
@@ -118,39 +125,38 @@ void ConsolidatedConsentScreenHandler::DeclareLocalizedValues(
   }
 }
 
-void ConsolidatedConsentScreenHandler::Initialize() {}
+void ConsolidatedConsentScreenHandler::InitializeDeprecated() {}
 
 void ConsolidatedConsentScreenHandler::Show(const ScreenConfig& config) {
-  base::DictionaryValue data;
+  base::Value::Dict data;
   // If ARC is enabled, show the ARC ToS and the related opt-ins.
-  data.SetBoolean("isArcEnabled", config.is_arc_enabled);
+  data.Set("isArcEnabled", config.is_arc_enabled);
   // In demo mode, don't show any opt-ins related to ARC and allow showing the
   // offline ARC ToS if the online version failed to load.
-  data.SetBoolean("isDemo", config.is_demo);
+  data.Set("isDemo", config.is_demo);
   // Child accounts have alternative strings for the opt-ins.
-  data.SetBoolean("isChildAccount", config.is_child_account);
-  // Managed account will not be shown any terms of service, and the title
-  // string will be updated.
-  data.SetBoolean("isEnterpriseManagedAccount",
-                  config.is_enterprise_managed_account);
+  data.Set("isChildAccount", config.is_child_account);
+  // If the user is affiliated with the device management domain, ToS should be
+  // hidden.
+  data.Set("isTosHidden", config.is_tos_hidden);
   // Country code is needed to load the ARC ToS.
-  data.SetString("countryCode", config.country_code);
+  data.Set("countryCode", config.country_code);
   // URL for EULA, the URL should include the locale.
-  data.SetString("googleEulaUrl", config.google_eula_url);
+  data.Set("googleEulaUrl", config.google_eula_url);
   // URL for Chrome and ChromeOS additional terms of service, the URL should
   // include the locale.
-  data.SetString("crosEulaUrl", config.cros_eula_url);
-  ShowScreenWithData(kScreenId, &data);
+  data.Set("crosEulaUrl", config.cros_eula_url);
+  ShowInWebUI(std::move(data));
 }
 
 void ConsolidatedConsentScreenHandler::Bind(ConsolidatedConsentScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ConsolidatedConsentScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void ConsolidatedConsentScreenHandler::RegisterMessages() {
@@ -185,4 +191,7 @@ void ConsolidatedConsentScreenHandler::SetLocationMode(bool enabled,
   CallJS("login.ConsolidatedConsentScreen.setLocationMode", enabled, managed);
 }
 
+void ConsolidatedConsentScreenHandler::SetUsageOptinOptinHidden(bool hidden) {
+  CallJS("login.ConsolidatedConsentScreen.setUsageOptinHidden", hidden);
+}
 }  // namespace chromeos

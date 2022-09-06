@@ -1,99 +1,79 @@
+import { assert, memcpy } from '../../common/util/util.js';
+import { RegularTextureFormat } from '../capability_info.js';
 import { GPUTest } from '../gpu_test.js';
 
-import { checkElementsEqual, checkElementsBetween } from './check_contents.js';
-import { align } from './math.js';
-import { kBytesPerRowAlignment } from './texture/layout.js';
-
-export function isFp16Format(format: GPUTextureFormat): boolean {
-  switch (format) {
-    case 'r16float':
-    case 'rg16float':
-    case 'rgba16float':
-      return true;
-    default:
-      return false;
-  }
-}
+import { makeInPlaceColorConversion } from './color_space_conversion.js';
+import { TexelView } from './texture/texel_view.js';
+import { TexelCompareOptions, textureContentIsOKByT2B } from './texture/texture_ok.js';
 
 export class CopyToTextureUtils extends GPUTest {
-  // TODO(crbug.com/dawn/868): Should be possible to consolidate this along with texture checking
-  checkCopyExternalImageResult(
-    src: GPUBuffer,
-    expected: ArrayBufferView,
+  doFlipY(
+    sourcePixels: Uint8ClampedArray,
     width: number,
     height: number,
-    bytesPerPixel: number,
-    isFp16: boolean
-  ): void {
-    const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
-    const rowPitch = align(width * bytesPerPixel, kBytesPerRowAlignment);
+    bytesPerPixel: number
+  ): Uint8ClampedArray {
+    const dstPixels = new Uint8ClampedArray(width * height * bytesPerPixel);
+    for (let i = 0; i < height; ++i) {
+      for (let j = 0; j < width; ++j) {
+        const srcPixelPos = i * width + j;
+        // WebGL readPixel returns pixels from bottom-left origin. Using CopyExternalImageToTexture
+        // to copy from WebGL Canvas keeps top-left origin. So the expectation from webgl.readPixel should
+        // be flipped.
+        const dstPixelPos = (height - i - 1) * width + j;
 
-    const readbackPromise = this.readGPUBufferRangeTyped(src, {
-      type: Uint8Array,
-      typedLength: rowPitch * height,
-    });
-
-    this.eventualAsyncExpectation(async niceStack => {
-      const readback = await readbackPromise;
-      const check = this.checkBufferWithRowPitch(
-        readback.data,
-        exp,
-        width,
-        height,
-        rowPitch,
-        bytesPerPixel,
-        isFp16
-      );
-      if (check !== undefined) {
-        niceStack.message = check;
-        this.rec.expectationFailed(niceStack);
-      }
-      readback.cleanup();
-    });
-  }
-
-  // TODO(crbug.com/dawn/868): Should be possible to consolidate this along with texture checking
-  checkBufferWithRowPitch(
-    actual: Uint8Array,
-    exp: Uint8Array,
-    width: number,
-    height: number,
-    rowPitch: number,
-    bytesPerPixel: number,
-    isFp16: boolean
-  ): string | undefined {
-    const bytesPerRow = width * bytesPerPixel;
-    // When dst format is fp16 formats, the expectation and real result always has 1 bit difference in the ending
-    // (e.g. CC vs CD) if there needs some alpha ops (if alpha channel is not 0.0 or 1.0). Suspect it is errors when
-    // doing encoding. We check fp16 dst texture format with 1-bit ULP tolerance.
-    if (isFp16) {
-      for (let y = 0; y < height; ++y) {
-        const expRow = exp.subarray(y * bytesPerRow, bytesPerRow);
-        const checkResult = checkElementsBetween(actual.subarray(y * rowPitch, bytesPerRow), [
-          i => (expRow[i] > 0 ? expRow[i] - 1 : expRow[i]),
-          i => expRow[i] + 1,
-        ]);
-        if (checkResult !== undefined) return `on row ${y}: ${checkResult}`;
-      }
-    } else {
-      for (let y = 0; y < height; ++y) {
-        const checkResult = checkElementsEqual(
-          actual.subarray(y * rowPitch, bytesPerRow),
-          exp.subarray(y * bytesPerRow, bytesPerRow)
+        memcpy(
+          { src: sourcePixels, start: srcPixelPos * bytesPerPixel, length: bytesPerPixel },
+          { dst: dstPixels, start: dstPixelPos * bytesPerPixel }
         );
-        if (checkResult !== undefined) return `on row ${y}: ${checkResult}`;
       }
     }
-    return undefined;
+
+    return dstPixels;
+  }
+
+  getExpectedPixels(
+    sourcePixels: Uint8ClampedArray,
+    width: number,
+    height: number,
+    format: RegularTextureFormat,
+    isFlipY: boolean,
+    conversion: {
+      srcPremultiplied: boolean;
+      dstPremultiplied: boolean;
+      srcColorSpace?: PredefinedColorSpace;
+      dstColorSpace?: PredefinedColorSpace;
+    }
+  ): TexelView {
+    const applyConversion = makeInPlaceColorConversion(conversion);
+
+    const divide = 255.0;
+    return TexelView.fromTexelsAsColors(
+      format,
+      coords => {
+        assert(coords.x < width && coords.y < height && coords.z === 0, 'out of bounds');
+        const y = isFlipY ? height - coords.y - 1 : coords.y;
+        const pixelPos = y * width + coords.x;
+
+        const rgba = {
+          R: sourcePixels[pixelPos * 4] / divide,
+          G: sourcePixels[pixelPos * 4 + 1] / divide,
+          B: sourcePixels[pixelPos * 4 + 2] / divide,
+          A: sourcePixels[pixelPos * 4 + 3] / divide,
+        };
+        applyConversion(rgba);
+        return rgba;
+      },
+      { clampToFormatRange: true }
+    );
   }
 
   doTestAndCheckResult(
     imageCopyExternalImage: GPUImageCopyExternalImage,
     dstTextureCopyView: GPUImageCopyTextureTagged,
-    copySize: GPUExtent3DDict,
-    bytesPerPixel: number,
-    expectedData: Uint8ClampedArray,
-    isFp16: boolean
+    expTexelView: TexelView,
+    copySize: Required<GPUExtent3DDict>,
+    texelCompareOptions: TexelCompareOptions
   ): void {
     this.device.queue.copyExternalImageToTexture(
       imageCopyExternalImage,
@@ -101,32 +81,13 @@ export class CopyToTextureUtils extends GPUTest {
       copySize
     );
 
-    const externalImage = imageCopyExternalImage.source;
-    const dstTexture = dstTextureCopyView.texture;
-
-    const bytesPerRow = align(externalImage.width * bytesPerPixel, kBytesPerRowAlignment);
-    const testBuffer = this.device.createBuffer({
-      size: bytesPerRow * externalImage.height,
-      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-    });
-    this.trackForCleanup(testBuffer);
-
-    const encoder = this.device.createCommandEncoder();
-
-    encoder.copyTextureToBuffer(
-      { texture: dstTexture, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
-      { buffer: testBuffer, bytesPerRow },
-      { width: externalImage.width, height: externalImage.height, depthOrArrayLayers: 1 }
+    const resultPromise = textureContentIsOKByT2B(
+      this,
+      { texture: dstTextureCopyView.texture },
+      copySize,
+      { expTexelView },
+      texelCompareOptions
     );
-    this.device.queue.submit([encoder.finish()]);
-
-    this.checkCopyExternalImageResult(
-      testBuffer,
-      expectedData,
-      externalImage.width,
-      externalImage.height,
-      bytesPerPixel,
-      isFp16
-    );
+    this.eventualExpectOK(resultPromise);
   }
 }

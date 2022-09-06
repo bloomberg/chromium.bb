@@ -27,12 +27,12 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #include "base/win/com_init_util.h"
 #include "base/win/current_module.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace base {
 namespace internal {
@@ -65,7 +65,7 @@ class PooledSingleThreadTaskRunnerManagerTest : public testing::Test {
   }
 
   virtual void StartSingleThreadTaskRunnerManagerFromSetUp() {
-    single_thread_task_runner_manager_->Start();
+    single_thread_task_runner_manager_->Start(service_thread_.task_runner());
   }
 
   virtual void TearDownSingleThreadTaskRunnerManager() {
@@ -532,7 +532,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
   join_from_different_thread.Join();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
@@ -644,7 +644,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   test::ShutdownTaskTracker(&task_tracker_);
 }
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -688,7 +688,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerStartTest, PostTaskBeforeStart) {
   // flaky if the tested code allows that to happen.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   manager_started.Set();
-  single_thread_task_runner_manager_->Start();
+  single_thread_task_runner_manager_->Start(service_thread_.task_runner());
 
   // Wait for the task to complete to keep |manager_started| alive.
   task_finished.Wait();

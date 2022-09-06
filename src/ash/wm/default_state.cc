@@ -11,6 +11,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_metrics_controller.h"
@@ -21,6 +22,8 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -106,7 +109,7 @@ void DefaultState::AttachState(WindowState* window_state,
     aura::Window* window = window_state->window();
     window->SetProperty(
         aura::client::kShowStateKey,
-        window->GetProperty(aura::client::kPreMinimizedShowStateKey));
+        window->GetProperty(aura::client::kRestoreShowStateKey));
   }
 
   ReenterToCurrentState(window_state, state_in_previous_mode);
@@ -187,9 +190,8 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       int min_height = bounds.height() * kMinimumPercentOnScreenArea;
       AdjustBoundsToEnsureWindowVisibility(display_area, min_width, min_height,
                                            &bounds);
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window->bounds() != bounds)
-        window_state->SetBoundsConstrained(bounds);
+      window_state->AdjustSnappedBoundsForDisplayWorkspaceChange(&bounds);
+      window_state->SetBoundsConstrained(bounds);
       return;
     }
     case WM_EVENT_DISPLAY_BOUNDS_CHANGED: {
@@ -338,7 +340,8 @@ void DefaultState::HandleBoundsEvents(WindowState* window_state,
 void DefaultState::HandleTransitionEvents(WindowState* window_state,
                                           const WMEvent* event) {
   WindowStateType current_state_type = window_state->GetStateType();
-  WindowStateType next_state_type = GetStateForTransitionEvent(event);
+  WindowStateType next_state_type =
+      GetStateForTransitionEvent(window_state, event);
   if (event->IsPinEvent()) {
     // If there already is a pinned window, it is not allowed to set it
     // to this window.
@@ -362,6 +365,16 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
                                     : WindowStateType::kSecondarySnapped);
     window_state->SetBoundsDirectAnimated(snapped_bounds);
     return;
+  }
+
+  if (next_state_type == WindowStateType::kPrimarySnapped ||
+      next_state_type == WindowStateType::kSecondarySnapped) {
+    if (type == WM_EVENT_RESTORE) {
+      window_state->set_snap_action_source(
+          WindowSnapActionSource::kSnapByWindowStateRestore);
+    }
+    window_state->RecordAndResetWindowSnapActionSource(current_state_type,
+                                                       next_state_type);
   }
 
   EnterToNextState(window_state, next_state_type);
@@ -423,6 +436,20 @@ void DefaultState::EnterToNextState(WindowState* window_state,
 
   window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
+
+  auto* const float_controller = Shell::Get()->float_controller();
+  auto* window = window_state->window();
+  if (state_type_ == WindowStateType::kFloated) {
+    DCHECK_EQ(next_state_type, WindowStateType::kFloated);
+    // Add window to float container.
+    float_controller->Float(window);
+  }
+
+  // Unfloat floated window when exiting float state to another state.
+  if (previous_state_type == WindowStateType::kFloated) {
+    // Remove float window from float container.
+    float_controller->Unfloat(window);
+  }
 
   // Don't update the window if the window is detached from parent.
   // This can happen during dragging.
@@ -534,8 +561,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
             bounds_in_parent.width() >= work_area_in_parent.width() &&
             bounds_in_parent.height() >= work_area_in_parent.height()) {
           bounds_in_parent = work_area_in_parent;
-          bounds_in_parent.Inset(kMaximizedWindowInset, kMaximizedWindowInset,
-                                 kMaximizedWindowInset, kMaximizedWindowInset);
+          bounds_in_parent.Inset(kMaximizedWindowInset);
         }
       } else {
         bounds_in_parent = window->bounds();
@@ -564,6 +590,11 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       break;
     case WindowStateType::kInactive:
     case WindowStateType::kAutoPositioned:
+    case WindowStateType::kFloated:
+      // TODO(crbug.com/1331078): Handle Float Size and Position requirement.
+      // Temporarily set to current bounds.
+      bounds_in_parent = window->bounds();
+      break;
     case WindowStateType::kPip:
       return;
   }
@@ -617,7 +648,7 @@ void DefaultState::UpdateBoundsForDisplayOrWorkAreaBoundsChange(
     bounds.AdjustToFit(work_area_in_parent);
   else if (!::wm::GetTransientParent(window_state->window()))
     AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent, &bounds);
-  window_state->AdjustSnappedBounds(&bounds);
+  window_state->AdjustSnappedBoundsForDisplayWorkspaceChange(&bounds);
 
   if (window_state->window()->GetTargetBounds() == bounds)
     return;

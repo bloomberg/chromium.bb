@@ -4,6 +4,7 @@
 
 #include "base/power_monitor/power_monitor_source.h"
 
+#include "base/notreached.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
 #include "build/build_config.h"
@@ -25,11 +26,11 @@ int PowerMonitorSource::GetInitialSpeedLimit() {
 void PowerMonitorSource::SetCurrentThermalState(
     PowerThermalObserver::DeviceThermalState state) {}
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 int PowerMonitorSource::GetRemainingBatteryCapacity() {
   return 0;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // static
 void PowerMonitorSource::ProcessPowerEvent(PowerEvent event_id) {

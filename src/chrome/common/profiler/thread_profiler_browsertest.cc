@@ -20,13 +20,13 @@
 #include "content/public/test/browser_test.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
 #else
 #include "chrome/test/base/in_process_browser_test.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -125,20 +125,6 @@ class ThreadProfilerBrowserTest : public PlatformBrowserTest {
   }
 };
 
-bool ShouldSkipTestForMacOS11() {
-#if defined(OS_MAC)
-  // Sampling profiler does not work and is disabled on macOS 11.
-  // See https://crbug.com/1101399 and https://crbug.com/1098119.
-  // DCHECK that that remains the case so these tests are re-enabled when the
-  // sampling profiler is re-enabled there.
-  if (base::mac::IsAtLeastOS11()) {
-    DCHECK(!base::StackSamplingProfiler::IsSupportedForCurrentPlatform());
-    return true;
-  }
-#endif
-  return false;
-}
-
 // Wait for a profile with the specified properties.
 bool WaitForProfile(metrics::SampledProfile::TriggerEvent trigger_event,
                     metrics::Process process,
@@ -168,79 +154,76 @@ bool WaitForProfile(metrics::SampledProfile::TriggerEvent trigger_event,
 
 }  // namespace
 
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
+// These threads are not currently profiled on Android.
+#define MAYBE_BrowserProcessMainThread DISABLED_BrowserProcessMainThread
+#define MAYBE_BrowserProcessIOThread DISABLED_BrowserProcessIOThread
+#define MAYBE_GpuProcessMainThread DISABLED_GpuProcessMainThread
+#define MAYBE_GpuProcessIOThread DISABLED_GpuProcessIOThread
+#define MAYBE_GpuProcessCompositorThread DISABLED_GpuProcessCompositorThread
+// Android doesn't have a network service process.
+#define MAYBE_NetworkServiceProcessIOThread \
+  DISABLED_NetworkServiceProcessIOThread
+#else
+#define MAYBE_BrowserProcessMainThread BrowserProcessMainThread
+#define MAYBE_BrowserProcessIOThread BrowserProcessIOThread
+#define MAYBE_GpuProcessMainThread GpuProcessMainThread
+#define MAYBE_GpuProcessIOThread GpuProcessIOThread
+#define MAYBE_GpuProcessCompositorThread GpuProcessCompositorThread
+#define MAYBE_NetworkServiceProcessIOThread NetworkServiceProcessIOThread
+#endif
+
 // Check that we receive startup profiles in the browser process for profiled
 // processes/threads. We've seen multiple breakages previously where profiles
 // were dropped as a result of bugs introduced by mojo refactorings.
 
-IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, BrowserProcessMainThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
+IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest,
+                       MAYBE_BrowserProcessMainThread) {
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::BROWSER_PROCESS, metrics::MAIN_THREAD));
 }
 
-IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, BrowserProcessIOThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
+IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest,
+                       MAYBE_BrowserProcessIOThread) {
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::BROWSER_PROCESS, metrics::IO_THREAD));
 }
 
-IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, GpuProcessMainThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
+IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, MAYBE_GpuProcessMainThread) {
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::GPU_PROCESS, metrics::MAIN_THREAD));
 }
 
-IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, GpuProcessIOThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
+IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, MAYBE_GpuProcessIOThread) {
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::GPU_PROCESS, metrics::IO_THREAD));
 }
 
-IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, GpuProcessCompositorThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
+IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest,
+                       MAYBE_GpuProcessCompositorThread) {
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::GPU_PROCESS, metrics::COMPOSITOR_THREAD));
 }
 
 IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, RendererProcessMainThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::RENDERER_PROCESS, metrics::MAIN_THREAD));
 }
 
 IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest, RendererProcessIOThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::RENDERER_PROCESS, metrics::IO_THREAD));
 }
 
 IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest,
                        RendererProcessCompositorThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::RENDERER_PROCESS,
                              metrics::COMPOSITOR_THREAD));
 }
 
-// Android doesn't have a network service process.
-#if defined(OS_ANDROID)
-#define MAYBE_NetworkServiceProcessIOThread \
-  DISABLED_NetworkServiceProcessIOThread
-#else
-#define MAYBE_NetworkServiceProcessIOThread NetworkServiceProcessIOThread
-#endif
 IN_PROC_BROWSER_TEST_F(ThreadProfilerBrowserTest,
                        MAYBE_NetworkServiceProcessIOThread) {
-  if (ShouldSkipTestForMacOS11())
-    GTEST_SKIP() << "Stack sampler is not supported on macOS 11.";
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::NETWORK_SERVICE_PROCESS,
                              metrics::IO_THREAD));

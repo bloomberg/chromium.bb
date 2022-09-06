@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -31,10 +32,7 @@ constexpr char kFallbackTouchDevicePhys[] = "fallback_touch_device_phys";
 
 // Returns true if |path| is likely a USB device.
 bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-
-  for (const auto& component : components) {
+  for (const auto& component : path.GetComponents()) {
     if (base::StartsWith(component, "usb",
                          base::CompareCase::INSENSITIVE_ASCII)) {
       return true;
@@ -62,10 +60,10 @@ int GetUsbAssociationScore(const ManagedDisplayInfo* display,
 
   // The association score is simply the number of prefix path components that
   // sysfs paths have in common.
-  std::vector<base::FilePath::StringType> display_components;
-  std::vector<base::FilePath::StringType> device_components;
-  display->sys_path().GetComponents(&display_components);
-  device.sys_path.GetComponents(&device_components);
+  std::vector<base::FilePath::StringType> display_components =
+      display->sys_path().GetComponents();
+  std::vector<base::FilePath::StringType> device_components =
+      device.sys_path.GetComponents();
 
   std::size_t largest_idx = 0;
   while (largest_idx < display_components.size() &&
@@ -96,7 +94,7 @@ DeviceList::const_iterator GuessBestUsbDevice(const ManagedDisplayInfo* display,
 
 // Returns true if |display| is internal.
 bool IsInternalDisplay(const ManagedDisplayInfo* display) {
-  return Display::IsInternalDisplayId(display->id());
+  return IsInternalDisplayId(display->id());
 }
 
 // Returns true if |device| is internal.
@@ -142,7 +140,7 @@ ManagedDisplayInfo* GetBestMatchForDevice(
   // associated with the touch device identified by |identifier|.
   for (auto* display : *displays) {
     // We do not want to match anything to the internal display.
-    if (Display::IsInternalDisplayId(display->id()))
+    if (IsInternalDisplayId(display->id()))
       continue;
     if (!base::Contains(info_map, display->id()))
       continue;

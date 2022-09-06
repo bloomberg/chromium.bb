@@ -4,24 +4,20 @@
 
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import './print_preview_vars_css.js';
+import './print_preview_vars.css.js';
 import '../strings.m.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {isMac} from 'chrome://resources/js/cr.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DarkModeMixin} from '../dark_mode_mixin.js';
 import {Coordinate2d} from '../data/coordinate2d.js';
 import {Destination} from '../data/destination.js';
-import {getPrinterTypeForDestination} from '../data/destination_match.js';
 import {CustomMarginsOrientation, Margins, MarginsSetting, MarginsType} from '../data/margins.js';
 import {MeasurementSystem} from '../data/measurement_system.js';
 import {DuplexMode, MediaSizeValue, Ticket} from '../data/model.js';
-import {PrintableArea} from '../data/printable_area.js';
 import {ScalingType} from '../data/scaling.js';
 import {Size} from '../data/size.js';
 import {Error, State} from '../data/state.js';
@@ -31,15 +27,16 @@ import {areRangesEqual} from '../print_preview_utils.js';
 
 import {MARGIN_KEY_MAP, MarginObject, PrintPreviewMarginControlContainerElement} from './margin_control_container.js';
 import {PluginProxy, PluginProxyImpl} from './plugin_proxy.js';
+import {getTemplate} from './preview_area.html.js';
 import {SettingsMixin} from './settings_mixin.js';
 
 export type PreviewTicket = Ticket&{
-  headerFooterEnabled: boolean;
-  pageRange: Array<{to: number, from: number}>;
-  pagesPerSheet: number;
-  isFirstRequest: boolean;
-  requestID: number;
-}
+  headerFooterEnabled: boolean,
+  pageRange: Array<{to: number, from: number}>,
+  pagesPerSheet: number,
+  isFirstRequest: boolean,
+  requestID: number,
+};
 
 export enum PreviewAreaState {
   LOADING = 'loading',
@@ -50,7 +47,7 @@ export enum PreviewAreaState {
 }
 
 export interface PrintPreviewPreviewAreaElement {
-  $: {marginControlContainer: PrintPreviewMarginControlContainerElement;};
+  $: {marginControlContainer: PrintPreviewMarginControlContainerElement};
 }
 
 const PrintPreviewPreviewAreaElementBase =
@@ -63,7 +60,7 @@ export class PrintPreviewPreviewAreaElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -135,7 +132,7 @@ export class PrintPreviewPreviewAreaElement extends
   private pluginProxy_: PluginProxy = PluginProxyImpl.getInstance();
   private keyEventCallback_: ((e: KeyboardEvent) => void)|null = null;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.nativeLayer_ = NativeLayerImpl.getInstance();
@@ -239,14 +236,6 @@ export class PrintPreviewPreviewAreaElement extends
   }
 
   /**
-   * @return Whether the "learn more" link to the cloud print help
-   *     page should be shown.
-   */
-  private shouldShowLearnMoreLink_(): boolean {
-    return this.error === Error.UNSUPPORTED_PRINTER;
-  }
-
-  /**
    * @return The current preview area message to display.
    */
   private currentMessage_(): string {
@@ -262,7 +251,7 @@ export class PrintPreviewPreviewAreaElement extends
       // </if>
       case PreviewAreaState.ERROR:
         // The preview area is responsible for displaying all errors except
-        // print failed and cloud print error.
+        // print failed.
         return this.getErrorMessage_();
       default:
         return '';
@@ -307,7 +296,6 @@ export class PrintPreviewPreviewAreaElement extends
   // <if expr="is_macosx">
   /** Set the preview state to display the "opening in preview" message. */
   setOpeningPdfInPreview() {
-    assert(isMac);
     this.previewState = this.previewState === PreviewAreaState.LOADING ?
         PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
         PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
@@ -636,8 +624,7 @@ export class PrintPreviewPreviewAreaElement extends
     }
 
     // Destination
-    if (getPrinterTypeForDestination(this.destination) !==
-        lastTicket.printerType) {
+    if (this.destination.type !== lastTicket.printerType) {
       return true;
     }
 
@@ -735,14 +722,9 @@ export class PrintPreviewPreviewAreaElement extends
       dpiVertical: this.getDpiForTicket_('vertical_dpi'),
       duplex: this.getSettingValue('duplex') ? DuplexMode.LONG_EDGE :
                                                DuplexMode.SIMPLEX,
-      printerType: getPrinterTypeForDestination(this.destination),
+      printerType: this.destination.type,
       rasterizePDF: this.getSettingValue('rasterize') as boolean,
     };
-
-    // Set 'cloudPrintID' only if the this.destination is not local.
-    if (this.destination && !this.destination.isLocal) {
-      ticket.cloudPrintID = this.destination.id;
-    }
 
     if (this.getSettingValue('margins') === MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
@@ -770,12 +752,7 @@ export class PrintPreviewPreviewAreaElement extends
           substitutions: [],
           tags: ['BR'],
         });
-      case Error.UNSUPPORTED_PRINTER:
-        return this.i18nAdvanced('unsupportedCloudPrinter', {
-          substitutions: [],
-          tags: ['BR'],
-        });
-      // <if expr="chromeos or lacros">
+      // <if expr="chromeos_ash or chromeos_lacros">
       case Error.NO_DESTINATIONS:
         return this.i18n('noDestinationsMessage');
       // </if>

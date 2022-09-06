@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FENCED_FRAME_DOCUMENT_FENCED_FRAMES_H_
 
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -19,7 +19,15 @@ class DocumentFencedFrames final
       public Supplement<Document> {
  public:
   static const char kSupplementName[];
-  static DocumentFencedFrames& From(Document&);
+
+  // Returns the supplement that stores the fenced frame elements
+  // that are associated with the document. Returns nullptr if
+  // `GetOrCreate` has yet been called yet.
+  static DocumentFencedFrames* Get(Document&);
+
+  // Like `Get` but if the supplement has not been created yet it
+  // will be created.
+  static DocumentFencedFrames& GetOrCreate(Document&);
 
   explicit DocumentFencedFrames(Document&);
 

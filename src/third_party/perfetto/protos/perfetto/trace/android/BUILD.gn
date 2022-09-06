@@ -18,7 +18,9 @@ perfetto_proto_library("@TYPE@") {
   deps = [ "../../common:@TYPE@" ]
 
   sources = [
+    "android_game_intervention_list.proto",
     "android_log.proto",
+    "camera_event.proto",
     "frame_timeline_event.proto",
     "gpu_mem_event.proto",
     "graphics_frame_event.proto",

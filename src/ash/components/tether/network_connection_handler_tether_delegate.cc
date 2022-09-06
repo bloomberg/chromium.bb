@@ -4,15 +4,15 @@
 
 #include "ash/components/tether/network_connection_handler_tether_delegate.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/tether/active_host.h"
 #include "ash/components/tether/tether_connector.h"
 #include "ash/components/tether/tether_disconnector.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -136,4 +136,4 @@ void NetworkConnectionHandlerTetherDelegate::OnRequestError(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

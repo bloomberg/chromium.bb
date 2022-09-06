@@ -55,12 +55,16 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
     txfm2d_size_ = tx_width_ * tx_height_;
     input_ = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(input_[0]) * txfm2d_size_));
+    ASSERT_NE(input_, nullptr);
     output_ = reinterpret_cast<int32_t *>(
         aom_memalign(16, sizeof(output_[0]) * txfm2d_size_));
+    ASSERT_NE(output_, nullptr);
     ref_input_ = reinterpret_cast<double *>(
         aom_memalign(16, sizeof(ref_input_[0]) * txfm2d_size_));
+    ASSERT_NE(ref_input_, nullptr);
     ref_output_ = reinterpret_cast<double *>(
         aom_memalign(16, sizeof(ref_output_[0]) * txfm2d_size_));
+    ASSERT_NE(ref_output_, nullptr);
   }
 
   void RunFwdAccuracyCheck() {

@@ -85,7 +85,7 @@ enum ExtractMask {
 //
 // Future potential improvements include:
 // * Detect potential visibility of elements with "overflow: visible".
-//   (See Element::scrollWidth().)
+//   (See WebElement::GetScrollSize().)
 // * Detect invisibility of elements with
 //   - "position: absolute; {left,top,right,bottol}: -100px"
 //   - "opacity: 0.0"
@@ -146,10 +146,10 @@ GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
 GURL GetDocumentUrlWithoutAuth(const blink::WebDocument& document);
 
 // Returns true if |element| is a month input element.
-bool IsMonthInput(const blink::WebInputElement* element);
+bool IsMonthInput(const blink::WebInputElement& element);
 
 // Returns true if |element| is a text input element.
-bool IsTextInput(const blink::WebInputElement* element);
+bool IsTextInput(const blink::WebInputElement& element);
 
 // Returns true if |element| is a select element.
 bool IsSelectElement(const blink::WebFormControlElement& element);
@@ -158,20 +158,43 @@ bool IsSelectElement(const blink::WebFormControlElement& element);
 bool IsTextAreaElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is a checkbox or a radio button element.
-bool IsCheckableElement(const blink::WebInputElement* element);
+bool IsCheckableElement(const blink::WebInputElement& element);
 
 // Returns true if |element| is one of the input element types that can be
 // autofilled. {Text, Radiobutton, Checkbox}.
-bool IsAutofillableInputElement(const blink::WebInputElement* element);
+bool IsAutofillableInputElement(const blink::WebInputElement& element);
 
 // Returns true if |element| is one of the element types that can be autofilled.
 // {Text, Radiobutton, Checkbox, Select, TextArea}.
 bool IsAutofillableElement(const blink::WebFormControlElement& element);
 
-// True if this node can take focus. If layout is blocked, then the function
-// checks if the element takes up space in the layout, ie. this element or a
-// descendant has a non-empty bounding bounding client rect.
-bool IsWebElementVisible(const blink::WebElement& element);
+// True if this node can take focus. If the layout is blocked, then the function
+// checks if the element takes up space in the layout, i.e., this element or a
+// descendant has a non-empty bounding client rect.
+bool IsWebElementFocusable(const blink::WebElement& element);
+
+// A heuristic visibility detection. See crbug.com/1335257 for an overview of
+// relevant aspects.
+//
+// Note that WebElement::BoundsInViewport(), WebElement::GetClientSize(), and
+// WebElement::GetScrollSize() include the padding but do not include the border
+// and margin. BoundsInViewport() additionally scales the dimensions according
+// to the zoom factor.
+//
+// It seems that invisible fields on websites typically have dimensions between
+// 0 and 10 pixels, before the zoom factor. Therefore choosing `kMinPixelSize`
+// is easier without including the zoom factor. For that reason, this function
+// prefers GetClientSize() over BoundsInViewport().
+//
+// This function does not check the position in the viewport because fields in
+// iframes commonly are visible despite the body having height zero. Therefore,
+// `e.GetDocument().Body().BoundsInViewport().Intersects(e.BoundsInViewport())`
+// yields false negatives.
+//
+// Exposed for testing purposes.
+//
+// TODO(crbug.com/1335257): Can input fields or iframes actually overflow?
+bool IsWebElementVisible(blink::WebElement element);
 
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
@@ -343,8 +366,8 @@ std::u16string FindChildTextWithIgnoreListForTesting(
     const blink::WebNode& node,
     const std::set<blink::WebNode>& divs_to_skip);
 bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
-                                    std::u16string* label,
-                                    FormFieldData::LabelSource* label_source);
+                                    std::u16string& label,
+                                    FormFieldData::LabelSource& label_source);
 
 // Returns the form element by unique renderer id. Returns the null element if
 // there is no form with the |form_renderer_id|.

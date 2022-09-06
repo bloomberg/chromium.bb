@@ -841,7 +841,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="AnchorElementMetrics.IsAdFrameElement" units="Boolean"
+<histogram name="AnchorElementMetrics.IsAdFrameElement" enum="Boolean"
     expires_after="2020-05-21">
   <obsolete>
     Removed 05/2020.
@@ -2393,7 +2393,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.ZeroStateSearchResutRemovalDecision"
-    enum="AppListZeroStateResultRemovalConfirmation" expires_after="2019-12-31">
+    enum="AppListResultRemovalConfirmation" expires_after="2019-12-31">
   <obsolete>
     Removed June 2019, replaced by
     Apps.AppList.ZeroStateSearchResultRemovalDecision.
@@ -9081,6 +9081,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.PlatformKeysService.{Operation}.{KeyType}"
+    enum="BooleanSuccess" expires_after="2022-03-19">
+  <obsolete>
+    Removed in 2022/03 as part of https://crbug.com/1294874 and
+    https://crbug.com/1294873
+  </obsolete>
+  <owner>omorsi@google.com</owner>
+  <owner>mgawad@google.com</owner>
+  <summary>
+    Tracks the final result of performing {Operation} operation on an {KeyType}
+    key in PlatformKeysService.
+  </summary>
+  <token key="Operation">
+    <variant name="GenerateKey"/>
+    <variant name="SignKey"/>
+  </token>
+  <token key="KeyType">
+    <variant name="EC"/>
+    <variant name="RSA"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.PlatformVerification.ExpiryStatus"
     enum="ChromeOSPlatformVerificationExpiryStatus" expires_after="M80">
   <obsolete>
@@ -10258,7 +10280,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceDependencyDeadline.DeadlineHit"
-    units="Boolean" expires_after="2018-10-17">
+    enum="Boolean" expires_after="2018-10-17">
   <obsolete>
     Removed as of 10/2018. This metric didn't end up being useful.
   </obsolete>
@@ -11984,6 +12006,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.TimeToTakeTpmOwnership" units="ms"
+    expires_after="2022-03-20">
+  <obsolete>
+    Removed 04/2022 as it is not used since crrev.com/c/2637147 (02/2021)
+  </obsolete>
+  <owner>apronin@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome daemon to take ownership of
+    the TPM.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.DynamicModule.CreateActivityDelegateTime"
     units="ms" expires_after="2020-02-29">
   <obsolete>
@@ -12707,7 +12742,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DataReductionProxy.NetworkProperties.CacheHit"
-    units="BooleanCacheHit" expires_after="M81">
+    enum="BooleanCacheHit" expires_after="M81">
   <obsolete>
     Obsoleted in April 2020
   </obsolete>
@@ -16438,7 +16473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.DatabaseDownloadExistsForDownloadSlice"
-    units="Boolean" expires_after="M77">
+    enum="Boolean" expires_after="M77">
   <obsolete>
     Removed in 07/2019.
   </obsolete>
@@ -22676,7 +22711,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.ExtensionFrameMapCacheHit" units="Boolean"
+<histogram name="Extensions.ExtensionFrameMapCacheHit" enum="Boolean"
     expires_after="M85">
   <obsolete>
     Removed in M77.
@@ -22689,7 +22724,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.ExtensionFrameMapLookupSuccessful" units="Boolean"
+<histogram name="Extensions.ExtensionFrameMapLookupSuccessful" enum="Boolean"
     expires_after="M85">
   <obsolete>
     Removed in M77.
@@ -22765,7 +22800,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.ExtensionRendererStateCacheHit" units="Boolean"
+<histogram name="Extensions.ExtensionRendererStateCacheHit" enum="Boolean"
     expires_after="2016-04-05">
   <obsolete>
     Removed 4/2016. ExtensionRendererState was replaced with ExtensionFrameMap.
@@ -26238,7 +26273,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.ProgramCache.CompressDataSuccess" units="BooleanSuccess"
+<histogram name="GPU.ProgramCache.CompressDataSuccess" enum="BooleanSuccess"
     expires_after="M77">
   <obsolete>
     Not used after M77. ProgramCache not actively being tuned.
@@ -26279,7 +26314,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.ProgramCache.DecompressDataSuccess" units="BooleanSuccess"
+<histogram name="GPU.ProgramCache.DecompressDataSuccess" enum="BooleanSuccess"
     expires_after="M77">
   <obsolete>
     Not used after M77. ProgramCache not actively being tuned.
@@ -50573,7 +50608,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintCache.HasHint.AtCommit"
-    units="BooleanAvailable" expires_after="2020-04-30">
+    enum="BooleanAvailable" expires_after="2020-04-30">
   <obsolete>
     Obsolete as of 04/2020 since this histogram no longer makes sense with the
     current request flow.
@@ -50587,7 +50622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintCache.HasHint.BeforeCommit"
-    units="BooleanAvailable" expires_after="2020-04-30">
+    enum="BooleanAvailable" expires_after="2020-04-30">
   <obsolete>
     Obsolete as of 04/2020 since this histogram no longer makes sense with the
     current request flow.
@@ -50602,7 +50637,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintCache.HostMatch.AtCommit"
-    units="BooleanMatched" expires_after="2020-04-30">
+    enum="BooleanMatched" expires_after="2020-04-30">
   <obsolete>
     Obsolete as of 04/2020 since this histogram no longer makes sense with the
     current request flow.
@@ -50619,7 +50654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintCache.PageMatch.AtCommit"
-    units="BooleanMatched" expires_after="2020-04-30">
+    enum="BooleanMatched" expires_after="2020-04-30">
   <obsolete>
     Obsolete as of 04/2020 since this histogram no longer makes sense with the
     current request flow.
@@ -56154,6 +56189,53 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PerformanceManager.AgentsByTime" units="units"
+    expires_after="2020-12-04">
+  <obsolete>
+    Removed 2020-11.
+  </obsolete>
+  <owner>bokan@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
+  <owner>platform-architecture-dev@chromium.org</owner>
+  <summary>
+    Tracks the total number of agents hosted by the browser by time. An entry in
+    bucket N corresponds to N agents being hosted across all live renderer
+    process for 1 second. Recorded on state changes and every 5 minutes.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceManager.AgentsPerRendererByTime" units="units"
+    expires_after="2020-12-04">
+  <obsolete>
+    Removed 2020-11.
+  </obsolete>
+  <owner>bokan@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
+  <owner>platform-architecture-dev@chromium.org</owner>
+  <summary>
+    Tracks the number of agents hosted per renderer by time. An entry in bucket
+    N corresponds to N agents being hosted by a renderer process for 1 second.
+    Recorded on state changes and every 5 minutes.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceManager.AgentsUniqueByTime" units="units"
+    expires_after="2020-12-04">
+  <obsolete>
+    Removed 2020-11.
+  </obsolete>
+  <owner>bokan@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
+  <owner>platform-architecture-dev@chromium.org</owner>
+  <summary>
+    Tracks the number of unique agents hosted by the browser by time. An entry
+    in bucket N corresponds to N unique agents being hosted across all live
+    renderer process for 1 second. Unique means that the agent count would
+    remain the same if they were in one process (i.e. they have different
+    protocol+site). Recorded on state changes and every 5 minutes.
+  </summary>
+</histogram>
+
 <histogram
     name="PerformanceManager.BrowsingInstancePluralityVisibilityState.ByPageTime"
     enum="BrowsingInstancePluralityVisibilityState" expires_after="2019-09-30">
@@ -57842,6 +57924,16 @@ chromium-metrics-reviews@google.com.
     http://crbug.com/338657 and http://crosbug.com/p/16009. Note that we log
     retries on all 7 FETs even though we've only ever seen failures of FET1.
   </summary>
+</histogram>
+
+<histogram name="Platform.U2F.LegacyCommand" enum="Cr50U2FCommands"
+    expires_after="2021-12-21">
+  <obsolete>
+    Removed 04/2022 as it is not used since crrev.com/c/1755785 (09/2019)
+  </obsolete>
+  <owner>cylai@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
+  <summary>Records occurrences of legacy U2F commands sent to cr50.</summary>
 </histogram>
 
 <histogram name="PlatformFile.FlushTime" units="ms" expires_after="2016-07-22">
@@ -61642,7 +61734,7 @@ chromium-metrics-reviews@google.com.
   </obsolete>
   <owner>robertogden@chromium.org</owner>
   <owner>tombergan@chromium.org</owner>
-  <owner>src/components/data_reduction_proxy/OWNERS</owner>
+  <owner>src/chrome/browser/data_saver/OWNERS</owner>
   <summary>
     Whether or not the server directed Chrome to blacklist the requested host on
     a bypass response.
@@ -65010,7 +65102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="RendererScheduler.UserModel.GesturePredictedCorrectly"
-    units="GesturePredictionResult" expires_after="2017-08-30">
+    enum="GesturePredictionResult" expires_after="2017-08-30">
   <obsolete>
     Removed from code 2017-08.
   </obsolete>
@@ -67133,7 +67225,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.ModuleBaseRelocation" units="BaseRelocationType"
+<histogram name="SafeBrowsing.ModuleBaseRelocation" enum="BaseRelocationType"
     expires_after="M85">
   <obsolete>
     No longer used. Removed 2020-06.
@@ -79276,7 +79368,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Storage.Blob.MaxDiskSpace" units="MB"
     expires_after="2018-12-13">
   <obsolete>
-    Removed as of 12/18. Use Storage.Blob.MaxDiskSpace2 instead.
+    Removed as of 12/18.
   </obsolete>
   <owner>dmurph@chromium.org</owner>
   <summary>
@@ -81831,7 +81923,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Sync.Preferences.RemotePrefTypeMismatch" units="BooleanHit"
+<histogram name="Sync.Preferences.RemotePrefTypeMismatch" enum="BooleanHit"
     expires_after="M85">
   <obsolete>
     Removed 2020-06.
@@ -81911,8 +82003,8 @@ chromium-metrics-reviews@google.com.
   </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
-    Whether OAuth2 refresh token was available at the time when
-    ProfileSyncService was starting backend.
+    Whether OAuth2 refresh token was available at the time when SyncServiceImpl
+    was starting backend.
   </summary>
 </histogram>
 
@@ -82203,7 +82295,7 @@ chromium-metrics-reviews@google.com.
   </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
-    Time taken from the start of sync shutdown (in ProfileSyncService) until the
+    Time taken from the start of sync shutdown (in SyncServiceImpl) until the
     backend (SyncEngine) is fully destroyed.
   </summary>
 </histogram>
@@ -82255,7 +82347,7 @@ chromium-metrics-reviews@google.com.
   <owner>jeremy@chromium.org</owner>
   <owner>zea@google.com</owner>
   <summary>
-    Time spent after ProfileSyncService *creation* but before SyncEngine
+    Time spent after SyncServiceImpl *creation* but before SyncEngine
     initialization.
   </summary>
 </histogram>
@@ -84608,7 +84700,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="UI.CompositorResizeLock.TimedOut" units="Boolean"
+<histogram name="UI.CompositorResizeLock.TimedOut" enum="Boolean"
     expires_after="2019-02-07">
   <obsolete>
     Removed in M65.
@@ -86893,6 +86985,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Tracks whether the UMA-Uniformity-Trial-1-Percent field trial was not active
     and which factors contributed to it.
+  </summary>
+</histogram>
+
+<histogram name="Viewport.OverviewZoom" units="%" expires_after="M85">
+  <obsolete>
+    Expired in M85.
+  </obsolete>
+  <owner>bokan@chromium.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    The screen width as a percentage of viewport width (i.e. zoom at which we
+    can see the whole page). Only recorded on Android and for viewport meta tags
+    with constant width.
   </summary>
 </histogram>
 

@@ -14,10 +14,6 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace chromeos {
 namespace settings {
 
@@ -47,17 +43,17 @@ class StylusHandler : public ::settings::SettingsPageUIHandler,
 
  private:
   void UpdateNoteTakingApps();
-  void HandleRequestApps(const base::ListValue* unused_args);
-  void HandleSetPreferredNoteTakingApp(const base::ListValue* args);
+  void HandleRequestApps(const base::Value::List& unused_args);
+  void HandleSetPreferredNoteTakingApp(const base::Value::List& args);
   void HandleSetPreferredNoteTakingAppEnabledOnLockScreen(
-      const base::ListValue* args);
-  void HandleInitialize(const base::ListValue* args);
+      const base::Value::List& args);
+  void HandleInitialize(const base::Value::List& args);
 
   // Enables or disables the stylus UI section.
   void SendHasStylus();
 
   // Called by JS to show the Play Store Android app.
-  void HandleShowPlayStoreApps(const base::ListValue* args);
+  void HandleShowPlayStoreApps(const base::Value::List& args);
 
   // IDs of available note-taking apps.
   std::set<std::string> note_taking_app_ids_;

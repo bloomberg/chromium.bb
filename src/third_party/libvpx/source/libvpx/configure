@@ -114,6 +114,8 @@ all_platforms="${all_platforms} armv7-win32-vs14"
 all_platforms="${all_platforms} armv7-win32-vs15"
 all_platforms="${all_platforms} armv7s-darwin-gcc"
 all_platforms="${all_platforms} armv8-linux-gcc"
+all_platforms="${all_platforms} loongarch32-linux-gcc"
+all_platforms="${all_platforms} loongarch64-linux-gcc"
 all_platforms="${all_platforms} mips32-linux-gcc"
 all_platforms="${all_platforms} mips64-linux-gcc"
 all_platforms="${all_platforms} ppc64le-linux-gcc"
@@ -140,6 +142,7 @@ all_platforms="${all_platforms} x86-win32-gcc"
 all_platforms="${all_platforms} x86-win32-vs14"
 all_platforms="${all_platforms} x86-win32-vs15"
 all_platforms="${all_platforms} x86-win32-vs16"
+all_platforms="${all_platforms} x86-win32-vs17"
 all_platforms="${all_platforms} x86_64-android-gcc"
 all_platforms="${all_platforms} x86_64-darwin9-gcc"
 all_platforms="${all_platforms} x86_64-darwin10-gcc"
@@ -162,6 +165,7 @@ all_platforms="${all_platforms} x86_64-win64-gcc"
 all_platforms="${all_platforms} x86_64-win64-vs14"
 all_platforms="${all_platforms} x86_64-win64-vs15"
 all_platforms="${all_platforms} x86_64-win64-vs16"
+all_platforms="${all_platforms} x86_64-win64-vs17"
 all_platforms="${all_platforms} generic-gnu"
 
 # all_targets is a list of all targets that can be configured
@@ -237,6 +241,7 @@ ARCH_LIST="
     x86
     x86_64
     ppc
+    loongarch
 "
 ARCH_EXT_LIST_X86="
     mmx
@@ -252,6 +257,8 @@ ARCH_EXT_LIST_X86="
 
 ARCH_EXT_LIST_LOONGSON="
     mmi
+    lsx
+    lasx
 "
 
 ARCH_EXT_LIST="

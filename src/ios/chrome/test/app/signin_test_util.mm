@@ -117,6 +117,8 @@ void ResetSigninPromoPreferences() {
   prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, false);
   prefs->SetInteger(prefs::kIosSettingsSigninPromoDisplayedCount, 0);
   prefs->SetBoolean(prefs::kIosSettingsPromoAlreadySeen, false);
+  prefs->SetInteger(prefs::kIosNtpFeedTopSigninPromoDisplayedCount, 0);
+  prefs->SetBoolean(prefs::kIosNtpFeedTopPromoAlreadySeen, false);
   prefs->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
@@ -132,7 +134,6 @@ void SignInWithoutSync(ChromeIdentity* identity) {
   __block AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:browser
                                          identity:identity
-                                  shouldClearData:SHOULD_CLEAR_DATA_CLEAR_DATA
                                  postSignInAction:POST_SIGNIN_ACTION_NONE
                          presentingViewController:viewController];
   authenticationFlow.dispatcher = (id<BrowsingDataCommands>)GetMainController();

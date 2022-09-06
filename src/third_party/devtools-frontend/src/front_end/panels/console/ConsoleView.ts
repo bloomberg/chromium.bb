@@ -56,7 +56,15 @@ import {ConsoleFilter, FilterType} from './ConsoleFilter.js';
 import {ConsolePinPane} from './ConsolePinPane.js';
 import {ConsolePrompt, Events as ConsolePromptEvents} from './ConsolePrompt.js';
 import {ConsoleSidebar, Events} from './ConsoleSidebar.js';
-import {ConsoleCommand, ConsoleCommandResult, ConsoleGroupViewMessage, ConsoleTableMessageView, ConsoleViewMessage, getMessageForElement, MaxLengthForLinks} from './ConsoleViewMessage.js';
+import {
+  ConsoleCommand,
+  ConsoleCommandResult,
+  ConsoleGroupViewMessage,
+  ConsoleTableMessageView,
+  ConsoleViewMessage,
+  getMessageForElement,
+  MaxLengthForLinks,
+} from './ConsoleViewMessage.js';
 
 import type {ConsoleViewportElement, ConsoleViewportProvider} from './ConsoleViewport.js';
 import {ConsoleViewport} from './ConsoleViewport.js';
@@ -108,6 +116,14 @@ const UIStrings = {
   */
   hideConsoleSidebar: 'Hide console sidebar',
   /**
+   * @description Screen reader announcement when the sidebar is shown in the Console panel.
+   */
+  consoleSidebarShown: 'Console sidebar shown',
+  /**
+   * @description Screen reader announcement when the sidebar is hidden in the Console panel.
+   */
+  consoleSidebarHidden: 'Console sidebar hidden',
+  /**
   *@description Tooltip text that appears on the setting to preserve log when hovering over the item
   */
   doNotClearLogOnPageReload: 'Do not clear log on page reload / navigation',
@@ -129,9 +145,21 @@ const UIStrings = {
   */
   selectedContextOnly: 'Selected context only',
   /**
+   *@description Description of a setting that controls whether XMLHttpRequests are logged in the console.
+   */
+  logXMLHttpRequests: 'Log XMLHttpRequests',
+  /**
   *@description Tooltip text that appears on the setting when hovering over it in Console View of the Console panel
   */
   eagerlyEvaluateTextInThePrompt: 'Eagerly evaluate text in the prompt',
+  /**
+   *@description Description of a setting that controls whether text typed in the console should be autocompleted from commands executed in the local console history.
+   */
+  autocompleteFromHistory: 'Autocomplete from history',
+  /**
+   *@description Description of a setting that controls whether user activation is triggered by evaluation'.
+  */
+  treatEvaluationAsUserActivation: 'Treat evaluation as user activation',
   /**
   * @description Text in Console View of the Console panel, indicating that a number of console
   * messages have been hidden.
@@ -263,8 +291,6 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   private readonly progressToolbarItem: UI.Toolbar.ToolbarItem;
   private readonly groupSimilarSetting: Common.Settings.Setting<boolean>;
   private readonly showCorsErrorsSetting: Common.Settings.Setting<boolean>;
-  private readonly preserveLogCheckbox: UI.Toolbar.ToolbarSettingCheckbox;
-  private readonly hideNetworkMessagesCheckbox: UI.Toolbar.ToolbarSettingCheckbox;
   private readonly timestampsSetting: Common.Settings.Setting<unknown>;
   private readonly consoleHistoryAutocompleteSetting: Common.Settings.Setting<boolean>;
   readonly pinPane: ConsolePinPane;
@@ -274,12 +300,10 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   private viewportThrottler: Common.Throttler.Throttler;
   private pendingBatchResize: boolean;
   private readonly onMessageResizedBound: (e: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void;
-  private topGroup: ConsoleGroup;
-  private currentGroup: ConsoleGroup;
   private readonly promptElement: HTMLElement;
   private readonly linkifier: Components.Linkifier.Linkifier;
   private consoleMessages: ConsoleViewMessage[];
-  private readonly viewMessageSymbol: symbol;
+  private consoleGroupStarts: ConsoleGroupViewMessage[];
   private readonly consoleHistorySetting: Common.Settings.Setting<string[]>;
   private prompt: ConsolePrompt;
   private immediatelyFilterMessagesForTest?: boolean;
@@ -370,21 +394,19 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.progressToolbarItem = new UI.Toolbar.ToolbarItem(document.createElement('div'));
     this.groupSimilarSetting = Common.Settings.Settings.instance().moduleSetting('consoleGroupSimilar');
     this.groupSimilarSetting.addChangeListener(() => this.updateMessageList());
-    const groupSimilarToggle = new UI.Toolbar.ToolbarSettingCheckbox(
-        this.groupSimilarSetting, i18nString(UIStrings.groupSimilarMessagesInConsole));
+
     this.showCorsErrorsSetting = Common.Settings.Settings.instance().moduleSetting('consoleShowsCorsErrors');
     this.showCorsErrorsSetting.addChangeListener(() => {
       Host.userMetrics.showCorsErrorsSettingChanged(this.showCorsErrorsSetting.get());
       this.updateMessageList();
     });
-    const showCorsErrorsToggle = new UI.Toolbar.ToolbarSettingCheckbox(
-        this.showCorsErrorsSetting, i18nString(UIStrings.showCorsErrorsInConsole));
 
     const toolbar = new UI.Toolbar.Toolbar('console-main-toolbar', this.consoleToolbarContainer);
     toolbar.makeWrappable(true);
     const rightToolbar = new UI.Toolbar.Toolbar('', this.consoleToolbarContainer);
     toolbar.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(
-        i18nString(UIStrings.showConsoleSidebar), i18nString(UIStrings.hideConsoleSidebar)));
+        i18nString(UIStrings.showConsoleSidebar), i18nString(UIStrings.hideConsoleSidebar),
+        i18nString(UIStrings.consoleSidebarShown), i18nString(UIStrings.consoleSidebarHidden)));
     toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(
         (UI.ActionRegistry.ActionRegistry.instance().action('console.clear') as UI.ActionRegistration.Action)));
     toolbar.appendSeparator();
@@ -404,7 +426,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.issueCounter.data = {
       clickHandler: (): void => {
         Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
-        UI.ViewManager.ViewManager.instance().showView('issues-pane');
+        void UI.ViewManager.ViewManager.instance().showView('issues-pane');
       },
       issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
       accessibleName: i18nString(UIStrings.issueToolbarTooltipGeneral),
@@ -415,15 +437,6 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     rightToolbar.appendToolbarItem(this.filterStatusText);
     rightToolbar.appendToolbarItem(this.showSettingsPaneButton);
 
-    this.preserveLogCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-        Common.Settings.Settings.instance().moduleSetting('preserveConsoleLog'),
-        i18nString(UIStrings.doNotClearLogOnPageReload), i18nString(UIStrings.preserveLog));
-    this.hideNetworkMessagesCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-        this.filter.hideNetworkMessagesSetting, this.filter.hideNetworkMessagesSetting.title(),
-        i18nString(UIStrings.hideNetwork));
-    const filterByExecutionContextCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-        this.filter.filterByExecutionContextSetting, i18nString(UIStrings.onlyShowMessagesFromTheCurrentContext),
-        i18nString(UIStrings.selectedContextOnly));
     const monitoringXHREnabledSetting = Common.Settings.Settings.instance().moduleSetting('monitoringXHREnabled');
     this.timestampsSetting = Common.Settings.Settings.instance().moduleSetting('consoleTimestampsEnabled');
     this.consoleHistoryAutocompleteSetting =
@@ -435,26 +448,36 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
     UI.ARIAUtils.setAccessibleName(settingsPane.element, i18nString(UIStrings.consoleSettings));
     UI.ARIAUtils.markAsGroup(settingsPane.element);
+
     const settingsToolbarLeft = new UI.Toolbar.Toolbar('', settingsPane.element);
     settingsToolbarLeft.makeVertical();
-    settingsToolbarLeft.appendToolbarItem(this.hideNetworkMessagesCheckbox);
-    settingsToolbarLeft.appendToolbarItem(this.preserveLogCheckbox);
-    settingsToolbarLeft.appendToolbarItem(filterByExecutionContextCheckbox);
-    settingsToolbarLeft.appendToolbarItem(groupSimilarToggle);
-    settingsToolbarLeft.appendToolbarItem(showCorsErrorsToggle);
+
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarLeft, this.filter.hideNetworkMessagesSetting, this.filter.hideNetworkMessagesSetting.title(),
+        i18nString(UIStrings.hideNetwork));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarLeft, 'preserveConsoleLog', i18nString(UIStrings.doNotClearLogOnPageReload),
+        i18nString(UIStrings.preserveLog));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarLeft, this.filter.filterByExecutionContextSetting,
+        i18nString(UIStrings.onlyShowMessagesFromTheCurrentContext), i18nString(UIStrings.selectedContextOnly));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarLeft, this.groupSimilarSetting, i18nString(UIStrings.groupSimilarMessagesInConsole));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarLeft, this.showCorsErrorsSetting, i18nString(UIStrings.showCorsErrorsInConsole));
 
     const settingsToolbarRight = new UI.Toolbar.Toolbar('', settingsPane.element);
     settingsToolbarRight.makeVertical();
-    settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(monitoringXHREnabledSetting));
-    const eagerEvalCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-        Common.Settings.Settings.instance().moduleSetting('consoleEagerEval'),
-        i18nString(UIStrings.eagerlyEvaluateTextInThePrompt));
-    settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
-    settingsToolbarRight.appendToolbarItem(
-        new UI.Toolbar.ToolbarSettingCheckbox(this.consoleHistoryAutocompleteSetting));
-    const userGestureCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(
-        Common.Settings.Settings.instance().moduleSetting('consoleUserActivationEval'));
-    settingsToolbarRight.appendToolbarItem(userGestureCheckbox);
+
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarRight, monitoringXHREnabledSetting, i18nString(UIStrings.logXMLHttpRequests));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarRight, 'consoleEagerEval', i18nString(UIStrings.eagerlyEvaluateTextInThePrompt));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarRight, this.consoleHistoryAutocompleteSetting, i18nString(UIStrings.autocompleteFromHistory));
+    ConsoleView.appendSettingsCheckboxToToolbar(
+        settingsToolbarRight, 'consoleUserActivationEval', i18nString(UIStrings.treatEvaluationAsUserActivation));
+
     if (!this.showSettingsPaneSetting.get()) {
       settingsPane.element.classList.add('hidden');
     }
@@ -482,11 +505,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.viewportThrottler = new Common.Throttler.Throttler(50);
     this.pendingBatchResize = false;
     this.onMessageResizedBound = (e: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>): void => {
-      this.onMessageResized(e);
+      void this.onMessageResized(e);
     };
-
-    this.topGroup = ConsoleGroup.createTopGroup();
-    this.currentGroup = this.topGroup;
 
     this.promptElement = this.messagesElement.createChild('div', 'source-code');
     this.promptElement.id = 'console-prompt';
@@ -509,7 +529,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
         new Components.Linkifier.Linkifier(MaxLengthForLinks, /* useLinkDecorator */ undefined, refilterMessages);
 
     this.consoleMessages = [];
-    this.viewMessageSymbol = Symbol('viewMessage');
+    this.consoleGroupStarts = [];
 
     this.consoleHistorySetting = Common.Settings.Settings.instance().createLocalSetting('consoleHistory', []);
 
@@ -564,6 +584,20 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     issuesManager.addEventListener(
         IssuesManager.IssuesManager.Events.IssuesCountUpdated,
         () => this.issueToolbarThrottle.schedule(async () => this.updateIssuesToolbarItem()), this);
+  }
+  static appendSettingsCheckboxToToolbar(
+      toolbar: UI.Toolbar.Toolbar, settingOrSetingName: Common.Settings.Setting<boolean>|string, title: string,
+      alternateTitle?: string): UI.Toolbar.ToolbarSettingCheckbox {
+    let setting: Common.Settings.Setting<boolean>;
+    if (typeof settingOrSetingName === 'string') {
+      setting = Common.Settings.Settings.instance().moduleSetting(settingOrSetingName);
+    } else {
+      setting = settingOrSetingName;
+    }
+
+    const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(setting, title, alternateTitle);
+    toolbar.appendToolbarItem(checkbox);
+    return checkbox;
   }
 
   static instance(): ConsoleView {
@@ -755,6 +789,10 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.scheduledRefreshPromiseForTest = this.viewportThrottler.schedule(this.invalidateViewport.bind(this));
   }
 
+  getScheduledRefreshPromiseForTest(): Promise<void>|undefined {
+    return this.scheduledRefreshPromiseForTest;
+  }
+
   private scheduleViewportRefreshForTest(_muted: boolean): void {
     // This functions is sniffed in tests.
   }
@@ -801,6 +839,23 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     const insertedInMiddle = insertAt < this.consoleMessages.length;
     this.consoleMessages.splice(insertAt, 0, viewMessage);
 
+    if (message.type !== SDK.ConsoleModel.FrontendMessageType.Command &&
+        message.type !== SDK.ConsoleModel.FrontendMessageType.Result) {
+      // Maintain group tree.
+      // Find parent group.
+      const consoleGroupStartIndex =
+          Platform.ArrayUtilities.upperBound(this.consoleGroupStarts, viewMessage, timeComparator) - 1;
+      if (consoleGroupStartIndex >= 0) {
+        const currentGroup = this.consoleGroupStarts[consoleGroupStartIndex];
+        addToGroup(viewMessage, currentGroup);
+      }
+      // Add new group.
+      if (message.isGroupStartMessage()) {
+        insertAt = Platform.ArrayUtilities.upperBound(this.consoleGroupStarts, viewMessage, timeComparator);
+        this.consoleGroupStarts.splice(insertAt, 0, viewMessage as ConsoleGroupViewMessage);
+      }
+    }
+
     this.filter.onMessageAdded(message);
     if (this.isSidebarOpen) {
       this.sidebar.onMessageAdded(viewMessage);
@@ -835,6 +890,29 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
     this.scheduleViewportRefresh();
     this.consoleMessageAddedForTest(viewMessage);
+
+    // Figure out whether the message should belong into this group or the parent group based on group end timestamp.
+    function addToGroup(viewMessage: ConsoleViewMessage, currentGroup: ConsoleGroupViewMessage): void {
+      const currentEnd = currentGroup.groupEnd();
+      if (currentEnd !== null) {
+        // Exceeds this group's end. It should belong into parent group.
+        if (timeComparator(viewMessage, currentEnd) > 0) {
+          const parent = currentGroup.consoleGroup();
+          // No parent group. We reached ungrouped messages. Don't establish group links.
+          if (parent === null) {
+            return;
+          }  // Add to parent group.
+          addToGroup(viewMessage, parent);
+          return;
+        }
+      }
+      // Add message to this group, and set group of the message.
+      if (viewMessage.consoleMessage().type === Protocol.Runtime.ConsoleAPICalledEventType.EndGroup) {
+        currentGroup.setGroupEnd(viewMessage);
+      } else {
+        viewMessage.setConsoleGroup(currentGroup);
+      }
+    }
 
     function timeComparator(viewMessage1: ConsoleViewMessage, viewMessage2: ConsoleViewMessage): number {
       return (messagesSortedBySymbol.get(viewMessage1) || 0) - (messagesSortedBySymbol.get(viewMessage2) || 0);
@@ -872,6 +950,18 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
         !this.showCorsErrorsSetting.get()) {
       return;
     }
+
+    const lastMessage = this.visibleViewMessages[this.visibleViewMessages.length - 1];
+    if (viewMessage.consoleMessage().type === Protocol.Runtime.ConsoleAPICalledEventType.EndGroup) {
+      if (lastMessage) {
+        const group = lastMessage.consoleGroup();
+        if (group && !group.messagesHidden()) {
+          lastMessage.incrementCloseGroupDecorationCount();
+        }
+      }
+      return;
+    }
+
     if (!this.shouldMessageBeVisible(viewMessage)) {
       this.hiddenByFilterCount++;
       return;
@@ -882,29 +972,36 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       return;
     }
 
-    const lastMessage = this.visibleViewMessages[this.visibleViewMessages.length - 1];
-    if (viewMessage.consoleMessage().type === Protocol.Runtime.ConsoleAPICalledEventType.EndGroup) {
-      if (lastMessage && !this.currentGroup.messagesHidden()) {
-        lastMessage.incrementCloseGroupDecorationCount();
-      }
-      this.currentGroup = this.currentGroup.parentGroup() || this.currentGroup;
-      return;
-    }
-    if (!this.currentGroup.messagesHidden()) {
+    const currentGroup = viewMessage.consoleGroup();
+
+    if (!currentGroup || !currentGroup.messagesHidden()) {
       const originatingMessage = viewMessage.consoleMessage().originatingMessage();
       if (lastMessage && originatingMessage && lastMessage.consoleMessage() === originatingMessage) {
         viewMessage.toMessageElement().classList.add('console-adjacent-user-command-result');
       }
-
+      showGroup(currentGroup, this.visibleViewMessages);
       this.visibleViewMessages.push(viewMessage);
       this.searchMessage(this.visibleViewMessages.length - 1);
     }
 
-    if (viewMessage.consoleMessage().isGroupStartMessage()) {
-      this.currentGroup = new ConsoleGroup(this.currentGroup, (viewMessage as ConsoleGroupViewMessage));
-    }
-
     this.messageAppendedForTests();
+
+    // Show the group the message belongs to, and also show parent groups.
+    function showGroup(currentGroup: ConsoleGroupViewMessage|null, visibleViewMessages: ConsoleViewMessage[]): void {
+      if (currentGroup === null) {
+        return;
+      }
+      // Group is already being shown, no need to traverse to
+      // parent groups since they are also already being shown.
+      if (visibleViewMessages.includes(currentGroup)) {
+        return;
+      }
+      const parentGroup = currentGroup.consoleGroup();
+      if (parentGroup) {
+        showGroup(parentGroup, visibleViewMessages);
+      }
+      visibleViewMessages.push(currentGroup);
+    }
   }
 
   private messageAppendedForTests(): void {
@@ -912,29 +1009,24 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   private createViewMessage(message: SDK.ConsoleModel.ConsoleMessage): ConsoleViewMessage {
-    const nestingLevel = this.currentGroup.nestingLevel();
     switch (message.type) {
       case SDK.ConsoleModel.FrontendMessageType.Command:
         return new ConsoleCommand(
-            message, this.linkifier, this.requestResolver, this.issueResolver, nestingLevel,
-            this.onMessageResizedBound);
+            message, this.linkifier, this.requestResolver, this.issueResolver, this.onMessageResizedBound);
       case SDK.ConsoleModel.FrontendMessageType.Result:
         return new ConsoleCommandResult(
-            message, this.linkifier, this.requestResolver, this.issueResolver, nestingLevel,
-            this.onMessageResizedBound);
+            message, this.linkifier, this.requestResolver, this.issueResolver, this.onMessageResizedBound);
       case Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed:
       case Protocol.Runtime.ConsoleAPICalledEventType.StartGroup:
         return new ConsoleGroupViewMessage(
-            message, this.linkifier, this.requestResolver, this.issueResolver, nestingLevel,
-            this.updateMessageList.bind(this), this.onMessageResizedBound);
+            message, this.linkifier, this.requestResolver, this.issueResolver, this.updateMessageList.bind(this),
+            this.onMessageResizedBound);
       case Protocol.Runtime.ConsoleAPICalledEventType.Table:
         return new ConsoleTableMessageView(
-            message, this.linkifier, this.requestResolver, this.issueResolver, nestingLevel,
-            this.onMessageResizedBound);
+            message, this.linkifier, this.requestResolver, this.issueResolver, this.onMessageResizedBound);
       default:
         return new ConsoleViewMessage(
-            message, this.linkifier, this.requestResolver, this.issueResolver, nestingLevel,
-            this.onMessageResizedBound);
+            message, this.linkifier, this.requestResolver, this.issueResolver, this.onMessageResizedBound);
     }
   }
 
@@ -970,6 +1062,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.linkifier.reset();
     this.filter.clear();
     this.requestResolver.clear();
+    this.consoleGroupStarts = [];
     if (hadFocus) {
       this.prompt.focus();
     }
@@ -980,7 +1073,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     const eventTarget = (event.target as Node);
     if (eventTarget.isSelfOrDescendant(this.promptElement)) {
-      contextMenu.show();
+      void contextMenu.show();
       return;
     }
 
@@ -1011,13 +1104,15 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       }
     }
 
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private async saveConsole(): Promise<void> {
     const url = (SDK.TargetManager.TargetManager.instance().mainTarget() as SDK.Target.Target).inspectedURL();
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
-    const filename = Platform.StringUtilities.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now());
+    const filename =
+        Platform.StringUtilities.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now()) as
+        Platform.DevToolsPath.RawPathString;
     const stream = new Bindings.FileUtils.FileOutputStream();
 
     const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
@@ -1044,7 +1139,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       progressIndicator.setWorked(messageIndex);
     }
 
-    stream.close();
+    void stream.close();
     progressIndicator.done();
   }
 
@@ -1079,7 +1174,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       return;
     }
     this.buildHiddenCacheTimeout =
-        this.element.window().requestAnimationFrame(this.buildHiddenCache.bind(this, i, viewMessages));
+        this.element.window().requestAnimationFrame(this.buildHiddenCache.bind(this, i + 1, viewMessages));
   }
 
   private cancelBuildHiddenCache(): void {
@@ -1091,8 +1186,6 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   private updateMessageList(): void {
-    this.topGroup = ConsoleGroup.createTopGroup();
-    this.currentGroup = this.topGroup;
     this.regexMatchRanges = [];
     this.hiddenByFilterCount = 0;
     for (const visibleViewMessage of this.visibleViewMessages) {
@@ -1105,9 +1198,14 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     } else {
       for (const consoleMessage of this.consoleMessages) {
         consoleMessage.setInSimilarGroup(false);
+        if (consoleMessage.consoleMessage().isGroupable()) {
+          // Since grouping similar messages is disabled, we need clear the
+          // reference to the artificial console group start.
+          consoleMessage.clearConsoleGroup();
+        }
         this.appendMessageToEnd(
             consoleMessage,
-            true /* crbug.com/1082963: prevent collapse of same messages when "Group similar" is false */);
+            true /* crbug.com/1082963: prevent collaps`e of same messages when "Group similar" is false */);
       }
     }
     this.updateFilterStatus();
@@ -1169,6 +1267,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       for (const viewMessageInGroup of viewMessagesInGroup) {
         viewMessageInGroup.setInSimilarGroup(
             true, viewMessagesInGroup[viewMessagesInGroup.length - 1] === viewMessageInGroup);
+        viewMessageInGroup.setConsoleGroup(startGroupViewMessage as ConsoleGroupViewMessage);
         this.appendMessageToEnd(viewMessageInGroup, true);
         alreadyAdded.add(viewMessageInGroup.consoleMessage());
       }
@@ -1283,7 +1382,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.searchCanceled();
     this.searchableViewInternal.updateSearchMatchesCount(0);
 
-    this.searchRegex = searchConfig.toSearchRegex(true);
+    this.searchRegex = searchConfig.toSearchRegex(true).regex;
 
     this.regexMatchRanges = [];
     this.currentMatchRangeIndex = -1;
@@ -1336,7 +1435,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
     if (index === this.visibleViewMessages.length) {
       this.cleanupAfterSearch();
-      setTimeout(this.searchFinishedForTests.bind(this), 0);
+      window.setTimeout(this.searchFinishedForTests.bind(this), 0);
       return;
     }
 
@@ -1621,7 +1720,7 @@ export class ConsoleViewFilter {
     for (const [level, levelText] of this.levelLabels.entries()) {
       contextMenu.defaultSection().appendCheckboxItem(levelText, toggleShowLevel.bind(null, level), levels[level]);
     }
-    contextMenu.show();
+    void contextMenu.show();
 
     function toggleShowLevel(level: string): void {
       levels[level] = !levels[level];
@@ -1629,7 +1728,7 @@ export class ConsoleViewFilter {
     }
   }
 
-  addMessageURLFilter(url: string): void {
+  addMessageURLFilter(url: Platform.DevToolsPath.UrlString): void {
     if (!url) {
       return;
     }
@@ -1653,35 +1752,6 @@ export class ConsoleViewFilter {
     this.hideNetworkMessagesSetting.set(false);
     this.textFilterUI.setValue('');
     this.onFilterChanged();
-  }
-}
-
-export class ConsoleGroup {
-  private readonly parentGroupInternal: ConsoleGroup|null;
-  private readonly nestingLevelInternal: number;
-  private readonly messagesHiddenInternal: boolean;
-
-  constructor(parentGroup: ConsoleGroup|null, groupMessage: ConsoleGroupViewMessage|null) {
-    this.parentGroupInternal = parentGroup;
-    this.nestingLevelInternal = parentGroup ? parentGroup.nestingLevel() + 1 : 0;
-    this.messagesHiddenInternal = groupMessage && groupMessage.collapsed() ||
-        this.parentGroupInternal && this.parentGroupInternal.messagesHidden() || false;
-  }
-
-  static createTopGroup(): ConsoleGroup {
-    return new ConsoleGroup(null, null);
-  }
-
-  messagesHidden(): boolean {
-    return this.messagesHiddenInternal;
-  }
-
-  nestingLevel(): number {
-    return this.nestingLevelInternal;
-  }
-
-  parentGroup(): ConsoleGroup|null {
-    return this.parentGroupInternal;
   }
 }
 

@@ -25,17 +25,17 @@
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 
-namespace em = enterprise_management;
-
 namespace policy {
+
+namespace em = ::enterprise_management;
 
 class DisplayRotationDefaultTest
     : public DeviceDisplayPolicyCrosBrowserTest,
       public testing::WithParamInterface<display::Display::Rotation> {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(ash::switches::kLoginManager);
+    command_line->AppendSwitch(ash::switches::kForceLoginManagerInTests);
   }
 
   void SetRotationPolicy(int rotation) {
@@ -212,8 +212,7 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
   const display::Display::Rotation user_rotation = display::Display::ROTATE_180;
 
   // Set policy.
-  policy::DevicePolicyBuilder* const device_policy(
-      policy_helper()->device_policy());
+  DevicePolicyBuilder* const device_policy(policy_helper()->device_policy());
   em::ChromeDeviceSettingsProto& proto(device_policy->payload());
   proto.mutable_display_rotation_default()->set_display_rotation_default(
       static_cast<em::DisplayRotationDefaultProto::Rotation>(policy_rotation));

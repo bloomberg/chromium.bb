@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/location.h"
@@ -193,7 +194,7 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
     if (!source_web_contents)
       return nullptr;
     if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN &&
-        source_web_contents->GetURL().host_piece() == url.host_piece()) {
+        source_web_contents->GetVisibleURL().host_piece() == url.host_piece()) {
       origin = ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN;
     }
     // TODO(ajwong): This does not correctly handle storage for isolated apps.
@@ -360,8 +361,8 @@ bool NoStatePrefetchManager::HasRecentlyBeenNavigatedTo(Origin origin,
 
   CleanUpOldNavigations(&navigations_,
                         base::Milliseconds(kNavigationRecordWindowMs));
-  for (auto it = navigations_.rbegin(); it != navigations_.rend(); ++it) {
-    if (it->url == url)
+  for (const NavigationRecord& navigation : base::Reversed(navigations_)) {
+    if (navigation.url == url)
       return true;
   }
 
@@ -373,17 +374,17 @@ std::unique_ptr<base::DictionaryValue> NoStatePrefetchManager::CopyAsValue()
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->SetKey("history", base::Value::FromUniquePtrValue(
-                                    prerender_history_->CopyEntriesAsValue()));
+  dict_value->GetDict().Set("history",
+                            prerender_history_->CopyEntriesAsValue());
   dict_value->SetKey(
       "active", base::Value::FromUniquePtrValue(GetActivePrerendersAsValue()));
-  dict_value->SetBoolean("enabled",
+  dict_value->SetBoolKey("enabled",
                          delegate_->IsNetworkPredictionPreferenceEnabled());
-  dict_value->SetString("disabled_note",
-                        delegate_->GetReasonForDisablingPrediction());
+  dict_value->SetStringKey("disabled_note",
+                           delegate_->GetReasonForDisablingPrediction());
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
-  dict_value->SetString("enabled_note", enabled_note);
+  dict_value->SetStringKey("enabled_note", enabled_note);
   return dict_value;
 }
 
@@ -841,14 +842,14 @@ bool NoStatePrefetchManager::GetPrefetchInformation(
   if (origin)
     *origin = ORIGIN_NONE;
 
-  for (auto it = prefetches_.crbegin(); it != prefetches_.crend(); ++it) {
-    if (it->url == url) {
+  for (const NavigationRecord& prefetch : base::Reversed(prefetches_)) {
+    if (prefetch.url == url) {
       if (prefetch_age)
-        *prefetch_age = GetCurrentTimeTicks() - it->time;
+        *prefetch_age = GetCurrentTimeTicks() - prefetch.time;
       if (final_status)
-        *final_status = it->final_status;
+        *final_status = prefetch.final_status;
       if (origin)
-        *origin = it->origin;
+        *origin = prefetch.origin;
       return true;
     }
   }
@@ -858,9 +859,9 @@ bool NoStatePrefetchManager::GetPrefetchInformation(
 void NoStatePrefetchManager::SetPrefetchFinalStatusForUrl(
     const GURL& url,
     FinalStatus final_status) {
-  for (auto it = prefetches_.rbegin(); it != prefetches_.rend(); ++it) {
-    if (it->url == url) {
-      it->final_status = final_status;
+  for (NavigationRecord& prefetch : base::Reversed(prefetches_)) {
+    if (prefetch.url == url) {
+      prefetch.final_status = final_status;
       break;
     }
   }
@@ -930,7 +931,8 @@ NoStatePrefetchManager::GetActivePrerendersAsValue() const {
   for (const auto& prefetch : active_prefetches_) {
     auto prefetch_value = prefetch->contents()->GetAsValue();
     if (prefetch_value)
-      list_value->Append(std::move(prefetch_value));
+      list_value->GetList().Append(
+          base::Value::FromUniquePtrValue(std::move(prefetch_value)));
   }
   return list_value;
 }

@@ -118,6 +118,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   int GetMinHeight() const { return min_height_; }
 
+  // Sets the preferred margins within the scroll viewport - when scrolling
+  // rects to visible, these margins will be added to the visible rect.
+  void SetPreferredViewportMargins(const gfx::Insets& margins);
+
   // The background color can be configured in two distinct ways:
   // . By way of SetBackgroundThemeColorId(). This is the default and when
   //   called the background color comes from the theme (and changes if the
@@ -311,15 +315,17 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // scrolling content within the viewport.
   void UpdateOverflowIndicatorVisibility(const gfx::PointF& offset);
 
+  View* GetContentsViewportForTest() const;
+
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
   View* contents_ = nullptr;
-  raw_ptr<View> contents_viewport_ = nullptr;
+  raw_ptr<Viewport> contents_viewport_ = nullptr;
 
   // The current header and its viewport. |header_| is contained in
   // |header_viewport_|.
   View* header_ = nullptr;
-  raw_ptr<View> header_viewport_ = nullptr;
+  raw_ptr<Viewport> header_viewport_ = nullptr;
 
   // Horizontal scrollbar.
   raw_ptr<ScrollBar> horiz_sb_;
@@ -379,6 +385,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // The layer type used for content view when scroll by layers is enabled.
   ui::LayerType layer_type_ = ui::LAYER_TEXTURED;
+
+  gfx::Insets preferred_viewport_margins_;
 
   // Scrolling callbacks.
   ScrollViewCallbackList on_contents_scrolled_;

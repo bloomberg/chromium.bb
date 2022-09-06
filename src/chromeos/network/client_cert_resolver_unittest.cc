@@ -19,6 +19,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/onc/onc_certificate_importer_impl.h"
+#include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
@@ -28,8 +30,6 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_certificate_importer_impl.h"
-#include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
@@ -41,10 +41,14 @@
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+using ::testing::IsEmpty;
+using ::testing::Not;
 
 namespace {
 
@@ -246,7 +250,8 @@ class ClientCertResolverTest : public testing::Test,
     network_config_handler_->Init(network_state_handler_.get(),
                                   nullptr /* network_device_handler */);
     managed_config_handler_->Init(
-        /*cellular_policy_handler=*/nullptr, network_state_handler_.get(),
+        /*cellular_policy_handler=*/nullptr,
+        /*managed_cellular_pref_handler=*/nullptr, network_state_handler_.get(),
         network_profile_handler_.get(), network_config_handler_.get(),
         nullptr /* network_device_handler */,
         nullptr /* prohibited_technologies_handler */);
@@ -337,12 +342,10 @@ class ClientCertResolverTest : public testing::Test,
             test_onc_pattern, base::JSON_ALLOW_TRAILING_COMMAS);
     ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
-    base::DictionaryValue* onc_pattern_dict;
-    parsed_json.value->GetAsDictionary(&onc_pattern_dict);
-
     client_cert_config->onc_source = onc_source;
     client_cert_config->client_cert_type = ::onc::client_cert::kPattern;
-    client_cert_config->pattern.ReadFromONCDictionary(*onc_pattern_dict);
+    client_cert_config->pattern.ReadFromONCDictionary(
+        parsed_json.value->GetDict());
   }
 
   // Sets up a policy with a certificate pattern that matches any client cert
@@ -376,17 +379,16 @@ class ClientCertResolverTest : public testing::Test,
                                base::StringPiece policy_json) {
     base::JSONReader::ValueWithError parsed_json =
         base::JSONReader::ReadAndReturnValueWithError(
-            policy_json, base::JSON_ALLOW_TRAILING_COMMAS);
+            policy_json,
+            base::JSON_ALLOW_TRAILING_COMMAS | base::JSON_ALLOW_CONTROL_CHARS);
     ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
-
-    base::ListValue* policy = nullptr;
-    ASSERT_TRUE(parsed_json.value->GetAsList(&policy));
+    ASSERT_TRUE(parsed_json.value->is_list());
 
     std::string user_hash =
         onc_source == ::onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
     managed_config_handler_->SetPolicy(
-        onc_source, user_hash, *policy,
-        base::DictionaryValue() /* no global network config */);
+        onc_source, user_hash, *parsed_json.value,
+        /*global_network_config=*/base::Value(base::Value::Type::DICTIONARY));
   }
 
   void SetWifiState(const std::string& state) {
@@ -497,6 +499,7 @@ class ClientCertResolverTest : public testing::Test,
       ++network_properties_changed_count_;
   }
 
+ protected:
   ShillServiceClient::TestInterface* service_test_ = nullptr;
   ShillProfileClient::TestInterface* profile_test_ = nullptr;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
@@ -723,9 +726,9 @@ TEST_F(ClientCertResolverTest, UserPolicyUsesSystemTokenSync) {
   SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_USER_POLICY,
                                          &client_cert_config);
 
-  base::DictionaryValue shill_properties;
+  base::Value shill_properties(base::Value::Type::DICTIONARY);
   ClientCertResolver::ResolveClientCertificateSync(
-      client_cert::CONFIG_TYPE_EAP, client_cert_config, &shill_properties);
+      client_cert::ConfigType::kEap, client_cert_config, &shill_properties);
   std::string pkcs11_id =
       GetString(shill_properties, shill::kEapCertIdProperty);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
@@ -762,9 +765,9 @@ TEST_F(ClientCertResolverTest, DevicePolicyUsesSystemTokenSync) {
   SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          &client_cert_config);
 
-  base::DictionaryValue shill_properties;
+  base::Value shill_properties(base::Value::Type::DICTIONARY);
   ClientCertResolver::ResolveClientCertificateSync(
-      client_cert::CONFIG_TYPE_EAP, client_cert_config, &shill_properties);
+      client_cert::ConfigType::kEap, client_cert_config, &shill_properties);
   std::string pkcs11_id =
       GetString(shill_properties, shill::kEapCertIdProperty);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
@@ -803,9 +806,9 @@ TEST_F(ClientCertResolverTest, DevicePolicyDoesNotUseUserTokenSync) {
   SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          &client_cert_config);
 
-  base::DictionaryValue shill_properties;
+  base::Value shill_properties(base::Value::Type::DICTIONARY);
   ClientCertResolver::ResolveClientCertificateSync(
-      client_cert::CONFIG_TYPE_EAP, client_cert_config, &shill_properties);
+      client_cert::ConfigType::kEap, client_cert_config, &shill_properties);
   std::string pkcs11_id =
       GetString(shill_properties, shill::kEapCertIdProperty);
   EXPECT_EQ(std::string(), pkcs11_id);
@@ -841,7 +844,6 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
 
   GetServiceProperty(shill::kEapIdentityProperty, &identity);
   EXPECT_EQ("upn-santest@ad.corp.example.com-suffix", identity);
-  EXPECT_EQ(2, network_properties_changed_count_);
 
   // Verify that after changing the ONC policy to request the subject CommonName
   // field, the correct value is substituted into the shill service entry.
@@ -852,7 +854,6 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
 
   GetServiceProperty(shill::kEapIdentityProperty, &identity);
   EXPECT_EQ("subject-cn-Client Cert F-suffix", identity);
-  EXPECT_EQ(3, network_properties_changed_count_);
 }
 
 // Test for crbug.com/781276. A notification which results in no networks to be

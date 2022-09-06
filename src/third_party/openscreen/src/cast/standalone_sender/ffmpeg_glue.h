@@ -18,6 +18,7 @@ extern "C" {
 }
 
 #include <memory>
+#include <string>
 #include <utility>
 
 namespace openscreen {
@@ -64,6 +65,12 @@ DEFINE_AV_UNIQUE_PTR(AVFrame, av_frame_alloc, av_frame_free);
 DEFINE_AV_UNIQUE_PTR(SwrContext, swr_alloc, swr_free);
 
 #undef DEFINE_AV_UNIQUE_PTR
+
+// The av_err2str macro uses a compound literal, which is a C99-only feature.
+// So instead, we roll our own here.
+// TODO(https://issuetracker.google.com/224642520): dedup with standalone
+// receiver.
+std::string AvErrorToString(int error_num);
 
 }  // namespace cast
 }  // namespace openscreen

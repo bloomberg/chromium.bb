@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/numerics/safe_math.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/der/input.h"
@@ -163,50 +161,13 @@ const uint8_t kOidDsaWithSha256[] = {0x60, 0x86, 0x48, 0x01, 0x65,
 const uint8_t kOidMgf1[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
                             0x0d, 0x01, 0x01, 0x08};
 
-// RFC 5280 section 4.1.1.2 defines signatureAlgorithm as:
-//
-//     AlgorithmIdentifier  ::=  SEQUENCE  {
-//          algorithm               OBJECT IDENTIFIER,
-//          parameters              ANY DEFINED BY algorithm OPTIONAL  }
-WARN_UNUSED_RESULT bool ParseAlgorithmIdentifier(const der::Input& input,
-                                                 der::Input* algorithm,
-                                                 der::Input* parameters) {
-  der::Parser parser(input);
-
-  der::Parser algorithm_identifier_parser;
-  if (!parser.ReadSequence(&algorithm_identifier_parser))
-    return false;
-
-  // There shouldn't be anything after the sequence. This is by definition,
-  // as the input to this function is expected to be a single
-  // AlgorithmIdentifier.
-  if (parser.HasMore())
-    return false;
-
-  if (!algorithm_identifier_parser.ReadTag(der::kOid, algorithm))
-    return false;
-
-  // Read the optional parameters to a der::Input. The parameters can be at
-  // most one TLV (for instance NULL or a sequence).
-  //
-  // Note that nothing is allowed after the single optional "parameters" TLV.
-  // This is because RFC 5912's notation for AlgorithmIdentifier doesn't
-  // explicitly list an extension point after "parameters".
-  *parameters = der::Input();
-  if (algorithm_identifier_parser.HasMore() &&
-      !algorithm_identifier_parser.ReadRawTLV(parameters)) {
-    return false;
-  }
-  return !algorithm_identifier_parser.HasMore();
-}
-
 // Returns true if |input| is empty.
-WARN_UNUSED_RESULT bool IsEmpty(const der::Input& input) {
+[[nodiscard]] bool IsEmpty(const der::Input& input) {
   return input.Length() == 0;
 }
 
 // Returns true if the entirety of the input is a NULL value.
-WARN_UNUSED_RESULT bool IsNull(const der::Input& input) {
+[[nodiscard]] bool IsNull(const der::Input& input) {
   der::Parser parser(input);
   der::Input null_value;
   if (!parser.ReadTag(der::kNull, &null_value))
@@ -363,8 +324,8 @@ std::unique_ptr<SignatureAlgorithm> ParseEcdsa(DigestAlgorithm digest,
 // Note that the possible mask gen algorithms is extensible. However at present
 // the only function supported is MGF1, as that is the singular mask gen
 // function defined by RFC 4055 / RFC 5912.
-WARN_UNUSED_RESULT bool ParseMaskGenAlgorithm(const der::Input input,
-                                              DigestAlgorithm* mgf1_hash) {
+[[nodiscard]] bool ParseMaskGenAlgorithm(const der::Input input,
+                                         DigestAlgorithm* mgf1_hash) {
   der::Input oid;
   der::Input params;
   if (!ParseAlgorithmIdentifier(input, &oid, &params))
@@ -375,43 +336,6 @@ WARN_UNUSED_RESULT bool ParseMaskGenAlgorithm(const der::Input input,
     return false;
 
   return ParseHashAlgorithm(params, mgf1_hash);
-}
-
-// Consumes an optional, explicitly-tagged INTEGER from |parser|, using the
-// indicated context-specific class number. Values greater than 32-bits will be
-// rejected.
-//
-// Returns true on success.
-WARN_UNUSED_RESULT bool ReadOptionalContextSpecificUint32(
-    der::Parser* parser,
-    uint8_t class_number,
-    absl::optional<uint32_t>* out) {
-  absl::optional<der::Input> field;
-
-  // Read the context specific value.
-  if (!parser->ReadOptionalTag(der::ContextSpecificConstructed(class_number),
-                               &field)) {
-    return false;
-  }
-
-  if (field.has_value()) {
-    // Parse the integer contained in it.
-    der::Parser number_parser(field.value());
-    uint64_t uint64_value;
-
-    if (!number_parser.ReadUint64(&uint64_value))
-      return false;
-    if (number_parser.HasMore())
-      return false;
-
-    // Cast the number to a uint32_t
-    base::CheckedNumeric<uint32_t> casted(uint64_value);
-    if (!casted.IsValid())
-      return false;
-    *out = casted.ValueOrDie();
-  }
-
-  return true;
 }
 
 // Parses the parameters for an RSASSA-PSS signature algorithm, as defined by
@@ -434,19 +358,13 @@ WARN_UNUSED_RESULT bool ReadOptionalContextSpecificUint32(
 //     }
 //
 // Which is to say the parameters MUST be present, and of type
-// RSASSA-PSS-params.
+// RSASSA-PSS-params. Additionally, we only support the RSA-PSS parameter
+// combinations representable by TLS 1.3 (RFC 8446).
 //
 // Note also that DER encoding (ITU-T X.690 section 11.5) prohibits
 // specifying default values explicitly. The parameter should instead be
 // omitted to indicate a default value.
 std::unique_ptr<SignatureAlgorithm> ParseRsaPss(const der::Input& params) {
-  // Right now, whether some unenforced DER error is recorded with this bool,
-  // and that bool is reported via a UMA metric below.
-  // TODO(crbug.com/525829): After the UMA metric shows rare occurrence of
-  // unenforced errors, then add a Finch flag to toggle to enforcing these
-  // errors by returning nullptr.
-  bool der_error = false;
-
   der::Parser parser(params);
   der::Parser params_parser;
   if (!parser.ReadSequence(&params_parser))
@@ -457,87 +375,43 @@ std::unique_ptr<SignatureAlgorithm> ParseRsaPss(const der::Input& params) {
   if (parser.HasMore())
     return nullptr;
 
-  absl::optional<der::Input> field;
-
-  // Parse:
+  // The default values for hashAlgorithm, maskGenAlgorithm, and saltLength
+  // correspond to SHA-1, which we do not support with RSA-PSS, so treat them as
+  // required fields. Explicitly-specified defaults will be rejected later, when
+  // we limit combinations. Additionally, as the trailerField is required to be
+  // the default, we simply ignore it and reject it as any other trailing data.
+  //
   //     hashAlgorithm     [0] HashAlgorithm DEFAULT sha1Identifier,
-  DigestAlgorithm hash = DigestAlgorithm::Sha1;
-  if (!params_parser.ReadOptionalTag(der::ContextSpecificConstructed(0),
-                                     &field)) {
-    return nullptr;
-  }
-  if (field.has_value() && !ParseHashAlgorithm(field.value(), &hash))
-    return nullptr;
-  // Default hash should be specified by omission.
-  der_error |= (field.has_value() && hash == DigestAlgorithm::Sha1);
-
-  // Parse:
   //     maskGenAlgorithm  [1] MaskGenAlgorithm DEFAULT mgf1SHA1,
-  DigestAlgorithm mgf1_hash = DigestAlgorithm::Sha1;
-  if (!params_parser.ReadOptionalTag(der::ContextSpecificConstructed(1),
-                                     &field)) {
-    return nullptr;
-  }
-  if (field.has_value() && !ParseMaskGenAlgorithm(field.value(), &mgf1_hash))
-    return nullptr;
-  // Default mask generation should be specified by omission.
-  der_error |= (field.has_value() && mgf1_hash == DigestAlgorithm::Sha1);
-
-  // Parse:
   //     saltLength        [2] INTEGER DEFAULT 20,
-  absl::optional<uint32_t> opt_salt_length;
-  if (!ReadOptionalContextSpecificUint32(&params_parser, 2, &opt_salt_length)) {
+  //     trailerField      [3] INTEGER DEFAULT 1
+  der::Input field;
+  DigestAlgorithm hash, mgf1_hash;
+  der::Parser salt_length_parser;
+  uint64_t salt_length;
+  if (!params_parser.ReadTag(der::ContextSpecificConstructed(0), &field) ||
+      !ParseHashAlgorithm(field, &hash) ||
+      !params_parser.ReadTag(der::ContextSpecificConstructed(1), &field) ||
+      !ParseMaskGenAlgorithm(field, &mgf1_hash) ||
+      !params_parser.ReadConstructed(der::ContextSpecificConstructed(2),
+                                     &salt_length_parser) ||
+      !salt_length_parser.ReadUint64(&salt_length) ||
+      salt_length_parser.HasMore() || params_parser.HasMore()) {
     return nullptr;
   }
-  // Default salt length should be specified by omission.
-  der_error |= (opt_salt_length.has_value() && opt_salt_length.value() == 20u);
-  uint32_t salt_length = opt_salt_length.value_or(20u);
 
-  // Parse:
-  //     trailerField      [3] INTEGER DEFAULT 1
-  absl::optional<uint32_t> opt_trailer_field;
-  if (!ReadOptionalContextSpecificUint32(&params_parser, 3,
-                                         &opt_trailer_field)) {
-    return nullptr;
+  // Only combinations of RSASSA-PSS-params specified by TLS 1.3 (RFC 8446) are
+  // supported.
+  if ((hash == DigestAlgorithm::Sha256 &&
+       mgf1_hash == DigestAlgorithm::Sha256 && salt_length == 32) ||
+      (hash == DigestAlgorithm::Sha384 &&
+       mgf1_hash == DigestAlgorithm::Sha384 && salt_length == 48) ||
+      (hash == DigestAlgorithm::Sha512 &&
+       mgf1_hash == DigestAlgorithm::Sha512 && salt_length == 64)) {
+    return SignatureAlgorithm::CreateRsaPss(hash, mgf1_hash, salt_length);
   }
-  // Default trailer field should be specified by omission.
-  der_error |=
-      (opt_trailer_field.has_value() && opt_trailer_field.value() == 1u);
-  uint32_t trailer_field = opt_trailer_field.value_or(1u);
 
-  // Parse:
-  //     trailerField      [3] INTEGER DEFAULT 1
-  //
-  // The trailer field parameter is expected to not be present, because of
-  // the combination of two requirements:
-  //
-  // 1. RFC 4055 says that the trailer field must be 1:
-  //
-  //     The trailerField field is an integer.  It provides
-  //     compatibility with IEEE Std 1363a-2004 [P1363A].  The value
-  //     MUST be 1, which represents the trailer field with hexadecimal
-  //     value 0xBC.  Other trailer fields, including the trailer field
-  //     composed of HashID concatenated with 0xCC that is specified in
-  //     IEEE Std 1363a, are not supported.  Implementations that
-  //     perform signature generation MUST omit the trailerField field,
-  //     indicating that the default trailer field value was used.
-  //     Implementations that perform signature validation MUST
-  //     recognize both a present trailerField field with value 1 and an
-  //     absent trailerField field.
-  //
-  // 2. DER encoding prohibits specifying a default value, which in this
-  //    case is 1.
-  if (trailer_field != 1)
-    return nullptr;
-
-  // There must not be any unconsumed data left. (RFC 5912 does not explicitly
-  // include an extensibility point for RSASSA-PSS-params)
-  if (params_parser.HasMore())
-    return nullptr;
-
-  UMA_HISTOGRAM_BOOLEAN("Net.CertVerifier.InvalidRsaPssParams", der_error);
-
-  return SignatureAlgorithm::CreateRsaPss(hash, mgf1_hash, salt_length);
+  return nullptr;
 }
 
 DEFINE_CERT_ERROR_ID(kUnknownAlgorithmIdentifierOid,
@@ -545,8 +419,40 @@ DEFINE_CERT_ERROR_ID(kUnknownAlgorithmIdentifierOid,
 
 }  // namespace
 
-WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input& input,
-                                           DigestAlgorithm* out) {
+[[nodiscard]] bool ParseAlgorithmIdentifier(const der::Input& input,
+                                            der::Input* algorithm,
+                                            der::Input* parameters) {
+  der::Parser parser(input);
+
+  der::Parser algorithm_identifier_parser;
+  if (!parser.ReadSequence(&algorithm_identifier_parser))
+    return false;
+
+  // There shouldn't be anything after the sequence. This is by definition,
+  // as the input to this function is expected to be a single
+  // AlgorithmIdentifier.
+  if (parser.HasMore())
+    return false;
+
+  if (!algorithm_identifier_parser.ReadTag(der::kOid, algorithm))
+    return false;
+
+  // Read the optional parameters to a der::Input. The parameters can be at
+  // most one TLV (for instance NULL or a sequence).
+  //
+  // Note that nothing is allowed after the single optional "parameters" TLV.
+  // This is because RFC 5912's notation for AlgorithmIdentifier doesn't
+  // explicitly list an extension point after "parameters".
+  *parameters = der::Input();
+  if (algorithm_identifier_parser.HasMore() &&
+      !algorithm_identifier_parser.ReadRawTLV(parameters)) {
+    return false;
+  }
+  return !algorithm_identifier_parser.HasMore();
+}
+
+[[nodiscard]] bool ParseHashAlgorithm(const der::Input& input,
+                                      DigestAlgorithm* out) {
   CBS cbs;
   CBS_init(&cbs, input.UnsafeData(), input.Length());
   const EVP_MD* md = EVP_parse_digest_algorithm(&cbs);

@@ -23,6 +23,7 @@
 
 #include "perfetto/base/compiler.h"
 #include "perfetto/tracing/internal/track_event_data_source.h"
+#include "perfetto/tracing/string_helpers.h"
 #include "perfetto/tracing/track_event_category_registry.h"
 
 // Ignore GCC warning about a missing argument for a variadic macro parameter.
@@ -79,7 +80,7 @@
   namespace internal {                                   \
   PERFETTO_COMPONENT_EXPORT std::atomic<uint8_t>         \
       g_category_state_storage[kCategoryCount];          \
-  PERFETTO_COMPONENT_EXPORT const ::perfetto::internal:: \
+  PERFETTO_EXPORT_COMPONENT const ::perfetto::internal:: \
       TrackEventCategoryRegistry kCategoryRegistry(      \
           kCategoryCount,                                \
           &kCategories[0],                               \
@@ -87,9 +88,17 @@
   }  // namespace internal
 
 // Defines the TrackEvent data source for the current track event namespace.
-#define PERFETTO_INTERNAL_DECLARE_TRACK_EVENT_DATA_SOURCE()              \
-  struct TrackEvent : public ::perfetto::internal::TrackEventDataSource< \
-                          TrackEvent, &internal::kCategoryRegistry> {}
+// `virtual ~TrackEvent` is added to avoid `-Wweak-vtables` warning.
+// Learn more : aosp/2019906
+#define PERFETTO_INTERNAL_DECLARE_TRACK_EVENT_DATA_SOURCE() \
+  struct PERFETTO_COMPONENT_EXPORT TrackEvent               \
+      : public ::perfetto::internal::TrackEventDataSource<  \
+            TrackEvent, &internal::kCategoryRegistry> {     \
+    virtual ~TrackEvent();                                  \
+  }
+
+#define PERFETTO_INTERNAL_DEFINE_TRACK_EVENT_DATA_SOURCE() \
+  TrackEvent::~TrackEvent() = default;
 
 // At compile time, turns a category name represented by a static string into an
 // index into the current category registry. A build error will be generated if
@@ -107,8 +116,9 @@
 
 // Efficiently determines whether tracing is enabled for the given category, and
 // if so, emits one trace event with the given arguments.
-#define PERFETTO_INTERNAL_TRACK_EVENT(category, ...)                           \
+#define PERFETTO_INTERNAL_TRACK_EVENT(category, name, ...)                     \
   do {                                                                         \
+    perfetto::internal::ValidateEventNameType<decltype(name)>();               \
     namespace tns = ::PERFETTO_TRACK_EVENT_NAMESPACE;                          \
     /* Compute the category index outside the lambda to work around a */       \
     /* GCC 7 bug */                                                            \
@@ -118,7 +128,7 @@
     if (tns::internal::IsDynamicCategory(category)) {                          \
       tns::TrackEvent::CallIfEnabled(                                          \
           [&](uint32_t instances) PERFETTO_NO_THREAD_SAFETY_ANALYSIS {         \
-            tns::TrackEvent::TraceForCategory(instances, category,             \
+            tns::TrackEvent::TraceForCategory(instances, category, name,       \
                                               ##__VA_ARGS__);                  \
           });                                                                  \
     } else {                                                                   \
@@ -129,7 +139,7 @@
                 instances,                                                     \
                 PERFETTO_UID(                                                  \
                     kCatIndex_ADD_TO_PERFETTO_DEFINE_CATEGORIES_IF_FAILS_),    \
-                ##__VA_ARGS__);                                                \
+                name, ##__VA_ARGS__);                                          \
           });                                                                  \
     }                                                                          \
   } while (false)
@@ -146,6 +156,12 @@
       /* scope if used in a single line if statement.                      */ \
       EventFinalizer(...) {}                                                  \
       ~EventFinalizer() { TRACE_EVENT_END(category); }                        \
+                                                                              \
+      EventFinalizer(const EventFinalizer&) = delete;                         \
+      inline EventFinalizer& operator=(const EventFinalizer&) = delete;       \
+                                                                              \
+      EventFinalizer(EventFinalizer&&) = default;                             \
+      EventFinalizer& operator=(EventFinalizer&&) = delete;                   \
     } finalizer;                                                              \
   } PERFETTO_UID(scoped_event) {                                              \
     [&]() {                                                                   \

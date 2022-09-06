@@ -27,7 +27,6 @@
 #include <base/logging.h>  // for DCHECK
 #include <base/strings/string_util.h>
 #include <base/memory/ptr_util.h>
-#include <base/task/post_task.h>
 #include <base/task/thread_pool.h>
 #include <base/task/task_traits.h>
 #include <content/public/browser/browser_task_traits.h>
@@ -119,8 +118,7 @@ void URLRequestContextGetterImpl::useSystemProxyConfig()
 
     d_wasProxyInitialized = true;
 
-    auto ioLoop = base::CreateSingleThreadTaskRunner(
-        {content::BrowserThread::IO});
+    auto ioLoop = content::GetIOThreadTaskRunner({});
 
     // We must create the proxy config service on the UI loop on Linux
     // because it must synchronously run on the glib message loop.  This
@@ -149,8 +147,7 @@ net::URLRequestContext* URLRequestContextGetterImpl::GetURLRequestContext()
 scoped_refptr<base::SingleThreadTaskRunner>
 URLRequestContextGetterImpl::GetNetworkTaskRunner() const
 {
-    return base::CreateSingleThreadTaskRunner(
-           {content::BrowserThread::IO});
+    return content::GetIOThreadTaskRunner({});
 }
 
 void URLRequestContextGetterImpl::initialize()
@@ -174,7 +171,7 @@ void URLRequestContextGetterImpl::initialize()
     builder.set_proxy_resolution_service(std::move(d_proxyService));
     builder.set_network_delegate(std::unique_ptr<net::NetworkDelegateImpl>(new net::NetworkDelegateImpl()));
     builder.SetCookieStore(std::unique_ptr<net::CookieMonster>(
-            new net::CookieMonster(d_cookieStore, nullptr)));
+            new net::CookieMonster(d_cookieStore, nullptr, false)));
     builder.set_accept_language("en-us,en");
     builder.set_user_agent(base::EmptyString());
 

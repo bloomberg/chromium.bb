@@ -58,7 +58,6 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
   DCHECK(response_head->headers);
   DCHECK(encoding_.empty());
   response_head->headers->GetCharset(&encoding_);
-  body_handle_ = std::move(body_handle);
   body_size_ = response_head->content_length;
 
   // Just drain the metadata (V8 code cache): this entire class is just to
@@ -73,11 +72,10 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
             *response_head));
   }
 
-  client_->OnReceiveResponse(std::move(response_head));
+  client_->OnReceiveResponse(std::move(response_head), std::move(body_handle));
   if (metadata) {
     client_->OnReceiveCachedMetadata(std::move(*metadata));
   }
-  client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().
 }
 

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
@@ -54,12 +55,6 @@ CSSDefaultStyleSheets& CSSDefaultStyleSheets::Instance() {
   return *css_default_style_sheets;
 }
 
-static const MediaQueryEvaluator& ScreenEval() {
-  DEFINE_STATIC_LOCAL(const Persistent<MediaQueryEvaluator>, static_screen_eval,
-                      (MakeGarbageCollected<MediaQueryEvaluator>("screen")));
-  return *static_screen_eval;
-}
-
 static const MediaQueryEvaluator& PrintEval() {
   DEFINE_STATIC_LOCAL(const Persistent<MediaQueryEvaluator>, static_print_eval,
                       (MakeGarbageCollected<MediaQueryEvaluator>("print")));
@@ -76,6 +71,11 @@ static const MediaQueryEvaluator& ForcedColorsEval() {
 }
 
 // static
+void CSSDefaultStyleSheets::Init() {
+  Instance();
+}
+
+// static
 StyleSheetContents* CSSDefaultStyleSheets::ParseUASheet(const String& str) {
   // UA stylesheets always parse in the insecure context mode.
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(
@@ -88,6 +88,13 @@ StyleSheetContents* CSSDefaultStyleSheets::ParseUASheet(const String& str) {
   return sheet;
 }
 
+// static
+const MediaQueryEvaluator& CSSDefaultStyleSheets::ScreenEval() {
+  DEFINE_STATIC_LOCAL(const Persistent<MediaQueryEvaluator>, static_screen_eval,
+                      (MakeGarbageCollected<MediaQueryEvaluator>("screen")));
+  return *static_screen_eval;
+}
+
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : media_controls_style_sheet_loader_(nullptr) {
   // Strict-mode rules.
@@ -97,9 +104,7 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
   default_style_sheet_ = ParseUASheet(default_rules);
 
   // Quirks-mode rules.
-  String quirks_rules =
-      UncompressResourceAsASCIIString(IDR_UASTYLE_QUIRKS_CSS) +
-      LayoutTheme::GetTheme().ExtraQuirksStyleSheet();
+  String quirks_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_QUIRKS_CSS);
   quirks_style_sheet_ = ParseUASheet(quirks_rules);
 
   InitializeDefaultStyles();
@@ -130,6 +135,7 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   forced_colors_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
   popup_style_sheet_.Clear();
+  selectmenu_style_sheet_.Clear();
   webxr_overlay_style_sheet_.Clear();
   marker_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
@@ -296,14 +302,22 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     }
   }
 
-  if (!popup_style_sheet_ && IsA<HTMLPopupElement>(element)) {
-    // TODO: We should assert that this sheet only contains rules for <popup>.
-    String popup_rules =
-        RuntimeEnabledFeatures::HTMLPopupElementEnabled()
-            ? UncompressResourceAsASCIIString(IDR_UASTYLE_POPUP_CSS)
-            : String();
-    popup_style_sheet_ = ParseUASheet(popup_rules);
+  if (!popup_style_sheet_ && element.HasValidPopupAttribute()) {
+    // TODO: We should assert that this sheet only contains rules for popups.
+    DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+    popup_style_sheet_ =
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_POPUP_CSS));
     AddRulesToDefaultStyleSheets(popup_style_sheet_, NamespaceType::kHTML);
+    changed_default_style = true;
+  }
+
+  if (!selectmenu_style_sheet_ && IsA<HTMLSelectMenuElement>(element)) {
+    // TODO: We should assert that this sheet only contains rules for
+    // <selectmenu>.
+    DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
+    selectmenu_style_sheet_ = ParseUASheet(
+        UncompressResourceAsASCIIString(IDR_UASTYLE_SELECTMENU_CSS));
+    AddRulesToDefaultStyleSheets(selectmenu_style_sheet_, NamespaceType::kHTML);
     changed_default_style = true;
   }
 
@@ -423,6 +437,7 @@ void CSSDefaultStyleSheets::Trace(Visitor* visitor) const {
   visitor->Trace(forced_colors_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
   visitor->Trace(popup_style_sheet_);
+  visitor->Trace(selectmenu_style_sheet_);
   visitor->Trace(webxr_overlay_style_sheet_);
   visitor->Trace(marker_style_sheet_);
 }

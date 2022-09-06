@@ -3,18 +3,16 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_data.h"
+#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
 
 namespace blink {
 
-HbFontCacheEntry::HbFontCacheEntry(hb_font_t* font)
-    : hb_font_(HbScoped<hb_font_t>(font)),
-      hb_font_data_(std::make_unique<HarfBuzzFontData>()) {}
+HarfBuzzFontCache::HarfBuzzFontCache() = default;
+HarfBuzzFontCache::~HarfBuzzFontCache() = default;
 
-HbFontCacheEntry::~HbFontCacheEntry() = default;
+// See "harfbuzz_face.cc" for |HarfBuzzFontCache::GetOrCreateFontData()|
+// implementation.
 
-scoped_refptr<HbFontCacheEntry> HbFontCacheEntry::Create(hb_font_t* hb_font) {
-  DCHECK(hb_font);
-  return base::AdoptRef(new HbFontCacheEntry(hb_font));
-}
 }  // namespace blink

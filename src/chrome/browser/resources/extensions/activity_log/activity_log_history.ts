@@ -6,13 +6,14 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import '../shared_style.js';
+import '../shared_style.css.js';
 import './activity_log_history_item.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './activity_log_history.html.js';
 import {ActivityGroup} from './activity_log_history_item.js';
 
 /**
@@ -41,7 +42,7 @@ export interface ActivityLogDelegate {
  * the scripts executed (specified as a stringified JSON array in the args
  * field) as the keys for an activity group instead.
  */
-function getActivityGroupKeysForContentScript_(
+function getActivityGroupKeysForContentScript(
     activity: chrome.activityLogPrivate.ExtensionActivity): string[] {
   assert(
       activity.activityType ===
@@ -62,7 +63,7 @@ function getActivityGroupKeysForContentScript_(
  * is in activity.other.webRequest and we use this to generate more activity
  * group keys if possible.
  */
-function getActivityGroupKeysForWebRequest_(
+function getActivityGroupKeysForWebRequest(
     activity: chrome.activityLogPrivate.ExtensionActivity): Array<string> {
   assert(
       activity.activityType ===
@@ -110,9 +111,9 @@ function groupActivities(
 
     let activityGroupKeys = [activity.apiCall];
     if (isContentScript) {
-      activityGroupKeys = getActivityGroupKeysForContentScript_(activity);
+      activityGroupKeys = getActivityGroupKeysForContentScript(activity);
     } else if (isWebRequest) {
-      activityGroupKeys = getActivityGroupKeysForWebRequest_(activity);
+      activityGroupKeys = getActivityGroupKeysForWebRequest(activity);
     }
 
     for (const key of activityGroupKeys) {
@@ -168,13 +169,13 @@ declare global {
   }
 }
 
-class ActivityLogHistoryElement extends PolymerElement {
+export class ActivityLogHistoryElement extends PolymerElement {
   static get is() {
     return 'activity-log-history';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -230,9 +231,13 @@ class ActivityLogHistoryElement extends PolymerElement {
     this.rawActivities_ = '';
   }
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('delete-activity-log-item', e => this.deleteItem_(e));
+  }
+
+  setPageStateForTest(state: ActivityLogPageState) {
+    this.pageState_ = state;
   }
 
   /**
@@ -242,7 +247,7 @@ class ActivityLogHistoryElement extends PolymerElement {
     return this.dataFetchedResolver_!.promise;
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.dataFetchedResolver_ = new PromiseResolver();
     this.refreshActivities_();
@@ -269,8 +274,9 @@ class ActivityLogHistoryElement extends PolymerElement {
   }
 
   private onMoreActionsClick_() {
-    this.shadowRoot!.querySelector('cr-action-menu')!.showAt(
-        assert(this.shadowRoot!.querySelector('cr-icon-button')!));
+    const moreButton = this.shadowRoot!.querySelector('cr-icon-button');
+    assert(moreButton);
+    this.shadowRoot!.querySelector('cr-action-menu')!.showAt(moreButton);
   }
 
   private expandItems_(expanded: boolean) {
@@ -360,6 +366,12 @@ class ActivityLogHistoryElement extends PolymerElement {
 
     this.lastSearch_ = searchTerm;
     this.refreshActivities_();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'activity-log-history': ActivityLogHistoryElement;
   }
 }
 

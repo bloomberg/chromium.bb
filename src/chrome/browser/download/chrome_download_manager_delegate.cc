@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -20,9 +21,9 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -93,7 +94,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/content_uri_utils.h"
 #include "base/android/path_utils.h"
 #include "chrome/browser/download/android/chrome_duplicate_download_infobar_delegate.h"
 #include "chrome/browser/download/android/download_controller.h"
@@ -125,10 +127,6 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #endif
 
-#if defined(OS_WIN)
-#include "components/services/quarantine/public/cpp/quarantine_features_win.h"
-#endif
-
 using content::BrowserThread;
 using content::DownloadManager;
 using download::DownloadItem;
@@ -156,8 +154,7 @@ enum PlatformDownloadPathType {
 // platform_util::ShowItemInFolder / DownloadTargetDeterminer.
 //
 // How the platform path is determined is based on PlatformDownloadPathType.
-base::FilePath GetPlatformDownloadPath(Profile* profile,
-                                       const DownloadItem* download,
+base::FilePath GetPlatformDownloadPath(const DownloadItem* download,
                                        PlatformDownloadPathType path_type) {
   if (path_type == PLATFORM_TARGET_PATH)
     return download->GetTargetFilePath();
@@ -208,6 +205,11 @@ void CheckDownloadUrlDone(
 
 // Called asynchronously to determine the MIME type for |path|.
 std::string GetMimeType(const base::FilePath& path) {
+#if BUILDFLAG(IS_ANDROID)
+  if (path.IsContentUri()) {
+    return base::GetContentUriMimeType(path);
+  }
+#endif
   std::string mime_type;
   net::GetMimeTypeFromFile(path, &mime_type);
   return mime_type;
@@ -215,7 +217,7 @@ std::string GetMimeType(const base::FilePath& path) {
 
 // On Android, Chrome wants to warn the user of file overwrites rather than
 // uniquify.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const DownloadPathReservationTracker::FilenameConflictAction
     kDefaultPlatformConflictAction = DownloadPathReservationTracker::PROMPT;
 #else
@@ -246,7 +248,7 @@ void CheckCanDownload(const content::WebContents::Getter& web_contents_getter,
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // TODO(qinmin): reuse the similar function defined in
 // DownloadResourceThrottle.
 void OnDownloadAcquireFileAccessPermissionDone(
@@ -290,7 +292,7 @@ void OnDownloadDialogClosed(
       break;
   }
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void OnCheckExistingDownloadPathDone(
     std::unique_ptr<DownloadTargetInfo> target_info,
@@ -304,11 +306,12 @@ void OnCheckExistingDownloadPathDone(
   std::move(callback).Run(
       target_info->target_path, target_info->target_disposition,
       target_info->danger_type, target_info->mixed_content_status,
-      target_info->intermediate_path, std::move(target_info->download_schedule),
+      target_info->intermediate_path, target_info->display_name,
+      target_info->mime_type, std::move(target_info->download_schedule),
       target_info->result);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Callback used by Mixed Download infobar on Android. Unlike on Desktop, this
 // infobar's entire life occurs prior to download start.
 void HandleMixedDownloadInfoBarResult(
@@ -318,13 +321,13 @@ void HandleMixedDownloadInfoBarResult(
     bool should_download) {
   // If the download should be blocked, we can call the callback directly.
   if (!should_download) {
-    std::move(callback).Run(target_info->target_path,
-                            target_info->target_disposition,
-                            download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                            DownloadItem::MixedContentStatus::SILENT_BLOCK,
-                            target_info->intermediate_path,
-                            std::move(target_info->download_schedule),
-                            download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+    std::move(callback).Run(
+        target_info->target_path, target_info->target_disposition,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        DownloadItem::MixedContentStatus::SILENT_BLOCK,
+        target_info->intermediate_path, target_info->display_name,
+        target_info->mime_type, std::move(target_info->download_schedule),
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return;
   }
   target_info->mixed_content_status =
@@ -423,7 +426,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       next_id_retrieved_(false),
       download_prefs_(new DownloadPrefs(profile)),
       is_file_picker_showing_(false) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   download_dialog_bridge_ = std::make_unique<DownloadDialogBridge>();
 #endif
 }
@@ -444,7 +447,7 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ChromeDownloadManagerDelegate::ShowDownloadDialog(
     gfx::NativeWindow native_window,
     int64_t total_bytes,
@@ -455,7 +458,7 @@ void ChromeDownloadManagerDelegate::ShowDownloadDialog(
   DCHECK(download_dialog_bridge_);
   auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
   bool show_date_time_picker = DownloadDialogBridge::ShouldShowDateTimePicker();
-  bool is_incognito = profile_->IsIncognitoProfile();
+  bool is_incognito = profile_->IsOffTheRecord();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           download::switches::kDownloadLaterDebugOnWifi)) {
@@ -471,7 +474,7 @@ void ChromeDownloadManagerDelegate::SetDownloadDialogBridgeForTesting(
     DownloadDialogBridge* bridge) {
   download_dialog_bridge_.reset(bridge);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
@@ -541,10 +544,10 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
                      weak_ptr_factory_.GetWeakPtr(), download->GetId(),
                      std::move(*callback));
   base::FilePath download_path =
-      GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH);
+      GetPlatformDownloadPath(download, PLATFORM_TARGET_PATH);
   DownloadPathReservationTracker::FilenameConflictAction action =
       kDefaultPlatformConflictAction;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (!download_path.empty())
     action = DownloadPathReservationTracker::UNIQUIFY;
 #endif
@@ -616,6 +619,10 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     base::OnceClosure internal_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+  // If this is a chrome triggered download, return true;
+  if (!item->RequireSafetyChecks())
+    return true;
+
   if (!download_prefs_->safebrowsing_for_trusted_sources_enabled() &&
       download_prefs_->IsFromTrustedSource(*item)) {
     return true;
@@ -651,8 +658,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
              download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT)) {
       DVLOG(2) << __func__
                << "() SB service disabled. Marking download as DANGEROUS FILE";
-      if (ShouldBlockFile(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-                          item)) {
+      if (ShouldBlockFile(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE)) {
         MaybeReportDangerousDownloadBlocked(
             download_prefs_->download_restriction(), "DANGEROUS_FILE_TYPE",
             item->GetTargetFilePath().AsUTF8Unsafe(), item);
@@ -789,11 +795,13 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
 }
 
 void ChromeDownloadManagerDelegate::SanitizeSavePackageResourceName(
-    base::FilePath* filename) {
+    base::FilePath* filename,
+    const GURL& source_url) {
   safe_browsing::FileTypePolicies* file_type_policies =
       safe_browsing::FileTypePolicies::GetInstance();
 
-  if (file_type_policies->GetFileDangerLevel(*filename) ==
+  const PrefService* prefs = profile_->GetPrefs();
+  if (file_type_policies->GetFileDangerLevel(*filename, source_url, prefs) ==
       safe_browsing::DownloadFileType::NOT_DANGEROUS)
     return;
 
@@ -815,7 +823,7 @@ void ChromeDownloadManagerDelegate::SanitizeDownloadParameters(
 void ChromeDownloadManagerDelegate::OpenDownloadUsingPlatformHandler(
     DownloadItem* download) {
   base::FilePath platform_path(
-      GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH));
+      GetPlatformDownloadPath(download, PLATFORM_TARGET_PATH));
   DCHECK(!platform_path.empty());
   platform_util::OpenItem(profile_, platform_path, platform_util::OPEN_FILE,
                           platform_util::OpenOperationCallback());
@@ -832,7 +840,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   MaybeSendDangerousDownloadOpenedReport(download,
                                          false /* show_download_in_folder */);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DownloadUtils::OpenDownload(download, DownloadOpenSource::kUnknown);
 #else
 
@@ -871,7 +879,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
     browser->OpenURL(params);
 
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_BROWSER);
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 bool ChromeDownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
@@ -916,7 +924,7 @@ void ChromeDownloadManagerDelegate::ShowDownloadInShell(
   }
 
   base::FilePath platform_path(
-      GetPlatformDownloadPath(profile_, download, PLATFORM_CURRENT_PATH));
+      GetPlatformDownloadPath(download, PLATFORM_CURRENT_PATH));
   DCHECK(!platform_path.empty());
   platform_util::ShowItemInFolder(profile_, platform_path);
 }
@@ -995,7 +1003,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
 // TODO(xingliu): We should abstract a DownloadFilePicker interface and make all
 // platform use it.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(download);
     if (reason == DownloadConfirmationReason::SAVE_AS) {
@@ -1051,15 +1059,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       bool show_download_later_dialog = ShouldShowDownloadLaterDialog(download);
       if (!show_download_later_dialog &&
           !download_prefs_->PromptForDownload()) {
-        if (base::FeatureList::IsEnabled(
-                chrome::android::kEnableDuplicateDownloadDialog)) {
-          DuplicateDownloadDialogBridgeDelegate::GetInstance()->CreateDialog(
-              download, suggested_path, web_contents, std::move(callback));
-        } else {
-          android::ChromeDuplicateDownloadInfoBarDelegate::Create(
-              infobars::ContentInfoBarManager::FromWebContents(web_contents),
-              download, suggested_path, std::move(callback));
-        }
+        DuplicateDownloadDialogBridgeDelegate::GetInstance()->CreateDialog(
+            download, suggested_path, web_contents, std::move(callback));
         return;
       }
 
@@ -1104,7 +1105,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
         base::BindOnce(&OnDownloadDialogClosed, std::move(callback)));
     return;
 
-#else   // !OS_ANDROID
+#else   // BUILDFLAG(IS_ANDROID)
   // Desktop Chrome displays a file picker for all confirmation needs. We can do
   // better.
   if (is_file_picker_showing_) {
@@ -1116,7 +1117,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
     is_file_picker_showing_ = true;
     ShowFilePicker(download->GetGuid(), suggested_path, std::move(callback));
   }
-#endif  // !OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void ChromeDownloadManagerDelegate::OnConfirmationCallbackComplete(
@@ -1160,7 +1161,7 @@ void ChromeDownloadManagerDelegate::ShowFilePickerForDownload(
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
     gfx::NativeWindow native_window,
     bool show_download_later_dialog,
@@ -1235,14 +1236,14 @@ bool ChromeDownloadManagerDelegate::ShouldShowDownloadLaterDialog(
       download && download->GetTotalBytes() >= min_file_size_kb * 1024;
   return met_file_size_condition;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(
     DownloadItem* download,
     const base::FilePath& virtual_path,
-    DownloadTargetDeterminerDelegate::LocalPathCallback callback) {
+    download::LocalPathCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(callback).Run(virtual_path);
+  download::DetermineLocalPath(download, virtual_path, std::move(callback));
 }
 
 void ChromeDownloadManagerDelegate::CheckDownloadUrl(
@@ -1396,7 +1397,7 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       } else {
         item->OnAsyncScanningCompleted(danger_type);
       }
-    } else if (ShouldBlockFile(danger_type, item)) {
+    } else if (ShouldBlockFile(danger_type)) {
       // Specifying a dangerous type here would take precedence over the
       // blocking of the file. For BLOCKED_TOO_LARGE and
       // BLOCKED_PASSWORD_PROTECTED, we want to display more clear UX, so
@@ -1539,14 +1540,14 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
         target_info->is_filetype_handled_safely)
       DownloadItemModel(item).SetShouldPreferOpeningInBrowser(true);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     if (item->GetOriginalMimeType() == "application/x-x509-user-cert")
       DownloadItemModel(item).SetShouldPreferOpeningInBrowser(true);
 #endif
 
     DownloadItemModel(item).SetDangerLevel(target_info->danger_level);
   }
-  if (ShouldBlockFile(target_info->danger_type, item)) {
+  if (ShouldBlockFile(target_info->danger_type)) {
     MaybeReportDangerousDownloadBlocked(
         download_prefs_->download_restriction(), "DANGEROUS_FILE_TYPE",
         target_info->target_path.AsUTF8Unsafe(), item);
@@ -1557,7 +1558,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
 
   base::FilePath target_path = target_info->target_path;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Present a mixed content download infobar when needed, and wait to initiate
   // the download until the user decides what to do.
   // On Desktop, this is handled using the unsafe-download warnings that are
@@ -1568,34 +1569,17 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
       (mcs == download::DownloadItem::MixedContentStatus::BLOCK ||
        mcs == download::DownloadItem::MixedContentStatus::WARN)) {
     auto* web_contents = content::DownloadItemUtils::GetWebContents(item);
-    if (base::FeatureList::IsEnabled(
-            chrome::android::kEnableMixedContentDownloadDialog)) {
-      gfx::NativeWindow native_window =
-          web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr;
-      if (native_window && item) {
-        MixedContentDownloadDialogBridge::GetInstance()->CreateDialog(
-            item, target_path.BaseName(), native_window,
-            base::BindOnce(HandleMixedDownloadInfoBarResult, item,
-                           std::move(target_info), std::move(callback)));
-        return;
-      }
-    } else {
-      auto* infobar_manager =
-          web_contents
-              ? infobars::ContentInfoBarManager::FromWebContents(web_contents)
-              : nullptr;
-      if (infobar_manager) {
-        // There is always an infobar manager except when running in a unit
-        // test, and those tests assume no infobar is shown.
-        MixedContentDownloadInfoBarDelegate::Create(
-            infobar_manager, target_path.BaseName(), mcs,
-            base::BindOnce(HandleMixedDownloadInfoBarResult, item,
-                           std::move(target_info), std::move(callback)));
-        return;
-      }
+    gfx::NativeWindow native_window =
+        web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr;
+    if (native_window && item) {
+      MixedContentDownloadDialogBridge::GetInstance()->CreateDialog(
+          item, target_path.BaseName(), native_window,
+          base::BindOnce(HandleMixedDownloadInfoBarResult, item,
+                         std::move(target_info), std::move(callback)));
+      return;
     }
   }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // A separate reservation with the same target path may exist.
   // If so, cancel the current reservation.
@@ -1607,8 +1591,8 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
 
 bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
     const base::FilePath& path) {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
   if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf"))) {
     return !download_prefs_->ShouldOpenPdfInSystemReader();
   }
@@ -1616,7 +1600,7 @@ bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
 
   // On Android, always prefer opening with an external app. On ChromeOS, there
   // are no external apps so just allow all opens to be handled by the "System."
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
     BUILDFLAG(ENABLE_PLUGINS)
   // TODO(asanka): Consider other file types and MIME types.
   // http://crbug.com/323561
@@ -1638,8 +1622,7 @@ bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
 }
 
 bool ChromeDownloadManagerDelegate::ShouldBlockFile(
-    download::DownloadDangerType danger_type,
-    download::DownloadItem* item) const {
+    download::DownloadDangerType danger_type) const {
   DownloadPrefs::DownloadRestriction download_restriction =
       download_prefs_->download_restriction();
 
@@ -1715,8 +1698,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
     bool content_initiated,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
   // Don't download pdf if it is a file URL, as that might cause an infinite
   // download loop if Chrome is not the system pdf viewer.
   if (url.SchemeIsFile() && download_prefs_->ShouldOpenPdfInSystemReader()) {
@@ -1735,7 +1718,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
   CanDownloadCallback cb = base::BindOnce(
       &ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete,
       weak_ptr_factory_.GetWeakPtr(), std::move(check_download_allowed_cb));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
       base::BindOnce(&OnDownloadAcquireFileAccessPermissionDone,
@@ -1757,8 +1740,8 @@ ChromeDownloadManagerDelegate::GetQuarantineConnectionCallback() {
 std::unique_ptr<download::DownloadItemRenameHandler>
 ChromeDownloadManagerDelegate::GetRenameHandlerForDownload(
     download::DownloadItem* download_item) {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
   return enterprise_connectors::FileSystemRenameHandler::CreateIfNeeded(
       download_item);
 #else
@@ -1773,14 +1756,8 @@ void ChromeDownloadManagerDelegate::CheckSavePackageAllowed(
   DCHECK(download_item);
   DCHECK(download_item->IsSavePackageDownload());
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
-  if (!base::FeatureList::IsEnabled(
-          download::features::kAllowSavePackageScanning)) {
-    std::move(callback).Run(true);
-    return;
-  }
-
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
   absl::optional<enterprise_connectors::AnalysisSettings> settings =
       safe_browsing::DeepScanningRequest::ShouldUploadBinary(download_item);
 
@@ -1840,16 +1817,13 @@ ChromeDownloadManagerDelegate::GetWeakPtr() {
 // static
 void ChromeDownloadManagerDelegate::ConnectToQuarantineService(
     mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
-#if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
-    content::ServiceProcessHost::Launch(
-        std::move(receiver), content::ServiceProcessHost::Options()
-                                 .WithDisplayName("Quarantine Service")
-                                 .Pass());
-    return;
-  }
-#endif
-
+#if BUILDFLAG(IS_WIN)
+  content::ServiceProcessHost::Launch(std::move(receiver),
+                                      content::ServiceProcessHost::Options()
+                                          .WithDisplayName("Quarantine Service")
+                                          .Pass());
+#else   // !BUILDFLAG(IS_WIN)
   mojo::MakeSelfOwnedReceiver(std::make_unique<quarantine::QuarantineImpl>(),
                               std::move(receiver));
+#endif  // !BUILDFLAG(IS_WIN)
 }

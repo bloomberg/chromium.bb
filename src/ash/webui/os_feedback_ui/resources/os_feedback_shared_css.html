@@ -1,7 +1,3 @@
-<link rel="stylesheet"
-    href="chrome://resources/chromeos/colors/cros_styles.css">
-<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-<link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 <template>
   <style include="cr-shared-style">
     html {
@@ -20,9 +16,15 @@
       margin: 0 0 24px 0;
     }
 
+    #content {
+      display: flex;
+      flex-direction: column;
+      height: 456px;
+    }
+
     #title {
-      margin-block-end: 0;
       margin: auto 0 0 0;
+      margin-block-end: 0;
     }
 
     #navButtons {

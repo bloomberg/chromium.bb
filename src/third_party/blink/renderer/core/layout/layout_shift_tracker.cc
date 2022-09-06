@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "ui/gfx/geometry/rect.h"
@@ -116,12 +115,12 @@ void RectToTracedValue(const gfx::Rect& rect,
 }
 
 void RegionToTracedValue(const LayoutShiftRegion& region, TracedValue& value) {
-  Region blink_region;
+  cc::Region blink_region;
   for (const gfx::Rect& rect : region.GetRects())
-    blink_region.Unite(Region(rect));
+    blink_region.Union(rect);
 
   value.BeginArray("region_rects");
-  for (const gfx::Rect& rect : blink_region.Rects())
+  for (gfx::Rect rect : blink_region)
     RectToTracedValue(rect, value);
   value.EndArray();
 }
@@ -351,7 +350,7 @@ void LayoutShiftTracker::ObjectShifted(
 
   LocalFrame& frame = frame_view_->GetFrame();
   if (ShouldLog(frame)) {
-    VLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+    VLOG(1) << "in " << (frame.IsOutermostMainFrame() ? "" : "subframe ")
             << frame.GetDocument()->Url() << ", " << object << " moved from "
             << old_rect_in_root.ToString() << " to "
             << new_rect_in_root.ToString() << " (visible from "
@@ -478,7 +477,7 @@ void LayoutShiftTracker::NotifyTextPrePaint(
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {
   LocalFrame& frame = frame_view_->GetFrame();
-  if (frame.IsMainFrame())
+  if (frame.IsOutermostMainFrame())
     return 1;
 
   // Map the subframe view rect into the coordinate space of the local root.
@@ -497,6 +496,9 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
   gfx::Size subframe_visible_size = subframe_rect.PixelSnappedSize();
   gfx::Size main_frame_size = frame.GetPage()->GetVisualViewport().Size();
 
+  if (main_frame_size.Area64() == 0) {
+    return 0;
+  }
   // TODO(crbug.com/940711): This comparison ignores page scale and CSS
   // transforms above the local root.
   return static_cast<double>(subframe_visible_size.Area64()) /
@@ -530,7 +532,7 @@ void LayoutShiftTracker::NotifyPrePaintFinishedInternal() {
 
   LocalFrame& frame = frame_view_->GetFrame();
   if (ShouldLog(frame)) {
-    VLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+    VLOG(1) << "in " << (frame.IsOutermostMainFrame() ? "" : "subframe ")
             << frame.GetDocument()->Url() << ", viewport was "
             << (impact_fraction * 100) << "% impacted with distance fraction "
             << move_distance_factor << " and subframe weighting factor "
@@ -580,9 +582,12 @@ void LayoutShiftTracker::SubmitPerformanceEntry(double score_delta,
   DCHECK(performance);
 
   double input_timestamp = LastInputTimestamp();
-  LayoutShift* entry =
-      LayoutShift::Create(performance->now(), score_delta, had_recent_input,
-                          input_timestamp, CreateAttributionList());
+  LayoutShift* entry = LayoutShift::Create(
+      performance->now(), score_delta, had_recent_input, input_timestamp,
+      CreateAttributionList(),
+      PerformanceEntry::GetNavigationId(window));  // Add WPT for
+                                                   //  LayoutShift. See
+                                                   //  crbug.com/1320878.
 
   performance->AddLayoutShiftEntry(entry);
 }
@@ -609,7 +614,7 @@ void LayoutShiftTracker::ReportShift(double score_delta,
       "frame", ToTraceValue(&frame));
 
   if (ShouldLog(frame)) {
-    VLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+    VLOG(1) << "in " << (frame.IsOutermostMainFrame() ? "" : "subframe ")
             << frame.GetDocument()->Url().GetString() << ", layout shift of "
             << score_delta
             << (had_recent_input ? " excluded by recent input" : " reported")
@@ -740,7 +745,8 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   value->SetDouble("overall_max_distance", overall_max_distance_);
   value->SetDouble("frame_max_distance", frame_max_distance_);
   RegionToTracedValue(region_, *value);
-  value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
+  value->SetBoolean("is_main_frame",
+                    frame_view_->GetFrame().IsOutermostMainFrame());
   value->SetBoolean("had_recent_input", input_detected);
   value->SetDouble("last_input_timestamp", LastInputTimestamp());
   AttributionsToTracedValue(*value);
@@ -781,10 +787,10 @@ void LayoutShiftTracker::SendLayoutShiftRectsToHud(
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
       WebVector<gfx::Rect> rects;
-      Region blink_region;
+      cc::Region blink_region;
       for (const gfx::Rect& rect : int_rects)
-        blink_region.Unite(Region(rect));
-      for (const gfx::Rect& rect : blink_region.Rects())
+        blink_region.Union(rect);
+      for (gfx::Rect rect : blink_region)
         rects.emplace_back(rect);
       cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(
           rects.ReleaseVector());

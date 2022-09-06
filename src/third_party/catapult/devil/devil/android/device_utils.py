@@ -101,17 +101,6 @@ _FILE_LIST_SCRIPT = """
   done
 """
 
-_RESTART_ADBD_SCRIPT = """
-  trap '' HUP
-  trap '' TERM
-  trap '' PIPE
-  function restart() {
-    stop adbd
-    start adbd
-  }
-  restart &
-"""
-
 _UNZIP_AND_CHMOD_SCRIPT = """
   {bin_dir}/unzip {zip_file} && (for dir in {dirs}
   do
@@ -1183,7 +1172,9 @@ class DeviceUtils(object):
               retries=None,
               modules=None,
               fake_modules=None,
-              additional_locales=None):
+              additional_locales=None,
+              instant_app=False,
+              force_queryable=False):
     """Install an APK or app bundle.
 
     Noop if an identical APK is already installed. If installing a bundle, the
@@ -1192,10 +1183,10 @@ class DeviceUtils(object):
 
     Args:
       apk: An ApkHelper instance or string containing the path to the APK or
-        bundle.
+          bundle.
       allow_downgrade: A boolean indicating if we should allow downgrades.
       reinstall: A boolean indicating if we should keep any existing app data.
-        Ignored if |apk| is a bundle.
+          Ignored if |apk| is a bundle.
       permissions: Set of permissions to set. If not set, finds permissions with
           apk helper. To set no permissions, pass [].
       timeout: timeout in seconds
@@ -1207,12 +1198,20 @@ class DeviceUtils(object):
           rather than installed. Thus the app can emulate SplitCompat while
           running. This should not have any overlap with |modules|.
       additional_locales: An iterable with additional locales to install for a
-        bundle.
+          bundle.
+      instant_app: A boolean that selects if the APK should be installed as an
+          instant app or not. Instant apps are installed in a more
+          restrictive execution environment. - Supported from SDK 29
+      force_queryable: A boolean that allows the installed application to be
+        queryable by all other applications regardless of if they have declared
+        the package as queryable in their manifests - Supported from SDK 30
 
     Raises:
       CommandFailedError if the installation fails.
       CommandTimeoutError if the installation times out.
       DeviceUnreachableError on missing device.
+      DeviceVersionError if the device SDK level does not support instant
+        apps or forcing queryable
     """
     apk = apk_helper.ToHelper(apk)
     modules_set = set(modules or [])
@@ -1231,12 +1230,13 @@ class DeviceUtils(object):
         apk_paths_to_install = [p for p in apk_paths if p not in fake_apk_paths]
       else:
         apk_paths_to_install = apk_paths
-      self._InstallInternal(
-          apk,
-          apk_paths_to_install,
-          allow_downgrade=allow_downgrade,
-          reinstall=reinstall,
-          permissions=permissions)
+      self._InstallInternal(apk,
+                            apk_paths_to_install,
+                            allow_downgrade=allow_downgrade,
+                            reinstall=reinstall,
+                            permissions=permissions,
+                            instant_app=instant_app,
+                            force_queryable=force_queryable)
 
   @staticmethod
   def _GetFakeInstallPaths(apk_paths, fake_modules):
@@ -1298,7 +1298,9 @@ class DeviceUtils(object):
                       allow_cached_props=False,
                       permissions=None,
                       timeout=None,
-                      retries=None):
+                      retries=None,
+                      instant_app=False,
+                      force_queryable=False):
     """Install a split APK.
 
     Noop if all of the APK splits are already installed.
@@ -1314,29 +1316,40 @@ class DeviceUtils(object):
           apk helper. To set no permissions, pass [].
       timeout: timeout in seconds
       retries: number of retries
+      instant_app: A boolean that selects if the APK should be installed as an
+          instant app or not. Instant apps are installed in a more
+          restrictive execution environment. - Supported from SDK 29
+      force_queryable: A boolean that allows the installed application to be
+        queryable by all other applications regardless of if they have declared
+        the package as queryable in their manifests - Supported from SDK 30
 
     Raises:
       CommandFailedError if the installation fails.
       CommandTimeoutError if the installation times out.
       DeviceUnreachableError on missing device.
       DeviceVersionError if device SDK is less than Android L.
+      DeviceVersionError if the device SDK level does not support instant
+        apps or forcing queryable
     """
     apk = apk_helper.ToSplitHelper(base_apk, split_apks)
     with apk.GetApkPaths(
         self, allow_cached_props=allow_cached_props) as apk_paths:
-      self._InstallInternal(
-          apk,
-          apk_paths,
-          reinstall=reinstall,
-          permissions=permissions,
-          allow_downgrade=allow_downgrade)
+      self._InstallInternal(apk,
+                            apk_paths,
+                            reinstall=reinstall,
+                            permissions=permissions,
+                            allow_downgrade=allow_downgrade,
+                            instant_app=instant_app,
+                            force_queryable=force_queryable)
 
   def _InstallInternal(self,
                        apk,
                        apk_paths,
                        allow_downgrade=False,
                        reinstall=False,
-                       permissions=None):
+                       permissions=None,
+                       instant_app=False,
+                       force_queryable=False):
     if not apk_paths:
       raise device_errors.CommandFailedError('Did not get any APKs to install')
 
@@ -1373,9 +1386,14 @@ class DeviceUtils(object):
       if apks_to_install and not reinstall:
         apks_to_install = apk_paths
 
-    if device_apk_paths and apks_to_install and not reinstall:
-      logger.info('Uninstalling package %s', package_name)
-      self.Uninstall(package_name)
+    if device_apk_paths and not reinstall:
+      if apks_to_install:
+        logger.info('Uninstalling package %s', package_name)
+        self.Uninstall(package_name)
+      else:
+        # Running adb uninstall clears the data, so to be consistent, we
+        # explicitly clear it when skipping the uninstall.
+        self.ClearApplicationState(package_name)
 
     if apks_to_install:
       # Assume that we won't know the resulting device state.
@@ -1388,18 +1406,20 @@ class DeviceUtils(object):
       logger.info('Installing package %s using APKs %s',
                   package_name, apks_to_install)
       if len(apks_to_install) > 1 or partial:
-        self.adb.InstallMultiple(
-            apks_to_install,
-            partial=partial,
-            reinstall=reinstall,
-            streaming=streaming,
-            allow_downgrade=allow_downgrade)
+        self.adb.InstallMultiple(apks_to_install,
+                                 partial=partial,
+                                 reinstall=reinstall,
+                                 streaming=streaming,
+                                 allow_downgrade=allow_downgrade,
+                                 instant_app=instant_app,
+                                 force_queryable=force_queryable)
       else:
-        self.adb.Install(
-            apks_to_install[0],
-            reinstall=reinstall,
-            streaming=streaming,
-            allow_downgrade=allow_downgrade)
+        self.adb.Install(apks_to_install[0],
+                         reinstall=reinstall,
+                         streaming=streaming,
+                         allow_downgrade=allow_downgrade,
+                         instant_app=instant_app,
+                         force_queryable=force_queryable)
     else:
       logger.info('Skipping installation of package %s', package_name)
       # Running adb install terminates running instances of the app, so to be
@@ -3881,12 +3901,10 @@ class DeviceUtils(object):
   @decorators.WithTimeoutAndRetriesFromInstance()
   def RestartAdbd(self, timeout=None, retries=None):
     logger.info('Restarting adbd on device.')
-    with device_temp_file.DeviceTempFile(self.adb, suffix='.sh') as script:
-      self.WriteFile(script.name, _RESTART_ADBD_SCRIPT)
-      self.RunShellCommand(['source', script.name],
-                           check_return=True,
-                           as_root=True)
-      self.adb.WaitForDevice()
+    self.RunShellCommand(['setprop', 'ctl.restart', 'adbd'],
+                         check_return=False,
+                         as_root=True)
+    self.adb.WaitForDevice()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GrantPermissions(self, package, permissions, timeout=None, retries=None):

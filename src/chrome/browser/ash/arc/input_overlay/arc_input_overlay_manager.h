@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_ARC_INPUT_OVERLAY_MANAGER_H_
 
 #include "ash/components/arc/ime/arc_ime_bridge.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ash/arc/input_overlay/db/data_controller.h"
+#include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/key_event_source_rewriter.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
@@ -62,7 +65,7 @@ class ArcInputOverlayManager : public KeyedService,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
-  // KeyedService overrides:
+  // KeyedService:
   void Shutdown() override;
 
   // aura::client::FocusChangeObserver:
@@ -74,32 +77,55 @@ class ArcInputOverlayManager : public KeyedService,
 
   class InputMethodObserver;
 
+  // TODO(djacobo|cuicuiruan): Sort this, functions first, members last.
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observation_{this};
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       window_observations_{this};
-  base::ScopedObservation<aura::client::FocusClient,
-                          aura::client::FocusChangeObserver>
-      focus_observation_{this};
-  base::flat_map<aura::Window*, std::unique_ptr<TouchInjector>>
+  base::flat_map<aura::Window*, std::unique_ptr<input_overlay::TouchInjector>>
       input_overlay_enabled_windows_;
   bool is_text_input_active_ = false;
-  ui::InputMethod* input_method_ = nullptr;
+  raw_ptr<ui::InputMethod> input_method_ = nullptr;
   std::unique_ptr<InputMethodObserver> input_method_observer_;
   // Only one window is registered since there is only one window can be focused
   // each time.
-  aura::Window* registered_top_level_window_ = nullptr;
+  raw_ptr<aura::Window> registered_top_level_window_ = nullptr;
   std::unique_ptr<KeyEventSourceRewriter> key_event_source_rewriter_;
-  std::unique_ptr<DisplayOverlayController> display_overlay_controller_;
+  std::unique_ptr<input_overlay::DisplayOverlayController>
+      display_overlay_controller_;
+  std::unique_ptr<input_overlay::DataController> data_controller_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
+  // Read all the data including both default data and customized data.
   void ReadData(const std::string& package_name,
                 aura::Window* top_level_window);
+  // Read default data.
+  input_overlay::TouchInjector* ReadDefaultData(const std::string& package_name,
+                                                aura::Window* top_level_window);
+  // Read customized data. Customized data will overrides the default data if
+  // there is any.
+  void ReadCustomizedData(const std::string& package_name,
+                          input_overlay::TouchInjector* touch_injector);
+  // Get the Proto object from customized data.
+  std::unique_ptr<input_overlay::AppDataProto> GetProto(
+      const std::string& package_name);
+  // Apply the customized proto data.
+  void OnProtoDataAvailable(input_overlay::TouchInjector* touch_injector,
+                            std::unique_ptr<input_overlay::AppDataProto> proto);
+  // Callback function triggered by Save button.
+  void OnSaveProtoFile(std::unique_ptr<input_overlay::AppDataProto> proto,
+                       const std::string& package_name);
+  void SaveFile(std::unique_ptr<input_overlay::AppDataProto> proto,
+                const std::string& package_name);
   void NotifyTextInputState();
   void AddObserverToInputMethod();
   void RemoveObserverFromInputMethod();
-  // Only top level window will be registered successfully.
+  // Only top level window will be registered/unregistered successfully.
   void RegisterWindow(aura::Window* window);
   void UnRegisterWindow(aura::Window* window);
-  void AddDisplayOverlayController();
+  void RegisterWindowIfFocused(aura::Window* window);
+  // Add display overlay controller related to |touch_injector|.
+  void AddDisplayOverlayController(
+      input_overlay::TouchInjector* touch_injector);
   void RemoveDisplayOverlayController();
 
   base::WeakPtrFactory<ArcInputOverlayManager> weak_ptr_factory_{this};

@@ -40,12 +40,6 @@ namespace {
 
 class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   // Overridden from gpu::gles2::GLES2Interface:
-  GLuint CreateImageCHROMIUM(ClientBuffer buffer,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum internalformat) override {
-    return 1u;
-  }
   void GenBuffers(GLsizei n, GLuint* buffers) override {
     for (GLsizei i = 0; i < n; ++i)
       buffers[i] = 1u;
@@ -356,8 +350,8 @@ class RasterBufferProviderPerfTest
  public:
   // Overridden from testing::Test:
   void SetUp() override {
-    pending_raster_queries_ = std::make_unique<RasterQueryQueue>(
-        worker_context_provider_.get(), /*oop_rasterization_enabled=*/false);
+    pending_raster_queries_ =
+        std::make_unique<RasterQueryQueue>(worker_context_provider_.get());
 
     switch (GetParam()) {
       case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
@@ -379,7 +373,7 @@ class RasterBufferProviderPerfTest
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
-            false, viz::RGBA_8888, gfx::Size(), true, false,
+            false, viz::RGBA_8888, gfx::Size(), true,
             pending_raster_queries_.get());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:

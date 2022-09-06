@@ -13,6 +13,7 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_service_commands.h"
 #include "components/sessions/core/session_types.h"
+#include "content/public/browser/navigation_entry.h"
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/persistence/browser_persistence_common.h"
 #include "weblayer/browser/tab_impl.h"
@@ -59,7 +60,7 @@ class MinimalPersister {
   // Returns true if all |commands| were successfully added. A return value of
   // false indicates the max size has been reached and no more commands will be
   // accepted.
-  bool AppendIfFits(SessionCommands commands) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool AppendIfFits(SessionCommands commands) {
     // The number of commands is written out as |size_type|, make sure the
     // count isn't exceeded.
     const int commands_size = CalculateSizeForCommands(commands);
@@ -183,7 +184,8 @@ class MinimalRestorer {
 };
 
 // Iterates over the NavigationEntries of a tab in the order they should be
-// written.
+// written. Starts at the pending NavigationEntry if it exists, and skips over
+// a NavigationEntry if it is the initial NavigationEntry.
 class NavigationEntryIterator {
  public:
   explicit NavigationEntryIterator(Tab* tab)
@@ -195,6 +197,13 @@ class NavigationEntryIterator {
                                  : controller_.GetCurrentEntryIndex()) {
     // GetPendingEntryIndex() returns -1 for new entries, which this implicitly
     // skips (Chrome's persistence code does the same).
+
+    if (content::NavigationEntry* current_entry = entry()) {
+      // If `entry_index_` points to the initial NavigationEntry, skip it, as
+      // initial NavigationEntries should not be persisted.
+      if (!at_pending_ && current_entry->IsInitialEntry())
+        Next();
+    }
   }
   NavigationEntryIterator(const NavigationEntryIterator&) = delete;
   NavigationEntryIterator& operator=(const NavigationEntryIterator&) = delete;
@@ -204,7 +213,7 @@ class NavigationEntryIterator {
   int entry_index() const { return entry_index_; }
 
   // Returns the current entry.
-  content::NavigationEntry* entry() {
+  content::NavigationEntry* entry() const {
     if (at_pending_)
       return controller_.GetPendingEntry();
     return entry_index_ == -1 ? nullptr
@@ -225,6 +234,13 @@ class NavigationEntryIterator {
         --entry_index_;
     } else if (entry_index_ != -1) {
       --entry_index_;
+    }
+
+    // Skip over the initial NavigationEntry as it shouldn't be persisted.
+    content::NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index_);
+    if (entry && entry->IsInitialEntry()) {
+      DCHECK_EQ(0, entry_index_);
+      entry_index_ = -1;
     }
     return !at_end();
   }
@@ -360,10 +376,12 @@ std::vector<uint8_t> PersistMinimalState(BrowserImpl* browser,
   return builder.ToByteArray();
 }
 
-void RestoreMinimalState(BrowserImpl* browser,
-                         const std::vector<uint8_t>& value) {
+void RestoreMinimalStateForBrowser(BrowserImpl* browser,
+                                   const std::vector<uint8_t>& value) {
   MinimalRestorer restorer(value);
+  browser->set_is_minimal_restore_in_progress(true);
   RestoreBrowserState(browser, restorer.RestoreCommands());
+  browser->set_is_minimal_restore_in_progress(false);
 }
 
 }  // namespace weblayer

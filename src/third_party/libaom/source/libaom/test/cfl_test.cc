@@ -125,20 +125,6 @@ class CFLTestWithData : public CFLTest {
 template <typename I>
 class CFLTestWithAlignedData : public CFLTest {
  public:
-  CFLTestWithAlignedData() {
-    chroma_pels_ref =
-        reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
-    chroma_pels =
-        reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
-    sub_luma_pels_ref = reinterpret_cast<int16_t *>(
-        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
-    sub_luma_pels = reinterpret_cast<int16_t *>(
-        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
-    memset(chroma_pels_ref, 0, sizeof(I) * CFL_BUF_SQUARE);
-    memset(chroma_pels, 0, sizeof(I) * CFL_BUF_SQUARE);
-    memset(sub_luma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
-    memset(sub_luma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
-  }
   ~CFLTestWithAlignedData() {
     aom_free(chroma_pels_ref);
     aom_free(sub_luma_pels_ref);
@@ -147,6 +133,25 @@ class CFLTestWithAlignedData : public CFLTest {
   }
 
  protected:
+  void init() {
+    chroma_pels_ref =
+        reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
+    ASSERT_NE(chroma_pels_ref, nullptr);
+    chroma_pels =
+        reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
+    ASSERT_NE(chroma_pels, nullptr);
+    sub_luma_pels_ref = reinterpret_cast<int16_t *>(
+        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+    ASSERT_NE(sub_luma_pels_ref, nullptr);
+    sub_luma_pels = reinterpret_cast<int16_t *>(
+        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+    ASSERT_NE(sub_luma_pels, nullptr);
+    memset(chroma_pels_ref, 0, sizeof(I) * CFL_BUF_SQUARE);
+    memset(chroma_pels, 0, sizeof(I) * CFL_BUF_SQUARE);
+    memset(sub_luma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
+    memset(sub_luma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
+  }
+
   I *chroma_pels_ref;
   I *chroma_pels;
   int16_t *sub_luma_pels_ref;
@@ -366,6 +371,7 @@ class CFLPredictTest : public ::testing::TestWithParam<predict_param>,
  public:
   virtual void SetUp() {
     CFLTest::init(std::get<0>(this->GetParam()));
+    CFLTestWithAlignedData::init();
     predict = std::get<1>(this->GetParam())(tx_size);
     predict_ref = cfl_get_predict_lbd_fn_c(tx_size);
   }
@@ -414,6 +420,7 @@ class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd>,
  public:
   virtual void SetUp() {
     CFLTest::init(std::get<0>(this->GetParam()));
+    CFLTestWithAlignedData::init();
     predict = std::get<1>(this->GetParam())(tx_size);
     predict_ref = cfl_get_predict_hbd_fn_c(tx_size);
   }

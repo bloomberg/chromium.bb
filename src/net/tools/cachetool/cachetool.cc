@@ -8,7 +8,6 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/hash/md5.h"
@@ -86,7 +85,7 @@ void PrintHelp() {
 class CommandMarshal {
  public:
   explicit CommandMarshal(Backend* cache_backend)
-      : command_failed_(false), cache_backend_(cache_backend) {}
+      : cache_backend_(cache_backend) {}
   virtual ~CommandMarshal() = default;
 
   // Reads the next command's name to execute.
@@ -138,7 +137,7 @@ class CommandMarshal {
   Backend* cache_backend() { return cache_backend_; }
 
  protected:
-  bool command_failed_;
+  bool command_failed_ = false;
   Backend* const cache_backend_;
 };
 
@@ -147,7 +146,7 @@ class ProgramArgumentCommandMarshal final : public CommandMarshal {
  public:
   ProgramArgumentCommandMarshal(Backend* cache_backend,
                                 base::CommandLine::StringVector args)
-      : CommandMarshal(cache_backend), command_line_args_(args), args_id_(0) {}
+      : CommandMarshal(cache_backend), command_line_args_(args) {}
 
   // Implements CommandMarshal.
   std::string ReadCommandName() override {
@@ -221,7 +220,7 @@ class ProgramArgumentCommandMarshal final : public CommandMarshal {
 
  private:
   const base::CommandLine::StringVector command_line_args_;
-  size_t args_id_;
+  size_t args_id_ = 0;
 };
 
 // Online command input/output that receives pickled commands from stdin and
@@ -238,7 +237,7 @@ class StreamCommandMarshal final : public CommandMarshal {
       return "";
     std::cout.flush();
     size_t command_id = static_cast<size_t>(std::cin.get());
-    if (command_id >= base::size(kCommandNames)) {
+    if (command_id >= std::size(kCommandNames)) {
       ReturnFailure("Unknown command.");
       return "";
     }
@@ -754,8 +753,8 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<Backend> cache_backend;
   net::TestCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, backend_type, cache_path, INT_MAX,
-      disk_cache::ResetHandling::kNeverReset, nullptr, &cache_backend,
+      net::DISK_CACHE, backend_type, /*file_operations=*/nullptr, cache_path,
+      INT_MAX, disk_cache::ResetHandling::kNeverReset, nullptr, &cache_backend,
       cb.callback());
   if (cb.GetResult(rv) != net::OK) {
     std::cerr << "Invalid cache." << std::endl;

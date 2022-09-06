@@ -53,9 +53,9 @@ namespace {
 
 // Notifies the ApiActivityMonitor that an extension API function has been
 // called. May be called from any thread.
-void NotifyApiFunctionCalled(const std::string& extension_id,
+void NotifyApiFunctionCalled(const ExtensionId& extension_id,
                              const std::string& api_name,
-                             const base::ListValue& args,
+                             const base::Value::List& args,
                              content::BrowserContext* browser_context) {
   activity_monitor::OnApiFunctionCalled(browser_context, extension_id, api_name,
                                         args);
@@ -70,7 +70,7 @@ bool IsRequestFromServiceWorker(const mojom::RequestParams& request_params) {
 void ResponseCallbackOnError(ExtensionFunction::ResponseCallback callback,
                              ExtensionFunction::ResponseType type,
                              const std::string& error) {
-  std::move(callback).Run(type, base::Value(base::Value::Type::LIST), error);
+  std::move(callback).Run(type, base::Value::List(), error);
 }
 
 }  // namespace
@@ -110,10 +110,12 @@ class ExtensionFunctionDispatcher::ResponseCallbackWrapper
   }
 
  private:
+  // TODO(https://crbug.com/1312686): Change |results| type to
+  // base::Value::List.
   void OnExtensionFunctionCompleted(
       mojom::LocalFrameHost::RequestCallback callback,
       ExtensionFunction::ResponseType type,
-      base::Value results,
+      base::Value::List results,
       const std::string& error) {
     std::move(callback).Run(type == ExtensionFunction::SUCCEEDED,
                             std::move(results), error);
@@ -170,10 +172,12 @@ class ExtensionFunctionDispatcher::WorkerResponseCallbackWrapper
     // Note: we are deleted here!
   }
 
+  // TODO(https://crbug.com/1312686): Change |results| type to
+  // base::Value::List.
   void OnExtensionFunctionCompleted(int request_id,
                                     int worker_thread_id,
                                     ExtensionFunction::ResponseType type,
-                                    base::Value results,
+                                    base::Value::List results,
                                     const std::string& error) {
     if (type == ExtensionFunction::BAD_MESSAGE) {
       // The renderer will be shut down from ExtensionFunction::SetBadMessage().
@@ -181,7 +185,7 @@ class ExtensionFunctionDispatcher::WorkerResponseCallbackWrapper
     }
     render_process_host_->Send(new ExtensionMsg_ResponseWorker(
         worker_thread_id, request_id, type == ExtensionFunction::SUCCEEDED,
-        base::Value::AsListValue(results), error));
+        std::move(results), error));
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
@@ -231,13 +235,12 @@ ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
 
 void ExtensionFunctionDispatcher::Dispatch(
     mojom::RequestParamsPtr params,
-    content::RenderFrameHost* render_frame_host,
-    int render_process_id,
+    content::RenderFrameHost& frame,
     mojom::LocalFrameHost::RequestCallback callback) {
-  if (!render_frame_host || IsRequestFromServiceWorker(*params)) {
+  if (IsRequestFromServiceWorker(*params)) {
     constexpr char kBadMessage[] = "LocalFrameHost::Request got a bad message.";
-    std::move(callback).Run(ExtensionFunction::FAILED,
-                            base::Value(base::Value::Type::LIST), kBadMessage);
+    std::move(callback).Run(ExtensionFunction::FAILED, base::Value::List(),
+                            kBadMessage);
     // Kill the renderer if it's an invalid request.
     mojo::ReportBadMessage(kBadMessage);
     return;
@@ -248,14 +251,14 @@ void ExtensionFunctionDispatcher::Dispatch(
   // Extension API from a non Service Worker context, e.g. extension page,
   // background page, content script.
   std::unique_ptr<ResponseCallbackWrapper>& callback_wrapper =
-      response_callback_wrappers_[render_frame_host];
+      response_callback_wrappers_[&frame];
   if (!callback_wrapper) {
-    callback_wrapper = std::make_unique<ResponseCallbackWrapper>(
-        AsWeakPtr(), render_frame_host);
+    callback_wrapper =
+        std::make_unique<ResponseCallbackWrapper>(AsWeakPtr(), &frame);
   }
 
   DispatchWithCallbackInternal(
-      *params, render_frame_host, render_process_id,
+      *params, &frame, frame.GetProcess()->GetID(),
       callback_wrapper->CreateCallback(std::move(callback)));
 }
 
@@ -369,15 +372,14 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
   ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
   QuotaService* quota = extension_system->quota_service();
-  std::string violation_error = quota->Assess(
-      extension->id(), function.get(),
-      &base::Value::AsListValue(params.arguments), base::TimeTicks::Now());
+  std::string violation_error =
+      quota->Assess(extension->id(), function.get(), params.arguments,
+                    base::TimeTicks::Now());
 
   if (violation_error.empty()) {
     // See crbug.com/39178.
     ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
-    NotifyApiFunctionCalled(extension->id(), params.name,
-                            base::Value::AsListValue(params.arguments),
+    NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             browser_context_);
 
     // Note: Deliberately don't include external component extensions here -
@@ -395,6 +397,11 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
       base::UmaHistogramSparse(
           "Extensions.Functions.ExtensionServiceWorkerCalls",
           function->histogram_value());
+    }
+
+    if (extension->manifest_version() == 3) {
+      base::UmaHistogramSparse("Extensions.Functions.ExtensionMV3Calls",
+                               function->histogram_value());
     }
 
     base::ElapsedTimer timer;
@@ -514,7 +521,7 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     return nullptr;
   }
 
-  function->SetArgs(params.arguments.Clone());
+  function->SetArgs(base::Value(params.arguments.Clone()));
 
   const Feature::Context context_type = process_map.GetMostLikelyContextType(
       extension, requesting_process_id, rfh_url);

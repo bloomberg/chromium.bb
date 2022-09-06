@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/cxx17_backports.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -158,14 +158,17 @@ Status ParseMobileEmulation(const base::Value& option,
     if (!mobile_emulation->GetDictionary("deviceMetrics", &metrics))
       return Status(kInvalidArgument, "'deviceMetrics' must be a dictionary");
 
-    int width = 0;
-    int height = 0;
-
-    if (metrics->FindKey("width") && !metrics->GetInteger("width", &width))
+    const base::Value* width_value = metrics->FindKey("width");
+    if (width_value && !width_value->is_int())
       return Status(kInvalidArgument, "'width' must be an integer");
 
-    if (metrics->FindKey("height") && !metrics->GetInteger("height", &height))
+    int width = width_value ? width_value->GetInt() : 0;
+
+    const base::Value* height_value = metrics->FindKey("height");
+    if (height_value && !height_value->is_int())
       return Status(kInvalidArgument, "'height' must be an integer");
+
+    int height = height_value ? height_value->GetInt() : 0;
 
     absl::optional<double> maybe_device_scale_factor =
         metrics->FindDoubleKey("pixelRatio");
@@ -265,7 +268,7 @@ Status ParseSwitches(const base::Value& option,
                      Capabilities* capabilities) {
   if (!option.is_list())
     return Status(kInvalidArgument, "must be a list");
-  for (const base::Value& arg : option.GetList()) {
+  for (const base::Value& arg : option.GetListDeprecated()) {
     if (!arg.is_string())
       return Status(kInvalidArgument, "each argument must be a string");
     std::string arg_string = arg.GetString();
@@ -280,7 +283,7 @@ Status ParseSwitches(const base::Value& option,
 Status ParseExtensions(const base::Value& option, Capabilities* capabilities) {
   if (!option.is_list())
     return Status(kInvalidArgument, "must be a list");
-  for (const base::Value& extension : option.GetList()) {
+  for (const base::Value& extension : option.GetListDeprecated()) {
     if (!extension.is_string()) {
       return Status(kInvalidArgument,
                     "each extension must be a base64 encoded string");
@@ -319,7 +322,7 @@ Status ParseProxy(bool w3c_compliant,
     const std::string kSocksProxy = "socksProxy";
     const base::Value* option_value = nullptr;
     std::string proxy_servers;
-    for (size_t i = 0; i < base::size(proxy_servers_options); ++i) {
+    for (size_t i = 0; i < std::size(proxy_servers_options); ++i) {
       option_value = proxy_dict->FindPath(proxy_servers_options[i][0]);
       if (option_value == nullptr || option_value->is_none()) {
         continue;
@@ -332,11 +335,7 @@ Status ParseProxy(bool w3c_compliant,
       }
       std::string value = option_value->GetString();
       if (proxy_servers_options[i][0] == kSocksProxy) {
-        int socksVersion;
-        if (!proxy_dict->GetInteger("socksVersion", &socksVersion))
-          return Status(
-              kInvalidArgument,
-              "Specifying 'socksProxy' requires an integer for 'socksVersion'");
+        int socksVersion = proxy_dict->FindIntKey("socksVersion").value_or(-1);
         if (socksVersion < 0 || socksVersion > 255)
           return Status(
               kInvalidArgument,
@@ -359,7 +358,7 @@ Status ParseProxy(bool w3c_compliant,
       // In practice, library implementations are not always consistent,
       // so we accept both formats regardless of the W3C mode setting.
       if (option_value->is_list()) {
-        for (const base::Value& item : option_value->GetList()) {
+        for (const base::Value& item : option_value->GetListDeprecated()) {
           if (!item.is_string())
             return Status(kInvalidArgument,
                           "'noProxy' must be a list of strings");
@@ -392,7 +391,7 @@ Status ParseExcludeSwitches(const base::Value& option,
                             Capabilities* capabilities) {
   if (!option.is_list())
     return Status(kInvalidArgument, "must be a list");
-  for (const base::Value& switch_value : option.GetList()) {
+  for (const base::Value& switch_value : option.GetListDeprecated()) {
     if (!switch_value.is_string()) {
       return Status(kInvalidArgument,
                     "each switch to be removed must be a string");
@@ -522,7 +521,7 @@ Status ParseDevToolsEventsLoggingPrefs(const base::Value& option,
                                        Capabilities* capabilities) {
   if (!option.is_list())
     return Status(kInvalidArgument, "must be a list");
-  if (option.GetList().empty())
+  if (option.GetListDeprecated().empty())
     return Status(kInvalidArgument, "list must contain values");
   capabilities->devtools_events_logging_prefs = option.Clone();
   return Status(kOk);
@@ -532,7 +531,7 @@ Status ParseWindowTypes(const base::Value& option, Capabilities* capabilities) {
   if (!option.is_list())
     return Status(kInvalidArgument, "must be a list");
   std::set<WebViewInfo::Type> window_types_tmp;
-  for (const base::Value& window_type : option.GetList()) {
+  for (const base::Value& window_type : option.GetListDeprecated()) {
     if (!window_type.is_string()) {
       return Status(kInvalidArgument, "each window type must be a string");
     }
@@ -676,7 +675,7 @@ void Switches::SetSwitch(const std::string& name) {
 }
 
 void Switches::SetSwitch(const std::string& name, const std::string& value) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   switch_map_[name] = base::UTF8ToWide(value);
 #else
   switch_map_[name] = value;
@@ -687,12 +686,34 @@ void Switches::SetSwitch(const std::string& name, const base::FilePath& value) {
   switch_map_[name] = value.value();
 }
 
+void Switches::SetMultivaluedSwitch(const std::string& name,
+                                    const std::string& value) {
+#if BUILDFLAG(IS_WIN)
+  auto native_value = base::UTF8ToWide(value);
+  auto delimiter = L',';
+#else
+  const auto& native_value = value;
+  const auto delimiter = ',';
+#endif
+  NativeString& switch_value = switch_map_[name];
+  if (switch_value.size() > 0 && switch_value.back() != delimiter) {
+    switch_value += delimiter;
+  }
+  switch_value += native_value;
+}
+
 void Switches::SetFromSwitches(const Switches& switches) {
   for (auto iter = switches.switch_map_.begin();
        iter != switches.switch_map_.end(); ++iter) {
     switch_map_[iter->first] = iter->second;
   }
 }
+
+namespace {
+constexpr auto kMultivaluedSwitches = base::MakeFixedFlatSet<base::StringPiece>(
+    {"enable-blink-features", "disable-blink-features", "enable-features",
+     "disable-features"});
+}  // namespace
 
 void Switches::SetUnparsedSwitch(const std::string& unparsed_switch) {
   std::string value;
@@ -706,7 +727,10 @@ void Switches::SetUnparsedSwitch(const std::string& unparsed_switch) {
     start_index = 2;
   name = unparsed_switch.substr(start_index, equals_index - start_index);
 
-  SetSwitch(name, value);
+  if (kMultivaluedSwitches.contains(name))
+    SetMultivaluedSwitch(name, value);
+  else
+    SetSwitch(name, value);
 }
 
 void Switches::RemoveSwitch(const std::string& name) {
@@ -719,7 +743,7 @@ bool Switches::HasSwitch(const std::string& name) const {
 
 std::string Switches::GetSwitchValue(const std::string& name) const {
   NativeString value = GetSwitchValueNative(name);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return base::WideToUTF8(value);
 #else
   return value;

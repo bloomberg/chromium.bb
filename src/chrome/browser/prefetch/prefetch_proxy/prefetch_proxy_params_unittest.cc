@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -122,4 +123,13 @@ TEST(PrefetchProxyParamsTest, NoDecoysForMSBB) {
     EXPECT_TRUE(
         PrefetchProxySendDecoyRequestForIneligiblePrefetch(&pref_service));
   }
+}
+
+TEST(PrefetchProxyParamsTest, BypassProxyForHost) {
+  EXPECT_FALSE(PrefetchProxyBypassProxyForHost().has_value());
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "bypass-prefetch-proxy-for-host", "www.www1.hostname.test");
+  EXPECT_TRUE(PrefetchProxyBypassProxyForHost().has_value());
+  EXPECT_EQ(PrefetchProxyBypassProxyForHost().value(),
+            "www.www1.hostname.test");
 }

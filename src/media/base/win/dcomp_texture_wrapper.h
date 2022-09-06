@@ -7,11 +7,16 @@
 
 #include "base/callback.h"
 #include "base/unguessable_token.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gfx {
 class Rect;
 class Size;
 }  // namespace gfx
+
+namespace gpu {
+struct Mailbox;
+}  // namespace gpu
 
 namespace media {
 
@@ -39,9 +44,15 @@ class DCOMPTextureWrapper {
 
   // Creates VideoFrame which will be returned in `create_video_frame_cb`.
   using CreateVideoFrameCB =
-      base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
+      base::OnceCallback<void(scoped_refptr<VideoFrame>, const gpu::Mailbox&)>;
   virtual void CreateVideoFrame(const gfx::Size& natural_size,
                                 CreateVideoFrameCB create_video_frame_cb) = 0;
+
+  using CreateDXVideoFrameCB =
+      base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
+  virtual void CreateVideoFrame(const gfx::Size& natural_size,
+                                gfx::GpuMemoryBufferHandle dx_handle,
+                                CreateDXVideoFrameCB create_video_frame_cb) = 0;
 };
 
 }  // namespace media

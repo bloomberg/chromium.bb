@@ -38,7 +38,6 @@ import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink.mojom.EventType;
 import org.chromium.blink.mojom.FocusType;
 import org.chromium.blink_public.web.WebInputEventModifier;
@@ -142,7 +141,6 @@ public class ImeAdapterImpl
     private int mLastCompositionStart;
     private int mLastCompositionEnd;
     private boolean mRestartInputOnNextStateUpdate;
-    private boolean mLogNextStateUpdate;
 
     // True if ImeAdapter is connected to render process.
     private boolean mIsConnected;
@@ -540,11 +538,6 @@ public class ImeAdapterImpl
                 mInputConnection.updateStateOnUiThread(text, selectionStart, selectionEnd,
                         compositionStart, compositionEnd, singleLine, replyToRequest);
             }
-
-            if (mLogNextStateUpdate) {
-                logNodeEditableType(editable);
-            }
-
         } finally {
             TraceEvent.end("ImeAdapter.updateState");
         }
@@ -802,10 +795,10 @@ public class ImeAdapterImpl
         if (mTextInputAction == TextInputAction.DEFAULT) {
             switch (actionCode) {
                 case EditorInfo.IME_ACTION_NEXT:
-                    advanceFocusInForm(FocusType.FORWARD);
+                    advanceFocusForIME(FocusType.FORWARD);
                     return true;
                 case EditorInfo.IME_ACTION_PREVIOUS:
-                    advanceFocusInForm(FocusType.BACKWARD);
+                    advanceFocusForIME(FocusType.BACKWARD);
                     return true;
             }
         }
@@ -823,9 +816,9 @@ public class ImeAdapterImpl
     }
 
     @Override
-    public void advanceFocusInForm(int focusType) {
+    public void advanceFocusForIME(int focusType) {
         if (mNativeImeAdapterAndroid == 0) return;
-        ImeAdapterImplJni.get().advanceFocusInForm(
+        ImeAdapterImplJni.get().advanceFocusForIME(
                 mNativeImeAdapterAndroid, ImeAdapterImpl.this, focusType);
     }
 
@@ -988,27 +981,6 @@ public class ImeAdapterImpl
 
         if (mTextInputType != TextInputType.NONE && mInputConnection != null && isEditable) {
             mRestartInputOnNextStateUpdate = true;
-        }
-        mLogNextStateUpdate = true;
-    }
-
-    private void logNodeEditableType(boolean isEditable) {
-        mLogNextStateUpdate = false;
-        if (!isEditable) {
-            RecordHistogram.recordEnumeratedHistogram("Android.Input.EditableContentTypes",
-                    /* sample=Not editable */ 0, /* max= */ 3);
-        } else if (mTextInputType == TextInputType.CONTENT_EDITABLE) {
-            RecordHistogram.recordEnumeratedHistogram("Android.Input.EditableContentTypes",
-                    /* sample=Content editable */ 1, /* max= */ 3);
-        } else if (mTextInputType == TextInputType.TEXT_AREA) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Android.Input.EditableContentTypes", /* sample=Text area */ 2, /* max= */ 3);
-        } else if (mTextInputType == TextInputType.TEXT || mTextInputType == TextInputType.PASSWORD
-                || mTextInputType == TextInputType.SEARCH || mTextInputType == TextInputType.NUMBER
-                || mTextInputType == TextInputType.TELEPHONE
-                || mTextInputType == TextInputType.URL) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Android.Input.EditableContentTypes", /* sample=Input */ 3, /* max= */ 3);
         }
     }
 
@@ -1214,6 +1186,6 @@ public class ImeAdapterImpl
         boolean requestTextInputStateUpdate(long nativeImeAdapterAndroid, ImeAdapterImpl caller);
         void requestCursorUpdate(long nativeImeAdapterAndroid, ImeAdapterImpl caller,
                 boolean immediateRequest, boolean monitorRequest);
-        void advanceFocusInForm(long nativeImeAdapterAndroid, ImeAdapterImpl caller, int focusType);
+        void advanceFocusForIME(long nativeImeAdapterAndroid, ImeAdapterImpl caller, int focusType);
     }
 }

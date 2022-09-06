@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -82,7 +81,7 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
   };
   // Before optimizing, consider the data size and the cost of L2 cache misses.
   // A linear search over a couple dozen integers is very fast.
-  for (size_t i = 0; i < base::size(kCategoryLabels); ++i) {
+  for (size_t i = 0; i < std::size(kCategoryLabels); ++i) {
     if (kCategoryLabels[i].node_type == node_type) {
       return kCategoryLabels[i].id;
     }
@@ -140,39 +139,39 @@ void CookiesViewHandler::OnJavascriptDisallowed() {
 }
 
 void CookiesViewHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.getDisplayList",
       base::BindRepeating(&CookiesViewHandler::HandleGetDisplayList,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.removeAll",
       base::BindRepeating(&CookiesViewHandler::HandleRemoveAll,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.removeShownItems",
       base::BindRepeating(&CookiesViewHandler::HandleRemoveShownItems,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.removeItem",
       base::BindRepeating(&CookiesViewHandler::HandleRemoveItem,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.getCookieDetails",
       base::BindRepeating(&CookiesViewHandler::HandleGetCookieDetails,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.getNumCookiesString",
       base::BindRepeating(&CookiesViewHandler::HandleGetNumCookiesString,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.removeSite",
       base::BindRepeating(&CookiesViewHandler::HandleRemoveSite,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.removeThirdPartyCookies",
       base::BindRepeating(&CookiesViewHandler::HandleRemoveThirdParty,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "localData.reload",
       base::BindRepeating(&CookiesViewHandler::HandleReloadCookies,
                           base::Unretained(this)));
@@ -233,10 +232,10 @@ void CookiesViewHandler::RecreateCookiesTreeModel() {
   cookies_tree_model_->AddCookiesTreeObserver(this);
 }
 
-void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
-  std::string callback_id = args->GetList()[0].GetString();
-  std::string site = args->GetList()[1].GetString();
+void CookiesViewHandler::HandleGetCookieDetails(const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
+  std::string callback_id = args[0].GetString();
+  std::string site = args[1].GetString();
 
   AllowJavascript();
   pending_requests_.emplace(
@@ -256,21 +255,21 @@ void CookiesViewHandler::GetCookieDetails(const std::string& callback_id,
     return;
   }
 
-  base::ListValue children;
-  // TODO (crbug.com/642955): Pass true for |include_quota_nodes| parameter
+  // TODO (crbug.com/642955): Pass true for `include_quota_nodes` parameter
   // when quota nodes include local/session storage in the total.
-  model_util_->GetChildNodeDetails(node, /* include_quota_nodes */ false,
-                                   &children);
+  base::Value::List children =
+      model_util_->GetChildNodeDetails(node, /* include_quota_nodes */ false);
 
-  ResolveJavascriptCallback(base::Value(callback_id), std::move(children));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(std::move(children)));
 }
 
 void CookiesViewHandler::HandleGetNumCookiesString(
-    const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
+    const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
   std::string callback_id;
-  callback_id = args->GetList()[0].GetString();
-  int num_cookies = args->GetList()[1].GetInt();
+  callback_id = args[0].GetString();
+  int num_cookies = args[1].GetInt();
 
   AllowJavascript();
   const std::u16string string =
@@ -281,10 +280,10 @@ void CookiesViewHandler::HandleGetNumCookiesString(
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
 }
 
-void CookiesViewHandler::HandleGetDisplayList(const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
-  std::string callback_id = args->GetList()[0].GetString();
-  std::u16string filter = base::UTF8ToUTF16(args->GetList()[1].GetString());
+void CookiesViewHandler::HandleGetDisplayList(const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
+  std::string callback_id = args[0].GetString();
+  std::u16string filter = base::UTF8ToUTF16(args[1].GetString());
 
   AllowJavascript();
   pending_requests_.emplace(
@@ -307,9 +306,9 @@ void CookiesViewHandler::GetDisplayList(std::string callback_id,
   ReturnLocalDataList(callback_id);
 }
 
-void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  std::string callback_id = args->GetList()[0].GetString();
+void CookiesViewHandler::HandleReloadCookies(const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  std::string callback_id = args[0].GetString();
 
   // Allowing Javascript for the first time will queue a task to create a new
   // tree model. Thus the tree model only needs to be recreated if Javascript
@@ -333,11 +332,11 @@ void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
   ProcessPendingRequests();
 }
 
-void CookiesViewHandler::HandleRemoveAll(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
+void CookiesViewHandler::HandleRemoveAll(const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
   AllowJavascript();
 
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args[0].GetString();
 
   pending_requests_.emplace(
       Request::SYNC_BATCH,
@@ -351,8 +350,8 @@ void CookiesViewHandler::RemoveAll(const std::string& callback_id) {
   ResolveJavascriptCallback(base::Value(callback_id), base::Value());
 }
 
-void CookiesViewHandler::HandleRemoveItem(const base::ListValue* args) {
-  std::string node_path = args->GetList()[0].GetString();
+void CookiesViewHandler::HandleRemoveItem(const base::Value::List& args) {
+  std::string node_path = args[0].GetString();
 
   AllowJavascript();
   pending_requests_.emplace(
@@ -370,9 +369,9 @@ void CookiesViewHandler::RemoveItem(const std::string& path) {
   }
 }
 
-void CookiesViewHandler::HandleRemoveThirdParty(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  std::string callback_id = args->GetList()[0].GetString();
+void CookiesViewHandler::HandleRemoveThirdParty(const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  std::string callback_id = args[0].GetString();
 
   AllowJavascript();
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -389,8 +388,8 @@ void CookiesViewHandler::HandleRemoveThirdParty(const base::ListValue* args) {
   ProcessPendingRequests();
 }
 
-void CookiesViewHandler::HandleRemoveShownItems(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetList().size());
+void CookiesViewHandler::HandleRemoveShownItems(const base::Value::List& args) {
+  CHECK_EQ(0U, args.size());
 
   AllowJavascript();
   pending_requests_.emplace(
@@ -406,9 +405,9 @@ void CookiesViewHandler::RemoveShownItems() {
     cookies_tree_model_->DeleteCookieNode(parent->children().front().get());
 }
 
-void CookiesViewHandler::HandleRemoveSite(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  std::u16string site = base::UTF8ToUTF16(args->GetList()[0].GetString());
+void CookiesViewHandler::HandleRemoveSite(const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  std::u16string site = base::UTF8ToUTF16(args[0].GetString());
   AllowJavascript();
   pending_requests_.emplace(
       Request::NO_BATCH,
@@ -437,7 +436,7 @@ void CookiesViewHandler::ReturnLocalDataList(const std::string& callback_id) {
   //   category - Cookies, Local Storage, etc.
   //   item - Info on the actual thing.
   // Gather list of sites with some highlights of the categories and items.
-  base::ListValue site_list;
+  base::Value::List site_list;
   for (const auto& site : parent->children()) {
     std::u16string description;
     for (const auto& category : site->children()) {
@@ -452,7 +451,7 @@ void CookiesViewHandler::ReturnLocalDataList(const std::string& callback_id) {
         case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
           DCHECK_EQ(0u, item_count);
           item_count = 1;
-          FALLTHROUGH;
+          [[fallthrough]];
         case CookieTreeNode::DetailedInfo::TYPE_COOKIES:
           description += l10n_util::GetPluralStringFUTF16(
               IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES,
@@ -469,20 +468,20 @@ void CookiesViewHandler::ReturnLocalDataList(const std::string& callback_id) {
           break;
       }
     }
-    std::unique_ptr<base::DictionaryValue> list_info(new base::DictionaryValue);
-    list_info->Set(kLocalData, std::make_unique<base::Value>(description));
-    std::string title = base::UTF16ToUTF8(site->GetTitle());
-    list_info->Set(kSite, std::make_unique<base::Value>(title));
+    base::Value::Dict list_info;
+    list_info.Set(kLocalData, description);
+    list_info.Set(kSite, site->GetTitle());
     site_list.Append(std::move(list_info));
   }
 
   // Sort the list into alphabetical order based on site name.
-  std::sort(site_list.GetList().begin(), site_list.GetList().end(),
+  std::sort(site_list.begin(), site_list.end(),
             [=](const base::Value& a, const base::Value& b) {
               return *a.FindStringKey(kSite) < *b.FindStringKey(kSite);
             });
 
-  ResolveJavascriptCallback(base::Value(callback_id), std::move(site_list));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(std::move(site_list)));
 }
 
 void CookiesViewHandler::ProcessPendingRequests() {

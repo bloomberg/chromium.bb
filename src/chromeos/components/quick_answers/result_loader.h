@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/search_result_parsers/search_response_parser.h"
 
@@ -19,7 +20,6 @@ class SimpleURLLoader;
 struct ResourceRequest;
 }  // namespace network
 
-namespace ash {
 namespace quick_answers {
 
 enum class IntentType;
@@ -30,9 +30,6 @@ class ResultLoader {
   // A delegate interface for the ResultLoader.
   class ResultLoaderDelegate {
    public:
-    using AccessTokenCallback =
-        base::OnceCallback<void(const std::string& access_token)>;
-
     ResultLoaderDelegate(const ResultLoaderDelegate&) = delete;
     ResultLoaderDelegate& operator=(const ResultLoaderDelegate&) = delete;
 
@@ -43,9 +40,6 @@ class ResultLoader {
     // be |nullptr| if no answer found for the selected content.
     virtual void OnQuickAnswerReceived(
         std::unique_ptr<QuickAnswer> quick_answer) {}
-
-    // Request for the access token associated with the active user's profile.
-    virtual void RequestAccessToken(AccessTokenCallback callback) {}
 
    protected:
     ResultLoaderDelegate() = default;
@@ -115,6 +109,5 @@ class ResultLoader {
 };
 
 }  // namespace quick_answers
-}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_RESULT_LOADER_H_

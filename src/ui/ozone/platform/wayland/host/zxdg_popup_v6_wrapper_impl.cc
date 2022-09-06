@@ -21,6 +21,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
+#include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/zxdg_surface_v6_wrapper_impl.h"
 #include "ui/ozone/platform/wayland/host/zxdg_toplevel_v6_wrapper_impl.h"
@@ -158,7 +159,7 @@ bool ZXDGPopupV6WrapperImpl::Initialize(const ShellPopupParams& params) {
       &ZXDGPopupV6WrapperImpl::PopupDone,
   };
 
-  auto positioner = CreatePositioner(wayland_window_->parent_window());
+  auto positioner = CreatePositioner();
   if (!positioner)
     return false;
 
@@ -200,11 +201,13 @@ void ZXDGPopupV6WrapperImpl::SetWindowGeometry(const gfx::Rect& bounds) {
 }
 
 void ZXDGPopupV6WrapperImpl::Grab(uint32_t serial) {
-  zxdg_popup_v6_grab(zxdg_popup_v6_.get(), connection_->seat(), serial);
+  DCHECK(connection_->seat());
+
+  zxdg_popup_v6_grab(zxdg_popup_v6_.get(), connection_->seat()->wl_object(),
+                     serial);
 }
 
-wl::Object<zxdg_positioner_v6> ZXDGPopupV6WrapperImpl::CreatePositioner(
-    WaylandWindow* parent_window) {
+wl::Object<zxdg_positioner_v6> ZXDGPopupV6WrapperImpl::CreatePositioner() {
   wl::Object<zxdg_positioner_v6> positioner(
       zxdg_shell_v6_create_positioner(connection_->shell_v6()));
   if (!positioner)

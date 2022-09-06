@@ -56,6 +56,16 @@ CHECK_PROFILE_ENUM(AV1PROFILE_PROFILE_MAIN);
 CHECK_PROFILE_ENUM(AV1PROFILE_PROFILE_HIGH);
 CHECK_PROFILE_ENUM(AV1PROFILE_PROFILE_PRO);
 CHECK_PROFILE_ENUM(AV1PROFILE_MAX);
+CHECK_PROFILE_ENUM(HEVCPROFILE_EXT_MIN);
+CHECK_PROFILE_ENUM(HEVCPROFILE_REXT);
+CHECK_PROFILE_ENUM(HEVCPROFILE_HIGH_THROUGHPUT);
+CHECK_PROFILE_ENUM(HEVCPROFILE_MULTIVIEW_MAIN);
+CHECK_PROFILE_ENUM(HEVCPROFILE_SCALABLE_MAIN);
+CHECK_PROFILE_ENUM(HEVCPROFILE_3D_MAIN);
+CHECK_PROFILE_ENUM(HEVCPROFILE_SCREEN_EXTENDED);
+CHECK_PROFILE_ENUM(HEVCPROFILE_SCALABLE_REXT);
+CHECK_PROFILE_ENUM(HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED);
+CHECK_PROFILE_ENUM(HEVCPROFILE_EXT_MAX);
 CHECK_PROFILE_ENUM(VIDEO_CODEC_PROFILE_MAX);
 
 #undef CHECK_PROFILE_ENUM
@@ -92,6 +102,15 @@ bool EnumTraits<arc::mojom::VideoCodecProfile, media::VideoCodecProfile>::
     case arc::mojom::VideoCodecProfile::HEVCPROFILE_MAIN:
     case arc::mojom::VideoCodecProfile::HEVCPROFILE_MAIN10:
     case arc::mojom::VideoCodecProfile::HEVCPROFILE_MAIN_STILL_PICTURE:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_REXT:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_HIGH_THROUGHPUT:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_MULTIVIEW_MAIN:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_SCALABLE_MAIN:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_3D_MAIN:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_SCREEN_EXTENDED:
+    case arc::mojom::VideoCodecProfile::HEVCPROFILE_SCALABLE_REXT:
+    case arc::mojom::VideoCodecProfile::
+        HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED:
     case arc::mojom::VideoCodecProfile::DOLBYVISION_PROFILE0:
     case arc::mojom::VideoCodecProfile::DOLBYVISION_PROFILE4:
     case arc::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5:
@@ -225,6 +244,52 @@ bool StructTraits<arc::mojom::VideoFrameLayoutDataView,
 
   *out = std::make_unique<media::VideoFrameLayout>(*layout);
   return true;
+}
+
+// static
+arc::mojom::DecoderStatus
+EnumTraits<arc::mojom::DecoderStatus, media::DecoderStatus>::ToMojom(
+    media::DecoderStatus input) {
+  switch (input.code()) {
+    case media::DecoderStatus::Codes::kOk:
+      return arc::mojom::DecoderStatus::OK;
+    case media::DecoderStatus::Codes::kAborted:
+      return arc::mojom::DecoderStatus::ABORTED;
+    case media::DecoderStatus::Codes::kFailed:
+      return arc::mojom::DecoderStatus::FAILED;
+    case media::DecoderStatus::Codes::kFailedToCreateDecoder:
+      return arc::mojom::DecoderStatus::CREATION_FAILED;
+    case media::DecoderStatus::Codes::kInvalidArgument:
+      return arc::mojom::DecoderStatus::INVALID_ARGUMENT;
+    default:
+      NOTREACHED() << "unknown status: " << static_cast<int>(input.code());
+      return arc::mojom::DecoderStatus::INVALID_ARGUMENT;
+  }
+}
+
+// static
+bool EnumTraits<arc::mojom::DecoderStatus, media::DecoderStatus>::FromMojom(
+    arc::mojom::DecoderStatus input,
+    media::DecoderStatus* output) {
+  switch (input) {
+    case arc::mojom::DecoderStatus::OK:
+      *output = media::DecoderStatus::Codes::kOk;
+      return true;
+    case arc::mojom::DecoderStatus::ABORTED:
+      *output = media::DecoderStatus::Codes::kAborted;
+      return true;
+    case arc::mojom::DecoderStatus::FAILED:
+      *output = media::DecoderStatus::Codes::kFailed;
+      return true;
+    case arc::mojom::DecoderStatus::CREATION_FAILED:
+      *output = media::DecoderStatus::Codes::kFailedToCreateDecoder;
+      return true;
+    case arc::mojom::DecoderStatus::INVALID_ARGUMENT:
+      *output = media::DecoderStatus::Codes::kInvalidArgument;
+      return true;
+  }
+  NOTREACHED() << "unknown status: " << static_cast<int>(input);
+  return false;
 }
 
 }  // namespace mojo

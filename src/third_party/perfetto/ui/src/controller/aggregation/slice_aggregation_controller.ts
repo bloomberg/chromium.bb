@@ -12,78 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Actions} from '../../common/actions';
 import {ColumnDef} from '../../common/aggregation_data';
 import {Engine} from '../../common/engine';
-import {
-  SLICE_AGGREGATION_PIVOT_TABLE_ID
-} from '../../common/pivot_table_common';
 import {Area, Sorting} from '../../common/state';
 import {toNs} from '../../common/time';
-import {PIVOT_TABLE_FLAG} from '../../frontend/keyboard_event_handler';
 import {
   ASYNC_SLICE_TRACK_KIND,
-  Config as AsyncSliceConfig
+  Config as AsyncSliceConfig,
 } from '../../tracks/async_slices/common';
 import {
   Config as SliceConfig,
-  SLICE_TRACK_KIND
+  SLICE_TRACK_KIND,
 } from '../../tracks/chrome_slices/common';
 import {globals} from '../globals';
 
 import {AggregationController} from './aggregation_controller';
 
-function addPivotTableOnAreaSelection(
-    selectedTrackIds: number[], startSec: number, endSec: number) {
-  const selectedPivots =
-      [{tableName: 'slice', columnName: 'name', isStackPivot: false}];
-
-  const selectedAggregations = [
-    {tableName: 'slice', columnName: 'dur', aggregation: 'SUM', order: 'DESC'},
-    {tableName: 'slice', columnName: 'dur', aggregation: 'AVG', order: 'DESC'},
-    {tableName: 'slice', columnName: 'id', aggregation: 'COUNT', order: 'DESC'}
-  ];
-
-  globals.dispatch(Actions.addNewPivotTable({
-    name: 'Pivot Table - Slices',
-    pivotTableId: SLICE_AGGREGATION_PIVOT_TABLE_ID,
-    selectedPivots,
-    selectedAggregations,
-    traceTime: {startSec, endSec},
-    selectedTrackIds
-  }));
-
-  globals.dispatch(Actions.setPivotTableRequest(
-      {pivotTableId: SLICE_AGGREGATION_PIVOT_TABLE_ID, action: 'QUERY'}));
+export function getSelectedTrackIds(area: Area): number[] {
+  const selectedTrackIds = [];
+  for (const trackId of area.tracks) {
+    const track = globals.state.tracks[trackId];
+    // Track will be undefined for track groups.
+    if (track !== undefined) {
+      if (track.kind === SLICE_TRACK_KIND) {
+        selectedTrackIds.push((track.config as SliceConfig).trackId);
+      }
+      if (track.kind === ASYNC_SLICE_TRACK_KIND) {
+        const config = track.config as AsyncSliceConfig;
+        for (const id of config.trackIds) {
+          selectedTrackIds.push(id);
+        }
+      }
+    }
+  }
+  return selectedTrackIds;
 }
 
 export class SliceAggregationController extends AggregationController {
   async createAggregateView(engine: Engine, area: Area) {
     await engine.query(`drop view if exists ${this.kind};`);
 
-    const selectedTrackIds = [];
-    for (const trackId of area.tracks) {
-      const track = globals.state.tracks[trackId];
-      // Track will be undefined for track groups.
-      if (track !== undefined) {
-        if (track.kind === SLICE_TRACK_KIND) {
-          selectedTrackIds.push((track.config as SliceConfig).trackId);
-        }
-        if (track.kind === ASYNC_SLICE_TRACK_KIND) {
-          const config = track.config as AsyncSliceConfig;
-          for (const id of config.trackIds) {
-            selectedTrackIds.push(id);
-          }
-        }
-      }
-    }
+    const selectedTrackIds = getSelectedTrackIds(area);
 
     if (selectedTrackIds.length === 0) return false;
-
-    if (PIVOT_TABLE_FLAG.get()) {
-      addPivotTableOnAreaSelection(
-          selectedTrackIds, area.startSec, area.endSec);
-    }
 
     const query = `create view ${this.kind} as
         SELECT
@@ -123,21 +94,21 @@ export class SliceAggregationController extends AggregationController {
         kind: 'TIMESTAMP_NS',
         columnConstructor: Float64Array,
         columnId: 'total_dur',
-        sum: true
+        sum: true,
       },
       {
         title: 'Avg Wall duration (ms)',
         kind: 'TIMESTAMP_NS',
         columnConstructor: Float64Array,
-        columnId: 'avg_dur'
+        columnId: 'avg_dur',
       },
       {
         title: 'Occurrences',
         kind: 'NUMBER',
         columnConstructor: Uint16Array,
         columnId: 'occurrences',
-        sum: true
-      }
+        sum: true,
+      },
     ];
   }
 }

@@ -193,6 +193,7 @@ class ConvolveHorizRSTestBase : public ::testing::Test {
 
         image_ =
             new TestImage<Pixel>(width_src, height, superres_denom, x0, bd_);
+        ASSERT_NE(image_, nullptr);
 
         Prep(&rnd);
         RunOne(true);
@@ -212,6 +213,7 @@ class ConvolveHorizRSTestBase : public ::testing::Test {
     int x0 = RS_SCALE_SUBPEL_MASK >> 1;
 
     image_ = new TestImage<Pixel>(width_src, height, superres_denom, x0, bd_);
+    ASSERT_NE(image_, nullptr);
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     Prep(&rnd);

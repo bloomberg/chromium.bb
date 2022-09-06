@@ -75,14 +75,18 @@
   margin: auto;
 }
 
+.authenticator-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
 .authenticator-section-title {
   line-height: 24px;
-  width: 260px;
   display: inline-block;
 }
 
 .authenticator-section-title .authenticator-name-field {
-  width: 220px;
   display: inline-block;
   font-weight: bold;
   border: none;
@@ -118,18 +122,6 @@
   width: 200px;
   display: inline-block;
   padding: 5px 10px 0 0;
-}
-
-.text-button {
-  float: right;
-  white-space: nowrap;
-  overflow: hidden;
-  min-width: 28px;
-  background: transparent;
-  border: none;
-  color: var(--color-link);
-  text-decoration: underline;
-  cursor: pointer;
 }
 
 td .text-button {

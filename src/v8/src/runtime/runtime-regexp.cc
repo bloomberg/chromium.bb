@@ -43,7 +43,7 @@ uint32_t GetArgcForReplaceCallable(uint32_t num_captures,
   uint32_t argc = has_named_captures
                       ? num_captures + kAdditionalArgsWithNamedCaptures
                       : num_captures + kAdditionalArgsWithoutNamedCaptures;
-  STATIC_ASSERT(Code::kMaxArguments < std::numeric_limits<uint32_t>::max() -
+  static_assert(Code::kMaxArguments < std::numeric_limits<uint32_t>::max() -
                                           kAdditionalArgsWithNamedCaptures);
   return (argc > Code::kMaxArguments) ? -1 : argc;
 }
@@ -567,7 +567,7 @@ V8_WARN_UNUSED_RESULT static Object StringReplaceGlobalAtomRegExpWithString(
                           static_cast<int64_t>(subject_len);
   int result_len;
   if (result_len_64 > static_cast<int64_t>(String::kMaxLength)) {
-    STATIC_ASSERT(String::kMaxLength < kMaxInt);
+    static_assert(String::kMaxLength < kMaxInt);
     result_len = kMaxInt;  // Provoke exception.
   } else {
     result_len = static_cast<int>(result_len_64);
@@ -664,6 +664,8 @@ V8_WARN_UNUSED_RESULT static Object StringReplaceGlobalRegExpWithString(
   // from. Global regexps can match any number of times, so we guess
   // conservatively.
   int expected_parts = (compiled_replacement.parts() + 1) * 4 + 1;
+  // TODO(v8:12843): improve the situation where the expected_parts exceeds
+  // the maximum size of the backing store.
   ReplacementStringBuilder builder(isolate->heap(), subject, expected_parts);
 
   int prev = 0;
@@ -792,7 +794,7 @@ V8_WARN_UNUSED_RESULT static Object StringReplaceGlobalRegExpWithEmptyString(
   // TODO(hpayer): We should shrink the large object page if the size
   // of the object changed significantly.
   if (!heap->IsLargeObject(*answer)) {
-    heap->CreateFillerObjectAt(end_of_string, delta, ClearRecordedSlots::kNo);
+    heap->CreateFillerObjectAt(end_of_string, delta);
   }
   return *answer;
 }
@@ -800,9 +802,9 @@ V8_WARN_UNUSED_RESULT static Object StringReplaceGlobalRegExpWithEmptyString(
 RUNTIME_FUNCTION(Runtime_StringSplit) {
   HandleScope handle_scope(isolate);
   DCHECK_EQ(3, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, pattern, 1);
-  CONVERT_NUMBER_CHECKED(uint32_t, limit, Uint32, args[2]);
+  Handle<String> subject = args.at<String>(0);
+  Handle<String> pattern = args.at<String>(1);
+  uint32_t limit = NumberToUint32(args[2]);
   CHECK_LT(0, limit);
 
   int subject_length = subject->length();
@@ -911,10 +913,11 @@ MaybeHandle<Object> ExperimentalOneshotExec(
 RUNTIME_FUNCTION(Runtime_RegExpExec) {
   HandleScope scope(isolate);
   DCHECK_EQ(4, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 1);
-  CONVERT_INT32_ARG_CHECKED(index, 2);
-  CONVERT_ARG_HANDLE_CHECKED(RegExpMatchInfo, last_match_info, 3);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
+  Handle<String> subject = args.at<String>(1);
+  int32_t index = 0;
+  CHECK(args[2].ToInt32(&index));
+  Handle<RegExpMatchInfo> last_match_info = args.at<RegExpMatchInfo>(3);
   RETURN_RESULT_OR_FAILURE(
       isolate, RegExpExec(isolate, regexp, subject, index, last_match_info,
                           RegExp::ExecQuirks::kNone));
@@ -923,10 +926,11 @@ RUNTIME_FUNCTION(Runtime_RegExpExec) {
 RUNTIME_FUNCTION(Runtime_RegExpExecTreatMatchAtEndAsFailure) {
   HandleScope scope(isolate);
   DCHECK_EQ(4, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 1);
-  CONVERT_INT32_ARG_CHECKED(index, 2);
-  CONVERT_ARG_HANDLE_CHECKED(RegExpMatchInfo, last_match_info, 3);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
+  Handle<String> subject = args.at<String>(1);
+  int32_t index = 0;
+  CHECK(args[2].ToInt32(&index));
+  Handle<RegExpMatchInfo> last_match_info = args.at<RegExpMatchInfo>(3);
   RETURN_RESULT_OR_FAILURE(
       isolate, RegExpExec(isolate, regexp, subject, index, last_match_info,
                           RegExp::ExecQuirks::kTreatMatchAtEndAsFailure));
@@ -935,10 +939,11 @@ RUNTIME_FUNCTION(Runtime_RegExpExecTreatMatchAtEndAsFailure) {
 RUNTIME_FUNCTION(Runtime_RegExpExperimentalOneshotExec) {
   HandleScope scope(isolate);
   DCHECK_EQ(4, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 1);
-  CONVERT_INT32_ARG_CHECKED(index, 2);
-  CONVERT_ARG_HANDLE_CHECKED(RegExpMatchInfo, last_match_info, 3);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
+  Handle<String> subject = args.at<String>(1);
+  int32_t index = 0;
+  CHECK(args[2].ToInt32(&index));
+  Handle<RegExpMatchInfo> last_match_info = args.at<RegExpMatchInfo>(3);
   RETURN_RESULT_OR_FAILURE(
       isolate,
       ExperimentalOneshotExec(isolate, regexp, subject, index, last_match_info,
@@ -949,10 +954,11 @@ RUNTIME_FUNCTION(
     Runtime_RegExpExperimentalOneshotExecTreatMatchAtEndAsFailure) {
   HandleScope scope(isolate);
   DCHECK_EQ(4, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 1);
-  CONVERT_INT32_ARG_CHECKED(index, 2);
-  CONVERT_ARG_HANDLE_CHECKED(RegExpMatchInfo, last_match_info, 3);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
+  Handle<String> subject = args.at<String>(1);
+  int32_t index = 0;
+  CHECK(args[2].ToInt32(&index));
+  Handle<RegExpMatchInfo> last_match_info = args.at<RegExpMatchInfo>(3);
   RETURN_RESULT_OR_FAILURE(
       isolate,
       ExperimentalOneshotExec(isolate, regexp, subject, index, last_match_info,
@@ -962,10 +968,10 @@ RUNTIME_FUNCTION(
 RUNTIME_FUNCTION(Runtime_RegExpBuildIndices) {
   HandleScope scope(isolate);
   DCHECK_EQ(3, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(RegExpMatchInfo, match_info, 1);
-  CONVERT_ARG_HANDLE_CHECKED(Object, maybe_names, 2);
+  Handle<RegExpMatchInfo> match_info = args.at<RegExpMatchInfo>(1);
+  Handle<Object> maybe_names = args.at(2);
 #ifdef DEBUG
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
   DCHECK(regexp->flags() & JSRegExp::kHasIndices);
 #endif
 
@@ -1462,10 +1468,10 @@ RUNTIME_FUNCTION(Runtime_RegExpExecMultiple) {
   HandleScope handles(isolate);
   DCHECK_EQ(4, args.length());
 
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 1);
-  CONVERT_ARG_HANDLE_CHECKED(RegExpMatchInfo, last_match_info, 2);
-  CONVERT_ARG_HANDLE_CHECKED(JSArray, result_array, 3);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
+  Handle<String> subject = args.at<String>(1);
+  Handle<RegExpMatchInfo> last_match_info = args.at<RegExpMatchInfo>(2);
+  Handle<JSArray> result_array = args.at<JSArray>(3);
 
   DCHECK(RegExpUtils::IsUnmodifiedRegExp(isolate, regexp));
   CHECK(result_array->HasObjectElements());
@@ -1488,9 +1494,9 @@ RUNTIME_FUNCTION(Runtime_RegExpExecMultiple) {
 RUNTIME_FUNCTION(Runtime_StringReplaceNonGlobalRegExpWithFunction) {
   HandleScope scope(isolate);
   DCHECK_EQ(3, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(String, subject, 0);
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 1);
-  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, replace_obj, 2);
+  Handle<String> subject = args.at<String>(0);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(1);
+  Handle<JSReceiver> replace_obj = args.at<JSReceiver>(2);
 
   DCHECK(RegExpUtils::IsUnmodifiedRegExp(isolate, regexp));
   DCHECK(replace_obj->map().is_callable());
@@ -1639,9 +1645,9 @@ RUNTIME_FUNCTION(Runtime_RegExpSplit) {
   HandleScope scope(isolate);
   DCHECK_EQ(3, args.length());
 
-  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, recv, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, string, 1);
-  CONVERT_ARG_HANDLE_CHECKED(Object, limit_obj, 2);
+  Handle<JSReceiver> recv = args.at<JSReceiver>(0);
+  Handle<String> string = args.at<String>(1);
+  Handle<Object> limit_obj = args.at(2);
 
   Factory* factory = isolate->factory();
 
@@ -1793,8 +1799,8 @@ RUNTIME_FUNCTION(Runtime_RegExpReplaceRT) {
   HandleScope scope(isolate);
   DCHECK_EQ(3, args.length());
 
-  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, recv, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, string, 1);
+  Handle<JSReceiver> recv = args.at<JSReceiver>(0);
+  Handle<String> string = args.at<String>(1);
   Handle<Object> replace_obj = args.at(2);
 
   Factory* factory = isolate->factory();
@@ -1993,9 +1999,9 @@ RUNTIME_FUNCTION(Runtime_RegExpInitializeAndCompile) {
   // TODO(pwong): To follow the spec more closely and simplify calling code,
   // this could handle the canonicalization of pattern and flags. See
   // https://tc39.github.io/ecma262/#sec-regexpinitialize
-  CONVERT_ARG_HANDLE_CHECKED(JSRegExp, regexp, 0);
-  CONVERT_ARG_HANDLE_CHECKED(String, source, 1);
-  CONVERT_ARG_HANDLE_CHECKED(String, flags, 2);
+  Handle<JSRegExp> regexp = args.at<JSRegExp>(0);
+  Handle<String> source = args.at<String>(1);
+  Handle<String> flags = args.at<String>(2);
 
   RETURN_FAILURE_ON_EXCEPTION(isolate,
                               JSRegExp::Initialize(regexp, source, flags));
@@ -2006,14 +2012,14 @@ RUNTIME_FUNCTION(Runtime_RegExpInitializeAndCompile) {
 RUNTIME_FUNCTION(Runtime_IsRegExp) {
   SealHandleScope shs(isolate);
   DCHECK_EQ(1, args.length());
-  CONVERT_ARG_CHECKED(Object, obj, 0);
+  Object obj = args[0];
   return isolate->heap()->ToBoolean(obj.IsJSRegExp());
 }
 
 RUNTIME_FUNCTION(Runtime_RegExpStringFromFlags) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
-  CONVERT_ARG_CHECKED(JSRegExp, regexp, 0);
+  auto regexp = JSRegExp::cast(args[0]);
   Handle<String> flags = JSRegExp::StringFromFlags(isolate, regexp.flags());
   return *flags;
 }

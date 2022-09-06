@@ -5,16 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 
-#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
+#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
+#include "base/values.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom-forward.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace chromeos {
 
@@ -28,7 +25,7 @@ class NetworkUI : public ui::MojoWebUIController {
 
   ~NetworkUI() override;
 
-  static void GetLocalizedStrings(base::DictionaryValue* localized_strings);
+  static base::Value::Dict GetLocalizedStrings();
 
   // Instantiates implementation of the mojom::CrosNetworkConfig mojo interface
   // passing the pending receiver that will be internally bound.
@@ -50,7 +47,7 @@ class NetworkUI : public ui::MojoWebUIController {
   // Instantiates implementor of the mojom::ESimManager mojo interface
   // passing the pending receiver that will be internally bound.
   void BindInterface(
-      mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver);
+      mojo::PendingReceiver<ash::cellular_setup::mojom::ESimManager> receiver);
 
  private:
   WEB_UI_CONTROLLER_TYPE_DECL();

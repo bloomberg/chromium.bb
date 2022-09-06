@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">La prochaine touche actionnée ne sera pas utilisée.</translation>
 <translation id="4623097797855662355">Colophon</translation>
+<translation id="4624970070706497034">TalkBack n'offre plus d'options de personnalisation pour les Chromebook. Vous pouvez toujours l'utiliser avec les raccourcis-clavier par défaut de TalkBack. Appuyez sur Recherche+A, puis sur K pour afficher les raccourcis disponibles. Si vous voulez toujours utiliser TalkBack, appuyez à nouveau sur la commande.</translation>
 <translation id="463135993322337640">Appuyez sur ChromeVox o, n pour découvrir les nouveautés</translation>
 <translation id="4649220074413114917">Vous pouvez toucher l'écran avec deux doigts pour arrêter la lecture en cours. Cela est utile si vous ne voulez pas que ChromeVox lise quelque chose. Pour continuer, touchez l'écran avec deux doigts.</translation>
 <translation id="4660783501463101648">Version classique supprimée. Le commutateur de clavier pour revenir à la version classique de ChromeVox a été supprimé.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Sous-titres en braille activés</translation>
 <translation id="5183440668879371625">Ligne précédente en braille</translation>
 <translation id="5189244881767082992">Ligne</translation>
-<translation id="5234747236692380506">taper <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Barbe de maïs</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Fin</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Vous avez terminé l'orientation rapide!</translation>
 <translation id="5534303576632885660">en-tête</translation>
 <translation id="5539820223028224601">Gris moyen</translation>
+<translation id="554893713779400387">Activer/désactiver la dictée</translation>
 <translation id="5549179427201066174">Activer ou désactiver la rétroaction sonore (carillons)</translation>
 <translation id="556042886152191864">Bouton</translation>
 <translation id="5561345396546889625">Liste suivante</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Journal</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Symbole graphique</translation>
+<translation id="5648939288050772726">Félicitations! Vous avez appris les bases nécessaires pour utiliser ChromeVox. N'oubliez pas que vous pouvez ouvrir le menu de commande de ChromeVox en tout temps en appuyant sur les touches Rechercher+Point. Pour en apprendre encore plus sur ChromeVox et sur Chrome OS, consultez les articles suivants.
+    Si vous avez terminé le tutoriel, servez-vous de ChromeVox pour naviguer jusqu'au bouton Fermer, puis cliquez dessus.</translation>
 <translation id="5653397561111110475">Utiliser les fonctionnalités d'accessibilité de l'écran tactile du Chromebook</translation>
 <translation id="5655682562155942719">Commandes de renvoi</translation>
 <translation id="56637627897541303">Zone de texte</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{deux-points}one{# deux-points}other{# deux-points}}</translation>
 <translation id="6444046323172968959">Boîte de dialogue d'alerte</translation>
 <translation id="6452403590345320472">Table des matières</translation>
+<translation id="6457542714329819968">saisir</translation>
 <translation id="6468049171101508116">Bouton suivant</translation>
 <translation id="646954774886932461">Index</translation>
 <translation id="6475604559827479857">Couleur de surlignage des mots :</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">liste remplissage automatique</translation>
 <translation id="7713139339518499741">Voix naturelle</translation>
 <translation id="7714340021005120797">Aucune zone de liste ou de texte suivante</translation>
-<translation id="772146615414628379">Félicitations! Vous avez appris les bases nécessaires pour utiliser ChromeVox. Rappelez-vous : vous pouvez ouvrir le menu de commande de ChromeVox en tout temps en appuyant sur les touches Rechercher+Point. Pour en apprendre encore plus sur ChromeVox et sur Chrome OS, consultez les articles suivants.
-    Si vous avez terminé le tutoriel, servez-vous de ChromeVox pour naviguer jusqu'au bouton Fermer et cliquez dessus.</translation>
 <translation id="7724603315864178912">Couper</translation>
 <translation id="7731785449856576010">Aucun widget multimédia suivant</translation>
 <translation id="7735498529470878067">Grâce à la fonctionnalité Explorer au toucher, vous saurez rapidement ce qui se trouve à l'écran.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Rouge foncé</translation>
 <translation id="923331726185079994">ChromeVox a été mis à jour</translation>
 <translation id="93384979447910801">Vert mer foncé</translation>
+<translation id="937605981140327129">La fonctionnalité TalkBack n'est pas installée pour le moment. Veuillez installer l'application Outils d'accessibilité Android à partir de la boutique Play Store et réessayez.</translation>
 <translation id="948171205378458592">Diminuer le débit de la parole</translation>
 <translation id="957570623732056069">Balayez l'écran vers la gauche ou la droite avec un doigt pour naviguer dans cette leçon</translation>
 <translation id="958854023026327378">Faites glisser un doigt vers le bas</translation>

@@ -4,9 +4,13 @@
 
 #include "media/gpu/chromeos/libyuv_image_processor_backend.h"
 
+#include <sys/mman.h>
+
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/video_frame_mapper.h"
@@ -96,41 +100,39 @@ enum class Transform {
   kRotation,
 };
 
+static constexpr struct {
+  uint32_t input;
+  uint32_t output;
+  Transform transform;
+  SupportResult support_result;
+} kSupportFormatConversionArray[] = {
+#define CONV(in, out, trans, result) \
+  {Fourcc::in, Fourcc::out, Transform::trans, SupportResult::result}
+    // Conversion.
+    CONV(NV12, NV12, kConversion, Supported),
+    CONV(YM16, NV12, kConversion, Supported),
+    CONV(YM16, YU12, kConversion, Supported),
+    CONV(YU12, NV12, kConversion, Supported),
+    CONV(YU12, YU12, kConversion, Supported),
+    CONV(YUYV, NV12, kConversion, Supported),
+    CONV(YUYV, YU12, kConversion, Supported),
+    CONV(YV12, NV12, kConversion, Supported),
+    CONV(MM21, NV12, kConversion, Supported),
+    // Scaling.
+    CONV(NV12, NV12, kScaling, Supported),
+    CONV(YM16, NV12, kScaling, SupportedWithNV12Pivot),
+    CONV(YM16, YU12, kScaling, SupportedWithI420Pivot),
+    CONV(YU12, YU12, kScaling, Supported),
+    CONV(YUYV, NV12, kScaling, SupportedWithNV12Pivot),
+    CONV(YUYV, YU12, kScaling, SupportedWithI420Pivot),
+    // Rotating.
+    CONV(NV12, NV12, kRotation, SupportedWithI420Pivot),
+#undef CONV
+};
+
 SupportResult IsConversionSupported(Fourcc input_fourcc,
                                     Fourcc output_fourcc,
                                     Transform transform) {
-  static constexpr struct {
-    uint32_t input;
-    uint32_t output;
-    Transform transform;
-    SupportResult support_result;
-  } kSupportFormatConversionArray[] = {
-#define CONV(in, out, trans, result) \
-  {Fourcc::in, Fourcc::out, Transform::trans, SupportResult::result}
-      // Conversion.
-      CONV(AB24, NV12, kConversion, SupportedWithI420Pivot),
-      CONV(AR24, NV12, kConversion, Supported),
-      CONV(NV12, NV12, kConversion, Supported),
-      CONV(XB24, NV12, kConversion, SupportedWithI420Pivot),
-      CONV(YM16, NV12, kConversion, Supported),
-      CONV(YM16, YU12, kConversion, Supported),
-      CONV(YU12, NV12, kConversion, Supported),
-      CONV(YU12, YU12, kConversion, Supported),
-      CONV(YUYV, NV12, kConversion, Supported),
-      CONV(YUYV, YU12, kConversion, Supported),
-      CONV(YV12, NV12, kConversion, Supported),
-      // Scaling.
-      CONV(NV12, NV12, kScaling, Supported),
-      CONV(YM16, NV12, kScaling, SupportedWithNV12Pivot),
-      CONV(YM16, YU12, kScaling, SupportedWithI420Pivot),
-      CONV(YU12, YU12, kScaling, Supported),
-      CONV(YUYV, NV12, kScaling, SupportedWithNV12Pivot),
-      CONV(YUYV, YU12, kScaling, SupportedWithI420Pivot),
-      // Rotating.
-      CONV(NV12, NV12, kRotation, SupportedWithI420Pivot),
-#undef CONV
-  };
-
   const auto single_input_fourcc = input_fourcc.ToSinglePlanar();
   const auto single_output_fourcc = output_fourcc.ToSinglePlanar();
   if (!single_input_fourcc || !single_output_fourcc)
@@ -164,11 +166,13 @@ SupportResult IsConversionSupported(Fourcc input_fourcc,
 std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
     const PortConfig& input_config,
     const PortConfig& output_config,
-    const std::vector<OutputMode>& preferred_output_modes,
+    OutputMode output_mode,
     VideoRotation relative_rotation,
     ErrorCB error_cb,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
   VLOGF(2);
+  DCHECK_EQ(output_mode, OutputMode::IMPORT)
+      << "Only OutputMode::IMPORT supported";
 
   std::unique_ptr<VideoFrameMapper> input_frame_mapper;
   // LibYUVImageProcessorBackend supports only memory-based video frame for
@@ -215,11 +219,6 @@ std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
   }
   if (output_storage_type == VideoFrame::STORAGE_UNKNOWN) {
     VLOGF(2) << "Unsupported output storage type";
-    return nullptr;
-  }
-
-  if (!base::Contains(preferred_output_modes, OutputMode::IMPORT)) {
-    VLOGF(2) << "Only support OutputMode::IMPORT";
     return nullptr;
   }
 
@@ -331,7 +330,11 @@ void LibYUVImageProcessorBackend::Process(
   if (input_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
       input_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     DCHECK_NE(input_frame_mapper_.get(), nullptr);
-    input_frame = input_frame_mapper_->Map(std::move(input_frame));
+    int mapping_permissions = PROT_READ;
+    if (input_frame->storage_type() != VideoFrame::STORAGE_DMABUFS)
+      mapping_permissions |= PROT_WRITE;
+    input_frame =
+        input_frame_mapper_->Map(std::move(input_frame), mapping_permissions);
     if (!input_frame) {
       VLOGF(1) << "Failed to map input VideoFrame";
       error_cb_.Run();
@@ -345,20 +348,29 @@ void LibYUVImageProcessorBackend::Process(
   if (output_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
       output_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     DCHECK_NE(output_frame_mapper_.get(), nullptr);
-    mapped_frame = output_frame_mapper_->Map(output_frame);
+    mapped_frame =
+        output_frame_mapper_->Map(output_frame, PROT_READ | PROT_WRITE);
     if (!mapped_frame) {
       VLOGF(1) << "Failed to map output VideoFrame";
       error_cb_.Run();
       return;
     }
   }
-  int res = DoConversion(input_frame.get(), mapped_frame.get());
+
+  int res;
+  {
+    TRACE_EVENT0("media", "LibYUVImageProcessorBackend::Process");
+    SCOPED_UMA_HISTOGRAM_TIMER("LibYUVImageProcessorBackend::Process");
+    res = DoConversion(input_frame.get(), mapped_frame.get());
+  }
+
   if (res != 0) {
     VLOGF(1) << "libyuv returns non-zero code: " << res;
     error_cb_.Run();
     return;
   }
   output_frame->set_timestamp(input_frame->timestamp());
+  output_frame->set_color_space(input_frame->ColorSpace());
 
   std::move(cb).Run(std::move(output_frame));
 }
@@ -384,9 +396,6 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
 #define YUY2_DATA(fr) \
   fr->visible_data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane)
 
-#define RGB_DATA(fr) \
-  fr->visible_data(VideoFrame::kARGBPlane), fr->stride(VideoFrame::kARGBPlane)
-
 #define LIBYUV_FUNC(func, i, o)                      \
   libyuv::func(i, o, output->visible_rect().width(), \
                output->visible_rect().height())
@@ -398,24 +407,11 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
       case PIXEL_FORMAT_YV12:
         return LIBYUV_FUNC(I420ToNV12, Y_V_U_DATA(input), Y_UV_DATA(output));
 
-      // RGB conversions. NOTE: Libyuv functions called here are named in
-      // little-endian manner.
-      case PIXEL_FORMAT_ARGB:
-        return LIBYUV_FUNC(ARGBToNV12, RGB_DATA(input), Y_UV_DATA(output));
-      case PIXEL_FORMAT_XBGR:
-      case PIXEL_FORMAT_ABGR: {
-        // There is no libyuv function to convert to RGBA to NV12. Therefore, we
-        // convert RGBA to I420 tentatively and thereafter convert the tentative
-        // one to NV12.
-        DCHECK_EQ(intermediate_frame_->format(), PIXEL_FORMAT_I420);
-        int ret = LIBYUV_FUNC(ABGRToI420, RGB_DATA(input),
-                              Y_U_V_DATA(intermediate_frame_));
-        if (ret != 0)
-          return ret;
-        return LIBYUV_FUNC(I420ToNV12, Y_U_V_DATA(intermediate_frame_),
-                           Y_UV_DATA(output));
-      }
       case PIXEL_FORMAT_NV12:
+        // MM21 mode.
+        if (input_config_.fourcc == Fourcc(Fourcc::MM21))
+          return LIBYUV_FUNC(MM21ToNV12, Y_UV_DATA(input), Y_UV_DATA(output));
+
         // Rotation mode.
         if (relative_rotation_ != VIDEO_ROTATION_0) {
           // The size of |tmp_buffer| of NV12Rotate() should be
@@ -530,11 +526,26 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
 #undef Y_U_V_DATA
 #undef Y_V_U_DATA
 #undef Y_UV_DATA
-#undef RGB_DATA
 #undef LIBYUV_FUNC
 
   VLOGF(1) << "Unexpected output format: " << output->format();
   return -1;
+}
+
+bool LibYUVImageProcessorBackend::needs_linear_output_buffers() const {
+  return true;
+}
+
+std::vector<Fourcc> LibYUVImageProcessorBackend::GetSupportedOutputFormats(
+    Fourcc input_format) {
+  std::vector<Fourcc> supported_formats;
+  for (const auto& conv : kSupportFormatConversionArray) {
+    if (Fourcc::FromUint32(conv.input) &&
+        *Fourcc::FromUint32(conv.input) == input_format &&
+        Fourcc::FromUint32(conv.output))
+      supported_formats.emplace_back(*Fourcc::FromUint32(conv.output));
+  }
+  return supported_formats;
 }
 
 }  // namespace media

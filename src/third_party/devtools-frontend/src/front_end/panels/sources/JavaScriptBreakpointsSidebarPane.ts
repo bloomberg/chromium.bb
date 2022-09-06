@@ -246,7 +246,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     }
 
     if (breakpoints.some(breakpoint => breakpoint.isSelected)) {
-      UI.ViewManager.ViewManager.instance().showView('sources.jsBreakpoints');
+      void UI.ViewManager.ViewManager.instance().showView('sources.jsBreakpoints');
     }
 
     this.list.element.classList.toggle(
@@ -415,7 +415,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
       }
     }
     if (uiLocation) {
-      Common.Revealer.reveal(uiLocation);
+      void Common.Revealer.reveal(uiLocation);
     }
   }
 
@@ -426,7 +426,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     const removeEntryTitle = breakpoints.length > 1 ? i18nString(UIStrings.removeAllBreakpointsInLine) :
                                                       i18nString(UIStrings.removeBreakpoint);
     contextMenu.defaultSection().appendItem(
-        removeEntryTitle, () => breakpoints.map(breakpoint => breakpoint.remove(false /* keepInStorage */)));
+        removeEntryTitle, () => breakpoints.map(breakpoint => void breakpoint.remove(false /* keepInStorage */)));
     if (event.target instanceof Element) {
       contextMenu.defaultSection().appendItem(
           i18nString(UIStrings.revealLocation), this.revealLocation.bind(this, event.target));
@@ -463,7 +463,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     const removeOtherTitle = i18nString(UIStrings.removeOtherBreakpoints);
     contextMenu.defaultSection().appendItem(
         removeOtherTitle, this.removeOtherBreakpoints.bind(this, new Set(breakpoints)));
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private toggleAllBreakpointsInFile(element: Element, toggleState: boolean): void {
@@ -487,14 +487,14 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
 
   private removeAllBreakpoints(): void {
     for (const breakpointLocation of this.breakpointManager.allBreakpointLocations()) {
-      breakpointLocation.breakpoint.remove(false /* keepInStorage */);
+      void breakpointLocation.breakpoint.remove(false /* keepInStorage */);
     }
   }
 
   private removeOtherBreakpoints(selectedBreakpoints: Set<Bindings.BreakpointManager.Breakpoint>): void {
     for (const breakpointLocation of this.breakpointManager.allBreakpointLocations()) {
       if (!selectedBreakpoints.has(breakpointLocation.breakpoint)) {
-        breakpointLocation.breakpoint.remove(false /* keepInStorage */);
+        void breakpointLocation.breakpoint.remove(false /* keepInStorage */);
       }
     }
   }

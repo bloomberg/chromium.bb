@@ -41,15 +41,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using password_manager::InsecureCredential;
 using password_manager::MockPasswordFormManagerForUI;
 using password_manager::MockPasswordStoreInterface;
 using password_manager::PasswordForm;
@@ -84,6 +81,7 @@ MATCHER_P3(MatchesLoginAndURL,
 
 // A random URL.
 constexpr char kExampleUrl[] = "http://example.com";
+constexpr char16_t kExampleUsername[] = u"Bob";
 
 // Number of dismissals that for sure suppresses the bubble.
 constexpr int kGreatDissmisalCount = 10;
@@ -153,7 +151,6 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
                CredentialLeakPrompt*(CredentialLeakDialogController*));
   MOCK_CONST_METHOD0(HasBrowserWindow, bool());
   MOCK_METHOD0(OnUpdateBubbleAndIconVisibility, void());
-  using ManagePasswordsUIController::DidFinishNavigation;
 
  private:
   void UpdateBubbleAndIconVisibility() override;
@@ -211,11 +208,11 @@ password_manager::PasswordForm BuildFormFromLoginAndURL(
   return form;
 }
 
-InsecureCredential CreateInsecureCredential(const PasswordForm& form) {
-  return InsecureCredential(form.signon_realm, form.username_value,
-                            base::Time(),
-                            password_manager::InsecureType::kLeaked,
-                            password_manager::IsMuted(false));
+password_manager::PasswordForm CreateInsecureCredential(PasswordForm form) {
+  form.password_issues.insert(
+      {InsecureType::kLeaked,
+       InsecurityMetadata(base::Time(), password_manager::IsMuted(false))});
+  return form;
 }
 
 }  // namespace
@@ -256,6 +253,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   PasswordForm test_local_form_;
   PasswordForm test_federated_form_;
   PasswordForm submitted_form_;
+  std::vector<const PasswordForm*> insecure_credentials_;
   CredentialManagementDialogPromptMock dialog_prompt_;
 };
 
@@ -275,8 +273,6 @@ void ManagePasswordsUIControllerTest::SetUp() {
   test_local_form_.username_element = u"username_element";
   test_local_form_.password_value = u"12345";
   test_local_form_.password_element = u"password_element";
-  test_local_form_.password_issues =
-      base::flat_map<InsecureType, InsecurityMetadata>();
 
   test_federated_form_.url = GURL("http://example.com/login");
   test_federated_form_.signon_realm =
@@ -284,19 +280,14 @@ void ManagePasswordsUIControllerTest::SetUp() {
   test_federated_form_.username_value = u"username";
   test_federated_form_.federation_origin =
       url::Origin::Create(GURL("https://federation.test/"));
-  // TODO(crbug.com/1223022): Once all places that operate changes on forms
-  // via UpdateLogin properly set |password_issues|, setting them to an empty
-  // map should be part of the default constructor.
-  test_federated_form_.password_issues =
-      base::flat_map<InsecureType, InsecurityMetadata>();
 
   submitted_form_ = test_local_form_;
   submitted_form_.username_value = u"submitted_username";
   submitted_form_.password_value = u"pass12345";
 
   // We need to be on a "webby" URL for most tests.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kExampleUrl));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
 }
 
 void ManagePasswordsUIControllerTest::ExpectIconStateIs(
@@ -336,7 +327,7 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
           Return(base::span<const password_manager::InteractionsStats>()));
   EXPECT_CALL(*form_manager, GetInsecureCredentials())
       .Times(AtMost(1))
-      .WillOnce(Return(base::span<const InsecureCredential>()));
+      .WillOnce(ReturnRef(insecure_credentials_));
   EXPECT_CALL(*form_manager, GetPendingCredentials())
       .WillRepeatedly(ReturnRef(submitted_form_));
   EXPECT_CALL(*form_manager, GetMetricsRecorder())
@@ -463,8 +454,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleCancelled) {
   // Test on the real controller.
   std::unique_ptr<content::WebContents> web_content(CreateTestWebContents());
-  content::WebContentsTester::For(web_content.get())
-      ->NavigateAndCommit(GURL(kExampleUrl));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_content.get(),
+                                                             GURL(kExampleUrl));
   ManagePasswordsUIController::CreateForWebContents(web_content.get());
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_content.get());
@@ -479,8 +470,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleCancelled) {
 
   // The tab navigated in background. Because the controller's state has changed
   // the bubble shouldn't pop up anymore.
-  content::WebContentsTester::For(web_content.get())
-      ->NavigateAndCommit(GURL("http://google.com"));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_content.get(), GURL("http://google.com"));
   EXPECT_FALSE(controller->IsAutomaticallyOpeningBubble());
 }
 
@@ -556,9 +547,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
     controller()->OnBubbleHidden();
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-    content::MockNavigationHandle test_handle(web_contents());
-    test_handle.set_has_committed(true);
-    controller()->DidFinishNavigation(&test_handle);
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL(kExampleUrl));
 
     recorder = nullptr;
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -701,9 +691,8 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
   // Fake-navigate. We expect the bubble's state to persist so a user reasonably
   // has been able to interact with the bubble. This happens on
   // `accounts.google.com`, for instance.
-  content::MockNavigationHandle test_handle(web_contents());
-  test_handle.set_has_committed(true);
-  controller()->DidFinishNavigation(&test_handle);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
   ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
@@ -721,17 +710,16 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
 
   // Fake-navigate. There is no bubble, reset the state.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  content::MockNavigationHandle test_handle(web_contents());
-  test_handle.set_has_committed(true);
-  controller()->DidFinishNavigation(&test_handle);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
   ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
   // Navigate to a non-webby URL, then see what happens!
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("chrome://sign-in"));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("chrome://sign-in"));
 
   std::vector<const PasswordForm*> best_matches;
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
@@ -970,9 +958,8 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
   // The dialog should survive any navigation.
   EXPECT_CALL(dialog_prompt(), ControllerGone()).Times(0);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  content::MockNavigationHandle test_handle(web_contents());
-  test_handle.set_has_committed(true);
-  controller()->DidFinishNavigation(&test_handle);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&dialog_prompt()));
   EXPECT_CALL(dialog_prompt(), ControllerGone());
 }
@@ -1104,9 +1091,8 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     // state is retained on navigation, and the PasswordFormManager is not
     // destroyed.
     controller()->OnBubbleHidden();
-    content::MockNavigationHandle test_handle(web_contents());
-    test_handle.set_has_committed(true);
-    controller()->DidFinishNavigation(&test_handle);
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL(kExampleUrl));
 
     recorder = nullptr;
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -1195,9 +1181,8 @@ TEST_F(ManagePasswordsUIControllerTest,
     testing::Mock::VerifyAndClearExpectations(controller());
     if (enforce_navigation) {
       // Fake-navigate. The fallback should persist.
-      content::MockNavigationHandle test_handle(web_contents());
-      test_handle.set_has_committed(true);
-      controller()->DidFinishNavigation(&test_handle);
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(
+          web_contents(), GURL(kExampleUrl));
       ExpectIconAndControllerStateIs(
           password_manager::ui::PENDING_PASSWORD_STATE);
     }
@@ -1250,9 +1235,8 @@ TEST_F(ManagePasswordsUIControllerTest,
       // navigation.
       controller()->OnBubbleHidden();
       EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-      content::MockNavigationHandle test_handle(web_contents());
-      test_handle.set_has_committed(true);
-      controller()->DidFinishNavigation(&test_handle);
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(
+          web_contents(), GURL(kExampleUrl));
       ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
     }
     testing::Mock::VerifyAndClearExpectations(controller());
@@ -1384,7 +1368,7 @@ TEST_F(ManagePasswordsUIControllerTest, AuthenticateUserToRevealPasswords) {
 
   // Simulate that re-auth is need to reveal passwords in the bubble.
   bool success = controller()->AuthenticateUser();
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   EXPECT_FALSE(success);
   // Let the task posted in AuthenticateUser re-open the bubble.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
@@ -1422,7 +1406,7 @@ TEST_F(ManagePasswordsUIControllerTest, SaveBubbleAfterLeakCheck) {
           password_manager::IsSaved(false), password_manager::IsReused(false),
           password_manager::IsSyncing(false),
           password_manager::HasChangeScript(false)),
-      GURL(kExampleUrl));
+      GURL(kExampleUrl), kExampleUsername);
   // The bubble is gone.
   EXPECT_FALSE(controller()->opened_bubble());
 
@@ -1454,7 +1438,7 @@ TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
           password_manager::IsSaved(true), password_manager::IsReused(false),
           password_manager::IsSyncing(false),
           password_manager::HasChangeScript(false)),
-      GURL(kExampleUrl));
+      GURL(kExampleUrl), kExampleUsername);
   // The bubble is gone.
   EXPECT_FALSE(controller()->opened_bubble());
 
@@ -1574,12 +1558,12 @@ TEST_F(ManagePasswordsUIControllerTest, OpenSafeStateBubble) {
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
 
   EXPECT_CALL(*test_form_manager_raw, Save());
-  std::vector<InsecureCredential> saved = {
-      CreateInsecureCredential(test_local_form())};
+  PasswordForm credential = CreateInsecureCredential(test_local_form());
+  std::vector<const PasswordForm*> saved = {&credential};
   // Pretend that the current credential was insecure but with the updated
   // password not anymore.
   EXPECT_CALL(*test_form_manager_raw, GetInsecureCredentials())
-      .WillOnce(Return(saved));
+      .WillOnce(ReturnRef(saved));
   base::WeakPtr<password_manager::PasswordStoreConsumer> post_save_helper;
 
   EXPECT_CALL(*client().GetProfilePasswordStore(), GetAutofillableLogins)
@@ -1617,10 +1601,10 @@ TEST_F(ManagePasswordsUIControllerTest, OpenMoreToFixBubble) {
 
   EXPECT_CALL(*test_form_manager_raw, Save());
   // Pretend that the current credential was insecure.
-  std::vector<InsecureCredential> saved = {
-      CreateInsecureCredential(test_local_form())};
+  PasswordForm credential = CreateInsecureCredential(test_local_form());
+  std::vector<const PasswordForm*> saved = {&credential};
   EXPECT_CALL(*test_form_manager_raw, GetInsecureCredentials())
-      .WillOnce(Return(saved));
+      .WillOnce(ReturnRef(saved));
 
   base::WeakPtr<password_manager::PasswordStoreConsumer> post_save_helper;
 
@@ -1666,11 +1650,11 @@ TEST_F(ManagePasswordsUIControllerTest, NoMoreToFixBubbleIfPromoStillOpen) {
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
 
   EXPECT_CALL(*test_form_manager_raw, Save());
-  std::vector<InsecureCredential> saved = {
-      CreateInsecureCredential(test_local_form())};
+  PasswordForm credential = CreateInsecureCredential(test_local_form());
+  std::vector<const PasswordForm*> saved = {&credential};
   // Pretend that the current credential was insecure.
   EXPECT_CALL(*test_form_manager_raw, GetInsecureCredentials())
-      .WillOnce(Return(saved));
+      .WillOnce(ReturnRef(saved));
   controller()->SavePassword(submitted_form().username_value,
                              submitted_form().password_value);
   // The sign-in promo bubble stays open, the warning isn't shown.

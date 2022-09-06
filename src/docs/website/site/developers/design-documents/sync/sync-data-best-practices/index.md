@@ -7,7 +7,7 @@ breadcrumbs:
 - - /developers/design-documents/sync
   - Sync
 page_name: sync-data-best-practices
-title: Sync Data Best Practices
+title: Sync Data Best Practices (Needs update)
 ---
 
 [The new sync API](/developers/design-documents/sync/syncable-service-api) uses

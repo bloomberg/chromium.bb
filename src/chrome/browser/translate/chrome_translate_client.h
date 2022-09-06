@@ -11,8 +11,8 @@
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/autofill_assistant/browser/public/runtime_observer.h"
+#include "components/language/core/browser/accept_languages_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/content/browser/per_frame_content_translate_driver.h"
@@ -29,11 +29,15 @@ class WebContents;
 
 class PrefService;
 
+namespace language {
+class AcceptLanguagesService;
+}
+
 namespace translate {
 class LanguageState;
-class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
+class TranslateMessage;
 
 struct LanguageDetectionDetails;
 }  // namespace translate
@@ -67,9 +71,9 @@ class ChromeTranslateClient
   static std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
       PrefService* prefs);
 
-  // Helper method to return the TranslateAcceptLanguages instance associated
+  // Helper method to return the AcceptLanguagesService instance associated
   // with |browser_context|.
-  static translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages(
+  static language::AcceptLanguagesService* GetAcceptLanguagesService(
       content::BrowserContext* browser_context);
 
   // Helper method to return the TranslateManager instance associated with
@@ -89,8 +93,8 @@ class ChromeTranslateClient
   translate::TranslateDriver* GetTranslateDriver() override;
   PrefService* GetPrefs() override;
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
-  translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
-#if defined(OS_ANDROID)
+  language::AcceptLanguagesService* GetAcceptLanguagesService() override;
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
@@ -132,7 +136,7 @@ class ChromeTranslateClient
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Shows the translate bubble.
   ShowTranslateBubbleResult ShowBubble(
       translate::TranslateStep step,
@@ -142,15 +146,21 @@ class ChromeTranslateClient
       bool is_user_gesture);
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+  void OnTranslateMessageDismissed();
+#endif
+
   std::unique_ptr<translate::ContentTranslateDriver> translate_driver_;
   std::unique_ptr<translate::PerFrameContentTranslateDriver>
       per_frame_translate_driver_;
   std::unique_ptr<translate::TranslateManager> translate_manager_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Whether to trigger a manual translation when ready.
   // See ChromeTranslateClient::ManualTranslateOnReady
   bool manual_translate_on_ready_ = false;
+
+  std::unique_ptr<translate::TranslateMessage> translate_message_;
 #endif
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

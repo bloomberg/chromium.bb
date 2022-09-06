@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/devicetype.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "base/feature_list.h"
@@ -23,7 +22,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-// TODO(b/174811949): Hide behind ChromeOS build flag.
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -32,13 +31,17 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_launch_queue.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
-#include "chrome/browser/web_launch/web_launch_files_helper.h"
+#include "chromeos/constants/devicetype.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -76,7 +79,7 @@ ChromeCameraAppUIDelegate::CameraAppDialog::CameraAppDialog(
     : chromeos::SystemWebDialogDelegate(GURL(url),
                                         /*title=*/std::u16string()) {}
 
-ChromeCameraAppUIDelegate::CameraAppDialog::~CameraAppDialog() {}
+ChromeCameraAppUIDelegate::CameraAppDialog::~CameraAppDialog() = default;
 
 ui::ModalType ChromeCameraAppUIDelegate::CameraAppDialog::GetDialogModalType()
     const {
@@ -85,6 +88,25 @@ ui::ModalType ChromeCameraAppUIDelegate::CameraAppDialog::GetDialogModalType()
 
 bool ChromeCameraAppUIDelegate::CameraAppDialog::CanMaximizeDialog() const {
   return !ash::TabletMode::Get()->InTabletMode();
+}
+
+ui::WebDialogDelegate::FrameKind
+ChromeCameraAppUIDelegate::CameraAppDialog::GetWebDialogFrameKind() const {
+  // For customizing the title bar.
+  return ui::WebDialogDelegate::FrameKind::kNonClient;
+}
+
+void ChromeCameraAppUIDelegate::CameraAppDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  auto grey_900 = cros_styles::ResolveColor(
+      cros_styles::ColorName::kGoogleGrey900, /*is_dark_mode=*/false,
+      /*use_debug_colors=*/false);
+  params->init_properties_container.SetProperty(
+      chromeos::kTrackDefaultFrameColors, false);
+  params->init_properties_container.SetProperty(chromeos::kFrameActiveColorKey,
+                                                grey_900);
+  params->init_properties_container.SetProperty(
+      chromeos::kFrameInactiveColorKey, grey_900);
 }
 
 void ChromeCameraAppUIDelegate::CameraAppDialog::GetDialogSize(
@@ -108,7 +130,7 @@ bool ChromeCameraAppUIDelegate::CameraAppDialog::CheckMediaAccessPermission(
       ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
 }
 
-ChromeCameraAppUIDelegate::FileMonitor::FileMonitor() {}
+ChromeCameraAppUIDelegate::FileMonitor::FileMonitor() = default;
 
 ChromeCameraAppUIDelegate::FileMonitor::~FileMonitor() = default;
 
@@ -175,13 +197,23 @@ void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
   auto my_files_folder_path =
       file_manager::util::GetMyFilesFolderForProfile(profile);
 
-  web_launch::WebLaunchFilesHelper::EnqueueLaunchParams(
-      web_contents,
-      /*app_scope=*/GURL(ash::kChromeUICameraAppScopeURL),
-      /*await_navigation=*/true,
-      /*launch_url=*/GURL(ash::kChromeUICameraAppMainURL), my_files_folder_path,
-      /*launch_paths=*/{});
+  absl::optional<web_app::AppId> app_id =
+      ash::SystemWebAppManager::Get(profile)->GetAppIdForSystemApp(
+          ash::SystemWebAppType::CAMERA);
+
+  // The launch directory is passed here rather than
+  // `SystemWebAppDelegate::LaunchAndNavigateSystemWebApp()` to handle the case
+  // of the app being opened to handle an Android intent, i.e. when it's shown
+  // as a dialog via `CameraAppDialog`.
+  web_app::WebAppLaunchParams launch_params;
+  launch_params.started_new_navigation = true;
+  launch_params.app_id = *app_id;
+  launch_params.target_url = GURL(ash::kChromeUICameraAppMainURL);
+  launch_params.dir = my_files_folder_path;
   web_app::WebAppTabHelper::CreateForWebContents(web_contents);
+  web_app::WebAppTabHelper::FromWebContents(web_contents)
+      ->EnsureLaunchQueue()
+      .Enqueue(std::move(launch_params));
 }
 
 void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
@@ -190,10 +222,6 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("device_type",
                     DeviceTypeToString(chromeos::GetDeviceType()));
-  // Add chrome flags.
-  source->AddBoolean("cameraAppDocumentManualCrop",
-                     base::FeatureList::IsEnabled(
-                         chromeos::features::kCameraAppDocumentManualCrop));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {
@@ -213,7 +241,7 @@ void ChromeCameraAppUIDelegate::OpenFileInGallery(const std::string& name) {
   params.launch_paths = {path};
   params.launch_source = apps::mojom::LaunchSource::kFromOtherApp;
   web_app::LaunchSystemWebAppAsync(Profile::FromWebUI(web_ui_),
-                                   web_app::SystemAppType::MEDIA, params);
+                                   ash::SystemWebAppType::MEDIA, params);
 }
 
 void ChromeCameraAppUIDelegate::OpenFeedbackDialog(

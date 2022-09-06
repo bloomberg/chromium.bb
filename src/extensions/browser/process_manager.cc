@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/one_shot_event.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -94,6 +95,7 @@ base::TimeDelta GetEventPageSuspendDelay() {
   return base::Milliseconds(kEventPageSuspendDelayMs.Get());
 }
 
+// TODO(solomonkinard): Take into account GUID-based dynamic URLs.
 std::string GetExtensionIdForSiteInstance(
     content::SiteInstance* site_instance) {
   // <webview> guests always store the ExtensionId in the partition domain.
@@ -757,6 +759,7 @@ void ProcessManager::ReleaseLazyKeepaliveCountForFrame(
 
 std::string ProcessManager::IncrementServiceWorkerKeepaliveCount(
     const WorkerId& worker_id,
+    content::ServiceWorkerExternalRequestTimeoutType timeout_type,
     Activity::Type activity_type,
     const std::string& extra_data) {
   // TODO(lazyboy): Use |activity_type| and |extra_data|.
@@ -774,7 +777,7 @@ std::string ProcessManager::IncrementServiceWorkerKeepaliveCount(
           ->GetServiceWorkerContext();
 
   service_worker_context->StartingExternalRequest(service_worker_version_id,
-                                                  request_uuid);
+                                                  timeout_type, request_uuid);
   return request_uuid;
 }
 
@@ -1043,13 +1046,6 @@ void ProcessManager::UnregisterServiceWorker(const WorkerId& worker_id) {
 
 bool ProcessManager::HasServiceWorker(const WorkerId& worker_id) const {
   return all_extension_workers_.Contains(worker_id);
-}
-
-std::vector<WorkerId> ProcessManager::GetServiceWorkers(
-    const ExtensionId& extension_id,
-    int render_process_id) const {
-  return all_extension_workers_.GetAllForExtension(extension_id,
-                                                   render_process_id);
 }
 
 std::vector<WorkerId> ProcessManager::GetServiceWorkersForExtension(

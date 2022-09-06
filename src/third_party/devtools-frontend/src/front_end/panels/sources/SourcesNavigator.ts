@@ -31,14 +31,18 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as Feedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Snippets from '../snippets/snippets.js';
 
 import type {NavigatorUISourceCodeTreeNode} from './NavigatorView.js';
 import {NavigatorView} from './NavigatorView.js';
+import sourcesNavigatorStyles from './sourcesNavigator.css.js';
 
 const UIStrings = {
   /**
@@ -99,20 +103,61 @@ const UIStrings = {
   *@description Text to save content as a specific file type
   */
   saveAs: 'Save as...',
+  /**
+   *@description Description of the new experimental Authored/Deployed view
+   */
+  authoredDescription: 'Group files by Authored/Deployed',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesNavigator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let networkNavigatorViewInstance: NetworkNavigatorView;
 
 export class NetworkNavigatorView extends NavigatorView {
+  private previewToggle: Feedback.PreviewToggle.PreviewToggle;
   private constructor() {
-    super();
+    super(true);
     SDK.TargetManager.TargetManager.instance().addEventListener(
         SDK.TargetManager.Events.InspectedURLChanged, this.inspectedURLChanged, this);
+
+    this.previewToggle = new Feedback.PreviewToggle.PreviewToggle();
+    this.onGroupingChanged();
+
+    const div = UI.Fragment.html`<div class="border-container"></div>`;
+    div.append(this.previewToggle);
+    this.contentElement.prepend(div);
 
     // Record the sources tool load time after the file navigator has loaded.
     Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
   }
+
+  onGroupingChanged(): void {
+    // Setting the data will re-render it.
+    this.previewToggle.data = {
+      name: i18nString(UIStrings.authoredDescription),
+      helperText: null,
+      experiment: Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING,
+      learnMoreURL: 'https://goo.gle/authored-deployed',
+      feedbackURL: 'https://goo.gle/authored-deployed-feedback',
+      onChangeCallback: this.onAuthoredDeployedChanged,
+    };
+  }
+
+  wasShown(): void {
+    this.registerCSSFiles([sourcesNavigatorStyles]);
+    super.wasShown();
+  }
+
+  private onAuthoredDeployedChanged(checked: boolean): void {
+    Host.userMetrics.experimentChanged(Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING, checked);
+    // Need to signal to the NavigatorView that grouping has changed. Unfortunately,
+    // it can't listen to an experiment, and this class doesn't directly interact
+    // with it, so we will convince it a different grouping setting changed. When we switch
+    // from using an experiment to a setting, it will listen to that setting and we
+    // won't need to do this.
+    const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
+    groupByFolderSetting.set(groupByFolderSetting.get());
+  }
+
   static instance(opts: {
     forceNew: boolean|null,
   } = {forceNew: null}): NetworkNavigatorView {
@@ -171,7 +216,7 @@ export class FilesNavigatorView extends NavigatorView {
   `);
 
     const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
-    toolbar.appendItemsAtLocation('files-navigator-toolbar').then(() => {
+    void toolbar.appendItemsAtLocation('files-navigator-toolbar').then(() => {
       if (!toolbar.empty()) {
         this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
       }
@@ -194,7 +239,7 @@ export class FilesNavigatorView extends NavigatorView {
   handleContextMenu(event: Event): void {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendAction('sources.add-folder-to-workspace', undefined, true);
-    contextMenu.show();
+    void contextMenu.show();
   }
 }
 
@@ -272,12 +317,12 @@ export class OverridesNavigatorView extends NavigatorView {
     const title = i18nString(UIStrings.selectFolderForOverrides);
     const setupButton = new UI.Toolbar.ToolbarButton(title, 'largeicon-add', title);
     setupButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
-      this.setupNewWorkspace();
+      void this.setupNewWorkspace();
     }, this);
     this.toolbar.appendToolbarItem(setupButton);
   }
 
-  private async setupNewWorkspace(): Promise<void> {
+  async setupNewWorkspace(): Promise<void> {
     const fileSystem =
         await Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem('overrides');
     if (!fileSystem) {
@@ -338,7 +383,8 @@ export class SnippetsNavigatorView extends NavigatorView {
     const newButton = new UI.Toolbar.ToolbarButton(
         i18nString(UIStrings.newSnippet), 'largeicon-add', i18nString(UIStrings.newSnippet));
     newButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
-      this.create(Snippets.ScriptSnippetFileSystem.findSnippetsProject(), '');
+      void this.create(
+          Snippets.ScriptSnippetFileSystem.findSnippetsProject(), '' as Platform.DevToolsPath.EncodedPathString);
     });
     toolbar.appendToolbarItem(newButton);
     this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
@@ -359,8 +405,9 @@ export class SnippetsNavigatorView extends NavigatorView {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.headerSection().appendItem(
         i18nString(UIStrings.createNewSnippet),
-        () => this.create(Snippets.ScriptSnippetFileSystem.findSnippetsProject(), ''));
-    contextMenu.show();
+        () => this.create(
+            Snippets.ScriptSnippetFileSystem.findSnippetsProject(), '' as Platform.DevToolsPath.EncodedPathString));
+    void contextMenu.show();
   }
 
   handleFileContextMenu(event: Event, node: NavigatorUISourceCodeTreeNode): void {
@@ -372,14 +419,19 @@ export class SnippetsNavigatorView extends NavigatorView {
     contextMenu.editSection().appendItem(
         i18nString(UIStrings.remove), () => uiSourceCode.project().deleteFile(uiSourceCode));
     contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAs), this.handleSaveAs.bind(this, uiSourceCode));
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private async handleSaveAs(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<void> {
     uiSourceCode.commitWorkingCopy();
     const {content} = await uiSourceCode.requestContent();
-    Workspace.FileManager.FileManager.instance().save(uiSourceCode.url(), content || '', true);
+    void Workspace.FileManager.FileManager.instance().save(
+        this.addJSExtension(uiSourceCode.url()), content || '', true);
     Workspace.FileManager.FileManager.instance().close(uiSourceCode.url());
+  }
+
+  private addJSExtension(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
+    return Common.ParsedURL.ParsedURL.concatenate(url, '.js');
   }
 }
 
@@ -399,12 +451,12 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
   handleAction(context: UI.Context.Context, actionId: string): boolean {
     switch (actionId) {
       case 'sources.create-snippet':
-        Snippets.ScriptSnippetFileSystem.findSnippetsProject()
-            .createFile('', null, '')
+        void Snippets.ScriptSnippetFileSystem.findSnippetsProject()
+            .createFile(Platform.DevToolsPath.EmptyEncodedPathString, null, '')
             .then(uiSourceCode => Common.Revealer.reveal(uiSourceCode));
         return true;
       case 'sources.add-folder-to-workspace':
-        Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
+        void Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
         return true;
     }
     return false;

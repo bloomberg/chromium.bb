@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/webui/connectors_internals/connectors_internals_page_handler.h"
 
 #include "base/check.h"
-#include "base/containers/flat_map.h"
+#include "base/json/json_writer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service_factory.h"
@@ -31,7 +32,8 @@ void ConnectorsInternalsPageHandler::GetZeroTrustState(
   auto* device_trust_service =
       DeviceTrustServiceFactory::GetForProfile(profile_);
 
-  // The factory will not return a service if the profile is off-the-record.
+  // The factory will not return a service if the profile is off-the-record, or
+  // if the current management configuration is not supported.
   if (!device_trust_service) {
     auto state = connectors_internals::mojom::ZeroTrustState::New(
         false,
@@ -40,7 +42,7 @@ void ConnectorsInternalsPageHandler::GetZeroTrustState(
                 UNSUPPORTED,
             connectors_internals::mojom::KeyTrustLevel::UNSPECIFIED,
             connectors_internals::mojom::KeyType::UNKNOWN),
-        base::flat_map<std::string, std::string>());
+        std::string());
     std::move(callback).Run(std::move(state));
     return;
   }
@@ -56,10 +58,12 @@ void ConnectorsInternalsPageHandler::GetZeroTrustState(
 void ConnectorsInternalsPageHandler::OnSignalsCollected(
     GetZeroTrustStateCallback callback,
     bool is_device_trust_enabled,
-    std::unique_ptr<SignalsType> signals) {
+    const base::Value::Dict signals) {
+  std::string signals_json;
+  base::JSONWriter::WriteWithOptions(
+      signals, base::JSONWriter::OPTIONS_PRETTY_PRINT, &signals_json);
   auto state = connectors_internals::mojom::ZeroTrustState::New(
-      is_device_trust_enabled, utils::GetKeyInfo(),
-      utils::SignalsToMap(std::move(signals)));
+      is_device_trust_enabled, utils::GetKeyInfo(), signals_json);
   std::move(callback).Run(std::move(state));
 }
 

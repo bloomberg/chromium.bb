@@ -10,12 +10,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +26,7 @@
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "extensions/buildflags/buildflags.h"
 
 namespace {
@@ -136,15 +139,17 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
 
     // Manually set preferences that aren't direct copies of the settings value.
     {
-      bool record_history =
-          settings->FindBoolPath(supervised_users::kRecordHistory)
-              .value_or(true);
-      prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, !record_history);
+      // Allow history deletion for supervised accounts on supported platforms.
+      bool allow_history_deletion = base::FeatureList::IsEnabled(
+          supervised_users::kAllowHistoryDeletionForChildAccounts);
+      prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory,
+                         allow_history_deletion);
+      // Incognito is disabled for supervised users across platforms.
+      // First-party sites use signed-in cookies to ensure that parental
+      // restrictions are applied for Unicorn accounts.
       prefs_->SetInteger(
           prefs::kIncognitoModeAvailability,
-          static_cast<int>(record_history
-                               ? IncognitoModePrefs::Availability::kDisabled
-                               : IncognitoModePrefs::Availability::kEnabled));
+          static_cast<int>(IncognitoModePrefs::Availability::kDisabled));
     }
 
     {

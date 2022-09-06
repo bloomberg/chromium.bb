@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -51,7 +51,7 @@
 #include "extensions/common/value_builder.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -200,8 +200,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern +
-          base::size(kNotificationVibrationPattern));
+      kNotificationVibrationPattern + std::size(kNotificationVibrationPattern));
 
   PlatformNotificationData data;
   data.title = u"My notification's title";
@@ -233,8 +232,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
 TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern +
-          base::size(kNotificationVibrationPattern));
+      kNotificationVibrationPattern + std::size(kNotificationVibrationPattern));
   PlatformNotificationData data;
   data.title = u"My notification's title";
   data.body = u"Hello, world!";
@@ -417,16 +415,9 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
 
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if !defined(OS_ANDROID)
-
-class PlatformNotificationServiceTest_WebAppNotificationIconAndTitle
-    : public PlatformNotificationServiceTest {
- protected:
-  PlatformNotificationServiceTest_WebAppNotificationIconAndTitle() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDesktopPWAsNotificationIconAndTitle);
-  }
-};
+#if BUILDFLAG(IS_CHROMEOS)
+using PlatformNotificationServiceTest_WebAppNotificationIconAndTitle =
+    PlatformNotificationServiceTest;
 
 TEST_F(PlatformNotificationServiceTest_WebAppNotificationIconAndTitle,
        FindWebAppIconAndTitle_NoApp) {
@@ -472,5 +463,4 @@ TEST_F(PlatformNotificationServiceTest_WebAppNotificationIconAndTitle,
       SK_ColorTRANSPARENT,
       icon_and_title->icon.GetRepresentation(1.0f).GetBitmap().getColor(0, 0));
 }
-
-#endif  // !defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS)

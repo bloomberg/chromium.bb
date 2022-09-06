@@ -8,5 +8,7 @@
 PRODUCT_NAME=
 readonly PRODUCT_NAME
 
-local exe="${UNPACK_DIR}/${PRODUCT_NAME}.app/Contents/MacOS/${PRODUCT_NAME}"
-"${exe}" ${SERVER_ARGS}
+env
+
+"${UNPACK_DIR}/${PRODUCT_NAME}.app/Contents/MacOS/${PRODUCT_NAME}" \
+    ${SERVER_ARGS} ${KS_kServerActionArguments}

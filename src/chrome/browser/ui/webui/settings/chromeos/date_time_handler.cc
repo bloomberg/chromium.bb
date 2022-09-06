@@ -19,7 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -69,18 +69,18 @@ DateTimeHandler::DateTimeHandler() {}
 DateTimeHandler::~DateTimeHandler() = default;
 
 void DateTimeHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "dateTimePageReady",
       base::BindRepeating(&DateTimeHandler::HandleDateTimePageReady,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getTimeZones", base::BindRepeating(&DateTimeHandler::HandleGetTimeZones,
                                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "showSetDateTimeUI",
       base::BindRepeating(&DateTimeHandler::HandleShowSetDateTimeUI,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "handleShowParentAccessForTimeZone",
       base::BindRepeating(&DateTimeHandler::HandleShowParentAccessForTimeZone,
                           base::Unretained(this)));
@@ -115,7 +115,7 @@ void DateTimeHandler::OnJavascriptDisallowed() {
   local_state_pref_change_registrar_.RemoveAll();
 }
 
-void DateTimeHandler::HandleDateTimePageReady(const base::ListValue* args) {
+void DateTimeHandler::HandleDateTimePageReady(const base::Value::List& args) {
   AllowJavascript();
 
   // Send the time zone automatic detection policy in case it changed after the
@@ -123,15 +123,15 @@ void DateTimeHandler::HandleDateTimePageReady(const base::ListValue* args) {
   NotifyTimezoneAutomaticDetectionPolicy();
 }
 
-void DateTimeHandler::HandleGetTimeZones(const base::ListValue* args) {
+void DateTimeHandler::HandleGetTimeZones(const base::Value::List& args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetList().size());
-  const base::Value& callback_id = args->GetList()[0];
+  CHECK_EQ(1U, args.size());
+  const base::Value& callback_id = args[0];
   ResolveJavascriptCallback(callback_id, *system::GetTimezoneList());
 }
 
-void DateTimeHandler::HandleShowSetDateTimeUI(const base::ListValue* args) {
+void DateTimeHandler::HandleShowSetDateTimeUI(const base::Value::List& args) {
   // Make sure the clock status hasn't changed since the button was clicked.
   if (!SystemClockClient::Get()->CanSetTime())
     return;
@@ -140,7 +140,7 @@ void DateTimeHandler::HandleShowSetDateTimeUI(const base::ListValue* args) {
 }
 
 void DateTimeHandler::HandleShowParentAccessForTimeZone(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   DCHECK(user_manager::UserManager::Get()->GetActiveUser()->IsChild());
 
   if (!parent_access::ParentAccessService::IsApprovalRequired(

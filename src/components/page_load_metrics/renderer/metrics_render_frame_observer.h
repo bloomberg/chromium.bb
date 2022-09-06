@@ -52,7 +52,6 @@ class MetricsRenderFrameObserver
   void DidObserveInputDelay(base::TimeDelta input_delay) override;
   void DidObserveUserInteraction(
       base::TimeDelta max_event_duration,
-      base::TimeDelta total_event_duration,
       blink::UserInteractionType interaction_type) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
@@ -62,16 +61,12 @@ class MetricsRenderFrameObserver
   void DidObserveLayoutNg(uint32_t all_block_count,
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
-                          uint32_t ng_call_count,
-                          uint32_t flexbox_ng_block_count,
-                          uint32_t grid_ng_block_count) override;
-  void DidObserveLazyLoadBehavior(
-      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
-  void DidStartResponse(const GURL& response_url,
-                        int request_id,
-                        const network::mojom::URLResponseHead& response_head,
-                        network::mojom::RequestDestination request_destination,
-                        blink::PreviewsState previews_state) override;
+                          uint32_t ng_call_count) override;
+  void DidStartResponse(
+      const url::SchemeHostPort& final_response_url,
+      int request_id,
+      const network::mojom::URLResponseHead& response_head,
+      network::mojom::RequestDestination request_destination) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;
   void DidCompleteResponse(
@@ -108,7 +103,9 @@ class MetricsRenderFrameObserver
   void OnAdResourceObserved(int request_id) override;
 
   void OnMainFrameIntersectionChanged(
-      const gfx::Rect& main_frame_intersection) override;
+      const gfx::Rect& main_frame_intersection_rect) override;
+  void OnMainFrameViewportRectangleChanged(
+      const gfx::Rect& main_frame_viewport_rect) override;
   void OnMobileFriendlinessChanged(const blink::MobileFriendliness&) override;
 
   bool SetUpSmoothnessReporting(
@@ -141,6 +138,7 @@ class MetricsRenderFrameObserver
   void MaybeSetCompletedBeforeFCP(int request_id);
 
   void SendMetrics();
+  void OnMetricsSenderCreated();
   virtual Timing GetTiming() const;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
   virtual std::unique_ptr<PageTimingSender> CreatePageTimingSender(
@@ -168,6 +166,12 @@ class MetricsRenderFrameObserver
 
   // Handle to the shared memory for transporting smoothness related ukm data.
   base::ReadOnlySharedMemoryRegion ukm_smoothness_data_;
+
+  // The main frame intersection rectangle signal received before
+  // `page_timing_metrics_sender_` is created. The signal will be send out right
+  // after `page_timing_metrics_sender_` is created.
+  absl::optional<gfx::Rect>
+      main_frame_intersection_rect_before_metrics_sender_created_;
 
   // Will be null when we're not actively sending metrics.
   std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;

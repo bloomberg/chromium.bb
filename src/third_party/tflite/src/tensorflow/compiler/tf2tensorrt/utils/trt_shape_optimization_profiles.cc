@@ -35,9 +35,9 @@ template <typename TensorShapeType>
 std::vector<nvinfer1::Dims> GetDimVec(std::vector<TensorShapeType> shape_vec) {
   std::vector<nvinfer1::Dims> dimvec(shape_vec.size());
   absl::c_transform(shape_vec, dimvec.begin(), [](TensorShapeType shape) {
-    nvinfer1::Dims dims;
-    TF_CHECK_OK(TensorShapeToTrtDims(shape, false, &dims));
-    return dims;
+    auto adap = DimsAdapter::Create(shape);
+    TF_CHECK_OK(adap.status());
+    return adap->AsTrtDims();
   });
   return dimvec;
 }
@@ -155,6 +155,12 @@ Status TrtShapeOptimizationProfile::CollectShapeValues(OpKernelContext* ctx) {
   // First copy all the shape value candidates into actual_shape_values_ vector.
   for (int i = 0; i < ctx->num_inputs(); i++) {
     if (is_shape_tensor_[i]) {
+      if (ctx->input_dtype(i) != DT_INT32) {
+        // In case the is_shape_tensor mask was initialized with the input
+        // shapes only (without knowledge of dtype) then we apply correction.
+        is_shape_tensor_[i] = false;
+        continue;
+      }
       // We have to copy the shape values to the host, because TRT's
       // ExecutionContext::setInputShapeBinding expects a host pointer.
       n_shape_val++;
@@ -312,9 +318,52 @@ void TrtShapeOptimizationProfile::InitProfiles(
   }
 }
 
+void TrtShapeOptimizationProfile::InitCalibProfile(
+    const std::vector<TensorShape>& shapes) {
+  VLOG(1) << "Collected shape(s) " << DebugString(shapes) << " for "
+          << " calibration profile.";
+  auto shape_vec = shapes;
+  if (!shape_vec.empty()) {
+    std::vector<nvinfer1::Dims> dimvec = GetDimVec(shape_vec);
+    dimvec.insert(dimvec.end(), actual_shape_values_.begin(),
+                  actual_shape_values_.end());
+    VLOG(2) << "Initializing calibration optimization profile config with "
+            << "min=opt=max " << DebugString(dimvec);
+
+    OptimizationProfileConfig profConfig{dimvec, dimvec, dimvec};
+    calib_profiles_ = std::move(profConfig);
+  } else {
+    VLOG(2) << "Failed to initialize calibration optimization profile.";
+  }
+}
+
 Status TrtShapeOptimizationProfile::AddProfiles(
     nvinfer1::IBuilder* builder, nvinfer1::IBuilderConfig* config,
     const nvinfer1::INetworkDefinition* network) {
+  // Create optimization profile for calibration if necessary.
+  if (!calib_profiles_.min.empty()) {
+    VLOG(2) << "Setting up calibration profies";
+    auto* calibProfile = builder->createOptimizationProfile();
+    Status status = calib_profiles_.SetDimensions(network, calibProfile);
+    if (!status.ok()) {
+      return status;
+    }
+    bool result = false;
+    if (calibProfile->isValid()) {
+      result = config->setCalibrationProfile(calibProfile);
+    } else {
+      VLOG(2) << "Calibration profile is not valid";
+    }
+    if (result) {
+      VLOG(2) << "Added calibration optimization profile "
+              << calib_profiles_.DebugString() << " to builder config.";
+    } else {
+      VLOG(2) << "FAILED TO ADD PROFILE";
+      LOG(ERROR) << "Failed to add calibration optimization profile "
+                 << calib_profiles_.DebugString()
+                 << ". This usually happens when profile is invalid.";
+    }
+  }
   // Create a vector of optimization profiles.
   for (int i = 0; i < profiles_.size(); i++) {
     auto* optProfile = builder->createOptimizationProfile();
@@ -345,7 +394,7 @@ Status TrtShapeOptimizationProfile::AddProfiles(
     return errors::Internal("Failure in adding an optimization profile.");
   }
   need_profiles_ = config->getNbOptimizationProfiles() > 0;
-  // Update the the mask that flag shape tensors. The network is known now,
+  // Update the mask that flag shape tensors. The network is known now,
   // the mask will be correct.
   SetShapeTensorMask(network);
   is_pruned_input_.resize(network->getNbInputs());
@@ -400,6 +449,10 @@ void TrtShapeOptimizationProfile::SetShapeTensorMask(
 // definition or the engine would give concrete answers.
 void TrtShapeOptimizationProfile::SetShapeTensorMask(
     const std::vector<PartialTensorShape>& input_partial_shapes) {
+  if (is_shape_tensor_.size() == input_partial_shapes.size()) {
+    // Already initialized, e.g. by TRTEngineOp::ComputeAsync().
+    return;
+  }
   is_shape_tensor_.resize(input_partial_shapes.size(), false);
   for (int i = 0; i < input_partial_shapes.size(); i++) {
     is_shape_tensor_[i] = IsTrtShapeTensorCompatible(input_partial_shapes[i]);

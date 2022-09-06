@@ -25,6 +25,7 @@
 #include "media/mojo/mojom/capture_handle.mojom.h"
 #include "media/mojo/mojom/display_media_information.mojom.h"
 #include "third_party/blink/public/mojom/media/capture_handle_config.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -65,7 +66,7 @@ media::mojom::CaptureHandlePtr CreateCaptureHandle(
 
   // Observing CaptureHandle when either the capturing or the captured party
   // is incognito is disallowed, except for self-capture.
-  if (capturer->GetMainFrame() != captured->GetMainFrame()) {
+  if (capturer->GetPrimaryMainFrame() != captured->GetPrimaryMainFrame()) {
     if (capturer->GetBrowserContext()->IsOffTheRecord() ||
         captured->GetBrowserContext()->IsOffTheRecord()) {
       return nullptr;
@@ -79,7 +80,7 @@ media::mojom::CaptureHandlePtr CreateCaptureHandle(
 
   auto result = media::mojom::CaptureHandle::New();
   if (captured_config.expose_origin) {
-    result->origin = captured->GetMainFrame()->GetLastCommittedOrigin();
+    result->origin = captured->GetPrimaryMainFrame()->GetLastCommittedOrigin();
   }
   result->capture_handle = captured_config.capture_handle;
 
@@ -177,9 +178,9 @@ std::string DeviceNamePrefix(
   // dialog for DISPLAY_VIDEO_CAPTURE_THIS_TAB could still return something
   // other than the current tab - be it a screen, window, or another tab.
   if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
-      web_contents->GetMainFrame()->GetProcess()->GetID() ==
+      web_contents->GetPrimaryMainFrame()->GetProcess()->GetID() ==
           media_id.web_contents_id.render_process_id &&
-      web_contents->GetMainFrame()->GetRoutingID() ==
+      web_contents->GetPrimaryMainFrame()->GetRoutingID() ==
           media_id.web_contents_id.main_render_frame_id) {
     return "current-";
   }
@@ -212,7 +213,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     bool disable_local_echo,
     bool display_notification,
     const std::u16string& application_title,
-    blink::MediaStreamDevices* out_devices) {
+    blink::mojom::StreamDevices& out_devices) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DVLOG(2) << __func__ << ": media_id " << media_id.ToString()
@@ -227,7 +228,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       DeviceName(web_contents, request.video_type, media_id));
   device.display_media_info = DesktopMediaIDToDisplayMediaInformation(
       web_contents, url::Origin::Create(request.security_origin), media_id);
-  out_devices->push_back(device);
+  out_devices.video_device = device;
 
   if (capture_audio) {
     DCHECK_NE(request.audio_type, blink::mojom::MediaStreamType::NO_SERVICE);
@@ -235,16 +236,16 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
       content::WebContentsMediaCaptureId web_id = media_id.web_contents_id;
       web_id.disable_local_echo = disable_local_echo;
-      out_devices->push_back(blink::MediaStreamDevice(
-          request.audio_type, web_id.ToString(), "Tab audio"));
+      out_devices.audio_device = blink::MediaStreamDevice(
+          request.audio_type, web_id.ToString(), "Tab audio");
     } else {
       // Use the special loopback device ID for system audio capture.
-      out_devices->push_back(blink::MediaStreamDevice(
+      out_devices.audio_device = blink::MediaStreamDevice(
           request.audio_type,
           (disable_local_echo
                ? media::AudioDeviceDescription::kLoopbackWithMuteDeviceId
                : media::AudioDeviceDescription::kLoopbackInputDeviceId),
-          "System Audio"));
+          "System Audio");
     }
   }
 
@@ -253,12 +254,11 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   if (display_notification) {
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
       content::GlobalRenderFrameHostId capturer_id;
-      if (web_contents && web_contents->GetMainFrame()) {
-        capturer_id = web_contents->GetMainFrame()->GetGlobalId();
+      if (web_contents && web_contents->GetPrimaryMainFrame()) {
+        capturer_id = web_contents->GetPrimaryMainFrame()->GetGlobalId();
       }
       notification_ui = TabSharingUI::Create(
           capturer_id, media_id, application_title,
-          request.region_capture_capable,
           /*favicons_used_for_switch_to_tab_button=*/false);
     } else {
       notification_ui = ScreenCaptureNotificationUI::Create(
@@ -268,6 +268,6 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
 
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->GetMediaStreamCaptureIndicator()
-      ->RegisterMediaStream(web_contents, *out_devices,
+      ->RegisterMediaStream(web_contents, out_devices,
                             std::move(notification_ui), application_title);
 }

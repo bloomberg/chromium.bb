@@ -16,6 +16,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -39,11 +40,10 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -346,7 +346,7 @@ class TestAppWindow : public content::WebContentsObserver {
     extensions::AppWindow::CreateParams params;
     params.hidden = !shown;
     window_->Init(GURL(), new extensions::AppWindowContentsImpl(window_),
-                  web_contents_->GetMainFrame(), params);
+                  web_contents_->GetPrimaryMainFrame(), params);
     Observe(window_->web_contents());
   }
 
@@ -397,7 +397,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
     command_line_->GetProcessCommandLine()->InitFromArgv({""});
@@ -407,8 +407,9 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     SetUpStylusAvailability();
 
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
-    session_manager_->SetSessionState(
+    // SessionManager is created by
+    // |AshTestHelper::bluetooth_config_test_helper()|.
+    session_manager()->SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
@@ -457,11 +458,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     extensions::ExtensionSystem::Get(profile())->Shutdown();
     ash::NoteTakingHelper::Shutdown();
     arc_session_manager_.reset();
-    session_manager_.reset();
     app_window_.reset();
     BrowserWithTestWindowTest::TearDown();
     command_line_.reset();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -542,7 +542,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     DictionaryPrefUpdate dict_update(
         profile()->GetPrefs(), prefs::kNoteTakingAppsLockScreenToastShown);
-    dict_update->SetBoolean(app_id, true);
+    dict_update->SetBoolKey(app_id, true);
   }
 
   // Helper method to move state controller to the specified state.
@@ -566,7 +566,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
         ->AddExtension(app_.get());
     SetFirstRunCompletedIfNeeded(app_->id());
 
-    session_manager_->SetSessionState(session_manager::SessionState::LOCKED);
+    session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
     state_controller_->FlushTrayActionForTesting();
 
     if (app_manager_->state() != TestAppManager::State::kStarted) {
@@ -640,7 +640,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   }
 
   session_manager::SessionManager* session_manager() {
-    return session_manager_.get();
+    return session_manager::SessionManager::Get();
   }
 
   TestStateObserver* observer() { return &observer_; }
@@ -691,8 +691,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   // needed to properly initialize NoteTakingHelper.
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
-
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   std::unique_ptr<lock_screen_apps::StateController> state_controller_;
 

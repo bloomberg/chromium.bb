@@ -5,11 +5,16 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_TASKS_H_
 #define BASE_TASK_SEQUENCE_MANAGER_TASKS_H_
 
+#include "base/base_export.h"
+#include "base/check.h"
 #include "base/containers/intrusive_heap.h"
+#include "base/dcheck_is_on.h"
 #include "base/pending_task.h"
+#include "base/task/delay_policy.h"
 #include "base/task/sequence_manager/delayed_task_handle_delegate.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequenced_task_runner.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace base {
@@ -37,6 +42,7 @@ struct BASE_EXPORT PostedTask {
                       OnceClosure callback,
                       Location location,
                       TimeTicks delayed_run_time,
+                      subtle::DelayPolicy delay_policy,
                       Nestable nestable = Nestable::kNestable,
                       TaskType task_type = kTaskTypeNone,
                       WeakPtr<DelayedTaskHandleDelegate>
@@ -47,8 +53,9 @@ struct BASE_EXPORT PostedTask {
   ~PostedTask();
 
   bool is_delayed() const {
-    return absl::holds_alternative<TimeTicks>(delay_or_delayed_run_time) ||
-           !absl::get<TimeDelta>(delay_or_delayed_run_time).is_zero();
+    return absl::holds_alternative<TimeTicks>(delay_or_delayed_run_time)
+               ? !absl::get<TimeTicks>(delay_or_delayed_run_time).is_null()
+               : !absl::get<TimeDelta>(delay_or_delayed_run_time).is_zero();
   }
 
   OnceClosure callback;
@@ -56,6 +63,7 @@ struct BASE_EXPORT PostedTask {
   Nestable nestable = Nestable::kNestable;
   TaskType task_type = kTaskTypeNone;
   absl::variant<TimeDelta, TimeTicks> delay_or_delayed_run_time;
+  subtle::DelayPolicy delay_policy = subtle::DelayPolicy::kFlexibleNoSooner;
   // The task runner this task is running on. Can be used by task runners that
   // support posting back to the "current sequence".
   scoped_refptr<SequencedTaskRunner> task_runner;
@@ -70,19 +78,26 @@ enum class WakeUpResolution { kLow, kHigh };
 
 // Represents a time at which a task wants to run.
 struct WakeUp {
+  static constexpr TimeDelta kDefaultLeeway = PendingTask::kDefaultLeeway;
+
+  // is_null() for immediate wake up.
   TimeTicks time;
-  WakeUpResolution resolution;
+  // These are meaningless if is_immediate().
+  TimeDelta leeway;
+  WakeUpResolution resolution = WakeUpResolution::kLow;
+  subtle::DelayPolicy delay_policy = subtle::DelayPolicy::kFlexibleNoSooner;
 
   bool operator!=(const WakeUp& other) const {
-    return time != other.time || resolution != other.resolution;
+    return time != other.time || leeway != other.leeway ||
+           resolution != other.resolution || delay_policy != other.delay_policy;
   }
 
   bool operator==(const WakeUp& other) const { return !(*this != other); }
 
-  // Used for a min-heap.
-  bool operator>(const WakeUp& other) const {
-    return std::tie(time, resolution) > std::tie(other.time, other.resolution);
-  }
+  bool is_immediate() const { return time.is_null(); }
+
+  TimeTicks earliest_time() const;
+  TimeTicks latest_time() const;
 };
 
 // PendingTask with extra metadata for SequenceManager.
@@ -91,7 +106,8 @@ struct BASE_EXPORT Task : public PendingTask {
        EnqueueOrder sequence_order,
        EnqueueOrder enqueue_order = EnqueueOrder(),
        TimeTicks queue_time = TimeTicks(),
-       WakeUpResolution wake_up_resolution = WakeUpResolution::kLow);
+       WakeUpResolution wake_up_resolution = WakeUpResolution::kLow,
+       TimeDelta leeway = TimeDelta());
   Task(Task&& move_from);
   ~Task();
   Task& operator=(Task&& other);
@@ -150,7 +166,10 @@ struct BASE_EXPORT Task : public PendingTask {
   EnqueueOrder enqueue_order_;
 
   // The delegate for the DelayedTaskHandle, if this task was posted through
-  // PostCancelableDelayedTask(), nullptr otherwise.
+  // `PostCancelableDelayedTask()`, not set otherwise. The task is canceled if
+  // `WeakPtr::WasInvalidated` is true. Note: if the task was not posted via
+  // `PostCancelableDelayedTask()`. the weak pointer won't be valid, but
+  // `WeakPtr::WasInvalidated` will be false.
   WeakPtr<internal::DelayedTaskHandleDelegate> delayed_task_handle_delegate_;
 };
 

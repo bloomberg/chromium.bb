@@ -11,12 +11,15 @@
 #include <vector>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/enterprise/common/download_item_reroute_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,7 +48,7 @@ char kInterruptReasonCounter[] = {
 #include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 };
-const size_t kInterruptReasonCount = base::size(kInterruptReasonCounter);
+const size_t kInterruptReasonCount = std::size(kInterruptReasonCounter);
 
 // Default target path for a mock download item in DownloadItemModelTest.
 const base::FilePath::CharType kDefaultTargetFilePath[] =
@@ -79,6 +82,8 @@ RerouteInfo MakeTestRerouteInfo(Provider provider) {
   return info;
 }
 const RerouteInfo kTestRerouteInfo = MakeTestRerouteInfo(kTestProvider);
+
+}  // namespace
 
 class DownloadItemModelTest : public testing::Test {
  public:
@@ -123,10 +128,15 @@ class DownloadItemModelTest : public testing::Test {
                        : DownloadItem::INTERRUPTED));
   }
 
-  void SetupCompletedDownloadItem() {
+  void SetupCompletedDownloadItem(base::TimeDelta time_since_complete) {
     ON_CALL(item_, GetFileExternallyRemoved()).WillByDefault(Return(false));
     EXPECT_CALL(item_, GetState())
         .WillRepeatedly(Return(DownloadItem::COMPLETE));
+    base::Time now = base::Time::Now();
+    base::TimeDelta diff = time_since_complete;
+    clock_.SetNow(now);
+    model_.set_clock_for_testing(&clock_);
+    ON_CALL(item_, GetEndTime()).WillByDefault(Return(now - diff));
   }
 
   download::MockDownloadItem& item() { return item_; }
@@ -135,12 +145,15 @@ class DownloadItemModelTest : public testing::Test {
     return model_;
   }
 
+  void SetStatusTextBuilder(bool for_bubble) {
+    model_.set_status_text_builder_for_testing(for_bubble);
+  }
+
  private:
   NiceMock<download::MockDownloadItem> item_;
   DownloadItemModel model_;
+  base::SimpleTestClock clock_;
 };
-
-}  // namespace
 
 TEST_F(DownloadItemModelTest, InterruptedStatus) {
   // Test that we have the correct interrupt status message for downloads that
@@ -151,60 +164,77 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
 
     // Expected status string. This will include the progress as well.
     const char* expected_status_msg;
+
+    // Expected bubble status string. This will include the progress as well.
+    // If empty, use the expected_status_msg.
+    // \xE2\x80\xA2 refers to the UTF8 encoding for the unicode symbol
+    // 0x2022 "•" bullet, used as the separator in Download Bubble
+    // \xE2\x80\xA6 refers to the UTF8 encoding for the unicode symbol
+    // 0x2026 "…" HORIZONTAL ELLIPSIS
+    std::string expected_bubble_status_msg;
   } kTestCases[] = {
-      {download::DOWNLOAD_INTERRUPT_REASON_NONE, "1/2 B"},
-      {download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, "%s - Download error"},
+      {download::DOWNLOAD_INTERRUPT_REASON_NONE, "1/2 B",
+       "1/2 B \xE2\x80\xA2 Resuming\xE2\x80\xA6"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, "%s - Download error",
+       "Something went wrong"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
-       "%s - Insufficient permissions"},
-      {download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, "%s - Disk full"},
+       "%s - Insufficient permissions", "Needs permission to download"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, "%s - Disk full",
+       "Out of storage space"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
-       "%s - Path too long"},
+       "%s - Path too long", "File name or location is too long"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE,
-       "%s - File too large"},
+       "%s - File too large", "File is too big for this device"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
-       "%s - Virus detected"},
-      {download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, "%s - Blocked"},
+       "%s - Virus detected", "Virus detected"},
+      {download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, "%s - Blocked",
+       "Blocked by your organization"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED,
-       "%s - Virus scan failed"},
+       "%s - Virus scan failed", "Virus scan failed"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
-       "%s - File truncated"},
+       "%s - File truncated", "Something went wrong"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
-       "%s - Already downloaded"},
+       "%s - Already downloaded", "Already downloaded"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR,
-       "%s - System busy"},
+       "%s - System busy", "Couldn\xE2\x80\x99t finish download"},
       {download::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
-       "%s - Download error"},
-      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
-       "%s - Network error"},
+       "%s - Download error", "Something went wrong"},
+      {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, "%s - Network error",
+       "Check internet connection"},
       {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT,
-       "%s - Network timeout"},
+       "%s - Network timeout", "Check internet connection"},
       {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
-       "%s - Network disconnected"},
+       "%s - Network disconnected", "Check internet connection"},
       {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN,
-       "%s - Server unavailable"},
+       "%s - Server unavailable", "Site wasn\xE2\x80\x99t available"},
       {download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
-       "%s - Network error"},
-      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
-       "%s - Server problem"},
+       "%s - Network error", "Check internet connection"},
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, "%s - Server problem",
+       "Site wasn\xE2\x80\x99t available"},
       {download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE,
-       "%s - Download error"},
-      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, "%s - No file"},
+       "%s - Download error", "Something went wrong"},
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, "%s - No file",
+       "File wasn\xE2\x80\x99t available on site"},
       {download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
-       "%s - Needs authorization"},
+       "%s - Needs authorization", "File wasn\xE2\x80\x99t available on site"},
       {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM,
-       "%s - Bad certificate"},
-      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN, "%s - Forbidden"},
+       "%s - Bad certificate", "Site wasn\xE2\x80\x99t available"},
+      {download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN, "%s - Forbidden",
+       "File wasn\xE2\x80\x99t available on site"},
       {download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
-       "%s - Server unreachable"},
+       "%s - Server unreachable", "Site wasn\xE2\x80\x99t available"},
       {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH,
-       "%s - File incomplete"},
+       "%s - File incomplete", "Couldn\xE2\x80\x99t finish download"},
       {download::DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT,
-       "%s - Download error"},
-      {download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, "Canceled"},
-      {download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "%s - Shutdown"},
-      {download::DOWNLOAD_INTERRUPT_REASON_CRASH, "%s - Crash"},
+       "%s - Download error", "Something went wrong"},
+      {download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, "Canceled",
+       "Canceled"},
+      {download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "%s - Shutdown",
+       "Couldn\xE2\x80\x99t finish download"},
+      {download::DOWNLOAD_INTERRUPT_REASON_CRASH, "%s - Crash",
+       "Couldn\xE2\x80\x99t finish download"},
   };
-  static_assert(kInterruptReasonCount == base::size(kTestCases),
+  static_assert(kInterruptReasonCount == std::size(kTestCases),
                 "interrupt reason mismatch");
 
   SetupDownloadItemDefaults();
@@ -214,7 +244,18 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
     SetupInterruptedDownloadItem(test_case.reason);
     std::string expected_status_msg =
         base::StringPrintf(test_case.expected_status_msg, default_failed_msg);
+    std::u16string expected_bubble_status_msg =
+        base::UTF8ToUTF16(test_case.expected_bubble_status_msg);
+    if (expected_bubble_status_msg.empty()) {
+      expected_bubble_status_msg = base::UTF8ToUTF16(expected_status_msg);
+      base::ReplaceFirstSubstringAfterOffset(&expected_bubble_status_msg, 0,
+                                             u"-", u"•");
+    }
+    SetStatusTextBuilder(/*for_bubble=*/false);
     EXPECT_EQ(expected_status_msg, base::UTF16ToUTF8(model().GetStatusText()));
+
+    SetStatusTextBuilder(/*for_bubble=*/true);
+    EXPECT_EQ(expected_bubble_status_msg, model().GetStatusText());
   }
 
   const std::string provider_failed_msg =
@@ -234,6 +275,7 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
                                                provider_failed_msg.c_str());
       expected_history_page_text = expected_status_msg;
     }
+    SetStatusTextBuilder(/*for_bubble=*/false);
     EXPECT_EQ(expected_status_msg, base::UTF16ToUTF8(model().GetStatusText()));
     EXPECT_EQ(expected_history_page_text,
               base::UTF16ToUTF8(model().GetHistoryPageStatusText()));
@@ -307,7 +349,7 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
       {download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, "foo.bar\nShutdown"},
       {download::DOWNLOAD_INTERRUPT_REASON_CRASH, "foo.bar\nCrash"},
   };
-  static_assert(kInterruptReasonCount == base::size(kTestCases),
+  static_assert(kInterruptReasonCount == std::size(kTestCases),
                 "interrupt reason mismatch");
 
   SetupDownloadItemDefaults();
@@ -330,6 +372,9 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     bool  is_paused;                    // IsPaused().
     const RerouteInfo reroute_info;     // GetRerouteInfo().
     const char* expected_status_msg;    // Expected status text.
+    // Expected bubble status string. This will include the progress as well.
+    // If empty, use the expected_status_msg.
+    std::string expected_bubble_status_msg;
   } kTestCases[] = {
       // These are all the valid combinations of the above fields for a download
       // that is in IN_PROGRESS state. Go through all of them and check the
@@ -347,31 +392,172 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
       //        |       .-- .GetOpenWhenComplete()
       //        |      |      .---- .IsPaused()
       //        |      |     |     .---- .GetRerouteInfo()
-      {0, 0, false, false, false, {}, "Starting\xE2\x80\xA6"},
-      {1, 0, false, false, false, {}, "1 B"},
-      {0, 2, false, false, false, {}, "Starting\xE2\x80\xA6"},
-      {1, 2, false, false, false, {}, "1/2 B"},
-      {0, 2, true, false, false, {}, "0/2 B, 10 secs left"},
-      {1, 2, true, false, false, {}, "1/2 B, 10 secs left"},
-      {0, 0, false, true, false, {}, "Opening when complete"},
-      {1, 0, false, true, false, {}, "Opening when complete"},
-      {0, 2, false, true, false, {}, "Opening when complete"},
-      {1, 2, false, true, false, {}, "Opening when complete"},
-      {0, 2, true, true, false, {}, "Opening in 10 secs\xE2\x80\xA6"},
-      {1, 2, true, true, false, {}, "Opening in 10 secs\xE2\x80\xA6"},
-      {0, 0, false, false, true, {}, "0 B, Paused"},
-      {1, 0, false, false, true, {}, "1 B, Paused"},
-      {0, 2, false, false, true, {}, "0/2 B, Paused"},
-      {1, 2, false, false, true, {}, "1/2 B, Paused"},
-      {0, 2, true, false, true, {}, "0/2 B, Paused"},
-      {1, 2, true, false, true, {}, "1/2 B, Paused"},
-      {0, 0, false, true, true, {}, "0 B, Paused"},
-      {1, 0, false, true, true, {}, "1 B, Paused"},
-      {0, 2, false, true, true, {}, "0/2 B, Paused"},
-      {1, 2, false, true, true, {}, "1/2 B, Paused"},
-      {0, 2, true, true, true, {}, "0/2 B, Paused"},
-      {1, 2, true, true, true, {}, "1/2 B, Paused"},
-      {5, 5, true, true, false, kTestRerouteInfo, reroute_status}};
+      {0,
+       0,
+       false,
+       false,
+       false,
+       {},
+       "Starting\xE2\x80\xA6",
+       "0 B \xE2\x80\xA2 Starting\xE2\x80\xA6"},
+      {1,
+       0,
+       false,
+       false,
+       false,
+       {},
+       "1 B",
+       "1 B \xE2\x80\xA2 Resuming\xE2\x80\xA6"},
+      {0,
+       2,
+       false,
+       false,
+       false,
+       {},
+       "Starting\xE2\x80\xA6",
+       "0/2 B \xE2\x80\xA2 Starting\xE2\x80\xA6"},
+      {1,
+       2,
+       false,
+       false,
+       false,
+       {},
+       "1/2 B",
+       "1/2 B \xE2\x80\xA2 Resuming\xE2\x80\xA6"},
+      {0,
+       2,
+       true,
+       false,
+       false,
+       {},
+       "0/2 B, 10 secs left",
+       "\xE2\x86\x93 0/2 B \xE2\x80\xA2 10 seconds left"},
+      {1,
+       2,
+       true,
+       false,
+       false,
+       {},
+       "1/2 B, 10 secs left",
+       "\xE2\x86\x93 1/2 B \xE2\x80\xA2 10 seconds left"},
+      {0,
+       0,
+       false,
+       true,
+       false,
+       {},
+       "Opening when complete",
+       "0 B \xE2\x80\xA2 Opening when complete"},
+      {1,
+       0,
+       false,
+       true,
+       false,
+       {},
+       "Opening when complete",
+       "1 B \xE2\x80\xA2 Opening when complete"},
+      {0,
+       2,
+       false,
+       true,
+       false,
+       {},
+       "Opening when complete",
+       "0/2 B \xE2\x80\xA2 Opening when complete"},
+      {1,
+       2,
+       false,
+       true,
+       false,
+       {},
+       "Opening when complete",
+       "1/2 B \xE2\x80\xA2 Opening when complete"},
+      {0,
+       2,
+       true,
+       true,
+       false,
+       {},
+       "Opening in 10 secs\xE2\x80\xA6",
+       "\xE2\x86\x93 0/2 B \xE2\x80\xA2 Opening in 10 seconds\xE2\x80\xA6"},
+      {1,
+       2,
+       true,
+       true,
+       false,
+       {},
+       "Opening in 10 secs\xE2\x80\xA6",
+       "\xE2\x86\x93 1/2 B \xE2\x80\xA2 Opening in 10 seconds\xE2\x80\xA6"},
+      {0, 0, false, false, true, {}, "0 B, Paused", "0 B \xE2\x80\xA2 Paused"},
+      {1, 0, false, false, true, {}, "1 B, Paused", "1 B \xE2\x80\xA2 Paused"},
+      {0,
+       2,
+       false,
+       false,
+       true,
+       {},
+       "0/2 B, Paused",
+       "0/2 B \xE2\x80\xA2 Paused"},
+      {1,
+       2,
+       false,
+       false,
+       true,
+       {},
+       "1/2 B, Paused",
+       "1/2 B \xE2\x80\xA2 Paused"},
+      {0,
+       2,
+       true,
+       false,
+       true,
+       {},
+       "0/2 B, Paused",
+       "0/2 B \xE2\x80\xA2 Paused"},
+      {1,
+       2,
+       true,
+       false,
+       true,
+       {},
+       "1/2 B, Paused",
+       "1/2 B \xE2\x80\xA2 Paused"},
+      {0, 0, false, true, true, {}, "0 B, Paused", "0 B \xE2\x80\xA2 Paused"},
+      {1, 0, false, true, true, {}, "1 B, Paused", "1 B \xE2\x80\xA2 Paused"},
+      {0,
+       2,
+       false,
+       true,
+       true,
+       {},
+       "0/2 B, Paused",
+       "0/2 B \xE2\x80\xA2 Paused"},
+      {1,
+       2,
+       false,
+       true,
+       true,
+       {},
+       "1/2 B, Paused",
+       "1/2 B \xE2\x80\xA2 Paused"},
+      {0,
+       2,
+       true,
+       true,
+       true,
+       {},
+       "0/2 B, Paused",
+       "0/2 B \xE2\x80\xA2 Paused"},
+      {1,
+       2,
+       true,
+       true,
+       true,
+       {},
+       "1/2 B, Paused",
+       "1/2 B \xE2\x80\xA2 Paused"},
+      {5, 5, true, true, false, kTestRerouteInfo, reroute_status,
+       base::StrCat({"5 B \xE2\x80\xA2 ", reroute_status})}};
 
   SetupDownloadItemDefaults();
 
@@ -393,19 +579,48 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     EXPECT_CALL(item(), GetRerouteInfo())
         .WillRepeatedly(ReturnRef(test_case.reroute_info));
 
+    SetStatusTextBuilder(/*for_bubble=*/false);
     EXPECT_EQ(test_case.expected_status_msg,
+              base::UTF16ToUTF8(model().GetStatusText()));
+    SetStatusTextBuilder(/*for_bubble=*/true);
+    EXPECT_EQ(test_case.expected_bubble_status_msg.empty()
+                  ? test_case.expected_status_msg
+                  : test_case.expected_bubble_status_msg,
               base::UTF16ToUTF8(model().GetStatusText()));
   }
 }
 
 TEST_F(DownloadItemModelTest, CompletedStatus) {
   SetupDownloadItemDefaults();
-  SetupCompletedDownloadItem();
 
-  EXPECT_TRUE(model().GetStatusText().empty());
-#if defined(OS_MAC)
+  const struct TimeElapsedTestCase {
+    base::TimeDelta time_since_download_complete;
+    std::string expected_status_message;
+    std::string expected_bubble_status_msg;
+  } kTimeElapsedTestCases[] = {
+      {base::Seconds(10), "", "2 B \xE2\x80\xA2 Done"},
+      {base::Seconds(50), "", "2 B \xE2\x80\xA2 Done"},
+      {base::Seconds(60), "", "2 B \xE2\x80\xA2 1 minute ago"},
+      {base::Hours(23), "", "2 B \xE2\x80\xA2 23 hours ago"},
+  };
+  for (const auto& test_case : kTimeElapsedTestCases) {
+    SetupCompletedDownloadItem(test_case.time_since_download_complete);
+    SetStatusTextBuilder(/*for_bubble=*/false);
+    EXPECT_EQ(base::UTF16ToUTF8(model().GetStatusText()),
+              test_case.expected_status_message);
+    SetStatusTextBuilder(/*for_bubble=*/true);
+    EXPECT_EQ(base::UTF16ToUTF8(model().GetStatusText()),
+              test_case.expected_bubble_status_msg);
+  }
+
+  EXPECT_CALL(item(), GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE));
+  EXPECT_EQ("2 B \xE2\x80\xA2 Done, no issues found",
+            base::UTF16ToUTF8(model().GetStatusText()));
+
+#if BUILDFLAG(IS_MAC)
   EXPECT_EQ("Show in Finder", base::UTF16ToUTF8(model().GetShowInFolderText()));
-#else  // defined(OS_MAC)
+#else  // BUILDFLAG(IS_MAC)
   EXPECT_EQ("Show in folder", base::UTF16ToUTF8(model().GetShowInFolderText()));
 #endif
 

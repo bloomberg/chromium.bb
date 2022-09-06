@@ -45,7 +45,7 @@ const char* FX_strstr(const char* haystack,
   const char* end_ptr = haystack + haystack_len - needle_len;
   while (haystack <= end_ptr) {
     size_t i = 0;
-    while (1) {
+    while (true) {
       if (haystack[i] != needle[i])
         break;
 
@@ -181,13 +181,21 @@ ByteString::ByteString(const std::initializer_list<ByteStringView>& list) {
   }
 }
 
-ByteString::ByteString(const std::ostringstream& outStream) {
-  std::string str = outStream.str();
-  if (str.length() > 0)
-    m_pData.Reset(StringData::Create(str.c_str(), str.length()));
+ByteString::ByteString(const fxcrt::ostringstream& outStream) {
+  auto str = outStream.str();
+  if (str.size() > 0)
+    m_pData.Reset(StringData::Create(str.c_str(), str.size()));
 }
 
 ByteString::~ByteString() = default;
+
+void ByteString::clear() {
+  if (m_pData && m_pData->CanOperateInPlace(0)) {
+    m_pData->m_nDataLength = 0;
+    return;
+  }
+  m_pData.Reset();
+}
 
 ByteString& ByteString::operator=(const char* str) {
   if (!str || !str[0])
@@ -577,7 +585,7 @@ absl::optional<size_t> ByteString::ReverseFind(char ch) const {
 }
 
 void ByteString::MakeLower() {
-  if (!m_pData)
+  if (IsEmpty())
     return;
 
   ReallocBeforeWrite(m_pData->m_nDataLength);
@@ -585,7 +593,7 @@ void ByteString::MakeLower() {
 }
 
 void ByteString::MakeUpper() {
-  if (!m_pData)
+  if (IsEmpty())
     return;
 
   ReallocBeforeWrite(m_pData->m_nDataLength);
@@ -593,7 +601,7 @@ void ByteString::MakeUpper() {
 }
 
 size_t ByteString::Remove(char chRemove) {
-  if (!m_pData || m_pData->m_nDataLength == 0)
+  if (IsEmpty())
     return 0;
 
   char* pstrSource = m_pData->m_String;
@@ -635,7 +643,7 @@ size_t ByteString::Replace(ByteStringView pOld, ByteStringView pNew) {
   size_t nCount = 0;
   const char* pStart = m_pData->m_String;
   char* pEnd = m_pData->m_String + m_pData->m_nDataLength;
-  while (1) {
+  while (true) {
     const char* pTarget = FX_strstr(pStart, static_cast<int>(pEnd - pStart),
                                     pOld.unterminated_c_str(), nSourceLen);
     if (!pTarget)

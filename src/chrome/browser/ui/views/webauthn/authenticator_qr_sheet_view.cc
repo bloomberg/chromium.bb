@@ -6,10 +6,15 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h"
 #include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"
+#include "device/fido/features.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
@@ -35,26 +40,21 @@ class AuthenticatorQRViewCentered : public views::View {
         views::BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
-    const int border_radius =
-        views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::Emphasis::kHigh);
     qr_code_image_ = AddChildViewAt(std::make_unique<views::ImageView>(), 0);
-    qr_code_image_->SetBorder(views::CreateRoundedRectBorder(
-        /*thickness=*/2, border_radius, gfx::kGoogleGrey200));
     qr_code_image_->SetHorizontalAlignment(
         views::ImageView::Alignment::kCenter);
     qr_code_image_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
     qr_code_image_->SetImageSize(qrCodeImageSize());
     qr_code_image_->SetPreferredSize(qrCodeImageSize() +
                                      gfx::Size(kQrCodeMargin, kQrCodeMargin));
-    qr_code_image_->SetBackground(
-        views::CreateRoundedRectBackground(SK_ColorWHITE, border_radius));
 
     qrcode_generator::mojom::GenerateQRCodeRequestPtr request =
         qrcode_generator::mojom::GenerateQRCodeRequest::New();
     request->data = qr_string;
     request->should_render = true;
-    request->render_dino = true;
+    request->render_dino =
+        !base::FeatureList::IsEnabled(device::kWebAuthPasskeysUI);
+
     request->render_module_style =
         qrcode_generator::mojom::ModuleStyle::CIRCLES;
     request->render_locator_style =
@@ -73,6 +73,20 @@ class AuthenticatorQRViewCentered : public views::View {
   AuthenticatorQRViewCentered(const AuthenticatorQRViewCentered&) = delete;
   AuthenticatorQRViewCentered& operator=(const AuthenticatorQRViewCentered&) =
       delete;
+
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+
+    const int border_radius =
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::Emphasis::kHigh);
+    const auto* color_provider = GetColorProvider();
+    qr_code_image_->SetBorder(views::CreateRoundedRectBorder(
+        /*thickness=*/2, border_radius,
+        color_provider->GetColor(kColorQrCodeBorder)));
+    qr_code_image_->SetBackground(views::CreateRoundedRectBackground(
+        color_provider->GetColor(kColorQrCodeBackground), border_radius, 2));
+  }
 
  private:
   qrcode_generator::mojom::QRCodeGeneratorService* qr_code_service() {
@@ -96,7 +110,7 @@ class AuthenticatorQRViewCentered : public views::View {
   }
 
   std::string qr_string_;
-  views::ImageView* qr_code_image_;
+  raw_ptr<views::ImageView> qr_code_image_;
 
   // Service instance for QR code image generation.
   mojo::Remote<qrcode_generator::mojom::QRCodeGeneratorService>

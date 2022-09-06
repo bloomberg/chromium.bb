@@ -61,6 +61,15 @@ AX_EXPORT absl::optional<id> PerformAXSelector(const id node,
                                                const std::string& selector);
 
 //
+// Performs the given selector on the given node with exactly one string
+// argument and returns the result. If the node does not conform to the
+// NSAccessibility protocol or the selector is not found, then returns nullopt.
+AX_EXPORT absl::optional<id> PerformAXSelector(
+    const id node,
+    const std::string& selector_string,
+    const std::string& argument_string);
+
+//
 // Sets attribute value on a given node (either AXUIElement or
 // BrowserAccessibilityCocoa).
 AX_EXPORT void SetAXAttributeValueOf(const id node,
@@ -94,6 +103,9 @@ AX_EXPORT std::pair<AXUIElementRef, int> FindAXUIElement(const AXTreeSelector&);
 // Returns AXUIElement for a window having title matching the given pattern.
 AX_EXPORT AXUIElementRef FindAXWindowChild(AXUIElementRef parent,
                                            const std::string& pattern);
+
+// Returns true on success, otherwise returns false and logs error.
+AX_EXPORT bool AXSuccess(AXError, const std::string& message);
 
 }  // namespace ui
 

@@ -58,6 +58,24 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
         type: Boolean,
         value: false,
       },
+
+      is_input_invalid_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
+      retailer_id_input_: {
+        type: String,
+        value: '',
+        observer: 'retailerIdObserver_',
+      },
+
+      retailer_id_input_pattern_: {
+        type: String,
+        value: '[a-zA-Z]{3}-[0-9]{4}$',
+      },
+
     };
   }
 
@@ -80,9 +98,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('DemoPreferencesScreen', {
-      resetAllowed: false,
-    });
+    this.initializeLoginScreen('DemoPreferencesScreen');
     this.updateLocalizedContent();
   }
 
@@ -105,11 +121,13 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
 
   /** Called when dialog is shown for the first time */
   applyOobeConfiguration_() {
-    if (this.configuration_applied_)
+    if (this.configuration_applied_) {
       return;
+    }
     const configuration = Oobe.getInstance().getOobeConfiguration();
-    if (!configuration)
+    if (!configuration) {
       return;
+    }
     if (configuration.demoPreferencesNext) {
       this.onNextClicked_();
     }
@@ -140,7 +158,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
    */
   setSelectedKeyboard(keyboardId) {
     let found = false;
-    for (let keyboard of this.keyboards) {
+    for (const keyboard of this.keyboards) {
       if (keyboard.value != keyboardId) {
         keyboard.selected = false;
         continue;
@@ -148,8 +166,9 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
       keyboard.selected = true;
       found = true;
     }
-    if (!found)
+    if (!found) {
       return;
+    }
 
     // Force i18n-dropdown to refresh.
     this.keyboards = this.keyboards.slice();
@@ -182,7 +201,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
     this.countries = countries;
     this.$.countryDropdownContainer.hidden = countries.length == 0;
     for (let i = 0; i < countries.length; ++i) {
-      let country = countries[i];
+      const country = countries[i];
       if (country.selected && country.value !== this.country_not_selected_id_) {
         this.is_country_selected_ = true;
         return;
@@ -190,24 +209,20 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
     }
   }
 
-  /**
-   * Handle language selection.
-   * @param {!CustomEvent<!OobeTypes.LanguageDsc>} event
-   * @private
-   */
-  onLanguageSelected_(event) {
-    const languageId = event.detail.value;
-    chrome.send('DemoPreferencesScreen.setLocaleId', [languageId]);
+  getRetailerIdInputDisplayText_() {
+    if (this.is_input_invalid_) {
+      return this.i18n('retailerIdInputErrorText');
+    }
+    return this.i18n('retailerIdInputHelpText');
   }
 
-  /**
-   * Handle keyboard layout selection.
-   * @param {!CustomEvent<!OobeTypes.IMEDsc>} event
-   * @private
-   */
-  onKeyboardSelected_(event) {
-    const inputMethodId = event.detail.value;
-    chrome.send('DemoPreferencesScreen.setInputMethodId', [inputMethodId]);
+  retailerIdObserver_() {
+    if (!this.retailer_id_input_) {
+      this.is_input_invalid_ = false;
+    } else {
+      this.is_input_invalid_ = !RegExp(this.retailer_id_input_pattern_)
+                                    .test(this.retailer_id_input_);
+    }
   }
 
   /**
@@ -216,10 +231,15 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
    * @private
    */
   onCountrySelected_(event) {
-    chrome.send(
-        'DemoPreferencesScreen.setDemoModeCountry', [event.detail.value]);
+    this.userActed(['set-demo-mode-country', event.detail.value]);
     this.is_country_selected_ =
         event.detail.value !== this.country_not_selected_id_;
+  }
+
+  onKeydownRetailerIdInput_(e) {
+    if (e.key == 'Enter') {
+      this.onNextClicked_();
+    }
   }
 
   /**
@@ -235,7 +255,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
    * @private
    */
   onNextClicked_() {
-    this.userActed('continue-setup');
+    this.userActed(['continue-setup', this.retailer_id_input_]);
   }
 }
 

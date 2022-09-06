@@ -127,13 +127,15 @@ class PLATFORM_EXPORT ResponseBodyLoader final
 
   // ResponseBodyLoaderClient implementation.
   void DidReceiveData(base::span<const char> data) override;
+  void DidReceiveDecodedData(
+      const String& data,
+      std::unique_ptr<ParkableStringImpl::SecureDigest> digest) override;
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
   void DidCancelLoadingBody() override;
 
   void EvictFromBackForwardCache(mojom::blink::RendererEvictionReason);
   void DidBufferLoadWhileInBackForwardCache(size_t num_bytes);
-  bool CanContinueBufferingWhileInBackForwardCache();
 
   // BytesConsumer::Client implementation.
   void OnStateChange() override;

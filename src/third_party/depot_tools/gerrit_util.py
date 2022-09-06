@@ -254,8 +254,8 @@ class CookiesAuthenticator(Authenticator):
       if a[0]:
         secret = base64.b64encode(('%s:%s' % (a[0], a[2])).encode('utf-8'))
         return 'Basic %s' % secret.decode('utf-8')
-      else:
-        return 'Bearer %s' % a[2]
+
+      return 'Bearer %s' % a[2]
     return None
 
   def get_auth_email(self, host):
@@ -696,7 +696,8 @@ def GetChangeReview(host, change, revision=None):
     jmsg = GetChangeRevisions(host, change)
     if not jmsg:
       return None
-    elif len(jmsg) > 1:
+
+    if len(jmsg) > 1:
       raise GerritError(200, 'Multiple changes found for ChangeId %s.' % change)
     revision = jmsg[0]['current_revision']
   path = 'changes/%s/revisions/%s/review'
@@ -774,8 +775,17 @@ def ChangeEdit(host, change, path, data):
   path = 'changes/%s/edit/%s' % (change, urllib.parse.quote(path, ''))
   body = {
       'binary_content':
-      'data:text/plain;base64,%s' % base64.b64encode(data.encode('utf-8'))
+      'data:text/plain;base64,%s' %
+      base64.b64encode(data.encode('utf-8')).decode('utf-8')
   }
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  return ReadHttpJsonResponse(conn, accept_statuses=(204, 409))
+
+
+def SetChangeEditMessage(host, change, message):
+  """Sets the commit message of a change edit."""
+  path = 'changes/%s/edit:message' % change
+  body = {'message': message}
   conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
   return ReadHttpJsonResponse(conn, accept_statuses=(204, 409))
 
@@ -797,6 +807,28 @@ def DeletePendingChangeEdit(host, change):
   # On success, Gerrit returns status 204; if the edit was already deleted it
   # returns 404.  Anything else is an error.
   ReadHttpResponse(conn, accept_statuses=[204, 404])
+
+
+def CherryPick(host, change, destination, revision='current'):
+  """Create a cherry-pick commit from the given change, onto the given
+  destination.
+  """
+  path = 'changes/%s/revisions/%s/cherrypick' % (change, revision)
+  body = {'destination': destination}
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  return ReadHttpJsonResponse(conn)
+
+
+def GetFileContents(host, change, path):
+  """Get the contents of a file with the given path in the given revision.
+
+  Returns:
+    A bytes object with the file's contents.
+  """
+  path = 'changes/%s/revisions/current/files/%s/content' % (
+      change, urllib.parse.quote(path, ''))
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  return base64.b64decode(ReadHttpResponse(conn).read())
 
 
 def SetCommitMessage(host, change, description, notify='ALL'):
@@ -981,7 +1013,8 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
   if not jmsg:
     raise GerritError(
         200, 'Could not get review information for change "%s"' % change)
-  elif jmsg[0]['current_revision'] != revision:
+
+  if jmsg[0]['current_revision'] != revision:
     raise GerritError(200, 'While resetting labels on change "%s", '
                    'a new patchset was uploaded.' % change)
 
@@ -1000,7 +1033,7 @@ def CreateChange(host, project, branch='main', subject='', params=()):
   """
   path = 'changes/'
   body = {'project': project, 'branch': branch, 'subject': subject}
-  body.update({k: v for k, v in params})
+  body.update(dict(params))
   for key in 'project', 'branch', 'subject':
     if not body[key]:
       raise GerritError(200, '%s is required' % key.title())

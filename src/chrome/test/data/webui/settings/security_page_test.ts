@@ -15,6 +15,25 @@ import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js'
 
 // clang-format on
 
+function pagePrefs() {
+  return {
+    profile: {password_manager_leak_detection: {value: false}},
+    safebrowsing: {
+      scout_reporting_enabled: {value: true},
+    },
+    generated: {
+      safe_browsing: {
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: SafeBrowsingSetting.STANDARD,
+      },
+      password_leak_detection: {value: false},
+    },
+    dns_over_https:
+        {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
+    https_only_mode_enabled: {value: false},
+  };
+}
+
 suite('CrSettingsSecurityPageTest', function() {
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let testPrivacyBrowserProxy: TestPrivacyPageBrowserProxy;
@@ -34,22 +53,7 @@ suite('CrSettingsSecurityPageTest', function() {
     PrivacyPageBrowserProxyImpl.setInstance(testPrivacyBrowserProxy);
     document.body.innerHTML = '';
     page = document.createElement('settings-security-page');
-    page.prefs = {
-      profile: {password_manager_leak_detection: {value: false}},
-      safebrowsing: {
-        scout_reporting_enabled: {value: true},
-      },
-      generated: {
-        safe_browsing: {
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-          value: SafeBrowsingSetting.STANDARD,
-        },
-        password_leak_detection: {value: false},
-      },
-      dns_over_https:
-          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
-      https_only_mode_enabled: {value: false},
-    };
+    page.prefs = pagePrefs();
     document.body.appendChild(page);
     page.$.safeBrowsingEnhanced.updateCollapsed();
     page.$.safeBrowsingStandard.updateCollapsed();
@@ -74,7 +78,7 @@ suite('CrSettingsSecurityPageTest', function() {
     assertTrue(page.$.safeBrowsingStandard.expanded);
   });
 
-  // <if expr="not lacros">
+  // <if expr="not chromeos_lacros">
   // TODO(crbug.com/1148302): This class directly calls
   // `CreateNSSCertDatabaseGetterForIOThread()` that causes crash at the
   // moment and is never called from Lacros-Chrome. This should be revisited
@@ -90,6 +94,10 @@ suite('CrSettingsSecurityPageTest', function() {
 
   test('ManageSecurityKeysSubpageVisible', function() {
     assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
+  });
+
+  test('ManageSecurityKeysPhonesSubpageHidden', function() {
+    assertFalse(isChildVisible(page, '#security-keys-phones-subpage-trigger'));
   });
 
   test('PasswordsLeakDetectionSubLabel', function() {
@@ -582,21 +590,7 @@ suite('CrSettingsSecurityPageTest_FlagsDisabled', function() {
   setup(function() {
     document.body.innerHTML = '';
     page = document.createElement('settings-security-page');
-    page.prefs = {
-      profile: {password_manager_leak_detection: {value: true}},
-      safebrowsing: {
-        scout_reporting_enabled: {value: true},
-      },
-      generated: {
-        safe_browsing: {
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-          value: SafeBrowsingSetting.STANDARD,
-        },
-        password_leak_detection: {value: true, userControlDisabled: false},
-      },
-      dns_over_https:
-          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
-    };
+    page.prefs = pagePrefs();
     document.body.appendChild(page);
     flush();
   });
@@ -608,6 +602,21 @@ suite('CrSettingsSecurityPageTest_FlagsDisabled', function() {
   test('ManageSecurityKeysSubpageHidden', function() {
     assertFalse(isChildVisible(page, '#security-keys-subpage-trigger'));
   });
+
+  // The element only exists on Windows.
+  // <if expr="is_win">
+  test('ManageSecurityKeysPhonesSubpageVisibleAndNavigates', function() {
+    // On modern versions of Windows the security keys subpage will be disabled
+    // because Windows manages that itself, but a link to the subpage for
+    // managing phones as security keys will be included.
+    const triggerId = '#security-keys-phones-subpage-trigger';
+    assertTrue(isChildVisible(page, triggerId));
+    page.shadowRoot!.querySelector<HTMLElement>(triggerId)!.click();
+    flush();
+    assertEquals(
+        routes.SECURITY_KEYS_PHONES, Router.getInstance().getCurrentRoute());
+  });
+  // </if>
 
   test('HttpsOnlyModeSettingHidden', function() {
     assertFalse(isChildVisible(page, '#httpsOnlyModeToggle'));

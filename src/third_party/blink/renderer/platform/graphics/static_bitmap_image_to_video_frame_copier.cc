@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image_to_video_frame_copier.h"
 
+#include "base/callback_helpers.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_video_frame_pool.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/color_space.h"
@@ -84,53 +86,33 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
 
   // Try async reading if image is texture backed.
   if (image->CurrentFrameKnownToBeOpaque() || can_discard_alpha_) {
+    // Split the callback so it can be used for both the GMB frame pool copy and
+    // ReadYUVPixelsAsync fallback paths.
+    auto split_callback = base::SplitOnceCallback(std::move(callback));
     if (accelerated_frame_pool_enabled_) {
       if (!accelerated_frame_pool_) {
         accelerated_frame_pool_ =
             std::make_unique<WebGraphicsContext3DVideoFramePool>(
                 context_provider);
       }
-      auto blit_done_lambda =
-          [](base::WeakPtr<StaticBitmapImageToVideoFrameCopier> converter,
-             base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
-                 context_provider,
-             scoped_refptr<StaticBitmapImage> image,
-             FrameReadyCallback callback,
-             scoped_refptr<media::VideoFrame> video_frame) {
-            if (!converter)
-              return;
-            if (video_frame) {
-              converter->OnYUVPixelsReadAsync(video_frame, std::move(callback),
-                                              true);
-            } else if (context_provider) {
-              converter->ReadYUVPixelsAsync(image,
-                                            context_provider->ContextProvider(),
-                                            std::move(callback));
-            }
-          };
-      auto blit_done_callback =
-          WTF::Bind(blit_done_lambda, weak_ptr_factory_.GetWeakPtr(),
-                    context_provider, image, std::move(callback));
-
       // TODO(https://crbug.com/1224279): This assumes that all
       // StaticBitmapImages are 8-bit sRGB. Expose the color space and pixel
       // format that is backing `image->GetMailboxHolder()`, or, alternatively,
       // expose an accelerated SkImage.
-      accelerated_frame_pool_->CopyRGBATextureToVideoFrame(
-          viz::SkColorTypeToResourceFormat(kRGBA_8888_SkColorType),
-          gfx::Size(image->width(), image->height()),
-          gfx::ColorSpace::CreateSRGB(),
-          image->IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
-                                   : kBottomLeft_GrSurfaceOrigin,
-          image->GetMailboxHolder(), gfx::ColorSpace::CreateREC709(),
-          std::move(blit_done_callback));
-      // Early out even if the above fails since it would've already invoked the
-      // FrameReadyCallback with a null VideoFrame to indicate failure, and that
-      // will cause us to the take the fallback path in |blit_done_lambda|.
-      return;
+      if (accelerated_frame_pool_->CopyRGBATextureToVideoFrame(
+              viz::SkColorTypeToResourceFormat(kRGBA_8888_SkColorType),
+              gfx::Size(image->width(), image->height()),
+              gfx::ColorSpace::CreateSRGB(),
+              image->IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
+                                       : kBottomLeft_GrSurfaceOrigin,
+              image->GetMailboxHolder(), gfx::ColorSpace::CreateREC709(),
+              std::move(split_callback.first))) {
+        // Early out on success, otherwise fallback to ReadYUVPixelsAsync path.
+        return;
+      }
     }
     ReadYUVPixelsAsync(image, context_provider->ContextProvider(),
-                       std::move(callback));
+                       std::move(split_callback.second));
   } else {
     ReadARGBPixelsAsync(image, context_provider->ContextProvider(),
                         std::move(callback));

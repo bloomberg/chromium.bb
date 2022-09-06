@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,33 +74,26 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
   std::vector<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
 
   // Create 16bit service UUIDs.
-  arc::mojom::BluetoothAdvertisingDataPtr data =
-      arc::mojom::BluetoothAdvertisingData::New();
-  data->set_service_uuids_16({kUuid16});
-  adv_data.push_back(std::move(data));
+  adv_data.push_back(
+      arc::mojom::BluetoothAdvertisingData::NewServiceUuids16({kUuid16}));
 
   // Create service UUIDs.
-  data = arc::mojom::BluetoothAdvertisingData::New();
-  std::vector<device::BluetoothUUID> service_uuids;
-  service_uuids.push_back((device::BluetoothUUID(kUuidStr)));
-  data->set_service_uuids(service_uuids);
-  adv_data.push_back(std::move(data));
+  adv_data.push_back(arc::mojom::BluetoothAdvertisingData::NewServiceUuids(
+      {device::BluetoothUUID(kUuidStr)}));
 
   // Create service data.
-  data = arc::mojom::BluetoothAdvertisingData::New();
   arc::mojom::BluetoothServiceDataPtr service_data =
       arc::mojom::BluetoothServiceData::New();
   service_data->uuid_16bit = kUuid16;
   service_data->data =
       std::vector<uint8_t>(std::begin(kServiceData), std::end(kServiceData));
-  data->set_service_data(std::move(service_data));
-  adv_data.push_back(std::move(data));
+  adv_data.push_back(arc::mojom::BluetoothAdvertisingData::NewServiceData(
+      std::move(service_data)));
 
   // Create manufacturer data.
-  data = arc::mojom::BluetoothAdvertisingData::New();
-  data->set_manufacturer_data(std::vector<uint8_t>(
-      std::begin(kManufacturerData), std::end(kManufacturerData)));
-  adv_data.push_back(std::move(data));
+  adv_data.push_back(arc::mojom::BluetoothAdvertisingData::NewManufacturerData(
+      std::vector<uint8_t>(std::begin(kManufacturerData),
+                           std::end(kManufacturerData))));
 
   advertisement_mojo->type =
       arc::mojom::BluetoothAdvertisementType::ADV_TYPE_CONNECTABLE;
@@ -123,7 +115,7 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
       converted_service = advertisement->service_data();
   EXPECT_EQ(converted_service->size(), 1U);
   EXPECT_EQ(converted_service->begin()->first, kUuid16Str);
-  for (size_t i = 0; i < base::size(kServiceData); i++) {
+  for (size_t i = 0; i < std::size(kServiceData); i++) {
     EXPECT_EQ(kServiceData[i], converted_service->begin()->second[i]);
   }
 
@@ -134,7 +126,7 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
   EXPECT_EQ(cic & 0xff, kManufacturerData[0]);
   EXPECT_EQ((cic >> 8) & 0xff, kManufacturerData[1]);
   EXPECT_EQ(converted_manufacturer->begin()->second.size(),
-            base::size(kManufacturerData) - sizeof(uint16_t));
+            std::size(kManufacturerData) - sizeof(uint16_t));
 }
 
 TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisementFailure) {
@@ -144,10 +136,8 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisementFailure) {
 
   // Create empty manufacturer data. Manufacturer data must include the CIC
   // which is 2 bytes long.
-  arc::mojom::BluetoothAdvertisingDataPtr data =
-      arc::mojom::BluetoothAdvertisingData::New();
-  data->set_manufacturer_data(std::vector<uint8_t>());
-  adv_data.push_back(std::move(data));
+  adv_data.push_back(
+      arc::mojom::BluetoothAdvertisingData::NewManufacturerData({}));
 
   advertisement_mojo->type =
       arc::mojom::BluetoothAdvertisementType::ADV_TYPE_CONNECTABLE;

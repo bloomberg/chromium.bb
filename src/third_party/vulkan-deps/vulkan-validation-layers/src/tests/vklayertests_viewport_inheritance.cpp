@@ -135,7 +135,7 @@ class ViewportInheritanceTestData {
 
     void CreatePipelineLayout() {
         assert(!m_pipelineLayout);
-        VkPipelineLayoutCreateInfo info = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+        VkPipelineLayoutCreateInfo info = LvlInitStruct<VkPipelineLayoutCreateInfo>();
         VkResult result = vk::CreatePipelineLayout(m_device, &info, nullptr, &m_pipelineLayout);
         if (result != VK_SUCCESS) m_failureReason = "Could not create pipeline layout";
     }
@@ -143,8 +143,7 @@ class ViewportInheritanceTestData {
     void CreateShaderStages() {
         VkShaderModuleCreateInfo vertex_info = {VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, 0, sizeof kVertexSpirV,
                                                 kVertexSpirV};
-        m_shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        m_shaderStages[0].pNext = nullptr;
+        m_shaderStages[0] = LvlInitStruct<VkPipelineShaderStageCreateInfo>();
         m_shaderStages[0].flags = 0;
         m_shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
         VkResult result = vk::CreateShaderModule(m_device, &vertex_info, nullptr, &m_shaderStages[0].module);
@@ -157,8 +156,7 @@ class ViewportInheritanceTestData {
 
         VkShaderModuleCreateInfo fragment_info = {VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, 0, sizeof kFragmentSpirV,
                                                   kFragmentSpirV};
-        m_shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        m_shaderStages[1].pNext = nullptr;
+        m_shaderStages[1] = LvlInitStruct<VkPipelineShaderStageCreateInfo>();
         m_shaderStages[1].flags = 0;
         m_shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
         result = vk::CreateShaderModule(m_device, &fragment_info, nullptr, &m_shaderStages[1].module);
@@ -200,11 +198,10 @@ class ViewportInheritanceTestData {
     static bool InitState(VkRenderFramework* p_framework, AddDeviceExtension add_device_extension, const char** pp_reason,
                           bool inheritedViewportScissor2D, bool extended_dynamic_state_multi_viewport,
                           bool disable_multi_viewport = false) {
-        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT ext = {
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT, nullptr};
-        VkPhysicalDeviceInheritedViewportScissorFeaturesNV nv = {
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV, &ext};
-        VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, &nv};
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT ext = LvlInitStruct<VkPhysicalDeviceExtendedDynamicStateFeaturesEXT>();
+        VkPhysicalDeviceInheritedViewportScissorFeaturesNV nv =
+            LvlInitStruct<VkPhysicalDeviceInheritedViewportScissorFeaturesNV>(&ext);
+        VkPhysicalDeviceFeatures2 features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&nv);
         VkPhysicalDevice gpu = p_framework->gpu();
 
         // Enable extended dynamic state if requested.
@@ -350,7 +347,7 @@ class ViewportInheritanceTestData {
 
     // Begin recording the primary command buffer.
     VkResult BeginPrimaryCommandBuffer(VkCommandBuffer cmd) const {
-        VkCommandBufferBeginInfo info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, 0, nullptr};
+        VkCommandBufferBeginInfo info = LvlInitStruct<VkCommandBufferBeginInfo>();
         return vk::BeginCommandBuffer(cmd, &info);
     }
 
@@ -979,12 +976,14 @@ TEST_F(VkLayerTest, ViewportInheritanceScissorMissingFeature) {
 TEST_F(VkLayerTest, PipelineMissingDynamicStateDiscardRectangle) {
     TEST_DESCRIPTION("Bind pipeline with missing dynamic state discard rectangle.");
 
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME)) {
-        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME);
-        return;
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
-    m_device_extension_names.push_back(VK_EXT_DISCARD_RECTANGLES_EXTENSION_NAME);
+
     bool has_features = false;
     const char* missing_feature_string = nullptr;
     auto self = this;
@@ -1106,8 +1105,8 @@ const VkPipelineMultisampleStateCreateInfo ViewportInheritanceTestData::kMultisa
     VK_SAMPLE_COUNT_1_BIT,
 };
 
-const VkPipelineDepthStencilStateCreateInfo ViewportInheritanceTestData::kDepthStencilState = {
-    VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO, NULL};
+const VkPipelineDepthStencilStateCreateInfo ViewportInheritanceTestData::kDepthStencilState =
+    LvlInitStruct<VkPipelineDepthStencilStateCreateInfo>();
 
 const VkPipelineColorBlendAttachmentState ViewportInheritanceTestData::kBlendAttachmentState = {
     VK_FALSE,

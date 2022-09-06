@@ -12,6 +12,7 @@
 #include "ash/components/arc/mojom/ime.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_content_view.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -94,7 +95,10 @@ class FakeInputMethod : public ui::DummyInputMethod {
 
   ui::TextInputClient* GetTextInputClient() const override { return client_; }
 
-  void ShowVirtualKeyboardIfEnabled() override { count_show_ime_if_needed_++; }
+  void SetVirtualKeyboardVisibilityIfEnabled(bool visible) override {
+    if (visible)
+      count_show_ime_if_needed_++;
+  }
 
   void CancelComposition(const ui::TextInputClient* client) override {
     if (client == client_)
@@ -106,7 +110,7 @@ class FakeInputMethod : public ui::DummyInputMethod {
       client_ = nullptr;
   }
 
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {
+  void OnTextInputTypeChanged(ui::TextInputClient* client) override {
     count_on_text_input_type_changed_++;
   }
 
@@ -221,6 +225,8 @@ class ArcImeServiceTest : public testing::Test {
     instance_->SetImeBridgeForTesting(base::WrapUnique(fake_arc_ime_bridge_));
 
     arc_win_ = fake_window_delegate_->CreateFakeArcWindow();
+
+    ArcImeService::SetOverrideDisplayOriginForTesting(gfx::Point(0, 0));
   }
 
   void TearDown() override {
@@ -403,7 +409,7 @@ TEST_F(ArcImeServiceTest, GetTextFromRange) {
 
   instance_->OnCursorRectChangedWithSurroundingText(
       gfx::Rect(0, 0, 1, 1), text_range, text_in_range, selection_range,
-      true /* is_screen_coordinates */);
+      mojom::CursorCoordinateSpace::SCREEN);
 
   gfx::Range temp;
   instance_->GetTextRange(&temp);
@@ -434,7 +440,8 @@ TEST_F(ArcImeServiceTest, OnKeyboardAppearanceChanged) {
   const gfx::Rect new_keyboard_bounds(
       0 * new_scale_factor, 480 * new_scale_factor, 1200 * new_scale_factor,
       320 * new_scale_factor);
-  instance_->SetOverrideDefaultDeviceScaleFactorForTesting(new_scale_factor);
+  ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
+      new_scale_factor);
 
   // Keyboard bounds passed to Android should be changed.
   instance_->OnKeyboardAppearanceChanged(desc);
@@ -443,6 +450,8 @@ TEST_F(ArcImeServiceTest, OnKeyboardAppearanceChanged) {
 }
 
 TEST_F(ArcImeServiceTest, GetCaretBounds) {
+  using Coordinate = mojom::CursorCoordinateSpace;
+
   EXPECT_EQ(gfx::Rect(), instance_->GetCaretBounds());
 
   const gfx::Rect window_rect(123, 321, 100, 100);
@@ -450,21 +459,64 @@ TEST_F(ArcImeServiceTest, GetCaretBounds) {
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
 
   const gfx::Rect cursor_rect(10, 12, 2, 8);
-  instance_->OnCursorRectChanged(cursor_rect, true);  // screen coordinates
+  instance_->OnCursorRectChanged(cursor_rect, Coordinate::SCREEN);
   EXPECT_EQ(cursor_rect, instance_->GetCaretBounds());
 
-  instance_->OnCursorRectChanged(cursor_rect, false);  // window coordinates
+  const gfx::Point display_origin(200, 300);
+  ArcImeService::SetOverrideDisplayOriginForTesting(display_origin);
+  instance_->OnCursorRectChanged(cursor_rect, Coordinate::DISPLAY);
+  EXPECT_EQ(cursor_rect + display_origin.OffsetFromOrigin(),
+            instance_->GetCaretBounds());
+
+  const double new_scale_factor = 10.0;
+  const gfx::Rect new_cursor_rect(10 * new_scale_factor, 12 * new_scale_factor,
+                                  2 * new_scale_factor, 8 * new_scale_factor);
+  ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
+      new_scale_factor);
+  instance_->OnCursorRectChanged(new_cursor_rect, Coordinate::SCREEN);
+  EXPECT_EQ(cursor_rect, instance_->GetCaretBounds());
+
+  instance_->OnCursorRectChanged(new_cursor_rect, Coordinate::DISPLAY);
+  EXPECT_EQ(cursor_rect + display_origin.OffsetFromOrigin(),
+            instance_->GetCaretBounds());
+}
+
+TEST_F(ArcImeServiceTest, GetCaretBoundsInNotification) {
+  using Coordinate = mojom::CursorCoordinateSpace;
+
+  EXPECT_EQ(gfx::Rect(), instance_->GetCaretBounds());
+
+  const int notification_window_width =
+      ash::ArcNotificationContentView::GetNotificationContentViewWidth();
+  const gfx::Rect window_rect(123, 321, 200, 100);
+  arc_win_->SetBounds(window_rect);
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
+  const gfx::Rect cursor_rect(10, 12, 2, 8);
+  instance_->OnCursorRectChanged(cursor_rect, Coordinate::NOTIFICATION);
+  EXPECT_EQ(cursor_rect + window_rect.OffsetFromOrigin(),
+            instance_->GetCaretBounds());
+
+  const gfx::Rect shifted_cursor_rect(10 + notification_window_width * 2, 12, 2,
+                                      8);
+  instance_->OnCursorRectChanged(shifted_cursor_rect, Coordinate::NOTIFICATION);
   EXPECT_EQ(cursor_rect + window_rect.OffsetFromOrigin(),
             instance_->GetCaretBounds());
 
   const double new_scale_factor = 10.0;
   const gfx::Rect new_cursor_rect(10 * new_scale_factor, 12 * new_scale_factor,
                                   2 * new_scale_factor, 8 * new_scale_factor);
-  instance_->SetOverrideDefaultDeviceScaleFactorForTesting(new_scale_factor);
-  instance_->OnCursorRectChanged(new_cursor_rect, true);  // screen coordinates
-  EXPECT_EQ(cursor_rect, instance_->GetCaretBounds());
+  ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
+      new_scale_factor);
+  instance_->OnCursorRectChanged(new_cursor_rect, Coordinate::NOTIFICATION);
+  EXPECT_EQ(cursor_rect + window_rect.OffsetFromOrigin(),
+            instance_->GetCaretBounds());
 
-  instance_->OnCursorRectChanged(new_cursor_rect, false);  // window coordinates
+  const gfx::Rect shifted_new_cursor_rect(
+      (10 + notification_window_width * 3) * new_scale_factor,
+      12 * new_scale_factor, 2 * new_scale_factor, 8 * new_scale_factor);
+  instance_->OnCursorRectChanged(shifted_new_cursor_rect,
+                                 Coordinate::NOTIFICATION);
   EXPECT_EQ(cursor_rect + window_rect.OffsetFromOrigin(),
             instance_->GetCaretBounds());
 }
@@ -500,7 +552,8 @@ TEST_F(ArcImeServiceTest, DoNothingIfArcWindowIsNotFocused) {
   const gfx::Rect cursor_rect(10, 20, 30, 40);
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true,
                                     mojom::TEXT_INPUT_FLAG_NONE);
-  instance_->OnCursorRectChanged(cursor_rect, true);
+  instance_->OnCursorRectChanged(cursor_rect,
+                                 mojom::CursorCoordinateSpace::SCREEN);
   instance_->OnCancelComposition();
 
   EXPECT_EQ(0, fake_input_method_->count_show_ime_if_needed());
@@ -520,14 +573,14 @@ TEST_F(ArcImeServiceTest, SetComposingRegion) {
 
   instance_->OnCursorRectChangedWithSurroundingText(
       gfx::Rect(), gfx::Range(0, 100), std::u16string(100, 'a'),
-      gfx::Range(0, 0), false);
+      gfx::Range(0, 0), mojom::CursorCoordinateSpace::DISPLAY);
   instance_->SetCompositionFromExistingText(composing_range, {});
   EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
 
   // Ignore it if the range is outside of text range.
   instance_->OnCursorRectChangedWithSurroundingText(
       gfx::Rect(), gfx::Range(0, 100), std::u16string(100, 'a'),
-      gfx::Range(0, 0), false);
+      gfx::Range(0, 0), mojom::CursorCoordinateSpace::DISPLAY);
   instance_->SetCompositionFromExistingText(gfx::Range(50, 101), {});
   EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
 }
@@ -536,7 +589,7 @@ TEST_F(ArcImeServiceTest, ExtendSelectionAndDeleteThenSetComposingRegion) {
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
   instance_->OnCursorRectChangedWithSurroundingText(
       gfx::Rect(), gfx::Range(0, 100), std::u16string(100, 'a'),
-      gfx::Range(100, 100), false);
+      gfx::Range(100, 100), mojom::CursorCoordinateSpace::DISPLAY);
 
   instance_->ExtendSelectionAndDelete(1, 0);
   const gfx::Range composing_range(0, 99);
@@ -594,6 +647,16 @@ TEST_F(ArcImeServiceTest, OnDispatchingKeyEventPostIME) {
   fabricated_event.SetProperties(properties);
   instance_->OnDispatchingKeyEventPostIME(&fabricated_event);
   EXPECT_TRUE(fabricated_event.handled());
+
+  // Language input keys from VK should not pass to the next phase.
+  ui::KeyEvent language_input_event{
+      ui::ET_KEY_PRESSED,  ui::VKEY_CONVERT,     ui::DomCode::CONVERT, 0,
+      ui::DomKey::CONVERT, ui::EventTimeForNow()};
+  instance_->OnDispatchingKeyEventPostIME(&language_input_event);
+  EXPECT_FALSE(language_input_event.handled());
+  language_input_event.SetProperties(properties);
+  instance_->OnDispatchingKeyEventPostIME(&language_input_event);
+  EXPECT_TRUE(language_input_event.handled());
 }
 
 TEST_F(ArcImeServiceTest, SendKeyEvent) {

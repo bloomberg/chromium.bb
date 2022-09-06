@@ -4343,7 +4343,7 @@ UNINITIALIZED_TEST(DebugSetOutOfMemoryListener) {
 }
 
 TEST(DebugCoverage) {
-  i::FLAG_always_opt = false;
+  i::FLAG_always_turbofan = false;
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope scope(isolate);
@@ -4360,6 +4360,7 @@ TEST(DebugCoverage) {
   v8::debug::Coverage::ScriptData script_data = coverage.GetScriptData(0);
   v8::Local<v8::debug::Script> script = script_data.GetScript();
   CHECK(script->Source()
+            ->JavaScriptCode()
             .ToLocalChecked()
             ->Equals(env.local(), source)
             .FromMaybe(false));
@@ -4397,7 +4398,7 @@ v8::debug::Coverage::ScriptData GetScriptDataAndDeleteCoverage(
 }  // namespace
 
 TEST(DebugCoverageWithCoverageOutOfScope) {
-  i::FLAG_always_opt = false;
+  i::FLAG_always_turbofan = false;
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope scope(isolate);
@@ -4413,6 +4414,7 @@ TEST(DebugCoverageWithCoverageOutOfScope) {
       GetScriptDataAndDeleteCoverage(isolate);
   v8::Local<v8::debug::Script> script = script_data.GetScript();
   CHECK(script->Source()
+            ->JavaScriptCode()
             .ToLocalChecked()
             ->Equals(env.local(), source)
             .FromMaybe(false));
@@ -4467,7 +4469,7 @@ v8::debug::Coverage::FunctionData GetFunctionDataAndDeleteCoverage(
 }  // namespace
 
 TEST(DebugCoverageWithScriptDataOutOfScope) {
-  i::FLAG_always_opt = false;
+  i::FLAG_always_turbofan = false;
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope scope(isolate);
@@ -4497,7 +4499,7 @@ TEST(BuiltinsExceptionPrediction) {
   bool fail = false;
   for (i::Builtin builtin = i::Builtins::kFirst; builtin <= i::Builtins::kLast;
        ++builtin) {
-    i::Code code = builtins->code(builtin);
+    i::Code code = FromCodeT(builtins->code(builtin));
     if (code.kind() != i::CodeKind::BUILTIN) continue;
     auto prediction = code.GetBuiltinCatchPrediction();
     USE(prediction);
@@ -4561,6 +4563,48 @@ TEST(DebugEvaluateNoSideEffect) {
     if (failed) isolate->clear_pending_exception();
   }
   DisableDebugger(env->GetIsolate());
+}
+
+TEST(DebugEvaluateGlobalSharedCrossOrigin) {
+  LocalContext env;
+  v8::Isolate* isolate = env->GetIsolate();
+  v8::HandleScope scope(isolate);
+  v8::TryCatch tryCatch(isolate);
+  tryCatch.SetCaptureMessage(true);
+  v8::MaybeLocal<v8::Value> result =
+      v8::debug::EvaluateGlobal(isolate, v8_str(isolate, "throw new Error()"),
+                                v8::debug::EvaluateGlobalMode::kDefault);
+  CHECK(result.IsEmpty());
+  CHECK(tryCatch.HasCaught());
+  CHECK(tryCatch.Message()->IsSharedCrossOrigin());
+}
+
+TEST(DebugEvaluateLocalSharedCrossOrigin) {
+  struct BreakProgramDelegate : public v8::debug::DebugDelegate {
+    void BreakProgramRequested(v8::Local<v8::Context> context,
+                               std::vector<v8::debug::BreakpointId> const&,
+                               v8::debug::BreakReasons) final {
+      v8::Isolate* isolate = context->GetIsolate();
+      v8::TryCatch tryCatch(isolate);
+      tryCatch.SetCaptureMessage(true);
+      std::unique_ptr<v8::debug::StackTraceIterator> it =
+          v8::debug::StackTraceIterator::Create(isolate);
+      v8::MaybeLocal<v8::Value> result =
+          it->Evaluate(v8_str(isolate, "throw new Error()"), false);
+      CHECK(result.IsEmpty());
+      CHECK(tryCatch.HasCaught());
+      CHECK(tryCatch.Message()->IsSharedCrossOrigin());
+    }
+  } delegate;
+  LocalContext env;
+  v8::Isolate* isolate = env->GetIsolate();
+  v8::HandleScope scope(isolate);
+  v8::debug::SetDebugDelegate(isolate, &delegate);
+  v8::Script::Compile(env.local(), v8_str(isolate, "debugger;"))
+      .ToLocalChecked()
+      ->Run(env.local())
+      .ToLocalChecked();
+  v8::debug::SetDebugDelegate(isolate, nullptr);
 }
 
 namespace {
@@ -4699,59 +4743,73 @@ TEST(SourceInfo) {
     }
   }
 
-  // Test first positon.
+  // Test first position.
   CHECK_EQ(script->GetSourceLocation(0).GetLineNumber(), 0);
   CHECK_EQ(script->GetSourceLocation(0).GetColumnNumber(), 0);
 
-  // Test second positon.
+  // Test second position.
   CHECK_EQ(script->GetSourceLocation(1).GetLineNumber(), 0);
   CHECK_EQ(script->GetSourceLocation(1).GetColumnNumber(), 1);
 
-  // Test first positin in function a().
+  // Test first position in function a().
   const int start_a =
       static_cast<int>(strstr(source, "function a") - source) + 10;
   CHECK_EQ(script->GetSourceLocation(start_a).GetLineNumber(), 1);
   CHECK_EQ(script->GetSourceLocation(start_a).GetColumnNumber(), 10);
 
-  // Test first positin in function b().
+  // Test first position in function b().
   const int start_b =
       static_cast<int>(strstr(source, "function    b") - source) + 13;
   CHECK_EQ(script->GetSourceLocation(start_b).GetLineNumber(), 2);
   CHECK_EQ(script->GetSourceLocation(start_b).GetColumnNumber(), 13);
 
-  // Test first positin in function c().
+  // Test first position in function c().
   const int start_c =
       static_cast<int>(strstr(source, "function c") - source) + 10;
   CHECK_EQ(script->GetSourceLocation(start_c).GetLineNumber(), 5);
   CHECK_EQ(script->GetSourceLocation(start_c).GetColumnNumber(), 12);
 
-  // Test first positin in function d().
+  // Test first position in function d().
   const int start_d =
       static_cast<int>(strstr(source, "function d") - source) + 10;
   CHECK_EQ(script->GetSourceLocation(start_d).GetLineNumber(), 12);
   CHECK_EQ(script->GetSourceLocation(start_d).GetColumnNumber(), 10);
 
   // Test offsets.
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(1, 10)), start_a);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(2, 13)), start_b);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(3, 0)), start_b + 5);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(3, 2)), start_b + 7);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(4, 0)), start_b + 16);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(5, 12)), start_c);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(6, 0)), start_c + 6);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(7, 0)), start_c + 19);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(8, 0)), start_c + 35);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(9, 0)), start_c + 48);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(10, 0)), start_c + 64);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(11, 0)), start_c + 70);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(12, 10)), start_d);
-  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(13, 0)), start_d + 6);
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(1, 10)),
+           v8::Just(start_a));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(2, 13)),
+           v8::Just(start_b));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(3, 0)),
+           v8::Just(start_b + 5));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(3, 2)),
+           v8::Just(start_b + 7));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(4, 0)),
+           v8::Just(start_b + 16));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(5, 12)),
+           v8::Just(start_c));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(6, 0)),
+           v8::Just(start_c + 6));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(7, 0)),
+           v8::Just(start_c + 19));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(8, 0)),
+           v8::Just(start_c + 35));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(9, 0)),
+           v8::Just(start_c + 48));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(10, 0)),
+           v8::Just(start_c + 64));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(11, 0)),
+           v8::Just(start_c + 70));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(12, 10)),
+           v8::Just(start_d));
+  CHECK_EQ(script->GetSourceOffset(v8::debug::Location(13, 0)),
+           v8::Just(start_d + 6));
   for (int i = 1; i <= num_lines_d; ++i) {
     CHECK_EQ(script->GetSourceOffset(v8::debug::Location(start_line_d + i, 0)),
-             6 + (i * line_length_d) + start_d);
+             v8::Just(6 + (i * line_length_d) + start_d));
   }
   CHECK_EQ(script->GetSourceOffset(v8::debug::Location(start_line_d + 17, 0)),
-           start_d + 158);
+           v8::Nothing<int>());
 
   // Make sure invalid inputs work properly.
   const int last_position = static_cast<int>(strlen(source)) - 1;
@@ -5503,7 +5561,7 @@ TEST(TerminateOnResumeAtUnhandledRejectionCppImpl) {
   auto data = std::make_pair(isolate, &env);
   v8::debug::SetDebugDelegate(env->GetIsolate(), &delegate);
   {
-    // We want to trigger a breapoint upon Promise rejection, but we will only
+    // We want to trigger a breakpoint upon Promise rejection, but we will only
     // get the callback if there is at least one JavaScript frame in the stack.
     v8::Local<v8::Function> func =
         v8::Function::New(env.local(), RejectPromiseThroughCpp,
@@ -5720,8 +5778,74 @@ TEST(AwaitCleansUpGlobalPromiseStack) {
       "})();\n");
   CompileRun(source);
 
-  CHECK_EQ(CcTest::i_isolate()->thread_local_top()->promise_on_stack_, nullptr);
+  CHECK(CcTest::i_isolate()->IsPromiseStackEmpty());
 
   v8::debug::SetDebugDelegate(env->GetIsolate(), nullptr);
   CheckDebuggerUnloaded();
+}
+
+TEST(CreateMessageFromOldException) {
+  LocalContext context;
+  v8::HandleScope scope(context->GetIsolate());
+
+  context->GetIsolate()->SetCaptureStackTraceForUncaughtExceptions(true);
+
+  v8::Local<v8::Value> error;
+  {
+    v8::TryCatch try_catch(context->GetIsolate());
+    CompileRun(R"javascript(
+        function f1() {
+          throw new Error('error in f1');
+        };
+        f1();
+    )javascript");
+    CHECK(try_catch.HasCaught());
+
+    error = try_catch.Exception();
+  }
+  CHECK(error->IsObject());
+
+  v8::Local<v8::Message> message =
+      v8::debug::CreateMessageFromException(context->GetIsolate(), error);
+  CHECK(!message.IsEmpty());
+  CHECK_EQ(3, message->GetLineNumber(context.local()).FromJust());
+  CHECK_EQ(16, message->GetStartColumn(context.local()).FromJust());
+
+  v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
+  CHECK(!stackTrace.IsEmpty());
+  CHECK_EQ(2, stackTrace->GetFrameCount());
+
+  stackTrace = v8::Exception::GetStackTrace(error);
+  CHECK(!stackTrace.IsEmpty());
+  CHECK_EQ(2, stackTrace->GetFrameCount());
+}
+
+TEST(CreateMessageDoesNotInspectStack) {
+  LocalContext context;
+  v8::HandleScope scope(context->GetIsolate());
+
+  // Do not enable Isolate::SetCaptureStackTraceForUncaughtExceptions.
+
+  v8::Local<v8::Value> error;
+  {
+    v8::TryCatch try_catch(context->GetIsolate());
+    CompileRun(R"javascript(
+        function f1() {
+          throw new Error('error in f1');
+        };
+        f1();
+    )javascript");
+    CHECK(try_catch.HasCaught());
+
+    error = try_catch.Exception();
+  }
+  // The caught error should not have a stack trace attached.
+  CHECK(error->IsObject());
+  CHECK(v8::Exception::GetStackTrace(error).IsEmpty());
+
+  // The corresponding message should also not have a stack trace.
+  v8::Local<v8::Message> message =
+      v8::debug::CreateMessageFromException(context->GetIsolate(), error);
+  CHECK(!message.IsEmpty());
+  CHECK(message->GetStackTrace().IsEmpty());
 }

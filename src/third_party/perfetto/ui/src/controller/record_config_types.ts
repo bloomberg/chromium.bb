@@ -21,7 +21,7 @@ import {
   requiredStr,
   record,
   runValidator,
-  ValidatedType
+  ValidatedType,
 } from './validators';
 
 const recordModes = ['STOP_WHEN_FULL', 'RING_BUFFER', 'LONG_TRACE'] as const;
@@ -44,9 +44,10 @@ export const recordConfigValidator = record({
   ftraceEvents: arrayOf(str()),
   ftraceExtraEvents: str(),
   atraceCats: arrayOf(str()),
+  allAtraceApps: bool(true),
   atraceApps: str(),
-  ftraceBufferSizeKb: num(2 * 1024),
-  ftraceDrainPeriodMs: num(250),
+  ftraceBufferSizeKb: num(0),
+  ftraceDrainPeriodMs: num(0),
   androidLogs: bool(),
   androidLogBuffers: arrayOf(str()),
   androidFrameTimeline: bool(),

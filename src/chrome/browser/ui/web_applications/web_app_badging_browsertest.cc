@@ -3,28 +3,35 @@
 // found in the LICENSE file.
 
 #include "base/memory/raw_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/badging/test_badge_manager_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 
 using content::RenderFrameHost;
-using content::WebContents;
 
 namespace web_app {
 
 class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
  public:
   WebAppBadgingBrowserTest()
-      : WebAppControllerBrowserTest(),
-        cross_origin_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : cross_origin_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebAppControllerBrowserTest::SetUpCommandLine(command_line);
@@ -48,10 +55,10 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     main_app_id_ = InstallPWA(start_url);
 
     GURL sub_start_url = https_server()->GetURL("/web_app_badging/blank.html");
-    auto sub_app_info = std::make_unique<WebApplicationInfo>();
+    auto sub_app_info = std::make_unique<WebAppInstallInfo>();
     sub_app_info->start_url = sub_start_url;
     sub_app_info->scope = sub_start_url;
-    sub_app_info->user_display_mode = DisplayMode::kStandalone;
+    sub_app_info->user_display_mode = UserDisplayMode::kStandalone;
     sub_app_id_ = InstallWebApp(std::move(sub_app_info));
 
     content::WebContents* web_contents = OpenApplication(main_app_id_);
@@ -63,7 +70,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     auto frames = CollectAllRenderFrameHosts(web_contents->GetPrimaryPage());
     ASSERT_EQ(4u, frames.size());
 
-    main_frame_ = web_contents->GetMainFrame();
+    main_frame_ = web_contents->GetPrimaryMainFrame();
     for (auto* frame : frames) {
       if (frame->GetLastCommittedURL() == sub_start_url) {
         sub_app_frame_ = frame;
@@ -100,7 +107,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     awaiter_ = std::make_unique<base::RunLoop>();
 
     badging::BadgeManager* badge_manager =
-        badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile());
+        badging::BadgeManagerFactory::GetForProfile(profile());
 
     // The delegate is owned by the badge manager. We hold a pointer to it for
     // the test.
@@ -157,7 +164,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
  protected:
   // Expects a single badge change only.
-  void ExecuteScriptAndWaitForBadgeChange(std::string script,
+  void ExecuteScriptAndWaitForBadgeChange(const std::string& script,
                                           RenderFrameHost* on) {
     ExecuteScriptAndWaitForMultipleBadgeChanges(
         script, on, /*expected_badge_change_count=*/1);
@@ -166,7 +173,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
   // Handles badge changes that may affect multiple apps. Useful for testing
   // service workers, which can control many apps.
   void ExecuteScriptAndWaitForMultipleBadgeChanges(
-      std::string script,
+      const std::string& script,
       RenderFrameHost* on,
       size_t expected_badge_change_count) {
     expected_badge_change_count_ = expected_badge_change_count;
@@ -469,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
       OpenURLOffTheRecord(profile(), main_frame_->GetLastCommittedURL());
   RenderFrameHost* incognito_frame = incognito_browser->tab_strip_model()
                                          ->GetActiveWebContents()
-                                         ->GetMainFrame();
+                                         ->GetPrimaryMainFrame();
 
   ASSERT_TRUE(
       content::ExecuteScript(incognito_frame, "navigator.setAppBadge()"));
@@ -491,6 +498,33 @@ IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest,
       "postMessageToServiceWorker('$1', { command: 'clear-app-badge' });",
       app_service_worker_scope_.spec());
   ASSERT_EQ("OK", EvalJs(incognito_frame, clear_badge_script));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppBadgingBrowserTest, ClearLastBadgingTime) {
+  ExecuteScriptAndWaitForBadgeChange("navigator.setAppBadge()", main_frame_);
+  WebAppRegistrar& registrar = provider().registrar();
+  EXPECT_NE(registrar.GetAppLastBadgingTime(main_app_id()), base::Time());
+  EXPECT_NE(registrar.GetAppLastLaunchTime(main_app_id()), base::Time());
+
+  // Browsing data for all origins will be deleted.
+  auto filter_builder = content::BrowsingDataFilterBuilder::Create(
+      content::BrowsingDataFilterBuilder::Mode::kPreserve);
+  ChromeBrowsingDataRemoverDelegate data_remover_delegate(profile());
+  base::RunLoop run_loop;
+  data_remover_delegate.RemoveEmbedderData(
+      /*delete_begin=*/base::Time::Min(),
+      /*delete_end=*/base::Time::Max(),
+      /*remove_mask=*/chrome_browsing_data_remover::DATA_TYPE_HISTORY,
+      filter_builder.get(),
+      /*origin_type_mask=*/1,
+      base::BindLambdaForTesting([&run_loop](uint64_t failed_data_types) {
+        EXPECT_EQ(failed_data_types, 0U);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  EXPECT_EQ(registrar.GetAppLastBadgingTime(main_app_id()), base::Time());
+  EXPECT_EQ(registrar.GetAppLastLaunchTime(main_app_id()), base::Time());
 }
 
 }  // namespace web_app

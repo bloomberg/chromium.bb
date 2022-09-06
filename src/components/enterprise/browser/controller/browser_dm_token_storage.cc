@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -105,6 +104,8 @@ void BrowserDMTokenStorage::StoreDMToken(const std::string& dm_token,
   store_callback_ = std::move(callback);
 
   if (dm_token.empty()) {
+    // TODO(crbug.com/1318153): Implement DMToken deletion logic once all
+    // delegates have the required handling.
     dm_token_ = CreateEmptyToken();
     SaveDMToken("");
   } else if (dm_token == kInvalidTokenValue) {

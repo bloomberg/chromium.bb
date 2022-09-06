@@ -37,8 +37,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.attribution_reporting.AttributionIntentHandlerFactory;
-import org.chromium.chrome.browser.attribution_reporting.AttributionParameters;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -747,7 +745,18 @@ public class IntentHandler {
      * token.
      */
     public static void startActivityForTrustedIntent(Intent intent) {
-        startActivityForTrustedIntentInternal(intent, null);
+        startActivityForTrustedIntentInternal(null, intent, null);
+    }
+
+    /**
+     * Start activity for the given trusted Intent.
+     *
+     * To make sure the intent is not dropped by Chrome, we send along an authentication token to
+     * identify ourselves as a trusted sender. The method {@link #shouldIgnoreIntent} validates the
+     * token.
+     */
+    public static void startActivityForTrustedIntent(Context context, Intent intent) {
+        startActivityForTrustedIntentInternal(context, intent, null);
     }
 
     /**
@@ -763,12 +772,12 @@ public class IntentHandler {
     public static void startChromeLauncherActivityForTrustedIntent(Intent intent) {
         // Specify the exact component that will handle creating a new tab.  This allows specifying
         // URLs that are not exposed in the intent filters (i.e. chrome://).
-        startActivityForTrustedIntentInternal(intent, ChromeLauncherActivity.class.getName());
+        startActivityForTrustedIntentInternal(null, intent, ChromeLauncherActivity.class.getName());
     }
 
     private static void startActivityForTrustedIntentInternal(
-            Intent intent, String componentClassName) {
-        Context appContext = ContextUtils.getApplicationContext();
+            Context context, Intent intent, String componentClassName) {
+        Context appContext = context == null ? ContextUtils.getApplicationContext() : context;
         // The caller might want to re-use the Intent, so we'll use a copy.
         Intent copiedIntent = new Intent(intent);
 
@@ -1578,22 +1587,7 @@ public class IntentHandler {
                 metadata == null ? false : metadata.isRendererInitiated());
         loadUrlParams.setInitiatorOrigin(metadata == null ? null : metadata.getInitiatorOrigin());
 
-        setAttributionParamsFromIntent(loadUrlParams, intent);
         return loadUrlParams;
-    }
-
-    /**
-     * Fills out the AttributionParameters for a LoadUrlParams from the provided Intent.
-     */
-    public static void setAttributionParamsFromIntent(LoadUrlParams loadUrlParams, Intent intent) {
-        AttributionParameters attributionParams =
-                AttributionIntentHandlerFactory.getInstance()
-                        .getAndClearPendingAttributionParameters(intent);
-        if (attributionParams != null) {
-            loadUrlParams.setAttributionParameters(attributionParams.getSourcePackageName(),
-                    attributionParams.getSourceEventId(), attributionParams.getDestination(),
-                    attributionParams.getReportTo(), attributionParams.getExpiry());
-        }
     }
 
     /**

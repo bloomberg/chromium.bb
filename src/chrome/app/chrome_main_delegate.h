@@ -28,6 +28,7 @@ class TracingSamplerProfiler;
 }
 
 class ChromeContentBrowserClient;
+class ChromeContentUtilityClient;
 class HeapProfilerController;
 
 // Chrome implementation of ContentMainDelegate.
@@ -56,16 +57,15 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       const std::string& process_type,
       content::MainFunctionParams main_function_params) override;
   void ProcessExiting(const std::string& process_type) override;
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
                           delegates) override;
   void ZygoteForked() override;
 #endif
   void PreBrowserMain() override;
-  void PostEarlyInitialization(bool is_running_tests) override;
-  bool ShouldCreateFeatureList() override;
-  void PostFieldTrialInitialization() override;
-#if defined(OS_WIN)
+  void PostEarlyInitialization(InvokedIn invoked_in) override;
+  bool ShouldCreateFeatureList(InvokedIn invoked_in) override;
+#if BUILDFLAG(IS_WIN)
   bool ShouldHandleConsoleControlEvents() override;
 #endif
 
@@ -75,15 +75,19 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   content::ContentRendererClient* CreateContentRendererClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
 
-#if defined(OS_MAC)
+  // Initialization that happens in all process types.
+  void CommonEarlyInitialization();
+
+#if BUILDFLAG(IS_MAC)
   void InitMacCrashReporter(const base::CommandLine& command_line,
                             const std::string& process_type);
   void SetUpInstallerPreferences(const base::CommandLine& command_line);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
   ChromeContentClient chrome_content_client_;
 
   std::unique_ptr<ChromeContentBrowserClient> chrome_content_browser_client_;
+  std::unique_ptr<ChromeContentUtilityClient> chrome_content_utility_client_;
 
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler_;
 

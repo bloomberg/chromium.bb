@@ -10,9 +10,11 @@
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/public/cpp/test/test_desks_templates_delegate.h"
 #include "ash/public/cpp/test/test_nearby_share_delegate.h"
+#include "ash/system/geolocation/test_geolocation_url_loader_factory.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -50,6 +52,12 @@ TestShellDelegate::CreateDesksTemplatesDelegate() const {
   return std::make_unique<TestDesksTemplatesDelegate>();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+TestShellDelegate::GetGeolocationUrlLoaderFactory() const {
+  return static_cast<scoped_refptr<network::SharedURLLoaderFactory>>(
+      base::MakeRefCounted<TestGeolocationUrlLoaderFactory>());
+}
+
 bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return can_go_back_;
 }
@@ -67,7 +75,7 @@ int TestShellDelegate::GetBrowserWebUITabStripHeight() {
 }
 
 void TestShellDelegate::BindMultiDeviceSetup(
-    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+    mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
   if (multidevice_setup_binder_)
     multidevice_setup_binder_.Run(std::move(receiver));
@@ -96,6 +104,15 @@ bool TestShellDelegate::IsLoggingRedirectDisabled() const {
 
 base::FilePath TestShellDelegate::GetPrimaryUserDownloadsFolder() const {
   return base::FilePath();
+}
+
+const GURL& TestShellDelegate::GetLastCommittedURLForWindowIfAny(
+    aura::Window* window) {
+  return last_committed_url_;
+}
+
+void TestShellDelegate::SetLastCommittedURLForWindow(const GURL& url) {
+  last_committed_url_ = url;
 }
 
 }  // namespace ash

@@ -22,8 +22,7 @@ exact details of how the firmware accomplishes this are outside the scope of
 this document.
 The recovery image performs the actions described in the following diagram:
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/recovery_imagepng">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/recovery_image.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/recovery_image.png)
 
 ## Firmware updating
 
@@ -45,8 +44,7 @@ boots B. If B's checksum also fails, it goes into recovery mode.
 The firmware updater is a userspace program that runs on system boot. It
 performs the following actions:
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/firmware_updaterpng">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/firmware_updater.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/firmware_updater.png)
 
 ## Bit rot evasion (corruption on the hard drive)
 
@@ -59,8 +57,7 @@ We use the extra bits in the partition table as follows. Note that we have 8
 bits in each byte reserved for the bootable flag. This gives us 7 unused bits
 per partition for the boot loader.
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/partition_extra_bitspng">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/partition_extra_bits.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/partition_extra_bits.png)
 
 0x80 Bootable flag: this partition can be booted. This bit being set implies
 that it's a good partition to boot from; it's been vetted. 0x40 Tryboot flag:
@@ -73,8 +70,7 @@ document.
 
 The boot loader flow is then:
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/bootloader_flowpng">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/bootloader_flow.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/filesystem-autoupdate-supplements/bootloader_flow.png)
 
 Open issue: We could use a third system partition. This comes at a cost of
 space, but lets us *always* have a backup partition ready, even midway through

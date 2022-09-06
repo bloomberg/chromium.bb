@@ -38,8 +38,7 @@ class HeadlessPopUpMethods {
   HeadlessPopUpMethods& operator=(const HeadlessPopUpMethods&) = delete;
 
   static void Init() {
-    static base::NoDestructor<HeadlessPopUpMethods> swizzler;
-    ALLOW_UNUSED_LOCAL(swizzler);
+    [[maybe_unused]] static base::NoDestructor<HeadlessPopUpMethods> swizzler;
   }
 
  private:
@@ -66,6 +65,7 @@ const NSActivityOptions kActivityOptions =
 }  // namespace
 
 void HeadlessBrowserImpl::PlatformInitialize() {
+  screen_ = std::make_unique<display::ScopedNativeScreen>();
   HeadlessPopUpMethods::Init();
 }
 

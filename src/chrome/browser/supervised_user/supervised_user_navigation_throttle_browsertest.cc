@@ -285,7 +285,7 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
 }
 
 // Tests that prerendering fails in supervised user mode.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 // TODO(crbug.com/1259146): Flaky on ChromeOS.
 #define MAYBE_DisallowPrerendering DISABLED_DisallowPrerendering
 #else
@@ -808,7 +808,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest,
                              kExampleHost));
 
   NavigationFinishedWaiter waiter(
-      active_contents, active_contents->GetMainFrame()->GetFrameTreeNodeId(),
+      active_contents,
+      active_contents->GetPrimaryMainFrame()->GetFrameTreeNodeId(),
       blocked_url);
   permission_creator()->HandleDelayedRequests();
   waiter.Wait();
@@ -932,7 +933,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserNarrowWidthIframeFilterTest,
                              kExampleHost));
 
   NavigationFinishedWaiter waiter(
-      active_contents, active_contents->GetMainFrame()->GetFrameTreeNodeId(),
+      active_contents,
+      active_contents->GetPrimaryMainFrame()->GetFrameTreeNodeId(),
       blocked_url);
   permission_creator()->HandleDelayedRequests();
   waiter.Wait();
@@ -975,7 +977,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
 
   // Close the flow without approval - interstitial should be still shown.
   ui::test::EventGenerator generator(ash::Shell::Get()->GetPrimaryRootWindow());
-  generator.PressKey(ui::VKEY_ESCAPE, ui::EventFlags::EF_NONE);
+  generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
 
   EXPECT_FALSE(chromeos::ParentAccessDialog::GetInstance());
   EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
@@ -1006,7 +1008,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
 
   // Close the flow without approval - interstitial should be still shown.
   ui::test::EventGenerator generator(ash::Shell::Get()->GetPrimaryRootWindow());
-  generator.PressKey(ui::VKEY_ESCAPE, ui::EventFlags::EF_NONE);
+  generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
 
   EXPECT_FALSE(chromeos::ParentAccessDialog::GetInstance());
   EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
@@ -1070,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleFencedFramesTest,
       kExampleHost, "/supervised_user/fenced_frame.html");
   content::RenderFrameHost* rfh_same_origin =
       fenced_frame_test_helper().CreateFencedFrame(
-          web_contents()->GetMainFrame(), kSameOriginFencedFrameUrl);
+          web_contents()->GetPrimaryMainFrame(), kSameOriginFencedFrameUrl);
   EXPECT_TRUE(rfh_same_origin);
 
   // Host1 is not blocked, and therefore must be allowed.
@@ -1078,7 +1080,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleFencedFramesTest,
       kIframeHost1, "/supervised_user/fenced_frame.html");
   content::RenderFrameHost* rfh_host1 =
       fenced_frame_test_helper().CreateFencedFrame(
-          web_contents()->GetMainFrame(), kHost1FencedFrameUrl);
+          web_contents()->GetPrimaryMainFrame(), kHost1FencedFrameUrl);
   EXPECT_TRUE(rfh_host1);
 
   // Host2 is blocked, and therefore should result in a interstitial being
@@ -1087,7 +1089,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleFencedFramesTest,
       kIframeHost2, "/supervised_user/fenced_frame.html");
   content::RenderFrameHost* rfh_host2 =
       fenced_frame_test_helper().CreateFencedFrame(
-          web_contents()->GetMainFrame(), kHost2FencedFrameUrl,
+          web_contents()->GetPrimaryMainFrame(), kHost2FencedFrameUrl,
           net::Error::ERR_FAILED);
   EXPECT_TRUE(rfh_host2);
 }

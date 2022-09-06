@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,6 +27,7 @@
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
@@ -55,11 +56,8 @@ base::FilePath MapDevPathToSysPath(const base::FilePath& device_path) {
   base::FilePath sys_path = base::MakeAbsoluteFilePath(
       base::FilePath("/sys/class/drm").Append(device_path.BaseName()));
 
-  std::vector<base::FilePath::StringType> components;
-  sys_path.GetComponents(&components);
   base::FilePath path_thus_far;
-
-  for (const auto& component : components) {
+  for (const auto& component : sys_path.GetComponents()) {
     if (path_thus_far.empty()) {
       path_thus_far = base::FilePath(component);
     } else {
@@ -100,29 +98,51 @@ void OpenDeviceAsync(const base::FilePath& device_path,
                                 std::move(handle)));
 }
 
+struct DisplayCard {
+  base::FilePath path;
+  absl::optional<std::string> driver;
+};
+
 base::FilePath GetPrimaryDisplayCardPath() {
   struct drm_mode_card_res res;
+  std::vector<DisplayCard> cards;
   for (int i = 0; /* end on first card# that does not exist */; i++) {
     std::string card_path = base::StringPrintf(kDefaultGraphicsCardPattern, i);
 
-    if (access(card_path.c_str(), F_OK) != 0)
-      break;
+    if (access(card_path.c_str(), F_OK) != 0) {
+      if (i == 0) /* card paths may start with 0 or 1 */
+        continue;
+      else
+        break;
+    }
 
-    int fd = open(card_path.c_str(), O_RDWR | O_CLOEXEC);
-    if (fd < 0) {
+    base::ScopedFD fd(open(card_path.c_str(), O_RDWR | O_CLOEXEC));
+    if (!fd.is_valid()) {
       VPLOG(1) << "Failed to open '" << card_path << "'";
       continue;
     }
 
     memset(&res, 0, sizeof(struct drm_mode_card_res));
-    int ret = drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res);
-    close(fd);
-    if (ret == 0 && res.count_crtcs > 0) {
-      return base::FilePath(card_path);
-    }
-
+    int ret = drmIoctl(fd.get(), DRM_IOCTL_MODE_GETRESOURCES, &res);
     VPLOG_IF(1, ret) << "Failed to get DRM resources for '" << card_path << "'";
+
+    if (ret == 0 && res.count_crtcs > 0)
+      cards.push_back(
+          {base::FilePath(card_path), GetDrmDriverNameFromFd(fd.get())});
   }
+
+  // Find the card with the most preferred driver.
+  const auto preferred_drivers = GetPreferredDrmDrivers();
+  for (const auto* preferred_driver : preferred_drivers) {
+    for (const auto& card : cards) {
+      if (card.driver == preferred_driver)
+        return card.path;
+    }
+  }
+
+  // Fall back to the first usable card.
+  if (!cards.empty())
+    return cards[0].path;
 
   LOG(FATAL) << "Failed to open primary graphics device.";
   return base::FilePath();  // Not reached.
@@ -169,6 +189,15 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     }
     host_properties->supports_overlays =
         primary_drm_device_handle_->has_atomic_capabilities();
+    // TODO(b/192563524): The legacy video decoder wraps its frames with legacy
+    // mailboxes instead of SharedImages. The display compositor can composite
+    // these quads, but does not support promoting them to overlays. Thus, we
+    // disable overlays on platforms using the legacy video decoder.
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(
+            switches::kPlatformDisallowsChromeOSDirectVideoDecoder)) {
+      host_properties->supports_overlays = false;
+    }
     drm_devices_[primary_graphics_card_path_] =
         primary_graphics_card_path_sysfs;
   }
@@ -195,6 +224,19 @@ DrmDisplayHostManager::~DrmDisplayHostManager() {
   proxy_->UnRegisterHandlerForDrmDisplayHostManager();
   proxy_->RemoveGpuThreadObserver(this);
 }
+
+DrmDisplayHostManager::DisplayEvent::DisplayEvent(
+    DeviceEvent::ActionType action_type,
+    const base::FilePath& path,
+    const EventPropertyMap& properties)
+    : action_type(action_type), path(path), display_event_props(properties) {}
+
+DrmDisplayHostManager::DisplayEvent::DisplayEvent(const DisplayEvent&) =
+    default;
+DrmDisplayHostManager::DisplayEvent&
+DrmDisplayHostManager::DisplayEvent::operator=(const DisplayEvent&) = default;
+
+DrmDisplayHostManager::DisplayEvent::~DisplayEvent() = default;
 
 DrmDisplayHost* DrmDisplayHostManager::GetDisplay(int64_t display_id) {
   auto it = std::find_if(displays_.begin(), displays_.end(),
@@ -284,7 +326,8 @@ void DrmDisplayHostManager::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::DISPLAY)
     return;
 
-  event_queue_.push(DisplayEvent(event.action_type(), event.path()));
+  event_queue_.push(
+      DisplayEvent(event.action_type(), event.path(), event.properties()));
   ProcessEvent();
 }
 
@@ -292,8 +335,12 @@ void DrmDisplayHostManager::ProcessEvent() {
   while (!event_queue_.empty() && !task_pending_) {
     DisplayEvent event = event_queue_.front();
     event_queue_.pop();
+    auto seqnum_it = event.display_event_props.find("SEQNUM");
+    const std::string seqnum = seqnum_it == event.display_event_props.end()
+                                   ? ""
+                                   : ("(SEQNUM:" + seqnum_it->second + ")");
     VLOG(1) << "Got display event " << kDisplayActionString[event.action_type]
-            << " for " << event.path.value();
+            << seqnum << " for " << event.path.value();
     switch (event.action_type) {
       case DeviceEvent::ADD:
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
@@ -313,7 +360,8 @@ void DrmDisplayHostManager::ProcessEvent() {
         task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::BindOnce(&DrmDisplayHostManager::OnUpdateGraphicsDevice,
-                           weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr(),
+                           event.display_event_props));
         break;
       case DeviceEvent::REMOVE:
         DCHECK(event.path != primary_graphics_card_path_)
@@ -345,10 +393,9 @@ void DrmDisplayHostManager::OnAddGraphicsDevice(
   ProcessEvent();
 }
 
-void DrmDisplayHostManager::OnUpdateGraphicsDevice() {
-  NotifyDisplayDelegate();
-  task_pending_ = false;
-  ProcessEvent();
+void DrmDisplayHostManager::OnUpdateGraphicsDevice(
+    const EventPropertyMap& udev_event_props) {
+  proxy_->GpuShouldDisplayEventTriggerConfiguration(udev_event_props);
 }
 
 void DrmDisplayHostManager::OnRemoveGraphicsDevice(
@@ -502,6 +549,15 @@ void DrmDisplayHostManager::GpuRelinquishedDisplayControl(bool status) {
       base::BindOnce(std::move(relinquish_display_control_callback_), status));
   relinquish_display_control_callback_.Reset();
   display_control_change_pending_ = false;
+}
+
+void DrmDisplayHostManager::GpuShouldDisplayEventTriggerConfiguration(
+    bool should_trigger) {
+  if (should_trigger)
+    NotifyDisplayDelegate();
+
+  task_pending_ = false;
+  ProcessEvent();
 }
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(

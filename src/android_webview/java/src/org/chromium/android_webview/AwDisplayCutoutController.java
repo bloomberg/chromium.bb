@@ -4,17 +4,16 @@
 
 package org.chromium.android_webview;
 
-import android.annotation.TargetApi;
 import android.graphics.Rect;
 import android.os.Build;
 import android.view.DisplayCutout;
 import android.view.View;
 import android.view.WindowInsets;
 
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.VerifiesOnP;
 
 /**
  * Display cutout controller for WebView.
@@ -22,8 +21,7 @@ import org.chromium.base.annotations.VerifiesOnP;
  * This object should be constructed in WebView's constructor to support set listener logic for
  * Android P and above.
  */
-@TargetApi(Build.VERSION_CODES.P)
-@VerifiesOnP
+@RequiresApi(Build.VERSION_CODES.P)
 public class AwDisplayCutoutController {
     private static final boolean DEBUG = false;
     private static final String TAG = "DisplayCutout";

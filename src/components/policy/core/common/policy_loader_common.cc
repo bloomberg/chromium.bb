@@ -46,6 +46,7 @@ const char* kSensitivePolicies[] = {
     key::kChromeCleanupReportingEnabled,
     key::kCommandLineFlagSecurityWarningsEnabled,
     key::kDefaultSearchProviderEnabled,
+    key::kFirstPartySetsOverrides,
     key::kHomepageIsNewTabPage,
     key::kHomepageLocation,
     key::kMetricsReportingEnabled,
@@ -56,7 +57,6 @@ const char* kSensitivePolicies[] = {
     key::kRestoreOnStartupURLs,
     key::kSafeBrowsingForTrustedSourcesEnabled,
     key::kSafeBrowsingEnabled,
-    key::kSafeBrowsingWhitelistDomains,
     key::kSafeBrowsingAllowlistDomains,
 };
 
@@ -72,13 +72,13 @@ bool FilterSensitiveExtensionsInstallForcelist(PolicyMap::Entry* map_entry) {
   if (!map_entry)
     return false;
 
-  base::Value* policy_list_value = map_entry->value();
-  if (!policy_list_value || !policy_list_value->is_list())
+  base::Value* policy_list_value = map_entry->value(base::Value::Type::LIST);
+  if (!policy_list_value)
     return false;
 
   // Using index for loop to update the list in place.
-  for (size_t i = 0; i < policy_list_value->GetList().size(); i++) {
-    const auto& list_entry = policy_list_value->GetList()[i];
+  for (size_t i = 0; i < policy_list_value->GetListDeprecated().size(); i++) {
+    const auto& list_entry = policy_list_value->GetListDeprecated()[i];
     if (!list_entry.is_string())
       continue;
 
@@ -88,9 +88,9 @@ bool FilterSensitiveExtensionsInstallForcelist(PolicyMap::Entry* map_entry) {
       continue;
 
     // Only allow custom update urls in enterprise environments.
-    if (!base::LowerCaseEqualsASCII(entry.substr(pos + 1),
-                                    kChromeWebstoreUpdateURL)) {
-      policy_list_value->GetList()[i] =
+    if (!base::EqualsCaseInsensitiveASCII(entry.substr(pos + 1),
+                                          kChromeWebstoreUpdateURL)) {
+      policy_list_value->GetListDeprecated()[i] =
           base::Value(kBlockedExtensionPrefix + entry);
       has_invalid_policies = true;
     }
@@ -111,8 +111,8 @@ bool FilterSensitiveExtensionsInstallForcelist(PolicyMap::Entry* map_entry) {
 bool FilterSensitiveExtensionSettings(PolicyMap::Entry* map_entry) {
   if (!map_entry)
     return false;
-  base::Value* policy_dict_value = map_entry->value();
-  if (!policy_dict_value || !policy_dict_value->is_dict()) {
+  base::Value* policy_dict_value = map_entry->value(base::Value::Type::DICT);
+  if (!policy_dict_value) {
     return false;
   }
 
@@ -131,8 +131,8 @@ bool FilterSensitiveExtensionSettings(PolicyMap::Entry* map_entry) {
       continue;
     }
     std::string* update_url = entry.second.FindStringKey(kUpdateUrl);
-    if (!update_url ||
-        base::LowerCaseEqualsASCII(*update_url, kChromeWebstoreUpdateURL)) {
+    if (!update_url || base::EqualsCaseInsensitiveASCII(
+                           *update_url, kChromeWebstoreUpdateURL)) {
       continue;
     }
 

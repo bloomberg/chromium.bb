@@ -20,8 +20,8 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/table_view/table_view_constants.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -320,7 +320,7 @@ void AddCurrentPageToReadingList() {
   [ChromeEarlGrey watchForButtonsWithLabels:@[ snackBarLabel ]
                                     timeout:kSnackbarAppearanceTimeout];
   [ChromeEarlGreyUI
-      tapToolsMenuButton:chrome_test_util::ButtonWithAccessibilityLabelId(
+      tapToolsMenuAction:chrome_test_util::ButtonWithAccessibilityLabelId(
                              IDS_IOS_SHARE_MENU_READING_LIST_ACTION)];
 
   // Wait for the snackbar to appear.
@@ -582,14 +582,21 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
   [ChromeEarlGrey goBack];
 
-  // Check that the offline version is still displayed.
   [ChromeEarlGrey waitForPageToFinishLoading];
   base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1));
-  AssertIsShowingDistillablePage(false, distillablePageURL);
 
-  // Check that a new navigation wasn't created.
-  GREYAssertEqual(0, [ChromeEarlGrey navigationBackListItemsCount],
-                  @"The offline page should be the first committed URL.");
+  if ([ChromeEarlGrey isLoadSimulatedRequestAPIEnabled]) {
+    // Check that the online version is now displayed.
+    AssertIsShowingDistillablePage(true, distillablePageURL);
+    GREYAssertEqual(1, [ChromeEarlGrey navigationBackListItemsCount],
+                    @"The NTP page should be the first committed URL.");
+  } else {
+    // Check that the offline version is still displayed.
+    AssertIsShowingDistillablePage(false, distillablePageURL);
+    // Check that a new navigation wasn't created.
+    GREYAssertEqual(0, [ChromeEarlGrey navigationBackListItemsCount],
+                    @"The offline page should be the first committed URL.");
+  }
 
   // Check that navigating forward navigates to the correct page.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -680,8 +687,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   GREYAssertFalse(self.serverServedRedImage,
                   @"Offline page accessed online resource.");
 
-  id checkImage = [ChromeEarlGrey executeJavaScript:kCheckImagesJS];
-  GREYAssert([checkImage isEqual:@YES], @"Incorrect image loading.");
+  auto checkImage = [ChromeEarlGrey evaluateJavaScript:kCheckImagesJS];
+
+  GREYAssertTrue(checkImage.is_bool(), @"CheckImage is not a boolean.");
+  GREYAssert(checkImage.GetBool(), @"Incorrect image loading.");
 
   // Verify that the webState's title is correct.
   GREYAssertEqualObjects([ChromeEarlGreyAppInterface currentTabTitle],
@@ -724,7 +733,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
-- (void)testSavingToReadingListAndLoadNoNetwork {
+// TODO(crbug.com/1326627): Fix flakiness.
+- (void)DISABLED_testSavingToReadingListAndLoadNoNetwork {
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
@@ -1155,41 +1165,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   // Check that the TableView has been dismissed.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kReadingListViewID)]
       assertWithMatcher:grey_nil()];
-}
-
-// Tests the long pressing the setting switch does not trigger any context menu.
-- (void)testContextMenuSwitch {
-  AppLaunchConfiguration config = [self appConfigurationForTestCase];
-  config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  config.features_enabled.push_back(kReadingListMessages);
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
-  AddEntriesAndOpenReadingList();
-  ScrollToTop();
-  id<GREYMatcher> matcher = grey_allOf(
-      chrome_test_util::StaticTextWithAccessibilityLabel(
-          l10n_util::GetNSString(IDS_IOS_READING_LIST_MESSAGES_SETTING_TITLE)),
-      grey_ancestor(grey_kindOfClassName(@"SettingsSwitchCell")),
-      grey_sufficientlyVisible(), nil);
-  [[[EarlGrey selectElementWithMatcher:matcher]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
-      onElementWithMatcher:grey_accessibilityID(kReadingListViewID)]
-      performAction:grey_longPressWithDuration(kLongPressDuration)];
-
-  GREYAssertFalse(
-      base::test::ios::WaitUntilConditionOrTimeout(
-          kWaitForUIElementTimeout,
-          ^BOOL {
-            NSError* error = nil;
-            // Check for _UIContextMenuView so it would catch both native
-            // and custom context menu.
-            [[EarlGrey
-                selectElementWithMatcher:grey_kindOfClassName(
-                                             @"_UIContextMenuContainerView")]
-                assertWithMatcher:grey_sufficientlyVisible()
-                            error:&error];
-            return error == nil;
-          }),
-      @"Context menu is displayed on settings button.");
 }
 
 // Tests the Copy Link context menu action for a reading list entry.

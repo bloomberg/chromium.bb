@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 cc_binary(
     name = "quic_trace_to_time_sequence_gnuplot",
     srcs = ["quic_trace_to_time_sequence_gnuplot.cc"],
     deps = [
-        "//lib:quic_trace_cc_proto",
+        "//quic_trace:quic_trace_cc_proto",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/flags:flag",
@@ -30,9 +30,10 @@ cc_binary(
     name = "transform_quic_trace",
     srcs = ["transform_quic_trace.cc"],
     deps = [
-        "//lib:quic_trace_cc_proto",
+        "//quic_trace:quic_trace_cc_proto",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
     ],
 )

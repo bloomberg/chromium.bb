@@ -1046,8 +1046,38 @@ static INLINE void sort_rd(int64_t rds[], int txk[], int len) {
   }
 }
 
+static INLINE int64_t av1_block_error_qm(const tran_low_t *coeff,
+                                         const tran_low_t *dqcoeff,
+                                         intptr_t block_size,
+                                         const qm_val_t *qmatrix,
+                                         const int16_t *scan, int64_t *ssz) {
+  int i;
+  int64_t error = 0, sqcoeff = 0;
+
+  for (i = 0; i < block_size; i++) {
+    int64_t weight = qmatrix[scan[i]];
+    int64_t dd = coeff[i] - dqcoeff[i];
+    dd *= weight;
+    int64_t cc = coeff[i];
+    cc *= weight;
+    // The ranges of coeff and dqcoeff are
+    //  bd8 : 18 bits (including sign)
+    //  bd10: 20 bits (including sign)
+    //  bd12: 22 bits (including sign)
+    // As AOM_QM_BITS is 5, the intermediate quantities in the calculation
+    // below should fit in 54 bits, thus no overflow should happen.
+    error += (dd * dd + (1 << (2 * AOM_QM_BITS - 1))) >> (2 * AOM_QM_BITS);
+    sqcoeff += (cc * cc + (1 << (2 * AOM_QM_BITS - 1))) >> (2 * AOM_QM_BITS);
+  }
+
+  *ssz = sqcoeff;
+  return error;
+}
+
 static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
-                                        TX_SIZE tx_size, int64_t *out_dist,
+                                        TX_SIZE tx_size,
+                                        const qm_val_t *qmatrix,
+                                        const int16_t *scan, int64_t *out_dist,
                                         int64_t *out_sse) {
   const struct macroblock_plane *const p = &x->plane[plane];
   // Transform domain distortion computation is more efficient as it does
@@ -1062,12 +1092,21 @@ static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
   tran_low_t *const dqcoeff = p->dqcoeff + block_offset;
 #if CONFIG_AV1_HIGHBITDEPTH
   MACROBLOCKD *const xd = &x->e_mbd;
-  if (is_cur_buf_hbd(xd))
+  if (is_cur_buf_hbd(xd)) {
+    // TODO(veluca): handle use_qm_dist_metric for HBD too.
     *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse,
                                        xd->bd);
-  else
+  } else {
 #endif
-    *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
+    if (qmatrix == NULL || !x->txfm_search_params.use_qm_dist_metric) {
+      *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
+    } else {
+      *out_dist = av1_block_error_qm(coeff, dqcoeff, buffer_length, qmatrix,
+                                     scan, &this_sse);
+    }
+#if CONFIG_AV1_HIGHBITDEPTH
+  }
+#endif
 
   *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
   *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
@@ -1129,7 +1168,10 @@ uint16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
                     &quant_param);
 
-    dist_block_tx_domain(x, plane, block, tx_size, &dist, &sse);
+    const SCAN_ORDER *const scan_order =
+        get_scan(txfm_param.tx_size, txfm_param.tx_type);
+    dist_block_tx_domain(x, plane, block, tx_size, quant_param.qmatrix,
+                         scan_order->scan, &dist, &sse);
 
     rate_cost = av1_cost_coeffs_txb_laplacian(x, plane, block, tx_size, tx_type,
                                               txb_ctx, reduced_tx_set_used, 0);
@@ -1162,7 +1204,10 @@ uint16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
                     &quant_param);
 
-    dist_block_tx_domain(x, plane, block, tx_size, &dist, &sse);
+    const SCAN_ORDER *const scan_order =
+        get_scan(txfm_param.tx_size, txfm_param.tx_type);
+    dist_block_tx_domain(x, plane, block, tx_size, quant_param.qmatrix,
+                         scan_order->scan, &dist, &sse);
 
     rate_cost = av1_cost_coeffs_txb_laplacian(x, plane, block, tx_size, tx_type,
                                               txb_ctx, reduced_tx_set_used, 0);
@@ -1254,7 +1299,10 @@ uint16_t prune_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     rate_cost = av1_cost_coeffs_txb_laplacian(x, plane, block, tx_size, tx_type,
                                               txb_ctx, reduced_tx_set_used, 0);
     // tx domain dist
-    dist_block_tx_domain(x, plane, block, tx_size, &dist, &sse);
+    const SCAN_ORDER *const scan_order =
+        get_scan(txfm_param.tx_size, txfm_param.tx_type);
+    dist_block_tx_domain(x, plane, block, tx_size, quant_param.qmatrix,
+                         scan_order->scan, &dist, &sse);
 
     txk_map[num_cand] = tx_type;
     rds[num_cand] = RDCOST(x->rdmult, rate_cost, dist);
@@ -2110,6 +2158,8 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     // Calculate rate cost of quantized coefficients.
     if (quant_param.use_optimize_b) {
+      // TODO(aomedia:3209): update Trellis quantization to take into account
+      // quantization matrices.
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
                      &rate_cost);
     } else {
@@ -2130,7 +2180,10 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       this_rd_stats.dist = dist_block_px_domain(
           cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size);
     } else if (use_transform_domain_distortion) {
-      dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
+      const SCAN_ORDER *const scan_order =
+          get_scan(txfm_param.tx_size, txfm_param.tx_type);
+      dist_block_tx_domain(x, plane, block, tx_size, quant_param.qmatrix,
+                           scan_order->scan, &this_rd_stats.dist,
                            &this_rd_stats.sse);
     } else {
       int64_t sse_diff = INT64_MAX;
@@ -2147,7 +2200,10 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         // to decide if we should do pixel domain distortion. If the energy
         // is mostly in first quadrant, then it is unlikely that we have
         // overflow issue in inverse transform.
-        dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
+        const SCAN_ORDER *const scan_order =
+            get_scan(txfm_param.tx_size, txfm_param.tx_type);
+        dist_block_tx_domain(x, plane, block, tx_size, quant_param.qmatrix,
+                             scan_order->scan, &this_rd_stats.dist,
                              &this_rd_stats.sse);
         sse_diff = block_sse - this_rd_stats.sse;
       }
@@ -2917,7 +2973,10 @@ int64_t av1_estimate_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
       this_rd_stats.rate =
           cost_coeffs(x, 0, i, tx_size, txfm_param.tx_type, &txb_ctx, 0);
 
-      dist_block_tx_domain(x, 0, i, tx_size, &this_rd_stats.dist,
+      const SCAN_ORDER *const scan_order =
+          get_scan(txfm_param.tx_size, txfm_param.tx_type);
+      dist_block_tx_domain(x, 0, i, tx_size, quant_param.qmatrix,
+                           scan_order->scan, &this_rd_stats.dist,
                            &this_rd_stats.sse);
 
       const int64_t no_skip_txfm_rd =

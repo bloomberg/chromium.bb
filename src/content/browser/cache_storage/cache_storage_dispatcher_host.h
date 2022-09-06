@@ -21,6 +21,10 @@ namespace network {
 struct CrossOriginEmbedderPolicy;
 }
 
+namespace storage {
+struct BucketLocator;
+}
+
 namespace content {
 
 class CacheStorageContextImpl;
@@ -50,6 +54,7 @@ class CacheStorageDispatcherHost {
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter,
       const blink::StorageKey& storage_key,
+      const absl::optional<storage::BucketLocator>& bucket,
       storage::mojom::CacheStorageOwner owner,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 
@@ -62,8 +67,9 @@ class CacheStorageDispatcherHost {
       std::unique_ptr<CacheImpl> cache_impl,
       mojo::PendingAssociatedReceiver<blink::mojom::CacheStorageCache>
           receiver);
-  CacheStorageHandle OpenCacheStorage(const blink::StorageKey& storage_key,
-                                      storage::mojom::CacheStorageOwner owner);
+  CacheStorageHandle OpenCacheStorage(
+      const storage::BucketLocator& bucket_locator,
+      storage::mojom::CacheStorageOwner owner);
 
   // `this` is owned by `context_`.
   const raw_ptr<CacheStorageContextImpl> context_;

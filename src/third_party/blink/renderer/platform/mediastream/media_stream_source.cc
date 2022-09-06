@@ -30,11 +30,13 @@
 
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
+#include "base/synchronization/lock.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webaudio_destination_consumer.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -156,6 +158,24 @@ MediaStreamSource::MediaStreamSource(const String& id,
           .Utf8());
 }
 
+MediaStreamSource::MediaStreamSource(
+    const String& id,
+    StreamType type,
+    const String& name,
+    bool remote,
+    std::unique_ptr<WebPlatformMediaStreamSource> platform_source,
+    ReadyState ready_state,
+    bool requires_consumer)
+    : MediaStreamSource(id,
+                        type,
+                        name,
+                        remote,
+                        ready_state,
+                        requires_consumer) {
+  platform_source_ = std::move(platform_source);
+  platform_source_->SetOwner(this);
+}
+
 void MediaStreamSource::SetGroupId(const String& group_id) {
   SendLogMessage(
       String::Format("SetGroupId({group_id=%s})", group_id.Utf8().c_str())
@@ -190,14 +210,6 @@ void MediaStreamSource::AddObserver(MediaStreamSource::Observer* observer) {
   observers_.insert(observer);
 }
 
-void MediaStreamSource::SetPlatformSource(
-    std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
-  if (platform_source)
-    platform_source->SetOwner(this);
-
-  platform_source_ = std::move(platform_source);
-}
-
 void MediaStreamSource::SetAudioProcessingProperties(
     EchoCancellationMode echo_cancellation_mode,
     bool auto_gain_control,
@@ -214,24 +226,22 @@ void MediaStreamSource::SetAudioProcessingProperties(
   noise_supression_ = noise_supression;
 }
 
-void MediaStreamSource::AddAudioConsumer(
+void MediaStreamSource::SetAudioConsumer(
     WebAudioDestinationConsumer* consumer) {
   DCHECK(requires_consumer_);
-  auto consumer_wrapper = std::make_unique<ConsumerWrapper>(consumer);
-
-  MutexLocker locker(audio_consumers_lock_);
-  audio_consumers_.insert(consumer, std::move(consumer_wrapper));
+  base::AutoLock locker(audio_consumer_lock_);
+  // audio_consumer_ should only be set once.
+  DCHECK(!audio_consumer_);
+  audio_consumer_ = std::make_unique<ConsumerWrapper>(consumer);
 }
 
-bool MediaStreamSource::RemoveAudioConsumer(
-    WebAudioDestinationConsumer* consumer) {
+bool MediaStreamSource::RemoveAudioConsumer() {
   DCHECK(requires_consumer_);
 
-  MutexLocker locker(audio_consumers_lock_);
-  auto it = audio_consumers_.find(consumer);
-  if (it == audio_consumers_.end())
+  base::AutoLock locker(audio_consumer_lock_);
+  if (!audio_consumer_)
     return false;
-  audio_consumers_.erase(it);
+  audio_consumer_.reset();
   return true;
 }
 
@@ -282,9 +292,10 @@ void MediaStreamSource::SetAudioFormat(int number_of_channels,
                                 sample_rate)
                      .Utf8());
   DCHECK(requires_consumer_);
-  MutexLocker locker(audio_consumers_lock_);
-  for (auto&& consumer : audio_consumers_.Values())
-    consumer->SetFormat(number_of_channels, sample_rate);
+  base::AutoLock locker(audio_consumer_lock_);
+  if (!audio_consumer_)
+    return;
+  audio_consumer_->SetFormat(number_of_channels, sample_rate);
 }
 
 void MediaStreamSource::ConsumeAudio(AudioBus* bus, int number_of_frames) {
@@ -292,9 +303,10 @@ void MediaStreamSource::ConsumeAudio(AudioBus* bus, int number_of_frames) {
                "MediaStreamSource::ConsumeAudio");
 
   DCHECK(requires_consumer_);
-  MutexLocker locker(audio_consumers_lock_);
-  for (auto&& consumer : audio_consumers_.Values())
-    consumer->ConsumeAudio(bus, number_of_frames);
+  base::AutoLock locker(audio_consumer_lock_);
+  if (!audio_consumer_)
+    return;
+  audio_consumer_->ConsumeAudio(bus, number_of_frames);
 }
 
 void MediaStreamSource::OnDeviceCaptureHandleChange(
@@ -304,18 +316,18 @@ void MediaStreamSource::OnDeviceCaptureHandleChange(
   }
 
   auto capture_handle = media::mojom::CaptureHandle::New();
-  if (device.display_media_info.has_value()) {
-    capture_handle = device.display_media_info.value()->capture_handle.Clone();
+  if (device.display_media_info) {
+    capture_handle = device.display_media_info->capture_handle.Clone();
   }
 
-  platform_source_->SetCaptureHandle(capture_handle.Clone());
+  platform_source_->SetCaptureHandle(std::move(capture_handle));
 
   // Observers may dispatch events which create and add new Observers;
   // take a snapshot so as to safely iterate.
   HeapVector<Member<Observer>> observers;
   CopyToVector(observers_, observers);
   for (auto observer : observers) {
-    observer->SourceChangedCaptureHandle(capture_handle.Clone());
+    observer->SourceChangedCaptureHandle();
   }
 }
 
@@ -325,8 +337,8 @@ void MediaStreamSource::Trace(Visitor* visitor) const {
 
 void MediaStreamSource::Dispose() {
   {
-    MutexLocker locker(audio_consumers_lock_);
-    audio_consumers_.clear();
+    base::AutoLock locker(audio_consumer_lock_);
+    audio_consumer_.reset();
   }
   platform_source_.reset();
   constraints_.Reset();

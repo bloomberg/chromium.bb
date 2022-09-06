@@ -126,9 +126,9 @@ found in the LICENSE file.
           <p class="error">[[error]]
         </template>
         <iron-ajax method="post" headers="[[authHeaders]]" auto url="/api/config" loading="{{configLoading}}" last-response="{{config}}"></iron-ajax>
-        <iron-ajax method="post" headers="[[authHeaders]]" auto url="https://chromeperf.appspot.com/api/test_suites" loading="{{suitesLoading}}" last-response="{{testSuites}}"></iron-ajax>
+        <iron-ajax method="post" headers="[[authHeaders]]" auto url="{{generateChromeperfUrl('/api/test_suites')}}" loading="{{suitesLoading}}" last-response="{{testSuites}}"></iron-ajax>
         <template is="dom-if" if="{{validBenchmark(benchmark)}}">
-          <iron-ajax method="post" headers="[[authHeaders]]" auto url="https://chromeperf.appspot.com/api/describe" params="{{describeParams(benchmark)}}" loading="{{benchmarkConfigLoading}}" last-response="{{benchmarkConfig}}"></iron-ajax>
+          <iron-ajax method="post" headers="[[authHeaders]]" auto url="{{generateChromeperfUrl('/api/describe')}}" params="{{describeParams(benchmark)}}" loading="{{benchmarkConfigLoading}}" last-response="{{benchmarkConfig}}"></iron-ajax>
         </template>
         <template is="dom-if" if="[[hasJob(job)]]">
           <iron-ajax method="post" headers="[[authHeaders]]" auto url="/api/commits" params="{{commitsParams(job)}}" loading="{{commitRangeLoading}}" last-response="{{commitsList}}"></iron-ajax>
@@ -214,6 +214,12 @@ found in the LICENSE file.
               </div>
             </div>
 
+            <div class="horizontal" hidden="[[isBisectJob(comparisonMode)]]">
+              <paper-input name="initial_attempt_count"
+                           value="{{initial_attempt_count}}"
+                           label="Attempt Count"></paper-input>
+            </div>
+
             <div class="horizontal" hidden="[[!isBisectJob(comparisonMode)]]">
               <div class="column rightPad">
                 <div class="horizontal">
@@ -287,9 +293,6 @@ found in the LICENSE file.
             <paper-input name="project" value="{{project::input}}" label="Monorail Project"></paper-input>
             <paper-input name="bug_id" value="{{bug_id}}" label="Bug ID"></paper-input>
 
-            <paper-checkbox name="experimental_execution_engine">
-              Use experimental execution engine.
-            </paper-checkbox>
             <paper-input name="batch_id" value="{{batch_id}}" label="Batch ID"></paper-input>
           </form>
         </iron-form>
@@ -341,6 +344,10 @@ found in the LICENSE file.
         },
         comparison_magnitude: Number,
         extra_test_args: String,
+        initial_attempt_count: {
+          type: Number,
+          value: 10
+        },
         patch: String,
         statistic: String,
         base_git_hash: {
@@ -465,6 +472,7 @@ found in the LICENSE file.
         this.comparisonMode = job.arguments.comparison_mode;
         this.comparison_magnitude = job.arguments.comparison_magnitude;
         this.extra_test_args = job.arguments.extra_test_args;
+        this.initial_attempt_count = job.arguments.initial_attempt_count;
         this.$.botDropdown.query = job.arguments.configuration;
         this.$.benchmarkDropdown.query = job.arguments.benchmark;
         this.$.storyCasesDropdown.query = job.arguments.story;
@@ -495,6 +503,15 @@ found in the LICENSE file.
           start_git_hash: job.arguments.start_git_hash,
           end_git_hash: job.arguments.end_git_hash
         };
+      },
+
+      generateChromeperfUrl(api) {
+        if (window.location.href.includes('-stage')) {
+          return "https://chromeperf-stage.uc.r.appspot.com" + api;
+        }
+        else {
+          return "https://chromeperf.appspot.com" + api;
+        }
       },
 
       describeParams(benchmark) {
@@ -588,6 +605,9 @@ found in the LICENSE file.
         if (configuration.toLowerCase().includes('webview')) {
           return 'performance_webview_test_suite';
         }
+        if (configuration.toLowerCase().includes('fuchsia')) {
+          return 'performance_web_engine_test_suite';
+        }
         if (configuration.toLowerCase().includes('eve')) {
           return 'performance_test_suite_eve';
         }
@@ -607,24 +627,32 @@ found in the LICENSE file.
           return 'performance_test_suite_android_clank_monochrome_bundle';
         } else if (configuration === 'android-go-perf') {
           return 'performance_test_suite_android_clank_chrome';
+        } else if (configuration === 'android-go-perf-pgo') {
+          return 'performance_test_suite_android_clank_chrome';
         } else if (configuration === 'Android Nexus5 Perf') {
           return 'performance_test_suite_android_chrome';
         } else if (configuration === 'android-pixel2-perf') {
+          return 'performance_test_suite_android_clank_monochrome_64_32_bundle';
+        } else if (configuration === 'android-pixel2-perf-pgo') {
           return 'performance_test_suite_android_clank_monochrome_64_32_bundle';
         } else if (configuration === 'android-pixel2_weblayer-perf') {
           return 'performance_weblayer_test_suite';
         } else if (configuration === 'android-pixel4-perf') {
           return 'performance_test_suite_android_clank_trichrome_bundle';
+        } else if (configuration === 'android-pixel4-perf-pgo') {
+          return 'performance_test_suite_android_clank_trichrome_bundle';
         } else if (configuration === 'android-pixel4_weblayer-perf') {
           return 'performance_weblayer_test_suite';
+        } else if (configuration === 'android-pixel4_weblayer-perf-pgo') {
+          return 'performance_weblayer_test_suite';
         } else if (configuration === 'android-pixel4a_power-perf') {
+          return 'performance_test_suite_android_clank_chrome';
+        } else if (configuration === 'android-pixel4a_power-perf-pgo') {
           return 'performance_test_suite_android_clank_chrome';
         } else if (configuration.toLowerCase().includes('android')) {
           throw Error(
               'Given Android configuration ' + configuration + ' does not ' +
               'have an isolate mapped to it');
-        } else if (configuration === 'fuchsia-perf-fyi') {
-          return 'performance_web_engine_test_suite';
         }
 
         return 'performance_test_suite';

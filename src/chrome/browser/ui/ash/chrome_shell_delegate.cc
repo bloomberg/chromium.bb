@@ -10,6 +10,8 @@
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/new_window_delegate.h"
+#include "ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -23,7 +25,7 @@
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/nearby_sharing/nearby_share_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -31,7 +33,7 @@
 #include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
-#include "chrome/browser/ui/ash/desks_templates/chrome_desks_templates_delegate.h"
+#include "chrome/browser/ui/ash/desks/chrome_desks_templates_delegate.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/window_pin_util.h"
@@ -39,8 +41,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -49,16 +49,16 @@
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -109,14 +109,36 @@ ChromeShellDelegate::CreateCaptureModeDelegate() const {
   return std::make_unique<ChromeCaptureModeDelegate>();
 }
 
+ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
+  return new ChromeAccessibilityDelegate;
+}
+
+std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
+ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
+    ash::BackGestureContextualNudgeController* controller) {
+  return std::make_unique<BackGestureContextualNudgeDelegate>(controller);
+}
+
+std::unique_ptr<ash::NearbyShareDelegate>
+ChromeShellDelegate::CreateNearbyShareDelegate(
+    ash::NearbyShareController* controller) const {
+  return std::make_unique<NearbyShareDelegateImpl>(controller);
+}
+
+std::unique_ptr<ash::DesksTemplatesDelegate>
+ChromeShellDelegate::CreateDesksTemplatesDelegate() const {
+  return std::make_unique<ChromeDesksTemplatesDelegate>();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeShellDelegate::GetGeolocationUrlLoaderFactory() const {
+  return g_browser_process->shared_url_loader_factory();
+}
+
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
-  chrome::ScopedTabbedBrowserDisplayer scoped_tabbed_browser_displayer(
-      ProfileManager::GetActiveUserProfile());
-  NavigateParams params(scoped_tabbed_browser_displayer.browser(),
-                        GURL(kKeyboardShortcutHelpPageUrl),
-                        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  Navigate(&params);
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(kKeyboardShortcutHelpPageUrl),
+      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
 }
 
 bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
@@ -182,11 +204,11 @@ void ChromeShellDelegate::BindFingerprint(
 }
 
 void ChromeShellDelegate::BindMultiDeviceSetup(
-    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+    mojo::PendingReceiver<ash::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
-  chromeos::multidevice_setup::MultiDeviceSetupService* service =
-      chromeos::multidevice_setup::MultiDeviceSetupServiceFactory::
-          GetForProfile(ProfileManager::GetPrimaryUserProfile());
+  ash::multidevice_setup::MultiDeviceSetupService* service =
+      ash::multidevice_setup::MultiDeviceSetupServiceFactory::GetForProfile(
+          ProfileManager::GetPrimaryUserProfile());
   if (service)
     service->BindMultiDeviceSetup(std::move(receiver));
 }
@@ -194,27 +216,6 @@ void ChromeShellDelegate::BindMultiDeviceSetup(
 media_session::MediaSessionService*
 ChromeShellDelegate::GetMediaSessionService() {
   return &content::GetMediaSessionService();
-}
-
-ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
-  return new ChromeAccessibilityDelegate;
-}
-
-std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
-ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
-    ash::BackGestureContextualNudgeController* controller) {
-  return std::make_unique<BackGestureContextualNudgeDelegate>(controller);
-}
-
-std::unique_ptr<ash::NearbyShareDelegate>
-ChromeShellDelegate::CreateNearbyShareDelegate(
-    ash::NearbyShareController* controller) const {
-  return std::make_unique<NearbyShareDelegateImpl>(controller);
-}
-
-std::unique_ptr<ash::DesksTemplatesDelegate>
-ChromeShellDelegate::CreateDesksTemplatesDelegate() const {
-  return std::make_unique<ChromeDesksTemplatesDelegate>();
 }
 
 bool ChromeShellDelegate::IsSessionRestoreInProgress() const {
@@ -314,4 +315,25 @@ void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
 // static
 void ChromeShellDelegate::ResetDisableLoggingRedirectForTesting() {
   disable_logging_redirect_for_testing.reset();
+}
+
+const GURL& ChromeShellDelegate::GetLastCommittedURLForWindowIfAny(
+    aura::Window* window) {
+  // Get the web content if the window is a browser window.
+  content::WebContents* contents =
+      GetActiveWebContentsForNativeBrowserWindow(window);
+
+  if (!contents) {
+    // Get the web content if the window is an app window.
+    Profile* profile = ProfileManager::GetLastUsedProfile();
+    if (profile) {
+      const extensions::AppWindow* app_window =
+          extensions::AppWindowRegistry::Get(profile)
+              ->GetAppWindowForNativeWindow(window);
+      if (app_window)
+        contents = app_window->web_contents();
+    }
+  }
+
+  return contents ? contents->GetLastCommittedURL() : GURL::EmptyGURL();
 }

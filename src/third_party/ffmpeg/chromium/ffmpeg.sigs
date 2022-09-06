@@ -44,6 +44,7 @@ void avformat_free_context(AVFormatContext *s);
 AVIOContext *avio_alloc_context(unsigned char *buffer, int buffer_size, int write_flag, void *opaque, AVIOReadWriteOperation read_packet, AVIOReadWriteOperation write_packet, AVIOSeekOperation seek);
 int avio_close(AVIOContext *s);
 int64_t av_stream_get_first_dts(const AVStream *st);
+uint8_t *av_stream_get_side_data(const AVStream *stream, enum AVPacketSideDataType type, size_t *size);
 
 
 //------------------------------------------------

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
+import("//ppapi/buildflags/buildflags.gni")
+
+assert(enable_plugins)
 
 config("proxy_implementation") {
   defines = [ "PPAPI_PROXY_IMPLEMENTATION" ]
@@ -100,8 +103,6 @@ component("proxy") {
     "ppb_testing_proxy.h",
     "ppp_class_proxy.cc",
     "ppp_class_proxy.h",
-    "ppp_find_proxy.cc",
-    "ppp_find_proxy.h",
     "ppp_graphics_3d_proxy.cc",
     "ppp_graphics_3d_proxy.h",
     "ppp_input_event_proxy.cc",
@@ -112,8 +113,6 @@ component("proxy") {
     "ppp_messaging_proxy.h",
     "ppp_mouse_lock_proxy.cc",
     "ppp_mouse_lock_proxy.h",
-    "ppp_pdf_proxy.cc",
-    "ppp_pdf_proxy.h",
     "ppp_printing_proxy.cc",
     "ppp_printing_proxy.h",
     "ppp_text_input_proxy.cc",
@@ -166,6 +165,12 @@ component("proxy") {
   ]
 
   if (is_nacl) {
+    # Consistency check: Check that is_nacl_irt is set to true for this
+    # code that is built for the NaCl IRT.  Previously, there was a bug
+    # where is_nacl_irt was not always set to true for builds of the NaCl
+    # IRT.
+    assert(is_nacl_irt)
+
     sources += [
       "../nacl_irt/irt_interfaces.cc",
       "../nacl_irt/irt_interfaces.h",
@@ -191,16 +196,10 @@ component("proxy") {
       "browser_font_singleton_resource.h",
       "device_enumeration_resource_helper.cc",
       "device_enumeration_resource_helper.h",
-      "flash_font_file_resource.cc",
-      "flash_font_file_resource.h",
-      "flash_fullscreen_resource.cc",
-      "flash_fullscreen_resource.h",
       "host_dispatcher.cc",
       "host_dispatcher.h",
       "host_var_serialization_rules.cc",
       "host_var_serialization_rules.h",
-      "pdf_resource.cc",
-      "pdf_resource.h",
       "ppb_buffer_proxy.cc",
       "ppb_var_deprecated_proxy.cc",
       "ppb_var_deprecated_proxy.h",

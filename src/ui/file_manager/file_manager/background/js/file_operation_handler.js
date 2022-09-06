@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+
 import {FileOperationProgressEvent} from '../../common/js/file_operation_common.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
 import {str, strf, util} from '../../common/js/util.js';
@@ -75,11 +77,11 @@ export class FileOperationHandler {
       };
     }
     item.message = getMessageFromProgressEvent_(event);
+    item.sourceMessage = event.sourceName;
+    item.destinationMessage = event.destinationName;
 
     switch (event.state) {
       case chrome.fileManagerPrivate.IOTaskState.QUEUED:
-        item.sourceMessage = event.sourceName;
-        item.destinationMessage = event.destinationName;
         item.progressMax = event.totalBytes;
         item.progressValue = event.bytesTransferred;
         item.remainingTime = event.remainingSeconds;
@@ -97,8 +99,6 @@ export class FileOperationHandler {
         if (newItem) {
           // ERROR events can be dispatched before BEGIN events.
           item.progressMax = 1;
-          item.sourceMessage = event.sourceName;
-          item.destinationMessage = event.destinationName;
         }
         if (event.state === chrome.fileManagerPrivate.IOTaskState.SUCCESS) {
           item.state = ProgressItemState.COMPLETED;
@@ -110,6 +110,16 @@ export class FileOperationHandler {
         } else {
           item.state = ProgressItemState.ERROR;
         }
+        // Extract IOTask details are only stored while an operation is active.
+        if (item.type == ProgressItemType.EXTRACT) {
+          this.fileOperationManager_.notifyExtractDone(event.taskId);
+        }
+        break;
+      case chrome.fileManagerPrivate.IOTaskState.NEED_PASSWORD:
+        // Set state to canceled so notification doesn't display.
+        item.state = ProgressItemState.CANCELED;
+        assert(item.type == ProgressItemType.EXTRACT);
+        this.fileOperationManager_.handleMissingPassword(event.taskId);
         break;
       default:
         console.error(`Invalid IOTaskState: ${event.state}`);
@@ -306,7 +316,9 @@ export class FileOperationHandler {
             case util.FileOperationType.ZIP:
               return strf('ZIP_TARGET_EXISTS_ERROR', name);
             default:
-              return strf('TRANSFER_TARGET_EXISTS_ERROR', name);
+              console.warn(
+                  `Unexpected operation type: ${event.status.operationType}`);
+              return strf('FILE_ERROR_GENERIC');
           }
 
         case util.FileOperationErrorType.FILESYSTEM_ERROR:
@@ -323,7 +335,9 @@ export class FileOperationHandler {
             case util.FileOperationType.RESTORE:
               return str('RESTORE_FROM_TRASH_ERROR');
             default:
-              return strf('TRANSFER_FILESYSTEM_ERROR', detail);
+              console.warn(
+                  `Unexpected operation type: ${event.status.operationType}`);
+              return strf('FILE_ERROR_GENERIC');
           }
 
         default:
@@ -339,7 +353,9 @@ export class FileOperationHandler {
             case util.FileOperationType.RESTORE:
               return str('RESTORE_FROM_TRASH_ERROR');
             default:
-              return strf('TRANSFER_UNEXPECTED_ERROR', event.error.code);
+              console.warn(
+                  `Unexpected operation type: ${event.status.operationType}`);
+              return strf('FILE_ERROR_GENERIC');
           }
       }
     } else if (event.status.numRemainingItems === 1) {
@@ -356,7 +372,9 @@ export class FileOperationHandler {
         case util.FileOperationType.RESTORE:
           return strf('RESTORE_FROM_TRASH_FILE_NAME', name);
         default:
-          return strf('TRANSFER_FILE_NAME', name);
+          console.warn(
+              `Unexpected operation type: ${event.status.operationType}`);
+          return strf('FILE_ERROR_GENERIC');
       }
     } else {
       const remainNumber = event.status.numRemainingItems;
@@ -372,7 +390,9 @@ export class FileOperationHandler {
         case util.FileOperationType.RESTORE:
           return strf('RESTORE_FROM_TRASH_ITEMS_REMAINING', remainNumber);
         default:
-          return strf('TRANSFER_ITEMS_REMAINING', remainNumber);
+          console.warn(
+              `Unexpected operation type: ${event.status.operationType}`);
+          return strf('FILE_ERROR_GENERIC');
       }
     }
   }
@@ -419,12 +439,14 @@ function getTypeFromIOTaskType_(type) {
   switch (type) {
     case chrome.fileManagerPrivate.IOTaskType.COPY:
       return ProgressItemType.COPY;
+    case chrome.fileManagerPrivate.IOTaskType.DELETE:
+      return ProgressItemType.DELETE;
+    case chrome.fileManagerPrivate.IOTaskType.EXTRACT:
+      return ProgressItemType.EXTRACT;
     case chrome.fileManagerPrivate.IOTaskType.MOVE:
       return ProgressItemType.MOVE;
     case chrome.fileManagerPrivate.IOTaskType.ZIP:
       return ProgressItemType.ZIP;
-    case chrome.fileManagerPrivate.IOTaskType.DELETE:
-      return ProgressItemType.DELETE;
     default:
       console.error('Unknown operation type: ' + type);
       return ProgressItemType.TRANSFER;
@@ -445,6 +467,8 @@ function getMessageFromProgressEvent_(event) {
     switch (event.type) {
       case chrome.fileManagerPrivate.IOTaskType.COPY:
         return strf('COPY_FILESYSTEM_ERROR', detail);
+      case chrome.fileManagerPrivate.IOTaskType.EXTRACT:
+        return strf('EXTRACT_FILESYSTEM_ERROR', detail);
       case chrome.fileManagerPrivate.IOTaskType.MOVE:
         return strf('MOVE_FILESYSTEM_ERROR', detail);
       case chrome.fileManagerPrivate.IOTaskType.ZIP:
@@ -454,7 +478,9 @@ function getMessageFromProgressEvent_(event) {
       // case chrome.fileManagerPrivate.IOTaskType.RESTORE:
       //  return str('RESTORE_FROM_TRASH_ERROR');
       default:
-        return strf('TRANSFER_FILESYSTEM_ERROR', detail);
+        console.warn(
+            `Unexpected operation type: ${event.status.operationType}`);
+        return strf('FILE_ERROR_GENERIC');
     }
   }
 

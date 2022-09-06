@@ -52,7 +52,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export interface PrecomputedFeatures {
   renderedWidth: number;
   renderedHeight: number;
-  currentSrc?: string;
+  currentSrc?: Platform.DevToolsPath.UrlString;
 }
 
 function isImageResource(resource: SDK.Resource.Resource|null): boolean {
@@ -60,17 +60,18 @@ function isImageResource(resource: SDK.Resource.Resource|null): boolean {
 }
 
 export class ImagePreview {
-  static async build(target: SDK.Target.Target, originalImageURL: string, showDimensions: boolean, options: {
-    precomputedFeatures: (PrecomputedFeatures|undefined),
-    imageAltText: (string|undefined),
-  }|undefined = {precomputedFeatures: undefined, imageAltText: undefined}): Promise<Element|null> {
+  static async build(
+      target: SDK.Target.Target, originalImageURL: Platform.DevToolsPath.UrlString, showDimensions: boolean, options: {
+        precomputedFeatures: (PrecomputedFeatures|undefined),
+        imageAltText: (string|undefined),
+      }|undefined = {precomputedFeatures: undefined, imageAltText: undefined}): Promise<Element|null> {
     const {precomputedFeatures, imageAltText} = options;
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     if (!resourceTreeModel) {
       return null;
     }
     let resource = resourceTreeModel.resourceForURL(originalImageURL);
-    let imageURL: string = originalImageURL;
+    let imageURL = originalImageURL;
     if (!isImageResource(resource) && precomputedFeatures && precomputedFeatures.currentSrc) {
       imageURL = precomputedFeatures.currentSrc;
       resource = resourceTreeModel.resourceForURL(imageURL);
@@ -95,7 +96,7 @@ export class ImagePreview {
       if (imageAltText) {
         imageElement.alt = imageAltText;
       }
-      imageResource.populateImageSource(imageElement);
+      void imageResource.populateImageSource(imageElement);
 
       function buildContent(): void {
         const shadowBoundary = document.createElement('div');
@@ -178,16 +179,20 @@ export class ImagePreview {
 
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // @ts-expect-error
-    const featuresObject = object.callFunctionJSON(features, undefined);
+    const featuresObject = await object.callFunctionJSON(features, undefined);
     object.release();
     return featuresObject;
 
     function features(this: HTMLImageElement): PrecomputedFeatures {
-      return {renderedWidth: this.width, renderedHeight: this.height, currentSrc: this.currentSrc};
+      return {
+        renderedWidth: this.width,
+        renderedHeight: this.height,
+        currentSrc: this.currentSrc as Platform.DevToolsPath.UrlString,
+      };
     }
   }
 
-  static defaultAltTextForImageURL(url: string): string {
+  static defaultAltTextForImageURL(url: Platform.DevToolsPath.UrlString): string {
     const parsedImageURL = new Common.ParsedURL.ParsedURL(url);
     const imageSourceText = parsedImageURL.isValid ? parsedImageURL.displayName : i18nString(UIStrings.unknownSource);
     return i18nString(UIStrings.imageFromS, {PH1: imageSourceText});

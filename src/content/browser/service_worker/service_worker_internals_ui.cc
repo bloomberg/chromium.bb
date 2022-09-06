@@ -162,6 +162,23 @@ base::Value::ListStorage GetRegistrationListValue(
   for (const auto& registration : registrations) {
     base::Value registration_info(base::Value::Type::DICTIONARY);
     registration_info.SetStringKey("scope", registration.scope.spec());
+    registration_info.SetBoolKey(
+        "third_party_storage_partitioning_enabled",
+        registration.key.IsThirdPartyStoragePartitioningEnabled());
+    registration_info.SetStringKey(
+        "ancestor_chain_bit", registration.key.ancestor_chain_bit() ==
+                                      blink::mojom::AncestorChainBit::kCrossSite
+                                  ? "CrossSite"
+                                  : "SameSite");
+    registration_info.SetStringKey("nonce",
+                                   registration.key.nonce().has_value()
+                                       ? registration.key.nonce()->ToString()
+                                       : "<null>");
+    registration_info.SetStringKey("origin",
+                                   registration.key.origin().GetDebugString());
+    registration_info.SetStringKey(
+        "top_level_site", registration.key.top_level_site().Serialize());
+    registration_info.SetStringKey("storage_key", registration.key.Serialize());
     registration_info.SetStringKey(
         "registration_id", base::NumberToString(registration.registration_id));
     registration_info.SetBoolKey("navigation_preload_enabled",
@@ -326,8 +343,9 @@ class ServiceWorkerInternalsHandler::PartitionObserver
 
 ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
-  WebUIDataSource* source =
-      WebUIDataSource::Create(kChromeUIServiceWorkerInternalsHost);
+  WebUIDataSource* source = WebUIDataSource::CreateAndAdd(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      kChromeUIServiceWorkerInternalsHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
@@ -343,9 +361,6 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
   source->DisableDenyXFrameOptions();
 
   web_ui->AddMessageHandler(std::make_unique<ServiceWorkerInternalsHandler>());
-  BrowserContext* browser_context =
-      web_ui->GetWebContents()->GetBrowserContext();
-  WebUIDataSource::Add(browser_context, source);
 }
 
 ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() = default;
@@ -453,9 +468,9 @@ void ServiceWorkerInternalsHandler::OnOperationComplete(
 }
 
 void ServiceWorkerInternalsHandler::HandleGetOptions(const ListValue* args) {
-  CHECK(args->GetList()[0].is_string());
-  CHECK(args->GetList().size() != 0);
-  std::string callback_id = args->GetList()[0].GetString();
+  CHECK(args->GetListDeprecated()[0].is_string());
+  CHECK(args->GetListDeprecated().size() != 0);
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
   AllowJavascript();
   base::Value options(base::Value::Type::DICTIONARY);
   options.SetBoolKey("debug_on_start",
@@ -465,7 +480,7 @@ void ServiceWorkerInternalsHandler::HandleGetOptions(const ListValue* args) {
 }
 
 void ServiceWorkerInternalsHandler::HandleSetOption(const ListValue* args) {
-  auto args_list = args->GetList();
+  auto args_list = args->GetListDeprecated();
   if (args_list.size() < 2) {
     return;
   }
@@ -565,11 +580,12 @@ bool ServiceWorkerInternalsHandler::GetServiceWorkerContext(
 
 void ServiceWorkerInternalsHandler::HandleStopWorker(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (args->GetList().size() == 0 || !args->GetList()[0].is_string())
+  if (args->GetListDeprecated().size() == 0 ||
+      !args->GetListDeprecated()[0].is_string())
     return;
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
 
-  const base::Value& cmd_args = args->GetList()[1];
+  const base::Value& cmd_args = args->GetListDeprecated()[1];
   if (!cmd_args.is_dict())
     return;
 
@@ -591,11 +607,12 @@ void ServiceWorkerInternalsHandler::HandleStopWorker(const ListValue* args) {
 
 void ServiceWorkerInternalsHandler::HandleInspectWorker(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (args->GetList().size() == 0 || !args->GetList()[0].is_string())
+  if (args->GetListDeprecated().size() == 0 ||
+      !args->GetListDeprecated()[0].is_string())
     return;
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
 
-  const base::Value& cmd_args = args->GetList()[1];
+  const base::Value& cmd_args = args->GetListDeprecated()[1];
   if (!cmd_args.is_dict())
     return;
 
@@ -622,53 +639,62 @@ void ServiceWorkerInternalsHandler::HandleInspectWorker(const ListValue* args) {
 
 void ServiceWorkerInternalsHandler::HandleUnregister(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (args->GetList().size() == 0 || !args->GetList()[0].is_string())
+  if (args->GetListDeprecated().size() == 0 ||
+      !args->GetListDeprecated()[0].is_string())
     return;
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
 
-  const base::Value& cmd_args = args->GetList()[1];
+  const base::Value& cmd_args = args->GetListDeprecated()[1];
   if (!cmd_args.is_dict())
     return;
 
   absl::optional<int> partition_id = cmd_args.FindIntKey("partition_id");
   scoped_refptr<ServiceWorkerContextWrapper> context;
   const std::string* scope_string = cmd_args.FindStringKey("scope");
+  const std::string* storage_key_string = cmd_args.FindStringKey("storage_key");
   if (!partition_id || !GetServiceWorkerContext(*partition_id, &context) ||
-      !scope_string) {
+      !scope_string || !storage_key_string) {
     return;
   }
+
+  absl::optional<blink::StorageKey> storage_key =
+      blink::StorageKey::Deserialize(*storage_key_string);
 
   base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback =
       base::BindOnce(OperationCompleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback_id);
-  UnregisterWithScope(context, GURL(*scope_string), std::move(callback));
+  UnregisterWithScope(context, GURL(*scope_string), storage_key.value(),
+                      std::move(callback));
 }
 
 void ServiceWorkerInternalsHandler::HandleStartWorker(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (args->GetList().size() == 0 || !args->GetList()[0].is_string())
+  if (args->GetListDeprecated().size() == 0 ||
+      !args->GetListDeprecated()[0].is_string())
     return;
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
 
-  const base::Value& cmd_args = args->GetList()[1];
+  const base::Value& cmd_args = args->GetListDeprecated()[1];
   if (!cmd_args.is_dict())
     return;
 
   absl::optional<int> partition_id = cmd_args.FindIntKey("partition_id");
-
   scoped_refptr<ServiceWorkerContextWrapper> context;
   const std::string* scope_string = cmd_args.FindStringKey("scope");
+  const std::string* storage_key_string = cmd_args.FindStringKey("storage_key");
   if (!partition_id || !GetServiceWorkerContext(*partition_id, &context) ||
-      !scope_string) {
+      !scope_string || !storage_key_string) {
     return;
   }
+
+  absl::optional<blink::StorageKey> storage_key =
+      blink::StorageKey::Deserialize(*storage_key_string);
+
   base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback =
       base::BindOnce(OperationCompleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback_id);
-  context->StartActiveServiceWorker(
-      GURL(*scope_string),
-      blink::StorageKey(url::Origin::Create(GURL(*scope_string))),
-      std::move(callback));
+  context->StartActiveServiceWorker(GURL(*scope_string), storage_key.value(),
+                                    std::move(callback));
 }
 
 void ServiceWorkerInternalsHandler::StopWorkerWithId(
@@ -693,6 +719,7 @@ void ServiceWorkerInternalsHandler::StopWorkerWithId(
 void ServiceWorkerInternalsHandler::UnregisterWithScope(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     const GURL& scope,
+    blink::StorageKey& storage_key,
     ServiceWorkerInternalsHandler::StatusCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -705,9 +732,9 @@ void ServiceWorkerInternalsHandler::UnregisterWithScope(
   // because that reduces a status code to boolean.
   // TODO(crbug.com/1199077): Update this when ServiceWorkerInternalsHandler
   // implements StorageKey.
-  context->context()->UnregisterServiceWorker(
-      scope, blink::StorageKey(url::Origin::Create(scope)),
-      /*is_immediate=*/false, std::move(callback));
+  context->context()->UnregisterServiceWorker(scope, storage_key,
+                                              /*is_immediate=*/false,
+                                              std::move(callback));
 }
 
 }  // namespace content

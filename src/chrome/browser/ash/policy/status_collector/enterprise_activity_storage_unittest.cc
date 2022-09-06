@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -13,17 +14,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace policy {
+
+namespace {
+
 using ::testing::AllOf;
 using ::testing::Property;
 using ::testing::UnorderedElementsAre;
 
-namespace em = enterprise_management;
+namespace em = ::enterprise_management;
 
-namespace {
 const char kPrefName[] = "pref-name";
-}  // namespace
 
-namespace policy {
+}  // namespace
 
 class EnterpriseActivityStorageTest : public ::testing::Test {
  protected:

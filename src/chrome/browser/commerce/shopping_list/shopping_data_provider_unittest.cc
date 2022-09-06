@@ -4,8 +4,10 @@
 
 #include "chrome/browser/commerce/shopping_list/shopping_data_provider.h"
 #include "base/logging.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/power_bookmarks/proto/power_bookmark_meta.pb.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,6 +17,7 @@ namespace {
 const char kLeadImageUrl[] = "image.png";
 const char kFallbackImageUrl[] = "fallback_image.png";
 const char kCurrencyCode[] = "USD";
+const char kCountryCode[] = "us";
 
 const char kMainTitle[] = "Title";
 const char kFallbackTitle[] = "Fallback Title";
@@ -23,11 +26,16 @@ const uint64_t kOfferId = 12345;
 const uint64_t kClusterId = 67890;
 
 TEST(ShoppingDataProviderTest, TestDataMergeWithLeadImage) {
+  base::test::ScopedFeatureList test_features;
+  test_features.InitWithFeatures({commerce::kCommerceAllowLocalImages,
+                                  commerce::kCommerceAllowServerImages},
+                                 {});
+
   power_bookmarks::PowerBookmarkMeta meta;
   meta.mutable_lead_image()->set_url(kLeadImageUrl);
 
   base::DictionaryValue data_map;
-  data_map.SetString("image", kFallbackImageUrl);
+  data_map.SetStringKey("image", kFallbackImageUrl);
 
   MergeData(&meta, data_map);
 
@@ -37,10 +45,15 @@ TEST(ShoppingDataProviderTest, TestDataMergeWithLeadImage) {
 }
 
 TEST(ShoppingDataProviderTest, TestDataMergeWithNoLeadImage) {
+  base::test::ScopedFeatureList test_features;
+  test_features.InitWithFeatures({commerce::kCommerceAllowLocalImages,
+                                  commerce::kCommerceAllowServerImages},
+                                 {});
+
   power_bookmarks::PowerBookmarkMeta meta;
 
   base::DictionaryValue data_map;
-  data_map.SetString("image", kFallbackImageUrl);
+  data_map.SetStringKey("image", kFallbackImageUrl);
 
   MergeData(&meta, data_map);
 
@@ -53,7 +66,7 @@ TEST(ShoppingDataProviderTest, TestDataMergeWithTitle) {
   meta.mutable_shopping_specifics()->set_title(kMainTitle);
 
   base::DictionaryValue data_map;
-  data_map.SetString("title", kFallbackTitle);
+  data_map.SetStringKey("title", kFallbackTitle);
 
   MergeData(&meta, data_map);
 
@@ -64,7 +77,7 @@ TEST(ShoppingDataProviderTest, TestDataMergeWithNoTitle) {
   power_bookmarks::PowerBookmarkMeta meta;
 
   base::DictionaryValue data_map;
-  data_map.SetString("title", kFallbackTitle);
+  data_map.SetStringKey("title", kFallbackTitle);
 
   MergeData(&meta, data_map);
 
@@ -77,7 +90,7 @@ TEST(ShoppingDataProviderTest, TestPopulateShoppingSpecifics) {
   power_bookmarks::PowerBookmarkMeta meta;
 
   base::DictionaryValue data_map;
-  data_map.SetString("title", kMainTitle);
+  data_map.SetStringKey("title", kMainTitle);
 
   commerce::BuyableProduct product;
   product.set_title(kMainTitle);
@@ -86,6 +99,7 @@ TEST(ShoppingDataProviderTest, TestPopulateShoppingSpecifics) {
   product.mutable_current_price()->set_amount_micros(100L);
   product.mutable_current_price()->set_currency_code(kCurrencyCode);
   product.set_offer_id(kOfferId);
+  product.set_country_code(kCountryCode);
 
   power_bookmarks::ShoppingSpecifics out_specifics;
 
@@ -97,13 +111,14 @@ TEST(ShoppingDataProviderTest, TestPopulateShoppingSpecifics) {
   EXPECT_EQ(100L, out_specifics.current_price().amount_micros());
   EXPECT_EQ(kCurrencyCode, out_specifics.current_price().currency_code());
   EXPECT_EQ(kOfferId, out_specifics.offer_id());
+  EXPECT_EQ(kCountryCode, out_specifics.country_code());
 }
 
 TEST(ShoppingDataProviderTest, TestPopulateShoppingSpecificsMissingData) {
   power_bookmarks::PowerBookmarkMeta meta;
 
   base::DictionaryValue data_map;
-  data_map.SetString("title", kMainTitle);
+  data_map.SetStringKey("title", kMainTitle);
 
   commerce::BuyableProduct product;
   product.set_title(kMainTitle);
@@ -117,6 +132,7 @@ TEST(ShoppingDataProviderTest, TestPopulateShoppingSpecificsMissingData) {
   EXPECT_EQ(kLeadImageUrl, out_specifics.image_url());
   EXPECT_FALSE(out_specifics.has_product_cluster_id());
   EXPECT_FALSE(out_specifics.has_current_price());
+  EXPECT_FALSE(out_specifics.has_country_code());
 }
 
 }  // namespace

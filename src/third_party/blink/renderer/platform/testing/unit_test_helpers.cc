@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -64,10 +63,6 @@ base::FilePath WebTestsFilePath() {
 void RunPendingTasks() {
   Thread::Current()->GetTaskRunner()->PostTask(FROM_HERE,
                                                WTF::Bind(&ExitRunLoop));
-
-  // The following runloop can execute non-nested tasks with heap pointers
-  // living on stack, so we force both Oilpan and Unified GC to visit the stack.
-  HeapPointersOnStackScope scan_stack(ThreadState::Current());
   EnterRunLoop();
 }
 

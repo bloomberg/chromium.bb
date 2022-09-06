@@ -20,6 +20,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_SEGMENTED_STRING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_SEGMENTED_STRING_H_
 
+#include "base/check_op.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -143,7 +144,6 @@ class PLATFORM_EXPORT SegmentedSubstring {
   union {
     const LChar* string8_ptr;
     const UChar* string16_ptr;
-    const void* void_ptr;
   } data_;
   const LChar* data_start_;
   // |data_last_char_| points to the last character (or nullptr). This is to
@@ -183,6 +183,13 @@ class PLATFORM_EXPORT SegmentedString {
     kUnconsume = 1,
   };
   void Prepend(const SegmentedString&, PrependType);
+
+  const SegmentedString* NextSegmentedString() const {
+    return next_segmented_string_;
+  }
+  void SetNextSegmentedString(const SegmentedString* next) {
+    next_segmented_string_ = next;
+  }
 
   bool ExcludeLineNumbers() const {
     return current_string_.ExcludeLineNumbers();
@@ -326,6 +333,7 @@ class PLATFORM_EXPORT SegmentedString {
   Deque<SegmentedSubstring> substrings_;
   bool closed_;
   bool empty_;
+  const SegmentedString* next_segmented_string_ = nullptr;
 };
 
 }  // namespace blink

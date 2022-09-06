@@ -36,7 +36,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import type {Project} from './WorkspaceImpl.js';
-import {Events as WorkspaceImplEvents, projectTypes} from './WorkspaceImpl.js';
+import {Events as WorkspaceImplEvents} from './WorkspaceImpl.js';
 
 const UIStrings = {
   /**
@@ -54,9 +54,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
     TextUtils.ContentProvider.ContentProvider {
   private projectInternal: Project;
-  private urlInternal: string;
-  private readonly originInternal: string;
-  private readonly parentURLInternal: string;
+  private urlInternal: Platform.DevToolsPath.UrlString;
+  private readonly originInternal: Platform.DevToolsPath.UrlString;
+  private readonly parentURLInternal: Platform.DevToolsPath.UrlString;
   private nameInternal: string;
   private contentTypeInternal: Common.ResourceType.ResourceType;
   private requestContentPromise: Promise<TextUtils.ContentProvider.DeferredContent>|null;
@@ -73,7 +73,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   private disableEditInternal: boolean;
   private contentEncodedInternal?: boolean;
 
-  constructor(project: Project, url: string, contentType: Common.ResourceType.ResourceType) {
+  constructor(project: Project, url: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType) {
     super();
     this.projectInternal = project;
     this.urlInternal = url;
@@ -81,14 +81,19 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     if (parsedURL) {
       this.originInternal = parsedURL.securityOrigin();
-      this.parentURLInternal = this.originInternal + parsedURL.folderPathComponents;
-      this.nameInternal = parsedURL.lastPathComponent;
+      this.parentURLInternal =
+          Common.ParsedURL.ParsedURL.concatenate(this.originInternal, parsedURL.folderPathComponents);
       if (parsedURL.queryParams) {
-        this.nameInternal += '?' + parsedURL.queryParams;
+        // in case file name contains query params, it doesn't look like a normal file name anymore
+        // so it can as well remain encoded
+        this.nameInternal = parsedURL.lastPathComponent + '?' + parsedURL.queryParams;
+      } else {
+        // file name looks best decoded
+        this.nameInternal = decodeURIComponent(parsedURL.lastPathComponent);
       }
     } else {
-      this.originInternal = '';
-      this.parentURLInternal = '';
+      this.originInternal = Platform.DevToolsPath.EmptyUrlString;
+      this.parentURLInternal = Platform.DevToolsPath.EmptyUrlString;
       this.nameInternal = url;
     }
 
@@ -118,15 +123,22 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return this.projectInternal.mimeType(this);
   }
 
-  url(): string {
+  url(): Platform.DevToolsPath.UrlString {
     return this.urlInternal;
   }
 
-  parentURL(): string {
+  // Identifier used for deduplicating scripts that are considered by the
+  // DevTools UI to be the same script. For now this is just the url but this
+  // is likely to change in the future.
+  canononicalScriptId(): string {
+    return this.urlInternal;
+  }
+
+  parentURL(): Platform.DevToolsPath.UrlString {
     return this.parentURLInternal;
   }
 
-  origin(): string {
+  origin(): Platform.DevToolsPath.UrlString {
     return this.originInternal;
   }
 
@@ -138,15 +150,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     if (!this.nameInternal) {
       return i18nString(UIStrings.index);
     }
-    let name: string = this.nameInternal;
-    try {
-      if (this.project().type() === projectTypes.FileSystem) {
-        name = unescape(name);
-      } else {
-        name = decodeURI(name);
-      }
-    } catch (error) {
-    }
+    const name = this.nameInternal;
     return skipTrim ? name : Platform.StringUtilities.trimEndWithMaxLength(name, 100);
   }
 
@@ -154,7 +158,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return this.projectInternal.canRename();
   }
 
-  rename(newName: string): Promise<boolean> {
+  rename(newName: Platform.DevToolsPath.RawPathString): Promise<boolean> {
     let fulfill: (arg0: boolean) => void;
     const promise = new Promise<boolean>(x => {
       fulfill = x;
@@ -163,10 +167,12 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return promise;
 
     function innerCallback(
-        this: UISourceCode, success: boolean, newName?: string, newURL?: string,
+        this: UISourceCode, success: boolean, newName?: string, newURL?: Platform.DevToolsPath.UrlString,
         newContentType?: Common.ResourceType.ResourceType): void {
       if (success) {
-        this.updateName(newName as string, newURL as string, newContentType as Common.ResourceType.ResourceType);
+        this.updateName(
+            newName as Platform.DevToolsPath.RawPathString, newURL as Platform.DevToolsPath.UrlString,
+            newContentType as Common.ResourceType.ResourceType);
       }
       fulfill(success);
     }
@@ -176,12 +182,15 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     this.projectInternal.deleteFile(this);
   }
 
-  private updateName(name: string, url: string, contentType?: Common.ResourceType.ResourceType): void {
+  private updateName(
+      name: Platform.DevToolsPath.RawPathString, url: Platform.DevToolsPath.UrlString,
+      contentType?: Common.ResourceType.ResourceType): void {
     const oldURL = this.urlInternal;
-    this.urlInternal = this.urlInternal.substring(0, this.urlInternal.length - this.nameInternal.length) + name;
     this.nameInternal = name;
     if (url) {
       this.urlInternal = url;
+    } else {
+      this.urlInternal = Common.ParsedURL.ParsedURL.relativePathToUrlString(name, oldURL);
     }
     if (contentType) {
       this.contentTypeInternal = contentType;
@@ -191,8 +200,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
         WorkspaceImplEvents.UISourceCodeRenamed, {oldURL: oldURL, uiSourceCode: this});
   }
 
-  // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     return this.url();
   }
 
@@ -238,6 +246,13 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return this.contentInternal as TextUtils.ContentProvider.DeferredContent;
   }
 
+  #decodeContent(content: TextUtils.ContentProvider.DeferredContent|null): string|null {
+    if (!content) {
+      return null;
+    }
+    return content.isEncoded && content.content ? window.atob(content.content) : content.content;
+  }
+
   async checkContentUpdated(): Promise<void> {
     if (!this.contentLoadedInternal && !this.forceLoadOnCheckContentInternal) {
       return;
@@ -263,8 +278,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
       return;
     }
 
-    if (this.contentInternal && 'content' in this.contentInternal &&
-        this.contentInternal.content === updatedContent.content) {
+    if (this.#decodeContent(this.contentInternal) === this.#decodeContent(updatedContent)) {
       this.lastAcceptedContent = null;
       return;
     }
@@ -277,7 +291,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     await Common.Revealer.reveal(this);
 
     // Make sure we are in the next frame before stopping the world with confirm
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => window.setTimeout(resolve, 0));
 
     const shouldUpdate = window.confirm(i18nString(UIStrings.thisFileWasChangedExternally));
     if (shouldUpdate) {
@@ -293,7 +307,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
 
   private commitContent(content: string): void {
     if (this.projectInternal.canSetFileContent()) {
-      this.projectInternal.setFileContent(this, content, false);
+      void this.projectInternal.setFileContent(this, content, false);
     }
     this.contentCommitted(content, true);
   }
@@ -331,7 +345,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     if (this.isDirty()) {
       return this.workingCopyInternal as string;
     }
-    return (this.contentInternal && 'content' in this.contentInternal && this.contentInternal.content) || '';
+    return this.contentInternal?.content || '';
   }
 
   resetWorkingCopy(): void {
@@ -353,7 +367,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   setContent(content: string, isBase64: boolean): void {
     this.contentEncodedInternal = isBase64;
     if (this.projectInternal.canSetFileContent()) {
-      this.projectInternal.setFileContent(this, content, isBase64);
+      void this.projectInternal.setFileContent(this, content, isBase64);
     }
     this.contentCommitted(content, true);
   }
@@ -393,7 +407,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   }
 
   content(): string {
-    return (this.contentInternal && 'content' in this.contentInternal && this.contentInternal.content) || '';
+    return this.contentInternal?.content || '';
   }
 
   loadError(): string|null {
@@ -439,7 +453,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   }
 
   removeMessage(message: Message): void {
-    if (this.messagesInternal && this.messagesInternal.delete(message)) {
+    if (this.messagesInternal?.delete(message)) {
       this.dispatchEventToListeners(Events.MessageRemoved, message);
     }
   }

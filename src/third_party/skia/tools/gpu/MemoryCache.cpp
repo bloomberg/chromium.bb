@@ -8,11 +8,11 @@
 #include "include/utils/SkBase64.h"
 #include "src/core/SkMD5.h"
 #include "src/core/SkReadBuffer.h"
-#include "src/gpu/GrPersistentCacheUtils.h"
+#include "src/gpu/ganesh/GrPersistentCacheUtils.h"
 #include "tools/gpu/MemoryCache.h"
 
 #if defined(SK_VULKAN)
-#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/ganesh/vk/GrVkGpu.h"
 #endif
 
 // Change this to 1 to log cache hits/misses/stores using SkDebugf.
@@ -93,7 +93,7 @@ void MemoryCache::writeShadersToDisk(const char* path, GrBackendApi api) {
         }
 
         SkSL::Program::Inputs inputsIgnored[kGrShaderTypeCount];
-        SkSL::String shaders[kGrShaderTypeCount];
+        std::string shaders[kGrShaderTypeCount];
         const SkData* data = it->second.fData.get();
         const SkString& description = it->second.fDescription;
         SkReadBuffer reader(data->data(), data->size());

@@ -5,10 +5,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
 
 #include "base/auto_reset.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
@@ -289,7 +291,10 @@ void V8ScriptValueSerializer::PrepareTransfer(ExceptionState& exception_state) {
   for (uint32_t i = 0; i < transferables_->array_buffers.size(); i++) {
     DOMArrayBufferBase* array_buffer = transferables_->array_buffers[i].Get();
     if (!array_buffer->IsShared()) {
-      v8::Local<v8::Value> wrapper = ToV8(array_buffer, script_state_);
+      v8::Local<v8::Value> wrapper =
+          ToV8Traits<DOMArrayBuffer>::ToV8(
+              script_state_, static_cast<DOMArrayBuffer*>(array_buffer))
+              .ToLocalChecked();
       serializer_.TransferArrayBuffer(
           i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
     } else {
@@ -363,6 +368,12 @@ void V8ScriptValueSerializer::FinalizeTransfer(
         return;
     }
   }
+}
+
+void V8ScriptValueSerializer::WriteUnguessableToken(
+    const base::UnguessableToken& token) {
+  WriteUint64(token.GetHighForSerialization());
+  WriteUint64(token.GetLowForSerialization());
 }
 
 void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
@@ -456,8 +467,11 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteTag(kImageBitmapTag);
     SkImageInfo info = image_bitmap->GetBitmapSkImageInfo();
     SerializedImageBitmapSettings color_params(info);
-    WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
-    WriteUint32Enum(color_params.GetSerializedColorSpace());
+    WriteUint32Enum(ImageSerializationTag::kParametricColorSpaceTag);
+    DCHECK_EQ(color_params.GetSerializedSkColorSpace().size(),
+              kSerializedParametricColorSpaceLength);
+    for (const auto& value : color_params.GetSerializedSkColorSpace())
+      WriteDouble(value);
     WriteUint32Enum(ImageSerializationTag::kCanvasPixelFormatTag);
     WriteUint32Enum(color_params.GetSerializedPixelFormat());
     WriteUint32Enum(ImageSerializationTag::kCanvasOpacityModeTag);
@@ -486,10 +500,10 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     ImageData* image_data = wrappable->ToImpl<ImageData>();
     WriteTag(kImageDataTag);
     SerializedImageDataSettings settings(
-        image_data->GetCanvasColorSpace(),
+        image_data->GetPredefinedColorSpace(),
         image_data->GetImageDataStorageFormat());
-    WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
-    WriteUint32Enum(settings.GetSerializedColorSpace());
+    WriteUint32Enum(ImageSerializationTag::kPredefinedColorSpaceTag);
+    WriteUint32Enum(settings.GetSerializedPredefinedColorSpace());
     WriteUint32Enum(ImageSerializationTag::kImageDataStorageFormatTag);
     WriteUint32Enum(settings.GetSerializedImageDataStorageFormat());
     WriteUint32Enum(ImageSerializationTag::kEndTag);
@@ -847,6 +861,36 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
   }
   return v8::Nothing<bool>();
 }
+namespace {
+DOMSharedArrayBuffer* ToSharedArrayBuffer(v8::Isolate* isolate,
+                                          v8::Local<v8::Value> value,
+                                          ExceptionState& exception_state) {
+  if (UNLIKELY(!value->IsSharedArrayBuffer())) {
+    exception_state.ThrowTypeError(
+        ExceptionMessages::FailedToConvertJSValue("SharedArrayBuffer"));
+    return nullptr;
+  }
+
+  v8::Local<v8::SharedArrayBuffer> v8_shared_array_buffer =
+      value.As<v8::SharedArrayBuffer>();
+  if (DOMSharedArrayBuffer* shared_array_buffer =
+          ToScriptWrappable(v8_shared_array_buffer)
+              ->ToImpl<DOMSharedArrayBuffer>()) {
+    return shared_array_buffer;
+  }
+
+  // Transfer the ownership of the allocated memory to a DOMArrayBuffer without
+  // copying.
+  ArrayBufferContents contents(v8_shared_array_buffer->GetBackingStore());
+  DOMSharedArrayBuffer* shared_array_buffer =
+      DOMSharedArrayBuffer::Create(contents);
+  v8::Local<v8::Object> wrapper = shared_array_buffer->AssociateWithWrapper(
+      isolate, shared_array_buffer->GetWrapperTypeInfo(),
+      v8_shared_array_buffer);
+  DCHECK(wrapper == v8_shared_array_buffer);
+  return shared_array_buffer;
+}
+}  // namespace
 
 v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
     v8::Isolate* isolate,
@@ -863,9 +907,16 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
     return v8::Nothing<uint32_t>();
   }
 
+  // The SharedArrayBuffer here may be a WebAssembly memory and can therefore be
+  // bigger than the 2GB limit of JavaScript SharedArrayBuffers that gets
+  // checked in NativeValueTraits<DOMSharedArrayBuffer>::NativeValue(). The
+  // code here can handle bigger SharedArrayBuffers, because the ByteLength
+  // field of the Shared ArrayBuffer does not get accessed. However, it is not
+  // possible to reuse NativeValueTraits<DOMSharedArrayBuffer>::NativeValue().
+  // TODO(1201109): Use NativeValueTraits<DOMSharedArrayBuffer>::NativeValue()
+  // again once the bounds check there got removed.
   DOMSharedArrayBuffer* shared_array_buffer =
-      NativeValueTraits<DOMSharedArrayBuffer>::NativeValue(
-          isolate, v8_shared_array_buffer, exception_state);
+      ToSharedArrayBuffer(isolate, v8_shared_array_buffer, exception_state);
   if (exception_state.HadException())
     return v8::Nothing<uint32_t>();
 
@@ -913,13 +964,6 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
       // simple and should perform sufficiently well under these expectations.
       serialized_script_value_->WasmModules().push_back(
           module->GetCompiledModule());
-      if (!serialized_script_value_->origin()) {
-        // Store the |SecurityOrigin| of the current |ExecutionContext| to count
-        // during deserialization if the WebAssembly module got transferred
-        // cross-origin.
-        serialized_script_value_->set_origin(
-            ExecutionContext::From(script_state_)->GetSecurityOrigin());
-      }
       uint32_t size =
           static_cast<uint32_t>(serialized_script_value_->WasmModules().size());
       DCHECK_GE(size, 1u);

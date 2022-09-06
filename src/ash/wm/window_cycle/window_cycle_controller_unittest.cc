@@ -30,6 +30,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/desks/desk.h"
@@ -210,7 +211,7 @@ class WindowCycleControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    WindowCycleList::DisableInitialDelayForTesting();
+    WindowCycleList::SetDisableInitialDelayForTesting(true);
 
     shelf_view_test_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
@@ -1019,6 +1020,34 @@ TEST_F(WindowCycleControllerTest, AltKeyRelease) {
   EXPECT_FALSE(base::Contains(currently_pressed_keys, ui::VKEY_MENU));
 }
 
+// Tests that system tray will be closed when alt-tab cycling starts. Also tests
+// releasing the alt key will end the alt-tab cycling successfully.
+TEST_F(WindowCycleControllerTest, AltKeyReleaseOnSystemTrayOpen) {
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+
+  // Open system tray.
+  auto* system_tray = GetPrimaryUnifiedSystemTray();
+  event_generator->MoveMouseTo(system_tray->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+  EXPECT_TRUE(system_tray->IsBubbleShown());
+
+  // Start window cycling by press Alt + Tab key.
+  WindowState::Get(window0.get())->Activate();
+  event_generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  EXPECT_TRUE(controller->IsCycling());
+  // Verify the system tray is closed after the alt-tab cycling starts.
+  EXPECT_FALSE(system_tray->IsBubbleShown());
+
+  // Release Alt key, verify alt-tab cycling is ended.
+  event_generator->ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_FALSE(controller->IsCycling());
+}
+
 // Test alt-tab will be shown on the display where the cursor is located
 // when there are 2 displays,
 TEST_F(WindowCycleControllerTest, AltTabMultiDisplay) {
@@ -1615,6 +1644,7 @@ TEST_F(WindowCycleControllerTest, TouchScroll) {
 // Tests that a vertical touch scroll doesn't crash. See crbug.com/1224969.
 TEST_F(WindowCycleControllerTest, VerticalTouchScroll) {
   const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow(bounds);
   std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds);
   std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds);
   std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds);
@@ -1734,6 +1764,32 @@ TEST_F(WindowCycleControllerTest, AltReleaseWithoutReleasingTap) {
   // Release the alt key. Make sure no crash happens.
   generator->ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
   EXPECT_FALSE(controller->IsCycling());
+}
+
+// Tests that pressing arrow key before cycle view UI is ready doesn't lead to a
+// crash. Regression test for https://crbug.com/1246251.
+TEST_F(WindowCycleControllerTest, ArrowKeyBeforeCycleViewUI) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  std::unique_ptr<Window> w0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+
+  // Enable initial delay for testing so that once it starts cycling, the cycle
+  // view UI will not be shown right away.
+  WindowCycleList::SetDisableInitialDelayForTesting(false);
+  controller->StartCycling();
+  EXPECT_TRUE(controller->IsCycling());
+  EXPECT_FALSE(CycleViewExists());
+  controller->HandleKeyboardNavigation(
+      WindowCycleController::KeyboardNavDirection::kUp);
+  controller->HandleKeyboardNavigation(
+      WindowCycleController::KeyboardNavDirection::kDown);
+  controller->HandleKeyboardNavigation(
+      WindowCycleController::KeyboardNavDirection::kLeft);
+  controller->HandleKeyboardNavigation(
+      WindowCycleController::KeyboardNavDirection::kRight);
+  CompleteCycling(controller);
 }
 
 class ReverseGestureWindowCycleControllerTest
@@ -3036,7 +3092,7 @@ class MultiUserWindowCycleControllerTest
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
 
-    WindowCycleList::DisableInitialDelayForTesting();
+    WindowCycleList::SetDisableInitialDelayForTesting(true);
     shelf_view_test_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_->SetAnimationDuration(base::Milliseconds(1));

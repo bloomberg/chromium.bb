@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
@@ -64,7 +65,9 @@ InspectorAnimationAgent::InspectorAnimationAgent(
       v8_session_(v8_session),
       is_cloning_(false),
       enabled_(&agent_state_, /*default_value=*/false),
-      playback_rate_(&agent_state_, /*default_value=*/1.0) {}
+      playback_rate_(&agent_state_, /*default_value=*/1.0) {
+  DCHECK(css_agent);
+}
 
 void InspectorAnimationAgent::Restore() {
   if (enabled_.Get()) {

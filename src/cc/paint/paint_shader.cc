@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
@@ -549,7 +551,7 @@ bool PaintShader::IsValid() const {
           start_degrees_ >= end_degrees_) {
         return false;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case Type::kLinearGradient:
     case Type::kRadialGradient:
     case Type::kTwoPointConicalGradient:
@@ -608,7 +610,7 @@ bool PaintShader::operator==(const PaintShader& other) const {
         return false;
       if (!PaintOp::AreEqualEvenIfNaN(end_degrees_, other.end_degrees_))
         return false;
-      FALLTHROUGH;
+      [[fallthrough]];
     case Type::kLinearGradient:
     case Type::kRadialGradient:
     case Type::kTwoPointConicalGradient:

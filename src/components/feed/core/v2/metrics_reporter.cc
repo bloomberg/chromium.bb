@@ -16,6 +16,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/feed/core/v2/enums.h"
+#include "components/feed/core/v2/feedstore_util.h"
 #include "components/feed/core/v2/prefs.h"
 #include "components/feed/core/v2/public/common_enums.h"
 #include "components/feed/core/v2/public/feed_api.h"
@@ -104,7 +106,7 @@ base::StringPiece ContentOrderToString(ContentOrder content_order) {
   switch (content_order) {
     case ContentOrder::kUnspecified:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case ContentOrder::kGrouped:
       return "Grouped";
     case ContentOrder::kReverseChron:
@@ -153,21 +155,52 @@ base::StringPiece HistogramReplacement(const StreamType& stream_type) {
   return stream_type.IsWebFeed() ? "Feed.WebFeed." : "Feed.";
 }
 
-std::string NoticeUmaName(const StreamType& stream_type,
-                          const std::string& key,
-                          base::StringPiece uma_base_name) {
-  std::string normalized_key = base::ToLowerASCII(key);
-  normalized_key[0] = base::ToUpperASCII(normalized_key[0]);
-  // Don't report UMA if the key is not supported.
-  if (normalized_key != "Youtube") {
-    base::UmaHistogramBoolean(
-        base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
-                      "InvalidNoticeKey"}),
-        true);
-    return std::string();
-  }
+std::string InfoCardActionUmaName(const StreamType& stream_type,
+                                  base::StringPiece action_name) {
   return base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
-                       uma_base_name, ".", normalized_key});
+                       "InfoCard.", action_name});
+}
+
+UserSettingsOnStart GetUserSettingsOnStart(
+    bool isEnabledByEnterprisePolicy,
+    bool isFeedVisible,
+    bool isSignedIn,
+    bool isEnabled,
+    const feedstore::Metadata& metadata) {
+  if (!isEnabledByEnterprisePolicy)
+    return UserSettingsOnStart::kFeedNotEnabledByPolicy;
+  if (!isEnabled)
+    return UserSettingsOnStart::kFeedNotEnabled;
+  if (!isFeedVisible) {
+    if (isSignedIn)
+      return UserSettingsOnStart::kFeedNotVisibleSignedIn;
+    return UserSettingsOnStart::kFeedNotVisibleSignedOut;
+  }
+  if (!isSignedIn)
+    return UserSettingsOnStart::kSignedOut;
+
+  const base::Time now = base::Time::Now();
+  bool has_recent_data = false;
+  for (const feedstore::Metadata::StreamMetadata& stream_meta :
+       metadata.stream_metadata()) {
+    base::TimeDelta delta = now - feedstore::FromTimestampMillis(
+                                      stream_meta.last_fetch_time_millis());
+    if (delta >= base::TimeDelta() && delta <= kUserSettingsMaxAge)
+      has_recent_data = true;
+  }
+
+  if (!has_recent_data)
+    return UserSettingsOnStart::kSignedInNoRecentData;
+
+  if (metadata.web_and_app_activity_enabled()) {
+    if (metadata.discover_personalization_enabled())
+      return UserSettingsOnStart::kSignedInWaaOnDpOn;
+    return UserSettingsOnStart::kSignedInWaaOnDpOff;
+  } else {
+    if (metadata.discover_personalization_enabled())
+      return UserSettingsOnStart::kSignedInWaaOffDpOn;
+    return UserSettingsOnStart::kSignedInWaaOffDpOff;
+  }
 }
 
 }  // namespace
@@ -199,6 +232,20 @@ MetricsReporter::~MetricsReporter() {
 
 void MetricsReporter::Initialize(Delegate* delegate) {
   delegate_ = delegate;
+}
+
+void MetricsReporter::OnMetadataInitialized(
+    bool isEnabledByEnterprisePolicy,
+    bool isFeedVisible,
+    bool isSignedIn,
+    bool isEnabled,
+    const feedstore::Metadata& metadata) {
+  UserSettingsOnStart settings =
+      GetUserSettingsOnStart(isEnabledByEnterprisePolicy, isFeedVisible,
+                             isSignedIn, isEnabled, metadata);
+  delegate_->RegisterFeedUserSettingsFieldTrial(ToString(settings));
+  base::UmaHistogramEnumeration("ContentSuggestions.Feed.UserSettingsOnStart",
+                                settings);
 }
 
 void MetricsReporter::OnEnterBackground() {
@@ -494,6 +541,16 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
           base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Share"));
       RecordInteraction(stream_type);
       break;
+    case FeedUserActionType::kTappedManage:
+      base::RecordAction(
+          base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Manage"));
+      RecordInteraction(stream_type);
+      break;
+    case FeedUserActionType::kTappedManageHidden:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.ManageHidden"));
+      RecordInteraction(stream_type);
+      break;
     case FeedUserActionType::kEphemeralChange:
     case FeedUserActionType::kEphemeralChangeRejected:
     case FeedUserActionType::kTappedTurnOn:
@@ -520,6 +577,20 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
     case FeedUserActionType::kTappedDismissPostFollowActiveHelp:
     case FeedUserActionType::kTappedDiscoverFeedPreview:
     case FeedUserActionType::kOpenedAutoplaySettings:
+    case FeedUserActionType::kTappedFollowButton:
+    case FeedUserActionType::kDiscoverFeedSelected:
+    case FeedUserActionType::kFollowingFeedSelected:
+    case FeedUserActionType::kTappedUnfollowButton:
+    case FeedUserActionType::kShowFollowSucceedSnackbar:
+    case FeedUserActionType::kShowFollowFailedSnackbar:
+    case FeedUserActionType::kShowUnfollowSucceedSnackbar:
+    case FeedUserActionType::kShowUnfollowFailedSnackbar:
+    case FeedUserActionType::kTappedGoToFeedOnSnackbar:
+    case FeedUserActionType::kTappedCrowButton:
+    case FeedUserActionType::kFirstFollowSheetShown:
+    case FeedUserActionType::kFirstFollowSheetTappedGoToFeed:
+    case FeedUserActionType::kFirstFollowSheetTappedGotIt:
+    case FeedUserActionType::kFollowRecommendationIPHShown:
       // Nothing additional for these actions. Note that some of these are iOS
       // only.
 
@@ -642,7 +713,7 @@ void MetricsReporter::NetworkRequestComplete(
   VVLOG << "Network Request Complete type=" << NetworkRequestTypeUmaName(type)
         << " status=" << response_info.status_code
         << " url=" << response_info.base_request_url
-        << " signed_in=" << response_info.was_signed_in
+        << " account_info=" << response_info.account_info
         << " response_size=" << response_info.encoded_size_bytes
         << " duration=" << response_info.fetch_duration;
 
@@ -920,49 +991,35 @@ void MetricsReporter::ReportFollowCountOnLoad(bool content_shown,
       subscription_count);
 }
 
-void MetricsReporter::OnNoticeCreated(const StreamType& stream_type,
-                                      const std::string& key) {
-  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeCreated");
-  if (uma_name.empty())
-    return;
-  base::UmaHistogramBoolean(uma_name, true);
+void MetricsReporter::OnInfoCardTrackViewStarted(const StreamType& stream_type,
+                                                 int info_card_type) {
+  base::UmaHistogramSparse(InfoCardActionUmaName(stream_type, "Started"),
+                           info_card_type);
 }
 
-void MetricsReporter::OnNoticeViewed(const StreamType& stream_type,
-                                     const std::string& key) {
-  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeViewed");
-  if (uma_name.empty())
-    return;
-  base::UmaHistogramBoolean(uma_name, true);
+void MetricsReporter::OnInfoCardViewed(const StreamType& stream_type,
+                                       int info_card_type) {
+  base::UmaHistogramSparse(InfoCardActionUmaName(stream_type, "Viewed"),
+                           info_card_type);
 }
 
-void MetricsReporter::OnNoticeOpenAction(const StreamType& stream_type,
-                                         const std::string& key) {
-  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeOpenAction");
-  if (uma_name.empty())
-    return;
-  base::UmaHistogramBoolean(uma_name, true);
+void MetricsReporter::OnInfoCardClicked(const StreamType& stream_type,
+                                        int info_card_type) {
+  base::UmaHistogramSparse(InfoCardActionUmaName(stream_type, "Clicked"),
+                           info_card_type);
 }
 
-void MetricsReporter::OnNoticeDismissed(const StreamType& stream_type,
-                                        const std::string& key) {
-  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeDismissed");
-  if (uma_name.empty())
-    return;
-  base::UmaHistogramBoolean(uma_name, true);
-}
-
-void MetricsReporter::OnNoticeAcknowledged(
+void MetricsReporter::OnInfoCardDismissedExplicitly(
     const StreamType& stream_type,
-    const std::string& key,
-    NoticeAcknowledgementPath acknowledgement_path) {
-  std::string uma_name = NoticeUmaName(stream_type, key, "NoticeAcknowledged");
-  if (uma_name.empty())
-    return;
-  base::UmaHistogramBoolean(uma_name, true);
-  base::UmaHistogramEnumeration(
-      NoticeUmaName(stream_type, key, "NoticeAcknowledgementPath"),
-      acknowledgement_path);
+    int info_card_type) {
+  base::UmaHistogramSparse(InfoCardActionUmaName(stream_type, "Dismissed"),
+                           info_card_type);
+}
+
+void MetricsReporter::OnInfoCardStateReset(const StreamType& stream_type,
+                                           int info_card_type) {
+  base::UmaHistogramSparse(InfoCardActionUmaName(stream_type, "Reset"),
+                           info_card_type);
 }
 
 }  // namespace feed

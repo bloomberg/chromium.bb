@@ -9,11 +9,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/download/vcard_tab_helper.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
@@ -28,21 +31,21 @@
 
 namespace {
 const char kUrl[] = "https://test.test/";
-const char16_t kUsdzFileName[] = u"important_file.usdz";
-const char16_t kRealityFileName[] = u"important_file.reality";
+const base::FilePath::CharType kUsdzFileName[] =
+    FILE_PATH_LITERAL("important_file.usdz");
+const base::FilePath::CharType kRealityFileName[] =
+    FILE_PATH_LITERAL("important_file.reality");
 
 // Substitutes real TabHelper for testing.
 template <class TabHelper>
 class StubTabHelper : public TabHelper {
  public:
+  // Overrides the method from web::WebStateUserData<TabHelper>.
   static void CreateForWebState(web::WebState* web_state) {
     web_state->SetUserData(TabHelper::UserDataKey(),
                            base::WrapUnique(new StubTabHelper(web_state)));
   }
 
-  StubTabHelper(const StubTabHelper&) = delete;
-  StubTabHelper& operator=(const StubTabHelper&) = delete;
-
   // Adds the given task to tasks() lists.
   void Download(std::unique_ptr<web::DownloadTask> task) override {
     tasks_.push_back(std::move(task));
@@ -52,38 +55,9 @@ class StubTabHelper : public TabHelper {
   using DownloadTasks = std::vector<std::unique_ptr<web::DownloadTask>>;
   const DownloadTasks& tasks() const { return tasks_; }
 
- private:
-  StubTabHelper(web::WebState* web_state)
-      : TabHelper(web_state, /*delegate=*/nil) {}
-
-  DownloadTasks tasks_;
-};
-
-// Substitutes ARQuickLookTabHelper for testing.
-class TestARQuickLookTabHelper : public ARQuickLookTabHelper {
- public:
-  static void CreateForWebState(web::WebState* web_state) {
-    web_state->SetUserData(
-        ARQuickLookTabHelper::UserDataKey(),
-        base::WrapUnique(new TestARQuickLookTabHelper(web_state)));
-  }
-
-  TestARQuickLookTabHelper(const TestARQuickLookTabHelper&) = delete;
-  TestARQuickLookTabHelper& operator=(const TestARQuickLookTabHelper&) = delete;
-
-  // Adds the given task to tasks() lists.
-  void Download(std::unique_ptr<web::DownloadTask> task) override {
-    tasks_.push_back(std::move(task));
-  }
-
-  // Tasks added via Download() call.
-  using DownloadTasks = std::vector<std::unique_ptr<web::DownloadTask>>;
-  const DownloadTasks& tasks() const { return tasks_; }
+  StubTabHelper(web::WebState* web_state) : TabHelper(web_state) {}
 
  private:
-  TestARQuickLookTabHelper(web::WebState* web_state)
-      : ARQuickLookTabHelper(web_state) {}
-
   DownloadTasks tasks_;
 };
 
@@ -93,25 +67,12 @@ class TestARQuickLookTabHelper : public ARQuickLookTabHelper {
 class BrowserDownloadServiceTest : public PlatformTest {
  protected:
   BrowserDownloadServiceTest()
-      : browser_state_(browser_state_builder_.Build()) {
+      : browser_state_(TestChromeBrowserState::Builder().Build()) {
     StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
-    TestARQuickLookTabHelper::CreateForWebState(&web_state_);
+    StubTabHelper<ARQuickLookTabHelper>::CreateForWebState(&web_state_);
+    StubTabHelper<VcardTabHelper>::CreateForWebState(&web_state_);
     StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);
-
-    // BrowserDownloadServiceFactory sets its service as
-    // DownloadControllerDelegate. These test use separate
-    // BrowserDownloadService, not created by factory. So delegate
-    // is temporary removed for these tests to avoid DCHECKs.
-    previous_delegate_ = download_controller()->GetDelegate();
-    download_controller()->SetDelegate(nullptr);
-    service_ = std::make_unique<BrowserDownloadService>(download_controller());
-  }
-
-  ~BrowserDownloadServiceTest() override {
-    service_.reset();
-    // Return back the original delegate so service created by service factory
-    // can be destructed without DCHECKs.
-    download_controller()->SetDelegate(previous_delegate_);
+    web_state_.SetBrowserState(browser_state_.get());
   }
 
   web::DownloadController* download_controller() {
@@ -123,9 +84,14 @@ class BrowserDownloadServiceTest : public PlatformTest {
         PassKitTabHelper::FromWebState(&web_state_));
   }
 
-  TestARQuickLookTabHelper* ar_quick_look_tab_helper() {
-    return static_cast<TestARQuickLookTabHelper*>(
+  StubTabHelper<ARQuickLookTabHelper>* ar_quick_look_tab_helper() {
+    return static_cast<StubTabHelper<ARQuickLookTabHelper>*>(
         ARQuickLookTabHelper::FromWebState(&web_state_));
+  }
+
+  StubTabHelper<VcardTabHelper>* vcard_tab_helper() {
+    return static_cast<StubTabHelper<VcardTabHelper>*>(
+        VcardTabHelper::FromWebState(&web_state_));
   }
 
   StubTabHelper<DownloadManagerTabHelper>* download_manager_tab_helper() {
@@ -133,11 +99,8 @@ class BrowserDownloadServiceTest : public PlatformTest {
         DownloadManagerTabHelper::FromWebState(&web_state_));
   }
 
-  web::DownloadControllerDelegate* previous_delegate_;
   web::WebTaskEnvironment task_environment_;
-  TestChromeBrowserState::Builder browser_state_builder_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  std::unique_ptr<BrowserDownloadService> service_;
   web::FakeWebState web_state_;
   base::HistogramTester histogram_tester_;
 };
@@ -165,7 +128,7 @@ TEST_F(BrowserDownloadServiceTest, PkPassMimeType) {
 TEST_F(BrowserDownloadServiceTest, UsdzExtension) {
   ASSERT_TRUE(download_controller()->GetDelegate());
   auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "other");
-  task->SetSuggestedFilename(kUsdzFileName);
+  task->SetGeneratedFileName(base::FilePath(kUsdzFileName));
   web::DownloadTask* task_ptr = task.get();
   download_controller()->GetDelegate()->OnDownloadCreated(
       download_controller(), &web_state_, std::move(task));
@@ -183,7 +146,7 @@ TEST_F(BrowserDownloadServiceTest, UsdzExtension) {
 TEST_F(BrowserDownloadServiceTest, RealityExtension) {
   ASSERT_TRUE(download_controller()->GetDelegate());
   auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "other");
-  task->SetSuggestedFilename(kRealityFileName);
+  task->SetGeneratedFileName(base::FilePath(kRealityFileName));
   web::DownloadTask* task_ptr = task.get();
   download_controller()->GetDelegate()->OnDownloadCreated(
       download_controller(), &web_state_, std::move(task));
@@ -275,7 +238,7 @@ TEST_F(BrowserDownloadServiceTest, PdfMimeType) {
 TEST_F(BrowserDownloadServiceTest, ZipArchiveMimeType) {
   ASSERT_TRUE(download_controller()->GetDelegate());
   auto task =
-      std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "application/zip");
+      std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kZipArchiveMimeType);
   web::DownloadTask* task_ptr = task.get();
   download_controller()->GetDelegate()->OnDownloadCreated(
       download_controller(), &web_state_, std::move(task));
@@ -293,7 +256,7 @@ TEST_F(BrowserDownloadServiceTest, ZipArchiveMimeType) {
 TEST_F(BrowserDownloadServiceTest, ExeMimeType) {
   ASSERT_TRUE(download_controller()->GetDelegate());
   auto task = std::make_unique<web::FakeDownloadTask>(
-      GURL(kUrl), "application/x-msdownload");
+      GURL(kUrl), kMicrosoftApplicationMimeType);
   web::DownloadTask* task_ptr = task.get();
   download_controller()->GetDelegate()->OnDownloadCreated(
       download_controller(), &web_state_, std::move(task));
@@ -312,7 +275,7 @@ TEST_F(BrowserDownloadServiceTest, ExeMimeType) {
 TEST_F(BrowserDownloadServiceTest, ApkMimeType) {
   ASSERT_TRUE(download_controller()->GetDelegate());
   auto task = std::make_unique<web::FakeDownloadTask>(
-      GURL(kUrl), "application/vnd.android.package-archive");
+      GURL(kUrl), kAndroidPackageArchiveMimeType);
   web::DownloadTask* task_ptr = task.get();
   download_controller()->GetDelegate()->OnDownloadCreated(
       download_controller(), &web_state_, std::move(task));
@@ -324,4 +287,43 @@ TEST_F(BrowserDownloadServiceTest, ApkMimeType) {
       static_cast<base::HistogramBase::Sample>(
           DownloadMimeTypeResult::AndroidPackageArchive),
       1);
+}
+
+// Tests that the code doesn't crash if the download manager tab helper hasn't
+// been created for this webstate.
+TEST_F(BrowserDownloadServiceTest, NoDownloadManager) {
+  web::FakeWebState fake_web_state;
+  fake_web_state.SetBrowserState(browser_state_.get());
+
+  ASSERT_TRUE(download_controller()->GetDelegate());
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "test/test");
+  download_controller()->GetDelegate()->OnDownloadCreated(
+      download_controller(), &fake_web_state, std::move(task));
+  ASSERT_EQ(0U, download_manager_tab_helper()->tasks().size());
+}
+
+// Tests downloading a valid vcard file while the kill switch is enabled.
+TEST_F(BrowserDownloadServiceTest, VCardKillSwitch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kVCardKillSwitch);
+
+  ASSERT_TRUE(download_controller()->GetDelegate());
+  auto task =
+      std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kVcardMimeType);
+  download_controller()->GetDelegate()->OnDownloadCreated(
+      download_controller(), &web_state_, std::move(task));
+  ASSERT_EQ(0U, vcard_tab_helper()->tasks().size());
+}
+
+// Tests downloading a valid AR file while the kill switch is enabled.
+TEST_F(BrowserDownloadServiceTest, ARKillSwitch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kARKillSwitch);
+
+  ASSERT_TRUE(download_controller()->GetDelegate());
+  auto task =
+      std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kUsdzMimeType);
+  download_controller()->GetDelegate()->OnDownloadCreated(
+      download_controller(), &web_state_, std::move(task));
+  ASSERT_EQ(0U, ar_quick_look_tab_helper()->tasks().size());
 }

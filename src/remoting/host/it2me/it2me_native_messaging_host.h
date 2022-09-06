@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
@@ -114,12 +115,12 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // Forward messages to an |elevated_host_|.
   bool use_elevated_host_ = false;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Controls the lifetime of the elevated native messaging host process.
   // Note: 'elevated' in this instance means having the UiAccess privilege, not
   // being run as a higher privilege user.
   std::unique_ptr<ElevatedNativeMessagingHost> elevated_host_;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   raw_ptr<Client> client_ = nullptr;
   DelegatingSignalStrategy::IqCallback incoming_message_callback_;

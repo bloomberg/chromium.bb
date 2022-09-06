@@ -160,15 +160,17 @@ int aom_noise_data_validate(const double *data, int w, int h) {
 
   // Check that noise variance is not increasing in x or y
   // and that the data is zero mean.
-  mean_x = (double *)aom_malloc(sizeof(*mean_x) * w);
-  var_x = (double *)aom_malloc(sizeof(*var_x) * w);
-  mean_y = (double *)aom_malloc(sizeof(*mean_x) * h);
-  var_y = (double *)aom_malloc(sizeof(*var_y) * h);
-
-  memset(mean_x, 0, sizeof(*mean_x) * w);
-  memset(var_x, 0, sizeof(*var_x) * w);
-  memset(mean_y, 0, sizeof(*mean_y) * h);
-  memset(var_y, 0, sizeof(*var_y) * h);
+  mean_x = (double *)aom_calloc(w, sizeof(*mean_x));
+  var_x = (double *)aom_calloc(w, sizeof(*var_x));
+  mean_y = (double *)aom_calloc(h, sizeof(*mean_x));
+  var_y = (double *)aom_calloc(h, sizeof(*var_y));
+  if (!(mean_x && var_x && mean_y && var_y)) {
+    aom_free(mean_x);
+    aom_free(mean_y);
+    aom_free(var_x);
+    aom_free(var_y);
+    return 0;
+  }
 
   for (y = 0; y < h; ++y) {
     for (x = 0; x < w; ++x) {

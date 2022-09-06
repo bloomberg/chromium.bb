@@ -24,7 +24,6 @@
 #include "fpdfsdk/formfiller/cffl_textfield.h"
 #include "public/fpdf_fwlevent.h"
 #include "third_party/base/check.h"
-#include "third_party/base/check_op.h"
 #include "third_party/base/cxx17_backports.h"
 
 CFFL_InteractiveFormFiller::CFFL_InteractiveFormFiller(
@@ -548,8 +547,39 @@ void CFFL_InteractiveFormFiller::UnregisterFormField(CPDFSDK_Widget* pWidget) {
   m_Map.erase(it);
 }
 
+void CFFL_InteractiveFormFiller::InvalidateRect(PerWindowData* pWidgetData,
+                                                const CFX_FloatRect& rect) {
+  auto* pPrivateData = static_cast<CFFL_PerWindowData*>(pWidgetData);
+  CPDFSDK_Widget* pWidget = pPrivateData->GetWidget();
+  if (!pWidget)
+    return;
+
+  GetCallbackIface()->InvalidateRect(pWidget, rect);
+}
+
+void CFFL_InteractiveFormFiller::OutputSelectedRect(PerWindowData* pWidgetData,
+                                                    const CFX_FloatRect& rect) {
+  auto* pPrivateData = static_cast<CFFL_PerWindowData*>(pWidgetData);
+  if (!pPrivateData)
+    return;
+
+  CFFL_FormField* pFormField = pPrivateData->GetFormField();
+  if (!pFormField)
+    return;
+
+  GetCallbackIface()->OutputSelectedRect(pFormField, rect);
+}
+
+bool CFFL_InteractiveFormFiller::IsSelectionImplemented() const {
+  return GetCallbackIface()->IsSelectionImplemented();
+}
+
+void CFFL_InteractiveFormFiller::SetCursor(CursorStyle nCursorStyle) {
+  GetCallbackIface()->SetCursor(nCursorStyle);
+}
+
 void CFFL_InteractiveFormFiller::QueryWherePopup(
-    const IPWL_SystemHandler::PerWindowData* pAttached,
+    const IPWL_FillerNotify::PerWindowData* pAttached,
     float fPopupMin,
     float fPopupMax,
     bool* bBottom,
@@ -830,7 +860,7 @@ bool CFFL_InteractiveFormFiller::IsValidAnnot(const CPDFSDK_PageView* pPageView,
 }
 
 std::pair<bool, bool> CFFL_InteractiveFormFiller::OnBeforeKeyStroke(
-    const IPWL_SystemHandler::PerWindowData* pAttached,
+    const IPWL_FillerNotify::PerWindowData* pAttached,
     WideString& strChange,
     const WideString& strChangeEx,
     int nSelStart,
@@ -911,7 +941,7 @@ std::pair<bool, bool> CFFL_InteractiveFormFiller::OnBeforeKeyStroke(
 }
 
 bool CFFL_InteractiveFormFiller::OnPopupPreOpen(
-    const IPWL_SystemHandler::PerWindowData* pAttached,
+    const IPWL_FillerNotify::PerWindowData* pAttached,
     Mask<FWL_EVENTFLAG> nFlag) {
 #ifdef PDF_ENABLE_XFA
   auto* pData = static_cast<const CFFL_PerWindowData*>(pAttached);
@@ -925,7 +955,7 @@ bool CFFL_InteractiveFormFiller::OnPopupPreOpen(
 }
 
 bool CFFL_InteractiveFormFiller::OnPopupPostOpen(
-    const IPWL_SystemHandler::PerWindowData* pAttached,
+    const IPWL_FillerNotify::PerWindowData* pAttached,
     Mask<FWL_EVENTFLAG> nFlag) {
 #ifdef PDF_ENABLE_XFA
   auto* pData = static_cast<const CFFL_PerWindowData*>(pAttached);

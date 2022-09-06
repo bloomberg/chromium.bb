@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_STICKY_POSITION_SCROLLING_CONSTRAINTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_STICKY_POSITION_SCROLLING_CONSTRAINTS_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -98,8 +98,7 @@ struct CORE_EXPORT StickyPositionScrollingConstraints final
   // position before scroll.
   //
   // This method exists for performance (to avoid recomputing the sticky offset)
-  // and must only be called when compositing inputs are clean for the sticky
-  // element. (Or after prepaint for CompositeAfterPaint).
+  // and must only be called after prepaint.
   PhysicalOffset GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
 
   void Trace(Visitor* visitor) const;

@@ -49,11 +49,11 @@ g.test('inputs')
     switch (t.params.method) {
       case 'param':
         params = `
-          [[builtin(local_invocation_id)]] local_id : vec3<u32>,
-          [[builtin(local_invocation_index)]] local_index : u32,
-          [[builtin(global_invocation_id)]] global_id : vec3<u32>,
-          [[builtin(workgroup_id)]] group_id : vec3<u32>,
-          [[builtin(num_workgroups)]] num_groups : vec3<u32>,
+          @builtin(local_invocation_id) local_id : vec3<u32>,
+          @builtin(local_invocation_index) local_index : u32,
+          @builtin(global_invocation_id) global_id : vec3<u32>,
+          @builtin(workgroup_id) group_id : vec3<u32>,
+          @builtin(num_workgroups) num_groups : vec3<u32>,
         `;
         local_id = 'local_id';
         local_index = 'local_index';
@@ -63,11 +63,11 @@ g.test('inputs')
         break;
       case 'struct':
         structures = `struct Inputs {
-            [[builtin(local_invocation_id)]] local_id : vec3<u32>;
-            [[builtin(local_invocation_index)]] local_index : u32;
-            [[builtin(global_invocation_id)]] global_id : vec3<u32>;
-            [[builtin(workgroup_id)]] group_id : vec3<u32>;
-            [[builtin(num_workgroups)]] num_groups : vec3<u32>;
+            @builtin(local_invocation_id) local_id : vec3<u32>,
+            @builtin(local_invocation_index) local_index : u32,
+            @builtin(global_invocation_id) global_id : vec3<u32>,
+            @builtin(workgroup_id) group_id : vec3<u32>,
+            @builtin(num_workgroups) num_groups : vec3<u32>,
           };`;
         params = `inputs : Inputs`;
         local_id = 'inputs.local_id';
@@ -78,16 +78,16 @@ g.test('inputs')
         break;
       case 'mixed':
         structures = `struct InputsA {
-          [[builtin(local_invocation_index)]] local_index : u32;
-          [[builtin(global_invocation_id)]] global_id : vec3<u32>;
+          @builtin(local_invocation_index) local_index : u32,
+          @builtin(global_invocation_id) global_id : vec3<u32>,
         };
         struct InputsB {
-          [[builtin(workgroup_id)]] group_id : vec3<u32>;
+          @builtin(workgroup_id) group_id : vec3<u32>
         };`;
-        params = `[[builtin(local_invocation_id)]] local_id : vec3<u32>,
+        params = `@builtin(local_invocation_id) local_id : vec3<u32>,
                   inputsA : InputsA,
                   inputsB : InputsB,
-                  [[builtin(num_workgroups)]] num_groups : vec3<u32>,`;
+                  @builtin(num_workgroups) num_groups : vec3<u32>,`;
         local_id = 'local_id';
         local_index = 'inputsA.local_index';
         global_id = 'inputsA.global_id';
@@ -98,19 +98,17 @@ g.test('inputs')
 
     // WGSL shader that stores every builtin value to a buffer, for every invocation in the grid.
     const wgsl = `
-      [[block]]
       struct S {
-        data : array<u32>;
+        data : array<u32>
       };
-      [[block]]
       struct V {
-        data : array<vec3<u32>>;
+        data : array<vec3<u32>>
       };
-      [[group(0), binding(0)]] var<storage, write> local_id_out : V;
-      [[group(0), binding(1)]] var<storage, write> local_index_out : S;
-      [[group(0), binding(2)]] var<storage, write> global_id_out : V;
-      [[group(0), binding(3)]] var<storage, write> group_id_out : V;
-      [[group(0), binding(4)]] var<storage, write> num_groups_out : V;
+      @group(0) @binding(0) var<storage, write> local_id_out : V;
+      @group(0) @binding(1) var<storage, write> local_index_out : S;
+      @group(0) @binding(2) var<storage, write> global_id_out : V;
+      @group(0) @binding(3) var<storage, write> group_id_out : V;
+      @group(0) @binding(4) var<storage, write> num_groups_out : V;
 
       ${structures}
 
@@ -118,7 +116,7 @@ g.test('inputs')
       let group_height = ${t.params.groupSize.y}u;
       let group_depth = ${t.params.groupSize.z}u;
 
-      [[stage(compute), workgroup_size(group_width, group_height, group_depth)]]
+      @compute @workgroup_size(group_width, group_height, group_depth)
       fn main(
         ${params}
         ) {
@@ -133,6 +131,7 @@ g.test('inputs')
     `;
 
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: wgsl,
@@ -179,7 +178,7 @@ g.test('inputs')
     pass.setBindGroup(0, bindGroup);
     switch (t.params.dispatch) {
       case 'direct':
-        pass.dispatch(t.params.numGroups.x, t.params.numGroups.y, t.params.numGroups.z);
+        pass.dispatchWorkgroups(t.params.numGroups.x, t.params.numGroups.y, t.params.numGroups.z);
         break;
       case 'indirect': {
         const dispatchBuffer = t.device.createBuffer({
@@ -193,11 +192,11 @@ g.test('inputs')
         dispatchData[1] = t.params.numGroups.y;
         dispatchData[2] = t.params.numGroups.z;
         dispatchBuffer.unmap();
-        pass.dispatchIndirect(dispatchBuffer, 0);
+        pass.dispatchWorkgroupsIndirect(dispatchBuffer, 0);
         break;
       }
     }
-    pass.endPass();
+    pass.end();
     t.queue.submit([encoder.finish()]);
 
     type vec3 = { x: number; y: number; z: number };
@@ -255,20 +254,20 @@ g.test('inputs')
       return undefined;
     };
 
-    // Check [[builtin(local_invocation_index)]] values.
+    // Check @builtin(local_invocation_index) values.
     t.expectGPUBufferValuesEqual(
       localIndexBuffer,
       new Uint32Array([...iterRange(totalInvocations, x => x % invocationsPerGroup)])
     );
 
-    // Check [[builtin(local_invocation_id)]] values.
+    // Check @builtin(local_invocation_id) values.
     t.expectGPUBufferValuesPassCheck(
       localIdBuffer,
       outputData => checkEachIndex(outputData, 'local_invocation_id', (_, localId) => localId),
       { type: Uint32Array, typedLength: totalInvocations * 4 }
     );
 
-    // Check [[builtin(global_invocation_id)]] values.
+    // Check @builtin(global_invocation_id) values.
     const getGlobalId = (groupId: vec3, localId: vec3) => {
       return {
         x: groupId.x * t.params.groupSize.x + localId.x,
@@ -282,14 +281,14 @@ g.test('inputs')
       { type: Uint32Array, typedLength: totalInvocations * 4 }
     );
 
-    // Check [[builtin(workgroup_id)]] values.
+    // Check @builtin(workgroup_id) values.
     t.expectGPUBufferValuesPassCheck(
       groupIdBuffer,
       outputData => checkEachIndex(outputData, 'workgroup_id', (groupId, _) => groupId),
       { type: Uint32Array, typedLength: totalInvocations * 4 }
     );
 
-    // Check [[builtin(num_workgroups)]] values.
+    // Check @builtin(num_workgroups) values.
     t.expectGPUBufferValuesPassCheck(
       numGroupsBuffer,
       outputData => checkEachIndex(outputData, 'num_workgroups', () => t.params.numGroups),

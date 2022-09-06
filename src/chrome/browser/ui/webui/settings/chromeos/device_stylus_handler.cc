@@ -38,24 +38,24 @@ void StylusHandler::RegisterMessages() {
 
   // Note: initializeStylusSettings must be called before observers will be
   // added.
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initializeStylusSettings",
       base::BindRepeating(&StylusHandler::HandleInitialize,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "requestNoteTakingApps",
       base::BindRepeating(&StylusHandler::HandleRequestApps,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "setPreferredNoteTakingApp",
       base::BindRepeating(&StylusHandler::HandleSetPreferredNoteTakingApp,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "setPreferredNoteTakingAppEnabledOnLockScreen",
       base::BindRepeating(
           &StylusHandler::HandleSetPreferredNoteTakingAppEnabledOnLockScreen,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "showPlayStoreApps",
       base::BindRepeating(&StylusHandler::HandleShowPlayStoreApps,
                           base::Unretained(this)));
@@ -87,7 +87,7 @@ void StylusHandler::OnDeviceListsComplete() {
 void StylusHandler::UpdateNoteTakingApps() {
   bool waiting_for_android = false;
   note_taking_app_ids_.clear();
-  base::ListValue apps_list;
+  base::Value::List apps_list;
 
   NoteTakingHelper* helper = NoteTakingHelper::Get();
   if (helper->play_store_enabled() && !helper->android_apps_received()) {
@@ -98,30 +98,31 @@ void StylusHandler::UpdateNoteTakingApps() {
     std::vector<NoteTakingAppInfo> available_apps =
         helper->GetAvailableApps(Profile::FromWebUI(web_ui()));
     for (const NoteTakingAppInfo& info : available_apps) {
-      auto dict = std::make_unique<base::DictionaryValue>();
-      dict->SetString(kAppNameKey, info.name);
-      dict->SetString(kAppIdKey, info.app_id);
-      dict->SetBoolean(kAppPreferredKey, info.preferred);
-      dict->SetInteger(kAppLockScreenSupportKey,
-                       static_cast<int>(info.lock_screen_support));
+      base::Value::Dict dict;
+      dict.Set(kAppNameKey, info.name);
+      dict.Set(kAppIdKey, info.app_id);
+      dict.Set(kAppPreferredKey, info.preferred);
+      dict.Set(kAppLockScreenSupportKey,
+               static_cast<int>(info.lock_screen_support));
       apps_list.Append(std::move(dict));
 
       note_taking_app_ids_.insert(info.app_id);
     }
   }
 
-  FireWebUIListener("onNoteTakingAppsUpdated", apps_list,
+  FireWebUIListener("onNoteTakingAppsUpdated",
+                    base::Value(std::move(apps_list)),
                     base::Value(waiting_for_android));
 }
 
-void StylusHandler::HandleRequestApps(const base::ListValue* unused_args) {
+void StylusHandler::HandleRequestApps(const base::Value::List& unused_args) {
   AllowJavascript();
   UpdateNoteTakingApps();
 }
 
 void StylusHandler::HandleSetPreferredNoteTakingApp(
-    const base::ListValue* args) {
-  const std::string& app_id = args->GetList()[0].GetString();
+    const base::Value::List& args) {
+  const std::string& app_id = args[0].GetString();
 
   // Sanity check: make sure that the ID we got back from WebUI is in the
   // currently-available set.
@@ -135,16 +136,16 @@ void StylusHandler::HandleSetPreferredNoteTakingApp(
 }
 
 void StylusHandler::HandleSetPreferredNoteTakingAppEnabledOnLockScreen(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   bool enabled = false;
-  CHECK(args->GetList()[0].is_bool());
-  enabled = args->GetList()[0].GetBool();
+  CHECK(args[0].is_bool());
+  enabled = args[0].GetBool();
 
   NoteTakingHelper::Get()->SetPreferredAppEnabledOnLockScreen(
       Profile::FromWebUI(web_ui()), enabled);
 }
 
-void StylusHandler::HandleInitialize(const base::ListValue* args) {
+void StylusHandler::HandleInitialize(const base::Value::List& args) {
   AllowJavascript();
   if (ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete())
     SendHasStylus();
@@ -156,9 +157,8 @@ void StylusHandler::SendHasStylus() {
                     base::Value(ash::stylus_utils::HasStylusInput()));
 }
 
-void StylusHandler::HandleShowPlayStoreApps(const base::ListValue* args) {
-  const std::string& apps_url =
-      !args->GetList().empty() ? args->GetList()[0].GetString() : "";
+void StylusHandler::HandleShowPlayStoreApps(const base::Value::List& args) {
+  const std::string& apps_url = !args.empty() ? args[0].GetString() : "";
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!arc::IsArcAllowedForProfile(profile)) {
     VLOG(1) << "ARC is not enabled for this profile";

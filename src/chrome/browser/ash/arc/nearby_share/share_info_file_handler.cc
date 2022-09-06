@@ -29,6 +29,10 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "url/gurl.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -231,7 +235,7 @@ void ShareInfoFileHandler::OnShareDirectoryPathCreated(
     return;
   }
 
-  for (auto i = 0; i < urls_size; i++) {
+  for (size_t i = 0; i < urls_size; i++) {
     const GURL& url = file_config_.external_urls[i];
     const std::string file_name = file_config_.names[i];
     int64_t file_size = file_config_.sizes[i];
@@ -331,8 +335,10 @@ void ShareInfoFileHandler::OnFileDescriptorCreated(
   (*it_stream_adapter)->StartRunner();
   file_config_.paths.push_back(dest_file_path);
 
-  // TODO(b/187358883): Add UMA metrics to measure time duration of file stream
-  // transfers. From local testing on caroline for 1.2GB takes around 1 minute.
+  // Used to measure time duration of file stream transfers. For reference,
+  // local testing on caroline for 1.2GB takes around 1 minute.
+  file_streaming_started_ = base::TimeTicks::Now();
+
   const int64_t timeout_seconds =
       GetTimeoutInSecondsFromBytes(GetTotalSizeOfFiles());
   const std::string timeout_message = base::StringPrintf(
@@ -391,6 +397,12 @@ void ShareInfoFileHandler::OnFileStreamReadCompleted(
       NotifyFileSharingCompleted(base::File::FILE_ERROR_INVALID_OPERATION);
       return;
     }
+
+    // Update file streaming duration UMA metric if transfer was successful.
+    const base::TimeDelta file_streaming_duration =
+        base::TimeTicks::Now() - file_streaming_started_;
+    UpdateNearbyShareFileStreamCompleteTime(file_streaming_duration);
+
     DVLOG(1) << "OnFileStreamReadCompleted: Completed streaming all files";
     NotifyFileSharingCompleted(base::File::FILE_OK);
   }

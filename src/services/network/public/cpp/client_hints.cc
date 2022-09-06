@@ -53,6 +53,9 @@ ClientHintToNameMap MakeClientHintToNameMap() {
        "sec-ch-viewport-width"},
       {network::mojom::WebClientHintsType::kUAFullVersionList,
        "sec-ch-ua-full-version-list"},
+      {network::mojom::WebClientHintsType::kFullUserAgent, "sec-ch-ua-full"},
+      {network::mojom::WebClientHintsType::kUAWoW64, "sec-ch-ua-wow64"},
+      {network::mojom::WebClientHintsType::kSaveData, "save-data"},
   };
 }
 
@@ -64,7 +67,7 @@ const ClientHintToNameMap& GetClientHintToNameMap() {
 
 namespace {
 
-struct ClientHintNameCompator {
+struct ClientHintNameComparator {
   bool operator()(const std::string& lhs, const std::string& rhs) const {
     return base::CompareCaseInsensitiveASCII(lhs, rhs) < 0;
   }
@@ -72,7 +75,7 @@ struct ClientHintNameCompator {
 
 using DecodeMap = base::flat_map<std::string,
                                  network::mojom::WebClientHintsType,
-                                 ClientHintNameCompator>;
+                                 ClientHintNameComparator>;
 
 DecodeMap MakeDecodeMap() {
   DecodeMap result;
@@ -123,7 +126,17 @@ ParseClientHintsHeader(const std::string& header) {
   return absl::make_optional(std::move(result));
 }
 
-absl::optional<ClientHintToDelegatedThirdPartiesMap>
+ClientHintToDelegatedThirdPartiesHeader::
+    ClientHintToDelegatedThirdPartiesHeader() = default;
+
+ClientHintToDelegatedThirdPartiesHeader::
+    ~ClientHintToDelegatedThirdPartiesHeader() = default;
+
+ClientHintToDelegatedThirdPartiesHeader::
+    ClientHintToDelegatedThirdPartiesHeader(
+        const ClientHintToDelegatedThirdPartiesHeader&) = default;
+
+absl::optional<const ClientHintToDelegatedThirdPartiesHeader>
 ParseClientHintToDelegatedThirdPartiesHeader(const std::string& header) {
   // Accept-CH is an sh-dictionary of tokens to origins; see:
   // https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-header-structure-19#section-3.2
@@ -134,7 +147,7 @@ ParseClientHintToDelegatedThirdPartiesHeader(const std::string& header) {
   if (!maybe_dictionary.has_value())
     return absl::nullopt;
 
-  ClientHintToDelegatedThirdPartiesMap result;
+  ClientHintToDelegatedThirdPartiesHeader result;
 
   // Now convert those to actual hint enums.
   const DecodeMap& decode_map = GetDecodeMap();
@@ -144,14 +157,21 @@ ParseClientHintToDelegatedThirdPartiesHeader(const std::string& header) {
       if (!member.item.is_token())
         continue;
       const GURL maybe_gurl = GURL(member.item.GetString());
-      if (!maybe_gurl.is_valid())
+      if (!maybe_gurl.is_valid()) {
+        result.had_invalid_origins = true;
         continue;
-      delegates.push_back(url::Origin::Create(maybe_gurl));
+      }
+      url::Origin maybe_origin = url::Origin::Create(maybe_gurl);
+      if (maybe_origin.opaque()) {
+        result.had_invalid_origins = true;
+        continue;
+      }
+      delegates.push_back(maybe_origin);
     }
     const std::string& client_hint_string = dictionary_pair.first;
     auto iter = decode_map.find(client_hint_string);
     if (iter != decode_map.end())
-      result.insert(std::make_pair(iter->second, delegates));
+      result.map.insert(std::make_pair(iter->second, delegates));
   }  // for dictionary_pair
   return absl::make_optional(std::move(result));
 }

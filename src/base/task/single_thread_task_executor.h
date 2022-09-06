@@ -51,7 +51,7 @@ class BASE_EXPORT SingleThreadTaskExecutor {
   // asks its delegate to DoWork(). Defaults to 1. Can be increased in some
   // scenarios where the native pump (i.e. not MessagePumpType::DEFAULT) has
   // high overhead and yielding to native isn't critical.
-  void SetWorkBatchSize(size_t work_batch_size);
+  void SetWorkBatchSize(int work_batch_size);
 
 #if defined(OS_WIN)
   void set_ipc_sync_messages_should_peek(bool ipc_sync_messages_should_peek) {

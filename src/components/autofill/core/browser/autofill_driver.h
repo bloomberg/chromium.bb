@@ -17,7 +17,7 @@
 #include "ui/accessibility/ax_tree_id.h"
 #include "url/origin.h"
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #include "components/webauthn/core/browser/internal_authenticator.h"
 #endif
 
@@ -29,18 +29,43 @@ namespace autofill {
 
 class FormStructure;
 
-// Interface that allows Autofill core code to interact with its driver (i.e.,
-// obtain information from it and give information to it). A concrete
-// implementation must be provided by the driver.
+// AutofillDriver is Autofill's lowest-level abstraction of a frame that is
+// shared among all platforms.
+//
+// Most notably, it is a gateway for all communication from the browser code to
+// the DOM, or more precisely, to the AutofillAgent (which are different classes
+// of the same name in non-iOS vs iOS).
+//
+// The reverse communication, from the AutofillAgent to the browser code, goes
+// through mojom::AutofillDriver on non-iOS, and directly to AutofillManager on
+// iOS.
+//
+// An AutofillDriver corresponds to a frame, rather than a document, in the
+// sense that it may survive navigations.
+//
+// AutofillDriver has two implementations:
+// - AutofillDriverIOS for iOS,
+// - ContentAutofillDriver for all other platforms.
+//
+// An AutofillDriver's lifetime should be contained by the associated frame.
+//
+// AutofillDriverIOS is co-owned by AutofillDriverIOSWebFrame, which itself is
+// owned by the WebFrame, and the iOS-specific AutofillAgent, which extends the
+// driver's lifetime beyond the WebFrame's (crbug.com/892612).
+//
+// ContentAutofillDriver is owned by ContentAutofillDriverFactory, which ensures
+// that the associated RenderFrameHost's lifetime contains the driver's
+// lifetime.
 class AutofillDriver {
  public:
-  virtual ~AutofillDriver() {}
+  virtual ~AutofillDriver() = default;
 
   // Returns whether the user is currently operating in an incognito context.
   virtual bool IsIncognito() const = 0;
 
-  // Returns whether AutofillDriver instance is associated with a main frame.
-  virtual bool IsInMainFrame() const = 0;
+  // Returns whether AutofillDriver instance is associated with a main frame,
+  // and this can be a primary or non-primary main frame.
+  virtual bool IsInAnyMainFrame() const = 0;
 
   // Returns whether the AutofillDriver instance is associated with a
   // prerendered frame.
@@ -60,7 +85,7 @@ class AutofillDriver {
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   // Gets or creates a pointer to an implementation of InternalAuthenticator.
   virtual webauthn::InternalAuthenticator*
   GetOrCreateCreditCardInternalAuthenticator() = 0;
@@ -78,23 +103,18 @@ class AutofillDriver {
   // that may be previewed or filled; these two parameters can be taken into
   // account to decide which fields to preview or fill across frames.
   //
-  // Returns a map from actually previewed or filled fields to their type. This
-  // is a sub-map of |field_type_map|: it does not contain those fields from
-  // |field_type_map| which shall not be filled due to the security policy for
-  // cross-frame previewing and filling.
+  // Returns the ids of those fields that are safe to fill according to the
+  // security policy for cross-frame previewing and filling. This is a subset of
+  // the ids of the fields in |data|. It is not necessarily a subset of the
+  // fields in |field_type_map|.
   //
   // This method is a no-op if the renderer is not currently available.
-  virtual base::flat_map<FieldGlobalId, ServerFieldType> FillOrPreviewForm(
+  virtual std::vector<FieldGlobalId> FillOrPreviewForm(
       int query_id,
       mojom::RendererFormDataAction action,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;
-
-  // Pass the form structures to the password manager to choose correct username
-  // and to the password generation manager to detect account creation forms.
-  virtual void PropagateAutofillPredictions(
-      const std::vector<autofill::FormStructure*>& forms) = 0;
 
   // Forwards parsed |forms| to the embedder.
   virtual void HandleParsedForms(const std::vector<const FormData*>& forms) = 0;

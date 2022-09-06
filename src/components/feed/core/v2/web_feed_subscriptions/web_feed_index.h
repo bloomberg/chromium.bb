@@ -8,6 +8,7 @@
 #include <iosfwd>
 
 #include "base/strings/string_piece_forward.h"
+#include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_store.h"
@@ -51,7 +52,7 @@ class WebFeedIndex {
   // than one match, preferentially returns subscribed Web Feed entries.
   Entry FindWebFeed(const WebFeedPageInformation& page_info);
 
-  Entry FindWebFeed(const std::string& id);
+  Entry FindWebFeed(const std::string& id) const;
   bool IsRecommended(const std::string& web_feed_id) const;
 
   base::Time GetRecommendedFeedsUpdateTime() const {
@@ -63,8 +64,10 @@ class WebFeedIndex {
   bool HasSubscriptions() const;
   int SubscriptionCount() const;
   int RecommendedWebFeedCount() const;
+  const std::vector<Entry>& GetSubscribedEntries() const;
 
   std::vector<Entry> GetRecommendedEntriesForTesting() const;
+  std::vector<Entry> GetSubscribedEntriesForTesting() const;
   void DumpStateForDebugging(std::ostream& os);
 
  private:

@@ -32,7 +32,9 @@ bool IsVisitInfoEqual(const VisitRow& a, const VisitRow& b) {
          a.visit_time == b.visit_time &&
          a.referring_visit == b.referring_visit &&
          ui::PageTransitionTypeIncludingQualifiersIs(a.transition,
-                                                     b.transition);
+                                                     b.transition) &&
+         a.originator_cache_guid == b.originator_cache_guid &&
+         a.originator_visit_id == b.originator_visit_id;
 }
 
 }  // namespace
@@ -76,6 +78,9 @@ TEST_F(VisitDatabaseTest, Add) {
   VisitRow visit_info2(visit_info1.url_id,
                        visit_info1.visit_time + base::Seconds(1), 1,
                        ui::PAGE_TRANSITION_TYPED, 0, true, 0);
+  // Verify we can fetch originator data too.
+  visit_info2.originator_cache_guid = "foobar_client";
+  visit_info2.originator_visit_id = 42;
   EXPECT_TRUE(AddVisit(&visit_info2, SOURCE_BROWSED));
 
   // Add third visit for a different page.
@@ -145,6 +150,8 @@ TEST_F(VisitDatabaseTest, Update) {
   modification.transition = ui::PAGE_TRANSITION_TYPED;
   modification.visit_time = Time::Now() + base::Days(1);
   modification.referring_visit = 9292;
+  modification.originator_cache_guid = "foobar_client";
+  modification.originator_visit_id = 42;
   UpdateVisitRow(modification);
 
   // Check that the mutated version was written.
@@ -327,7 +334,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
   ASSERT_EQ(static_cast<size_t>(1), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[0]));
 
-  options = QueryOptions();  // Reset to options to default.
+  options = QueryOptions();  // Reset options to default.
 
   // Query for a max count and make sure we get only that number.
   options.max_count = 1;
@@ -343,6 +350,13 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
   GetVisibleVisitsInRange(options, &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[1]));
+
+  // Query oldest visits in a time range and make sure beginning is exclusive
+  // and ending is inclusive.
+  options.visit_order = QueryOptions::OLDEST_FIRST;
+  GetVisibleVisitsInRange(options, &results);
+  ASSERT_EQ(static_cast<size_t>(1), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[3]));
 }
 
 TEST_F(VisitDatabaseTest, GetAllURLIDsForTransition) {
@@ -424,6 +438,40 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsForURL) {
   EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
   EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[1]));
   EXPECT_TRUE(IsVisitInfoEqual(results[2], test_visit_rows[0]));
+
+  // Now try with a `max_count` limit to get the newest 2 visits only.
+  options.max_count = 2;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[1]));
+
+  // Now try getting the oldest 2 visits and make sure they're ordered oldest
+  // first.
+  options.visit_order = QueryOptions::OLDEST_FIRST;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[0]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[1]));
+
+  // Query a time range and make sure beginning is inclusive and ending is
+  // exclusive.
+  options.begin_time = test_visit_rows[0].visit_time;
+  options.end_time = test_visit_rows[5].visit_time;
+  options.visit_order = QueryOptions::RECENT_FIRST;
+  options.max_count = 0;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[1]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[0]));
+
+  // Query oldest visits in a time range and make sure beginning is exclusive
+  // and ending is inclusive.
+  options.visit_order = QueryOptions::OLDEST_FIRST;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[1]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[5]));
 }
 
 TEST_F(VisitDatabaseTest, GetHistoryCount) {

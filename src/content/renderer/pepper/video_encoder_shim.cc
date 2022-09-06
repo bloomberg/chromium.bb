@@ -15,8 +15,12 @@
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/renderer/pepper/pepper_video_encoder_host.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/bitstream_buffer.h"
+#include "media/base/media_log.h"
+#include "media/base/video_frame.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
@@ -186,7 +190,7 @@ void VideoEncoderShim::EncoderImpl::Initialize(const Config& config) {
   config_.g_lag_in_frames = 0;
   config_.g_timebase.num = 1;
   config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
-  config_.rc_target_bitrate = config.bitrate.target() / 1000;
+  config_.rc_target_bitrate = config.bitrate.target_bps() / 1000;
   config_.rc_min_quantizer = min_quantizer;
   config_.rc_max_quantizer = max_quantizer;
   // Do not saturate CPU utilization just for encoding. On a lower-end system
@@ -197,7 +201,7 @@ void VideoEncoderShim::EncoderImpl::Initialize(const Config& config) {
 
   // Use Q/CQ mode if no target bitrate is given. Note that in the VP8/CQ case
   // the meaning of rc_target_bitrate changes to target maximum rate.
-  if (config.bitrate.target() == 0) {
+  if (config.bitrate.target_bps() == 0) {
     if (config.output_profile == media::VP9PROFILE_PROFILE0) {
       config_.rc_end_usage = VPX_Q;
     } else if (config.output_profile == media::VP8PROFILE_ANY) {
@@ -264,7 +268,7 @@ void VideoEncoderShim::EncoderImpl::RequestEncodingParametersChange(
   }
   framerate_ = framerate;
 
-  uint32_t bitrate_kbit = bitrate.target() / 1000;
+  uint32_t bitrate_kbit = bitrate.target_bps() / 1000;
   if (config_.rc_target_bitrate == bitrate_kbit)
     return;
 
@@ -387,6 +391,7 @@ VideoEncoderShim::GetSupportedProfiles() {
     // notions of denominator/numerator.
     profile.max_framerate_numerator = config.g_timebase.den;
     profile.max_framerate_denominator = config.g_timebase.num;
+    profile.rate_control_modes = media::VideoEncodeAccelerator::kConstantMode;
     profiles.push_back(profile);
   }
 
@@ -396,6 +401,7 @@ VideoEncoderShim::GetSupportedProfiles() {
     profile.max_resolution = gfx::Size(kMaxWidth, kMaxHeight);
     profile.max_framerate_numerator = config.g_timebase.den;
     profile.max_framerate_denominator = config.g_timebase.num;
+    profile.rate_control_modes = media::VideoEncodeAccelerator::kConstantMode;
     profile.profile = media::VP9PROFILE_PROFILE0;
     profiles.push_back(profile);
   }
@@ -405,7 +411,8 @@ VideoEncoderShim::GetSupportedProfiles() {
 
 bool VideoEncoderShim::Initialize(
     const media::VideoEncodeAccelerator::Config& config,
-    media::VideoEncodeAccelerator::Client* client) {
+    media::VideoEncodeAccelerator::Client* client,
+    std::unique_ptr<media::MediaLog> media_log) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(client, host_);
 

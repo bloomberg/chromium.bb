@@ -104,7 +104,7 @@ TEST_P(LevelTest, TestTargetLevelApi) {
 TEST_P(LevelTest, TestTargetLevel19) {
   std::unique_ptr<libaom_test::VideoSource> video;
   video.reset(new libaom_test::Y4mVideoSource("park_joy_90p_8_420.y4m", 0, 10));
-  ASSERT_TRUE(video.get() != NULL);
+  ASSERT_NE(video, nullptr);
   // Level index 19 corresponding to level 6.3.
   target_level_ = 19;
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
@@ -146,6 +146,17 @@ TEST_P(LevelTest, TestTargetLevel0) {
     cfg_.rc_target_bitrate = 4000;
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_EQ(level_[0], target_level);
+  }
+}
+
+TEST_P(LevelTest, TestTargetLevelRecode) {
+  if (cpu_used_ == 4 && encoding_mode_ == ::libaom_test::kTwoPassGood) {
+    libaom_test::I420VideoSource video("rand_noise_w1280h720.yuv", 1280, 720,
+                                       25, 1, 0, 10);
+    const int target_level = 0005;
+    target_level_ = target_level;
+    cfg_.rc_target_bitrate = 5000;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   }
 }
 

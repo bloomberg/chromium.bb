@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -47,7 +48,6 @@
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -71,16 +71,14 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
         dedicated_worker_host,
     mojo::PendingRemote<mojom::blink::BackForwardCacheControllerHost>
         back_forward_cache_controller_host) {
-  std::unique_ptr<Vector<String>> outside_origin_trial_tokens =
-      std::move(creation_params->origin_trial_tokens);
+  std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features =
+      std::move(creation_params->inherited_trial_features);
   BeginFrameProviderParams begin_frame_provider_params =
       creation_params->begin_frame_provider_params;
 
   KURL response_script_url = creation_params->script_url;
   network::mojom::ReferrerPolicy response_referrer_policy =
       creation_params->referrer_policy;
-  absl::optional<network::mojom::IPAddressSpace> response_address_space =
-      creation_params->response_address_space;
   const bool parent_cross_origin_isolated_capability =
       creation_params->parent_cross_origin_isolated_capability;
   const bool parent_direct_socket_capability =
@@ -90,7 +88,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
       std::move(creation_params->response_content_security_policies);
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin,
-      std::move(outside_origin_trial_tokens), begin_frame_provider_params,
+      std::move(inherited_trial_features), begin_frame_provider_params,
       parent_cross_origin_isolated_capability, parent_direct_socket_capability,
       std::move(dedicated_worker_host),
       std::move(back_forward_cache_controller_host));
@@ -100,7 +98,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
     // Pass dummy origin trial tokens here as it is already set to outside's
     // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
     global_scope->Initialize(response_script_url, response_referrer_policy,
-                             *response_address_space, std::move(response_csp),
+                             std::move(response_csp),
                              nullptr /* response_origin_trial_tokens */);
     return global_scope;
   } else {
@@ -110,18 +108,24 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
   }
 }
 
-struct ProcessedCreationParams {
-  std::unique_ptr<GlobalScopeCreationParams> creation_params;
-  ExecutionContextToken parent_context_token;
-};
-
 // static
 DedicatedWorkerGlobalScope::ParsedCreationParams
 DedicatedWorkerGlobalScope::ParseCreationParams(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   ParsedCreationParams parsed_creation_params;
+
+  // Copy some stuff we need after passing the creation params to
+  // WorkerGlobalScope.
   parsed_creation_params.parent_context_token =
       creation_params->parent_context_token.value();
+  parsed_creation_params.starter_secure_context =
+      creation_params->starter_secure_context;
+
+  if (!RuntimeEnabledFeatures::SecureContextFixForWorkersEnabled()) {
+    // Preserve incorrect behavior when the fix is not enabled.
+    creation_params->starter_secure_context = true;
+  }
+
   parsed_creation_params.creation_params = std::move(creation_params);
   return parsed_creation_params;
 }
@@ -130,7 +134,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin,
-    std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+    std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
     const BeginFrameProviderParams& begin_frame_provider_params,
     bool parent_cross_origin_isolated_capability,
     bool parent_direct_socket_capability,
@@ -142,7 +146,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
           ParseCreationParams(std::move(creation_params)),
           thread,
           time_origin,
-          std::move(outside_origin_trial_tokens),
+          std::move(inherited_trial_features),
           begin_frame_provider_params,
           parent_cross_origin_isolated_capability,
           parent_direct_socket_capability,
@@ -153,7 +157,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     ParsedCreationParams parsed_creation_params,
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin,
-    std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+    std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
     const BeginFrameProviderParams& begin_frame_provider_params,
     bool parent_cross_origin_isolated_capability,
     bool parent_direct_socket_capability,
@@ -163,7 +167,8 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
         back_forward_cache_controller_host)
     : WorkerGlobalScope(std::move(parsed_creation_params.creation_params),
                         thread,
-                        time_origin),
+                        time_origin,
+                        false),
       token_(thread->WorkerObjectProxy().token()),
       parent_token_(parsed_creation_params.parent_context_token),
       cross_origin_isolated_capability_(Agent::IsCrossOriginIsolated()),
@@ -172,6 +177,13 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
               begin_frame_provider_params)) {
+  // TODO(https://crbug.com/780031): When the right blink feature is disabled,
+  // we can incorrectly compute the secure context bit for this worker. It
+  // should never be true when the creator context was non-secure.
+  if (IsSecureContext() && !parsed_creation_params.starter_secure_context) {
+    CountUse(mojom::blink::WebFeature::kSecureContextIncorrectForWorker);
+  }
+
   // https://html.spec.whatwg.org/C/#run-a-worker
   // Step 14.10 "If shared is false and owner's cross-origin isolated
   // capability is false, then set worker global scope's cross-origin isolated
@@ -187,8 +199,9 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
 
   // Dedicated workers don't need to pause after script fetch.
   ReadyToRunWorkerScript();
-  // Inherit the outside's origin trial tokens.
-  OriginTrialContext::AddTokens(this, outside_origin_trial_tokens.get());
+  // Inherit the outside's enabled origin trial features.
+  OriginTrialContext::ActivateWorkerInheritedFeatures(
+      this, inherited_trial_features.get());
 
   dedicated_worker_host_.Bind(std::move(dedicated_worker_host),
                               GetTaskRunner(TaskType::kInternalDefault));
@@ -215,7 +228,6 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 void DedicatedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    network::mojom::IPAddressSpace response_address_space,
     Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
     const Vector<String>* /* response_origin_trial_tokens */) {
   // Step 14.3. "Set worker global scope's url to response's url."
@@ -228,9 +240,6 @@ void DedicatedWorkerGlobalScope::Initialize(
   // Step 14.5. "Set worker global scope's referrer policy to the result of
   // parsing the `Referrer-Policy` header of response."
   SetReferrerPolicy(response_referrer_policy);
-
-  // https://wicg.github.io/cors-rfc1918/#integration-html
-  SetAddressSpace(response_address_space);
 
   // The following is the Content-Security-Policy part of "Initialize worker
   // global scope's policy container"
@@ -436,7 +445,6 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   // Pass dummy origin trial tokens here as it is already set to outside's
   // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
   Initialize(classic_script_loader->ResponseURL(), response_referrer_policy,
-             classic_script_loader->ResponseAddressSpace(),
              classic_script_loader->GetContentSecurityPolicy()
                  ? mojo::Clone(classic_script_loader->GetContentSecurityPolicy()
                                    ->GetParsedPolicies())
@@ -495,7 +503,6 @@ void DedicatedWorkerGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(dedicated_worker_host_);
   visitor->Trace(back_forward_cache_controller_host_);
   visitor->Trace(animation_frame_provider_);
-  visitor->Trace(dedicated_workers_);
   WorkerGlobalScope::Trace(visitor);
 }
 
@@ -506,6 +513,13 @@ void DedicatedWorkerGlobalScope::EvictFromBackForwardCache(
     return;
   }
   if (!back_forward_cache_controller_host_.is_bound()) {
+    return;
+  }
+  if (!GetExecutionContext()->is_in_back_forward_cache()) {
+    // Don't send an eviction message unless the document associated with this
+    // DedicatedWorker is in back/forward cache.
+    // TODO(crbug.com/1163843): Maybe also check if eviction is already disabled
+    // for the document?
     return;
   }
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.Eviction.Renderer", reason);
@@ -527,16 +541,6 @@ void DedicatedWorkerGlobalScope::SetIsInBackForwardCache(
             total_bytes_buffered_while_in_back_forward_cache_);
     total_bytes_buffered_while_in_back_forward_cache_ = 0;
   }
-}
-
-void DedicatedWorkerGlobalScope::AddDedicatedWorker(
-    DedicatedWorker* dedicated_worker) {
-  dedicated_workers_.insert(dedicated_worker);
-}
-
-void DedicatedWorkerGlobalScope::RemoveDedicatedWorker(
-    DedicatedWorker* dedicated_worker) {
-  dedicated_workers_.erase(dedicated_worker);
 }
 
 }  // namespace blink

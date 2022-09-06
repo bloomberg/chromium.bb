@@ -5,6 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 
+#include <queue>
+
+#include "base/auto_reset.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/performance/largest_contentful_paint_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -21,11 +25,13 @@ namespace blink {
 
 class Image;
 class ImagePaintTimingDetector;
+class ImageRecord;
 class ImageResourceContent;
 class LargestContentfulPaintCalculator;
 class LayoutObject;
 class LocalFrameView;
 class PropertyTreeStateOrAlias;
+class MediaTiming;
 class StyleFetchedImage;
 class TextPaintTimingDetector;
 
@@ -58,7 +64,7 @@ class PaintTimingCallbackManager : public GarbageCollectedMixin {
 //
 // |GarbageCollected| inheritance is required by the swap-time callback
 // registration.
-class PaintTimingCallbackManagerImpl final
+class CORE_EXPORT PaintTimingCallbackManagerImpl final
     : public GarbageCollected<PaintTimingCallbackManagerImpl>,
       public PaintTimingCallbackManager {
  public:
@@ -107,8 +113,6 @@ class PaintTimingCallbackManagerImpl final
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
 //
-// Users has to enable 'loading' trace category to enable the metrics.
-//
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
 class CORE_EXPORT PaintTimingDetector
@@ -128,12 +132,12 @@ class CORE_EXPORT PaintTimingDetector
   static void NotifyImagePaint(
       const LayoutObject&,
       const gfx::Size& intrinsic_size,
-      const ImageResourceContent& cached_image,
+      const MediaTiming& media_timing,
       const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       const gfx::Rect& image_border);
   inline static void NotifyTextPaint(const gfx::Rect& text_visual_rect);
 
-  void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
+  void NotifyImageFinished(const LayoutObject&, const MediaTiming*);
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);
   void NotifyPaintFinished();
@@ -144,7 +148,8 @@ class CORE_EXPORT PaintTimingDetector
   // The returned value indicates whether the candidates have changed.
   bool NotifyIfChangedLargestImagePaint(base::TimeTicks image_paint_time,
                                         uint64_t image_size,
-                                        bool is_animated);
+                                        ImageRecord* image_record,
+                                        double image_bpp);
   bool NotifyIfChangedLargestTextPaint(base::TimeTicks, uint64_t size);
 
   void DidChangePerformanceTiming();
@@ -173,8 +178,11 @@ class CORE_EXPORT PaintTimingDetector
     return largest_image_paint_time_;
   }
   uint64_t LargestImagePaintSize() const { return largest_image_paint_size_; }
-  LargestContentfulPaintTypeMask LargestContentfulPaintType() const {
+  blink::LargestContentfulPaintType LargestContentfulPaintType() const {
     return largest_contentful_paint_type_;
+  }
+  double LargestContentfulPaintImageBPP() const {
+    return largest_contentful_paint_image_bpp_;
   }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_time_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
@@ -197,6 +205,9 @@ class CORE_EXPORT PaintTimingDetector
   void Trace(Visitor* visitor) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ImagePaintTimingDetectorTest,
+                           LargestImagePaint_Detached_Frame);
+
   // Method called to stop recording the Largest Contentful Paint.
   void OnInputOrScroll();
   bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size) const;
@@ -224,7 +235,9 @@ class CORE_EXPORT PaintTimingDetector
 
   base::TimeTicks largest_image_paint_time_;
   uint64_t largest_image_paint_size_ = 0;
-  LargestContentfulPaintTypeMask largest_contentful_paint_type_ = 0;
+  blink::LargestContentfulPaintType largest_contentful_paint_type_ =
+      blink::LargestContentfulPaintType::kNone;
+  double largest_contentful_paint_image_bpp_ = 0.0;
   base::TimeTicks largest_text_paint_time_;
   uint64_t largest_text_paint_size_ = 0;
   base::TimeTicks largest_contentful_paint_time_;

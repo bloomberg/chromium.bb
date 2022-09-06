@@ -15,6 +15,7 @@
 #include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_function.h"
@@ -35,6 +36,8 @@ class UsbExtensionFunction : public ExtensionFunction {
   ~UsbExtensionFunction() override;
 
   UsbDeviceManager* usb_device_manager();
+
+  bool IsUsbDeviceAllowedByPolicy(int vendor_id, int product_id);
 
  private:
   raw_ptr<UsbDeviceManager> usb_device_manager_ = nullptr;
@@ -115,7 +118,7 @@ class UsbFindDevicesFunction : public UsbExtensionFunction {
 
   uint16_t vendor_id_;
   uint16_t product_id_;
-  std::unique_ptr<base::ListValue> result_;
+  base::Value::List result_;
   base::RepeatingClosure barrier_;
 };
 

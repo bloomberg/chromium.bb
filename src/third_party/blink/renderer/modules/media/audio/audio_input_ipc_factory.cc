@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/modules/media/audio/mojo_audio_input_ipc.h"
@@ -31,14 +30,18 @@ void CreateMojoAudioInputStreamOnMainThread(
     const media::AudioSourceParameters& source_params,
     mojo::PendingRemote<mojom::blink::RendererAudioInputStreamFactoryClient>
         client,
+    mojo::PendingReceiver<media::mojom::blink::AudioProcessorControls>
+        controls_receiver,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
+  DCHECK_EQ(source_params.processing.has_value(), !!controls_receiver);
   if (auto* web_frame = static_cast<WebLocalFrame*>(
           blink::WebFrame::FromFrameToken(frame_token))) {
     web_frame->Client()->CreateAudioInputStream(
         std::move(client), source_params.session_id, params,
-        automatic_gain_control, total_segments);
+        automatic_gain_control, total_segments, std::move(controls_receiver),
+        source_params.processing ? &*source_params.processing : nullptr);
   }
 }
 
@@ -48,14 +51,16 @@ void CreateMojoAudioInputStream(
     const media::AudioSourceParameters& source_params,
     mojo::PendingRemote<mojom::blink::RendererAudioInputStreamFactoryClient>
         client,
+    mojo::PendingReceiver<media::mojom::blink::AudioProcessorControls>
+        controls_receiver,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
   main_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateMojoAudioInputStreamOnMainThread, frame_token,
-                     source_params, std::move(client), params,
-                     automatic_gain_control, total_segments));
+      FROM_HERE, base::BindOnce(&CreateMojoAudioInputStreamOnMainThread,
+                                frame_token, source_params, std::move(client),
+                                std::move(controls_receiver), params,
+                                automatic_gain_control, total_segments));
 }
 
 void AssociateInputAndOutputForAec(
@@ -80,16 +85,13 @@ void AssociateInputAndOutputForAec(
 
 AudioInputIPCFactory& AudioInputIPCFactory::GetInstance() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioInputIPCFactory, instance,
-                                  (Thread::MainThread()->GetTaskRunner(),
-                                   Platform::Current()->GetIOTaskRunner()));
+                                  (Thread::MainThread()->GetTaskRunner()));
   return instance;
 }
 
 AudioInputIPCFactory::AudioInputIPCFactory(
-    scoped_refptr<base::SequencedTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : main_task_runner_(std::move(main_task_runner)),
-      io_task_runner_(std::move(io_task_runner)) {}
+    scoped_refptr<base::SequencedTaskRunner> main_task_runner)
+    : main_task_runner_(std::move(main_task_runner)) {}
 
 AudioInputIPCFactory::~AudioInputIPCFactory() = default;
 

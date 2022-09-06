@@ -55,14 +55,14 @@ ImportDataHandler::~ImportDataHandler() {
 void ImportDataHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initializeImportDialog",
       base::BindRepeating(&ImportDataHandler::HandleInitializeImportDialog,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importData", base::BindRepeating(&ImportDataHandler::HandleImportData,
                                         base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importFromBookmarksFile",
       base::BindRepeating(&ImportDataHandler::HandleImportFromBookmarksFile,
                           base::Unretained(this)));
@@ -103,9 +103,9 @@ void ImportDataHandler::StartImport(
                                     source_profile.importer_type);
 }
 
-void ImportDataHandler::HandleImportData(const base::ListValue* args) {
+void ImportDataHandler::HandleImportData(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const auto& list = args->GetList();
+  const auto& list = args;
   CHECK_GE(list.size(), 2u);
 
   int browser_index = list[0].GetInt();
@@ -145,11 +145,11 @@ void ImportDataHandler::HandleImportData(const base::ListValue* args) {
 }
 
 void ImportDataHandler::HandleInitializeImportDialog(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+  CHECK_EQ(1U, args.size());
+  const std::string& callback_id = args[0].GetString();
 
   importer_list_ = std::make_unique<ImporterList>();
   importer_list_->DetectSourceProfiles(
@@ -160,13 +160,13 @@ void ImportDataHandler::HandleInitializeImportDialog(
 }
 
 void ImportDataHandler::HandleImportFromBookmarksFile(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (select_file_dialog_)
     return;
 
-  DCHECK(args && args->GetList().empty());
+  DCHECK(args.empty());
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
       std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
@@ -188,33 +188,31 @@ void ImportDataHandler::SendBrowserProfileData(const std::string& callback_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   importer_list_loaded_ = true;
 
-  base::ListValue browser_profiles;
+  base::Value::List browser_profiles;
   for (size_t i = 0; i < importer_list_->count(); ++i) {
     const importer::SourceProfile& source_profile =
         importer_list_->GetSourceProfileAt(i);
     uint16_t browser_services = source_profile.services_supported;
 
-    std::unique_ptr<base::DictionaryValue> browser_profile(
-        new base::DictionaryValue());
-    browser_profile->SetString("name", source_profile.importer_name);
-    browser_profile->SetInteger("index", i);
-    browser_profile->SetString("profileName", source_profile.profile);
-    browser_profile->SetBoolean("history",
-                                (browser_services & importer::HISTORY) != 0);
-    browser_profile->SetBoolean("favorites",
-                                (browser_services & importer::FAVORITES) != 0);
-    browser_profile->SetBoolean("passwords",
-                                (browser_services & importer::PASSWORDS) != 0);
-    browser_profile->SetBoolean(
-        "search", (browser_services & importer::SEARCH_ENGINES) != 0);
-    browser_profile->SetBoolean(
-        "autofillFormData",
-        (browser_services & importer::AUTOFILL_FORM_DATA) != 0);
+    base::Value::Dict browser_profile;
+    browser_profile.Set("name", source_profile.importer_name);
+    browser_profile.Set("index", static_cast<int>(i));
+    browser_profile.Set("profileName", source_profile.profile);
+    browser_profile.Set("history", (browser_services & importer::HISTORY) != 0);
+    browser_profile.Set("favorites",
+                        (browser_services & importer::FAVORITES) != 0);
+    browser_profile.Set("passwords",
+                        (browser_services & importer::PASSWORDS) != 0);
+    browser_profile.Set("search",
+                        (browser_services & importer::SEARCH_ENGINES) != 0);
+    browser_profile.Set("autofillFormData",
+                        (browser_services & importer::AUTOFILL_FORM_DATA) != 0);
 
     browser_profiles.Append(std::move(browser_profile));
   }
 
-  ResolveJavascriptCallback(base::Value(callback_id), browser_profiles);
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(std::move(browser_profiles)));
 }
 
 void ImportDataHandler::ImportStarted() {

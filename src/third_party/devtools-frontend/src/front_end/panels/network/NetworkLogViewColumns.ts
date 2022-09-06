@@ -8,12 +8,15 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 
 import type {NetworkNode} from './NetworkDataGridNode.js';
 import {NetworkRequestNode} from './NetworkDataGridNode.js';
 import type {NetworkLogView} from './NetworkLogView.js';
 import {NetworkManageCustomHeadersView} from './NetworkManageCustomHeadersView.js';
-import type {NetworkTimeCalculator, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';
+import type {
+  NetworkTimeCalculator, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from
+  './NetworkTimeCalculator.js';
 import {NetworkWaterfallColumn} from './NetworkWaterfallColumn.js';
 import {RequestInitiatorView} from './RequestInitiatorView.js';
 
@@ -205,11 +208,15 @@ export class NetworkLogViewColumns {
 
     this.setupDataGrid();
     this.setupWaterfall();
+
+    ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
+      this.scheduleRefresh();
+    });
   }
 
   private static convertToDataGridDescriptor(columnConfig: Descriptor): DataGrid.DataGrid.ColumnDescriptor {
     const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-    return /** @type {!DataGrid.DataGrid.ColumnDescriptor} */ {
+    return {
       id: columnConfig.id,
       title,
       sortable: columnConfig.sortable,
@@ -330,7 +337,7 @@ export class NetworkLogViewColumns {
       }
       const contextMenu = new UI.ContextMenu.ContextMenu(event);
       this.networkLogView.handleContextMenuForRequest(contextMenu, request);
-      contextMenu.show();
+      void contextMenu.show();
     }
   }
 

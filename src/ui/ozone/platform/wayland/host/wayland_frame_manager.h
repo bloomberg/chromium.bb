@@ -16,7 +16,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
+#include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 
 namespace ui {
 
@@ -32,13 +32,21 @@ class WaylandSubsurface;
 // presented and released.
 struct WaylandFrame {
  public:
-  WaylandFrame(
-      WaylandSurface* root_surface,
-      ui::ozone::mojom::WaylandOverlayConfigPtr root_config,
-      base::circular_deque<std::pair<WaylandSubsurface*,
-                                     ui::ozone::mojom::WaylandOverlayConfigPtr>>
-          subsurfaces_to_overlays = {},
-      bool expects_ack = true);
+  // A frame originated from gpu process, and hence, requires acknowledgements.
+  WaylandFrame(uint32_t frame_id,
+               WaylandSurface* root_surface,
+               wl::WaylandOverlayConfig root_config,
+               base::circular_deque<
+                   std::pair<WaylandSubsurface*, wl::WaylandOverlayConfig>>
+                   subsurfaces_to_overlays = {});
+
+  // A frame that does not require acknowledgements.
+  WaylandFrame(WaylandSurface* root_surface,
+               wl::WaylandOverlayConfig root_config,
+               base::circular_deque<
+                   std::pair<WaylandSubsurface*, wl::WaylandOverlayConfig>>
+                   subsurfaces_to_overlays = {});
+
   WaylandFrame() = delete;
   WaylandFrame(const WaylandFrame&) = delete;
   WaylandFrame& operator=(const WaylandFrame&) = delete;
@@ -47,18 +55,17 @@ struct WaylandFrame {
  private:
   friend class WaylandFrameManager;
 
+  uint32_t frame_id;
   WaylandSurface* root_surface;
-  ui::ozone::mojom::WaylandOverlayConfigPtr root_config;
-  base::circular_deque<
-      std::pair<WaylandSubsurface*, ui::ozone::mojom::WaylandOverlayConfigPtr>>
+  wl::WaylandOverlayConfig root_config;
+  base::circular_deque<std::pair<WaylandSubsurface*, wl::WaylandOverlayConfig>>
       subsurfaces_to_overlays;
 
   base::flat_map<WaylandSurface*, WaylandBufferHandle*> submitted_buffers;
 
-  // ID of one of the buffers that will be attached to the subsurfaces. If none
-  // of the buffers will be attached, this is |root_config->buffer_id|.
-  // Used to invoke buffer_manager_host OnSubmission and OnPrensentation calls.
-  uint32_t buffer_id;
+  // An indicator that there are buffers destrotyed before frame playback. This
+  // frame should be skipped.
+  bool buffer_lost = false;
 
   // A Wayland callback, which is triggered once wl_buffer has been committed
   // and it is the right time to notify the GPU that it can start a new drawing
@@ -69,7 +76,7 @@ struct WaylandFrame {
   // for this frame.
   base::ScopedFD merged_release_fence_fd;
   // Whether this frame has had OnSubmission sent for it.
-  bool submission_acked = false;
+  bool submission_acked;
 
   // The wayland object identifying this feedback.
   wl::Object<struct wp_presentation_feedback> pending_feedback;
@@ -77,7 +84,7 @@ struct WaylandFrame {
   // Wayland server has not arrived yet.
   absl::optional<gfx::PresentationFeedback> feedback = absl::nullopt;
   // Whether this frame has had OnPresentation sent for it.
-  bool presentation_acked = false;
+  bool presentation_acked;
 };
 
 // This is the frame update manager that configures graphical window/surface
@@ -106,7 +113,8 @@ class WaylandFrameManager {
   void MaybeProcessPendingFrame();
 
   // Clears the state of the |frame_manager_| when the GPU channel is destroyed.
-  void ClearStates();
+  // If |closing| is true, pending frames won't be processed.
+  void ClearStates(bool closing = false);
 
   // Similar to ClearStates(), but does not clear submitted frames.
   void Hide();
@@ -116,7 +124,7 @@ class WaylandFrameManager {
   // Configures |surface| but does not commit wl_surface states yet.
   void ApplySurfaceConfigure(WaylandFrame* frame,
                              WaylandSurface* surface,
-                             ui::ozone::mojom::WaylandOverlayConfigPtr& config,
+                             wl::WaylandOverlayConfig& config,
                              bool needs_opaque_region);
 
   void MaybeProcessSubmittedFrames();
@@ -124,7 +132,7 @@ class WaylandFrameManager {
                                 gfx::GpuFenceHandle release_fence_handle);
   void OnExplicitBufferRelease(WaylandSurface* surface,
                                struct wl_buffer* wl_buffer,
-                               absl::optional<int32_t> fence);
+                               base::ScopedFD fence);
   void OnWlBufferRelease(WaylandSurface* surface, struct wl_buffer* wl_buffer);
 
   // wl_callback_listener

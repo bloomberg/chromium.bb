@@ -25,7 +25,7 @@ LOCAL_MODULE := layer_utils
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/vk_layer_config.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/vk_layer_extension_utils.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/vk_layer_utils.cpp
-LOCAL_SRC_FILES += $(SRC_DIR)/layers/vk_format_utils.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/generated/vk_format_utils.cpp
 LOCAL_C_INCLUDES += $(VULKAN_INCLUDE) \
                     $(LOCAL_PATH)/$(SRC_DIR)/layers/generated \
                     $(LOCAL_PATH)/$(SRC_DIR)/layers \
@@ -38,15 +38,19 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := VkLayer_khronos_validation
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/state_tracker.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/device_memory_state.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/base_node.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/buffer_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/cmd_buffer_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/image_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/pipeline_state.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/pipeline_layout_state.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/pipeline_sub_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/queue_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/render_pass_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/core_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/drawdispatch.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/descriptor_sets.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/descriptor_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/buffer_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/shader_module.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/shader_validation.cpp
@@ -103,6 +107,8 @@ LOCAL_SRC_FILES += $(SRC_DIR)/tests/layer_validation_tests.cpp \
                    $(SRC_DIR)/tests/vklayertests_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_arm_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_wsi.cpp \
+                   $(SRC_DIR)/tests/vklayertests_imageless_framebuffer.cpp \
+                   $(SRC_DIR)/tests/vklayertests_graphics_library.cpp \
                    $(SRC_DIR)/tests/positive/command.cpp \
                    $(SRC_DIR)/tests/positive/descriptors.cpp \
                    $(SRC_DIR)/tests/positive/image_buffer.cpp \
@@ -149,6 +155,8 @@ LOCAL_SRC_FILES += $(SRC_DIR)/tests/layer_validation_tests.cpp \
                    $(SRC_DIR)/tests/vklayertests_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_arm_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_wsi.cpp \
+                   $(SRC_DIR)/tests/vklayertests_imageless_framebuffer.cpp \
+                   $(SRC_DIR)/tests/vklayertests_graphics_library.cpp \
                    $(SRC_DIR)/tests/positive/command.cpp \
                    $(SRC_DIR)/tests/positive/descriptors.cpp \
                    $(SRC_DIR)/tests/positive/image_buffer.cpp \

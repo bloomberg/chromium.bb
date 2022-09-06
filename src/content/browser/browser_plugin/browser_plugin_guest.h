@@ -93,7 +93,7 @@ class BrowserPluginGuest : public GuestHost, public WebContentsObserver {
 
   void PrimaryMainFrameRenderProcessGone(
       base::TerminationStatus status) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On MacOS X popups are painted by the browser process. We handle them here
   // so that they are positioned correctly.
   void ShowPopupMenu(
@@ -125,9 +125,6 @@ class BrowserPluginGuest : public GuestHost, public WebContentsObserver {
 
  private:
   void InitInternal(WebContentsImpl* owner_web_contents);
-
-  // Sets the focus state of the current RenderWidgetHostView.
-  void SetFocus(bool focused, blink::mojom::FocusType focus_type);
 
   void SendTextInputTypeChangedToView(RenderWidgetHostViewBase* guest_rwhv);
 

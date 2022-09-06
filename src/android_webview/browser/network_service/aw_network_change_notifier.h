@@ -44,12 +44,14 @@ class AwNetworkChangeNotifier
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
   void OnConnectionTypeChanged() override;
+  void OnConnectionCostChanged() override;
   void OnMaxBandwidthChanged(double max_bandwidth_mbps,
                              ConnectionType type) override;
   void OnNetworkConnected(NetworkHandle network) override;
   void OnNetworkSoonToDisconnect(NetworkHandle network) override;
   void OnNetworkDisconnected(NetworkHandle network) override;
   void OnNetworkMadeDefault(NetworkHandle network) override;
+  void OnDefaultNetworkActive() override;
 
  private:
   friend class AwNetworkChangeNotifierFactory;

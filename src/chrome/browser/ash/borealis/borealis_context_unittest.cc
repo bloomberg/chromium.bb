@@ -19,26 +19,28 @@
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager_test_helper.h"
 #include "chrome/browser/ash/borealis/testing/apps.h"
-#include "chrome/browser/ash/borealis/testing/dbus.h"
+#include "chrome/browser/ash/guest_os/dbus_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/chunneld/fake_chunneld_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/fake_seneschal_client.h"
 #include "components/exo/shell_surface_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/test/test_screen.h"
 
 namespace borealis {
 
 class BorealisContextTest : public testing::Test,
-                            protected FakeVmServicesHelper {
+                            protected guest_os::FakeVmServicesHelper {
  public:
   BorealisContextTest()
       : new_window_provider_(std::make_unique<ash::TestNewWindowDelegate>()) {
     profile_ = std::make_unique<TestingProfile>();
+    display::Screen::SetScreenInstance(&test_screen_);
     borealis_disk_manager_dispatcher_ =
         std::make_unique<BorealisDiskManagerDispatcher>();
     borealis_shutdown_monitor_ =
@@ -82,6 +84,7 @@ class BorealisContextTest : public testing::Test,
 
  protected:
   content::BrowserTaskEnvironment task_env_;
+  display::test::TestScreen test_screen_;
   std::unique_ptr<borealis::BorealisContext> borealis_context_;
   std::unique_ptr<TestingProfile> profile_;
   BorealisServiceFake* service_fake_;
@@ -94,7 +97,7 @@ class BorealisContextTest : public testing::Test,
 };
 
 TEST_F(BorealisContextTest, ConciergeFailure) {
-  auto* concierge_client = chromeos::FakeConciergeClient::Get();
+  auto* concierge_client = ash::FakeConciergeClient::Get();
 
   concierge_client->NotifyConciergeStopped();
   histogram_tester_.ExpectUniqueSample(
@@ -108,7 +111,7 @@ TEST_F(BorealisContextTest, ConciergeFailure) {
 }
 
 TEST_F(BorealisContextTest, CiceroneFailure) {
-  auto* cicerone_client = chromeos::FakeCiceroneClient::Get();
+  auto* cicerone_client = ash::FakeCiceroneClient::Get();
 
   cicerone_client->NotifyCiceroneStopped();
   histogram_tester_.ExpectUniqueSample(
@@ -122,7 +125,7 @@ TEST_F(BorealisContextTest, CiceroneFailure) {
 }
 
 TEST_F(BorealisContextTest, SeneschalFailure) {
-  auto* seneschal_client = chromeos::FakeSeneschalClient::Get();
+  auto* seneschal_client = ash::FakeSeneschalClient::Get();
 
   seneschal_client->NotifySeneschalStopped();
   histogram_tester_.ExpectUniqueSample(
@@ -152,11 +155,8 @@ TEST_F(BorealisContextTest, ChunneldFailure) {
 
 TEST_F(BorealisContextTest, MainAppHasSelfActivationPermission) {
   CreateFakeMainApp(profile_.get());
-  std::string window_name;
-  ASSERT_TRUE(base::Base64Decode(
-      "b3JnLmNocm9taXVtLmJvcmVhbGlzLndtY2xhc3MuU3RlYW0=", &window_name));
-  std::unique_ptr<ScopedTestWindow> window =
-      MakeAndTrackWindow(window_name, borealis_window_manager_.get());
+  std::unique_ptr<ScopedTestWindow> window = MakeAndTrackWindow(
+      "org.chromium.borealis.wmclass.Steam", borealis_window_manager_.get());
   EXPECT_TRUE(exo::HasPermissionToActivate(window->window()));
 }
 

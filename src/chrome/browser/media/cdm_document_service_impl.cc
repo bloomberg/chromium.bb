@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,7 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #endif
 
-#if BUILDFLAG(ENABLE_CDM_STORAGE_ID) || defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CDM_STORAGE_ID) || BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_frame_host.h"
 #endif
@@ -35,11 +36,11 @@
 #include "chromeos/lacros/lacros_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/media/platform_verification_chromeos.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #include "base/files/file_enumerator.h"
@@ -50,9 +51,10 @@
 #include "base/win/security_util.h"
 #include "base/win/sid.h"
 #include "chrome/browser/media/cdm_pref_service_helper.h"
+#include "chrome/browser/media/media_foundation_service_monitor.h"
 #include "media/cdm/win/media_foundation_cdm.h"
 #include "sandbox/policy/win/lpac_capability.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -72,7 +74,7 @@ std::vector<uint8_t> GetStorageIdSaltFromProfile(
 
 #endif  // BUILDFLAG(ENABLE_CDM_STORAGE_ID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const char kCdmStore[] = "MediaFoundationCdmStore";
 
 base::FilePath GetCdmStorePathRootForProfile(
@@ -80,11 +82,11 @@ base::FilePath GetCdmStorePathRootForProfile(
   return profile_path.AppendASCII(kCdmStore).AppendASCII(
       base::SysInfo::ProcessCPUArchitecture());
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool CreateCdmStorePathRootAndGrantAccessIfNeeded(
     const base::FilePath& cdm_store_path_root) {
   if (!media::MediaFoundationCdm::IsAvailable()) {
@@ -125,7 +127,7 @@ GetMediaFoundationCdmDataInternal(const base::FilePath profile_path,
   return std::make_unique<media::MediaFoundationCdmData>(
       pref_data->origin_id(), pref_data->client_token(), cdm_store_path_root);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 // static
 void CdmDocumentServiceImpl::Create(
@@ -163,7 +165,7 @@ void CdmDocumentServiceImpl::ChallengePlatform(
   // TODO(crbug.com/676224). This should be commented out at the mojom
   // level so that it's only available for ChromeOS.
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   bool success = platform_verification::PerformBrowserChecks(
       render_frame_host()->GetMainFrame());
   if (!success) {
@@ -283,7 +285,7 @@ void CdmDocumentServiceImpl::OnStorageIdResponse(
 }
 #endif  // BUILDFLAG(ENABLE_CDM_STORAGE_ID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 void CdmDocumentServiceImpl::IsVerifiedAccessEnabled(
     IsVerifiedAccessEnabledCallback callback) {
   // If we are in guest/incognito mode, then verified access is effectively
@@ -315,9 +317,9 @@ void CdmDocumentServiceImpl::IsVerifiedAccessEnabled(
   std::move(callback).Run(enabled_for_device);
 #endif  // else BUILDFLAG(IS_CHROMEOS_LACROS)
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void CdmDocumentServiceImpl::GetMediaFoundationCdmData(
     GetMediaFoundationCdmDataCallback callback) {
   const url::Origin cdm_origin = origin();
@@ -358,6 +360,40 @@ void CdmDocumentServiceImpl::SetCdmClientToken(
       Profile::FromBrowserContext(render_frame_host()->GetBrowserContext())
           ->GetPrefs();
   CdmPrefServiceHelper::SetCdmClientToken(user_prefs, cdm_origin, client_token);
+}
+
+void CdmDocumentServiceImpl::OnCdmEvent(media::CdmEvent event) {
+  DVLOG(1) << __func__ << ": event=" << static_cast<int>(event);
+
+  // CdmDocumentServiceImpl is shared by all CDMs in the same RenderFrame.
+  //
+  // We choose to only report a significant playback at most once and an error
+  // at most once because:
+  // 1. A site could create many CDM instances, e.g. to prefetch licenses. This
+  //    could cause multiple errors to be reported.
+  // 2. The media::Renderer could be destroyed and then recreated as part of the
+  //    suspend/resume process (e.g. paused for long time).This could cause
+  //    multiple significant playback to be reported.
+  // In both cases, our data could be skewed if we don't throttle them.
+  //
+  // If an error happens after a significant playback both will be reported.
+  // This is fine since MediaFoundationServiceMonitor calculates a score.
+  switch (event) {
+    case media::CdmEvent::kSignificantPlayback:
+      if (!has_reported_significant_playback_) {
+        has_reported_significant_playback_ = true;
+        MediaFoundationServiceMonitor::GetInstance()->OnSignificantPlayback();
+      }
+      break;
+    case media::CdmEvent::kPlaybackError:
+      [[fallthrough]];
+    case media::CdmEvent::kCdmError:
+      if (!has_reported_cdm_error_) {
+        has_reported_cdm_error_ = true;
+        MediaFoundationServiceMonitor::GetInstance()->OnPlaybackOrCdmError();
+      }
+      break;
+  }
 }
 
 // This function goes over each folder located under the MediaFoundationCdm
@@ -459,4 +495,4 @@ void CdmDocumentServiceImpl::ClearCdmData(
                      std::move(origin_id_mapping), start, end, filter),
       std::move(complete_cb));
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)

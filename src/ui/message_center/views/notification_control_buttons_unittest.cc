@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/notification_control_buttons_view.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
@@ -14,6 +15,8 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget.h"
 
 namespace message_center {
 
@@ -22,20 +25,23 @@ namespace {
 class TestMessageView : public MessageView {
  public:
   explicit TestMessageView(const Notification& notification)
-      : MessageView(notification),
-        buttons_view_(std::make_unique<NotificationControlButtonsView>(this)) {}
+      : MessageView(notification) {}
 
   NotificationControlButtonsView* GetControlButtonsView() const override {
-    return buttons_view_.get();
+    return buttons_view_;
+  }
+
+  void set_control_buttons_view(NotificationControlButtonsView* buttons_view) {
+    buttons_view_ = buttons_view;
   }
 
  private:
-  std::unique_ptr<NotificationControlButtonsView> buttons_view_;
+  raw_ptr<NotificationControlButtonsView> buttons_view_ = nullptr;
 };
 
 }  // namespace
 
-class NotificationControlButtonsTest : public testing::Test {
+class NotificationControlButtonsTest : public views::ViewsTestBase {
  public:
   NotificationControlButtonsTest() = default;
 
@@ -46,15 +52,23 @@ class NotificationControlButtonsTest : public testing::Test {
 
   ~NotificationControlButtonsTest() override = default;
 
-  // testing::Test
+  // views::ViewsTestBase:
   void SetUp() override {
-    Test::SetUp();
+    views::ViewsTestBase::SetUp();
+    widget_ = CreateTestWidget();
     Notification notification(
-        NOTIFICATION_TYPE_SIMPLE, "id", u"title", u"id", gfx::Image(),
+        NOTIFICATION_TYPE_SIMPLE, "id", u"title", u"id", ui::ImageModel(),
         std::u16string(), GURL(),
         NotifierId(NotifierType::APPLICATION, "notifier_id"),
         RichNotificationData(), nullptr);
     message_view_ = std::make_unique<TestMessageView>(notification);
+    message_view_->set_control_buttons_view(widget_->SetContentsView(
+        std::make_unique<NotificationControlButtonsView>(message_view_.get())));
+  }
+
+  void TearDown() override {
+    widget_.reset();
+    views::ViewsTestBase::TearDown();
   }
 
   NotificationControlButtonsView* buttons_view() {
@@ -79,6 +93,7 @@ class NotificationControlButtonsTest : public testing::Test {
   }
 
  private:
+  std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<TestMessageView> message_view_;
 };
 
@@ -110,7 +125,7 @@ TEST_F(NotificationControlButtonsTest, IconColor_NoContrastEnforcement) {
   buttons_view()->ShowSnoozeButton(true);
 
   // Default icon color.
-  ExpectIconColor(gfx::kChromeIconGrey);
+  ExpectIconColor(buttons_view()->GetColorProvider()->GetColor(ui::kColorIcon));
 
   // Without setting a background color we won't enforce contrast ratios.
   buttons_view()->SetButtonIconColors(SK_ColorWHITE);

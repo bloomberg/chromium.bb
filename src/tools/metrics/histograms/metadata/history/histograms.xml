@@ -23,9 +23,10 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="History.AttemptedToFixProfileError" units="units"
-    expires_after="M77">
+    expires_after="2022-11-20">
   <owner>sky@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logged whenever history database initialization fails. The frequency of
     logging will tell you the total failure rate. True indicate that we think
@@ -42,6 +43,7 @@ chromium-metrics-reviews@google.com.
     units="ms" expires_after="2022-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time that passed while performing a browsing data deletion using the
     ClearBrowsingDataOnExitList policy. The deletion will be for all time.
@@ -53,6 +55,7 @@ chromium-metrics-reviews@google.com.
     units="ms" expires_after="2022-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time that passed while performing a scheduled data deletion using the
     BrowsingDataSettings policy. The deletion will be for a specific hourly time
@@ -65,9 +68,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.BrowsingDataLifetime.State.BrowserShutdownDeletion"
-    enum="BooleanStartedCompleted" expires_after="2022-10-01">
+    enum="BooleanStartedCompleted" expires_after="2022-12-04">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>The states in which a deletion on shutdown went through.</summary>
 </histogram>
 
@@ -76,6 +80,7 @@ chromium-metrics-reviews@google.com.
     enum="BooleanStartedCompleted" expires_after="2022-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The states in which a scheduled deletion of {DeletionType} browsing data
     went through.
@@ -86,12 +91,68 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.Duration.ChromeTask.{Task}"
+    units="ms" expires_after="2022-10-01">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Records the duration of a ChromeBrowsingDataRemoverDelegate task for {Task}
+    deletion.
+  </summary>
+  <token key="Task">
+    <variant name="AccountCompromisedCredentials"
+        summary="AccountCompromisedCredentials"/>
+    <variant name="AccountPasswords" summary="AccountPasswords"/>
+    <variant name="AccountPasswordsSynced" summary="AccountPasswordsSynced"/>
+    <variant name="AutofillData" summary="AutofillData"/>
+    <variant name="AutofillOrigins" summary="AutofillOrigins"/>
+    <variant name="CdmLicenses" summary="CdmLicenses"/>
+    <variant name="CompromisedCredentials" summary="CompromisedCredentials"/>
+    <variant name="Cookies" summary="Cookies"/>
+    <variant name="DisableAutoSignin" summary="DisableAutoSignin"/>
+    <variant name="DomainReliability" summary="DomainReliability"/>
+    <variant name="ExploreSites" summary="ExploreSites"/>
+    <variant name="FaviconCacheExpiration" summary="FaviconCacheExpiration"/>
+    <variant name="FieldInfo" summary="FieldInfo"/>
+    <variant name="FlashDeauthorization" summary="FlashDeauthorization"/>
+    <variant name="History" summary="History"/>
+    <variant name="HostCache" summary="HostCache"/>
+    <variant name="HostNameResolution" summary="HostNameResolution"/>
+    <variant name="HttpAuthCache" summary="HttpAuthCache"/>
+    <variant name="KeywordsModel" summary="KeywordsModel"/>
+    <variant name="LegacyStrikes" summary="LegacyStrikes"/>
+    <variant name="MediaFeeds" summary="MediaFeeds"/>
+    <variant name="NaclCache" summary="NaclCache"/>
+    <variant name="NetworkErrorLogging" summary="NetworkErrorLogging"/>
+    <variant name="NetworkPredictor" summary="NetworkPredictor"/>
+    <variant name="OfflinePages" summary="OfflinePages"/>
+    <variant name="Passwords" summary="Passwords"/>
+    <variant name="PasswordsStatistics" summary="PasswordsStatistics"/>
+    <variant name="PluginData" summary="PluginData"/>
+    <variant name="PnaclCache" summary="PnaclCache"/>
+    <variant name="ReportingCache" summary="ReportingCache"/>
+    <variant name="SecurePaymentConfirmationCredentials"
+        summary="SecurePaymentConfirmationCredentials"/>
+    <variant name="Strikes" summary="Strikes"/>
+    <variant name="Synchronous" summary="Synchronous"/>
+    <variant name="TpmAttestationKeys" summary="TpmAttestationKeys"/>
+    <variant name="UserDataSnapshot" summary="UserDataSnapshot"/>
+    <variant name="VideoDecodeHistory" summary="VideoDecodeHistory"/>
+    <variant name="WebAppHistory" summary="WebAppHistory"/>
+    <variant name="WebAuthnCredentials" summary="WebAuthnCredentials"/>
+    <variant name="WebrtcEventLogs" summary="WebrtcEventLogs"/>
+    <variant name="WebrtcLogs" summary="WebrtcLogs"/>
+  </token>
+</histogram>
+
 <histogram name="History.ClearBrowsingData.Duration.FilteredDeletion"
     units="ms" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time that passed while performing a browsing data deletion with an
     origin filter. The deletion might be for all time or specific time range.
@@ -104,6 +165,7 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time that passed while performing a full browsing data deletion.
   </summary>
@@ -115,6 +177,7 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time that passed while performing a browsing data deletion for a set of
     origins.
@@ -127,6 +190,7 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Record tasks from BrowsingDataRemoverImpl that took more than 180s to
     finish.
@@ -139,6 +203,7 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Record tasks from ChromeBrowsingDataRemoverDelegate that took more than 180s
     to finish.
@@ -152,9 +217,36 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Record tasks from StoragePartition that took more than 180s to finish.
   </summary>
+</histogram>
+
+<histogram name="History.ClearBrowsingData.Duration.Task.{Task}" units="ms"
+    expires_after="2022-10-01">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Records the duration of a BrowsingDataRemoverImpl task for {Task} deletion.
+  </summary>
+  <token key="Task">
+    <variant name="AuthCache" summary="AuthCache"/>
+    <variant name="ChannelIds" summary="ChannelIds"/>
+    <variant name="CodeCaches" summary="CodeCaches"/>
+    <variant name="Conversions" summary="Conversions"/>
+    <variant name="DeferredCookies" summary="DeferredCookies"/>
+    <variant name="EmbedderData" summary="EmbedderData"/>
+    <variant name="HttpAndMediaCaches" summary="HttpAndMediaCaches"/>
+    <variant name="HttpCache" summary="HttpCache"/>
+    <variant name="NetworkErrorLogging" summary="NetworkErrorLogging"/>
+    <variant name="NetworkHistory" summary="NetworkHistory"/>
+    <variant name="ReportingCache" summary="ReportingCache"/>
+    <variant name="StoragePartition" summary="StoragePartition"/>
+    <variant name="Synchronous" summary="Synchronous"/>
+    <variant name="TrustTokens" summary="TrustTokens"/>
+  </token>
 </histogram>
 
 <histogram name="History.ClearBrowsingData.Duration.TimeRangeDeletion"
@@ -163,6 +255,7 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time that passed while performing a browsing data deletion for a
     restricted amount of time (e.g. &quot;Last hour&quot;) without an origin
@@ -171,9 +264,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.FailedTasksChrome"
-    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-04-17">
+    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-09-25">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Records tasks from ChromeBrowsingDataRemoverDelegate that did not complete
     successfully, i.e. where some data that was supposed to be deleted was left
@@ -185,6 +279,7 @@ chromium-metrics-reviews@google.com.
     name="History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated"
     enum="BooleanShown" expires_after="M81">
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Whether a notice about other forms of browsing history was shown in the
     footer of the Clear Browsing Data dialog. This is recorded every time the
@@ -196,6 +291,7 @@ chromium-metrics-reviews@google.com.
     units="units" expires_after="M95">
   <owner>dmurph@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user presses the 'clear' button when presented with the
     list of important sites they might want to exclude from clearing browsing
@@ -208,6 +304,7 @@ chromium-metrics-reviews@google.com.
     units="%/5" expires_after="M95">
   <owner>dmurph@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user presses the 'clear' button when presented with the
     list of important sites they might want to exclude from clearing browsing
@@ -220,16 +317,19 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.ClearBrowsingData.ImportantDialogShown"
     enum="BooleanShown" expires_after="M95">
   <owner>dmurph@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user presses the 'clear' button in the clear browsing
     dialog. We record 'true' if the important sites dialog is shown.
   </summary>
 </histogram>
 
-<histogram name="History.ClearBrowsingData.InstalledAppExcluded"
-    units="Boolean" expires_after="2022-04-17">
+<histogram name="History.ClearBrowsingData.InstalledAppExcluded" enum="Boolean"
+    expires_after="2023-03-09">
+  <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user presses the 'clear' button when presented with the
     list of installed apps they might want to exclude from clearing browsing
@@ -240,9 +340,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledAppsDialogAction"
-    enum="InstalledAppsDialogActions" expires_after="2022-04-24">
+    enum="InstalledAppsDialogActions" expires_after="2023-04-19">
+  <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded after the InstalledApps dialog is closed. This records the manner
     in which the dialog was closed.
@@ -250,9 +352,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledAppsDialogShown"
-    units="Boolean" expires_after="2022-04-24">
+    enum="Boolean" expires_after="2023-04-19">
+  <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded after the user clicks clear data on the CleaerBrowsingData dialog,
     but before the installed apps dialog is shown to the user. The value will be
@@ -262,9 +366,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledDeselectedNum"
-    units="units" expires_after="2022-04-17">
+    units="units" expires_after="2023-03-09">
+  <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user presses the 'clear' button when presented with the
     list of installed apps they might want to exclude from clearing browsing
@@ -274,9 +380,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledDeselectedPercent"
-    units="%" expires_after="2022-04-17">
+    units="%" expires_after="2023-03-09">
+  <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user presses the 'clear' button when presented with the
     list of installed apps they might want to exclude from clearing browsing
@@ -289,6 +397,7 @@ chromium-metrics-reviews@google.com.
     expires_after="M95">
   <owner>dmurph@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when we successfuly fetched important sites in the clear browsing
     data screen. This is the number of sites that we think are important to the
@@ -300,6 +409,7 @@ chromium-metrics-reviews@google.com.
     expires_after="M95">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when we successfuly fetched installed apps in the clear browsing
     data screen. This is the number of apps that we think are important to the
@@ -311,6 +421,7 @@ chromium-metrics-reviews@google.com.
     name="History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount"
     units="units" expires_after="M85">
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user deletes their passwords in the ClearBrowsingData
     dialog. Counts how many other data types were selected for deletion.
@@ -320,6 +431,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.ClearBrowsingData.ShownHistoryNoticeAfterClearing"
     enum="BooleanShown" expires_after="M81">
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Whether a dialog with a notice about other forms of browsing history was
     shown after the user deleted data from the Clear Browsing Data dialog.
@@ -332,22 +444,10 @@ chromium-metrics-reviews@google.com.
 
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The number of tasks that are in the task queue when the BrowsingDataRemover
     is destroyed.
-  </summary>
-</histogram>
-
-<histogram name="History.ClearBrowsingData.TimeSpentInDialog" units="ms"
-    expires_after="M85">
-  <obsolete>
-    Removed 12/2020
-  </obsolete>
-  <owner>dullweber@chromium.org</owner>
-  <owner>msramek@chromium.org</owner>
-  <summary>
-    Time spent in Clear Browsing Data dialog. From opening the dialog until data
-    is cleared. This does not record users who exit the dialog without clearing.
   </summary>
 </histogram>
 
@@ -356,6 +456,7 @@ chromium-metrics-reviews@google.com.
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user deletes their browsing data. Shows whether cookies
     and/or cache were among the selected data types.
@@ -367,6 +468,7 @@ chromium-metrics-reviews@google.com.
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user deletes their browsing data manually from the
     ClearBrowsingData dialog. Shows whether cookies and/or cache were among the
@@ -375,19 +477,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2022-04-17">
+    enum="ClearBrowsingDataTab" expires_after="2022-10-23">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded when the user deletes their browsing data. Shows which tab was used
     to perform the deletion.
   </summary>
 </histogram>
 
-<histogram name="History.Clusters.Actions.DidMakeQuery" units="BooleanQueried"
-    expires_after="M101">
+<histogram name="History.Clusters.Actions.DidMakeQuery" enum="BooleanQueried"
+    expires_after="2022-10-16">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logged when the user closes the chrome://history/journeys page (e.g. closed
     tab, navigated in the same tab, or closed browser). Logs whether the user
@@ -396,21 +500,68 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.FinalState"
-    units="HistoryClustersFinalState" expires_after="2022-05-15">
+    enum="HistoryClustersFinalState" expires_after="2022-05-27">
+  <obsolete>
+    Removed as of 05/2022 in favor of
+    History.Clusters.Actions.FinalState.Outcome
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logged when the user closes the chrome://history/journeys page (e.g. closed
     tab, navigated in the same tab, or closed browser). Logs the final state
     that ended the use of the journeys page (e.g., a link click away from the
     page).
+
+    Navigating back/forward aren't distinguished. E.g., if doing so leads to the
+    traditional history UI, a same doc navigation will be recorded; if doing so
+    leads to a different site, a link click will be recorded.
+
+    Before m100, tab refresh and same doc navigations were also not
+    distinguished and would record tab close.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Actions.FinalState.Number{Event}"
+    units="count" expires_after="2022-09-18">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs the number of
+    {Event} over the period of a single visit to the Journeys UI.
+  </summary>
+  <token key="Event">
+    <variant name="ClustersDeleted" summary="cluster deletions"/>
+    <variant name="IndividualVisitsDeleted"
+        summary="single/individual visits deleted"/>
+    <variant name="LinksOpened" summary="links opened"/>
+    <variant name="RelatedSearchesClicked"
+        summary="related search links opened"/>
+    <variant name="VisibilityToggles" summary="Journeys UI toggles on/off"/>
+  </token>
+</histogram>
+
+<histogram name="History.Clusters.Actions.FinalState.WasSuccessful"
+    enum="BooleanSuccess" expires_after="2022-09-18">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g., closed
+    tab, navigated in the same tab, or closed browser). Logs whether the users
+    interaction with the UI was deemed successful or not. Success is defined as
+    a link was clicked, a cluster was opened, or a deletion event occurred.
   </summary>
 </histogram>
 
 <histogram name="History.Clusters.Actions.InitialState"
-    units="HistoryClustersInitialState" expires_after="2022-05-15">
+    enum="HistoryClustersInitialState" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logged when the user closes the chrome://history/journeys page (e.g. closed
     tab, navigated in the same tab, or closed browser). Logs the state that
@@ -420,9 +571,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.LinksOpened" units="links opened"
-    expires_after="2022-05-15">
+    expires_after="2022-11-20">
   <owner>manukh@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logged when the user closed the chrome://history/journeys page (e.g. closed
     tab, navigated in the same tab, or closed browser). Logs the # of links
@@ -431,9 +583,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.NumQueries"
-    units="number queries made" expires_after="2022-05-15">
+    units="number queries made" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logged when the user closes the chrome://history/journeys page (e.g. closed
     tab, navigated in the same tab, or closed browser). Logs the number of
@@ -443,9 +596,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupLatency" units="ms"
-    expires_after="2022-05-15">
+    expires_after="2022-07-17">
+  <obsolete>
+    Deprecated for History.Clusters.Backend.BatchEntityLookupLatency2 in
+    02/20222.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logs the latency of querying entities for all the visits being clustered by
+    the on-device backend. Logged when clusters have been calculated based on
+    any request to cluster visits, which could be triggered from several things,
+    including loading the journeys UI, putting a query in the journeys page,
+    etc..
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.BatchEntityLookupLatency2" units="ms"
+    expires_after="2022-11-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the latency of querying entities for all the visits being clustered by
     the on-device backend. Logged when clusters have been calculated based on
@@ -456,9 +628,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupSize" units="count"
-    expires_after="2022-05-15">
+    expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the number of entities to be queried for their metadata when preparing
     to start clustering. The number of entities is the size of the entire batch
@@ -470,9 +643,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.ClusterSize.{ClusterStatistic}"
-    units="number visits" expires_after="M101">
+    units="number visits" expires_after="M106">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the {ClusterStatistic} of all clusters determined by the on-device
     backend. Logged when clusters have been calculated based on any request to
@@ -485,10 +659,41 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="History.Clusters.Backend.ComputeClusters.ThreadTime"
+    units="ms" expires_after="2022-11-20">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logs the time taken to cluster visits once the visits have been finalized
+    with all the necessary information for clustering, which is performed on a
+    background worker. This does not include any thread hop or queuing delay.
+    Logged when clusters have been calculated based on any request to cluster
+    visits, which could be triggered from several things, including loading the
+    journeys UI, putting a query in the journeys page, etc...
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.EntityIdGathering.ThreadTime"
+    units="ms" expires_after="2022-11-20">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logs the time taken to gather all entity IDs that require fetching
+    additional metadata for, which is performed on the UI thread. This does not
+    include any thread hop or queuing delay. Logged when clusters have been
+    calculated based on any request to cluster visits, which could be triggered
+    from several things, including loading the journeys UI, putting a query in
+    the journeys page, etc...
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.Backend.GetClustersLatency" units="ms"
-    expires_after="2022-05-15">
+    expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the latency of clustering visits performed by the on-device backend.
     Logged when clusters have been calculated based on any request to cluster
@@ -498,9 +703,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.AllKeywordPhraseCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-04-06">
+  <obsolete>
+    Deprecated 04/2022 because we no longer break keywords apart before storing
+    in the cache.
+  </obsolete>
   <owner>manukh@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the number of keyword phrases stored in the primary cache.
 
@@ -514,14 +724,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.AllKeywordsCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-11-13">
   <owner>manukh@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
-    Logs the number of keywords stored in the primary cache.
-
-    Each cluster can have multiple keyword phrases; each phrase consists of 1 or
-    more words.
+    Logs the number of keywords stored in the primary cache. Each keyword may
+    actually be multiple words.
 
     Logged each time the primary cache is refreshed, i.e. on omnibox key stroke
     limited to at most once every 2 hours, though clearing history items will
@@ -530,9 +739,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordPhraseCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-04-06">
+  <obsolete>
+    Deprecated 04/2022 because we no longer break keywords apart before storing
+    in the cache.
+  </obsolete>
   <owner>manukh@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the number of keywords stored in the short cache.
 
@@ -545,11 +759,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordsCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-11-13">
   <owner>manukh@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
-    Logs the number of keyword phrases stored in the short cache.
+    Logs the number of keyword stored in the short cache. Each keyword may
+    actually be multiple words.
 
     Each cluster can have multiple keyword phrases; each phrase consists of 1 or
     more words.
@@ -559,10 +775,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.Clusters.Backend.NumClustersReturned"
-    units="number clusters returned" expires_after="2022-05-15">
+<histogram name="History.Clusters.Backend.NumBatchesProcessedForVisits"
+    units="number of batches" expires_after="2022-05-11">
+  <obsolete>
+    Obsolete as of 05/2022.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logs the number of batches used to process visits. Logged once per request
+    for clusters to be calculated based on any request to cluster visits, which
+    could be triggered from several things, including loading the journeys UI,
+    putting a query in the journeys page, etc..
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.NumClustersReturned"
+    units="number clusters returned" expires_after="2022-11-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the total number of clusters returned for requested visits. Logged when
     clusters have been calculated based on any request to cluster visits, which
@@ -573,9 +806,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.NumKeywordsPerCluster.{KeywordStatistic}"
-    units="number keywords" expires_after="M101">
+    units="number keywords" expires_after="M106">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the {KeywordStatistic} over all clusters determined by the on-device
     backend. Logged when clusters have been calculated based on any request to
@@ -589,9 +823,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumVisitsToCluster"
-    units="number visits" expires_after="2022-05-15">
+    units="number visits" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs the total number of visits requested to be clustered by the backend.
     Logged when any request to cluster visits is made, which could be triggered
@@ -600,11 +835,73 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.Clusters.Backend.ProcessBatchOfVisits.BatchSize"
+    units="number visits" expires_after="2022-05-11">
+  <obsolete>
+    Obsolete as of 05/2022.
+  </obsolete>
+  <owner>tbansal@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logs the number of visits that were processed on the UI thread in a batch.
+    Can be logged multiple times when a request to cluster visits is made, which
+    could be triggered from several things, including loading the journeys UI,
+    putting a query in the journeys page, etc.. depending on how many visits
+    were sent to the backend to cluster.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.ProcessBatchOfVisits.ThreadTime"
+    units="ms" expires_after="2022-11-20">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logs the time taken to process a batch of visits (joining existing History
+    visit metadata with any additional Search, engagement, content metadata) and
+    is performed on the UI thread. This does not include any thread hop or
+    queuing delay. Can be logged multiple times when a request to cluster visits
+    is made, which could be triggered from several things, including loading the
+    journeys UI, putting a query in the journeys page, etc.. depending on how
+    many visits were sent to the backend to cluster.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.QueryAnnotatedVisits.ThreadTime"
+    units="ms" expires_after="2022-11-27">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    This histogram records the time taken (excluding queuing delay) to retrieve
+    visits from the History database, which occurs on the History DB thread.
+    Logged once per request to cluster vists is made, which could be triggered
+    from several things, including loading the journeys UI, putting a query in
+    the journeys page, etc.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.QueryAnnotatedVisitsLatency"
+    units="ms" expires_after="2022-07-24">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    This histogram records the total time taken (including queuing delay) from
+    which a request to retrieve vists from the History database took. Logged
+    once per request to cluster vists is made, which could be triggered from
+    several things, including loading the journeys UI, putting a query in the
+    journeys page, etc.
+  </summary>
+</histogram>
+
 <histogram
     name="History.Clusters.Backend.WasClusterFiltered.{ClusterFilterReason}"
-    enum="BooleanFiltered" expires_after="2022-05-15">
+    enum="BooleanFiltered" expires_after="2022-11-15">
   <owner>mcrouse@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Logs whether a cluster was filtered for having {ClusterFilterReason}. Logged
     when finalizing each individual cluster which occurs at the end of every
@@ -617,10 +914,41 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="History.Clusters.KeywordCache.Latency" units="ms"
+    expires_after="2022-07-24">
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Records the total amount of time spent populating the keyword cache,
+    measured via the wall clock. Most of this time is not on the main thread.
+
+    The total time spent populating the keywords cache will be:
+    History.Clusters.KeywordCache.Latency = (number of batches) *
+    (History.Clusters.Backend.QueryAnnotatedVisitsLatency +
+    History.Clusters.Backend.GetClustersLatency +
+    History.Clusters.KeywordCache.ThreadTime)
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.KeywordCache.ThreadTime" units="ms"
+    expires_after="2022-11-27">
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    This measures the amount of main thread time spent populating the keyword
+    cache AFTER we get it from the backend.
+
+    See History.Clusters.KeywordCache.Latency for the full wall clock time.
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.ProcessClustersDuration" units="ms"
-    expires_after="2022-05-22">
+    expires_after="2022-11-27">
   <owner>olivierli@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     This histogram records the total time taken to convert and process visits in
     in all history cluster available. This is recorded once after the
@@ -639,12 +967,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ServiceLatency" units="ms"
-    expires_after="2022-05-15">
+    expires_after="2022-11-20">
   <owner>tommycli@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
-    Records the time taken between the History Clusters WebUI handler requests a
-    batch of clusters, and when we get the clusters back from the Service.
+    Records the time taken between the History Clusters UI requests a batch of
+    clusters, and when we get the post-processed clusters back.
 
     This request occurs when the page is first loaded, when the page is
     refreshed, when the user changes the History search terms, and when the user
@@ -655,14 +984,21 @@ chromium-metrics-reviews@google.com.
     recorded on all requests, whether or not it returns clusters.
 
     This does not take into account the time spent in JavaScript, or updating
-    the DOM.
+    the DOM. It's recorded in QueryClustersState, which is meant to be shared
+    between multiple UIs.
+
+    Roughly, History.Clusters.ServiceLatency =
+    History.Clusters.Backend.QueryAnnotatedVisitsLatency +
+    History.Clusters.Backend.GetClustersLatency +
+    History.Clusters.ProcessClustersDuration
   </summary>
 </histogram>
 
 <histogram name="History.Clusters.UIActions.Cluster.{ClusterAction}"
-    units="index" expires_after="2022-02-25">
+    units="index" expires_after="2022-08-25">
   <owner>mahmadi@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded every time the user {ClusterAction} in chrome://history/journeys.
     The value represents the 0-indexed index of the cluster.
@@ -681,9 +1017,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.UIActions.RelatedSearch.{RelatedSearchAction}"
-    units="index" expires_after="2022-02-25">
+    units="index" expires_after="2022-08-25">
   <owner>mahmadi@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded every time the user {RelatedSearchAction} a related search
     suggestion in a history cluster in chrome://history/journeys. The value
@@ -696,9 +1033,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.UIActions.ToggledVisibility"
-    units="BooleanVisible" expires_after="2022-02-25">
+    enum="BooleanVisible" expires_after="2022-10-30">
   <owner>mahmadi@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded every time the user toggles the visibility of the history clusters
     Web UI shown at chrome://history/journeys from the history Web UI sidebar.
@@ -707,9 +1045,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.UIActions.{VisitType}Visit.{VisitAction}"
-    units="index" expires_after="2022-02-25">
+    units="index" expires_after="2022-08-25">
   <owner>mahmadi@chromium.org</owner>
-  <owner>chrome-memories@google.com</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded every time the user {VisitAction} a {VisitType} in a history
     cluster in chrome://history/journeys. The value represents the 0-indexed
@@ -727,9 +1066,29 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="History.Clusters.WebUISessionDuration" units="ms"
+    expires_after="2022-11-30">
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <summary>
+    Records the amount of time the Journeys WebUI is open.
+
+    This timer is started when the Journeys WebUI is loaded. The Journeys WebUI
+    is loaded when either the user directly goes to the Journeys WebUI, or when
+    the user switches to the Journeys tab from a different tab.
+
+    The timer is stopped and the elapsed time recorded when either the whole
+    WebUI is closed, or if the user disables the Journeys preference, or if the
+    user switches tabs off the Journeys tab onto a different one.
+
+    Elapsed times longer than one hour are recorded as one hour.
+  </summary>
+</histogram>
+
 <histogram name="History.DatabaseAdvancedMetricsTime" units="ms"
     expires_after="M77">
   <owner>shess@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time spent on advanced History DB metrics calculation (weekly and monthly
     URL, host, and category counts). Advanced metrics are logged on
@@ -740,6 +1099,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.DatabaseBasicMetricsTime" units="ms"
     expires_after="M77">
   <owner>shess@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time spent on basic History DB metrics calculation (file size and table
     counts). Basic metrics are logged on initialization of the History DB on 1%
@@ -747,8 +1107,11 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DatabaseFileMB" units="MB" expires_after="M85">
-  <owner>shess@chromium.org</owner>
+<histogram name="History.DatabaseFileMB" units="MB" expires_after="M110">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Size of History DB file. Duplicate of Profile.HistorySize and
     Sqlite.SizeKB.History. Logged on initialization of the History DB on 1% of
@@ -759,6 +1122,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.DatabaseMonthlyHostCountTime" units="ms"
     expires_after="2020-03-01">
   <owner>dimich@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time spent on computing the monthly count of hosts visited. Reported every
     time computation is performed, which in turn is done approximately weekly.
@@ -768,6 +1132,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.DeleteFTSIndexDatabases" units="units"
     expires_after="2018-08-30">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Count of &quot;History Index *&quot; databases deleted. These databases
     stored the full-text-search data for history, which was removed at r213442,
@@ -775,21 +1140,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCount1Day" units="domains"
-    expires_after="2022-04-17">
+<histogram name="History.DomainCount1Day_V2" units="domains"
+    expires_after="2022-10-23">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of unique domains visited by the user within a calendar day in user's
-    local timezone. For each profile, reported at profile open (which usually
-    happens at startup) for each unreported day (up to 7 days) prior to the
-    current date, and also reported once every 24 hours thereafter for the
-    latest unreported day, while the profile remains open. If no domains are
-    visited in a given day, a count of 0 will be reported for that day.
-
-    Warning: this histogram is logged incorrectly on ChromeOS. See
-    http://crbug.com/1237591
+    local timezone. For each regular profile (not incognito, guest, system,
+    etc.), reported at profile open (which usually happens at startup) for each
+    unreported day (up to 7 days) prior to the current date, and also reported
+    once every 24 hours thereafter for the latest unreported day, while the
+    profile remains open. If no domains are visited in a given day, a count of 0
+    will be reported for that day.
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -813,22 +1177,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCount28Day" units="domains"
-    expires_after="2022-04-17">
+<histogram name="History.DomainCount28Day_V2" units="domains"
+    expires_after="2022-10-23">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of unique domains visited by the user within a 28 calendar day period
-    in user's local timezone. For each profile, reported at profile open (which
-    usually happens at startup) for each unreported 28-day period (up to 7
-    periods) ending on the current day, current day - 1, current day - 2, etc.
-    Also reported once every 24 hours thereafter for the latest unreported
-    period, while the profile remains open. If no domains are visited during a
-    28-day period, a count of 0 will be reported for that period.
-
-    Warning: this histogram is logged incorrectly on ChromeOS. See
-    http://crbug.com/1237591
+    in user's local timezone. For each regular profile (not incognito, guest,
+    system, etc.), reported at profile open (which usually happens at startup)
+    for each unreported 28-day period (up to 7 periods) ending on the current
+    day, current day - 1, current day - 2, etc. Also reported once every 24
+    hours thereafter for the latest unreported period, while the profile remains
+    open. If no domains are visited during a 28-day period, a count of 0 will be
+    reported for that period.
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -852,22 +1215,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCount7Day" units="domains"
-    expires_after="2022-04-17">
+<histogram name="History.DomainCount7Day_V2" units="domains"
+    expires_after="2022-10-23">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of unique domains visited by the user within a 7 calendar day period
-    in user's local timezone. For each profile, reported at profile open (which
-    usually happens at startup) for each unreported 7-day period (up to 7
-    periods) ending on the current day, current day - 1, current day - 2, etc.
-    Also reported once every 24 hours thereafter for the latest unreported
-    period, while the profile remains open. If no domains are visited during a
-    7-day period, a count 0 will be reported for that period.
-
-    Warning: this histogram is logged incorrectly on ChromeOS. See
-    http://crbug.com/1237591
+    in user's local timezone. For each regular profile (not incognito, guest,
+    system, etc.), reported at profile open (which usually happens at startup)
+    for each unreported 7-day period (up to 7 periods) ending on the current
+    day, current day - 1, current day - 2, etc. Also reported once every 24
+    hours thereafter for the latest unreported period, while the profile remains
+    open. If no domains are visited during a 7-day period, a count 0 will be
+    reported for that period.
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -891,18 +1253,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCountQueryTime" units="ms"
-    expires_after="2022-02-20">
+<histogram name="History.DomainCountQueryTime_V2" units="ms"
+    expires_after="2022-10-23">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time spent on a scheduled computation task of domain visit counts. Each such
     task computes a number of (at least 1 and up to 7) sets of domain counts,
     where each set includes 3 results, for a 1-day, 7-day and 28-day period
     respectively. Note that for each computation task, only one query time is
     reported which covers the entire duration of the task. A task is scheduled
-    once at startup and every 24 hours thereafter while the browser remains
+    once per regular profile (not Incognito, Guest, System, etc. profiles) at
+    startup and every 24 hours per profile thereafter while the profile remains
     open.
   </summary>
 </histogram>
@@ -910,6 +1274,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.ExpireVisits.GetRedirectsDurationPercentage" units="%"
     expires_after="M90">
   <owner>calamity@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The percentage of time taken in ExpireHistoryBackend::ExpireVisits for
     calculating the redirect parent.
@@ -919,6 +1284,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.ExpireVisits.TotalDuration" units="ms"
     expires_after="M90">
   <owner>calamity@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The time taken to expire a list of visits. This is not scaled to the number
     of visits deleted, but gives an idea of how long a single request to
@@ -929,6 +1295,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.FaviconDatabaseAdvancedMetricsTime" units="ticks"
     expires_after="M77">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The wall-clock time taken to gather favicon database metrics. Metrics are
     logged on initialization of the Favicon DB on 1% of starts.
@@ -937,6 +1304,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="History.FaviconDatabaseSizeMB" units="MB" expires_after="M77">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Size of the Favicons database in MB. This is calculated as the number of
     pages consumed by the database multiplied by the page size. Logged on
@@ -947,6 +1315,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.FirstSetTopSitesDeltaSize" units="units"
     expires_after="M77">
   <owner>yiyaoliu@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The count of differences between cached top sites and up-to-date top sites
     when function TopSitesImpl::SetTopSites is firstly called at startup.
@@ -955,6 +1324,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="History.FirstUpdateTime" units="ms" expires_after="2020-02-02">
   <owner>yiyaoliu@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The amount of time for function
     history::TopSitesBackend::UpdateTopSitesOnDBThread to execute when this
@@ -966,13 +1336,15 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="History.GetFavIconFromDB" units="ms" expires_after="M79">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>Time to check the thumbnail database for an url's favicon.</summary>
 </histogram>
 
 <histogram name="History.HistoryPageView" enum="HistoryPageView"
-    expires_after="2022-05-01">
+    expires_after="2022-11-13">
   <owner>calamity@chromium.org</owner>
   <owner>src/chrome/browser/resources/history/OWNERS</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The page of the History page shown to the user. Logged each time the user
     loads the History page or switches pages.
@@ -983,9 +1355,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InitializationFailureStep" enum="HistoryInitStep"
-    expires_after="M77">
+    expires_after="2022-11-20">
   <owner>sky@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The phase of history initialization that failed. This histogram is only
     logged on database initialization failure.
@@ -996,13 +1369,15 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="History.InitTime" units="ms" expires_after="M79">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="History.InMemoryDBItemCount" units="typed URLs"
-    expires_after="2022-07-30">
+    expires_after="2022-10-16">
   <owner>sky@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The number of typed URLs in the history database that are read into the
     &quot;in memory&quot; history database. This in memory copy of the typed
@@ -1016,6 +1391,7 @@ chromium-metrics-reviews@google.com.
     expires_after="2020-02-16">
   <owner>sky@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of items in in-memory keyword_search_terms table. Recorded on profile
     open.
@@ -1026,33 +1402,17 @@ chromium-metrics-reviews@google.com.
     expires_after="2020-02-16">
   <owner>sky@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of items in in-memory urls table. Recorded on profile open.
   </summary>
 </histogram>
 
-<histogram name="History.InMemoryDBPopulate" units="ms"
-    expires_after="2022-07-30">
-  <obsolete>
-    Removed August 2021 because it was not meaningful. It did not seem to
-    reflect anything about the user experience or about contention in the
-    system; it moved in unexpected ways.
-  </obsolete>
-  <owner>sky@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
-  <summary>
-    The time it takes to read the typed URLs from the main history database into
-    the &quot;in memory&quot; history database. This in memory copy of the typed
-    URLs is used for synchronous inline autocomplete on the UI thread, while the
-    larger slower service is run off of disk on a background thread. Recorded on
-    profile open.
-  </summary>
-</histogram>
-
 <histogram name="History.InMemoryURLHistoryItems" units="items"
-    expires_after="2022-04-10">
+    expires_after="2022-12-01">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of history items in the in-memory url index. Recorded on profile open
     when restoring from a cache file and again shortly after profile open when
@@ -1061,9 +1421,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
   <owner>mpearson@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time to rebuild in-memory url index from main history database. Recorded
     once shortly after profile open.
@@ -1071,9 +1432,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime.RoundTripTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Records the total time between when the in-memory url index is requested to
     be built from the main thread, and when the request is succesfully finished
@@ -1087,9 +1449,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexRestoreCacheTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time to restore the in-memory url index from disk cache. Recorded on profile
     open.
@@ -1097,9 +1460,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexSaveCacheTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Time to write in-memory url index to disk cache. Recorded once shortly after
     profile open (after rebuilding the in-memory url index from history) and
@@ -1111,6 +1475,7 @@ chromium-metrics-reviews@google.com.
     expires_after="M77">
   <owner>sky@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     History database version from which history migration failed. If there are
     higher than normal migration failures, this histogram will indicate which
@@ -1119,9 +1484,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyHostCount" units="hosts"
-    expires_after="2022-04-10">
+    expires_after="2022-10-16">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Unique hostnames in History database urls table with last-visit times in the
     last 30 days. Metrics are logged on initialization of the History DB on 0.3%
@@ -1132,9 +1498,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyURLCount" units="urls"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Unique URLs in History database urls table with last-visit times in the last
     30 days. Metrics are logged on initialization of the History DB on 0.3% of
@@ -1142,22 +1509,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.MonthlyVisitCount" units="visits"
-    expires_after="2021-10-04">
-  <obsolete>
-    Removed September 2021.
-  </obsolete>
-  <owner>mpearson@chromium.org</owner>
-  <owner>sky@chromium.org</owner>
-  <summary>
-    Number of rows in History visits table with visit times in the last 30 days.
-    Metrics are logged on initialization of the History DB on 1% of starts.
-  </summary>
-</histogram>
-
 <histogram name="History.NumFaviconBitmapsInDB" units="units"
     expires_after="M77">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The total number of favicon bitmaps (of all sizes) cached in a user's
     Favicon database. A given favicon URL may be associated with multiple
@@ -1169,6 +1524,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.NumFaviconMappingsInDB" units="units"
     expires_after="M77">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The number of page URL (e.g., http://www.google.com) to favicon URL (e.g.,
     http://www.google.com/favicon.ico) mappings stored in a user's Favicon
@@ -1178,6 +1534,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="History.NumFaviconsInDB" units="units" expires_after="M77">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The total number of favicon URLs (e.g. http://www.google.com/favicon.ico)
     tracked in a user's Favicon database. This metric tracks knowledge of a
@@ -1190,6 +1547,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.NumLargeFaviconBitmapsInDB" units="units"
     expires_after="M77">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The total number of large (&gt;= 64 pixels wide) favicons being tracked in a
     user's Favicon database. This is a subset of History.NumFaviconBitmapsInDB,
@@ -1200,6 +1558,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="History.NumTouchIconsInDB" units="units" expires_after="M85">
   <owner>rogerm@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The total number of touch icons being tracked in a user's Favicon database.
     This is a subset of History.NumFaviconsInDB, which includes all icon types
@@ -1210,6 +1569,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.QueryMostVisitedURLsTime" units="ms"
     expires_after="M81">
   <owner>chengx@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The amount of time for function HistoryBackend::QueryMostVisitedURLs to
     execute. Excludes the case where local HistoryDatabase db_ is unavailable,
@@ -1220,6 +1580,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.ResultsRenderedTime" units="ms" expires_after="M90">
   <owner>calamity@chromium.org</owner>
   <owner>dbeam@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Records the time taken to load the history Web UI and render (at least) a
     screen full of items. This is roughly equivalent to 'time to first
@@ -1230,6 +1591,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.ShownHeaderAboutOtherFormsOfBrowsingHistory"
     enum="BooleanShown" expires_after="M77">
   <owner>msramek@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Whether the notice about other forms of browsing history was shown in the
     header of the History page when the header was displayed. The header is
@@ -1237,9 +1599,45 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.SqliteDatabaseError" enum="SqliteLoggedResultCode"
+    expires_after="2022-10-23">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>asully@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    The exact database error encountered when initializing the database, if
+    failed.
+  </summary>
+</histogram>
+
+<histogram name="History.TopSites.SearchTermsExtractedCount" units="counts"
+    expires_after="2022-10-16">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    The number of search terms extracted from the in-memory URLDatabase to
+    produce the most repeated search suggestions. Emitted on NTP load and on
+    omnibox popup shown on Android NTP when repeatable queries are requested to
+    be shown in the Most Visited tiles.
+  </summary>
+</histogram>
+
+<histogram name="History.TopSites.SearchTermsExtractionTime" units="ms"
+    expires_after="2022-10-16">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    The length of time it takes to extract the most repeated search terms from
+    the in-memory URLDatabase and sort by frecency scores. Emitted on NTP load
+    and on omnibox popup shown on Android NTP when repeatable queries are
+    requested to be shown in the Most Visited tiles.
+  </summary>
+</histogram>
+
 <histogram name="History.TopSitesRecoveredPercentage" units="%"
     expires_after="M85">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Size of the recovered TopSites database relative to the original corrupt
     database. Recovery is VACUUM-like, so the resulting database should always
@@ -1252,6 +1650,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.TopSitesRecoveredRowsThumbnails" units="units"
     expires_after="M85">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Rows recovered from [thumbnails] table in TopSites recovery.
   </summary>
@@ -1260,6 +1659,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="History.TopSitesRecovery" enum="HistoryTopSitesRecoveryEnum"
     expires_after="2018-08-30">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The TopSites recovery code is written conservatively, with successful
     recovery committed and any failure leading to rollback. This tracks the
@@ -1268,9 +1668,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.URLTableCount" units="URLs" expires_after="2022-08-29">
+<histogram name="History.URLTableCount" units="URLs" expires_after="2022-10-30">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of rows in urls table in History DB. Metrics are logged on
     initialization of the History DB on 1% of starts.
@@ -1278,9 +1679,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.VisitTableCount" units="visits"
-    expires_after="2022-06-05">
+    expires_after="2022-10-09">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of rows in visits table in History DB. Metrics are logged on
     initialization of the History DB on 1% of starts.
@@ -1288,9 +1690,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.WeeklyHostCount" units="hosts"
-    expires_after="2022-04-17">
+    expires_after="2022-10-23">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Unique hostnames in History database urls table with last-visit times in the
     last 7 days. Metrics are logged on initialization of the History DB on 0.3%
@@ -1299,9 +1702,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.WeeklyURLCount" units="URLs"
-    expires_after="2022-05-01">
+    expires_after="2022-09-11">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Unique URLs in History database urls table with last-visit times in the last
     7 days. Metrics are logged on initialization of the History DB on 0.3% of
@@ -1309,23 +1713,11 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.WeeklyVisitCount" units="visits"
-    expires_after="2021-10-04">
-  <obsolete>
-    Removed September 2021.
-  </obsolete>
-  <owner>mpearson@chromium.org</owner>
-  <owner>sky@chromium.org</owner>
-  <summary>
-    Number of rows in History visits table with visit times in the last 7 days.
-    Metrics are logged on initialization of the History DB on 1% of starts.
-  </summary>
-</histogram>
-
 <histogram name="HistoryPage.ClickAgeInDays" units="units"
     expires_after="2020-02-29">
   <owner>msramek@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Recorded each time an entry on the history page is clicked. Measures the age
     in days (defined as 24 hour periods, not using local time) of that entry.
@@ -1337,6 +1729,7 @@ chromium-metrics-reviews@google.com.
     expires_after="2020-02-29">
   <owner>msramek@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Subset of the HistoryPage.ClickAgeInDays histogram, with better bucket
     resolution at lower numbers.
@@ -1346,6 +1739,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.ClickPosition" units="units"
     expires_after="2020-02-23">
   <owner>rpop@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of entries that the clicked entry is older than in History page. Last
     bucket is any entry of that value or higher.
@@ -1355,6 +1749,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.ClickPositionSubset" units="units"
     expires_after="M81">
   <owner>rpop@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Subset of the Click Position histogram. Contains only the first smaller
     subset of entries on the page. Number of entries that the clicked entry is
@@ -1368,6 +1763,7 @@ chromium-metrics-reviews@google.com.
 
   <owner>rpop@google.com</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Histogram for usage of the section in the history page that allows the user
     to access tabs from other devices.
@@ -1382,6 +1778,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.OtherDevicesMenu.OpenAll.TabsPerWindow"
     units="units" expires_after="2020-07-01">
   <owner>markchang@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     The number of tabs created in each window when a user executes &quot;Open
     all&quot; menu item from a session menu in the &quot;Tabs from other
@@ -1392,6 +1789,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.OtherDevicesMenu.OpenAll.TotalTabs" units="units"
     expires_after="2020-07-01">
   <owner>markchang@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Total number of tabs opened when a user executes &quot;Open all&quot; menu
     item from a session menu in the &quot;Tabs from other devices&quot; section
@@ -1402,6 +1800,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.OtherDevicesMenu.OpenAll.TotalWindows"
     units="units" expires_after="2020-07-01">
   <owner>markchang@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Total number of windows opened when a user executes &quot;Open all&quot;
     menu item from a session menu in the &quot;Tabs from other devices&quot;
@@ -1412,6 +1811,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.RemoveEntryPosition" units="units"
     expires_after="M81">
   <owner>rpop@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Number of entries that the deleted entry is older than in History page. Last
     bucket is any entry of that value or higher. Confirmed removal is not
@@ -1422,6 +1822,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="HistoryPage.RemoveEntryPositionSubset" units="units"
     expires_after="M81">
   <owner>rpop@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
   <summary>
     Subset of Remove Entry Position histogram. Contains only the first smaller
     subset of entries on the page. Number of entries that the deleted entry is

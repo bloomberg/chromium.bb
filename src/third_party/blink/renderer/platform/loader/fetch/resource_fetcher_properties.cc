@@ -19,7 +19,7 @@ void DetachableResourceFetcherProperties::Detach() {
   fetch_client_settings_object_ =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
           properties_->GetFetchClientSettingsObject());
-  is_main_frame_ = properties_->IsMainFrame();
+  is_outermost_main_frame_ = properties_->IsOutermostMainFrame();
   paused_ = properties_->IsPaused();
   freeze_mode_ = properties_->FreezeMode();
   load_complete_ = properties_->IsLoadComplete();
@@ -27,8 +27,6 @@ void DetachableResourceFetcherProperties::Detach() {
       properties_->IsSubframeDeprioritizationEnabled();
   web_bundle_physical_url_ = properties_->WebBundlePhysicalUrl();
   outstanding_throttled_limit_ = properties_->GetOutstandingThrottledLimit();
-  litepage_subresource_redirect_origin_ =
-      properties_->GetLitePageSubresourceRedirectOrigin();
 
   properties_ = nullptr;
 }

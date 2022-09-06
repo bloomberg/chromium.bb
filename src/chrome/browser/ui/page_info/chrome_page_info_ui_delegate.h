@@ -42,9 +42,13 @@ class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
   // Returns "About this site" info for the active page.
   absl::optional<page_info::proto::SiteInfo> GetAboutThisSiteInfo();
 
+  // Opens the source URL in a new tab.
   void AboutThisSiteSourceClicked(GURL url, const ui::Event& event);
 
-#if !defined(OS_ANDROID)
+  // Handles opening the "More about this page" URL in a new tab.
+  void OpenMoreAboutThisPageUrl(const GURL& url, const ui::Event& event);
+
+#if !BUILDFLAG(IS_ANDROID)
   // If PageInfo should show a link to the site or app's settings page, this
   // will return true and set the params to the appropriate resource IDs (IDS_*).
   // Otherwise, it will return false.
@@ -54,11 +58,16 @@ class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
   // extra details to the user concerning the granted permission.
   std::u16string GetPermissionDetail(ContentSettingsType type);
 
+  // Opens Privacy Sandbox's "Ad Personalzation" settings page.
+  void ShowPrivacySandboxAdPersonalization();
+
   // PageInfoUiDelegate implementation
   bool IsBlockAutoPlayEnabled() override;
   bool IsMultipleTabsOpen() override;
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
   permissions::PermissionResult GetPermissionStatus(
+      ContentSettingsType type) override;
+  absl::optional<permissions::PermissionResult> GetEmbargoResult(
       ContentSettingsType type) override;
 
  private:

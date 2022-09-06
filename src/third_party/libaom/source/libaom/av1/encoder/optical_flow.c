@@ -67,43 +67,6 @@ static int pixel_interp(const double x, const double y, const double b00,
   return interp;
 }
 
-// bilinear interpolation to find subpixel values
-static AOM_INLINE int get_subpixels(const YV12_BUFFER_CONFIG *frame, int *pred,
-                                    const int w, const int h, LOCALMV mv,
-                                    const double x_coord,
-                                    const double y_coord) {
-  double left = x_coord + mv.row;
-  double top = y_coord + mv.col;
-  const int fromedge = 2;
-  const int height = frame->y_crop_height;
-  const int width = frame->y_crop_width;
-  if (left < 1) left = 1;
-  if (top < 1) top = 1;
-  // could use elements past boundary where stride > width
-  if (top > height - fromedge) top = height - fromedge;
-  if (left > width - fromedge) left = width - fromedge;
-  const uint8_t *buf = frame->y_buffer;
-  const int s = frame->y_stride;
-  int prev = -1;
-
-  int xint;
-  int yint;
-  int idx = 0;
-  for (int y = prev; y < prev + h; y++) {
-    for (int x = prev; x < prev + w; x++) {
-      double xx = left + x;
-      double yy = top + y;
-      xint = (int)xx;
-      yint = (int)yy;
-      int interp = pixel_interp(
-          xx, yy, buf[yint * s + xint], buf[yint * s + (xint + 1)],
-          buf[(yint + 1) * s + xint], buf[(yint + 1) * s + (xint + 1)]);
-      pred[idx++] = interp;
-    }
-  }
-  return 0;
-}
-
 // Scharr filter to compute spatial gradient
 static void spatial_gradient(const YV12_BUFFER_CONFIG *frame, const int x_coord,
                              const int y_coord, const int direction,

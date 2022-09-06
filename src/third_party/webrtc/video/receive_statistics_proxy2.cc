@@ -22,7 +22,6 @@
 #include "rtc_base/thread.h"
 #include "rtc_base/time_utils.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/field_trial.h"
 #include "system_wrappers/include/metrics.h"
 #include "video/video_receive_stream2.h"
 
@@ -98,13 +97,15 @@ bool IsCurrentTaskQueueOrThread(TaskQueueBase* task_queue) {
 
 }  // namespace
 
-ReceiveStatisticsProxy::ReceiveStatisticsProxy(uint32_t remote_ssrc,
-                                               Clock* clock,
-                                               TaskQueueBase* worker_thread)
+ReceiveStatisticsProxy::ReceiveStatisticsProxy(
+    uint32_t remote_ssrc,
+    Clock* clock,
+    TaskQueueBase* worker_thread,
+    const FieldTrialsView& field_trials)
     : clock_(clock),
       start_ms_(clock->TimeInMilliseconds()),
       enable_decode_time_histograms_(
-          !field_trial::IsEnabled("WebRTC-DecodeTimeHistogramsKillSwitch")),
+          !field_trials.IsEnabled("WebRTC-DecodeTimeHistogramsKillSwitch")),
       last_sample_time_(clock->TimeInMilliseconds()),
       fps_threshold_(kLowFpsThreshold,
                      kHighFpsThreshold,
@@ -651,11 +652,11 @@ ReceiveStatisticsProxy::GetCurrentEstimatedPlayoutNtpTimestampMs(
   return *last_estimated_playout_ntp_timestamp_ms_ + elapsed_ms;
 }
 
-VideoReceiveStream::Stats ReceiveStatisticsProxy::GetStats() const {
+VideoReceiveStreamInterface::Stats ReceiveStatisticsProxy::GetStats() const {
   RTC_DCHECK_RUN_ON(&main_thread_);
 
-  // Like VideoReceiveStream::GetStats, called on the worker thread from
-  // StatsCollector::ExtractMediaInfo via worker_thread()->Invoke().
+  // Like VideoReceiveStreamInterface::GetStats, called on the worker thread
+  // from StatsCollector::ExtractMediaInfo via worker_thread()->Invoke().
   // WebRtcVideoChannel::GetStats(), GetVideoReceiverInfo.
 
   // Get current frame rates here, as only updating them on new frames prevents
@@ -725,25 +726,33 @@ void ReceiveStatisticsProxy::OnFrameBufferTimingsUpdated(
     int jitter_buffer_ms,
     int min_playout_delay_ms,
     int render_delay_ms) {
-  RTC_DCHECK_RUN_ON(&decode_queue_);
-  worker_thread_->PostTask(ToQueuedTask(
-      task_safety_,
-      [max_decode_ms, current_delay_ms, target_delay_ms, jitter_buffer_ms,
-       min_playout_delay_ms, render_delay_ms, this]() {
-        RTC_DCHECK_RUN_ON(&main_thread_);
-        stats_.max_decode_ms = max_decode_ms;
-        stats_.current_delay_ms = current_delay_ms;
-        stats_.target_delay_ms = target_delay_ms;
-        stats_.jitter_buffer_ms = jitter_buffer_ms;
-        stats_.min_playout_delay_ms = min_playout_delay_ms;
-        stats_.render_delay_ms = render_delay_ms;
-        jitter_buffer_delay_counter_.Add(jitter_buffer_ms);
-        target_delay_counter_.Add(target_delay_ms);
-        current_delay_counter_.Add(current_delay_ms);
-        // Network delay (rtt/2) + target_delay_ms (jitter delay + decode time +
-        // render delay).
-        delay_counter_.Add(target_delay_ms + avg_rtt_ms_ / 2);
-      }));
+  // Only called on main_thread_ with FrameBuffer3
+  if (!worker_thread_->IsCurrent()) {
+    RTC_DCHECK_RUN_ON(&decode_queue_);
+    worker_thread_->PostTask(ToQueuedTask(
+        task_safety_,
+        [max_decode_ms, current_delay_ms, target_delay_ms, jitter_buffer_ms,
+         min_playout_delay_ms, render_delay_ms, this]() {
+          OnFrameBufferTimingsUpdated(max_decode_ms, current_delay_ms,
+                                      target_delay_ms, jitter_buffer_ms,
+                                      min_playout_delay_ms, render_delay_ms);
+        }));
+    return;
+  }
+
+  RTC_DCHECK_RUN_ON(&main_thread_);
+  stats_.max_decode_ms = max_decode_ms;
+  stats_.current_delay_ms = current_delay_ms;
+  stats_.target_delay_ms = target_delay_ms;
+  stats_.jitter_buffer_ms = jitter_buffer_ms;
+  stats_.min_playout_delay_ms = min_playout_delay_ms;
+  stats_.render_delay_ms = render_delay_ms;
+  jitter_buffer_delay_counter_.Add(jitter_buffer_ms);
+  target_delay_counter_.Add(target_delay_ms);
+  current_delay_counter_.Add(current_delay_ms);
+  // Network delay (rtt/2) + target_delay_ms (jitter delay + decode time +
+  // render delay).
+  delay_counter_.Add(target_delay_ms + avg_rtt_ms_ / 2);
 }
 
 void ReceiveStatisticsProxy::OnUniqueFramesCounted(int num_unique_frames) {
@@ -753,25 +762,29 @@ void ReceiveStatisticsProxy::OnUniqueFramesCounted(int num_unique_frames) {
 
 void ReceiveStatisticsProxy::OnTimingFrameInfoUpdated(
     const TimingFrameInfo& info) {
-  RTC_DCHECK_RUN_ON(&decode_queue_);
-  worker_thread_->PostTask(ToQueuedTask(task_safety_, [info, this]() {
-    RTC_DCHECK_RUN_ON(&main_thread_);
-    if (info.flags != VideoSendTiming::kInvalid) {
-      int64_t now_ms = clock_->TimeInMilliseconds();
-      timing_frame_info_counter_.Add(info, now_ms);
-    }
+  // Only called on main_thread_ with FrameBuffer3
+  if (!worker_thread_->IsCurrent()) {
+    RTC_DCHECK_RUN_ON(&decode_queue_);
+    worker_thread_->PostTask(ToQueuedTask(
+        task_safety_, [info, this]() { OnTimingFrameInfoUpdated(info); }));
+    return;
+  }
+  RTC_DCHECK_RUN_ON(&main_thread_);
+  if (info.flags != VideoSendTiming::kInvalid) {
+    int64_t now_ms = clock_->TimeInMilliseconds();
+    timing_frame_info_counter_.Add(info, now_ms);
+  }
 
-    // Measure initial decoding latency between the first frame arriving and
-    // the first frame being decoded.
-    if (!first_frame_received_time_ms_.has_value()) {
-      first_frame_received_time_ms_ = info.receive_finish_ms;
-    }
-    if (stats_.first_frame_received_to_decoded_ms == -1 &&
-        first_decoded_frame_time_ms_) {
-      stats_.first_frame_received_to_decoded_ms =
-          *first_decoded_frame_time_ms_ - *first_frame_received_time_ms_;
-    }
-  }));
+  // Measure initial decoding latency between the first frame arriving and
+  // the first frame being decoded.
+  if (!first_frame_received_time_ms_.has_value()) {
+    first_frame_received_time_ms_ = info.receive_finish_ms;
+  }
+  if (stats_.first_frame_received_to_decoded_ms == -1 &&
+      first_decoded_frame_time_ms_) {
+    stats_.first_frame_received_to_decoded_ms =
+        *first_decoded_frame_time_ms_ - *first_frame_received_time_ms_;
+  }
 }
 
 void ReceiveStatisticsProxy::RtcpPacketTypesCounterUpdated(
@@ -817,13 +830,33 @@ void ReceiveStatisticsProxy::OnDecodedFrame(const VideoFrame& frame,
                                             absl::optional<uint8_t> qp,
                                             int32_t decode_time_ms,
                                             VideoContentType content_type) {
+  webrtc::TimeDelta processing_delay = webrtc::TimeDelta::Millis(0);
+  webrtc::Timestamp current_time = clock_->CurrentTime();
+  // TODO(bugs.webrtc.org/13984): some tests do not fill packet_infos().
+  webrtc::TimeDelta assembly_time = webrtc::TimeDelta::Millis(0);
+  if (frame.packet_infos().size() > 0) {
+    const auto [first_packet, last_packet] = std::minmax_element(
+        frame.packet_infos().cbegin(), frame.packet_infos().cend(),
+        [](const webrtc::RtpPacketInfo& a, const webrtc::RtpPacketInfo& b) {
+          return a.receive_time() < b.receive_time();
+        });
+    if (first_packet->receive_time().IsFinite()) {
+      processing_delay = current_time - first_packet->receive_time();
+      // Extract frame assembly time (i.e. time between earliest and latest
+      // packet arrival). Note: for single-packet frames this will be 0.
+      assembly_time =
+          last_packet->receive_time() - first_packet->receive_time();
+    }
+  }
   // See VCMDecodedFrameCallback::Decoded for more info on what thread/queue we
   // may be on. E.g. on iOS this gets called on
   // "com.apple.coremedia.decompressionsession.clientcallback"
-  VideoFrameMetaData meta(frame, clock_->CurrentTime());
-  worker_thread_->PostTask(ToQueuedTask(
-      task_safety_, [meta, qp, decode_time_ms, content_type, this]() {
-        OnDecodedFrame(meta, qp, decode_time_ms, content_type);
+  VideoFrameMetaData meta(frame, current_time);
+  worker_thread_->PostTask(
+      ToQueuedTask(task_safety_, [meta, qp, decode_time_ms, processing_delay,
+                                  assembly_time, content_type, this]() {
+        OnDecodedFrame(meta, qp, decode_time_ms, processing_delay,
+                       assembly_time, content_type);
       }));
 }
 
@@ -831,6 +864,8 @@ void ReceiveStatisticsProxy::OnDecodedFrame(
     const VideoFrameMetaData& frame_meta,
     absl::optional<uint8_t> qp,
     int32_t decode_time_ms,
+    webrtc::TimeDelta processing_delay,
+    webrtc::TimeDelta assembly_time,
     VideoContentType content_type) {
   RTC_DCHECK_RUN_ON(&main_thread_);
 
@@ -871,6 +906,11 @@ void ReceiveStatisticsProxy::OnDecodedFrame(
   decode_time_counter_.Add(decode_time_ms);
   stats_.decode_ms = decode_time_ms;
   stats_.total_decode_time_ms += decode_time_ms;
+  stats_.total_processing_delay += processing_delay;
+  stats_.total_assembly_time += assembly_time;
+  if (!assembly_time.IsZero()) {
+    ++stats_.frames_assembled_from_multiple_packets;
+  }
   if (enable_decode_time_histograms_) {
     UpdateDecodeTimeHistograms(frame_meta.width, frame_meta.height,
                                decode_time_ms);

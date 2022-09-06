@@ -48,7 +48,7 @@ class CastMediaNotificationProducer
   // global_media_controls::MediaItemProducer:
   base::WeakPtr<media_message_center::MediaNotificationItem> GetMediaItem(
       const std::string& id) override;
-  std::set<std::string> GetActiveControllableItemIds() override;
+  std::set<std::string> GetActiveControllableItemIds() const override;
   bool HasFrozenItems() override;
   void OnItemShown(const std::string& id,
                    global_media_controls::MediaItemUI* item_ui) override;
@@ -59,9 +59,8 @@ class CastMediaNotificationProducer
   void OnMediaItemUIDismissed(const std::string& id) override;
 
   // media_router::MediaRoutesObserver:
-  void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes,
-                       const std::vector<media_router::MediaRoute::Id>&
-                           joinable_route_ids) override;
+  void OnRoutesUpdated(
+      const std::vector<media_router::MediaRoute>& routes) override;
 
   size_t GetActiveItemCount() const;
   bool HasLocalMediaRoute() const;

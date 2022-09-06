@@ -357,7 +357,7 @@
 <translation id="3286372614333682499">dọc</translation>
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3300348286427369683">Hỗ trợ văn bản đa dạng thức. ChromeVox hiện hỗ trợ các trường văn bản đa dạng thức, bao gồm cả lệnh di chuyển, định tuyến con trỏ chữ nổi, lựa chọn và các trường khác.</translation>
-<translation id="3300733168898541351">hủy</translation>
+<translation id="3300733168898541351">huỷ</translation>
 <translation id="3307886118343381874">Đi tới cuối bảng</translation>
 <translation id="3312997241656799641">Liên kết đã truy cập tiếp theo</translation>
 <translation id="3313245066383501820">Phím bổ trợ ChromeVox</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">bảng <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Bỏ qua nhấn phím tiếp theo</translation>
 <translation id="4623097797855662355">Lời ghi cuối sách</translation>
+<translation id="4624970070706497034">TalkBack không còn hỗ trợ chế độ tuỳ chỉnh trên Chromebook nữa. Bạn vẫn có thể sử dụng tính năng này nhưng hãy sử dụng phím tắt mặc định của TalkBack. Nhấn tổ hợp phím Search+A, rồi nhấn phím K để xem các phím tắt hiện có. Nếu bạn vẫn muốn dùng TalkBack, hãy nhấn lại lệnh này.</translation>
 <translation id="463135993322337640">Bạn có thể tìm hiểu tính năng mới bằng cách nhấn ChromeVox, o, n</translation>
 <translation id="4649220074413114917">Bạn có thể nhấn vào màn hình bằng 2 ngón tay để dừng mọi giọng đọc hiện tại. Thao tác này sẽ hữu ích khi bạn không muốn ChromeVox đọc nội dung nào đó. Để tiếp tục, hãy nhấn vào màn hình bằng 2 ngón tay.</translation>
 <translation id="4660783501463101648">Đã xóa phiên bản cổ điển. Phím chuyển đổi trên bàn phím để quay về phiên bản ChromeVox cổ điển đã bị xóa.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Đã bật phụ đề chữ nổi</translation>
 <translation id="5183440668879371625">Dòng chữ nổi trước</translation>
 <translation id="5189244881767082992">Dòng</translation>
-<translation id="5234747236692380506">nhập <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Màu râu ngô</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Kết thúc</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Bạn đã học xong phần Khám phá nhanh!</translation>
 <translation id="5534303576632885660">tiêu đề</translation>
 <translation id="5539820223028224601">Màu xám sáng</translation>
+<translation id="554893713779400387">Bật/tắt tính năng nhập bằng giọng nói</translation>
 <translation id="5549179427201066174">Bật/tắt phản hồi bằng âm thanh (âm báo)</translation>
 <translation id="556042886152191864">Nút</translation>
 <translation id="5561345396546889625">Danh sách tiếp theo</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Nhật ký</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Biểu tượng đồ họa</translation>
+<translation id="5648939288050772726">Xin chúc mừng! Bạn đã tìm hiểu xong thông tin cơ bản để sử dụng hiệu quả ChromeVox. Hãy nhớ rằng bạn có thể mở trình đơn lệnh của ChromeVox bất cứ lúc nào bằng cách nhấn tổ hợp phím Tìm kiếm+Dấu chấm. Để tìm hiểu thêm về ChromeVox và ChromeOS, hãy truy cập các bài viết sau đây.
+    Nếu bạn đã đọc xong phần hướng dẫn, hãy dùng ChromeVox để chuyển đến nút Đóng rồi nhấp vào nút đó.</translation>
 <translation id="5653397561111110475">Sử dụng tính năng trợ năng của màn hình cảm ứng Chromebook</translation>
 <translation id="5655682562155942719">Chuyển lệnh</translation>
 <translation id="56637627897541303">Vùng văn bản</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dấu hai chấm}other{# dấu hai chấm}}</translation>
 <translation id="6444046323172968959">Hộp thoại thông báo</translation>
 <translation id="6452403590345320472">Mục lục</translation>
+<translation id="6457542714329819968">nhập</translation>
 <translation id="6468049171101508116">Nút tiếp theo</translation>
 <translation id="646954774886932461">Chú dẫn</translation>
 <translation id="6475604559827479857">Màu làm nổi bật từ:</translation>
@@ -850,7 +854,7 @@
 <translation id="6910211073230771657">Đã xóa</translation>
 <translation id="6910969481785184048">Bật, tắt và dừng</translation>
 <translation id="6919104639734799681">Hiển thị danh sách bảng</translation>
-<translation id="692135145298539227">xóa</translation>
+<translation id="692135145298539227">xoá</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6949846980769640811">Màu xanh nước biển hài hòa</translation>
 <translation id="6951482098621102657">Không có tiêu đề cấp 5 nào tiếp theo</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Giọng nói tự nhiên</translation>
 <translation id="7714340021005120797">Không có hộp kết hợp nào tiếp theo</translation>
-<translation id="772146615414628379">Xin chúc mừng! Bạn đã tìm hiểu xong thông tin cơ bản để sử dụng hiệu quả ChromeVox. Hãy nhớ rằng bạn có thể mở trình đơn lệnh của ChromeVox bất cứ lúc nào bằng cách nhấn tổ hợp phím Tìm kiếm+Dấu chấm. Để tìm hiểu thêm về ChromeVox và Chrome OS, hãy truy cập vào các bài viết sau đây.
-    Nếu bạn đã đọc xong phần hướng dẫn, hãy dùng ChromeVox để chuyển đến nút Đóng rồi nhấp vào nút đó.</translation>
 <translation id="7724603315864178912">Cắt</translation>
 <translation id="7731785449856576010">Không có tiện ích nghe nhìn nào tiếp theo</translation>
 <translation id="7735498529470878067">Tính năng Khám phá bằng cách chạm có thể giúp bạn nhanh chóng nắm được nội dung trên màn hình.</translation>
@@ -1045,7 +1047,7 @@
 <translation id="8212109599554677485">Thay đổi kiểu hiển thị thành song song</translation>
 <translation id="8215202828671303819">Đa chọn</translation>
 <translation id="8249864170673238087"><ph name="COLOR" />, độ mờ <ph name="OPACITY_PERCENTAGE" />%.</translation>
-<translation id="8261506727792406068">Xóa</translation>
+<translation id="8261506727792406068">Xoá</translation>
 <translation id="826825447994856889">Giới thiệu</translation>
 <translation id="827266600368092403">Lựa chọn bắt đầu hoặc kết thúc</translation>
 <translation id="827422111966801947">Màu chàm</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Màu đỏ đậm</translation>
 <translation id="923331726185079994">Đã cập nhật ChromeVox</translation>
 <translation id="93384979447910801">Màu xanh biển đậm</translation>
+<translation id="937605981140327129">Chưa cài đặt TalkBack. Vui lòng cài đặt AccessibilitySuite dành cho Android thông qua Cửa hàng Play rồi thử lại.</translation>
 <translation id="948171205378458592">Giảm tốc độ nói</translation>
 <translation id="957570623732056069">Dùng một ngón tay vuốt sang trái hoặc sang phải để di chuyển trong bài học này</translation>
 <translation id="958854023026327378">Vuốt xuống dưới bằng một ngón tay</translation>

@@ -8,8 +8,6 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/download/android/download_controller.h"
 #include "chrome/browser/download/android/jni_headers/DownloadDialogBridge_jni.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -158,14 +156,6 @@ void JNI_DownloadDialogBridge_SetDownloadAndSaveFileDefaultDirectory(
   base::FilePath path(base::android::ConvertJavaStringToUTF8(env, directory));
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
-}
-
-// static
-jboolean JNI_DownloadDialogBridge_IsDataReductionProxyEnabled(JNIEnv* env) {
-  auto* data_reduction_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          ProfileManager::GetActiveUserProfile());
-  return data_reduction_settings->IsDataReductionProxyEnabled();
 }
 
 // static

@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/ignore_result.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1632,7 +1632,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
 // the omnibox.
 
 // Fails occasionally on Mac. http://crbug.com/852703
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_CancelLoginInterstitialOnRedirect \
   DISABLED_CancelLoginInterstitialOnRedirect
 #else
@@ -1749,7 +1749,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), broken_ssl_page));
     ASSERT_EQ("127.0.0.1", contents->GetLastCommittedURL().host());
     ASSERT_TRUE(contents->GetLastCommittedURL().SchemeIs("https"));
-    ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+    ASSERT_TRUE(WaitForRenderFrameReady(contents->GetPrimaryMainFrame()));
   }
 
   // An overrideable SSL interstitial is now being displayed. Navigate to the
@@ -2110,7 +2110,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
 }
 
 // Tests that basic proxy auth works as expected, for HTTPS pages.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1000446): Re-enable this test.
 #define MAYBE_ProxyAuthHTTPS DISABLED_ProxyAuthHTTPS
 #else
@@ -2337,6 +2337,101 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, BasicAuthWithServiceWorker) {
   }
 }
 
+namespace {
+
+const char kWorkerHttpBasicAuthPath[] =
+    "/service_worker/http_basic_auth?intercept";
+
+// Serves a Basic Auth challenge.
+std::unique_ptr<net::test_server::HttpResponse> HandleHttpAuthRequest(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != kWorkerHttpBasicAuthPath)
+    return nullptr;
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+  http_response->AddCustomHeader("WWW-Authenticate",
+                                 "Basic realm=\"test realm\"");
+  return http_response;
+}
+
+}  // namespace
+
+// Tests that crash doesn't happen, when the service worker calls fetch() for a
+// subresource and the page is destroyed before OnAuthRequired() is called. This
+// is a regression test for https://crbug.com/1320420.
+IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
+                       BasicAuthWithServiceWorkerForFetchSubResource) {
+  net::test_server::EmbeddedTestServer https_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.RegisterRequestHandler(
+      base::BindRepeating(&HandleHttpAuthRequest));
+  auto test_server_handle = https_server.StartAndReturnHandle();
+  ASSERT_TRUE(test_server_handle);
+
+  // Open a new tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  // There are two tabs.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Install a Service Worker that responds to fetch events by fetch()ing the
+  // requested resource.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL("/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE",
+            content::EvalJs(web_contents,
+                            "register('/service_worker/"
+                            "fetch_event_respond_with_fetch.js', '/')"));
+
+  // Now navigate to a simple page.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server.GetURL("/simple.html")));
+
+  // Write a JS to fetch a sub resource.
+  const std::string register_script = base::StringPrintf(
+      R"(
+        function try_fetch_status(url) {
+          return fetch(url).then(
+            response => {
+              return response.status;
+            },
+            err => {
+              return err.name;
+            }
+          );
+        }
+        try_fetch_status('%s');
+  )",
+      https_server.GetURL(kWorkerHttpBasicAuthPath).spec().c_str());
+
+  // Run JS asynchronously.
+  std::ignore = content::EvalJs(
+      web_contents, register_script,
+      content::EvalJsOptions::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES);
+
+  // Close the current active tab and it should not crash. By the JS above,
+  // OnAuthRequired() in StoragePartitionImpl is called even after the web
+  // contents is destroyed but it passes the empty credential info and
+  // triggers CancelAuth().
+  browser()->tab_strip_model()->CloseWebContentsAt(1,
+                                                   TabStripModel::CLOSE_NONE);
+
+  // It has one tab left.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Ensure that a new navigation works in the current web contents.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server.GetURL("/simple.html")));
+}
+
 class LoginPromptPrerenderBrowserTest : public LoginPromptBrowserTest {
  public:
   LoginPromptPrerenderBrowserTest()
@@ -2429,10 +2524,10 @@ IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
   const GURL kAuthIFrameUrl = embedded_test_server()->GetURL(kAuthBasicPage);
   content::RenderFrameHost* prerender_rfh =
       prerender_helper().GetPrerenderedMainFrameHost(host_id);
-  ignore_result(ExecJs(prerender_rfh,
-                       "var i = document.createElement('iframe'); i.src = '" +
-                           kAuthIFrameUrl.spec() +
-                           "'; document.body.appendChild(i);"));
+  std::ignore =
+      ExecJs(prerender_rfh,
+             "var i = document.createElement('iframe'); i.src = '" +
+                 kAuthIFrameUrl.spec() + "'; document.body.appendChild(i);");
 
   // The prerender should be destroyed.
   host_observer.WaitForDestroyed();
@@ -2474,8 +2569,8 @@ IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
         imgElement.src = '/auth-basic/favicon.gif';
         document.body.appendChild(imgElement);
   )";
-  ignore_result(ExecJs(prerender_helper().GetPrerenderedMainFrameHost(host_id),
-                       fetch_subresource_script));
+  std::ignore = ExecJs(prerender_helper().GetPrerenderedMainFrameHost(host_id),
+                       fetch_subresource_script);
 
   // The prerender should be destroyed.
   host_observer.WaitForDestroyed();

@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -379,48 +381,6 @@ void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
   sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
 }
 
-#if defined(OS_ANDROID)
-Mailbox SharedImageInterfaceInProcess::CreateSharedImageWithAHB(
-    const Mailbox& in_mailbox,
-    uint32_t usage,
-    const SyncToken& sync_token) {
-  auto out_mailbox = Mailbox::GenerateForSharedImage();
-  {
-    base::AutoLock lock(lock_);
-    // Note: we enqueue the task under the lock to guarantee monotonicity of
-    // the release ids as seen by the service. Unretained is safe because
-    // SharedImageInterfaceInProcess synchronizes with the GPU thread at
-    // destruction time, cancelling tasks, before |this| is destroyed.
-    ScheduleGpuTask(
-        base::BindOnce(
-            &SharedImageInterfaceInProcess::CreateSharedImageWithAHBOnGpuThread,
-            base::Unretained(this), out_mailbox, in_mailbox, usage,
-            MakeSyncToken(next_fence_sync_release_++)),
-        {sync_token});
-  }
-  return out_mailbox;
-}
-
-void SharedImageInterfaceInProcess::CreateSharedImageWithAHBOnGpuThread(
-    const Mailbox& out_mailbox,
-    const Mailbox& in_mailbox,
-    uint32_t usage,
-    const SyncToken& sync_token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  if (!MakeContextCurrent())
-    return;
-
-  if (!shared_image_factory_ ||
-      !shared_image_factory_->CreateSharedImageWithAHB(out_mailbox, in_mailbox,
-                                                       usage)) {
-    // Signal errors by losing the command buffer.
-    command_buffer_helper_->SetError();
-    return;
-  }
-  sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
-}
-#endif
-
 SharedImageInterface::SwapChainMailboxes
 SharedImageInterfaceInProcess::CreateSwapChain(
     viz::ResourceFormat format,
@@ -439,7 +399,7 @@ void SharedImageInterfaceInProcess::PresentSwapChain(
   NOTREACHED();
 }
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 void SharedImageInterfaceInProcess::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
     zx::channel token,
@@ -452,7 +412,7 @@ void SharedImageInterfaceInProcess::ReleaseSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id) {
   NOTREACHED();
 }
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 void SharedImageInterfaceInProcess::UpdateSharedImage(
     const SyncToken& sync_token,

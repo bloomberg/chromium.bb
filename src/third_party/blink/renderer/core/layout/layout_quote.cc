@@ -23,7 +23,6 @@
 
 #include <algorithm>
 
-#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -245,7 +244,7 @@ const QuotesData* QuotesDataForLanguage(const AtomicString& lang) {
     return nullptr;
 
   // This could be just a hash table, but doing that adds 200k to LayoutQuote.o
-  Language* languages_end = g_languages + base::size(g_languages);
+  Language* languages_end = g_languages + std::size(g_languages);
   std::string lowercase_lang = lang.LowerASCII().Utf8();
   Language key = {lowercase_lang.c_str(), 0, 0, 0, 0, nullptr};
   Language* match = std::lower_bound(g_languages, languages_end, key);
@@ -361,8 +360,18 @@ void LayoutQuote::AttachQuote() {
     return;
   }
 
+  // TODO(crbug.com/882385): Implement style containment for quotes. For now,
+  // make sure we don't crash for container queries. If we are inside a size
+  // query container, don't connect to previous quote, and don't set it as the
+  // LayoutQuoteHead for the LayoutView.
+  bool found_container_root = false;
+
   for (LayoutObject* predecessor = PreviousInPreOrder(); predecessor;
        predecessor = predecessor->PreviousInPreOrder()) {
+    if (predecessor->CanMatchSizeContainerQueries()) {
+      found_container_root = true;
+      break;
+    }
     // Skip unattached predecessors to avoid having stale m_previous pointers
     // if the previous node is never attached and is then destroyed.
     if (!predecessor->IsQuote() || !To<LayoutQuote>(predecessor)->IsAttached())
@@ -375,7 +384,7 @@ void LayoutQuote::AttachQuote() {
     break;
   }
 
-  if (!previous_) {
+  if (!previous_ && !found_container_root) {
     next_ = View()->LayoutQuoteHead();
     View()->SetLayoutQuoteHead(this);
     if (next_)

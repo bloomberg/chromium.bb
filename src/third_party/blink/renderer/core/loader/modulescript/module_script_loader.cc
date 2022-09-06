@@ -197,11 +197,10 @@ void ModuleScriptLoader::FetchInternal(
   fetch_params.MutableResourceRequest().SetReferrerString(
       module_request.ReferrerString());
 
-  // Priority Hints and a request's "importance" are currently non-standard, but
-  // we can assume the following (see https://crbug.com/821464):
-  // Step 5. "... importance is options's importance ..."
-  fetch_params.MutableResourceRequest().SetFetchImportanceMode(
-      options_.Importance());
+  // https://wicg.github.io/priority-hints/#script :
+  // Step 10. "... request’s priority to option’s fetchpriority ..."
+  fetch_params.MutableResourceRequest().SetFetchPriorityHint(
+      options_.FetchPriorityHint());
 
   // <spec step="5">... and client is fetch client settings object.</spec>
   //
@@ -214,9 +213,8 @@ void ModuleScriptLoader::FetchInternal(
 
   // Module scripts are always defer.
   fetch_params.SetDefer(FetchParameters::kLazyLoad);
-  // TODO(yoav): This is not accurate for module scripts with an async
-  // attribute.
-  fetch_params.SetRenderBlockingBehavior(RenderBlockingBehavior::kNonBlocking);
+  fetch_params.SetRenderBlockingBehavior(
+      module_request.Options().GetRenderBlockingBehavior());
 
   // [nospec] Unlike defer/async classic scripts, module scripts are fetched at
   // High priority.

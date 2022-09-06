@@ -12,13 +12,17 @@ import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 export type StoredAccount = {
   fullName?: string,
   givenName?: string, email: string,
-  avatarImage?: string
+  avatarImage?: string,
 };
 
 /**
+ * TODO(crbug.com/1322559): signedIn doesn't indicate if the user is signed-in,
+ * but instead if the user is syncing.
  * TODO(crbug.com/1107771): childUser and supervisedUser are only consumed
  * together and the latter implies the former, so it should be enough to have
  * only one of them here. The linked bug has other clean-up suggestions.
+ * TODO(crbug.com/1107771): signedIn actually means having primary account with
+ * sync consent. Rename to make this clear.
  * @see chrome/browser/ui/webui/settings/people_handler.cc
  */
 export type SyncStatus = {
@@ -118,13 +122,20 @@ export enum PageStatus {
   PASSPHRASE_FAILED = 'passphraseFailed',  // Error in the passphrase.
 }
 
+// WARNING: Keep synced with chrome/browser/ui/webui/settings/people_handler.cc.
+export enum TrustedVaultBannerState {
+  NOT_SHOWN = 0,
+  OFFER_OPT_IN = 1,
+  OPTED_IN = 2,
+}
+
 /**
  * Key to be used with localStorage.
  */
 const PROMO_IMPRESSION_COUNT_KEY: string = 'signin-promo-count';
 
 export interface SyncBrowserProxy {
-  // <if expr="not chromeos">
+  // <if expr="not chromeos_ash">
   /**
    * Starts the signin process for the user. Does nothing if the user is
    * already signed in.
@@ -152,7 +163,7 @@ export interface SyncBrowserProxy {
    */
   incrementPromoImpressionCount(): void;
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   /**
    * Signs the user out.
    */
@@ -237,13 +248,13 @@ export interface SyncBrowserProxy {
   sendSyncPrefsChanged(): void;
 
   /**
-   * Forces an offer-trusted-vault-opt-in-changed event to be fired.
+   * Forces a trusted-vault-banner-state-changed event to be fired.
    */
-  sendOfferTrustedVaultOptInChanged(): void;
+  sendTrustedVaultBannerStateChanged(): void;
 }
 
 export class SyncBrowserProxyImpl implements SyncBrowserProxy {
-  // <if expr="not chromeos">
+  // <if expr="not chromeos_ash">
   startSignIn() {
     chrome.send('SyncSetupStartSignIn');
   }
@@ -269,7 +280,7 @@ export class SyncBrowserProxyImpl implements SyncBrowserProxy {
         (this.getPromoImpressionCount() + 1).toString());
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   attemptUserExit() {
     return chrome.send('AttemptUserExit');
   }
@@ -329,8 +340,8 @@ export class SyncBrowserProxyImpl implements SyncBrowserProxy {
     chrome.send('SyncPrefsDispatch');
   }
 
-  sendOfferTrustedVaultOptInChanged() {
-    chrome.send('SyncOfferTrustedVaultOptInDispatch');
+  sendTrustedVaultBannerStateChanged() {
+    chrome.send('SyncTrustedVaultBannerStateDispatch');
   }
 
   static getInstance(): SyncBrowserProxy {

@@ -4,18 +4,24 @@
 
 #include "ash/quick_pair/repository/fast_pair_repository_impl.h"
 
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "ash/quick_pair/proto/fastpair_data.pb.h"
+#include "ash/quick_pair/repository/fast_pair/device_id_map.h"
+#include "ash/quick_pair/repository/fast_pair/device_image_store.h"
 #include "ash/quick_pair/repository/fast_pair/device_metadata_fetcher.h"
-#include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder.h"
+#include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder_impl.h"
 #include "ash/quick_pair/repository/fast_pair/footprints_fetcher.h"
+#include "ash/quick_pair/repository/fast_pair/footprints_fetcher_impl.h"
 #include "ash/quick_pair/repository/fast_pair/proto_conversions.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
 #include "ash/services/quick_pair/public/cpp/account_key_filter.h"
+#include "base/callback_helpers.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "components/image_fetcher/core/image_fetcher.h"
+#include "chromeos/services/bluetooth_config/public/cpp/device_image_info.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace ash {
@@ -24,16 +30,29 @@ namespace quick_pair {
 FastPairRepositoryImpl::FastPairRepositoryImpl()
     : FastPairRepository(),
       device_metadata_fetcher_(std::make_unique<DeviceMetadataFetcher>()),
-      footprints_fetcher_(std::make_unique<FootprintsFetcher>()),
-      image_decoder_(std::make_unique<FastPairImageDecoder>(
-          std::unique_ptr<image_fetcher::ImageFetcher>())),
+      footprints_fetcher_(std::make_unique<FootprintsFetcherImpl>()),
+      image_decoder_(std::make_unique<FastPairImageDecoderImpl>()),
+      device_id_map_(std::make_unique<DeviceIdMap>()),
+      device_image_store_(
+          std::make_unique<DeviceImageStore>(image_decoder_.get())),
       saved_device_registry_(std::make_unique<SavedDeviceRegistry>()),
-      footprints_last_updated_(base::Time::UnixEpoch()) {
-  // TODO(crbug/1270534): Determine the best place to make this call.
-  // footprints_fetcher_->GetUserDevices(
-  //     base::BindOnce(&FastPairRepositoryImpl::UpdateUserDevicesCache,
-  //                    weak_ptr_factory_.GetWeakPtr()));
-}
+      footprints_last_updated_(base::Time::UnixEpoch()) {}
+
+FastPairRepositoryImpl::FastPairRepositoryImpl(
+    std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher,
+    std::unique_ptr<FootprintsFetcher> footprints_fetcher,
+    std::unique_ptr<FastPairImageDecoder> image_decoder,
+    std::unique_ptr<DeviceIdMap> device_id_map,
+    std::unique_ptr<DeviceImageStore> device_image_store,
+    std::unique_ptr<SavedDeviceRegistry> saved_device_registry)
+    : FastPairRepository(),
+      device_metadata_fetcher_(std::move(device_metadata_fetcher)),
+      footprints_fetcher_(std::move(footprints_fetcher)),
+      image_decoder_(std::move(image_decoder)),
+      device_id_map_(std::move(device_id_map)),
+      device_image_store_(std::move(device_image_store)),
+      saved_device_registry_(std::move(saved_device_registry)),
+      footprints_last_updated_(base::Time::UnixEpoch()) {}
 
 FastPairRepositoryImpl::~FastPairRepositoryImpl() = default;
 
@@ -43,10 +62,13 @@ void FastPairRepositoryImpl::GetDeviceMetadata(
   std::string normalized_id = base::ToUpperASCII(hex_model_id);
   if (metadata_cache_.contains(normalized_id)) {
     QP_LOG(VERBOSE) << __func__ << ": Data already in cache.";
-    std::move(callback).Run(metadata_cache_[normalized_id].get());
+    RecordFastPairRepositoryCacheResult(/*success=*/true);
+    std::move(callback).Run(metadata_cache_[normalized_id].get(),
+                            /*has_retryable_error=*/false);
     return;
   }
   QP_LOG(VERBOSE) << __func__ << ": Not cached, fetching from web service.";
+  RecordFastPairRepositoryCacheResult(/*success=*/false);
   device_metadata_fetcher_->LookupHexDeviceId(
       normalized_id, base::BindOnce(&FastPairRepositoryImpl::OnMetadataFetched,
                                     weak_ptr_factory_.GetWeakPtr(),
@@ -56,15 +78,17 @@ void FastPairRepositoryImpl::GetDeviceMetadata(
 void FastPairRepositoryImpl::OnMetadataFetched(
     const std::string& normalized_model_id,
     DeviceMetadataCallback callback,
-    absl::optional<nearby::fastpair::GetObservedDeviceResponse> response) {
+    absl::optional<nearby::fastpair::GetObservedDeviceResponse> response,
+    bool has_retryable_error) {
   if (!response) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(nullptr, has_retryable_error);
     return;
   }
   if (response->image().empty()) {
     metadata_cache_[normalized_model_id] =
         std::make_unique<DeviceMetadata>(std::move(*response), gfx::Image());
-    std::move(callback).Run(metadata_cache_[normalized_model_id].get());
+    std::move(callback).Run(metadata_cache_[normalized_model_id].get(),
+                            /*has_retryable_error=*/false);
     return;
   }
 
@@ -73,6 +97,7 @@ void FastPairRepositoryImpl::OnMetadataFetched(
 
   image_decoder_->DecodeImage(
       binary_data,
+      /*resize_to_notification_size=*/true,
       base::BindOnce(&FastPairRepositoryImpl::OnImageDecoded,
                      weak_ptr_factory_.GetWeakPtr(), normalized_model_id,
                      std::move(callback), *response));
@@ -85,14 +110,13 @@ void FastPairRepositoryImpl::OnImageDecoded(
     gfx::Image image) {
   metadata_cache_[normalized_model_id] =
       std::make_unique<DeviceMetadata>(response, std::move(image));
-  std::move(callback).Run(metadata_cache_[normalized_model_id].get());
+  std::move(callback).Run(metadata_cache_[normalized_model_id].get(),
+                          /*has_retryable_error=*/false);
 }
 
-void FastPairRepositoryImpl::IsValidModelId(
-    const std::string& hex_model_id,
-    base::OnceCallback<void(bool)> callback) {
-  QP_LOG(INFO) << __func__;
-  std::move(callback).Run(false);
+bool FastPairRepositoryImpl::IsAccountKeyPairedLocally(
+    const std::vector<uint8_t>& account_key) {
+  return saved_device_registry_->IsAccountKeySavedToRegistry(account_key);
 }
 
 void FastPairRepositoryImpl::CheckAccountKeys(
@@ -144,6 +168,7 @@ void FastPairRepositoryImpl::RetryCheckAccountKeys(
     const AccountKeyFilter& account_key_filter,
     CheckAccountKeysCallback callback,
     absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices) {
+  QP_LOG(INFO) << __func__;
   if (!user_devices) {
     std::move(callback).Run(absl::nullopt);
     return;
@@ -157,7 +182,8 @@ void FastPairRepositoryImpl::RetryCheckAccountKeys(
 void FastPairRepositoryImpl::CompleteAccountKeyLookup(
     CheckAccountKeysCallback callback,
     const std::vector<uint8_t> account_key,
-    DeviceMetadata* device_metadata) {
+    DeviceMetadata* device_metadata,
+    bool has_retryable_error) {
   if (!device_metadata) {
     std::move(callback).Run(absl::nullopt);
     return;
@@ -183,56 +209,277 @@ void FastPairRepositoryImpl::AssociateAccountKey(
   DCHECK(device->classic_address());
   GetDeviceMetadata(
       device->metadata_id,
-      base::BindOnce(&FastPairRepositoryImpl::AddToFootprints,
+      base::BindOnce(&FastPairRepositoryImpl::AddDeviceToFootprints,
                      weak_ptr_factory_.GetWeakPtr(), device->metadata_id,
                      device->classic_address().value(), account_key));
 }
 
-void FastPairRepositoryImpl::AddToFootprints(
+bool FastPairRepositoryImpl::AssociateAccountKeyLocally(
+    scoped_refptr<Device> device) {
+  QP_LOG(VERBOSE) << __func__;
+
+  absl::optional<std::vector<uint8_t>> account_key =
+      device->GetAdditionalData(Device::AdditionalDataType::kAccountKey);
+  if (!account_key) {
+    QP_LOG(WARNING) << __func__ << ": Account key not found for device.";
+    return false;
+  }
+
+  DCHECK(device->classic_address());
+  saved_device_registry_->SaveAccountKey(device->classic_address().value(),
+                                         account_key.value());
+  QP_LOG(INFO) << __func__ << ": Saved account key locally.";
+  return true;
+}
+
+void FastPairRepositoryImpl::AddDeviceToFootprints(
     const std::string& hex_model_id,
     const std::string& mac_address,
     const std::vector<uint8_t>& account_key,
-    DeviceMetadata* metadata) {
+    DeviceMetadata* metadata,
+    bool has_retryable_error) {
   if (!metadata) {
     QP_LOG(WARNING) << __func__ << ": Unable to retrieve metadata.";
     return;
   }
 
-  footprints_fetcher_->AddUserDevice(
+  footprints_fetcher_->AddUserFastPairInfo(
       BuildFastPairInfo(hex_model_id, account_key, metadata),
-      base::BindOnce(&FastPairRepositoryImpl::OnAddToFootprintsComplete,
+      base::BindOnce(&FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete,
                      weak_ptr_factory_.GetWeakPtr(), mac_address, account_key));
 }
 
-void FastPairRepositoryImpl::OnAddToFootprintsComplete(
+void FastPairRepositoryImpl::OnAddDeviceToFootprintsComplete(
     const std::string& mac_address,
     const std::vector<uint8_t>& account_key,
     bool success) {
   if (!success) {
-    // TODO(jonmann): Handle caching to disk + retries.
+    // TODO(b/221126805): Handle caching to disk + retries.
     return;
   }
 
   saved_device_registry_->SaveAccountKey(mac_address, account_key);
 }
 
-bool FastPairRepositoryImpl::DeleteAssociatedDevice(
-    const device::BluetoothDevice* device) {
+void FastPairRepositoryImpl::CheckOptInStatus(
+    CheckOptInStatusCallback callback) {
+  footprints_fetcher_->GetUserDevices(
+      base::BindOnce(&FastPairRepositoryImpl::OnCheckOptInStatus,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FastPairRepositoryImpl::OnCheckOptInStatus(
+    CheckOptInStatusCallback callback,
+    absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices) {
   QP_LOG(INFO) << __func__;
-  absl::optional<const std::vector<uint8_t>> account_key =
-      saved_device_registry_->GetAccountKey(device->GetAddress());
-  if (!account_key) {
-    QP_LOG(VERBOSE)
+  if (!user_devices) {
+    QP_LOG(WARNING)
         << __func__
-        << ": Cannot find matching account key for unpaired device.";
-    return false;
+        << ": Missing UserReadDevicesResponse from call to Footprints";
+    std::move(callback).Run(nearby::fastpair::OptInStatus::STATUS_UNKNOWN);
+    return;
   }
 
+  for (const auto& info : user_devices->fast_pair_info()) {
+    if (info.has_opt_in_status()) {
+      std::move(callback).Run(info.opt_in_status());
+      return;
+    }
+  }
+
+  std::move(callback).Run(nearby::fastpair::OptInStatus::STATUS_UNKNOWN);
+}
+
+void FastPairRepositoryImpl::UpdateOptInStatus(
+    nearby::fastpair::OptInStatus opt_in_status,
+    UpdateOptInStatusCallback callback) {
+  footprints_fetcher_->AddUserFastPairInfo(
+      BuildFastPairInfoForOptIn(opt_in_status),
+      base::BindOnce(&FastPairRepositoryImpl::OnUpdateOptInStatusComplete,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FastPairRepositoryImpl::OnUpdateOptInStatusComplete(
+    UpdateOptInStatusCallback callback,
+    bool success) {
+  QP_LOG(INFO) << __func__ << ": success=" << success;
+  std::move(callback).Run(success);
+}
+
+void FastPairRepositoryImpl::GetSavedDevices(GetSavedDevicesCallback callback) {
+  footprints_fetcher_->GetUserDevices(
+      base::BindOnce(&FastPairRepositoryImpl::OnGetSavedDevices,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FastPairRepositoryImpl::OnGetSavedDevices(
+    GetSavedDevicesCallback callback,
+    absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices) {
+  QP_LOG(INFO) << __func__;
+  if (!user_devices) {
+    QP_LOG(WARNING)
+        << __func__
+        << ": Missing UserReadDevicesResponse from call to Footprints";
+    std::move(callback).Run(nearby::fastpair::OptInStatus::STATUS_UNKNOWN, {});
+    return;
+  }
+
+  nearby::fastpair::OptInStatus opt_in_status =
+      nearby::fastpair::OptInStatus::STATUS_UNKNOWN;
+  std::vector<nearby::fastpair::FastPairDevice> saved_devices;
+  for (const auto& info : user_devices->fast_pair_info()) {
+    if (info.has_opt_in_status()) {
+      opt_in_status = info.opt_in_status();
+    }
+
+    if (info.has_device()) {
+      saved_devices.push_back(info.device());
+    }
+  }
+
+  // If the opt in status is `STATUS_OPTED_OUT`, then we can expect the list of
+  // saved devices to be empty, since an opted out status removes all saved
+  // devices from the list, although there still might be saved devices, if
+  // an Android or Chromebook writes to the user's account against their wishes.
+  std::move(callback).Run(opt_in_status, std::move(saved_devices));
+}
+
+void FastPairRepositoryImpl::DeleteAssociatedDevice(
+    const std::string& mac_address,
+    DeleteAssociatedDeviceCallback callback) {
+  absl::optional<const std::vector<uint8_t>> account_key =
+      saved_device_registry_->GetAccountKey(mac_address);
+  if (!account_key) {
+    QP_LOG(WARNING) << __func__ << ": No saved account key.";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  QP_LOG(VERBOSE) << __func__
+                  << ": Removing device from Footprints with address: "
+                  << mac_address;
+  footprints_fetcher_->DeleteUserDevice(
+      base::HexEncode(*account_key),
+      base::BindOnce(&FastPairRepositoryImpl::OnDeleteAssociatedDevice,
+                     weak_ptr_factory_.GetWeakPtr(), mac_address,
+                     std::move(callback)));
+}
+
+void FastPairRepositoryImpl::OnDeleteAssociatedDevice(
+    const std::string& mac_address,
+    DeleteAssociatedDeviceCallback callback,
+    bool success) {
+  if (!success) {
+    // TODO(b/221126805): Handle saving pending update to disk + retries.
+    QP_LOG(WARNING) << __func__ << ": Failed to remove device from Footprints.";
+  }
+  QP_LOG(INFO) << __func__ << ": Successfully removed device from Footprints.";
+
+  // TODO(b/221126805): Check for successful Footprints delete before deleting
+  // from the Saved Device registry once Footprints retries are implemented.
+  if (saved_device_registry_->DeleteAccountKey(mac_address)) {
+    QP_LOG(INFO) << __func__
+                 << ": Successfully removed device from Saved Device Registry.";
+    std::move(callback).Run(/*success=*/success);
+    return;
+  }
+
+  QP_LOG(WARNING) << __func__
+                  << ": Failed to remove device from Saved Device Registry.";
+  std::move(callback).Run(/*success=*/false);
+}
+
+void FastPairRepositoryImpl::DeleteAssociatedDeviceByAccountKey(
+    const std::vector<uint8_t>& account_key,
+    DeleteAssociatedDeviceByAccountKeyCallback callback) {
   QP_LOG(INFO) << __func__ << ": Removing device from Footprints.";
-  footprints_fetcher_->DeleteUserDevice(base::HexEncode(*account_key),
-                                        base::DoNothing());
-  // TODO(jonmann): Handle saving pending update to disk + retries.
-  return true;
+  footprints_fetcher_->DeleteUserDevice(
+      base::HexEncode(account_key),
+      base::BindOnce(
+          &FastPairRepositoryImpl::OnDeleteAssociatedDeviceByAccountKey,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FastPairRepositoryImpl::OnDeleteAssociatedDeviceByAccountKey(
+    DeleteAssociatedDeviceByAccountKeyCallback callback,
+    bool success) {
+  QP_LOG(INFO) << __func__ << ": success=" << success;
+  std::move(callback).Run(success);
+}
+
+void FastPairRepositoryImpl::FetchDeviceImages(scoped_refptr<Device> device) {
+  QP_LOG(INFO) << __func__ << ": Fetching device images for model ID "
+               << device->metadata_id;
+  // Save a record of the device ID -> model ID for this device so that we can
+  // display images for device objects that lack a model ID, such as
+  // device::BluetoothDevice.
+  if (!device_id_map_->SaveModelIdForDevice(device)) {
+    QP_LOG(WARNING) << __func__
+                    << ": Unable to save device ID -> model ID"
+                       " mapping for model ID "
+                    << device->metadata_id;
+  }
+
+  GetDeviceMetadata(
+      device->metadata_id,
+      base::BindOnce(&FastPairRepositoryImpl::CompleteFetchDeviceImages,
+                     weak_ptr_factory_.GetWeakPtr(), device->metadata_id));
+}
+
+void FastPairRepositoryImpl::CompleteFetchDeviceImages(
+    const std::string& hex_model_id,
+    DeviceMetadata* device_metadata,
+    bool has_retryable_error) {
+  if (!device_metadata) {
+    QP_LOG(WARNING) << __func__ << ": No metadata available for "
+                    << hex_model_id;
+    return;
+  }
+
+  QP_LOG(INFO) << __func__
+               << ": Completing fetching device images for model ID "
+               << hex_model_id;
+  device_image_store_->FetchDeviceImages(hex_model_id, device_metadata,
+                                         base::DoNothing());
+}
+
+bool FastPairRepositoryImpl::PersistDeviceImages(scoped_refptr<Device> device) {
+  QP_LOG(INFO) << __func__ << ": Persisting device images for model ID "
+               << device->metadata_id;
+  if (!device_id_map_->PersistRecordsForDevice(device)) {
+    QP_LOG(WARNING) << __func__
+                    << ": Unable to persist address -> model ID"
+                       " mapping for model ID "
+                    << device->metadata_id;
+  }
+  return device_image_store_->PersistDeviceImages(device->metadata_id);
+}
+
+bool FastPairRepositoryImpl::EvictDeviceImages(
+    const device::BluetoothDevice* device) {
+  const std::string device_id = device->GetIdentifier();
+  absl::optional<const std::string> hex_model_id =
+      device_id_map_->GetModelIdForDeviceId(device_id);
+  if (!hex_model_id)
+    return false;
+  device_id_map_->EvictDeviceIdRecord(device_id);
+
+  // Before evicting images, check if other device IDs map to this model ID.
+  if (device_id_map_->HasPersistedRecordsForModelId(hex_model_id.value()))
+    return false;
+
+  return device_image_store_->EvictDeviceImages(hex_model_id.value());
+}
+
+absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
+FastPairRepositoryImpl::GetImagesForDevice(const std::string& device_id) {
+  absl::optional<const std::string> hex_model_id =
+      device_id_map_->GetModelIdForDeviceId(device_id);
+  if (!hex_model_id) {
+    return absl::nullopt;
+  }
+
+  return device_image_store_->GetImagesForDeviceModel(hex_model_id.value());
 }
 
 }  // namespace quick_pair

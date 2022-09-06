@@ -27,8 +27,9 @@ class BrowserCloudManagementStatusProvider final
   BrowserCloudManagementStatusProvider();
   ~BrowserCloudManagementStatusProvider() final;
 
+ protected:
   // ManagementStatusProvider impl
-  EnterpriseManagementAuthority GetAuthority() final;
+  EnterpriseManagementAuthority FetchAuthority() final;
 };
 
 class LocalBrowserManagementStatusProvider final
@@ -37,8 +38,9 @@ class LocalBrowserManagementStatusProvider final
   LocalBrowserManagementStatusProvider();
   ~LocalBrowserManagementStatusProvider() final;
 
+ protected:
   // ManagementStatusProvider impl
-  EnterpriseManagementAuthority GetAuthority() final;
+  EnterpriseManagementAuthority FetchAuthority() final;
 };
 
 class ProfileCloudManagementStatusProvider final
@@ -47,14 +49,16 @@ class ProfileCloudManagementStatusProvider final
   explicit ProfileCloudManagementStatusProvider(Profile* profile);
   ~ProfileCloudManagementStatusProvider() final;
 
+ protected:
   // ManagementStatusProvider impl
-  EnterpriseManagementAuthority GetAuthority() final;
+  EnterpriseManagementAuthority FetchAuthority() final;
 
  private:
   raw_ptr<Profile> profile_;
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+// This is both a device and browser management status provider for ChromeOS.
 class DeviceManagementStatusProvider final
     : public policy::ManagementStatusProvider {
  public:
@@ -62,8 +66,9 @@ class DeviceManagementStatusProvider final
       policy::BrowserPolicyConnectorAsh* browser_policy_connector);
   ~DeviceManagementStatusProvider() final;
 
+ protected:
   // ManagementStatusProvider impl
-  EnterpriseManagementAuthority GetAuthority() final;
+  EnterpriseManagementAuthority FetchAuthority() final;
 
  private:
   policy::BrowserPolicyConnectorAsh* browser_policy_connector_;

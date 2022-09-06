@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -121,6 +122,7 @@ void ServiceWorkerContextAdapter::UnregisterServiceWorker(
 content::ServiceWorkerExternalRequestResult
 ServiceWorkerContextAdapter::StartingExternalRequest(
     int64_t service_worker_version_id,
+    content::ServiceWorkerExternalRequestTimeoutType timeout_type,
     const std::string& request_uuid) {
   NOTIMPLEMENTED();
   return content::ServiceWorkerExternalRequestResult::kOk;
@@ -138,6 +140,14 @@ size_t ServiceWorkerContextAdapter::CountExternalRequestsForTest(
     const blink::StorageKey& key) {
   NOTIMPLEMENTED();
   return 0u;
+}
+
+bool ServiceWorkerContextAdapter::ExecuteScriptForTest(
+    const std::string& script,
+    int64_t version_id,
+    content::ServiceWorkerScriptExecutionCallback callback) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool ServiceWorkerContextAdapter::MaybeHasRegistrationForStorageKey(
@@ -182,6 +192,21 @@ void ServiceWorkerContextAdapter::StartWorkerForScope(
     StartWorkerCallback info_callback,
     StatusCodeCallback status_callback) {
   NOTIMPLEMENTED();
+}
+
+bool ServiceWorkerContextAdapter::IsLiveRunningServiceWorker(
+    int64_t service_worker_version_id) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+service_manager::InterfaceProvider&
+ServiceWorkerContextAdapter::GetRemoteInterfaces(
+    int64_t service_worker_version_id) {
+  NOTIMPLEMENTED();
+  static service_manager::InterfaceProvider interface_provider(
+      base::ThreadTaskRunnerHandle::Get());
+  return interface_provider;
 }
 
 void ServiceWorkerContextAdapter::StartServiceWorkerAndDispatchMessage(

@@ -60,7 +60,6 @@ const WaylandRemoteShellEventMapping wayland_remote_shell_event_mapping_v2 = {
     1,
     1,
     1,
-    1,
 };
 
 const struct zcr_remote_surface_v2_interface remote_surface_implementation_v2 =
@@ -163,6 +162,8 @@ void remote_shell_get_remote_surface_v2(wl_client* client,
   wl_resource* remote_surface_resource =
       wl_resource_create(client, &zcr_remote_surface_v2_interface,
                          wl_resource_get_version(resource), id);
+
+  shell_surface->SetCapabilities(GetCapabilities(client));
 
   shell_surface->set_delegate(
       shell->CreateShellSurfaceDelegate(remote_surface_resource));

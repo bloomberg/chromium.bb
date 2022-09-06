@@ -30,16 +30,12 @@ from mojom.parse import conditional_features
 
 
 # Disable this for easier debugging.
-# In Python 2, subprocesses just hang when exceptions are thrown :(.
-_ENABLE_MULTIPROCESSING = sys.version_info[0] > 2
+_ENABLE_MULTIPROCESSING = True
 
-if sys.version_info < (3, 4):
-  _MULTIPROCESSING_USES_FORK = sys.platform.startswith('linux')
-else:
-  # https://docs.python.org/3/library/multiprocessing.html#:~:text=bpo-33725
-  if __name__ == '__main__' and sys.platform == 'darwin':
-    multiprocessing.set_start_method('fork')
-  _MULTIPROCESSING_USES_FORK = multiprocessing.get_start_method() == 'fork'
+# https://docs.python.org/3/library/multiprocessing.html#:~:text=bpo-33725
+if __name__ == '__main__' and sys.platform == 'darwin':
+  multiprocessing.set_start_method('fork')
+_MULTIPROCESSING_USES_FORK = multiprocessing.get_start_method() == 'fork'
 
 
 def _ResolveRelativeImportPath(path, roots):
@@ -161,11 +157,19 @@ def _CollectAllowedImportsFromBuildMetadata(build_metadata_filename):
 
   def collect(metadata_filename):
     processed_deps.add(metadata_filename)
+
+    # Paths in the metadata file are relative to the metadata file's dir.
+    metadata_dir = os.path.abspath(os.path.dirname(metadata_filename))
+
+    def to_abs(s):
+      return os.path.normpath(os.path.join(metadata_dir, s))
+
     with open(metadata_filename) as f:
       metadata = json.load(f)
       allowed_imports.update(
-          map(os.path.normcase, map(os.path.normpath, metadata['sources'])))
+          [os.path.normcase(to_abs(s)) for s in metadata['sources']])
       for dep_metadata in metadata['deps']:
+        dep_metadata = to_abs(dep_metadata)
         if dep_metadata not in processed_deps:
           collect(dep_metadata)
 

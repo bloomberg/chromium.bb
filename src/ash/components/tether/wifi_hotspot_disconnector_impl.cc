@@ -4,18 +4,19 @@
 
 #include "ash/components/tether/wifi_hotspot_disconnector_impl.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/tether/network_configuration_remover.h"
 #include "ash/components/tether/pref_names.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -108,8 +109,7 @@ void WifiHotspotDisconnectorImpl::OnFailedWifiDisconnect(
     const std::string& wifi_network_guid,
     const std::string& wifi_network_path,
     StringErrorCallback error_callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   PA_LOG(ERROR) << "Failed to disconnect from Wi-Fi network with GUID "
                 << wifi_network_guid << ". Error name: " << error_name;
   CleanUpAfterWifiDisconnection(wifi_network_path, base::OnceClosure(),
@@ -133,4 +133,4 @@ void WifiHotspotDisconnectorImpl::CleanUpAfterWifiDisconnection(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

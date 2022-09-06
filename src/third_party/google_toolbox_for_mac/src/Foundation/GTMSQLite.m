@@ -47,7 +47,7 @@ GTM_INLINE CFStringEncoding SqliteTextEncodingToCFStringEncoding(int enc) {
   CFStringEncoding encoding = kCFStringEncodingUTF8;
   _GTMDevAssert(enc == SQLITE_UTF16BE ||
                 enc == SQLITE_UTF16LE,
-                @"Passed in encoding was not a UTF16 encoding");
+                @"Passed in encoding was not a UTF16 encoding: %d", enc);
   switch(enc) {
     case SQLITE_UTF16BE:
       encoding = kCFStringEncodingUTF16BE;
@@ -133,13 +133,14 @@ static CFLocaleRef gCurrentLocale = NULL;
 - (id)initWithPath:(NSString *)path
    withCFAdditions:(BOOL)additions
               utf8:(BOOL)useUTF8
+             flags:(int)flags
          errorCode:(int *)err {
   int rc = SQLITE_INTERNAL;
 
   if ((self = [super init])) {
     path_ = [path copy];
     if (useUTF8) {
-      rc = sqlite3_open([path_ fileSystemRepresentation], &db_);
+      rc = sqlite3_open_v2([path_ fileSystemRepresentation], &db_, flags, NULL);
     } else {
       CFStringEncoding cfEncoding;
 #if TARGET_RT_BIG_ENDIAN
@@ -185,6 +186,17 @@ static CFLocaleRef gCurrentLocale = NULL;
   return self;
 }
 
+- (id)initWithPath:(NSString *)path
+   withCFAdditions:(BOOL)additions
+              utf8:(BOOL)useUTF8
+         errorCode:(int *)err {
+  return [self initWithPath:path
+            withCFAdditions:additions
+                       utf8:useUTF8
+                      flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
+                  errorCode:err];
+}
+
 - (id)initInMemoryWithCFAdditions:(BOOL)additions
                              utf8:(BOOL)useUTF8
                         errorCode:(int *)err {
@@ -219,7 +231,7 @@ static CFLocaleRef gCurrentLocale = NULL;
   int rc = SQLITE_OK;
   // Install our custom functions for improved text handling
   // UPPER/LOWER
-  const struct {
+  static const struct {
     const char           *sqlName;
     UpperLowerUserArgs   userArgs;
     void                 *function;
@@ -251,7 +263,7 @@ static CFLocaleRef gCurrentLocale = NULL;
   }
 
   // Fixed collation sequences
-  const struct {
+  static const struct {
     const char           *sqlName;
     CollateUserArgs      userArgs;
     void                 *function;
@@ -276,7 +288,7 @@ static CFLocaleRef gCurrentLocale = NULL;
   }
 
   // Install handler for dynamic collation sequences
-  const struct {
+  static const struct {
     const char          *sqlName;
     int                 numArgs;
     int                 textRep;
@@ -323,7 +335,7 @@ static CFLocaleRef gCurrentLocale = NULL;
   }
 
   // Start GLOB just non-literal but case-sensitive (same as SQLite defaults)
-  const struct {
+  static const struct {
     const char          *sqlName;
     int                 textRep;
     void                *function;
@@ -519,7 +531,8 @@ static void UpperLower8(sqlite3_context *context, int argc, sqlite3_value **argv
   }
 
   _GTMDevAssert(userArgs->textRep == SQLITE_UTF8,
-                @"Received non UTF8 encoding in UpperLower8");
+                @"Received non UTF8 encoding in UpperLower8: %d",
+                userArgs->textRep);
 
   // Worker string, must be mutable for case conversion so order our calls
   // to only copy once
@@ -713,7 +726,8 @@ static void UpperLower16(sqlite3_context *context,
       // we might as well use the preferred encoding of the original call.
       _GTMDevAssert(userArgs->textRep == SQLITE_UTF16BE ||
                     userArgs->textRep == SQLITE_UTF16LE,
-                    @"Received non UTF8 encoding in UpperLower8");
+                    @"Received non UTF16 encoding in UpperLower16: %d",
+                    userArgs->textRep);
       switch (userArgs->textRep) {
       case SQLITE_UTF16BE:
         sqlite3_result_text16be(context, returnBuffer,

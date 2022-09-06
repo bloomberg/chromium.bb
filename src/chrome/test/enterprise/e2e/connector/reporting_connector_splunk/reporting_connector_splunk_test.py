@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from absl import flags
 import os
 import re
-import requests  # pylint: disable=import-error
 from datetime import datetime
 
+from chrome_ent_test.infra.core import before_all
+from chrome_ent_test.infra.core import category
+from chrome_ent_test.infra.core import environment
+from chrome_ent_test.infra.core import test
 from infra import ChromeEnterpriseTestCase
-from chrome_ent_test.infra.core import before_all, category, environment, test
-from splunk_server import SplunkApiService
+from .splunk_server import SplunkApiService
 
 
 @category("chrome_only")
@@ -21,7 +22,7 @@ class ReportingConnectorwithSplunkTest(ChromeEnterpriseTestCase):
   def getSplunkCredentials(self):
     path = "gs://%s/secrets/splunkInstances.json" % self.gsbucket
     cmd = r'gsutil cat ' + path
-    return self.RunCommand(self.win_config['dc'], cmd).rstrip()
+    return self.RunCommand(self.win_config['dc'], cmd).rstrip().decode()
 
   @before_all
   def setup(self):
@@ -33,7 +34,7 @@ class ReportingConnectorwithSplunkTest(ChromeEnterpriseTestCase):
     eventFound = False
     path = "gs://%s/secrets/CELabOrg-enrollToken" % self.gsbucket
     cmd = r'gsutil cat ' + path
-    token = self.RunCommand(self.win_config['dc'], cmd).rstrip()
+    token = self.RunCommand(self.win_config['dc'], cmd).rstrip().decode()
     self.SetPolicy(self.win_config['dc'], r'CloudManagementEnrollmentToken',
                    token, 'String')
 
@@ -41,13 +42,15 @@ class ReportingConnectorwithSplunkTest(ChromeEnterpriseTestCase):
     self.RunCommand(self.win_config['client'], 'gpupdate /force')
     testStartTime = datetime.utcnow()
     # trigger malware event & get device id from browser
-    dir = os.path.dirname(os.path.abspath(__file__))
+    localDir = os.path.dirname(os.path.abspath(__file__))
+    commonDir = os.path.dirname(localDir)
     clientId = self.RunUITest(
         self.win_config['client'],
-        os.path.join(dir, 'reporting_connector_ui_test.py'),
+        os.path.join(commonDir, 'common', 'realtime_reporting_ui_test.py'),
         timeout=600)
-    clientId = re.search(r'DeviceId:.*$',clientId.strip()).group(0) \
-      .replace('DeviceId:','')
+    clientId = re.search(r'DeviceId:.*$',
+                         clientId.strip()).group(0).replace('DeviceId:',
+                                                            '').rstrip("\\rn'")
     splunkCrendential = self.getSplunkCredentials()
     eventFound = SplunkApiService(splunkCrendential).lookupEvents(
         eventName='dangerousDownloadEvent',

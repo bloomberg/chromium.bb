@@ -410,14 +410,14 @@ void ViewAndroid::SetLayer(scoped_refptr<cc::Layer> layer) {
   layer_ = layer;
 }
 
-bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
-                                   const JavaRef<jobject>& jimage) {
+bool ViewAndroid::StartDragAndDrop(const JavaRef<jobject>& jshadow_image,
+                                   const JavaRef<jobject>& jdrop_data) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return false;
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext,
-                                                   jimage);
+  return Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jshadow_image,
+                                                   jdrop_data);
 }
 
 void ViewAndroid::OnCursorChanged(const Cursor& cursor) {
@@ -571,7 +571,7 @@ gfx::Size ViewAndroid::GetSize() const {
 
 bool ViewAndroid::OnDragEvent(const DragEventAndroid& event) {
   return HitTest(base::BindRepeating(&ViewAndroid::SendDragEventToHandler),
-                 event, event.location_f());
+                 event, event.location());
 }
 
 // static

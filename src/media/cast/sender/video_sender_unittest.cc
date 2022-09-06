@@ -11,29 +11,30 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/common/video_frame_factory.h"
 #include "media/cast/constants.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_impl.h"
 #include "media/cast/net/pacing/paced_sender.h"
-#include "media/cast/sender/fake_video_encode_accelerator_factory.h"
-#include "media/cast/sender/video_frame_factory.h"
+#include "media/cast/test/fake_video_encode_accelerator_factory.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
-namespace cast {
+namespace media::cast {
 
 namespace {
 static const uint8_t kPixelValue = 123;
@@ -124,8 +125,11 @@ class PeerVideoSender : public VideoSender {
                     base::BindRepeating(&PeerVideoSender::ProcessFeedback,
                                         base::Unretained(this))) {}
 
-  using VideoSender::OnReceivedCastFeedback;
-  using VideoSender::OnReceivedPli;
+  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
+    frame_sender_for_testing()->OnReceivedCastFeedback(cast_feedback);
+  }
+
+  void OnReceivedPli() { frame_sender_for_testing()->OnReceivedPli(); }
 
   void ProcessFeedback(const media::VideoCaptureFeedback& feedback) {
     feedback_ = feedback;
@@ -330,7 +334,7 @@ TEST_F(VideoSenderTest, RtcpTimer) {
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
-      base::Milliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
+      base::Milliseconds(1) + kRtcpReportInterval * 3 / 2;
 
   RunTasks(max_rtcp_timeout.InMilliseconds());
   EXPECT_LE(1, transport_->number_of_rtp_packets());
@@ -363,7 +367,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
   video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
   base::TimeDelta max_resend_timeout =
-      base::Milliseconds(1 + kDefaultRtpMaxDelayMs);
+      kDefaultTargetPlayoutDelay + base::Milliseconds(1);
 
   // Make sure that we do a re-send.
   RunTasks(max_resend_timeout.InMilliseconds());
@@ -414,7 +418,9 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   // than 4 frames in flight.
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
   video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
-  RunTasks(33);
+  // Give time for the frame to be processed plus handling some of the playout
+  // delay.
+  RunTasks(300);
 
   // Send 3 more frames and record the number of packets sent.
   for (int i = 0; i < 3; ++i) {
@@ -636,5 +642,4 @@ TEST_F(VideoSenderTest, CancelSendingOnReceivingPli) {
   EXPECT_EQ(2, transport_->number_of_rtp_packets());
 }
 
-}  // namespace cast
-}  // namespace media
+}  // namespace media::cast

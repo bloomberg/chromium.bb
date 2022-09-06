@@ -4,16 +4,20 @@
 
 #include "chrome/browser/safe_browsing/tailored_security/chrome_tailored_security_service.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/tailored_security/tailored_security_notification_result.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/storage_partition.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
@@ -24,7 +28,7 @@ namespace safe_browsing {
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 content::WebContents* GetWebContentsForProfile(Profile* profile) {
   for (const TabModel* tab_model : TabModelList::models()) {
     if (tab_model->GetProfile() != profile)
@@ -43,6 +47,15 @@ content::WebContents* GetWebContentsForProfile(Profile* profile) {
 
 }  // namespace
 
+// Records an UMA Histogram value to count the result of trying to notify a sync
+// user about enhanced protection for the enable case.
+void RecordEnabledNotificationResult(
+    TailoredSecurityNotificationResult result) {
+  base::UmaHistogramEnumeration(
+      "SafeBrowsing.TailoredSecurity.SyncPromptEnabledNotificationResult",
+      result);
+}
+
 ChromeTailoredSecurityService::ChromeTailoredSecurityService(Profile* profile)
     : TailoredSecurityService(IdentityManagerFactory::GetForProfile(profile),
                               profile->GetPrefs()),
@@ -56,8 +69,27 @@ void ChromeTailoredSecurityService::MaybeNotifySyncUser(
   if (!base::FeatureList::IsEnabled(kTailoredSecurityIntegration))
     return;
 
-  if (!identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync))
+  if (!identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    if (is_enabled) {
+      RecordEnabledNotificationResult(
+          TailoredSecurityNotificationResult::kAccountNotConsented);
+    }
     return;
+  }
+
+  if (SafeBrowsingPolicyHandler::IsSafeBrowsingProtectionLevelSetByPolicy(
+          profile_->GetPrefs())) {
+    if (is_enabled) {
+      RecordEnabledNotificationResult(
+          TailoredSecurityNotificationResult::kSafeBrowsingControlledByPolicy);
+    }
+    return;
+  }
+
+  if (is_enabled && IsEnhancedProtectionEnabled(*prefs())) {
+    RecordEnabledNotificationResult(
+        TailoredSecurityNotificationResult::kEnhancedProtectionAlreadyEnabled);
+  }
 
   if (is_enabled && !IsEnhancedProtectionEnabled(*prefs())) {
     ShowSyncNotification(true);
@@ -71,10 +103,15 @@ void ChromeTailoredSecurityService::MaybeNotifySyncUser(
 }
 
 void ChromeTailoredSecurityService::ShowSyncNotification(bool is_enabled) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   content::WebContents* web_contents = GetWebContentsForProfile(profile_);
-  if (!web_contents)
+  if (!web_contents) {
+    if (is_enabled) {
+      RecordEnabledNotificationResult(
+          TailoredSecurityNotificationResult::kNoWebContentsAvailable);
+    }
     return;
+  }
 
   // Since the Android UX is a notice, we simply set Safe Browsing state.
   SetSafeBrowsingState(profile_->GetPrefs(),
@@ -90,9 +127,12 @@ void ChromeTailoredSecurityService::ShowSyncNotification(bool is_enabled) {
 #else
   DisplayTailoredSecurityConsentedModalDesktop(profile_, is_enabled);
 #endif
+  if (is_enabled) {
+    RecordEnabledNotificationResult(TailoredSecurityNotificationResult::kShown);
+  }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ChromeTailoredSecurityService::MessageDismissed() {
   message_.reset();
 }

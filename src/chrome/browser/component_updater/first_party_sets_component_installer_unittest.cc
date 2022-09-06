@@ -5,19 +5,21 @@
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 
 #include "base/callback_helpers.h"
+#include "base/check.h"
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/run_loop.h"
-#include "base/sequence_checker.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
-#include "net/base/features.h"
+#include "content/public/browser/first_party_sets_handler.h"
+#include "content/public/common/content_features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,12 +44,15 @@ class FirstPartySetsComponentInstallerTest : public ::testing::Test {
  public:
   FirstPartySetsComponentInstallerTest() {
     CHECK(component_install_dir_.CreateUniqueTempDir());
-    scoped_feature_list_.InitAndEnableFeature(net::features::kFirstPartySets);
   }
 
-  void TearDown() override {
+  void SetUp() override {
+    content::FirstPartySetsHandler::GetInstance()->ResetForTesting();
     FirstPartySetsComponentInstallerPolicy::ResetForTesting();
   }
+
+  // Subclasses are expected to call this in their constructors.
+  virtual void InitializeFeatureList() = 0;
 
  protected:
   base::test::TaskEnvironment env_;
@@ -56,9 +61,31 @@ class FirstPartySetsComponentInstallerTest : public ::testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(FirstPartySetsComponentInstallerTest, FeatureDisabled) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndDisableFeature(net::features::kFirstPartySets);
+class FirstPartySetsComponentInstallerFeatureEnabledTest
+    : public FirstPartySetsComponentInstallerTest {
+ public:
+  FirstPartySetsComponentInstallerFeatureEnabledTest() {
+    InitializeFeatureList();
+  }
+
+  void InitializeFeatureList() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kFirstPartySets);
+  }
+};
+
+class FirstPartySetsComponentInstallerFeatureDisabledTest
+    : public FirstPartySetsComponentInstallerTest {
+ public:
+  FirstPartySetsComponentInstallerFeatureDisabledTest() {
+    InitializeFeatureList();
+  }
+
+  void InitializeFeatureList() override {
+    scoped_feature_list_.InitAndDisableFeature(features::kFirstPartySets);
+  }
+};
+
+TEST_F(FirstPartySetsComponentInstallerFeatureDisabledTest, FeatureDisabled) {
   auto service =
       std::make_unique<component_updater::MockComponentUpdateService>();
 
@@ -71,31 +98,43 @@ TEST_F(FirstPartySetsComponentInstallerTest, FeatureDisabled) {
   env_.RunUntilIdle();
 }
 
-TEST_F(FirstPartySetsComponentInstallerTest, NonexistentFile_OnComponentReady) {
-  SEQUENCE_CHECKER(sequence_checker);
-
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       NonexistentFile_OnComponentReady) {
   ASSERT_TRUE(
       base::DeleteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
           component_install_dir_.GetPath())));
 
-  FirstPartySetsComponentInstallerPolicy(
-      base::BindRepeating([](base::File) { CHECK(false); }))
+  base::test::TestFuture<base::File> future;
+  FirstPartySetsComponentInstallerPolicy(future.GetCallback())
       .ComponentReady(base::Version(), component_install_dir_.GetPath(),
                       base::Value(base::Value::Type::DICTIONARY));
 
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(future.Take().IsValid());
 }
 
-TEST_F(FirstPartySetsComponentInstallerTest, LoadsSets_OnComponentReady) {
-  SEQUENCE_CHECKER(sequence_checker);
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       NonexistentFile_OnRegistrationComplete) {
+  ASSERT_TRUE(
+      base::DeleteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
+          component_install_dir_.GetPath())));
+
+  base::test::TestFuture<base::File> future;
+  FirstPartySetsComponentInstallerPolicy policy(future.GetCallback());
+  policy.OnRegistrationComplete();
+
+  EXPECT_FALSE(future.Take().IsValid());
+
+  // Only one call has any effect.
+  policy.OnRegistrationComplete();
+  env_.RunUntilIdle();
+}
+
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       LoadsSets_OnComponentReady) {
   const std::string expectation = "some first party sets";
-  base::RunLoop run_loop;
+  base::test::TestFuture<base::File> future;
   auto policy = std::make_unique<FirstPartySetsComponentInstallerPolicy>(
-      base::BindLambdaForTesting([&](base::File file) {
-        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-        EXPECT_EQ(ReadToString(std::move(file)), expectation);
-        run_loop.Quit();
-      }));
+      future.GetCallback());
 
   ASSERT_TRUE(
       base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
@@ -105,30 +144,47 @@ TEST_F(FirstPartySetsComponentInstallerTest, LoadsSets_OnComponentReady) {
   policy->ComponentReady(base::Version(), component_install_dir_.GetPath(),
                          base::Value(base::Value::Type::DICTIONARY));
 
-  run_loop.Run();
+  base::File file = future.Take();
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_EQ(ReadToString(std::move(file)), expectation);
+}
+
+// Test that when the first version of the component is installed,
+// ComponentReady is a no-op, because OnRegistrationComplete already executed
+// the OnceCallback.
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       IgnoreNewSets_NoInitialComponent) {
+  base::test::TestFuture<base::File> future;
+  FirstPartySetsComponentInstallerPolicy policy(future.GetCallback());
+
+  policy.OnRegistrationComplete();
+  EXPECT_FALSE(future.Take().IsValid());
+
+  // Install the component, which should be ignored.
+  base::ScopedTempDir install_dir;
+  ASSERT_TRUE(install_dir.CreateUniqueTempDirUnderPath(
+      component_install_dir_.GetPath()));
+  ASSERT_TRUE(
+      base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
+                          install_dir.GetPath()),
+                      "first party sets content"));
+  policy.ComponentReady(base::Version(), install_dir.GetPath(),
+                        base::Value(base::Value::Type::DICTIONARY));
+
+  env_.RunUntilIdle();
 }
 
 // Test if a component has been installed, ComponentReady will be no-op when
 // newer versions are installed.
-TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnComponentReady) {
-  SEQUENCE_CHECKER(sequence_checker);
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       IgnoreNewSets_OnComponentReady) {
+  base::test::TestFuture<base::File> future;
+  FirstPartySetsComponentInstallerPolicy policy(future.GetCallback());
+
   const std::string sets_v1 = "first party sets v1";
-  const std::string sets_v2 = "first party sets v2";
-
   base::ScopedTempDir dir_v1;
-  CHECK(dir_v1.CreateUniqueTempDirUnderPath(component_install_dir_.GetPath()));
-  base::ScopedTempDir dir_v2;
-  CHECK(dir_v2.CreateUniqueTempDirUnderPath(component_install_dir_.GetPath()));
-
-  int callback_calls = 0;
-  FirstPartySetsComponentInstallerPolicy policy(
-      // It should run only once for the first ComponentReady call.
-      base::BindLambdaForTesting([&](base::File file) {
-        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-        EXPECT_EQ(ReadToString(std::move(file)), sets_v1);
-        callback_calls++;
-      }));
-
+  ASSERT_TRUE(
+      dir_v1.CreateUniqueTempDirUnderPath(component_install_dir_.GetPath()));
   ASSERT_TRUE(
       base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
                           dir_v1.GetPath()),
@@ -136,8 +192,16 @@ TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnComponentReady) {
   policy.ComponentReady(base::Version(), dir_v1.GetPath(),
                         base::Value(base::Value::Type::DICTIONARY));
 
-  // Install newer version of the component, which should not be picked up when
-  // calling ComponentReady again.
+  base::File file = future.Take();
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_EQ(ReadToString(std::move(file)), sets_v1);
+
+  // Install newer version of the component, which should not be picked up
+  // when calling ComponentReady again.
+  const std::string sets_v2 = "first party sets v2";
+  base::ScopedTempDir dir_v2;
+  ASSERT_TRUE(
+      dir_v2.CreateUniqueTempDirUnderPath(component_install_dir_.GetPath()));
   ASSERT_TRUE(
       base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
                           dir_v2.GetPath()),
@@ -146,164 +210,62 @@ TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnComponentReady) {
                         base::Value(base::Value::Type::DICTIONARY));
 
   env_.RunUntilIdle();
-
-  EXPECT_EQ(callback_calls, 1);
 }
 
-TEST_F(FirstPartySetsComponentInstallerTest, LoadsSets_OnNetworkRestart) {
-  SEQUENCE_CHECKER(sequence_checker);
-  const std::string expectation = "some first party sets";
-
-  // We do this in order for the static to memoize the install path.
-  {
-    base::RunLoop run_loop;
-    FirstPartySetsComponentInstallerPolicy policy(
-        base::BindLambdaForTesting([&](base::File file) {
-          DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-          EXPECT_EQ(ReadToString(std::move(file)), expectation);
-          run_loop.Quit();
-        }));
-
-    ASSERT_TRUE(base::WriteFile(
-        FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
-            component_install_dir_.GetPath()),
-        expectation));
-
-    policy.ComponentReady(base::Version(), component_install_dir_.GetPath(),
-                          base::Value(base::Value::Type::DICTIONARY));
-
-    run_loop.Run();
-  }
-
-  {
-    base::RunLoop run_loop;
-
-    FirstPartySetsComponentInstallerPolicy::ReconfigureAfterNetworkRestart(
-        base::BindLambdaForTesting([&](base::File file) {
-          DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-          EXPECT_EQ(ReadToString(std::move(file)), expectation);
-          run_loop.Quit();
-        }));
-
-    run_loop.Run();
-  }
-}
-
-// Test ReconfigureAfterNetworkRestart calls the callback with the correct
-// version, i.e. the first installed component, even if there are newer versions
-// installed after browser startup.
-TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnNetworkRestart) {
-  SEQUENCE_CHECKER(sequence_checker);
-  const std::string sets_v1 = "first party sets v1";
-  const std::string sets_v2 = "first party sets v2";
-
-  base::ScopedTempDir dir_v1;
-  CHECK(dir_v1.CreateUniqueTempDirUnderPath(component_install_dir_.GetPath()));
-  base::ScopedTempDir dir_v2;
-  CHECK(dir_v2.CreateUniqueTempDirUnderPath(component_install_dir_.GetPath()));
-
-  FirstPartySetsComponentInstallerPolicy policy(
-      base::BindLambdaForTesting([&](base::File file) {
-        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-        EXPECT_EQ(ReadToString(std::move(file)), sets_v1);
-      }));
-
-  ASSERT_TRUE(
-      base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
-                          dir_v1.GetPath()),
-                      sets_v1));
-  policy.ComponentReady(base::Version(), dir_v1.GetPath(),
-                        base::Value(base::Value::Type::DICTIONARY));
-
-  // Install newer version of the component, which should not be picked up when
-  // calling ComponentReady again.
-  ASSERT_TRUE(
-      base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
-                          dir_v2.GetPath()),
-                      sets_v2));
-  policy.ComponentReady(base::Version(), dir_v2.GetPath(),
-                        base::Value(base::Value::Type::DICTIONARY));
-
-  env_.RunUntilIdle();
-
-  // ReconfigureAfterNetworkRestart calls the callback with the correct version.
-  int callback_calls = 0;
-  FirstPartySetsComponentInstallerPolicy::ReconfigureAfterNetworkRestart(
-      base::BindLambdaForTesting([&](base::File file) {
-        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-        EXPECT_EQ(ReadToString(std::move(file)), sets_v1);
-        callback_calls++;
-      }));
-
-  env_.RunUntilIdle();
-  EXPECT_EQ(callback_calls, 1);
-}
-
-TEST_F(FirstPartySetsComponentInstallerTest, GetInstallerAttributes_Disabled) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndDisableFeature(net::features::kFirstPartySets);
-
+TEST_F(FirstPartySetsComponentInstallerFeatureDisabledTest,
+       GetInstallerAttributes_Disabled) {
   FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
 
   EXPECT_THAT(policy.GetInstallerAttributes(),
-              UnorderedElementsAre(
-                  Pair(FirstPartySetsComponentInstallerPolicy::
-                           kDogfoodInstallerAttributeName,
-                       "false"),
-                  Pair(FirstPartySetsComponentInstallerPolicy::kV2FormatOptIn,
-                       "true")));
+              UnorderedElementsAre(Pair(FirstPartySetsComponentInstallerPolicy::
+                                            kDogfoodInstallerAttributeName,
+                                        "false")));
 }
 
-TEST_F(FirstPartySetsComponentInstallerTest,
+class FirstPartySetsComponentInstallerNonDogFooderTest
+    : public FirstPartySetsComponentInstallerTest {
+ public:
+  FirstPartySetsComponentInstallerNonDogFooderTest() {
+    InitializeFeatureList();
+  }
+
+  void InitializeFeatureList() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kFirstPartySets,
+        {{features::kFirstPartySetsIsDogfooder.name, "false"}});
+  }
+};
+
+TEST_F(FirstPartySetsComponentInstallerNonDogFooderTest,
        GetInstallerAttributes_NonDogfooder) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      net::features::kFirstPartySets,
-      {{net::features::kFirstPartySetsIsDogfooder.name, "false"}});
-
   FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
 
   EXPECT_THAT(policy.GetInstallerAttributes(),
-              UnorderedElementsAre(
-                  Pair(FirstPartySetsComponentInstallerPolicy::
-                           kDogfoodInstallerAttributeName,
-                       "false"),
-                  Pair(FirstPartySetsComponentInstallerPolicy::kV2FormatOptIn,
-                       "true")));
+              UnorderedElementsAre(Pair(FirstPartySetsComponentInstallerPolicy::
+                                            kDogfoodInstallerAttributeName,
+                                        "false")));
 }
 
-TEST_F(FirstPartySetsComponentInstallerTest, GetInstallerAttributes_Dogfooder) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      net::features::kFirstPartySets,
-      {{net::features::kFirstPartySetsIsDogfooder.name, "true"}});
+class FirstPartySetsComponentInstallerDogFooderTest
+    : public FirstPartySetsComponentInstallerTest {
+ public:
+  FirstPartySetsComponentInstallerDogFooderTest() { InitializeFeatureList(); }
 
+  void InitializeFeatureList() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kFirstPartySets,
+        {{features::kFirstPartySetsIsDogfooder.name, "true"}});
+  }
+};
+
+TEST_F(FirstPartySetsComponentInstallerDogFooderTest,
+       GetInstallerAttributes_Dogfooder) {
   FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
 
   EXPECT_THAT(policy.GetInstallerAttributes(),
-              UnorderedElementsAre(
-                  Pair(FirstPartySetsComponentInstallerPolicy::
-                           kDogfoodInstallerAttributeName,
-                       "true"),
-                  Pair(FirstPartySetsComponentInstallerPolicy::kV2FormatOptIn,
-                       "true")));
-}
-
-TEST_F(FirstPartySetsComponentInstallerTest, GetInstallerAttributes_V2OptOut) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeatures(
-      {}, {net::features::kFirstPartySets,
-           net::features::kFirstPartySetsV2ComponentFormat});
-
-  FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
-
-  EXPECT_THAT(policy.GetInstallerAttributes(),
-              UnorderedElementsAre(
-                  Pair(FirstPartySetsComponentInstallerPolicy::
-                           kDogfoodInstallerAttributeName,
-                       "false"),
-                  Pair(FirstPartySetsComponentInstallerPolicy::kV2FormatOptIn,
-                       "false")));
+              UnorderedElementsAre(Pair(FirstPartySetsComponentInstallerPolicy::
+                                            kDogfoodInstallerAttributeName,
+                                        "true")));
 }
 
 }  // namespace component_updater

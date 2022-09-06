@@ -9,20 +9,10 @@ import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_se
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {ButtonState, ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
 import {RmadErrorCode, State, StateResult} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {disableAllButtons, enableAllButtons} from 'chrome://shimless-rma/shimless_rma_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.js';
-
-/**
- * onSelected*Change is not triggered automatically and the functions are
- * protected. It is not possible to suppress visibility inline so this helper
- * function wraps them.
- * @suppress {visibility}
- * @return {!RmadErrorCode}
- */
-function suppressedErrorMessage(component) {
-  return component.errorMessage_;
-}
 
 export function shimlessRMAAppTest() {
   /** @type {?ShimlessRma} */
@@ -57,6 +47,7 @@ export function shimlessRMAAppTest() {
     // Initialize the fake data.
     service.setStates(states);
     service.setGetCurrentOsVersionResult(chromeVersion);
+    service.setCheckForOsUpdatesResult('fake version');
 
     component =
         /** @type {!ShimlessRma} */ (document.createElement('shimless-rma'));
@@ -72,10 +63,10 @@ export function shimlessRMAAppTest() {
    */
   function assertNavButtons() {
     const nextButton = component.shadowRoot.querySelector('#next');
-    const prevButton = component.shadowRoot.querySelector('#cancel');
+    const exitButton = component.shadowRoot.querySelector('#exit');
     const backButton = component.shadowRoot.querySelector('#back');
     assertTrue(!!nextButton);
-    assertTrue(!!prevButton);
+    assertTrue(!!exitButton);
     assertTrue(!!backButton);
   }
 
@@ -84,6 +75,11 @@ export function shimlessRMAAppTest() {
    * @return {Promise}
    */
   function clickNext() {
+    // Make sure the Next button is enabled.
+    component.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: false},
+        ));
     const nextButton = component.shadowRoot.querySelector('#next');
     nextButton.click();
     return flushTasks();
@@ -100,12 +96,12 @@ export function shimlessRMAAppTest() {
   }
 
   /**
-   * Utility function to click cancel button
+   * Utility function to click exit button
    * @return {Promise}
    */
-  function clickCancel() {
-    const cancelButton = component.shadowRoot.querySelector('#cancel');
-    cancelButton.click();
+  function clickExit() {
+    const exitButton = component.shadowRoot.querySelector('#exit');
+    exitButton.click();
     return flushTasks();
   }
 
@@ -118,16 +114,17 @@ export function shimlessRMAAppTest() {
     await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
 
     const prevButton = component.shadowRoot.querySelector('#back');
-    const cancelButton = component.shadowRoot.querySelector('#cancel');
+    const exitButton = component.shadowRoot.querySelector('#exit');
     assertTrue(!!prevButton);
-    assertTrue(!!cancelButton);
+    assertTrue(!!exitButton);
 
     const initialPage =
         component.shadowRoot.querySelector('onboarding-landing-page');
     assertTrue(!!initialPage);
     assertFalse(initialPage.hidden);
+    assertFalse(initialPage.allButtonsDisabled);
     assertTrue(prevButton.hidden);
-    assertFalse(cancelButton.hidden);
+    assertTrue(exitButton.hidden);
 
     // This enables the next button on the landing page.
     service.triggerHardwareVerificationStatusObserver(true, '', 0);
@@ -141,7 +138,7 @@ export function shimlessRMAAppTest() {
     assertTrue(!!initialPage);
     assertTrue(initialPage.hidden);
     assertFalse(prevButton.hidden);
-    assertFalse(cancelButton.hidden);
+    assertFalse(exitButton.hidden);
 
     prevButton.click();
     await flushTasks();
@@ -151,10 +148,10 @@ export function shimlessRMAAppTest() {
     assertTrue(selectNetworkPage.hidden);
     assertFalse(initialPage.hidden);
     assertTrue(prevButton.hidden);
-    assertFalse(cancelButton.hidden);
+    assertTrue(exitButton.hidden);
   });
 
-  test('ShimlessRMACancellation', async () => {
+  test('ShimlessRMAExit', async () => {
     await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
     let abortRmaCount = 0;
     service.abortRma = () => {
@@ -163,12 +160,45 @@ export function shimlessRMAAppTest() {
     };
     const initialPage =
         component.shadowRoot.querySelector('onboarding-landing-page');
-    const cancelButton = component.shadowRoot.querySelector('#cancel');
+    const exitButton = component.shadowRoot.querySelector('#exit');
 
-    cancelButton.click();
+    assertFalse(initialPage.allButtonsDisabled);
+    exitButton.click();
+
+    const exitDialog = component.shadowRoot.querySelector('#exitDialog');
+    assertTrue(exitDialog.open);
+
+    const confirmExitButton =
+        component.shadowRoot.querySelector('#confirmExitDialogButton');
+    assertTrue(!!confirmExitButton);
+    confirmExitButton.click();
     await flushTasks();
 
     assertEquals(1, abortRmaCount);
+    assertTrue(initialPage.allButtonsDisabled);
+  });
+
+  test('CancelExitDialog', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+    let abortRmaCount = 0;
+    service.abortRma = () => {
+      abortRmaCount++;
+      return Promise.resolve(RmadErrorCode.kOk);
+    };
+    const initialPage =
+        component.shadowRoot.querySelector('onboarding-landing-page');
+    const exitButton = component.shadowRoot.querySelector('#exit');
+
+    assertFalse(initialPage.allButtonsDisabled);
+    exitButton.click();
+    const exitDialog = component.shadowRoot.querySelector('#exitDialog');
+    assertTrue(exitDialog.open);
+    component.shadowRoot.querySelector('#cancelExitDialogButton').click();
+    assertFalse(exitDialog.open);
+    await flushTasks();
+
+    assertEquals(0, abortRmaCount);
+    assertFalse(initialPage.allButtonsDisabled);
   });
 
   test('NextButtonClickedOnReady', async () => {
@@ -180,17 +210,21 @@ export function shimlessRMAAppTest() {
 
     const resolver = new PromiseResolver();
     initialPage.onNextButtonClick = () => resolver.promise;
+    assertFalse(initialPage.allButtonsDisabled);
 
     await clickNext();
     assertFalse(initialPage.hidden);
+    assertTrue(initialPage.allButtonsDisabled);
 
-    resolver.resolve({state: State.kUpdateOs, error: RmadErrorCode.kOk});
+    resolver.resolve(
+        {stateResult: {state: State.kUpdateOs, error: RmadErrorCode.kOk}});
     await flushTasks();
 
     const updatePage =
         component.shadowRoot.querySelector('onboarding-update-page');
     assertTrue(!!updatePage);
     assertFalse(updatePage.hidden);
+    assertFalse(updatePage.allButtonsDisabled);
     assertTrue(initialPage.hidden);
   });
 
@@ -230,7 +264,7 @@ export function shimlessRMAAppTest() {
     await initializeShimlessRMAApp(
         [{
           state: State.kSelectComponents,
-          canCancel: true,
+          canExit: true,
           canGoBack: true,
           error: RmadErrorCode.kOk
         }],
@@ -250,30 +284,11 @@ export function shimlessRMAAppTest() {
         nextButton.textContent.trim());
   });
 
-  test('ErrorSignalShowsErrorCode', async () => {
-    await initializeShimlessRMAApp(
-        [{
-          state: State.kSelectComponents,
-          canCancel: true,
-          canGoBack: true,
-          error: RmadErrorCode.kOk
-        }],
-        fakeChromeVersion[0]);
-
-    service.triggerErrorObserver(RmadErrorCode.kReimagingUsbInvalidImage, 0);
-
-    await flushTasks();
-
-    assertEquals(
-        'Error: kReimagingUsbInvalidImage(23)',
-        suppressedErrorMessage(component));
-  });
-
   test('NextButtonSpinner', async () => {
     await initializeShimlessRMAApp(
         [{
           state: State.kSelectComponents,
-          canCancel: true,
+          canExit: true,
           canGoBack: true,
           error: RmadErrorCode.kOk
         }],
@@ -287,34 +302,34 @@ export function shimlessRMAAppTest() {
         component.shadowRoot.querySelector('#nextButtonSpinner');
     const backButtonSpinner =
         component.shadowRoot.querySelector('#backButtonSpinner');
-    const cancelButtonSpinner =
-        component.shadowRoot.querySelector('#cancelButtonSpinner');
+    const exitButtonSpinner =
+        component.shadowRoot.querySelector('#exitButtonSpinner');
 
     // Next spinner
     const nextResolver = new PromiseResolver();
     initialPage.onNextButtonClick = () => nextResolver.promise;
     assertTrue(nextButtonSpinner.hidden);
     assertTrue(backButtonSpinner.hidden);
-    assertTrue(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
 
     await clickNext();
     assertFalse(nextButtonSpinner.hidden);
     assertTrue(backButtonSpinner.hidden);
-    assertTrue(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
 
     nextResolver.resolve({state: State.kUpdateOs, error: RmadErrorCode.kOk});
     await flushTasks();
 
     assertTrue(nextButtonSpinner.hidden);
     assertTrue(backButtonSpinner.hidden);
-    assertTrue(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
   });
 
   test('BackButtonSpinner', async () => {
     await initializeShimlessRMAApp(
         [{
           state: State.kSelectComponents,
-          canCancel: true,
+          canExit: true,
           canGoBack: true,
           error: RmadErrorCode.kOk
         }],
@@ -328,8 +343,8 @@ export function shimlessRMAAppTest() {
         component.shadowRoot.querySelector('#nextButtonSpinner');
     const backButtonSpinner =
         component.shadowRoot.querySelector('#backButtonSpinner');
-    const cancelButtonSpinner =
-        component.shadowRoot.querySelector('#cancelButtonSpinner');
+    const exitButtonSpinner =
+        component.shadowRoot.querySelector('#exitButtonSpinner');
 
     // Back spinner
     const backResolver = new PromiseResolver();
@@ -339,20 +354,21 @@ export function shimlessRMAAppTest() {
     await clickBack();
     assertTrue(nextButtonSpinner.hidden);
     assertFalse(backButtonSpinner.hidden);
-    assertTrue(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
 
-    backResolver.resolve({state: State.kUpdateOs, error: RmadErrorCode.kOk});
+    backResolver.resolve(
+        {stateResult: {state: State.kUpdateOs, error: RmadErrorCode.kOk}});
     await flushTasks();
     assertTrue(nextButtonSpinner.hidden);
     assertTrue(backButtonSpinner.hidden);
-    assertTrue(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
   });
 
-  test('CancelButtonSpinner', async () => {
+  test('ExitButtonSpinner', async () => {
     await initializeShimlessRMAApp(
         [{
           state: State.kSelectComponents,
-          canCancel: true,
+          canExit: true,
           canGoBack: true,
           error: RmadErrorCode.kOk
         }],
@@ -366,23 +382,115 @@ export function shimlessRMAAppTest() {
         component.shadowRoot.querySelector('#nextButtonSpinner');
     const backButtonSpinner =
         component.shadowRoot.querySelector('#backButtonSpinner');
-    const cancelButtonSpinner =
-        component.shadowRoot.querySelector('#cancelButtonSpinner');
+    const exitButtonSpinner =
+        component.shadowRoot.querySelector('#exitButtonSpinner');
 
-    // Cancel spinner
-    const cancelResolver = new PromiseResolver();
+    // Exit spinner
+    const exitResolver = new PromiseResolver();
     service.abortRma = () => {
-      return cancelResolver.promise;
+      return exitResolver.promise;
     };
-    await clickCancel();
+    await clickExit();
     assertTrue(nextButtonSpinner.hidden);
     assertTrue(backButtonSpinner.hidden);
-    assertFalse(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
 
-    cancelResolver.resolve({state: State.kUpdateOs, error: RmadErrorCode.kOk});
+    const exitDialog = component.shadowRoot.querySelector('#exitDialog');
+    assertTrue(exitDialog.open);
+    await component.shadowRoot.querySelector('#confirmExitDialogButton')
+        .click();
+    assertTrue(nextButtonSpinner.hidden);
+    assertTrue(backButtonSpinner.hidden);
+    assertFalse(exitButtonSpinner.hidden);
+
+    exitResolver.resolve({state: State.kUpdateOs, error: RmadErrorCode.kOk});
     await flushTasks();
     assertTrue(nextButtonSpinner.hidden);
     assertTrue(backButtonSpinner.hidden);
-    assertTrue(cancelButtonSpinner.hidden);
+    assertTrue(exitButtonSpinner.hidden);
+  });
+
+  test('AllButtonsDisabled', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+
+    const nextButton = component.shadowRoot.querySelector('#next');
+    const backButton = component.shadowRoot.querySelector('#back');
+    const exitButton = component.shadowRoot.querySelector('#exit');
+    const busyStateOverlay = /** @type {!HTMLElement} */ (
+        component.shadowRoot.querySelector('#busyStateOverlay'));
+
+    assertFalse(nextButton.disabled);
+    assertFalse(backButton.disabled);
+    assertFalse(exitButton.disabled);
+
+    disableAllButtons(component, /*showBusyStateOverlay=*/ false);
+    assertTrue(nextButton.disabled);
+    assertTrue(backButton.disabled);
+    assertTrue(exitButton.disabled);
+    assertFalse(isVisible(busyStateOverlay));
+
+    disableAllButtons(component, /*showBusyStateOverlay=*/ true);
+    assertTrue(isVisible(busyStateOverlay));
+
+    enableAllButtons(component);
+    assertFalse(nextButton.disabled);
+    assertFalse(backButton.disabled);
+    assertFalse(exitButton.disabled);
+    assertFalse(isVisible(busyStateOverlay));
+  });
+
+  test('ExitButtonClickEventIsHandled', async () => {
+    const resolver = new PromiseResolver();
+
+    await initializeShimlessRMAApp(
+        [{
+          state: State.kWelcomeScreen,
+          canExit: true,
+          canGoBack: true,
+          error: RmadErrorCode.kOk
+        }],
+        fakeChromeVersion[0]);
+
+    let callCounter = 0;
+    service.abortRma = () => {
+      callCounter++;
+      return resolver.promise;
+    };
+
+    component.dispatchEvent(new CustomEvent(
+        'click-exit-button',
+        {bubbles: true, composed: true},
+        ));
+
+    await flushTasks();
+    const exitDialog = component.shadowRoot.querySelector('#exitDialog');
+    assertTrue(exitDialog.open);
+    assertEquals(0, callCounter);
+  });
+
+  test('TransitionStateListener', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+
+    // Confirm starting on the landing page.
+    const initialPage =
+        component.shadowRoot.querySelector('onboarding-landing-page');
+    assertTrue(!!initialPage);
+
+    // Attempt to transition OS Update page.
+    component.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: () => Promise.resolve(
+              {stateResult: {state: State.kUpdateOs, error: RmadErrorCode.kOk}})
+        },
+        ));
+    await flushTasks();
+
+    // Confirm transition to the OS Update page.
+    const updatePage =
+        component.shadowRoot.querySelector('onboarding-update-page');
+    assertTrue(!!updatePage);
   });
 }

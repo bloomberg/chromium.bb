@@ -345,6 +345,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
   // Defocus the omnibox.
   if ([ChromeEarlGrey isIPadIdiom]) {
+    // This won't defocus the omnibox, it would only dismiss the keyboard.
     id<GREYMatcher> typingShield = grey_accessibilityID(@"Typing Shield");
     [[EarlGrey selectElementWithMatcher:typingShield] performAction:grey_tap()];
   } else {
@@ -428,9 +429,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
       performAction:grey_typeText(@"Obama")];
 
   // The popup should open.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kOmniboxPopupTableViewAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxPopupList()]
       assertWithMatcher:grey_notNil()];
 
   // Switch to the first tab.
@@ -439,9 +438,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
   // The omnibox shouldn't be focused and the popup should be closed.
   [self checkLocationBarSteadyState];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kOmniboxPopupTableViewAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxPopupList()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -465,9 +462,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
       performAction:grey_typeText(@"Obama")];
 
   // The popup should open.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kOmniboxPopupTableViewAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxPopupList()]
       assertWithMatcher:grey_notNil()];
 
   // Switch to the first tab.
@@ -476,9 +471,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
   // The omnibox shouldn't be focused and the popup should be closed.
   [self checkLocationBarSteadyState];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kOmniboxPopupTableViewAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxPopupList()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -512,6 +505,81 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 @end
 
+// Test case for the NTP home UI, except the new omnibox popup flag is enabled.
+@interface NewOmniboxPopupLocationBarSteadyStateTestCase
+    : LocationBarSteadyStateTestCase {
+  // Which variant of the new popup flag to use.
+  std::string _variant;
+}
+@end
+
+@implementation NewOmniboxPopupLocationBarSteadyStateTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+
+  config.additional_args.push_back(
+      "--enable-features=" + std::string(kIOSOmniboxUpdatedPopupUI.name) + "<" +
+      std::string(kIOSOmniboxUpdatedPopupUI.name));
+
+  config.additional_args.push_back(
+      "--force-fieldtrials=" + std::string(kIOSOmniboxUpdatedPopupUI.name) +
+      "/Test");
+
+  config.additional_args.push_back(
+      "--force-fieldtrial-params=" +
+      std::string(kIOSOmniboxUpdatedPopupUI.name) + ".Test:" +
+      std::string(kIOSOmniboxUpdatedPopupUIVariationName) + "/" + _variant);
+
+  return config;
+}
+
+@end
+
+// Test case for the NTP home UI, except the new omnibox popup flag is enabled
+// with variant 1.
+@interface NewOmniboxPopupLocationBarSteadyStateVariant1TestCase
+    : NewOmniboxPopupLocationBarSteadyStateTestCase
+@end
+
+@implementation NewOmniboxPopupLocationBarSteadyStateVariant1TestCase
+
+- (void)setUp {
+  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation1);
+
+  // |appConfigurationForTestCase| is called during [super setUp], and
+  // depends on _variant.
+  [super setUp];
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
+}
+
+@end
+
+// Test case for the NTP home UI, except the new omnibox popup flag is enabled
+// with variant 2.
+@interface NewOmniboxPopupLocationBarSteadyStateVariant2TestCase
+    : NewOmniboxPopupLocationBarSteadyStateTestCase
+@end
+
+@implementation NewOmniboxPopupLocationBarSteadyStateVariant2TestCase
+
+- (void)setUp {
+  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation2);
+
+  // |appConfigurationForTestCase| is called during [super setUp], and
+  // depends on _variant.
+  [super setUp];
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
+}
+
+@end
+
 #pragma mark - Edit state tests
 
 @interface LocationBarEditStateTestCase : ChromeTestCase
@@ -533,13 +601,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // displayed. Paste button should be hidden when pasteboard is empty otherwise
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
-- (void)testEmptyOmnibox {
-// TODO(crbug.com/1209342): test failing on ipad device
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
-  }
-#endif
+// TODO(crbug.com/1209342): test failing on device
+- (void)DISABLED_testEmptyOmnibox {
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]

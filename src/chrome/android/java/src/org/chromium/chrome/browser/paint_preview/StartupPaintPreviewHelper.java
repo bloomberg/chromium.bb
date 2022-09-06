@@ -35,7 +35,7 @@ import org.chromium.ui.base.WindowAndroid;
 public class StartupPaintPreviewHelper {
     public static final BooleanCachedFieldTrialParameter ACCESSIBILITY_SUPPORT_PARAM =
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,
-                    "has_accessibility_support", false);
+                    "has_accessibility_support", true);
     /**
      * Tracks whether a paint preview should be shown on tab restore. We use this to only attempt
      * to display a paint preview on the first tab restoration that happens on Chrome startup when
@@ -172,7 +172,7 @@ public class StartupPaintPreviewHelper {
         PageLoadMetrics.Observer observer = new PageLoadMetrics.Observer() {
             @Override
             public void onFirstMeaningfulPaint(WebContents webContents, long navigationId,
-                    long navigationStartTick, long firstMeaningfulPaintMs) {
+                    long navigationStartMicros, long firstMeaningfulPaintMs) {
                 startupPaintPreview.onWebContentsFirstMeaningfulPaint(webContents);
             }
         };

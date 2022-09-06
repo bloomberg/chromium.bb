@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_piece.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -16,6 +15,7 @@
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ime/virtual_keyboard_controller_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 
@@ -23,16 +23,12 @@ namespace ui {
 class InputMethod;
 }
 
-namespace keyboard {
-class KeyboardUIController;
-}
-
 namespace exo {
 class Surface;
 
 // This class bridges the ChromeOS input method and a text-input context.
 class TextInput : public ui::TextInputClient,
-                  public ash::KeyboardControllerObserver {
+                  public ui::VirtualKeyboardControllerObserver {
  public:
   class Delegate {
    public:
@@ -171,8 +167,8 @@ class TextInput : public ui::TextInputClient,
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const gfx::Range& range) override;
-  absl::optional<ui::GrammarFragment> GetGrammarFragment(
-      const gfx::Range& range) override;
+  absl::optional<ui::GrammarFragment> GetGrammarFragmentAtCursor()
+      const override;
   bool ClearGrammarFragments(const gfx::Range& range) override;
   bool AddGrammarFragments(
       const std::vector<ui::GrammarFragment>& fragments) override;
@@ -180,17 +176,17 @@ class TextInput : public ui::TextInputClient,
       absl::optional<gfx::Rect>* control_bounds,
       absl::optional<gfx::Rect>* selection_bounds) override {}
 
-  // ash::KeyboardControllerObserver:
-  void OnKeyboardVisibilityChanged(bool is_visible) override;
+  // ui::VirtualKeyboardControllerObserver:
+  void OnKeyboardVisible(const gfx::Rect& keyboard_rect) override;
+  void OnKeyboardHidden() override;
 
  private:
-  void AttachInputMethod();
+  void AttachInputMethod(aura::Window* window);
   void DetachInputMethod();
+  void ResetCompositionTextCache();
 
   // Delegate to talk to actual its client.
   std::unique_ptr<Delegate> delegate_;
-  // Keyboard Controller to observe the visibility.
-  keyboard::KeyboardUIController* keyboard_ui_controller_ = nullptr;
 
   // On requesting to show Virtual Keyboard, InputMethod may not be connected.
   // So, remember the request temporarily, and then on InputMethod connection
@@ -218,6 +214,9 @@ class TextInput : public ui::TextInputClient,
   // Cache of the current cursor position in the surrounding text, sent from
   // the client. Maybe "invalid" value, if not available.
   gfx::Range cursor_pos_ = gfx::Range::InvalidRange();
+
+  // Cache of the current composition range (set in absolute indices).
+  gfx::Range composition_range_ = gfx::Range::InvalidRange();
 
   // Cache of the current composition, updated from Chrome OS IME.
   ui::CompositionText composition_;

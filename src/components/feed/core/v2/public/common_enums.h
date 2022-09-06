@@ -119,8 +119,47 @@ enum class FeedUserActionType {
   kOpenedAutoplaySettings = 40,
   // User tapped "Add to Reading List" in the context menu.
   kTappedAddToReadingList = 41,
+  // User tapped "Manage" icon to open the manage intestitial.
+  kTappedManage = 42,
+  // User tapped "Hidden" in the manage intestitial.
+  kTappedManageHidden = 43,
+  // User tapped the "Follow" button on the main menu. (Android)
+  // User tapped the "Follow" option on the context menu. (IOS)
+  kTappedFollowButton = 44,
+  // User tapped on the Discover feed from the feed header.
+  kDiscoverFeedSelected = 45,
+  // User tapped on the Following feed from the feed header.
+  kFollowingFeedSelected = 46,
+  // User tapped the "Unfollow" option on the context menu.
+  kTappedUnfollowButton = 47,
+  // User action caused a follow succeed snackbar to be shown. User action not
+  // reported here. iOS only.
+  kShowFollowSucceedSnackbar = 48,
+  // User action caused a follow failed snackbar to be shown. User action not
+  // reported here. iOS only.
+  kShowFollowFailedSnackbar = 49,
+  // User action caused a unfollow succeed snackbar to be shown. User action not
+  // reported here. iOS only.
+  kShowUnfollowSucceedSnackbar = 50,
+  // User action caused a unfollow failed snackbar to be shown. User action not
+  // reported here. iOS only.
+  kShowUnfollowFailedSnackbar = 51,
+  // User tapped to go to feed using the snackbar 'go to feed' option.
+  kTappedGoToFeedOnSnackbar = 52,
+  // User tapped the Crow button in the context menu.
+  kTappedCrowButton = 53,
+  // User action caused a first follow sheet to be shown. User action not
+  // reported here. iOS only.
+  kFirstFollowSheetShown = 54,
+  // User tapped the "Go To Feed" button on the first follow sheet. (IOS)
+  kFirstFollowSheetTappedGoToFeed = 55,
+  // User tapped the "Got It" button on the first follow sheet. (IOS)
+  kFirstFollowSheetTappedGotIt = 56,
+  // Page load caused a Follow Recommendation IPH to be shown. User action not
+  // reported here. iOS only.
+  kFollowRecommendationIPHShown = 57,
 
-  kMaxValue = kTappedAddToReadingList,
+  kMaxValue = kFollowRecommendationIPHShown,
 };
 
 // For testing and debugging only.

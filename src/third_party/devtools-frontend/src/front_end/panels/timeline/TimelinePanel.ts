@@ -57,7 +57,15 @@ import {Events, PerformanceModel} from './PerformanceModel.js';
 import type {Client} from './TimelineController.js';
 import {TimelineController} from './TimelineController.js';
 import type {TimelineEventOverview} from './TimelineEventOverview.js';
-import {TimelineEventOverviewCoverage, TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewInput, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview} from './TimelineEventOverview.js';
+import {
+  TimelineEventOverviewCoverage,
+  TimelineEventOverviewCPUActivity,
+  TimelineEventOverviewInput,
+  TimelineEventOverviewMemory,
+  TimelineEventOverviewNetwork,
+  TimelineEventOverviewResponsiveness,
+  TimelineFilmStripOverview,
+} from './TimelineEventOverview.js';
 import {TimelineFlameChartView} from './TimelineFlameChartView.js';
 import {TimelineHistoryManager} from './TimelineHistoryManager.js';
 import {TimelineLoader} from './TimelineLoader.js';
@@ -161,6 +169,10 @@ const UIStrings = {
   *@description Text in Timeline Panel of the Performance panel
   */
   NetworkThrottlingIsEnabled: '- Network throttling is enabled',
+  /**
+  *@description Text in Timeline Panel of the Performance panel
+  */
+  HardwareConcurrencyIsEnabled: '- Hardware concurrency override is enabled',
   /**
   *@description Text in Timeline Panel of the Performance panel
   */
@@ -493,7 +505,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveProfile), 'largeicon-download');
     this.saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-      this.saveToFile();
+      void this.saveToFile();
     });
     this.panelToolbar.appendSeparator();
     this.panelToolbar.appendToolbarItem(this.loadButton);
@@ -543,6 +555,8 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
         this);
     SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener(
         SDK.CPUThrottlingManager.Events.RateChanged, this.updateShowSettingsToolbarButton, this);
+    SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener(
+        SDK.CPUThrottlingManager.Events.HardwareConcurrencyChanged, this.updateShowSettingsToolbarButton, this);
     this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
     this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
 
@@ -562,15 +576,29 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     throttlingPane.element.classList.add('flex-auto');
     throttlingPane.show(this.settingsPane.element);
 
+    const cpuThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
+    cpuThrottlingToolbar.appendText(i18nString(UIStrings.cpu));
+    this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
+    cpuThrottlingToolbar.appendToolbarItem(this.cpuThrottlingSelect);
+
     const networkThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
     networkThrottlingToolbar.appendText(i18nString(UIStrings.network));
     this.networkThrottlingSelect = this.createNetworkConditionsSelect();
     networkThrottlingToolbar.appendToolbarItem(this.networkThrottlingSelect);
 
-    const cpuThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
-    cpuThrottlingToolbar.appendText(i18nString(UIStrings.cpu));
-    this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
-    cpuThrottlingToolbar.appendToolbarItem(this.cpuThrottlingSelect);
+    const hardwareConcurrencyPane = new UI.Widget.VBox();
+    hardwareConcurrencyPane.element.classList.add('flex-auto');
+    hardwareConcurrencyPane.show(this.settingsPane.element);
+
+    const {toggle, input, reset, warning} =
+        MobileThrottling.ThrottlingManager.throttlingManager().createHardwareConcurrencySelector();
+    const concurrencyThrottlingToolbar = new UI.Toolbar.Toolbar('', hardwareConcurrencyPane.element);
+    concurrencyThrottlingToolbar.registerCSSFiles([timelinePanelStyles]);
+    input.element.classList.add('timeline-concurrency-input');
+    concurrencyThrottlingToolbar.appendToolbarItem(toggle);
+    concurrencyThrottlingToolbar.appendToolbarItem(input);
+    concurrencyThrottlingToolbar.appendToolbarItem(reset);
+    concurrencyThrottlingToolbar.appendToolbarItem(warning);
 
     this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));
     this.updateSettingsPaneVisibility();
@@ -624,7 +652,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
   private contextMenu(event: Event): void {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendItemsAtLocation('timelineMenu');
-    contextMenu.show();
+    void contextMenu.show();
   }
   async saveToFile(): Promise<void> {
     if (this.state !== State.Idle) {
@@ -636,7 +664,8 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     }
 
     const now = new Date();
-    const fileName = 'Profile-' + Platform.DateUtilities.toISO8601Compact(now) + '.json';
+    const fileName =
+        'Profile-' + Platform.DateUtilities.toISO8601Compact(now) + '.json' as Platform.DevToolsPath.RawPathString;
     const stream = new Bindings.FileUtils.FileOutputStream();
 
     const accepted = await stream.open(fileName);
@@ -686,7 +715,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.createFileSelector();
   }
 
-  loadFromURL(url: string): void {
+  loadFromURL(url: Platform.DevToolsPath.UrlString): void {
     if (this.state !== State.Idle) {
       return;
     }
@@ -700,7 +729,6 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     if (Root.Runtime.experiments.isEnabled('inputEventsOnTimelineOverview')) {
       this.overviewControls.push(new TimelineEventOverviewInput());
     }
-    this.overviewControls.push(new TimelineEventOverviewFrames());
     this.overviewControls.push(new TimelineEventOverviewCPUActivity());
     this.overviewControls.push(new TimelineEventOverviewNetwork());
     if (this.showScreenshotsSetting.get() && this.performanceModel &&
@@ -742,6 +770,9 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     if (SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate() !== 1) {
       messages.push(i18nString(UIStrings.CpuThrottlingIsEnabled));
     }
+    if (MobileThrottling.ThrottlingManager.throttlingManager().hardwareConcurrencyOverrideEnabled) {
+      messages.push(i18nString(UIStrings.HardwareConcurrencyIsEnabled));
+    }
     if (SDK.NetworkManager.MultitargetNetworkManager.instance().isThrottling()) {
       messages.push(i18nString(UIStrings.NetworkThrottlingIsEnabled));
     }
@@ -771,8 +802,8 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
   }
 
   private async getCoverageViewWidget(): Promise<Coverage.CoverageView.CoverageView> {
-    const view = (UI.ViewManager.ViewManager.instance().view('coverage') as UI.View.View);
-    return /** @type {!Coverage.CoverageView.CoverageView} */ await view.widget() as Coverage.CoverageView.CoverageView;
+    const view = UI.ViewManager.ViewManager.instance().view('coverage');
+    return await view.widget() as Coverage.CoverageView.CoverageView;
   }
 
   private async startRecording(): Promise<void> {
@@ -886,10 +917,10 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
   toggleRecording(): void {
     if (this.state === State.Idle) {
       this.recordingPageReload = false;
-      this.startRecording();
+      void this.startRecording();
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
     } else if (this.state === State.Recording) {
-      this.stopRecording();
+      void this.stopRecording();
     }
   }
 
@@ -898,7 +929,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
       return;
     }
     this.recordingPageReload = true;
-    this.startRecording();
+    void this.startRecording();
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelinePageReloadStarted);
   }
 
@@ -1090,7 +1121,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.historyManager.addRecording(this.performanceModel);
 
     if (this.startCoverage.get()) {
-      UI.ViewManager.ViewManager.instance()
+      void UI.ViewManager.ViewManager.instance()
           .showView('coverage')
           .then(() => this.getCoverageViewWidget())
           .then(widget => widget.processBacklog())
@@ -1148,20 +1179,19 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
       return;
     }
     const controller = this.controller;
-    await new Promise(r => setTimeout(r, this.millisecondsToRecordAfterLoadEvent));
+    await new Promise(r => window.setTimeout(r, this.millisecondsToRecordAfterLoadEvent));
 
     // Check if we're still in the same recording session.
     if (controller !== this.controller || this.state !== State.Recording) {
       return;
     }
-    this.stopRecording();
+    void this.stopRecording();
   }
 
   private frameForSelection(selection: TimelineSelection): TimelineModel.TimelineFrameModel.TimelineFrame|null {
     switch (selection.type()) {
       case TimelineSelection.Type.Frame:
-        return /** @type {!TimelineModel.TimelineFrameModel.TimelineFrame} */ selection.object() as
-            TimelineModel.TimelineFrameModel.TimelineFrame;
+        return selection.object() as TimelineModel.TimelineFrameModel.TimelineFrame;
       case TimelineSelection.Type.Range:
         return null;
       case TimelineSelection.Type.TraceEvent:
@@ -1242,7 +1272,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     const item = items[0];
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
     if (item.kind === 'string') {
-      const url = dataTransfer.getData('text/uri-list');
+      const url = dataTransfer.getData('text/uri-list') as Platform.DevToolsPath.UrlString;
       if (new Common.ParsedURL.ParsedURL(url).isValid) {
         this.loadFromURL(url);
       }
@@ -1484,8 +1514,8 @@ export class LoadTimelineHandler implements Common.QueryParamHandler.QueryParamH
   }
 
   handleQueryParam(value: string): void {
-    UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
-      TimelinePanel.instance().loadFromURL(window.decodeURIComponent(value));
+    void UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
+      TimelinePanel.instance().loadFromURL(window.decodeURIComponent(value) as Platform.DevToolsPath.UrlString);
     });
   }
 }
@@ -1515,7 +1545,7 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
         panel.recordReload();
         return true;
       case 'timeline.save-to-file':
-        panel.saveToFile();
+        void panel.saveToFile();
         return true;
       case 'timeline.load-from-file':
         panel.selectFileToLoad();
@@ -1527,7 +1557,7 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
         panel.jumpToFrame(1);
         return true;
       case 'timeline.show-history':
-        panel.showHistory();
+        void panel.showHistory();
         return true;
       case 'timeline.previous-recording':
         panel.navigateHistory(1);

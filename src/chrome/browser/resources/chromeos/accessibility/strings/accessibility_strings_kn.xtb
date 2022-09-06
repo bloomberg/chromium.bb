@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">ಮುಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="1268366246392928616">ಯಾವುದೇ ಹಿಂದಿನ ಗಣಿತದ ಎಕ್ಸ್‌ಪ್ರೆಶನ್‌ ಇಲ್ಲ</translation>
 <translation id="1273314450961659276">ಪಠ್ಯದಿಂದ ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
-<translation id="1275718070701477396">ಆಯ್ಕೆ ಮಾಡಿದ</translation>
+<translation id="1275718070701477396">ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1284576163386164372">ನಾಲ್ಕು ಬೆರಳುಗಳ ಟ್ಯಾಪ್ ಮೂಲಕ ಮೆನುಗಳನ್ನು ತೆರೆಯುವ ಕುರಿತು ನೀವು ಯಾವಾಗಲೂ ಟುಟೋರಿಯಲ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಬಹುದು. ನಂತರ “ChromeVox” ವಿಭಾಗದ ಅಡಿಯಲ್ಲಿ ಟುಟೋರಿಯಲ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="1291286136605998134">ಟಾಗಲ್ ಬಟನ್</translation>
 <translation id="1299774449519412690">ತಿಳಿ ಆಕಾಶ ನೀಲಿ</translation>
@@ -422,7 +422,7 @@
 <translation id="3712520970944678024">ಮಾತಿನ ನಿಯಂತ್ರಣ</translation>
 <translation id="371302509916403935">ಅಡಿಗೆರೆ</translation>
 <translation id="3716845769494773620">ಬಹು ಸಾಲು</translation>
-<translation id="3735039640698208086">ಆಡಿಯೊ ಪ್ಲೇ ಆಗುತ್ತಿರುವಾಗ...</translation>
+<translation id="3735039640698208086">ಆಡಿಯೋ ಪ್ಲೇ ಆಗುತ್ತಿರುವಾಗ...</translation>
 <translation id="3762198587642264450">ಪ್ರಸ್ತುತ ಸಾಲಿನ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3777742246909257041">ಹಿಮ</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">ಕೋಷ್ಠಕ <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ಮುಂದಿನ ಕೀ ಒತ್ತುವಿಕೆಯನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4623097797855662355">ಕೊಲೊಫೋನ್</translation>
+<translation id="4624970070706497034">TalkBack ಇನ್ನು ಮುಂದೆ Chromebook ಗಳಿಗಾಗಿ ಕಸ್ಟಮೈಸೇಶನ್‌ ಅನ್ನು ಒದಗಿಸುವುದಿಲ್ಲ. ನೀವು ಈಗಲೂ ಇದನ್ನು ಬಳಸಬಹುದು, ಆದರೆ TalkBack ಡೀಫಾಲ್ಟ್ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಬಳಸಿ. ಲಭ್ಯವಿರುವ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನೋಡಲು ಹುಡುಕಾಟ + A ಮತ್ತು ನಂತರ K ಒತ್ತಿರಿ. ನೀವು ಇನ್ನೂ TalkBack ಅನ್ನು ಬಳಸಲು ಬಯಸಿದರೆ, ಕಮಾಂಡ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಒತ್ತಿರಿ.</translation>
 <translation id="463135993322337640">ಹೊಸದೇನಿದೆ ಎಂಬುದನ್ನು ಕಂಡುಕೊಳ್ಳಲು ChromeVox o, n ಅನ್ನು ಒತ್ತಿ</translation>
 <translation id="4649220074413114917">ಪ್ರಸ್ತುತ ಯಾವುದೇ ಭಾಷಣವನ್ನು ನಿಲ್ಲಿಸಲು, ಎರಡು ಬೆರಳುಗಳಿಂದ ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಲು ಬಳಸಬಹುದು. ChromeVox ಏನನ್ನಾದರೂ ಓದಲು ನೀವು ಬಯಸದಿದ್ದರೆ, ಇದು ಉಪಯುಕ್ತವಾಗಿರುತ್ತದೆ. ಮುಂದುವರಿಸಲು, ಎರಡು ಬೆರಳುಗಳಿಂದ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="4660783501463101648">ಕ್ಲಾಸಿಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ChromeVox ಕ್ಲಾಸಿಕ್‌ಗೆ ಹಿಂತಿರುಗಲು ಕೀಬೋರ್ಡ್ ಟಾಗಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">ಬ್ರೈಲಿ ಶೀರ್ಷಿಕೆಗಳು ಸಕ್ರಿಯವಾಗಿವೆ</translation>
 <translation id="5183440668879371625">ಬ್ರೈಲಿ ಹಿಂದಿನ ಸಾಲು</translation>
 <translation id="5189244881767082992">ಸಾಲು</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> ಅನ್ನು ಟೈಪ್ ಮಾಡಿ</translation>
 <translation id="5263034204789987535">ಕಾರ್ನ್ ಸಿಲ್ಕ್</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">ಅಂತ್ಯ</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">ತ್ವರಿತ ಓರಿಯಂಟೇಶನ್ ಪೂರ್ಣಗೊಂಡಿದೆ!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">ಗೇನ್ಸ್‌ಬೋರೋ</translation>
+<translation id="554893713779400387">ಡಿಕ್ಟೇಶನ್ ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="5549179427201066174">ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ (ಇಯರ್‌ಕಾನ್‌‌ಗಳು) ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ</translation>
 <translation id="556042886152191864">ಬಟನ್</translation>
 <translation id="5561345396546889625">ಮುಂದಿನ ಪಟ್ಟಿ</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">ಲಾಗ್</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ಗ್ರಾಫಿಕ್ಸ್ ಚಿಹ್ನೆ</translation>
+<translation id="5648939288050772726">ಅಭಿನಂದನೆಗಳು! ChromeVox ಅನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಬಳಸಲು ಅಗತ್ಯವಿರುವ ಸಂಗತಿಗಳ ಕುರಿತು ನೀವು ತಿಳಿದುಕೊಂಡಿದ್ದೀರಿ. Search+Period ಒತ್ತುವ ಮೂಲಕ ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ChromeVox ಕಮಾಂಡ್ ಮೆನುವನ್ನು ತೆರೆಯಬಹುದು ಎಂಬುದನ್ನು ನೆನಪಿಡಿ. ChromeVox ಹಾಗೂ ChromeOS ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಲು, ಕೆಳಗಿನ ಲೇಖನಗಳನ್ನು ಓದಿ.
+    ನೀವು ಟುಟೋರಿಯಲ್ ಅನ್ನು ಓದಿ ಮುಗಿಸಿದ್ದರೆ, ChromeVox ಅನ್ನು ಬಳಸಿ Close ಬಟನ್‌ಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ ಮತ್ತು ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="5653397561111110475">Chromebook ಟಚ್ ಸ್ಕ್ರೀನ್ ಪ್ರವೇಶಿಸುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="5655682562155942719">ಆಜ್ಞೆಗಳಿಗೆ ಹೋಗು</translation>
 <translation id="56637627897541303">ಪಠ್ಯ ಪ್ರದೇಶ</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{ವಿವರಣೆ ಚಿಹ್ನೆ}one{# ವಿವರಣೆ ಚಿಹ್ನೆಗಳು}other{# ವಿವರಣೆ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="6444046323172968959">ಎಚ್ಚರಿಕೆ ಸಂವಾದ</translation>
 <translation id="6452403590345320472">ಪರಿವಿಡಿ</translation>
+<translation id="6457542714329819968">ಪ್ರಕಾರ</translation>
 <translation id="6468049171101508116">ಮುಂದಿನ ಬಟನ್</translation>
 <translation id="646954774886932461">ಸೂಚಿಕೆ</translation>
 <translation id="6475604559827479857">ಪದಗಳ ಹೈಲೈಟ್‌ಗಳಿಗಾಗಿ ಬಣ್ಣ:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">ನೈಸರ್ಗಿಕ ಧ್ವನಿ</translation>
 <translation id="7714340021005120797">ಯಾವುದೇ ಮುಂದಿನ ಕಾಂಬೊ ಬಾಕ್ಸ್ ಇಲ್ಲ</translation>
-<translation id="772146615414628379">ಅಭಿನಂದನೆಗಳು! ChromeVox ಅನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಬಳಸಲು ಅಗತ್ಯವಿರುವ ಸಂಗತಿಗಳ ಕುರಿತು ನೀವು ತಿಳಿದುಕೊಂಡಿದ್ದೀರಿ. Search+Period ಒತ್ತುವ ಮೂಲಕ ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ChromeVox ಕಮಾಂಡ್ ಮೆನುವನ್ನು ತೆರೆಯಬಹುದು ಎಂಬುದನ್ನು ನೆನಪಿಡಿ. ChromeVox ಹಾಗೂ Chrome OS ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಲು, ಕೆಳಗಿನ ಲೇಖನಗಳನ್ನು ಓದಿ.
-    ನೀವು ಟುಟೋರಿಯಲ್ ಅನ್ನು ಓದಿ ಮುಗಿಸಿದ್ದರೆ, ChromeVox ಅನ್ನು ಬಳಸಿ Close ಬಟನ್‌ಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ ಮತ್ತು ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="7724603315864178912">ಕತ್ತರಿಸು</translation>
 <translation id="7731785449856576010">ಯಾವುದೇ ಮುಂದಿನ ಮಾಧ್ಯಮ ವಿಜೆಟ್ ಇಲ್ಲ</translation>
 <translation id="7735498529470878067">ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಏನಿದೆ ಎಂಬುದನ್ನು ತ್ವರಿತವಾಗಿ ತಿಳಿಯಲು ಸ್ಪರ್ಶದ ಮೂಲಕ ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಿ ಸಹಾಯ ಮಾಡುತ್ತದೆ.</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">ಕಡು ಗೆಂಪು</translation>
 <translation id="923331726185079994">ChromeVox ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="93384979447910801">ಗಾಢ ಸಮುದ್ರ ಹಸಿರು</translation>
+<translation id="937605981140327129">ಪ್ರಸ್ತುತವಾಗಿ TalkBack ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ. Play Store ಮೂಲಕ Android AccessibilitySuite ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ ಹಾಗೂ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="948171205378458592">ಮಾತಿನ ಪ್ರಮಾಣವನ್ನು ಇಳಿಸಿ</translation>
 <translation id="957570623732056069">ಈ ಪಠ್ಯಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಒಂದು ಬೆರಳಿನಲ್ಲಿ ಎಡಕ್ಕೆ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="958854023026327378">ಒಂದು ಬೆರಳಿನಿಂದ ಕೆಳಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ</translation>

@@ -13,11 +13,15 @@ import './security_keys_bio_enroll_dialog.js';
 import './security_keys_set_pin_dialog.js';
 import './security_keys_reset_dialog.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Router} from '../router.js';
+
+import {getTemplate} from './security_keys_subpage.html.js';
 
 interface SecurityKeysSubpageElement {
   $: {
@@ -32,7 +36,7 @@ class SecurityKeysSubpageElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -73,6 +77,10 @@ class SecurityKeysSubpageElement extends PolymerElement {
   private showResetDialog_: boolean;
   private showBioEnrollDialog_: boolean;
 
+  private onManagePhonesClick_() {
+    Router.getInstance().navigateTo(routes.SECURITY_KEYS_PHONES);
+  }
+
   private onSetPIN_() {
     this.showSetPINDialog_ = true;
   }
@@ -88,8 +96,10 @@ class SecurityKeysSubpageElement extends PolymerElement {
 
   private onCredentialManagementDialogClosed_() {
     this.showCredentialManagementDialog_ = false;
-    focusWithoutInk(
-        assert(this.shadowRoot!.querySelector('#credentialManagementButton')!));
+    const toFocus =
+        this.shadowRoot!.querySelector('#credentialManagementButton');
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onReset_() {
@@ -107,8 +117,9 @@ class SecurityKeysSubpageElement extends PolymerElement {
 
   private onBioEnrollDialogClosed_() {
     this.showBioEnrollDialog_ = false;
-    focusWithoutInk(
-        assert(this.shadowRoot!.querySelector('#bioEnrollButton')!));
+    const toFocus = this.shadowRoot!.querySelector('#bioEnrollButton');
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/flying_indicator.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
@@ -53,10 +54,10 @@ FlyingIndicator::FlyingIndicator(const gfx::VectorIcon& icon,
           views::BubbleBorder::Shadow::STANDARD_SHADOW);
 
   const ui::ThemeProvider* theme_provider = target_->GetThemeProvider();
-  const SkColor foreground_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  const SkColor background_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor foreground_color = theme_provider->GetColor(
+      ThemeProperties::COLOR_FLYING_INDICATOR_FOREGROUND);
+  const SkColor background_color = theme_provider->GetColor(
+      ThemeProperties::COLOR_FLYING_INDICATOR_BACKGROUND);
 
   // Set the bubble properties.
   bubble_view->SetAccessibleRole(ax::mojom::Role::kNone);

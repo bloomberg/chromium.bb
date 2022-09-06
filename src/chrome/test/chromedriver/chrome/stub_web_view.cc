@@ -153,7 +153,7 @@ Status StubWebView::DispatchKeyEvents(const std::vector<KeyEvent>& events,
 }
 
 
-Status StubWebView::GetCookies(std::unique_ptr<base::ListValue>* cookies,
+Status StubWebView::GetCookies(base::Value* cookies,
                                const std::string& current_page_url) {
   return Status(kOk);
 }
@@ -223,7 +223,7 @@ Status StubWebView::PrintToPDF(const base::DictionaryValue& params,
 }
 
 Status StubWebView::SetFileInputFiles(const std::string& frame,
-                                      const base::DictionaryValue& element,
+                                      const base::Value& element,
                                       const std::vector<base::FilePath>& files,
                                       const bool append) {
   return Status(kOk);
@@ -259,10 +259,6 @@ bool StubWebView::IsNonBlocking() const {
   return false;
 }
 
-bool StubWebView::IsOOPIF(const std::string& frame_id) {
-  return false;
-}
-
 FrameTracker* StubWebView::GetFrameTracker() const {
   return nullptr;
 }
@@ -277,8 +273,8 @@ std::unique_ptr<base::Value> StubWebView::GetCastIssueMessage() {
 
 void StubWebView::SetFrame(const std::string& new_frame_id) {}
 
-Status StubWebView::GetNodeIdByElement(const std::string& frame,
-                                       const base::DictionaryValue& element,
-                                       int* node_id) {
+Status StubWebView::GetBackendNodeIdByElement(const std::string& frame,
+                                              const base::Value& element,
+                                              int* node_id) {
   return Status(kOk);
 }

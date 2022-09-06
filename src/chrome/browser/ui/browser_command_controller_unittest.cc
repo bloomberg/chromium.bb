@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -281,6 +280,7 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
   }
   void ExitFullscreen() override { fullscreen_ = false; }
   bool IsToolbarShowing() const override { return toolbar_showing_; }
+  bool IsLocationBarVisible() const override { return true; }
 
   ExclusiveAccessContext* GetExclusiveAccessContext() override { return this; }
 
@@ -373,8 +373,6 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_ABOUT,                   true,     false,     false,     false    },
     { IDC_SHOW_APP_MENU,           true,     false,     false,     false    },
     { IDC_SEND_TAB_TO_SELF,        true,     false,     false,     false    },
-    { IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                                   true,     false,     false,     false    },
     { IDC_FULLSCREEN,              true,     false,     true,      true     },
     { IDC_CLOSE_TAB,               true,     true,      true,      false    },
     { IDC_CLOSE_WINDOW,            true,     true,      true,      false    },
@@ -392,7 +390,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
       blink::WebInputEvent::Type::kUndefined, 0,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   // Defaults for a tabbed browser.
-  for (size_t i = 0; i < base::size(commands); i++) {
+  for (size_t i = 0; i < std::size(commands); i++) {
     SCOPED_TRACE(commands[i].command_id);
     EXPECT_EQ(chrome::IsCommandEnabled(browser(), commands[i].command_id),
               commands[i].enabled_in_tab);
@@ -409,7 +407,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   // By default, in fullscreen mode, the toolbar should be hidden; and all
   // platforms behave similarly.
   EXPECT_FALSE(window()->IsToolbarShowing());
-  for (size_t i = 0; i < base::size(commands); i++) {
+  for (size_t i = 0; i < std::size(commands); i++) {
     SCOPED_TRACE(commands[i].command_id);
     EXPECT_EQ(chrome::IsCommandEnabled(browser(), commands[i].command_id),
               commands[i].enabled_in_fullscreen);
@@ -418,14 +416,14 @@ TEST_F(BrowserCommandControllerFullscreenTest,
               commands[i].reserved_in_fullscreen);
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // When the toolbar is showing, commands should be reserved as if the content
   // were in a tab; IDC_FULLSCREEN should also be reserved.
   static_cast<FullscreenTestBrowserWindow*>(window())->set_toolbar_showing(
       true);
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_FULLSCREEN, key_event));
-  for (size_t i = 0; i < base::size(commands); i++) {
+  for (size_t i = 0; i < std::size(commands); i++) {
     if (commands[i].command_id != IDC_FULLSCREEN) {
       SCOPED_TRACE(commands[i].command_id);
       EXPECT_EQ(browser()->command_controller()->IsReservedCommandOrKey(
@@ -443,7 +441,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   ASSERT_FALSE(browser()->window()->IsFullscreen());
   browser()->command_controller()->FullscreenStateChanged();
 
-  for (size_t i = 0; i < base::size(commands); i++) {
+  for (size_t i = 0; i < std::size(commands); i++) {
     SCOPED_TRACE(commands[i].command_id);
     EXPECT_EQ(chrome::IsCommandEnabled(browser(), commands[i].command_id),
               commands[i].enabled_in_tab);
@@ -545,31 +543,7 @@ TEST_F(BrowserCommandControllerTest,
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
 }
 
-class IncognitoClearBrowsingDataCommandTest
-    : public BrowserWithTestWindowTest,
-      public testing::WithParamInterface<bool> {
- public:
-  IncognitoClearBrowsingDataCommandTest() {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kIncognitoClearBrowsingDataDialogForDesktop);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kIncognitoClearBrowsingDataDialogForDesktop);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    IncognitoClearBrowsingDataCommandTestWithFeatureFlag,
-    IncognitoClearBrowsingDataCommandTest,
-    /*should_show_cbd_option_in_incognito=*/testing::Bool());
-
-TEST_P(IncognitoClearBrowsingDataCommandTest,
-       testClearBrowsingDataOptionStateInIncognito) {
+TEST_F(BrowserWithTestWindowTest, ClearBrowsingDataIsEnabledInIncognito) {
   // Set up a profile with an off the record profile.
   std::unique_ptr<TestingProfile> profile1 = TestingProfile::Builder().Build();
   Profile* incognito_profile =
@@ -582,7 +556,5 @@ TEST_P(IncognitoClearBrowsingDataCommandTest,
       CreateBrowserWithTestWindowForParams(profile_params);
 
   chrome::BrowserCommandController command_controller(incognito_browser.get());
-  bool should_show_cbd_option_in_incognito = GetParam();
-  EXPECT_EQ(should_show_cbd_option_in_incognito,
-            command_controller.IsCommandEnabled(IDC_CLEAR_BROWSING_DATA));
+  EXPECT_EQ(true, command_controller.IsCommandEnabled(IDC_CLEAR_BROWSING_DATA));
 }

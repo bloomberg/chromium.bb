@@ -45,6 +45,7 @@ class FrameWidgetTestHelper {
       bool never_composited,
       bool is_for_child_local_root,
       bool is_for_nested_main_frame,
+      bool is_for_scalable_page,
       content::TestRunner* test_runner);
 
   // Reset state for web tests.
@@ -63,6 +64,10 @@ class FrameWidgetTestHelper {
   // to the user in the display compositor.
   virtual void UpdateAllLifecyclePhasesAndComposite(
       base::OnceClosure completion_callback) = 0;
+
+  // Retains the pseudo-element transition DOM generated for a
+  // DocumentTransition after all animations have finished.
+  virtual void DisableEndDocumentTransition() = 0;
 };
 
 }  // namespace blink

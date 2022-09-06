@@ -5,7 +5,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import datetime
-import hashlib
+import io
 import logging
 import os
 import os.path
@@ -168,7 +168,22 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       self._proc = subprocess.Popen(
           cmd, stdout=self._tmp_output_file, stderr=subprocess.STDOUT, env=env)
     else:
-      self._proc = subprocess.Popen(cmd, env=env)
+      # There is weird behavior on Windows where stream redirection does not
+      # work as expected if we let the subprocess use the defaults. This results
+      # in browser logging not being visible on Windows on swarming. Explicitly
+      # setting the streams works around this. The except is in case we are
+      # being run through typ, whose _TeedStream replaces the default streams.
+      # This can't be used for subprocesses since it is all in-memory, and thus
+      # does not have a fileno.
+      if sys.platform == 'win32':
+        try:
+          self._proc = subprocess.Popen(
+              cmd, stdout=sys.stdout, stderr=sys.stderr, env=env)
+        except io.UnsupportedOperation:
+          self._proc = subprocess.Popen(
+              cmd, stdout=sys.__stdout__, stderr=sys.__stderr__, env=env)
+      else:
+        self._proc = subprocess.Popen(cmd, env=env)
 
     self.BindDevToolsClient()
     # browser is foregrounded by default on Windows and Linux, but not Mac.
@@ -257,33 +272,8 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         self._dump_finder, self.build_dir, symbols_dir=symbols_dir)
     return dump_symbolizer.SymbolizeMinidump(minidump)
 
-  def _CreateExecutableUniqueDirectory(self, prefix):
-    """Creates a semi-permanent directory unique to the browser executable.
-
-    This directory will persist between different tests, and potentially
-    be available between different test suites, but is liable to be cleaned
-    up by the OS at any point outside of a test suite's run.
-
-    Args:
-      prefix: A string to include before the unique identifier in the
-          directory name.
-
-    Returns:
-      A string containing an absolute path to the created directory.
-    """
-    hashfunc = hashlib.sha1()
-    with open(self._executable, 'rb') as infile:
-      hashfunc.update(infile.read())
-    symbols_dirname = prefix + hashfunc.hexdigest()
-    # We can't use mkdtemp() directly since that will result in the directory
-    # being different, and thus not shared. So, create an unused directory
-    # and use the same parent directory.
-    unused_dir = tempfile.mkdtemp().rstrip(os.path.sep)
-    symbols_dir = os.path.join(os.path.dirname(unused_dir), symbols_dirname)
-    if not os.path.exists(symbols_dir) or not os.path.isdir(symbols_dir):
-      os.makedirs(symbols_dir)
-    shutil.rmtree(unused_dir)
-    return symbols_dir
+  def _GetBrowserExecutablePath(self):
+    return self._executable
 
   def _UploadMinidumpToCloudStorage(self, minidump_path):
     """ Upload minidump_path to cloud storage and return the cloud storage url.

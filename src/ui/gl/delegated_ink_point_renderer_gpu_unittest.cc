@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -97,8 +98,9 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
  protected:
   void SetUp() override {
     // Without this, the following check always fails.
-    gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings=*/true);
-    if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
+    display_ = gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings=*/true,
+                                                        /*system_device_id=*/0);
+    if (!gl::DirectCompositionSurfaceWin::GetDirectCompositionDevice()) {
       LOG(WARNING)
           << "GL implementation not using DirectComposition, skipping test.";
       return;
@@ -123,14 +125,15 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
     context_ = nullptr;
     if (surface_)
       DestroySurface(std::move(surface_));
-    gl::init::ShutdownGL(false);
+    gl::init::ShutdownGL(display_, false);
   }
 
  private:
   void CreateDirectCompositionSurfaceWin() {
     DirectCompositionSurfaceWin::Settings settings;
     surface_ = base::MakeRefCounted<DirectCompositionSurfaceWin>(
-        parent_window_, DirectCompositionSurfaceWin::VSyncCallback(), settings);
+        gl::GLSurfaceEGL::GetGLDisplayEGL(), parent_window_,
+        DirectCompositionSurfaceWin::VSyncCallback(), settings);
     EXPECT_TRUE(surface_->Initialize(GLSurfaceFormat()));
 
     // ImageTransportSurfaceDelegate::DidCreateAcceleratedSurfaceChildWindow()
@@ -162,6 +165,7 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
   HWND parent_window_;
   scoped_refptr<DirectCompositionSurfaceWin> surface_;
   scoped_refptr<GLContext> context_;
+  raw_ptr<GLDisplay> display_ = nullptr;
 
   // Used as a reference when making DelegatedInkMetadatas based on previously
   // sent points.

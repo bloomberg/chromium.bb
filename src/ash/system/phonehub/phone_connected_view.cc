@@ -6,12 +6,13 @@
 
 #include <memory>
 
-#include "ash/components/phonehub/notification_access_manager.h"
+#include "ash/components/phonehub/multidevice_feature_access_manager.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/components/phonehub/user_action_recorder.h"
 #include "ash/constants/ash_features.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/camera_roll_view.h"
-#include "ash/system/phonehub/notification_opt_in_view.h"
+#include "ash/system/phonehub/multidevice_feature_opt_in_view.h"
 #include "ash/system/phonehub/phone_hub_recent_apps_view.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
 #include "ash/system/phonehub/phone_status_view.h"
@@ -30,6 +31,19 @@
 
 namespace ash {
 
+namespace {
+
+constexpr auto kDarkLightModeEnabledPadding =
+    gfx::Insets::TLBR(0,
+                      kBubbleHorizontalSidePaddingDip,
+                      16,
+                      kBubbleHorizontalSidePaddingDip);
+
+constexpr auto kDarkLightModeDisabledPadding =
+    gfx::Insets::VH(0, kBubbleHorizontalSidePaddingDip);
+
+}  // namespace
+
 PhoneConnectedView::PhoneConnectedView(
     phonehub::PhoneHubManager* phone_hub_manager) {
   SetID(PhoneHubViewID::kPhoneConnectedView);
@@ -41,11 +55,13 @@ PhoneConnectedView::PhoneConnectedView(
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, kBubbleHorizontalSidePaddingDip)));
+      features::IsDarkLightModeEnabled() ? kDarkLightModeEnabledPadding
+                                         : kDarkLightModeDisabledPadding));
+
   layout->SetDefaultFlex(1);
 
-  AddChildView(std::make_unique<NotificationOptInView>(
-      phone_hub_manager->GetNotificationAccessManager()));
+  AddChildView(std::make_unique<MultideviceFeatureOptInView>(
+      phone_hub_manager->GetMultideviceFeatureAccessManager()));
 
   setup_layered_view(
       AddChildView(std::make_unique<QuickActionsView>(phone_hub_manager)));
@@ -58,8 +74,7 @@ PhoneConnectedView::PhoneConnectedView(
 
   auto* recent_apps_handler =
       phone_hub_manager->GetRecentAppsInteractionHandler();
-  if (features::IsEcheSWAEnabled() && features::IsPhoneHubRecentAppsEnabled() &&
-      recent_apps_handler) {
+  if (features::IsEcheSWAEnabled() && recent_apps_handler) {
     setup_layered_view(AddChildView(
         std::make_unique<PhoneHubRecentAppsView>(recent_apps_handler)));
   }
@@ -69,6 +84,8 @@ PhoneConnectedView::PhoneConnectedView(
     setup_layered_view(AddChildView(std::make_unique<CameraRollView>(
         camera_roll_manager, phone_hub_manager->GetUserActionRecorder())));
   }
+
+  phone_hub_manager->GetUserActionRecorder()->RecordUiOpened();
 }
 
 PhoneConnectedView::~PhoneConnectedView() = default;

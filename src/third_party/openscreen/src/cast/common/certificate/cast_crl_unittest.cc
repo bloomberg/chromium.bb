@@ -5,9 +5,10 @@
 #include "cast/common/certificate/cast_crl.h"
 
 #include "cast/common/certificate/cast_cert_validator.h"
-#include "cast/common/certificate/cast_cert_validator_internal.h"
+#include "cast/common/certificate/date_time.h"
 #include "cast/common/certificate/proto/test_suite.pb.h"
 #include "cast/common/certificate/testing/test_helpers.h"
+#include "cast/common/public/trust_store.h"
 #include "gtest/gtest.h"
 #include "platform/test/paths.h"
 #include "testing/util/read_file.h"
@@ -36,10 +37,11 @@ bool TestVerifyCertificate(TestStepResult expected_result,
                            const std::vector<std::string>& der_certs,
                            const DateTime& time,
                            TrustStore* cast_trust_store) {
-  std::unique_ptr<CertVerificationContext> context;
+  std::unique_ptr<ParsedCertificate> target_cert;
   CastDeviceCertPolicy policy;
-  Error result = VerifyDeviceCert(der_certs, time, &context, &policy, nullptr,
-                                  CRLPolicy::kCrlOptional, cast_trust_store);
+  Error result =
+      VerifyDeviceCert(der_certs, time, &target_cert, &policy, nullptr,
+                       CRLPolicy::kCrlOptional, cast_trust_store);
   bool success = (result.code() == Error::Code::kNone) ==
                  (expected_result == kResultSuccess);
   EXPECT_TRUE(success);
@@ -80,11 +82,11 @@ bool TestVerifyRevocation(Error::Code expected_result,
     EXPECT_NE(crl.get(), nullptr);
   }
 
-  std::unique_ptr<CertVerificationContext> context;
+  std::unique_ptr<ParsedCertificate> target_cert;
   CastDeviceCertPolicy policy;
   CRLPolicy crl_policy =
       crl_required ? CRLPolicy::kCrlRequired : CRLPolicy::kCrlOptional;
-  Error result = VerifyDeviceCert(der_certs, cert_time, &context, &policy,
+  Error result = VerifyDeviceCert(der_certs, cert_time, &target_cert, &policy,
                                   crl.get(), crl_policy, cast_trust_store);
   EXPECT_EQ(expected_result, result.code());
   return expected_result == result.code();
@@ -99,15 +101,13 @@ bool RunTest(const DeviceCertTest& test_case) {
   std::unique_ptr<TrustStore> crl_trust_store;
   std::unique_ptr<TrustStore> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
-    crl_trust_store = std::make_unique<TrustStore>();
-    cast_trust_store = std::make_unique<TrustStore>();
-    *crl_trust_store = TrustStore::CreateInstanceFromPemFile(
+    crl_trust_store = TrustStore::CreateInstanceFromPemFile(
         GetSpecificTestDataPath() + "certificates/cast_crl_test_root_ca.pem");
-    *cast_trust_store = TrustStore::CreateInstanceFromPemFile(
+    cast_trust_store = TrustStore::CreateInstanceFromPemFile(
         GetSpecificTestDataPath() + "certificates/cast_test_root_ca.pem");
-
-    EXPECT_FALSE(crl_trust_store->certs.empty());
-    EXPECT_FALSE(cast_trust_store->certs.empty());
+  } else {
+    crl_trust_store = CastCRLTrustStore::Create();
+    cast_trust_store = CastTrustStore::Create();
   }
 
   std::vector<std::string> der_cert_path;

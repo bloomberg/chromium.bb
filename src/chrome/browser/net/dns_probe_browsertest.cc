@@ -53,7 +53,7 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -405,11 +405,12 @@ class DnsProbeCurrentSecureConfigFailingProbesTest
   }
 
   void SetUpOnMainThread() override {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Mark as not enterprise managed to prevent the secure DNS mode from
     // being downgraded to off.
     base::win::ScopedDomainStateForTesting scoped_domain(false);
-    EXPECT_FALSE(base::IsMachineExternallyManaged());
+    // TODO(crbug.com/1339062): What is the correct function to use here?
+    EXPECT_FALSE(base::win::IsEnrolledToDomain());
 #endif
 
     // Set the mocked policy provider to act as if no policies are in use by

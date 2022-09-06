@@ -21,6 +21,8 @@
  * filter for manipulating frame side data
  */
 
+#include "config_components.h"
+
 #include "libavutil/avassert.h"
 #include "libavutil/internal.h"
 #include "libavutil/frame.h"
@@ -147,7 +149,8 @@ const AVFilter ff_af_asidedata = {
     .init          = init,
     FILTER_INPUTS(ainputs),
     FILTER_OUTPUTS(aoutputs),
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
+                     AVFILTER_FLAG_METADATA_ONLY,
 };
 #endif /* CONFIG_ASIDEDATA_FILTER */
 
@@ -179,6 +182,7 @@ const AVFilter ff_vf_sidedata = {
     .init        = init,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
-    .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
+                   AVFILTER_FLAG_METADATA_ONLY,
 };
 #endif /* CONFIG_SIDEDATA_FILTER */

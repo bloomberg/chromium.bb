@@ -27,6 +27,7 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
+#include "storage/browser/file_system/copy_or_move_hook_delegate.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -525,8 +526,9 @@ void CannedSyncableFileSystem::DoOpenFileSystem(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenFileSystem(
-      blink::StorageKey(url::Origin::Create(origin_)), type_,
-      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, std::move(callback));
+      blink::StorageKey(url::Origin::Create(origin_)), /*bucket=*/absl::nullopt,
+      type_, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      std::move(callback));
 }
 
 void CannedSyncableFileSystem::DoCreateDirectory(const FileSystemURL& url,
@@ -553,8 +555,7 @@ void CannedSyncableFileSystem::DoCopy(const FileSystemURL& src_url,
   operation_runner()->Copy(
       src_url, dest_url, storage::FileSystemOperation::CopyOrMoveOptionSet(),
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      storage::FileSystemOperation::CopyOrMoveProgressCallback(),
-      std::move(callback));
+      std::make_unique<storage::CopyOrMoveHookDelegate>(), std::move(callback));
 }
 
 void CannedSyncableFileSystem::DoMove(const FileSystemURL& src_url,
@@ -565,8 +566,7 @@ void CannedSyncableFileSystem::DoMove(const FileSystemURL& src_url,
   operation_runner()->Move(
       src_url, dest_url, storage::FileSystemOperation::CopyOrMoveOptionSet(),
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      storage::FileSystemOperation::CopyOrMoveProgressCallback(),
-      std::move(callback));
+      std::make_unique<storage::CopyOrMoveHookDelegate>(), std::move(callback));
 }
 
 void CannedSyncableFileSystem::DoTruncateFile(const FileSystemURL& url,
@@ -686,7 +686,7 @@ void CannedSyncableFileSystem::DoGetUsageAndQuota(
 void CannedSyncableFileSystem::DidOpenFileSystem(
     base::SingleThreadTaskRunner* original_task_runner,
     base::OnceClosure quit_closure,
-    const GURL& root,
+    const storage::FileSystemURL& root,
     const std::string& name,
     File::Error result) {
   if (io_task_runner_->RunsTasksInCurrentSequence()) {
@@ -703,7 +703,7 @@ void CannedSyncableFileSystem::DidOpenFileSystem(
     return;
   }
   result_ = result;
-  root_url_ = root;
+  root_url_ = GetSyncableFileSystemRootURI(root.origin().GetURL());
   std::move(quit_closure).Run();
 }
 

@@ -11,17 +11,14 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
@@ -131,7 +128,7 @@ const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
 void KeywordProviderTest::SetUpClientAndKeywordProvider() {
   client_ = std::make_unique<MockAutocompleteProviderClient>();
   client_->set_template_url_service(
-      std::make_unique<TemplateURLService>(kTestData, base::size(kTestData)));
+      std::make_unique<TemplateURLService>(kTestData, std::size(kTestData)));
   kw_provider_ = new KeywordProvider(client_.get(), nullptr);
 }
 
@@ -235,7 +232,7 @@ TEST_F(KeywordProviderTest, Edit) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<std::u16string>(edit_cases, base::size(edit_cases),
+  RunTest<std::u16string>(edit_cases, std::size(edit_cases),
                           &AutocompleteMatch::fill_into_edit);
 }
 
@@ -274,7 +271,7 @@ TEST_F(KeywordProviderTest, IgnoreRegistryForScoring) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
   SetUpClientAndKeywordProvider();
-  RunTest<std::u16string>(edit_cases, base::size(edit_cases),
+  RunTest<std::u16string>(edit_cases, std::size(edit_cases),
                           &AutocompleteMatch::fill_into_edit);
 }
 
@@ -312,7 +309,7 @@ TEST_F(KeywordProviderTest, DISABLED_URL) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<GURL>(url_cases, base::size(url_cases),
+  RunTest<GURL>(url_cases, std::size(url_cases),
                 &AutocompleteMatch::destination_url);
 }
 
@@ -353,7 +350,7 @@ TEST_F(KeywordProviderTest, Contents) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<std::u16string>(contents_cases, base::size(contents_cases),
+  RunTest<std::u16string>(contents_cases, std::size(contents_cases),
                           &AutocompleteMatch::contents);
 }
 
@@ -382,8 +379,6 @@ TEST_F(KeywordProviderTest, RemoveKeyword) {
 }
 
 TEST_F(KeywordProviderTest, GetKeywordForInput) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxKeywordSearchButton);
   SetUpClientAndKeywordProvider();
   EXPECT_EQ(u"aa", kw_provider_->GetKeywordForText(u"aa"));
   EXPECT_EQ(std::u16string(), kw_provider_->GetKeywordForText(u"aafoo"));
@@ -464,7 +459,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
        std::u16string::npos},
   };
   SetUpClientAndKeywordProvider();
-  for (size_t i = 0; i < base::size(cases); i++) {
+  for (size_t i = 0; i < std::size(cases); i++) {
     AutocompleteInput input(
         ASCIIToUTF16(cases[i].text), cases[i].cursor_position,
         metrics::OmniboxEventProto::OTHER, TestingSchemeClassifier());
@@ -496,7 +491,7 @@ TEST_F(KeywordProviderTest, ExtraQueryParams) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<GURL>(url_cases, base::size(url_cases),
+  RunTest<GURL>(url_cases, std::size(url_cases),
                 &AutocompleteMatch::destination_url);
 }
 

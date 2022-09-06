@@ -23,8 +23,12 @@ enum class CompositorElementIdNamespace {
   kEffectFilter,
   kEffectMask,
   kEffectClipPath,
+  kScaleTransform,
+  kRotateTransform,
+  kTranslateTransform,
   kVerticalScrollbar,
   kHorizontalScrollbar,
+  kSharedElementTransition,
   kDOMNodeId,
   // The following values are for internal usage only.
   kMax = kDOMNodeId,

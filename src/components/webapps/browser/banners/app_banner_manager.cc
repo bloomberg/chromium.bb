@@ -15,12 +15,14 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -35,7 +37,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -177,7 +181,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
 void AppBannerManager::OnInstall(blink::mojom::DisplayMode display) {
   TrackInstallDisplayMode(display);
   mojo::Remote<blink::mojom::InstallationService> installation_service;
-  web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+  web_contents()->GetPrimaryMainFrame()->GetRemoteInterfaces()->GetInterface(
       installation_service.BindNewPipeAndPassReceiver());
   DCHECK(installation_service);
   installation_service->OnInstall();
@@ -222,16 +226,9 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       SiteEngagementObserver(site_engagement::SiteEngagementService::Get(
           web_contents->GetBrowserContext())),
-      has_maskable_primary_icon_(false),
-      state_(State::INACTIVE),
       manager_(InstallableManager::FromWebContents(web_contents)),
       manifest_(blink::mojom::Manifest::New()),
-      has_sufficient_engagement_(false),
-      load_finished_(false),
-      status_reporter_(std::make_unique<NullStatusReporter>()),
-      install_animation_pending_(false),
-      installable_web_app_check_result_(
-          InstallableWebAppCheckResult::kUnknown) {
+      status_reporter_(std::make_unique<NullStatusReporter>()) {
   DCHECK(manager_);
 
   AppBannerSettingsHelper::UpdateFromFieldTrial();
@@ -368,8 +365,8 @@ InstallableParams AppBannerManager::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
-  params.has_worker = true;
-  params.wait_for_worker = true;
+  params.has_worker = !features::SkipBannerServiceWorkerCheck();
+  params.wait_for_worker = !features::SkipBannerServiceWorkerCheck();
 
   return params;
 }
@@ -396,10 +393,23 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
 
   UpdateState(State::ACTIVE);
-  if (data.has_worker && data.valid_manifest)
+  if (data.worker_check_passed && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
   auto error = data.NoBlockingErrors() ? NO_ERROR_DETECTED : data.errors[0];
+
+  // When |features::SkipInstallServiceWorkerCheck| is true, a service worker is
+  // still required to display the banner prompt. This would mean that while a
+  // banner may not appear, the site is still consider installabled if it only
+  // failed service worker checks.
+  bool worker_errors_ignored_for_installs = false;
+  if (features::SkipInstallServiceWorkerCheck() &&
+      data.HasErrorOnlyServiceWorkerErrors()) {
+    DCHECK(error != NO_ERROR_DETECTED);
+    worker_errors_ignored_for_installs = true;
+    error = NO_ERROR_DETECTED;
+  }
+
   if (error != NO_ERROR_DETECTED) {
     if (error == NO_MATCHING_SERVICE_WORKER)
       TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
@@ -424,10 +434,19 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
+  if (worker_errors_ignored_for_installs) {
+    DCHECK(data.HasErrorOnlyServiceWorkerErrors());
+
+    SetInstallableWebAppCheckResult(
+        InstallableWebAppCheckResult::kYes_ByUserRequest);
+    Stop(SERVICE_WORKER_NOT_REQUIRED);
+    return;
+  }
+
   SetInstallableWebAppCheckResult(
       InstallableWebAppCheckResult::kYes_Promotable);
 
-  DCHECK(data.has_worker && data.valid_manifest);
+  DCHECK(data.worker_check_passed && data.valid_manifest);
   DCHECK(!data.primary_icon_url.is_empty());
   DCHECK(data.primary_icon);
 
@@ -594,7 +613,7 @@ void AppBannerManager::SendBannerPromptRequest() {
   ResetBindings();
 
   mojo::Remote<blink::mojom::AppBannerController> controller;
-  web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+  web_contents()->GetPrimaryMainFrame()->GetRemoteInterfaces()->GetInterface(
       controller.BindNewPipeAndPassReceiver());
 
   // Get a raw controller pointer before we move out of the smart pointer to
@@ -622,17 +641,28 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
   // only allow the page to enter the cache if we know for sure that no
   // installation is needed. Note: this check must happen before calling
   // Terminate as it might set the installable_web_app_check_result_ to kNo.
-  if (installable_web_app_check_result_ != InstallableWebAppCheckResult::kNo &&
-      state_ != State::INACTIVE) {
-    content::BackForwardCache::DisableForRenderFrameHost(
-        handle->GetPreviousRenderFrameHostId(),
-        back_forward_cache::DisabledReason(
-            back_forward_cache::DisabledReasonId::kAppBannerManager));
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kBackForwardCacheAppBanner)) {
+    if (installable_web_app_check_result_ !=
+            InstallableWebAppCheckResult::kNo &&
+        state_ != State::INACTIVE) {
+      content::BackForwardCache::DisableForRenderFrameHost(
+          handle->GetPreviousRenderFrameHostId(),
+          back_forward_cache::DisabledReason(
+              back_forward_cache::DisabledReasonId::kAppBannerManager));
+    }
   }
 
   if (state_ != State::COMPLETE && state_ != State::INACTIVE)
     Terminate();
   ResetCurrentPageData();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBackForwardCacheAppBanner) &&
+      handle->IsServedFromBackForwardCache()) {
+    UpdateState(State::INACTIVE);
+    RequestAppBanner(validated_url_);
+  }
 }
 
 void AppBannerManager::DidFinishLoad(
@@ -665,7 +695,7 @@ void AppBannerManager::DidActivatePortal(
   // instantiated after DidFinishLoad. Trigger the banner pipeline now (on
   // portal activation) if we missed the load event.
   if (!load_finished_ && !web_contents()->ShouldShowLoadingUI()) {
-    DidFinishLoad(web_contents()->GetMainFrame(),
+    DidFinishLoad(web_contents()->GetPrimaryMainFrame(),
                   web_contents()->GetLastCommittedURL());
   }
 }
@@ -686,7 +716,7 @@ void AppBannerManager::DidUpdateWebManifestURL(
     case State::SENDING_EVENT_GOT_EARLY_PROMPT:
     case State::PENDING_PROMPT:
       Terminate();
-      FALLTHROUGH;
+      [[fallthrough]];
     case State::COMPLETE:
       if (!manifest_url.is_empty()) {
         // This call resets has_sufficient_engagement_data_. In order to
@@ -865,7 +895,7 @@ void AppBannerManager::OnBannerPromptReply(
   if (event_canceled) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
     if (ShouldBypassEngagementChecks()) {
-      web_contents()->GetMainFrame()->AddMessageToConsole(
+      web_contents()->GetPrimaryMainFrame()->AddMessageToConsole(
           blink::mojom::ConsoleMessageLevel::kInfo,
           "Banner not shown: beforeinstallpromptevent.preventDefault() called. "
           "The page must call beforeinstallpromptevent.prompt() to show the "

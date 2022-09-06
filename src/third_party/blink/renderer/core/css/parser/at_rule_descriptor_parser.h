@@ -25,7 +25,7 @@ class AtRuleDescriptorParser {
                           AtRuleDescriptorID,
                           const CSSTokenizedValue&,
                           const CSSParserContext&,
-                          HeapVector<CSSPropertyValue, 256>&);
+                          HeapVector<CSSPropertyValue, 64>&);
   static CSSValue* ParseFontFaceDescriptor(AtRuleDescriptorID,
                                            CSSParserTokenRange&,
                                            const CSSParserContext&);
@@ -40,6 +40,9 @@ class AtRuleDescriptorParser {
   static CSSValue* ParseAtCounterStyleDescriptor(AtRuleDescriptorID,
                                                  CSSParserTokenRange&,
                                                  const CSSParserContext&);
+  static CSSValue* ParseAtFontPaletteValuesDescriptor(AtRuleDescriptorID,
+                                                      CSSParserTokenRange&,
+                                                      const CSSParserContext&);
   static CSSValue* ParseAtScrollTimelineDescriptor(AtRuleDescriptorID,
                                                    CSSParserTokenRange&,
                                                    const CSSParserContext&);

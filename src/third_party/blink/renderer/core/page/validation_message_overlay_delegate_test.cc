@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
-#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/blink/public/web/win/web_font_rendering.h"
 #endif
@@ -25,7 +25,7 @@ namespace blink {
 
 class ValidationMessageOverlayDelegateTest : public PaintTestConfigurations,
                                              public RenderingTest {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
  public:
   void SetUp() override {
     RenderingTest::SetUp();
@@ -93,7 +93,7 @@ TEST_P(ValidationMessageOverlayDelegateTest,
 TEST_P(ValidationMessageOverlayDelegateTest,
        DelegatesInternalPageShouldHaveAnimationTimesUpdated) {
   // We use a ValidationMessageClientImpl here to create our delegate since we
-  // need the official path from PageWidgetDelegate::Animate to work.
+  // need the official path from Page::Animate to work.
   auto* client = MakeGarbageCollected<ValidationMessageClientImpl>(GetPage());
   ValidationMessageClient* original_client =
       &GetPage().GetValidationMessageClient();
@@ -124,7 +124,7 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   base::TimeTicks current_time = external_clock.CurrentTime();
 
   base::TimeTicks new_time = current_time + base::Seconds(1);
-  PageWidgetDelegate::Animate(GetPage(), new_time);
+  GetPage().Animate(new_time);
 
   // TODO(crbug.com/785940): Until this bug is fixed, this comparison could pass
   // even if the underlying behavior regresses (because calling CurrentTime

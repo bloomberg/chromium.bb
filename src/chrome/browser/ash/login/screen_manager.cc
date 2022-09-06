@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ash/login/screen_manager.h"
 
+#include <iostream>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 
 namespace ash {
@@ -15,14 +18,14 @@ ScreenManager::ScreenManager() = default;
 
 ScreenManager::~ScreenManager() = default;
 
-void ScreenManager::Init(std::vector<std::unique_ptr<BaseScreen>> screens) {
-  for (auto&& screen : screens)
-    screens_[screen->screen_id()] = std::move(screen);
+void ScreenManager::Init(
+    std::vector<std::pair<OobeScreenId, std::unique_ptr<BaseScreen>>> screens) {
+  screens_ = decltype(screens_)(std::move(screens));
 }
 
 BaseScreen* ScreenManager::GetScreen(OobeScreenId screen) {
   auto iter = screens_.find(screen);
-  DCHECK(iter != screens_.end()) << "Failed to find screen " << screen;
+  CHECK(iter != screens_.end()) << "Failed to find screen " << screen;
   return iter->second.get();
 }
 
@@ -39,6 +42,10 @@ void ScreenManager::SetScreenForTesting(std::unique_ptr<BaseScreen> value) {
 
 void ScreenManager::DeleteScreenForTesting(OobeScreenId screen) {
   screens_[screen] = nullptr;
+}
+
+void ScreenManager::Shutdown() {
+  screens_.clear();
 }
 
 }  // namespace ash

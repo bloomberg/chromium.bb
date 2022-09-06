@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_manager.h"
 
+#include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -43,6 +44,9 @@ AutofillField* FindAutofillFillField(const FormStructure& form,
 // Returns true if |live_form| does not match |cached_form|.
 bool CachedFormNeedsUpdate(const FormData& live_form,
                            const FormStructure& cached_form) {
+  if (cached_form.version() > live_form.version)
+    return false;
+
   if (live_form.fields.size() != cached_form.field_count())
     return true;
 
@@ -99,28 +103,15 @@ bool AutofillManager::IsRawMetadataUploadingEnabled(
          channel == version_info::Channel::DEV;
 }
 
-AutofillManager::AutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    AutofillDownloadManagerState enable_download_manager)
-    : AutofillManager(driver,
-                      client,
-                      enable_download_manager,
-                      client->GetChannel()) {
-  DCHECK(driver);
-  DCHECK(client);
-}
-
-AutofillManager::AutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    AutofillDownloadManagerState enable_download_manager,
-    version_info::Channel channel)
+AutofillManager::AutofillManager(AutofillDriver* driver,
+                                 AutofillClient* client,
+                                 version_info::Channel channel,
+                                 EnableDownloadManager enable_download_manager)
     : driver_(driver),
       client_(client),
       log_manager_(client ? client->GetLogManager() : nullptr),
       form_interactions_ukm_logger_(CreateFormInteractionsUkmLogger()) {
-  if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
+  if (enable_download_manager) {
     download_manager_ = std::make_unique<AutofillDownloadManager>(
         driver, this, GetAPIKeyForUrl(channel),
         AutofillDownloadManager::IsRawMetadataUploadingEnabled(
@@ -141,12 +132,10 @@ AutofillManager::~AutofillManager() {
 
 void AutofillManager::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillParsingPatternsLanguageDetection)) {
+  if (!base::FeatureList::IsEnabled(features::kAutofillPageLanguageDetection)) {
     return;
   }
-  for (auto& p : form_structures_) {
-    std::unique_ptr<FormStructure>& form_structure = p.second;
+  for (auto& [form_id, form_structure] : form_structures_) {
     form_structure->set_current_page_language(
         LanguageCode(details.adopted_language));
     form_structure->DetermineHeuristicTypes(form_interactions_ukm_logger(),
@@ -172,18 +161,19 @@ void AutofillManager::OnFormSubmitted(const FormData& form,
                                       mojom::SubmissionSource source) {
   if (IsValidFormData(form))
     OnFormSubmittedImpl(form, known_success, source);
+
+  for (Observer& observer : observers_)
+    observer.OnFormSubmitted();
 }
 
 void AutofillManager::OnFormsSeen(
     const std::vector<FormData>& updated_forms,
     const std::vector<FormGlobalId>& removed_forms) {
-  if (base::FeatureList::IsEnabled(features::kAutofillDisplaceRemovedForms)) {
-    // Erase forms that have been removed from the DOM. This prevents
-    // |form_structures_| from growing up its upper bound
-    // kAutofillManagerMaxFormCacheSize.
-    for (FormGlobalId removed_form : removed_forms)
-      form_structures_.erase(removed_form);
-  }
+  // Erase forms that have been removed from the DOM. This prevents
+  // |form_structures_| from growing up its upper bound
+  // kAutofillManagerMaxFormCacheSize.
+  for (FormGlobalId removed_form : removed_forms)
+    form_structures_.erase(removed_form);
 
   if (!IsValidFormDataVector(updated_forms) || !driver_->RendererIsAvailable())
     return;
@@ -289,6 +279,10 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
     return;
 
   OnTextFieldDidChangeImpl(form, field, bounding_box, timestamp);
+
+  for (Observer& observer : observers_) {
+    observer.OnTextFieldDidChange();
+  }
 }
 
 void AutofillManager::OnTextFieldDidScroll(const FormData& form,
@@ -298,6 +292,9 @@ void AutofillManager::OnTextFieldDidScroll(const FormData& form,
     return;
 
   OnTextFieldDidScrollImpl(form, field, bounding_box);
+
+  for (Observer& observer : observers_)
+    observer.OnTextFieldDidScroll();
 }
 
 void AutofillManager::OnSelectControlDidChange(const FormData& form,
@@ -307,18 +304,23 @@ void AutofillManager::OnSelectControlDidChange(const FormData& form,
     return;
 
   OnSelectControlDidChangeImpl(form, field, bounding_box);
+
+  for (Observer& observer : observers_)
+    observer.OnSelectControlDidChange();
 }
 
-void AutofillManager::OnAskForValuesToFill(int query_id,
-                                           const FormData& form,
-                                           const FormFieldData& field,
-                                           const gfx::RectF& bounding_box,
-                                           bool autoselect_first_suggestion) {
+void AutofillManager::OnAskForValuesToFill(
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box,
+    bool autoselect_first_suggestion,
+    TouchToFillEligible touch_to_fill_eligible) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
   OnAskForValuesToFillImpl(query_id, form, field, bounding_box,
-                           autoselect_first_suggestion);
+                           autoselect_first_suggestion, touch_to_fill_eligible);
 }
 
 void AutofillManager::OnFocusOnFormField(const FormData& form,
@@ -338,7 +340,6 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   // Maybe find an existing FormStructure that corresponds to |form|.
   FormStructure* cached_form = FindCachedFormByRendererId(form.global_id());
   if (cached_form) {
-    DCHECK(cached_form);
     if (!CachedFormNeedsUpdate(form, *cached_form)) {
       // There is no data to return if there are no auto-fillable fields.
       if (!cached_form->autofill_count())
@@ -385,11 +386,11 @@ size_t AutofillManager::FindCachedFormsBySignature(
     FormSignature form_signature,
     std::vector<FormStructure*>* form_structures) const {
   size_t hits_num = 0;
-  for (const auto& p : form_structures_) {
-    if (p.second->form_signature() == form_signature) {
+  for (const auto& [form_id, form_structure] : form_structures_) {
+    if (form_structure->form_signature() == form_signature) {
       ++hits_num;
       if (form_structures)
-        form_structures->push_back(p.second.get());
+        form_structures->push_back(form_structure.get());
     }
   }
   return hits_num;
@@ -422,8 +423,9 @@ FormStructure* AutofillManager::ParseForm(const FormData& form,
     form_structure->RetrieveFromCache(*cached_form,
                                       /*should_keep_cached_value=*/true,
                                       /*only_server_and_autofill_state=*/true);
-    if (observer_for_testing_)
-      observer_for_testing_->OnFormParsed();
+
+    for (Observer& observer : observers_)
+      observer.OnFormParsed();
 
     if (form_structure.get()->value_from_dynamic_change_form())
       value_from_dynamic_change_form_ = true;
@@ -504,7 +506,7 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
-  driver()->PropagateAutofillPredictions(queried_forms);
+  PropagateAutofillPredictions(queried_forms);
 }
 
 void AutofillManager::OnServerRequestError(

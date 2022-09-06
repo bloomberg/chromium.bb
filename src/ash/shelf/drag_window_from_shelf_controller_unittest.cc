@@ -4,6 +4,8 @@
 
 #include "ash/shelf/drag_window_from_shelf_controller.h"
 
+#include <tuple>
+
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -35,7 +37,9 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -107,17 +111,17 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
   void CancelDrag() { window_drag_controller_->CancelDrag(); }
   void WaitForHomeLauncherAnimationToFinish() {
     // Wait until home launcher animation finishes.
-    while (GetAppListTestHelper()
-               ->GetAppListView()
-               ->GetWidget()
-               ->GetLayer()
-               ->GetAnimator()
-               ->is_animating()) {
-      base::RunLoop run_loop;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(200));
-      run_loop.Run();
-    }
+    ui::Layer* layer =
+        GetAppListTestHelper()->GetAppListView()->GetWidget()->GetLayer();
+    ui::Compositor* compositor = layer->GetCompositor();
+
+    while (layer->GetAnimator()->is_animating())
+      EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+
+    // Ensure there is one more frame presented after animation finishes
+    // to allow animation throughput data is passed from cc to ui.
+    std::ignore =
+        ui::WaitForNextFrameToBePresented(compositor, base::Milliseconds(200));
   }
 
   SplitViewController* split_view_controller() {
@@ -1393,4 +1397,26 @@ TEST_F(DragWindowFromShelfControllerTest,
   EXPECT_FALSE(transient_child_win1->IsVisible());
   EXPECT_FALSE(transient_child_win2->IsVisible());
 }
+
+// Tests that destroying a dragged window in split view will not cause crash.
+TEST_F(DragWindowFromShelfControllerTest,
+       DestroyWindowDuringDraggingInSplitView) {
+  UpdateDisplay("500x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+
+  // Create a window and snapped to the left in split screen.
+  auto window = CreateTestWindow();
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+
+  // Try to drag the window from shelf.
+  StartDrag(window.get(), shelf_bounds.left_center());
+  Drag(gfx::Point(0, 200), 1.f, 1.f);
+
+  // Destroy the window while dragging. Expect no crash.
+  window.reset();
+
+  EndDrag(shelf_bounds.CenterPoint(), /*velocity_y=*/absl::nullopt);
+}
+
 }  // namespace ash

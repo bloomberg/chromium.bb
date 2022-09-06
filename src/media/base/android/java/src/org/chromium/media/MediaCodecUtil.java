@@ -411,17 +411,6 @@ class MediaCodecUtil {
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
         // *************************************************************
         if (mime.equals(MimeTypes.VIDEO_VP8)) {
-            if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
-                // Some Samsung devices cannot render VP8 video directly to the surface.
-
-                // Samsung Galaxy S4 Mini.
-                // Only GT-I9190 was tested with Android 4.4.2
-                // We block it and the popular GT-I9195 for all Android versions.
-                if (Build.MODEL.startsWith("GT-I9190") || Build.MODEL.startsWith("GT-I9195")) {
-                    return false;
-                }
-            }
-
             // MediaTek decoders do not work properly on vp8. See http://crbug.com/446974 and
             // http://crbug.com/597836.
             if (Build.HARDWARE.startsWith("mt")) {
@@ -451,29 +440,6 @@ class MediaCodecUtil {
     }
 
     /**
-     * Returns true if and only enabling adaptive playback is unsafe.  On some
-     * device / os combinations, enabling it causes decoded frames to be
-     * unusable.  For example, the S3 on 4.4.2 returns black and white, tiled
-     * frames when this is enabled.
-     */
-    private static boolean isAdaptivePlaybackDenied(String mime) {
-        if (!mime.equals("video/avc") && !mime.equals("video/avc1")) {
-            return false;
-        }
-
-        if (!Build.VERSION.RELEASE.equals("4.4.2")) {
-            return false;
-        }
-
-        if (!Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
-            return false;
-        }
-
-        return Build.MODEL.startsWith("GT-I9300") || // S3 (I9300 / I9300I)
-                Build.MODEL.startsWith("SCH-I535"); // S3
-    }
-
-    /**
      * Returns true if the given codec supports adaptive playback (dynamic resolution change).
      * @param mediaCodec the codec.
      * @param mime MIME type that corresponds to the codec creation.
@@ -489,10 +455,6 @@ class MediaCodecUtil {
                 return false;
             }
 
-            if (isAdaptivePlaybackDenied(mime)) {
-                return false;
-            }
-
             MediaCodecInfo.CodecCapabilities capabilities = info.getCapabilitiesForType(mime);
             return (capabilities != null)
                     && capabilities.isFeatureSupported(
@@ -505,7 +467,8 @@ class MediaCodecUtil {
 
     // List of supported HW encoders.
     @IntDef({HWEncoder.QcomVp8, HWEncoder.QcomH264, HWEncoder.ExynosVp8, HWEncoder.ExynosVp9,
-            HWEncoder.ExynosH264, HWEncoder.MediatekH264, HWEncoder.HisiH264})
+            HWEncoder.ExynosH264, HWEncoder.MediatekH264, HWEncoder.HisiH264,
+            HWEncoder.SpreadtrumH264})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HWEncoder {
         int QcomVp8 = 0;
@@ -515,11 +478,12 @@ class MediaCodecUtil {
         int ExynosH264 = 4;
         int MediatekH264 = 5;
         int HisiH264 = 6;
-        int NUM_ENTRIES = 7;
+        int SpreadtrumH264 = 7;
+        int NUM_ENTRIES = 8;
     }
 
-    private static String getMimeForHWEncoder(@HWEncoder int decoder) {
-        switch (decoder) {
+    private static String getMimeForHWEncoder(@HWEncoder int encoder) {
+        switch (encoder) {
             case HWEncoder.QcomVp8:
             case HWEncoder.ExynosVp8:
                 return MimeTypes.VIDEO_VP8;
@@ -529,14 +493,15 @@ class MediaCodecUtil {
             case HWEncoder.ExynosH264:
             case HWEncoder.MediatekH264:
             case HWEncoder.HisiH264:
+            case HWEncoder.SpreadtrumH264:
                 return MimeTypes.VIDEO_H264;
         }
         return "";
     }
 
-    private static String getPrefixForHWEncoder(@HWEncoder int decoder) {
+    private static String getPrefixForHWEncoder(@HWEncoder int encoder) {
         // NOTE: Prefixes must be lower case since the comparison is done in lower case.
-        switch (decoder) {
+        switch (encoder) {
             case HWEncoder.QcomVp8:
             case HWEncoder.QcomH264:
                 return "qcom";
@@ -548,12 +513,14 @@ class MediaCodecUtil {
                 return "mtk";
             case HWEncoder.HisiH264:
                 return "hisi";
+            case HWEncoder.SpreadtrumH264:
+                return "sprd";
         }
         return "";
     }
 
-    private static int getMinSDKForHWEncoder(@HWEncoder int decoder) {
-        switch (decoder) {
+    private static int getMinSDKForHWEncoder(@HWEncoder int encoder) {
+        switch (encoder) {
             case HWEncoder.QcomVp8:
             case HWEncoder.QcomH264:
             case HWEncoder.ExynosH264:
@@ -565,6 +532,8 @@ class MediaCodecUtil {
                 return Build.VERSION_CODES.O_MR1;
             case HWEncoder.HisiH264:
                 return Build.VERSION_CODES.N;
+            case HWEncoder.SpreadtrumH264:
+                return Build.VERSION_CODES.R;
         }
         return -1;
     }
@@ -579,6 +548,7 @@ class MediaCodecUtil {
             case HWEncoder.ExynosH264:
             case HWEncoder.MediatekH264:
             case HWEncoder.HisiH264:
+            case HWEncoder.SpreadtrumH264:
                 return BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT;
         }
         throw new IllegalArgumentException("Invalid HWEncoder decoder parameter.");

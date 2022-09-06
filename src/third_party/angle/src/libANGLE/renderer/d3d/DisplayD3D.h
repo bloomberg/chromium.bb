@@ -86,7 +86,7 @@ class DisplayD3D : public DisplayImpl, public d3d::Context
 
     std::string getRendererDescription() override;
     std::string getVendorString() override;
-    std::string getVersionString() override;
+    std::string getVersionString(bool includeFullVersion) override;
 
     egl::Error waitClient(const gl::Context *context) override;
     egl::Error waitNative(const gl::Context *context, EGLint engine) override;
@@ -100,6 +100,8 @@ class DisplayD3D : public DisplayImpl, public d3d::Context
                       unsigned int line) override;
 
     const std::string &getStoredErrorString() const { return mStoredErrorString; }
+
+    void initializeFrontendFeatures(angle::FrontendFeatures *features) const override;
 
     void populateFeatureList(angle::FeatureList *features) override;
 

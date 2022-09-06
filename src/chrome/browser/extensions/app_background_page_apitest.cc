@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
@@ -49,7 +50,7 @@
 #include "components/nacl/browser/nacl_process_host.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -500,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
 
 // TODO(https://crbug.com/1124033): Fails on LaCrOS bot.
 // TODO(https://crbug.com/1186442): Fails on linux-ozone-rel bot.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_OpenPopupFromBGPage DISABLED_OpenPopupFromBGPage
 #else
 #define MAYBE_OpenPopupFromBGPage OpenPopupFromBGPage
@@ -647,7 +648,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
-  ExtensionTestMessageListener ready_listener("ready", true);
+  ExtensionTestMessageListener ready_listener("ready",
+                                              ReplyBehavior::kWillReply);
   LaunchTestingApp();
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
 
@@ -665,7 +667,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
       manager->GetLazyKeepaliveActivities(extension());
   EXPECT_THAT(activities, testing::UnorderedElementsAre(api_activity));
 
-  ExtensionTestMessageListener created1_listener("created_module:1", true);
+  ExtensionTestMessageListener created1_listener("created_module:1",
+                                                 ReplyBehavior::kWillReply);
   ready_listener.Reply("create_module");
   EXPECT_TRUE(created1_listener.WaitUntilSatisfied());
 
@@ -676,7 +679,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   EXPECT_THAT(activities,
               testing::UnorderedElementsAre(api_activity, pepper_api_activity));
 
-  ExtensionTestMessageListener created2_listener("created_module:2", true);
+  ExtensionTestMessageListener created2_listener("created_module:2",
+                                                 ReplyBehavior::kWillReply);
   created1_listener.Reply("create_module");
   EXPECT_TRUE(created2_listener.WaitUntilSatisfied());
 
@@ -689,10 +693,11 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
                                             pepper_api_activity));
 
   // Tear-down both modules.
-  ExtensionTestMessageListener destroyed1_listener("destroyed_module", true);
+  ExtensionTestMessageListener destroyed1_listener("destroyed_module",
+                                                   ReplyBehavior::kWillReply);
   created2_listener.Reply("destroy_module");
   EXPECT_TRUE(destroyed1_listener.WaitUntilSatisfied());
-  ExtensionTestMessageListener destroyed2_listener("destroyed_module", false);
+  ExtensionTestMessageListener destroyed2_listener("destroyed_module");
   destroyed1_listener.Reply("destroy_module");
   EXPECT_TRUE(destroyed2_listener.WaitUntilSatisfied());
 

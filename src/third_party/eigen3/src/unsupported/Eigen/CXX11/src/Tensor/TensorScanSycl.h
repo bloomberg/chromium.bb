@@ -107,27 +107,27 @@ struct ScanKernelFunctor {
         inclusive(inclusive_) {}
 
   template <scan_step sst = stp, typename Input>
-  typename ::Eigen::internal::enable_if<sst == scan_step::first, CoeffReturnType>::type EIGEN_DEVICE_FUNC
+  std::enable_if_t<sst == scan_step::first, CoeffReturnType> EIGEN_DEVICE_FUNC
       EIGEN_STRONG_INLINE
       read(const Input &inpt, Index global_id) {
     return inpt.coeff(global_id);
   }
 
   template <scan_step sst = stp, typename Input>
-  typename ::Eigen::internal::enable_if<sst != scan_step::first, CoeffReturnType>::type EIGEN_DEVICE_FUNC
+  std::enable_if_t<sst != scan_step::first, CoeffReturnType> EIGEN_DEVICE_FUNC
       EIGEN_STRONG_INLINE
       read(const Input &inpt, Index global_id) {
     return inpt[global_id];
   }
 
   template <scan_step sst = stp, typename InclusiveOp>
-  typename ::Eigen::internal::enable_if<sst == scan_step::first>::type EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
+  std::enable_if_t<sst == scan_step::first> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
   first_step_inclusive_Operation(InclusiveOp inclusive_op) {
     inclusive_op();
   }
 
   template <scan_step sst = stp, typename InclusiveOp>
-  typename ::Eigen::internal::enable_if<sst != scan_step::first>::type EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
+  std::enable_if_t<sst != scan_step::first> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
   first_step_inclusive_Operation(InclusiveOp) {}
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void operator()(cl::sycl::nd_item<1> itemID) {

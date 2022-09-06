@@ -303,7 +303,7 @@ bool SynchronizedMinidumpManager::ParseFiles() {
     RCHECK(dump_info.has_value(), false);
     DumpInfo info(&dump_info.value());
     RCHECK(info.valid(), false);
-    dumps->Append(std::move(dump_info.value()));
+    dumps->GetList().Append(std::move(dump_info.value()));
   }
 
   JSONFileValueDeserializer deserializer(metadata_path_);
@@ -326,7 +326,7 @@ bool SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
   DCHECK(metadata);
   std::string lockfile;
 
-  for (const auto& elem : dumps->GetList()) {
+  for (const auto& elem : dumps->GetListDeprecated()) {
     std::string dump_info;
     bool ret = base::JSONWriter::Write(elem, &dump_info);
     RCHECK(ret, false);
@@ -367,12 +367,13 @@ bool SynchronizedMinidumpManager::AddEntryToLockFile(
     return false;
   }
 
-  dumps_->Append(dump_info.GetAsValue());
+  dumps_->GetList().Append(
+      base::Value::FromUniquePtrValue(dump_info.GetAsValue()));
   return true;
 }
 
 bool SynchronizedMinidumpManager::RemoveEntryFromLockFile(int index) {
-  base::Value::ListView dumps_view = dumps_->GetList();
+  base::Value::ListView dumps_view = dumps_->GetListDeprecated();
   if (index < 0 || static_cast<size_t>(index) >= dumps_view.size())
     return false;
   return dumps_->EraseListIter(dumps_view.begin() + index);
@@ -396,7 +397,7 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
 std::vector<std::unique_ptr<DumpInfo>> SynchronizedMinidumpManager::GetDumps() {
   std::vector<std::unique_ptr<DumpInfo>> dumps;
 
-  for (const auto& elem : dumps_->GetList()) {
+  for (const auto& elem : dumps_->GetListDeprecated()) {
     dumps.push_back(std::unique_ptr<DumpInfo>(new DumpInfo(&elem)));
   }
 
@@ -407,8 +408,10 @@ bool SynchronizedMinidumpManager::SetCurrentDumps(
     const std::vector<std::unique_ptr<DumpInfo>>& dumps) {
   dumps_->ClearList();
 
-  for (auto& dump : dumps)
-    dumps_->Append(dump->GetAsValue());
+  for (auto& dump : dumps) {
+    dumps_->GetList().Append(
+        base::Value::FromUniquePtrValue(dump->GetAsValue()));
+  }
 
   return true;
 }

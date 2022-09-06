@@ -6,6 +6,7 @@
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/navigation_handle_observer.h"
@@ -31,6 +32,10 @@ using testing::Not;
 using testing::UnorderedElementsAreArray;
 
 namespace content {
+
+using NotRestoredReason = BackForwardCacheMetrics::NotRestoredReason;
+using NotRestoredReasons =
+    BackForwardCacheCanStoreDocumentResult::NotRestoredReasons;
 
 // Navigate from A to B and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
@@ -189,6 +194,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   EXPECT_EQ(1u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
   Shell* popup = OpenPopup(rfh_a.get(), url_a, "");
   EXPECT_EQ(2u, rfh_a->GetSiteInstance()->GetRelatedActiveContentsCount());
+  rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
   // 2) Navigate to B. The previous document can't enter the BackForwardCache,
   // because of the popup.
@@ -202,11 +208,18 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   ASSERT_TRUE(ExecJs(rfh_b.get(), "history.back();"));
   ASSERT_TRUE(rfh_b.WaitUntilRenderFrameDeleted());
 
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kRelatedActiveContentsExist,
-       BackForwardCacheMetrics::NotRestoredReason::kBrowsingInstanceNotSwapped},
-      {}, {ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents}, {}, {},
-      FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kRelatedActiveContentsExist,
+                     NotRestoredReason::kBrowsingInstanceNotSwapped},
+                    {},
+                    {ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents},
+                    {}, {}, FROM_HERE);
+  // Make sure that the tree result also has the same reasons.
+  EXPECT_THAT(
+      GetTreeResult()->GetDocumentResult(),
+      MatchesDocumentResult(
+          NotRestoredReasons(NotRestoredReason::kRelatedActiveContentsExist,
+                             NotRestoredReason::kBrowsingInstanceNotSwapped),
+          BlockListedFeatures()));
 
   // 4) Make the popup drop the window.opener connection. It happens when the
   //    user does an omnibox-initiated navigation, which happens in a new
@@ -517,6 +530,10 @@ IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
 // into BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        ConfirmUnloadEventNotFired) {
+  // This test is only enabled for Android, as pages with unload handlers are
+  // only eligible for bfcache on Android.
+  if (!IsUnloadAllowedToEnterBackForwardCache())
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -559,9 +576,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
-// TODO(https://crbug.com/1075936) disabled due to flakiness
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DISABLED_DoesNotCacheIfMainFrameStillLoading) {
+                       DoesNotCacheIfMainFrameStillLoading) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/main_document");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -597,8 +613,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 3) Go back.
   web_contents()->GetController().GoBack();
   EXPECT_FALSE(WaitForLoadStop(shell()->web_contents()));
-  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::kLoading}, {},
-                    {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kLoading}, {}, {}, {}, {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -635,8 +650,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored(
       {
-          BackForwardCacheMetrics::NotRestoredReason::kLoading,
-          BackForwardCacheMetrics::NotRestoredReason::kSubframeIsNavigating,
+          NotRestoredReason::kLoading,
+          NotRestoredReason::kSubframeIsNavigating,
       },
       {}, {}, {}, {}, FROM_HERE);
 }
@@ -676,8 +691,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored(
       {
-          BackForwardCacheMetrics::NotRestoredReason::kLoading,
-          BackForwardCacheMetrics::NotRestoredReason::kSubframeIsNavigating,
+          NotRestoredReason::kLoading,
+          NotRestoredReason::kSubframeIsNavigating,
       },
       {}, {}, {}, {}, FROM_HERE);
 }
@@ -701,9 +716,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfHttpError) {
 
   // Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK}, {}, {},
-      {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kHTTPStatusNotOK}, {}, {}, {}, {},
+                    FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -743,8 +757,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_FALSE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK,
-       BackForwardCacheMetrics::NotRestoredReason::kNoResponseHead},
+      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kNoResponseHead,
+       NotRestoredReason::kErrorDocument},
       {}, {}, {}, {}, FROM_HERE);
 }
 
@@ -968,37 +982,26 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   EXPECT_TRUE(ExecJs(rfh_1, R"(
     window.onpagehide = (e) => {
-      if (e.persisted) {
-        window.domAutomationController.send('pagehide.persisted');
-      }
+      console.log("onagepagehide", e.persisted);
+      localStorage.setItem('pagehide_persisted',
+        e.persisted ? 'true' : 'false');
     }
     document.onvisibilitychange = () => {
-      if (document.visibilityState == 'hidden') {
-        window.domAutomationController.send('visibilitychange.hidden');
-      }
-    }
-    window.onunload = () => {
-      window.domAutomationController.send('unload');
+      localStorage.setItem('visibilitychange',
+        document.visibilityState);
     }
   )"));
 
-  DOMMessageQueue dom_message_queue(shell()->web_contents());
   // 3) Navigate to |url_2|.
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
   // |rfh_1| will not get into the back-forward cache and eventually get deleted
   // because it uses a blocklisted feature.
   delete_observer_rfh_1.WaitUntilDeleted();
 
-  // Only the pagehide and visibilitychange events will be dispatched.
-  int num_messages_received = 0;
-  std::string expected_messages[] = {"\"pagehide.persisted\"",
-                                     "\"visibilitychange.hidden\""};
-  std::string message;
-  while (dom_message_queue.PopMessage(&message)) {
-    EXPECT_EQ(expected_messages[num_messages_received], message);
-    num_messages_received++;
-  }
-  EXPECT_EQ(num_messages_received, 2);
+  EXPECT_EQ("true",
+            GetLocalStorage(current_frame_host(), "pagehide_persisted"));
+  EXPECT_EQ("hidden",
+            GetLocalStorage(current_frame_host(), "visibilitychange"));
 }
 
 // Track the events dispatched when a page is deemed ineligible for back-forward
@@ -1028,9 +1031,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
         window.domAutomationController.send('visibilitychange.hidden');
       }
     }
-    window.onunload = () => {
-      window.domAutomationController.send('unload');
-    }
   )"));
 
   DOMMessageQueue dom_message_queue(shell()->web_contents());
@@ -1043,14 +1043,103 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // "pagehide", "visibilitychange", and "unload" events will be dispatched.
   int num_messages_received = 0;
   std::string expected_messages[] = {"\"pagehide.not_persisted\"",
-                                     "\"visibilitychange.hidden\"",
-                                     "\"unload\""};
+                                     "\"visibilitychange.hidden\""};
   std::string message;
   while (dom_message_queue.PopMessage(&message)) {
     EXPECT_EQ(expected_messages[num_messages_received], message);
     num_messages_received++;
   }
-  EXPECT_EQ(num_messages_received, 3);
+  EXPECT_EQ(num_messages_received, 2);
+}
+
+enum class TestFrameType {
+  kMainFrame,
+  kSubFrame,
+};
+
+enum class StickinessType {
+  kSticky,
+  kNonSticky,
+};
+
+class BackForwardCacheBrowserTestWithVaryingFrameAndFeatureStickinessType
+    : public BackForwardCacheBrowserTest,
+      public ::testing::WithParamInterface<
+          testing::tuple<TestFrameType, StickinessType>> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BackForwardCacheBrowserTestWithVaryingFrameAndFeatureStickinessType,
+    ::testing::Combine(::testing::Values(TestFrameType::kMainFrame,
+                                         TestFrameType::kSubFrame),
+                       ::testing::Values(StickinessType::kSticky,
+                                         StickinessType::kNonSticky)));
+
+// Test pagehide's persisted value and whether the page can be BFCached when a
+// sticky/non-sticky feature is used on the mainframe/subframe.
+// TODO(crbug.com/1277888): flaky.
+IN_PROC_BROWSER_TEST_P(
+    BackForwardCacheBrowserTestWithVaryingFrameAndFeatureStickinessType,
+    DISABLED_TestPagehidePersistedValue) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  TestFrameType parameter_frame = std::get<0>(GetParam());
+  StickinessType use_sticky_feature = std::get<1>(GetParam());
+
+  // Depending on the parameter, pick the mainframe or subframe to add a
+  // blocking feature.
+  RenderFrameHostImplWrapper rfh_with_blocking_feature(
+      parameter_frame == TestFrameType::kSubFrame
+          ? current_frame_host()->child_at(0)->current_frame_host()
+          : current_frame_host());
+
+  // 2) Mark the document as using a feature that's either sticky or non-sticky,
+  // depending on the test parameter.
+  if (use_sticky_feature == StickinessType::kSticky) {
+    rfh_with_blocking_feature.get()
+        ->UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
+  } else {
+    EXPECT_TRUE(ExecJs(rfh_with_blocking_feature.get(),
+                       "window.foo = new BroadcastChannel('foo');"));
+  }
+
+  // 3) Install the pagehide handler in A to know pagehide.persisted status
+  // after navigating to B.
+  EXPECT_TRUE(ExecJs(current_frame_host(), R"(
+    window.onpagehide = (e) => {
+      localStorage.setItem('pagehide_persisted',
+        e.persisted ? 'true' : 'false');
+    }
+  )"));
+
+  // 4) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 5) Go back to the previous page.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+
+  // 6) If the page is using a sticky feature at pagehide, it can never be put
+  // into BFCache no matter what pagehide does, so pagehide's persisted is
+  // false. Meanwhile, if the page is using a non-sticky feature at pagehide, it
+  // can still be put into BFCache if the pagehide event removes the feature's
+  // usage, so pagehide's persisted is true, since the page might still get into
+  // BFCache.
+  EXPECT_EQ(use_sticky_feature == StickinessType::kSticky ? "false" : "true",
+            GetLocalStorage(current_frame_host(), "pagehide_persisted"));
+
+  // 7) Confirm that the page was not restored from the BFCache in both the
+  // sticky and non-sticky cases.
+  blink::scheduler::WebSchedulerTrackedFeature expected_feature =
+      (use_sticky_feature == StickinessType::kSticky)
+          ? blink::scheduler::WebSchedulerTrackedFeature::kDummy
+          : blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel;
+  ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                    {expected_feature}, {}, {}, {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
@@ -1409,10 +1498,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Check that the value for 'pagehide_storage' and 'visibilitychange_storage'
   // are set correctly.
   EXPECT_EQ("dispatched_once",
-            EvalJs(main_frame_3, "localStorage.getItem('pagehide_storage')"));
-  EXPECT_EQ(
-      "dispatched_once",
-      EvalJs(main_frame_3, "localStorage.getItem('visibilitychange_storage')"));
+            GetLocalStorage(main_frame_3, "pagehide_storage"));
+  EXPECT_EQ("dispatched_once",
+            GetLocalStorage(main_frame_3, "visibilitychange_storage"));
 }
 
 // Tests that the history value saved in the renderer is updated correctly when

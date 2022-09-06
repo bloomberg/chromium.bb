@@ -5,11 +5,30 @@
 import {assert} from 'chai';
 import type * as puppeteer from 'puppeteer';
 
-import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, pressKey, reloadDevTools, scrollElementIntoView, typeText, waitFor, waitForFunction} from '../../shared/helper.js';
+import {
+  $,
+  click,
+  enableExperiment,
+  getBrowserAndPages,
+  goToResource,
+  platform,
+  pressKey,
+  reloadDevTools,
+  scrollElementIntoView,
+  typeText,
+  waitFor,
+  waitForFunction,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {toggleShowCorsErrors} from '../helpers/console-helpers.js';
 import {navigateToCssOverviewTab, startCaptureCSSOverview} from '../helpers/css-overview-helpers.js';
-import {editCSSProperty, focusElementsTree, navigateToSidePane, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
+import {
+  editCSSProperty,
+  focusElementsTree,
+  navigateToSidePane,
+  waitForContentOfSelectedElementsNode,
+  waitForElementsStyleSection,
+} from '../helpers/elements-helpers.js';
 import {openCommandMenu} from '../helpers/quick_open-helpers.js';
 import {closeSecurityTab, navigateToSecurityTab} from '../helpers/security-helpers.js';
 import {openPanelViaMoreTools, openSettingsTab} from '../helpers/settings-helpers.js';
@@ -421,28 +440,6 @@ describe('User Metrics for Issue Panel', () => {
     await openPanelViaMoreTools('Issues');
   });
 
-  it('dispatch events when issue is expanded', async () => {
-    await goToResource('host/cookie-issue.html');
-    await waitFor('.issue');
-
-    await click('.issue');
-
-    await assertHistogramEventsInclude([
-      {
-        actionName: 'DevTools.IssueCreated',
-        actionCode: 15,  // SameSiteCookieIssue
-      },
-      {
-        actionName: 'DevTools.IssueCreated',
-        actionCode: 15,  // SameSiteCookieIssue
-      },
-      {
-        actionName: 'DevTools.IssuesPanelIssueExpanded',
-        actionCode: 2,  // SameSiteCookie
-      },
-    ]);
-  });
-
   it('dispatches an event when a LowTextContrastIssue is created', async () => {
     await goToResource('elements/low-contrast.html');
     await waitFor('.issue');
@@ -557,6 +554,30 @@ describe('User Metrics for Issue Panel', () => {
       {
         actionName: 'DevTools.IssueCreated',
         actionCode: 59,  // QuirksModeIssue::LimitedQuirksMode
+      },
+    ]);
+  });
+
+  it('dispatches an event when a Client Hints are used with invalid origin', async () => {
+    await goToResource('issues/client-hint-issue-MetaTagAllowListInvalidOrigin.html');
+    await waitFor('.issue');
+
+    await assertHistogramEventsInclude([
+      {
+        actionName: 'DevTools.IssueCreated',
+        actionCode: 61,  // ClientHintIssue::MetaTagAllowListInvalidOrigin
+      },
+    ]);
+  });
+
+  it('dispatches an event when a Client Hints are modified by javascript', async () => {
+    await goToResource('issues/client-hint-issue-MetaTagModifiedHTML.html');
+    await waitFor('.issue');
+
+    await assertHistogramEventsInclude([
+      {
+        actionName: 'DevTools.IssueCreated',
+        actionCode: 62,  // ClientHintIssue::MetaTagModifiedHTML
       },
     ]);
   });

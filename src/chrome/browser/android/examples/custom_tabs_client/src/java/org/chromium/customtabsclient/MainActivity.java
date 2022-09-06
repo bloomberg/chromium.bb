@@ -29,6 +29,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -38,6 +40,8 @@ import androidx.browser.customtabs.CustomTabsClient;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsServiceConnection;
 import androidx.browser.customtabs.CustomTabsSession;
+
+import com.google.android.material.button.MaterialButtonToggleGroup;
 
 import org.chromium.customtabsclient.shared.CustomTabsHelper;
 import org.chromium.customtabsclient.shared.ServiceConnection;
@@ -64,7 +68,11 @@ public class MainActivity
     private Button mMayLaunchButton;
     private Button mLaunchButton;
     private Button mLaunchIncognitoButton;
+    private Button mLaunchPartialHeightCctButton;
     private MediaPlayer mMediaPlayer;
+    private MaterialButtonToggleGroup mCloseButtonPositionToggle;
+    private TextView mToolbarCornerRadiusLabel;
+    private SeekBar mToolbarCornerRadiusSlider;
 
     /**
      * Once per second, asks the framework for the process importance, and logs any change.
@@ -110,6 +118,7 @@ public class MainActivity
         mMayLaunchButton = (Button) findViewById(R.id.may_launch_button);
         mLaunchButton = (Button) findViewById(R.id.launch_button);
         mLaunchIncognitoButton = findViewById(R.id.launch_incognito_button);
+        mLaunchPartialHeightCctButton = findViewById(R.id.launch_pcct_button);
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         mEditText.requestFocus();
         mConnectButton.setOnClickListener(this);
@@ -117,8 +126,27 @@ public class MainActivity
         mMayLaunchButton.setOnClickListener(this);
         mLaunchButton.setOnClickListener(this);
         mLaunchIncognitoButton.setOnClickListener(this);
+        mLaunchPartialHeightCctButton.setOnClickListener(this);
         mMediaPlayer = MediaPlayer.create(this, R.raw.amazing_grace);
         findViewById(R.id.register_twa_service).setOnClickListener(this);
+        mCloseButtonPositionToggle = findViewById(R.id.close_button_position_toggle);
+        mCloseButtonPositionToggle.check(R.id.start_button);
+        mToolbarCornerRadiusLabel = findViewById(R.id.corner_radius_slider_label);
+        mToolbarCornerRadiusSlider = findViewById(R.id.corner_radius_slider);
+        mToolbarCornerRadiusLabel.setText(
+                getString(R.string.dp_template, mToolbarCornerRadiusSlider.getProgress()));
+        mToolbarCornerRadiusSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mToolbarCornerRadiusLabel.setText(getString(R.string.dp_template, progress));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 
         Intent activityIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.example.com"));
         PackageManager pm = getPackageManager();
@@ -219,6 +247,10 @@ public class MainActivity
         String url = mEditText.getText().toString();
         int viewId = v.getId();
 
+        // @CloseButtonPosition
+        int closeButtonPosition =
+                mCloseButtonPositionToggle.getCheckedButtonId() == R.id.end_button ? 2 : 1;
+
         if (viewId == R.id.connect_button) {
             bindCustomTabsService();
         } else if (viewId == R.id.warmup_button) {
@@ -246,13 +278,30 @@ public class MainActivity
             customTabsIntent.intent.putExtra(
                     "com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB",
                     viewId == R.id.launch_incognito_button);
-            if (session != null) {
-                CustomTabsHelper.addKeepAliveExtra(this, customTabsIntent.intent);
-            } else {
-                if (!TextUtils.isEmpty(mPackageNameToBind)) {
-                    customTabsIntent.intent.setPackage(mPackageNameToBind);
-                }
-            }
+            customTabsIntent.intent.putExtra(
+                    "androidx.browser.customtabs.extra.CLOSE_BUTTON_POSITION", closeButtonPosition);
+            configSessionConnection(session, customTabsIntent);
+            customTabsIntent.launchUrl(this, Uri.parse(url));
+        } else if (viewId == R.id.launch_pcct_button) {
+            CustomTabsSession session = getSession();
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(session);
+            builder.setToolbarColor(Color.parseColor(TOOLBAR_COLOR)).setShowTitle(true);
+            prepareMenuItems(builder);
+            prepareActionButton(builder);
+            builder.setStartAnimations(this, R.anim.slide_in_up, R.anim.slide_out_bottom);
+            builder.setExitAnimations(this, R.anim.slide_in_bottom, R.anim.slide_out_up);
+            CustomTabsIntent customTabsIntent = builder.build();
+            configSessionConnection(session, customTabsIntent);
+            customTabsIntent.intent.putExtra(
+                    "androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_IN_PIXEL", 500);
+            customTabsIntent.intent.putExtra(
+                    "androidx.browser.customtabs.extra.CLOSE_BUTTON_POSITION", closeButtonPosition);
+            int toolbarCornerRadiusDp = mToolbarCornerRadiusSlider.getProgress();
+            int toolbarCornerRadiusPx =
+                    Math.round(toolbarCornerRadiusDp * getResources().getDisplayMetrics().density);
+            customTabsIntent.intent.putExtra(
+                    "androidx.browser.customtabs.extra.TOOLBAR_CORNER_RADIUS_IN_PIXEL",
+                    toolbarCornerRadiusPx);
             customTabsIntent.launchUrl(this, Uri.parse(url));
         }
     }
@@ -283,6 +332,17 @@ public class MainActivity
         BottomBarManager.setMediaPlayer(mMediaPlayer);
         builder.setSecondaryToolbarViews(BottomBarManager.createRemoteViews(this, true),
                 BottomBarManager.getClickableIDs(), BottomBarManager.getOnClickPendingIntent(this));
+    }
+
+    private void configSessionConnection(
+            CustomTabsSession session, CustomTabsIntent customTabsIntent) {
+        if (session != null) {
+            CustomTabsHelper.addKeepAliveExtra(this, customTabsIntent.intent);
+        } else {
+            if (!TextUtils.isEmpty(mPackageNameToBind)) {
+                customTabsIntent.intent.setPackage(mPackageNameToBind);
+            }
+        }
     }
 
     @Override

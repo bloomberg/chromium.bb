@@ -4,30 +4,43 @@
 
 package org.chromium.chrome.browser.feed.webfeed;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feed.FeedFeatures;
+import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.R;
+import org.chromium.chrome.browser.feed.StreamKind;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator.StreamTabId;
+import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge.WebFeedMetadata;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController.FeedLauncher;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.share.crow.CrowButtonDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.LoadingView;
 import org.chromium.url.GURL;
 
@@ -43,6 +56,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
     private Tab mTab;
     private String mTitle;
     private AppMenuHandler mAppMenuHandler;
+    private CrowButtonDelegate mCrowButtonDelegate;
 
     // Points to the currently shown chip: null, mFollowingChipView, mFollowChipView,
     private ChipView mChipView;
@@ -50,6 +64,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
     // Child views, null before inflation.
     private ChipView mFollowingChipView;
     private ChipView mFollowChipView;
+    private ChipView mCrowButton;
     private ImageView mIcon;
     private TextView mItemText;
 
@@ -70,7 +85,19 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mIcon = findViewById(R.id.icon);
         mFollowingChipView = findViewById(R.id.following_chip_view);
         mFollowChipView = findViewById(R.id.follow_chip_view);
+        mCrowButton = findViewById(R.id.crow_chip_view);
         mItemText = findViewById(R.id.menu_item_text);
+
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DYNAMIC_COLOR_BUTTONS_ANDROID)) {
+            final ColorStateList textColor = AppCompatResources.getColorStateList(
+                    mContext, R.color.default_text_color_accent1_tint_list);
+            mFollowingChipView.getPrimaryTextView().setTextColor(textColor);
+            mFollowChipView.getPrimaryTextView().setTextColor(textColor);
+            mCrowButton.getPrimaryTextView().setTextColor(textColor);
+            final ColorStateList backgroundColor = AppCompatResources.getColorStateList(
+                    mContext, R.color.menu_footer_chip_background_list);
+            mFollowChipView.setBackgroundTintList(backgroundColor);
+        }
     }
 
     /**
@@ -82,24 +109,31 @@ public class WebFeedMainMenuItem extends FrameLayout {
      * @param largeIconBridge {@link LargeIconBridge} to get the favicon of the page.
      * @param dialogManager {@link ModalDialogManager} for managing the dialog.
      * @param snackbarManager {@link SnackbarManager} to display snackbars.
+     * @param crowButtonDelegate {@link CrowButtonDelegate} for managing a footer chip.
      */
     public void initialize(Tab tab, AppMenuHandler appMenuHandler,
             WebFeedFaviconFetcher faviconFetcher, FeedLauncher feedLauncher,
-            ModalDialogManager dialogManager, SnackbarManager snackbarManager) {
+            ModalDialogManager dialogManager, SnackbarManager snackbarManager,
+            CrowButtonDelegate crowButtonDelegate) {
         mUrl = tab.getOriginalUrl();
         mTab = tab;
         mAppMenuHandler = appMenuHandler;
         mFaviconFetcher = faviconFetcher;
         mWebFeedSnackbarController = new WebFeedSnackbarController(
                 mContext, feedLauncher, dialogManager, snackbarManager);
-        WebFeedBridge.getWebFeedMetadataForPage(mTab, mUrl, result -> {
+        mCrowButtonDelegate = crowButtonDelegate;
+        Callback<WebFeedMetadata> metadata_callback = result -> {
             initializeFavicon(result);
             initializeText(result);
             initializeChipView(result);
+            initializeCrowButton(result);
+
             if (mChipView != null && mTab.isShowingErrorPage()) {
                 mChipView.setEnabled(false);
             }
-        });
+        };
+        WebFeedBridge.getWebFeedMetadataForPage(mTab, mUrl,
+                WebFeedPageInformationRequestReason.MENU_ITEM_PRESENTATION, metadata_callback);
     }
 
     private void initializeFavicon(WebFeedMetadata webFeedMetadata) {
@@ -135,6 +169,15 @@ public class WebFeedMainMenuItem extends FrameLayout {
         }
     }
 
+    private void initializeCrowButton(WebFeedMetadata webFeedMetadata) {
+        boolean isFollowing = webFeedMetadata != null
+                && webFeedMetadata.subscriptionStatus == WebFeedSubscriptionStatus.SUBSCRIBED;
+        if (mCrowButtonDelegate.isEnabledForSite(mUrl)) {
+            moveChipsToDedicatedRow();
+            showCrowButton(isFollowing);
+        }
+    }
+
     private void showUnsubscribedChipView() {
         mChipView = mFollowChipView;
         showEnabledChipView(mFollowChipView, mContext.getText(R.string.menu_follow),
@@ -149,6 +192,9 @@ public class WebFeedMainMenuItem extends FrameLayout {
                             FeedFeatures.setLastSeenFeedTabId(StreamTabId.FOLLOWING);
                         }
                     });
+                    WebFeedBridge.incrementFollowedFromWebPageMenuCount();
+                    FeedServiceBridge.reportOtherUserAction(
+                            StreamKind.UNKNOWN, FeedUserActionType.TAPPED_FOLLOW_BUTTON);
                     mAppMenuHandler.hideAppMenu();
                 });
     }
@@ -157,7 +203,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mChipView = mFollowingChipView;
         showEnabledChipView(mFollowingChipView, mContext.getText(R.string.menu_following),
                 R.drawable.ic_check_googblue_24dp, (view) -> {
-                    WebFeedBridge.unfollow(webFeedId,
+                    WebFeedBridge.unfollow(webFeedId, /*isDurable=*/false,
                             (result)
                                     -> mWebFeedSnackbarController.showSnackbarForUnfollow(
                                             result.requestStatus, webFeedId, mUrl, mTitle));
@@ -188,8 +234,9 @@ public class WebFeedMainMenuItem extends FrameLayout {
             });
         }
         postDelayed(()
-                            -> WebFeedBridge.getWebFeedMetadataForPage(
-                                    mTab, mUrl, this::initializeChipView),
+                            -> WebFeedBridge.getWebFeedMetadataForPage(mTab, mUrl,
+                                    WebFeedPageInformationRequestReason.MENU_ITEM_PRESENTATION,
+                                    this::initializeChipView),
                 LOADING_REFRESH_TIME_MS);
     }
 
@@ -227,10 +274,33 @@ public class WebFeedMainMenuItem extends FrameLayout {
         chipView.setVisibility(View.VISIBLE);
     }
 
+    private void showCrowButton(boolean isFollowing) {
+        mCrowButton.getPrimaryTextView().setText(mCrowButtonDelegate.getButtonText());
+        mCrowButton.setIcon(R.drawable.crow_icon, /*tintWithTextColor=*/true);
+        mCrowButton.setOnClickListener((view) -> {
+            if (mTab == null) return;
+            RecordUserAction.record("Crow.LaunchCustomTab.AppMenu");
+            Activity activity = mTab.getWindowAndroid().getActivity().get();
+            mCrowButtonDelegate.requestCanonicalUrl(mTab, (canonicalUrl) -> {
+                mCrowButtonDelegate.launchCustomTab(activity, mUrl, canonicalUrl, isFollowing);
+            });
+        });
+        RecordUserAction.record("Crow.EntryPointShown.AppMenu");
+        mCrowButton.setVisibility(View.VISIBLE);
+    }
+
     private void onFaviconFetched(Bitmap icon) {
         mIcon.setImageBitmap(icon);
         if (icon == null) {
             mIcon.setVisibility(View.GONE);
         }
+    }
+
+    private void moveChipsToDedicatedRow() {
+        ViewGroup secondRow = (ViewGroup) findViewById(R.id.footer_second_chip_row);
+        ViewGroup chipGroup = (ViewGroup) findViewById(R.id.chip_container);
+        UiUtils.removeViewFromParent(chipGroup);
+        secondRow.addView(chipGroup);
+        secondRow.setVisibility(View.VISIBLE);
     }
 }

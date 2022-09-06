@@ -23,6 +23,8 @@ class PolicyErrorMap;
 struct PolicyHandlerParameters;
 class PolicyMap;
 
+extern POLICY_EXPORT const size_t kMaxUrlFiltersPerPolicy;
+
 // Maps a policy type to a preference path, and to the expected value type.
 struct POLICY_EXPORT PolicyToPreferenceMapEntry {
   const char* const policy_name;
@@ -49,6 +51,9 @@ class POLICY_EXPORT ConfigurationPolicyHandler {
 
   // Processes the policies handled by this ConfigurationPolicyHandler and sets
   // the appropriate preferences in |prefs|.
+  //
+  // This method should only be called after |CheckPolicySettings()| returns
+  // true.
   virtual void ApplyPolicySettingsWithParameters(
       const PolicyMap& policies,
       const PolicyHandlerParameters& parameters,

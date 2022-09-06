@@ -46,6 +46,7 @@ enum Setting {
   kBluetoothDisconnectFromDevice = 102,
   kBluetoothPairDevice = 103,
   kBluetoothUnpairDevice = 104,
+  kFastPairOnOff = 105,
 
   // MultiDevice section.
   kSetUpMultiDevice = 200,
@@ -136,16 +137,17 @@ enum Setting {
   kPointingStickSwapPrimaryButtons = 437,
   kTouchpadHapticFeedback = 438,
   kTouchpadHapticClickSensitivity = 439,
+  kAdaptiveCharging = 440,
 
   // Personalization section.
   kOpenWallpaper = 500,
   kAmbientModeOnOff = 501,
   kAmbientModeSource = 502,
   kChangeDeviceAccountImage = 503,
-  // Note: Value 504 was for deprecated kAmbientModeUpdatePhotosContainers.
+  // Note: Values 504, 505, and 506 were for deprecated
+  // kAmbientModeUpdatePhotosContainers, kDarkModeOnOff and
+  // kDarkModeThemed respectively.
   // Do not reuse.
-  kDarkModeOnOff = 505,
-  kDarkModeThemed = 506,
 
   // Search and Assistant section.
   kPreferredSearchEngine = 600,
@@ -203,6 +205,7 @@ enum Setting {
   kPeripheralDataAccessProtection = 1113,
   kSnoopingProtection = 1114,
   kQuickDim = 1115,
+  kCameraOnOff = 1116,
 
   // Languages and Input section.
   kAddLanguage = 1200,
@@ -213,7 +216,9 @@ enum Setting {
   kOfferTranslation = 1205,
   kAddInputMethod = 1206,
   kSpellCheck = 1207,
-  kShowPredictiveWriting = 1208,
+  // Note: Value 1208 was for deprecated kShowPredictiveWriting.
+  // Do not reuse.
+  // TODO(crbug/1058552): Add [Deprecated] attribute once implemented.
 
   // Files section.
   kGoogleDriveConnection = 1300,

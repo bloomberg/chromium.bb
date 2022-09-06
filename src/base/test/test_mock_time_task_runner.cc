@@ -310,6 +310,10 @@ TimeDelta TestMockTimeTaskRunner::NextPendingTaskDelay() {
                         : tasks_.top().GetTimeToRun() - now_ticks_;
 }
 
+void TestMockTimeTaskRunner::DetachFromThread() {
+  thread_checker_.DetachFromThread();
+}
+
 // TODO(gab): Combine |thread_checker_| with a SequenceToken to differentiate
 // between tasks running in the scope of this TestMockTimeTaskRunner and other
 // task runners sharing this thread. http://crbug.com/631186
@@ -326,6 +330,17 @@ bool TestMockTimeTaskRunner::PostDelayedTask(const Location& from_here,
                                      TestPendingTask::NESTABLE));
   tasks_lock_cv_.Signal();
   return true;
+}
+
+bool TestMockTimeTaskRunner::PostDelayedTaskAt(
+    subtle::PostDelayedTaskPassKey,
+    const Location& from_here,
+    OnceClosure task,
+    TimeTicks delayed_run_time,
+    subtle::DelayPolicy deadline_policy) {
+  return PostDelayedTask(
+      from_here, std::move(task),
+      delayed_run_time.is_null() ? TimeDelta() : delayed_run_time - now_ticks_);
 }
 
 bool TestMockTimeTaskRunner::PostNonNestableDelayedTask(

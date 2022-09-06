@@ -17,7 +17,7 @@
 #include "core/fxcrt/widestring.h"
 #include "core/fxge/cfx_color.h"
 #include "core/fxge/cfx_renderdevice.h"
-#include "fpdfsdk/pwl/ipwl_systemhandler.h"
+#include "fpdfsdk/pwl/ipwl_fillernotify.h"
 #include "public/fpdf_fwlevent.h"
 
 class CPWL_Edit;
@@ -85,31 +85,28 @@ class CPWL_Wnd : public Observable {
 
     // get a matrix which map user space to CWnd client space
     virtual CFX_Matrix GetWindowMatrix(
-        const IPWL_SystemHandler::PerWindowData* pAttached) = 0;
-  };
+        const IPWL_FillerNotify::PerWindowData* pAttached) = 0;
 
-  class FocusHandlerIface {
-   public:
-    virtual ~FocusHandlerIface() = default;
-    virtual void OnSetFocus(CPWL_Edit* pEdit) = 0;
+    virtual void OnSetFocusForEdit(CPWL_Edit* pEdit) = 0;
   };
 
   // Caller-provided options for window creation.
   class CreateParams {
    public:
-    CreateParams();
+    CreateParams(CFX_Timer::HandlerIface* timer_handler,
+                 IPWL_FillerNotify* filler_notify,
+                 ProviderIface* provider);
     CreateParams(const CreateParams& other);
     ~CreateParams();
 
     // Required:
     CFX_FloatRect rcRectWnd;
-    ObservedPtr<CFX_Timer::HandlerIface> pTimerHandler;
-    UnownedPtr<IPWL_SystemHandler> pSystemHandler;
+    ObservedPtr<CFX_Timer::HandlerIface> const pTimerHandler;
+    UnownedPtr<IPWL_FillerNotify> const pFillerNotify;
     UnownedPtr<IPVT_FontMap> pFontMap;
     ObservedPtr<ProviderIface> pProvider;
 
     // Optional:
-    UnownedPtr<FocusHandlerIface> pFocusHandler;
     uint32_t dwFlags = 0;
     CFX_Color sBackgroundColor;
     BorderStyle nBorderStyle = BorderStyle::kSolid;
@@ -122,8 +119,8 @@ class CPWL_Wnd : public Observable {
 
     // Ignore, used internally only:
     CPWL_MsgControl* pMsgControl = nullptr;
-    IPWL_SystemHandler::CursorStyle eCursorType =
-        IPWL_SystemHandler::CursorStyle::kArrow;
+    IPWL_FillerNotify::CursorStyle eCursorType =
+        IPWL_FillerNotify::CursorStyle::kArrow;
   };
 
   static bool IsSHIFTKeyDown(Mask<FWL_EVENTFLAG> nFlag);
@@ -135,7 +132,7 @@ class CPWL_Wnd : public Observable {
   static bool IsPlatformShortcutKey(Mask<FWL_EVENTFLAG> nFlag);
 
   CPWL_Wnd(const CreateParams& cp,
-           std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
+           std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData);
   virtual ~CPWL_Wnd();
 
   // Returns |true| iff this instance is still allocated.
@@ -189,7 +186,6 @@ class CPWL_Wnd : public Observable {
   void Destroy();
   bool Move(const CFX_FloatRect& rcNew, bool bReset, bool bRefresh);
 
-  void InvalidateFocusHandler(FocusHandlerIface* handler);
   void InvalidateProvider(ProviderIface* provider);
   void SetCapture();
   void ReleaseCapture();
@@ -218,10 +214,10 @@ class CPWL_Wnd : public Observable {
   const CFX_FloatRect& GetClipRect() const;
 
   CPWL_Wnd* GetParentWindow() const { return m_pParent.Get(); }
-  IPWL_SystemHandler::PerWindowData* GetAttachedData() const {
+  IPWL_FillerNotify::PerWindowData* GetAttachedData() const {
     return m_pAttachedData.get();
   }
-  std::unique_ptr<IPWL_SystemHandler::PerWindowData> CloneAttachedData() const;
+  std::unique_ptr<IPWL_FillerNotify::PerWindowData> CloneAttachedData() const;
 
   bool WndHitTest(const CFX_PointF& point) const;
   bool ClientHitTest(const CFX_PointF& point) const;
@@ -234,9 +230,6 @@ class CPWL_Wnd : public Observable {
   IPVT_FontMap* GetFontMap() const { return m_CreationParams.pFontMap.Get(); }
   ProviderIface* GetProvider() const {
     return m_CreationParams.pProvider.Get();
-  }
-  FocusHandlerIface* GetFocusHandler() const {
-    return m_CreationParams.pFocusHandler.Get();
   }
 
   int32_t GetTransparency();
@@ -264,8 +257,8 @@ class CPWL_Wnd : public Observable {
   CFX_Timer::HandlerIface* GetTimerHandler() const {
     return m_CreationParams.pTimerHandler.Get();
   }
-  IPWL_SystemHandler* GetSystemHandler() const {
-    return m_CreationParams.pSystemHandler.Get();
+  IPWL_FillerNotify* GetFillerNotify() const {
+    return m_CreationParams.pFillerNotify.Get();
   }
 
   // Returns |true| iff this instance is still allocated.
@@ -291,7 +284,7 @@ class CPWL_Wnd : public Observable {
   CPWL_MsgControl* GetMsgControl() const;
 
   CreateParams m_CreationParams;
-  std::unique_ptr<IPWL_SystemHandler::PerWindowData> m_pAttachedData;
+  std::unique_ptr<IPWL_FillerNotify::PerWindowData> m_pAttachedData;
   UnownedPtr<CPWL_Wnd> m_pParent;
   std::vector<std::unique_ptr<CPWL_Wnd>> m_Children;
   UnownedPtr<CPWL_ScrollBar> m_pVScrollBar;

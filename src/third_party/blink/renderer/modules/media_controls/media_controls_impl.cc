@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
+#include "base/auto_reset.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -1155,7 +1156,7 @@ void MediaControlsImpl::BeginScrubbing(bool is_touch_event) {
   if (scrubbing_message_ && is_touch_event) {
     scrubbing_message_->SetIsWanted(true);
     if (scrubbing_message_->DoesFit())
-      panel_->setAttribute("class", kScrubbingMessageCSSClass);
+      panel_->setAttribute("class", AtomicString(kScrubbingMessageCSSClass));
   }
 
   is_scrubbing_ = true;

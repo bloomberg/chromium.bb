@@ -5,11 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/cxx17_backports.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
-#include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
@@ -47,7 +45,7 @@ Status AesGcmEncrypt(const blink::WebCryptoKey& key,
       CreateAesGcmAlgorithm(iv, additional_data, tag_length_bits);
 
   std::vector<uint8_t> output;
-  Status status = Encrypt(algorithm, key, CryptoData(plain_text), &output);
+  Status status = Encrypt(algorithm, key, plain_text, &output);
   if (status.IsError())
     return status;
 
@@ -91,7 +89,7 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
                               authentication_tag.begin(),
                               authentication_tag.end());
 
-  return Decrypt(algorithm, key, CryptoData(cipher_text_with_tag), plain_text);
+  return Decrypt(algorithm, key, cipher_text_with_tag, plain_text);
 }
 
 class WebCryptoAesGcmTest : public WebCryptoTestBase {};
@@ -99,7 +97,7 @@ class WebCryptoAesGcmTest : public WebCryptoTestBase {};
 TEST_F(WebCryptoAesGcmTest, GenerateKeyBadLength) {
   const uint16_t kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
-  for (size_t i = 0; i < base::size(kKeyLen); ++i) {
+  for (size_t i = 0; i < std::size(kKeyLen); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateAesKeyLength(),
               GenerateSecretKey(CreateAesGcmKeyGenAlgorithm(kKeyLen[i]), true,
@@ -133,14 +131,11 @@ TEST_F(WebCryptoAesGcmTest, ImportExportJwk) {
 //   * Test decryption with empty input
 //   * Test decryption with tag length of 0.
 TEST_F(WebCryptoAesGcmTest, SampleSets) {
-  base::ListValue tests;
-  ASSERT_TRUE(ReadJsonTestFileToList("aes_gcm.json", &tests));
+  base::Value::List tests = ReadJsonTestFileAsList("aes_gcm.json");
 
   // Note that WebCrypto appends the authentication tag to the ciphertext.
-  for (size_t test_index = 0; test_index < tests.GetList().size();
-       ++test_index) {
-    SCOPED_TRACE(test_index);
-    const base::Value& test_value = tests.GetList()[test_index];
+  for (const auto& test_value : tests) {
+    SCOPED_TRACE(&test_value - &tests[0]);
     ASSERT_TRUE(test_value.is_dict());
     const base::DictionaryValue* test =
         &base::Value::AsDictionaryValue(test_value);
@@ -208,7 +203,7 @@ TEST_F(WebCryptoAesGcmTest, SampleSets) {
 
     // Try different incorrect tag lengths
     uint8_t kAlternateTagLengths[] = {0, 8, 96, 120, 128, 160, 255};
-    for (size_t tag_i = 0; tag_i < base::size(kAlternateTagLengths); ++tag_i) {
+    for (size_t tag_i = 0; tag_i < std::size(kAlternateTagLengths); ++tag_i) {
       unsigned int wrong_tag_size_bits = kAlternateTagLengths[tag_i];
       if (test_tag_size_bits == wrong_tag_size_bits)
         continue;

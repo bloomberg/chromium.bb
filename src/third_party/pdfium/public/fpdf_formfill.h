@@ -307,7 +307,9 @@ typedef struct _IPDF_JsPlatform {
                       int length);
 
   /*
-   * Pointer to FPDF_FORMFILLINFO interface.
+   * Pointer for embedder-specific data. Unused by PDFium, and despite
+   * its name, can be any data the embedder desires, though traditionally
+   * a FPDF_FORMFILLINFO interface.
    */
   void* m_pFormfillinfo;
 
@@ -637,8 +639,9 @@ typedef struct _FPDF_FORMFILLINFO {
    * Return value:
    *       None.
    * Comments:
-   *       See the named actions description of <<PDF Reference, version 1.7>>
-   *       for more details.
+   *       See ISO 32000-1:2008, section 12.6.4.11 for descriptions of the
+   *       standard named actions, but note that a document may supply any
+   *       name of its choosing.
    */
   void (*FFI_ExecuteNamedAction)(struct _FPDF_FORMFILLINFO* pThis,
                                  FPDF_BYTESTRING namedAction);
@@ -1480,6 +1483,9 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnKeyDown(FPDF_FORMHANDLE hHandle,
  *                       flag values).
  * Return Value:
  *       True indicates success; otherwise false.
+ * Comments:
+ *       Currently unimplemented and always returns false. PDFium reserves this
+ *       API and may implement it in the future on an as-needed basis.
  */
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnKeyUp(FPDF_FORMHANDLE hHandle,
                                                  FPDF_PAGE page,

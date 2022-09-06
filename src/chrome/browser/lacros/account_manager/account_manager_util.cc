@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 
 namespace {
 
@@ -36,28 +37,7 @@ void GetAccountsNotDenylisted(
   std::move(callback).Run(result);
 }
 
-void GetAccountsAvailableAsPrimaryImpl(
-    ProfileAttributesStorage* storage,
-    AccountProfileMapper::ListAccountsCallback callback,
-    const std::map<base::FilePath, std::vector<account_manager::Account>>&
-        accounts_map) {
-  // Collect all primary syncing accounts.
-  std::vector<std::string> syncing_gaia_ids_temp;
-  for (ProfileAttributesEntry* entry : storage->GetAllProfilesAttributes()) {
-    // Skip if not syncing.
-    if (!entry->IsAuthenticated())
-      continue;
-    DCHECK(!entry->GetGAIAId().empty());
-    syncing_gaia_ids_temp.push_back(entry->GetGAIAId());
-  }
-  // Insert them all at once to avoid O(N^2) complexity.
-  base::flat_set<std::string> syncing_gaia_ids(
-      std::move(syncing_gaia_ids_temp));
-
-  GetAccountsNotDenylisted(accounts_map, syncing_gaia_ids, std::move(callback));
-}
-
-void GetAccountsAvailableAsSecondaryImpl(
+void GetAllAvailableAccountsImpl(
     const base::FilePath& profile_path,
     AccountProfileMapper::ListAccountsCallback callback,
     const std::map<base::FilePath, std::vector<account_manager::Account>>&
@@ -80,23 +60,14 @@ void GetAccountsAvailableAsSecondaryImpl(
 
 }  // namespace
 
-void GetAccountsAvailableAsPrimary(
-    AccountProfileMapper* mapper,
-    ProfileAttributesStorage* storage,
-    AccountProfileMapper::ListAccountsCallback callback) {
-  DCHECK(mapper);
-  DCHECK(storage);
-  DCHECK(callback);
-  mapper->GetAccountsMap(base::BindOnce(&GetAccountsAvailableAsPrimaryImpl,
-                                        storage, std::move(callback)));
-}
-
-void GetAccountsAvailableAsSecondary(
+void GetAllAvailableAccounts(
     AccountProfileMapper* mapper,
     const base::FilePath& profile_path,
     AccountProfileMapper::ListAccountsCallback callback) {
   DCHECK(mapper);
   DCHECK(callback);
-  mapper->GetAccountsMap(base::BindOnce(&GetAccountsAvailableAsSecondaryImpl,
+  DCHECK_NE(profile_path, ProfileManager::GetGuestProfilePath());
+  DCHECK_NE(profile_path, ProfileManager::GetSystemProfilePath());
+  mapper->GetAccountsMap(base::BindOnce(&GetAllAvailableAccountsImpl,
                                         profile_path, std::move(callback)));
 }

@@ -43,13 +43,9 @@ class MutatorHost {
 
   virtual void ClearMutators() = 0;
 
-  virtual void UpdateRegisteredElementIds(ElementListType changed_list) = 0;
   virtual void InitClientAnimationState() = 0;
 
-  virtual void RegisterElementId(ElementId element_id,
-                                 ElementListType list_type) = 0;
-  virtual void UnregisterElementId(ElementId element_id,
-                                   ElementListType list_type) = 0;
+  virtual void RemoveElementId(ElementId element_id) = 0;
 
   virtual void SetMutatorHostClient(MutatorHostClient* client) = 0;
 
@@ -86,29 +82,14 @@ class MutatorHost {
   virtual bool ScrollOffsetAnimationWasInterrupted(
       ElementId element_id) const = 0;
 
-  virtual bool IsAnimatingFilterProperty(ElementId element_id,
-                                         ElementListType list_type) const = 0;
-  virtual bool IsAnimatingBackdropFilterProperty(
-      ElementId element_id,
-      ElementListType list_type) const = 0;
-  virtual bool IsAnimatingOpacityProperty(ElementId element_id,
-                                          ElementListType list_type) const = 0;
-  virtual bool IsAnimatingTransformProperty(
-      ElementId element_id,
-      ElementListType list_type) const = 0;
+  virtual bool IsAnimatingProperty(ElementId element_id,
+                                   ElementListType list_type,
+                                   TargetProperty::Type property) const = 0;
 
-  virtual bool HasPotentiallyRunningFilterAnimation(
+  virtual bool HasPotentiallyRunningAnimationForProperty(
       ElementId element_id,
-      ElementListType list_type) const = 0;
-  virtual bool HasPotentiallyRunningBackdropFilterAnimation(
-      ElementId element_id,
-      ElementListType list_type) const = 0;
-  virtual bool HasPotentiallyRunningOpacityAnimation(
-      ElementId element_id,
-      ElementListType list_type) const = 0;
-  virtual bool HasPotentiallyRunningTransformAnimation(
-      ElementId element_id,
-      ElementListType list_type) const = 0;
+      ElementListType list_type,
+      TargetProperty::Type property) const = 0;
 
   virtual bool HasAnyAnimationTargetingProperty(
       ElementId element_id,
@@ -150,6 +131,7 @@ class MutatorHost {
   // If there is an ongoing scroll animation on Impl, return the ElementId of
   // the scroller. Otherwise returns an invalid ElementId.
   virtual ElementId ImplOnlyScrollAnimatingElement() const = 0;
+  virtual void ImplOnlyScrollAnimatingElementRemoved() = 0;
 
   virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool HasInvalidationAnimation() const = 0;
@@ -159,6 +141,7 @@ class MutatorHost {
   virtual bool HasCanvasInvalidation() const = 0;
   virtual bool HasJSAnimation() const = 0;
   virtual bool HasSmilAnimation() const = 0;
+  virtual bool HasSharedElementTransition() const = 0;
 
   // Iterates through all animations and returns the minimum tick interval.
   // Returns 0 if there is a continuous animation which should be ticked

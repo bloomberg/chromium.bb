@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 
+#include "base/process/memory.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_skia.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/skia/include/core/SkImage.h"
 
@@ -67,14 +69,6 @@ UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() {
   }
 }
 
-gfx::Size UnacceleratedStaticBitmapImage::SizeInternal() const {
-  return gfx::Size(paint_image_.width(), paint_image_.height());
-}
-
-bool UnacceleratedStaticBitmapImage::IsPremultiplied() const {
-  return paint_image_.GetAlphaType() == SkAlphaType::kPremul_SkAlphaType;
-}
-
 bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
   return paint_image_.IsOpaque();
 }
@@ -115,6 +109,12 @@ UnacceleratedStaticBitmapImage::ConvertToColorSpace(
     skia_image =
         skia_image->makeColorTypeAndColorSpace(color_type, color_space);
   }
+  if (UNLIKELY(!skia_image)) {
+    // Null value indicates that skia failed to allocate the destination
+    // bitmap.
+    base::TerminateBecauseOutOfMemory(
+        skia_image->imageInfo().makeColorType(color_type).computeMinByteSize());
+  }
   return UnacceleratedStaticBitmapImage::Create(skia_image, orientation_);
 }
 
@@ -149,8 +149,9 @@ bool UnacceleratedStaticBitmapImage::CopyToResourceProvider(
                                         /*x=*/0, /*y=*/0);
 }
 
-SkColorType UnacceleratedStaticBitmapImage::GetSkColorType() const {
-  return paint_image_.GetSkImageInfo().colorType();
+SkImageInfo UnacceleratedStaticBitmapImage::GetSkImageInfoInternal() const {
+  return paint_image_.GetSkImageInfo().makeWH(paint_image_.width(),
+                                              paint_image_.height());
 }
 
 }  // namespace blink

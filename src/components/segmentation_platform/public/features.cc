@@ -6,23 +6,38 @@
 
 #include "build/build_config.h"
 
-namespace segmentation_platform {
-namespace features {
+namespace segmentation_platform::features {
 
-const base::Feature kSegmentationPlatformFeature {
-  "SegmentationPlatform",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kSegmentationPlatformFeature{
+    "SegmentationPlatform", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSegmentationPlatformDummyFeature{
     "SegmentationPlatformDummyFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSegmentationPlatformQueryTilesFeature{
-    "SegmentationPlatformQueryTiles", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSegmentationStructuredMetricsFeature{
+    "SegmentationStructuredMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
 
-}  // namespace features
-}  // namespace segmentation_platform
+const base::Feature kSegmentationPlatformUkmEngine{
+    "SegmentationPlatformUkmEngine", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSegmentationPlatformLowEngagementFeature{
+    "SegmentationPlatformLowEngagementFeature",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSegmentationPlatformFeedSegmentFeature{
+  "SegmentationPlatformFeedSegmentFeature",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
+
+const base::Feature kContextualPageActions{"ContextualPageActions",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kContextualPageActionPriceTracking{
+    "ContextualPageActionPriceTracking", base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace segmentation_platform::features

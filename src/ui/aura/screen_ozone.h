@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "build/chromeos_buildflags.h"
 #include "ui/aura/aura_export.h"
 #include "ui/display/screen.h"
 
@@ -47,7 +48,6 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
   display::Display GetPrimaryDisplay() const override;
-  bool SetScreenSaverSuspended(bool suspend) override;
   bool IsScreenSaverActive() const override;
   base::TimeDelta CalculateIdleTime() const override;
   void AddObserver(display::DisplayObserver* observer) override;
@@ -60,8 +60,14 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   virtual gfx::NativeWindow GetNativeWindowFromAcceleratedWidget(
       gfx::AcceleratedWidget widget) const;
 
+  static bool IsOzoneInitialized();
+
  protected:
   ui::PlatformScreen* platform_screen() { return platform_screen_.get(); }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+  bool SetScreenSaverSuspended(bool suspend) override;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 
  private:
   gfx::AcceleratedWidget GetAcceleratedWidgetForWindow(
@@ -69,8 +75,20 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
 
   virtual void OnBeforePlatformScreenInit();
 
-  display::Screen* const old_screen_ = display::Screen::SetScreenInstance(this);
   std::unique_ptr<ui::PlatformScreen> platform_screen_;
+};
+
+// ScopedScreenOzone creates a ScreenOzone instead of NativeScreen
+// (created by `CreateNativeScreen()`) if the screen hasn't been set.
+class AURA_EXPORT ScopedScreenOzone : public display::ScopedNativeScreen {
+ public:
+  explicit ScopedScreenOzone(const base::Location& location = FROM_HERE);
+  ScopedScreenOzone(const ScopedScreenOzone&) = delete;
+  ScopedScreenOzone operator=(const ScopedScreenOzone&) = delete;
+  ~ScopedScreenOzone() override;
+
+ private:
+  display::Screen* CreateScreen() override;
 };
 
 }  // namespace aura

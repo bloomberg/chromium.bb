@@ -44,10 +44,12 @@ class AppMenuButton;
 class AvatarToolbarButton;
 class BrowserAppMenuButton;
 class Browser;
+class DownloadToolbarButtonView;
 class ExtensionsToolbarButton;
 class ExtensionsToolbarContainer;
 class ChromeLabsButton;
 class HomeButton;
+class IntentChipButton;
 class MediaToolbarButtonView;
 class ReloadButton;
 class ToolbarButton;
@@ -129,7 +131,7 @@ class ToolbarView : public views::AccessiblePaneView,
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
-      PageActionIconType icon_type,
+      IntentPickerBubbleView::BubbleType bubble_type,
       const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback);
 
@@ -143,6 +145,9 @@ class ToolbarView : public views::AccessiblePaneView,
   ChromeLabsButton* chrome_labs_button() const { return chrome_labs_button_; }
   ChromeLabsBubbleViewModel* chrome_labs_model() const {
     return chrome_labs_model_.get();
+  }
+  DownloadToolbarButtonView* download_button() const {
+    return download_button_;
   }
   ExtensionsToolbarContainer* extensions_container() const {
     return extensions_container_;
@@ -241,10 +246,13 @@ class ToolbarView : public views::AccessiblePaneView,
   AvatarToolbarButton* GetAvatarToolbarButton() override;
   ToolbarButton* GetBackButton() override;
   ReloadButton* GetReloadButton() override;
+  IntentChipButton* GetIntentChipButton() override;
 
   // BrowserRootView::DropTarget
   BrowserRootView::DropIndex GetDropIndex(
       const ui::DropTargetEvent& event) override;
+  BrowserRootView::DropTarget* GetDropTarget(
+      gfx::Point loc_in_local_coords) override;
   views::View* GetViewForDrop() override;
 
   // Changes the visibility of the Chrome Labs entry point based on prefs.
@@ -287,6 +295,7 @@ class ToolbarView : public views::AccessiblePaneView,
   raw_ptr<send_tab_to_self::SendTabToSelfToolbarIconView>
       send_tab_to_self_button_ = nullptr;
   raw_ptr<BrowserAppMenuButton> app_menu_button_ = nullptr;
+  raw_ptr<DownloadToolbarButtonView> download_button_ = nullptr;
 
   const raw_ptr<Browser> browser_;
   const raw_ptr<BrowserView> browser_view_;

@@ -12,14 +12,11 @@
 
 namespace openscreen {
 
-// The below functions are responsible for returning the network interfaces
-// provided of the current machine. GetAllInterfaces() returns all interfaces,
-// real or virtual. GetLoopbackInterfaceForTesting() returns one such interface
-// which is associated with the machine's loopback interface, while
-// GetNetworkInterfaces() returns all non-loopback interfaces.
-std::vector<InterfaceInfo> GetAllInterfaces();
-absl::optional<InterfaceInfo> GetLoopbackInterfaceForTesting();
+// Implements the platform API.
 std::vector<InterfaceInfo> GetNetworkInterfaces();
+
+// Returns the system's loopback interface.  Used for unit tests.
+absl::optional<InterfaceInfo> GetLoopbackInterfaceForTesting();
 
 }  // namespace openscreen
 

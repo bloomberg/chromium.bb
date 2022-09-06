@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace assistant_client {
 class AssistantManager;
 class AssistantManagerInternal;
@@ -28,6 +30,9 @@ class LibassistantFactory {
   virtual assistant_client::AssistantManagerInternal*
   UnwrapAssistantManagerInternal(
       assistant_client::AssistantManager* assistant_manager) = 0;
+
+  virtual void LoadLibassistantLibraryFromDlc(
+      const absl::optional<std::string>& root_path) = 0;
 };
 
 }  // namespace libassistant

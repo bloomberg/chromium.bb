@@ -13,9 +13,9 @@ function daisy() {
 }
 
 
-# Useful site: https://sites.google.com/a/chromium.org/dev/chromium-os/building-chromium-os/building-chromium-separately
+# Useful site: https://www.chromium.org/chromium-os/building-chromium-os/building-chromium-separately
 function chrome_build() {
-  # https://sites.google.com/a/chromium.org/dev/chromium-os/how-tos-and-troubleshooting/building-chromium-browser
+  # https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser
   export CHROME_ORIGIN=LOCAL_SOURCE
 
   unset GYP_DEFINES GYP_GENERATORS

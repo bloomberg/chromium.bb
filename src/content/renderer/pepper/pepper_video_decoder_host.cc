@@ -176,7 +176,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
       return PP_ERROR_NOTSUPPORTED;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return PP_ERROR_NOTSUPPORTED;
 #else
   if (!TryFallbackToSoftwareDecoder())
@@ -260,10 +260,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgDecode(
 
   shm_buffers_[shm_id].busy = true;
   decoder_->Decode(media::BitstreamBuffer(
-      decode_id,
-      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-          shm_buffers_[shm_id].region.Duplicate()),
-      size));
+      decode_id, shm_buffers_[shm_id].region.Duplicate(), size));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -507,7 +504,7 @@ const uint8_t* PepperVideoDecoderHost::DecodeIdToAddress(uint32_t decode_id) {
 }
 
 bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return false;
 #else
   DCHECK(!software_fallback_used_ && software_fallback_allowed_);
@@ -560,9 +557,7 @@ bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
   for (const PendingDecode& decode : pending_decodes_) {
     DCHECK(shm_buffers_[decode.shm_id].busy);
     decoder_->Decode(media::BitstreamBuffer(
-        decode.decode_id,
-        base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-            shm_buffers_[decode.shm_id].region.Duplicate()),
+        decode.decode_id, shm_buffers_[decode.shm_id].region.Duplicate(),
         decode.size));
   }
 

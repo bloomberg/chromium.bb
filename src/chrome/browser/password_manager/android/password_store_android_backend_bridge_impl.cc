@@ -11,6 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/password_manager/android/jni_headers/PasswordStoreAndroidBackendBridgeImpl_jni.h"
+#include "components/password_manager/core/browser/android_backend_error.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/sync/password_proto_utils.h"
 #include "components/sync/protocol/list_passwords_result.pb.h"
@@ -25,9 +26,9 @@ std::vector<password_manager::PasswordForm> CreateFormsVector(
   base::android::JavaByteArrayToByteVector(base::android::AttachCurrentThread(),
                                            passwords, &serialized_result);
   sync_pb::ListPasswordsResult list_passwords_result;
-  // TODO(crbug.com/1229655): Check that parsing executes successfully.
-  list_passwords_result.ParseFromArray(serialized_result.data(),
-                                       serialized_result.size());
+  bool parsing_succeeds = list_passwords_result.ParseFromArray(
+      serialized_result.data(), serialized_result.size());
+  DCHECK(parsing_succeeds);
   auto forms =
       password_manager::PasswordVectorFromListResult(list_passwords_result);
   for (auto& form : forms) {
@@ -37,26 +38,18 @@ std::vector<password_manager::PasswordForm> CreateFormsVector(
   return forms;
 }
 
-sync_pb::PasswordSpecificsData CreatePasswordSpecificsData(
-    const base::android::JavaRef<jbyteArray>& login) {
-  std::vector<uint8_t> serialized_result;
-  base::android::JavaByteArrayToByteVector(base::android::AttachCurrentThread(),
-                                           login, &serialized_result);
-  sync_pb::PasswordSpecificsData result;
-  // TODO(crbug.com/1229655): Check that parsing executes successfully.
-  result.ParseFromArray(serialized_result.data(), serialized_result.size());
-  return result;
-}
-
-sync_pb::PasswordWithLocalData CreatePasswordWithLocalData(
-    const base::android::JavaRef<jbyteArray>& login) {
-  std::vector<uint8_t> serialized_result;
-  base::android::JavaByteArrayToByteVector(base::android::AttachCurrentThread(),
-                                           login, &serialized_result);
-  sync_pb::PasswordWithLocalData result;
-  // TODO(crbug.com/1229655): Check that parsing executes successfully.
-  result.ParseFromArray(serialized_result.data(), serialized_result.size());
-  return result;
+base::android::ScopedJavaLocalRef<jstring> GetJavaStringFromAccount(
+    PasswordStoreAndroidBackendBridgeImpl::Account account) {
+  if (absl::holds_alternative<password_manager::PasswordStoreOperationTarget>(
+          account)) {
+    DCHECK(password_manager::PasswordStoreOperationTarget::kLocalStorage ==
+           absl::get<password_manager::PasswordStoreOperationTarget>(account));
+    return nullptr;
+  }
+  return base::android::ConvertUTF8ToJavaString(
+      base::android::AttachCurrentThread(),
+      absl::get<PasswordStoreAndroidBackendBridgeImpl::SyncingAccount>(account)
+          .value());
 }
 
 }  // namespace
@@ -118,118 +111,81 @@ void PasswordStoreAndroidBackendBridgeImpl::OnError(JNIEnv* env,
                      consumer_, JobId(job_id), std::move(error)));
 }
 
-JobId PasswordStoreAndroidBackendBridgeImpl::GetAllLogins() {
+JobId PasswordStoreAndroidBackendBridgeImpl::GetAllLogins(Account account) {
   JobId job_id = GetNextJobId();
   Java_PasswordStoreAndroidBackendBridgeImpl_getAllLogins(
-      base::android::AttachCurrentThread(), java_object_, job_id.value());
+      base::android::AttachCurrentThread(), java_object_, job_id.value(),
+      GetJavaStringFromAccount(std::move(account)));
   return job_id;
 }
 
-JobId PasswordStoreAndroidBackendBridgeImpl::GetAutofillableLogins() {
+JobId PasswordStoreAndroidBackendBridgeImpl::GetAutofillableLogins(
+    Account account) {
   JobId job_id = GetNextJobId();
   Java_PasswordStoreAndroidBackendBridgeImpl_getAutofillableLogins(
-      base::android::AttachCurrentThread(), java_object_, job_id.value());
+      base::android::AttachCurrentThread(), java_object_, job_id.value(),
+      GetJavaStringFromAccount(std::move(account)));
   return job_id;
 }
 
 JobId PasswordStoreAndroidBackendBridgeImpl::GetLoginsForSignonRealm(
-    const std::string& signon_realm) {
+    const std::string& signon_realm,
+    Account account) {
   JobId job_id = GetNextJobId();
   Java_PasswordStoreAndroidBackendBridgeImpl_getLoginsForSignonRealm(
       base::android::AttachCurrentThread(), java_object_, job_id.value(),
       base::android::ConvertUTF8ToJavaString(
-          base::android::AttachCurrentThread(), signon_realm));
+          base::android::AttachCurrentThread(), signon_realm),
+      GetJavaStringFromAccount(std::move(account)));
   return job_id;
 }
 
 JobId PasswordStoreAndroidBackendBridgeImpl::AddLogin(
-    const password_manager::PasswordForm& form) {
+    const password_manager::PasswordForm& form,
+    Account account) {
   JobId job_id = GetNextJobId();
   sync_pb::PasswordWithLocalData data = PasswordWithLocalDataFromPassword(form);
   Java_PasswordStoreAndroidBackendBridgeImpl_addLogin(
       base::android::AttachCurrentThread(), java_object_, job_id.value(),
       base::android::ToJavaByteArray(base::android::AttachCurrentThread(),
-                                     data.SerializeAsString()));
+                                     data.SerializeAsString()),
+      GetJavaStringFromAccount(std::move(account)));
   return job_id;
 }
 
 JobId PasswordStoreAndroidBackendBridgeImpl::UpdateLogin(
-    const password_manager::PasswordForm& form) {
+    const password_manager::PasswordForm& form,
+    Account account) {
   JobId job_id = GetNextJobId();
   sync_pb::PasswordWithLocalData data = PasswordWithLocalDataFromPassword(form);
   Java_PasswordStoreAndroidBackendBridgeImpl_updateLogin(
       base::android::AttachCurrentThread(), java_object_, job_id.value(),
       base::android::ToJavaByteArray(base::android::AttachCurrentThread(),
-                                     data.SerializeAsString()));
+                                     data.SerializeAsString()),
+      GetJavaStringFromAccount(std::move(account)));
   return job_id;
 }
 
 JobId PasswordStoreAndroidBackendBridgeImpl::RemoveLogin(
-    const password_manager::PasswordForm& form) {
+    const password_manager::PasswordForm& form,
+    Account account) {
   JobId job_id = GetNextJobId();
-  sync_pb::PasswordSpecificsData data = SpecificsDataFromPassword(form);
+  sync_pb::PasswordSpecificsData data =
+      SpecificsDataFromPassword(form, /*base_password_data=*/{});
   Java_PasswordStoreAndroidBackendBridgeImpl_removeLogin(
       base::android::AttachCurrentThread(), java_object_, job_id.value(),
       base::android::ToJavaByteArray(base::android::AttachCurrentThread(),
-                                     data.SerializeAsString()));
+                                     data.SerializeAsString()),
+      GetJavaStringFromAccount(std::move(account)));
   return job_id;
 }
 
-void PasswordStoreAndroidBackendBridgeImpl::OnLoginAdded(
-    JNIEnv* env,
-    jint job_id,
-    const base::android::JavaParamRef<jbyteArray>& login) {
+void PasswordStoreAndroidBackendBridgeImpl::OnLoginChanged(JNIEnv* env,
+                                                           jint job_id) {
   DCHECK(consumer_);
-
-  // TODO(crbug.com/1229655): This is a temporary workaround, while store
-  // change deltas are not received to confirm the correct operation execution.
-  sync_pb::PasswordWithLocalData login_data =
-      CreatePasswordWithLocalData(login);
-  password_manager::PasswordStoreChangeList changelist;
-  password_manager::PasswordForm added_form =
-      password_manager::PasswordFromProtoWithLocalData(login_data);
-  changelist.emplace_back(password_manager::PasswordStoreChange::ADD,
-                          added_form);
-
-  consumer_->OnLoginsChanged(JobId(job_id), changelist);
-}
-
-void PasswordStoreAndroidBackendBridgeImpl::OnLoginUpdated(
-    JNIEnv* env,
-    jint job_id,
-    const base::android::JavaParamRef<jbyteArray>& login) {
-  DCHECK(consumer_);
-
-  // TODO(crbug.com/1229655): This is a temporary workaround, while store
-  // change deltas are not received to confirm the correct operation execution.
-  sync_pb::PasswordWithLocalData login_data =
-      CreatePasswordWithLocalData(login);
-  password_manager::PasswordStoreChangeList changelist;
-  password_manager::PasswordForm updated_form =
-      password_manager::PasswordFromProtoWithLocalData(login_data);
-  changelist.emplace_back(password_manager::PasswordStoreChange::UPDATE,
-                          updated_form);
-
-  consumer_->OnLoginsChanged(JobId(job_id), changelist);
-}
-
-void PasswordStoreAndroidBackendBridgeImpl::OnLoginDeleted(
-    JNIEnv* env,
-    jint job_id,
-    const base::android::JavaParamRef<jbyteArray>& login) {
-  DCHECK(consumer_);
-
-  // TODO(crbug.com/1229655): This is a temporary workaround, while store
-  // change deltas are not received to confirm the correct operation execution.
-  sync_pb::PasswordSpecificsData login_data =
-      CreatePasswordSpecificsData(login);
-  password_manager::PasswordStoreChangeList changelist;
-  password_manager::PasswordForm removed_form =
-      password_manager::PasswordFromSpecifics(login_data);
-  changelist.emplace_back(password_manager::PasswordStoreChange::REMOVE,
-                          removed_form);
-
-  consumer_->OnLoginsChanged(JobId(job_id), changelist);
+  // Notifying that a login changed without providing a changelist prompts the
+  // caller to explicitly check the remaining logins.
+  consumer_->OnLoginsChanged(JobId(job_id), absl::nullopt);
 }
 
 JobId PasswordStoreAndroidBackendBridgeImpl::GetNextJobId() {

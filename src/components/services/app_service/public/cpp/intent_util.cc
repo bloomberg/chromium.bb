@@ -45,6 +45,8 @@ const char kMimeTypeInodeDirectory[] = "inode/directory";
 
 // Get the field from the |intent| that need to be checked/matched based on
 // |condition_type|.
+// TODO(crbug.com/1253250): Remove this function after migrating to non-mojo
+// AppService.
 absl::optional<std::string> GetIntentConditionValueByType(
     apps::mojom::ConditionType condition_type,
     const apps::mojom::IntentPtr& intent) {
@@ -80,74 +82,6 @@ bool ComponentMatched(const std::string& intent_component,
          intent_component == filter_component;
 }
 
-// TODO(crbug.com/1092784): Handle file path with extension with mime type.
-// Unlike Android mime type matching logic, if the intent mime type has *, it
-// can only match with *, not anything. The reason for this is the way we find
-// the common mime type for multiple files. It uses * to represent more than one
-// types in the list, which will cause an issue if we treat that as we want to
-// match with any filter. e.g. If we select a .zip, .jep and a .txt, the common
-// mime type will be */*, with Android matching logic, it will match with filter
-// that has mime type video, which is not what we expected.
-bool MimeTypeMatched(const std::string& intent_mime_type,
-                     const std::string& filter_mime_type) {
-  std::vector<std::string> intent_components =
-      base::SplitString(intent_mime_type, kMimeTypeSeparator,
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  std::vector<std::string> filter_components =
-      base::SplitString(filter_mime_type, kMimeTypeSeparator,
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  if (intent_components.size() > kMimeTypeComponentSize ||
-      filter_components.size() > kMimeTypeComponentSize ||
-      intent_components.size() == 0 || filter_components.size() == 0) {
-    return false;
-  }
-
-  // If the filter component only contain main mime type, check if main type
-  // matches.
-  if (filter_components.size() == 1) {
-    return ComponentMatched(intent_components[0], filter_components[0]);
-  }
-
-  // If the intent component only contain main mime type, complete the
-  // mime type.
-  if (intent_components.size() == 1) {
-    intent_components.push_back(kWildCardAny);
-  }
-
-  // Both intent and intent filter can use wildcard for mime type.
-  for (size_t i = 0; i < kMimeTypeComponentSize; i++) {
-    if (!ComponentMatched(intent_components[i], filter_components[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool ExtensionMatched(const std::string& file_name,
-                      const std::string& filter_extension) {
-  if (filter_extension == kWildCardAny)
-    return true;
-
-  // Normalise to have a preceding ".".
-  std::string normalised_extension = filter_extension;
-  if (filter_extension.length() > 0 && filter_extension[0] != '.') {
-    normalised_extension = '.' + normalised_extension;
-  }
-  base::FilePath::StringType handler_extension =
-      base::FilePath::FromUTF8Unsafe(normalised_extension).Extension();
-
-  base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_name);
-
-  // Accept files whose extension or combined extension (e.g. ".tar.gz")
-  // match the filter extension.
-  return base::FilePath::CompareEqualIgnoreCase(handler_extension,
-                                                file_path.Extension()) ||
-         base::FilePath::CompareEqualIgnoreCase(handler_extension,
-                                                file_path.FinalExtension());
-}
-
 }  // namespace
 
 namespace apps_util {
@@ -157,6 +91,62 @@ const char kIntentActionView[] = "view";
 const char kIntentActionSend[] = "send";
 const char kIntentActionSendMultiple[] = "send_multiple";
 const char kIntentActionCreateNote[] = "create_note";
+const char kIntentActionEdit[] = "edit";
+
+const char kUseBrowserForLink[] = "use_browser";
+
+apps::IntentPtr MakeShareIntent(const std::vector<GURL>& filesystem_urls,
+                                const std::vector<std::string>& mime_types) {
+  auto intent = std::make_unique<apps::Intent>(filesystem_urls.size() == 1
+                                                   ? kIntentActionSend
+                                                   : kIntentActionSendMultiple);
+  intent->mime_type = CalculateCommonMimeType(mime_types);
+
+  DCHECK_EQ(filesystem_urls.size(), mime_types.size());
+  for (size_t i = 0; i < filesystem_urls.size(); i++) {
+    auto file = std::make_unique<apps::IntentFile>(filesystem_urls[i]);
+    file->mime_type = mime_types.at(i);
+    intent->files.push_back(std::move(file));
+  }
+
+  return intent;
+}
+
+apps::IntentPtr MakeShareIntent(const std::vector<GURL>& filesystem_urls,
+                                const std::vector<std::string>& mime_types,
+                                const std::string& text,
+                                const std::string& title) {
+  auto intent = MakeShareIntent(filesystem_urls, mime_types);
+  if (!text.empty()) {
+    intent->share_text = text;
+  }
+  if (!title.empty()) {
+    intent->share_title = title;
+  }
+  return intent;
+}
+
+apps::IntentPtr MakeShareIntent(const std::string& text,
+                                const std::string& title) {
+  auto intent = std::make_unique<apps::Intent>(kIntentActionSend);
+  intent->mime_type = "text/plain";
+  intent->share_text = text;
+  if (!title.empty()) {
+    intent->share_title = title;
+  }
+  return intent;
+}
+
+apps::IntentPtr MakeEditIntent(const GURL& filesystem_url,
+                               const std::string& mime_type) {
+  auto intent = std::make_unique<apps::Intent>(kIntentActionEdit);
+  intent->mime_type = mime_type;
+
+  auto file = std::make_unique<apps::IntentFile>(filesystem_url);
+  file->mime_type = mime_type;
+  intent->files.push_back(std::move(file));
+  return intent;
+}
 
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
   auto intent = apps::mojom::Intent::New();
@@ -242,6 +232,20 @@ apps::mojom::IntentPtr CreateShareIntentFromText(
   return intent;
 }
 
+apps::mojom::IntentPtr CreateEditIntentFromFile(const GURL& filesystem_url,
+                                                const std::string& mime_type) {
+  auto intent = apps::mojom::Intent::New();
+  intent->action = kIntentActionEdit;
+  intent->files = std::vector<apps::mojom::IntentFilePtr>{};
+  intent->mime_type = mime_type;
+
+  auto file = apps::mojom::IntentFile::New();
+  file->url = filesystem_url;
+  file->mime_type = mime_type;
+  intent->files->push_back(std::move(file));
+  return intent;
+}
+
 apps::mojom::IntentPtr CreateIntentForActivity(const std::string& activity,
                                                const std::string& start_type,
                                                const std::string& category) {
@@ -251,6 +255,33 @@ apps::mojom::IntentPtr CreateIntentForActivity(const std::string& activity,
   intent->start_type = start_type;
   intent->categories = std::vector<std::string>{category};
   return intent;
+}
+
+bool ConditionValueMatches(const std::string& value,
+                           const apps::ConditionValuePtr& condition_value) {
+  switch (condition_value->match_type) {
+    // Fallthrough as kNone and kLiteral has same matching type.
+    case apps::PatternMatchType::kNone:
+    case apps::PatternMatchType::kLiteral:
+      return value == condition_value->value;
+    case apps::PatternMatchType::kPrefix:
+      return base::StartsWith(value, condition_value->value,
+                              base::CompareCase::INSENSITIVE_ASCII);
+    case apps::PatternMatchType::kSuffix:
+      return base::EndsWith(value, condition_value->value,
+                            base::CompareCase::INSENSITIVE_ASCII);
+    case apps::PatternMatchType::kGlob:
+      return MatchGlob(value, condition_value->value);
+    case apps::PatternMatchType::kMimeType:
+      // kMimeType as a match for kFile is handled in FileMatchesConditionValue.
+      return MimeTypeMatched(value, condition_value->value);
+    case apps::PatternMatchType::kFileExtension:
+    case apps::PatternMatchType::kIsDirectory: {
+      // Handled in FileMatchesConditionValue.
+      NOTREACHED();
+      return false;
+    }
+  }
 }
 
 bool ConditionValueMatches(
@@ -264,6 +295,9 @@ bool ConditionValueMatches(
     case apps::mojom::PatternMatchType::kPrefix:
       return base::StartsWith(value, condition_value->value,
                               base::CompareCase::INSENSITIVE_ASCII);
+    case apps::mojom::PatternMatchType::kSuffix:
+      return base::EndsWith(value, condition_value->value,
+                            base::CompareCase::INSENSITIVE_ASCII);
     case apps::mojom::PatternMatchType::kGlob:
       return MatchGlob(value, condition_value->value);
     case apps::mojom::PatternMatchType::kMimeType:
@@ -285,6 +319,7 @@ bool FileMatchesConditionValue(
     case apps::mojom::PatternMatchType::kNone:
     case apps::mojom::PatternMatchType::kLiteral:
     case apps::mojom::PatternMatchType::kPrefix:
+    case apps::mojom::PatternMatchType::kSuffix:
       NOTREACHED();
       return false;
     case apps::mojom::PatternMatchType::kGlob:
@@ -401,6 +436,43 @@ void GetMimeTypesAndExtensions(const apps::mojom::IntentFilterPtr& filter,
 
 }  // namespace
 
+bool IsGenericFileHandler(const apps::IntentPtr& intent,
+                          const apps::IntentFilterPtr& filter) {
+  if (!intent || !filter || intent->files.empty()) {
+    return false;
+  }
+
+  std::set<std::string> mime_types;
+  std::set<std::string> file_extensions;
+  filter->GetMimeTypesAndExtensions(mime_types, file_extensions);
+  if (file_extensions.count("*") > 0 || mime_types.count("*") > 0 ||
+      mime_types.count("*/*") > 0) {
+    return true;
+  }
+
+  // If a text/* file handler matches with an unsupported text mime type, we
+  // regard it as a generic match.
+  if (mime_types.count("text/*")) {
+    for (const auto& file : intent->files) {
+      DCHECK(file);
+      if (file->mime_type.has_value() &&
+          blink::IsUnsupportedTextMimeType(file->mime_type.value())) {
+        return true;
+      }
+    }
+  }
+
+  // If directory is selected, it is generic unless mime_types included
+  // 'inode/directory'.
+  for (const auto& file : intent->files) {
+    DCHECK(file);
+    if (file->is_directory.value_or(false)) {
+      return mime_types.count(kMimeTypeInodeDirectory) == 0;
+    }
+  }
+  return false;
+}
+
 bool IsGenericFileHandler(const apps::mojom::IntentPtr& intent,
                           const apps::mojom::IntentFilterPtr& filter) {
   if (!intent->files.has_value())
@@ -438,10 +510,6 @@ bool IsShareIntent(const apps::mojom::IntentPtr& intent) {
          intent->action == kIntentActionSendMultiple;
 }
 
-// TODO(crbug.com/853604): For glob match, it is currently only for Android
-// intent filters, so we will use the ARC intent filter implementation that is
-// transcribed from Android codebase, to prevent divergence from Android code.
-// This is now also used for mime type matching.
 bool MatchGlob(const std::string& value, const std::string& pattern) {
 #define GET_CHAR(s, i) ((UNLIKELY(i >= s.length())) ? '\0' : s[i])
 
@@ -521,6 +589,66 @@ bool MatchGlob(const std::string& value, const std::string& pattern) {
   return false;
 
 #undef GET_CHAR
+}
+
+bool MimeTypeMatched(const std::string& intent_mime_type,
+                     const std::string& filter_mime_type) {
+  std::vector<std::string> intent_components =
+      base::SplitString(intent_mime_type, kMimeTypeSeparator,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  std::vector<std::string> filter_components =
+      base::SplitString(filter_mime_type, kMimeTypeSeparator,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (intent_components.size() > kMimeTypeComponentSize ||
+      filter_components.size() > kMimeTypeComponentSize ||
+      intent_components.size() == 0 || filter_components.size() == 0) {
+    return false;
+  }
+
+  // If the filter component only contain main mime type, check if main type
+  // matches.
+  if (filter_components.size() == 1) {
+    return ComponentMatched(intent_components[0], filter_components[0]);
+  }
+
+  // If the intent component only contain main mime type, complete the
+  // mime type.
+  if (intent_components.size() == 1) {
+    intent_components.push_back(kWildCardAny);
+  }
+
+  // Both intent and intent filter can use wildcard for mime type.
+  for (size_t i = 0; i < kMimeTypeComponentSize; i++) {
+    if (!ComponentMatched(intent_components[i], filter_components[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool ExtensionMatched(const std::string& file_name,
+                      const std::string& filter_extension) {
+  if (filter_extension == kWildCardAny)
+    return true;
+
+  // Normalise to have a preceding ".".
+  std::string normalised_extension = filter_extension;
+  if (filter_extension.length() > 0 && filter_extension[0] != '.') {
+    normalised_extension = '.' + normalised_extension;
+  }
+  base::FilePath::StringType handler_extension =
+      base::FilePath::FromUTF8Unsafe(normalised_extension).Extension();
+
+  base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_name);
+
+  // Accept files whose extension or combined extension (e.g. ".tar.gz")
+  // match the filter extension.
+  return base::FilePath::CompareEqualIgnoreCase(handler_extension,
+                                                file_path.Extension()) ||
+         base::FilePath::CompareEqualIgnoreCase(handler_extension,
+                                                file_path.FinalExtension());
 }
 
 bool OnlyShareToDrive(const apps::mojom::IntentPtr& intent) {
@@ -610,22 +738,20 @@ base::Value ConvertIntentToValue(const apps::mojom::IntentPtr& intent) {
 absl::optional<std::string> GetStringValueFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
+  const base::Value* value = dict.FindKey(key_name);
+  if (!value)
     return absl::nullopt;
 
-  const std::string* value = dict.FindStringKey(key_name);
-  if (!value || value->empty())
+  const std::string* string_value = value->GetIfString();
+  if (!string_value || string_value->empty())
     return absl::nullopt;
 
-  return *value;
+  return *string_value;
 }
 
 apps::mojom::OptionalBool GetBoolValueFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return apps::mojom::OptionalBool::kUnknown;
-
   absl::optional<bool> value = dict.FindBoolKey(key_name);
   if (!value.has_value())
     return apps::mojom::OptionalBool::kUnknown;
@@ -636,9 +762,6 @@ apps::mojom::OptionalBool GetBoolValueFromDict(
 
 absl::optional<GURL> GetGurlValueFromDict(const base::DictionaryValue& dict,
                                           const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
-
   const std::string* url_spec = dict.FindStringKey(key_name);
   if (!url_spec)
     return absl::nullopt;
@@ -653,15 +776,12 @@ absl::optional<GURL> GetGurlValueFromDict(const base::DictionaryValue& dict,
 absl::optional<std::vector<apps::mojom::IntentFilePtr>> GetFilesFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
-
   const base::Value* value = dict.FindListKey(key_name);
-  if (!value || !value->is_list() || value->GetList().empty())
+  if (!value || !value->is_list() || value->GetListDeprecated().empty())
     return absl::nullopt;
 
   std::vector<apps::mojom::IntentFilePtr> files;
-  for (const auto& item : value->GetList()) {
+  for (const auto& item : value->GetListDeprecated()) {
     GURL url(item.GetString());
     if (url.is_valid()) {
       auto file = apps::mojom::IntentFile::New();
@@ -675,15 +795,12 @@ absl::optional<std::vector<apps::mojom::IntentFilePtr>> GetFilesFromDict(
 absl::optional<std::vector<std::string>> GetCategoriesFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
-
   const base::Value* value = dict.FindListKey(key_name);
-  if (!value || !value->is_list() || value->GetList().empty())
+  if (!value || !value->is_list() || value->GetListDeprecated().empty())
     return absl::nullopt;
 
   std::vector<std::string> categories;
-  for (const auto& item : value->GetList())
+  for (const auto& item : value->GetListDeprecated())
     categories.push_back(item.GetString());
 
   return categories;
@@ -692,9 +809,6 @@ absl::optional<std::vector<std::string>> GetCategoriesFromDict(
 absl::optional<base::flat_map<std::string, std::string>> GetExtrasFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
-
   const base::Value* value = dict.FindDictKey(key_name);
   if (!value || !value->is_dict())
     return absl::nullopt;

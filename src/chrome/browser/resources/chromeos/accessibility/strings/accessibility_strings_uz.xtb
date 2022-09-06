@@ -535,6 +535,7 @@
 <translation id="4601367666219428522">jdv <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Keyingi tugmalar bosilishini o‘tkazib yuborish</translation>
 <translation id="4623097797855662355">Nashriyot ramzi</translation>
+<translation id="4624970070706497034">TalkBack endi Chromebook qurilmalarini sozlamaydi. Undan foydalanishingiz mumkin, lekin TalkBack standart klaviatura tugmalaridan foydalaning. Mavjud tugmalarni koʻrish uchun avval Search+A, keyin esa K tugmasini bosing. Hali ham TalkBack ishlatishni istasangiz, buyruq ustiga yana bir marta bosing.</translation>
 <translation id="463135993322337640">Yangi o‘zgarishlarni ko‘rish uchun ChromeVox tugmasini, keyin esa O va N harflarini bosing</translation>
 <translation id="4649220074413114917">Ekranni ikkita barmoq bilan bosish orqali joriy qidiruvni bekor qilish mumkin. Bu ChromeVox biror nimani oʻqimasligi kerak boʻlganda qulay. Davom etish uchun ekranni ikkita barmoq bilan bosing.</translation>
 <translation id="4660783501463101648">ChromeVox Classic olib tashlandi. Endi unga klaviatura orqali qaytib bo‘lmaydi.</translation>
@@ -617,7 +618,6 @@
 <translation id="5170206230005240598">Brayl yozuvidagi taglavhalar yoniq</translation>
 <translation id="5183440668879371625">Avvalgi qator</translation>
 <translation id="5189244881767082992">Chiziq</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> yozish</translation>
 <translation id="5263034204789987535">Och qumrang</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Tugatish</translation>
@@ -665,6 +665,7 @@
 <translation id="5522423213731659107">Qisqa kurs tugadi!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Och kulrang</translation>
+<translation id="554893713779400387">Diktovkani yoqish</translation>
 <translation id="5549179427201066174">Ovoz signallarini (earcons) yoqish yoki faolsizlantirish</translation>
 <translation id="556042886152191864">Tugma</translation>
 <translation id="5561345396546889625">Keyingi ro‘yxat</translation>
@@ -683,6 +684,8 @@
 <translation id="5623842676595125836">Jurnal</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafik belgi</translation>
+<translation id="5648939288050772726">Tabriklaymiz! Siz ChromeVoxni ishlatish haqidagi boshlangʻich saboqlar bilan tanishdingiz. Eslatma: Qidiruv+Nuqta tugmalarini bosish orqali ChromeVox menyusini istalgan vaqtda chiqarish mumkin. ChromeVox va ChromeOS haqida batafsil axborotni quyidagi sahifalardan olish mumkin.
+    Saboqlarni yakunlagan boʻlsangiz, ChromeVox orqali Yopish tugmasini tanlang va uni bosing.</translation>
 <translation id="5653397561111110475">Chromebook sensorli ekranidan maxsus imkoniyatlar rejimida foydalanish</translation>
 <translation id="5655682562155942719">O‘tish buyruqlari</translation>
 <translation id="56637627897541303">Matn maydoni</translation>
@@ -792,6 +795,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{ikki nuqta}other{# ta ikki nuqta}}</translation>
 <translation id="6444046323172968959">Ogohlantirish muloqot oynasi</translation>
 <translation id="6452403590345320472">Mundarija</translation>
+<translation id="6457542714329819968">yozing</translation>
 <translation id="6468049171101508116">Keyingi tugmasi</translation>
 <translation id="646954774886932461">Indeks</translation>
 <translation id="6475604559827479857">So‘zlarni ajratib belgilash rangi:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Tabiiy ovoz</translation>
 <translation id="7714340021005120797">Keyingi kombinatsiyalangan roʻyxat mavjud emas</translation>
-<translation id="772146615414628379">Tabriklaymiz! Siz ChromeVoxni ishlatish haqidagi boshlangʻich saboqlar bilan tanishdingiz. Eslatma: Qidiruv+Nuqta tugmalarini bosish orqali ChromeVox menyusini istalgan vaqtda chiqarish mumkin. ChromeVox va Chrome OS haqida batafsil axborotni quyidagi sahifalardan olish mumkin.
-    Saboqlarni yakunlagan boʻlsangiz, ChromeVox orqali Yopish tugmasini tanlang va uni bosing.</translation>
 <translation id="7724603315864178912">Qirqish</translation>
 <translation id="7731785449856576010">Keyingi media vidjeti mavjud emas.</translation>
 <translation id="7735498529470878067">Teginib oʻrganish funksiyasi ekrandagi elementlarni tez aniqlash imkonini beradi.</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">Toʻq qizil</translation>
 <translation id="923331726185079994">ChromeVox yangilandi</translation>
 <translation id="93384979447910801">Kulrangsimon yashil</translation>
+<translation id="937605981140327129">Ayni vaqtda TalkBack oʻrnatilmagan. Play Market orqali Android AccessibilitySuite ilovasini oʻrnating va qaytadan urining.</translation>
 <translation id="948171205378458592">Nutq tezligini kamaytirish</translation>
 <translation id="957570623732056069">Bu darsni ochish uchun bir barmoqni yon tomonlarga suring</translation>
 <translation id="958854023026327378">Bitta barmoq bilan pastga suring</translation>

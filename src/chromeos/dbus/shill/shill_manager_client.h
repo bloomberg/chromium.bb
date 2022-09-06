@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/fake_shill_simulated_result.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
@@ -57,6 +57,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
                                            bool initializing) = 0;
     virtual void SetTechnologyProhibited(const std::string& type,
                                          bool prohibited) = 0;
+    virtual void SetTechnologyEnabled(const std::string& type,
+                                      base::OnceClosure callback,
+                                      bool enabled) = 0;
     // |network| must be a dictionary describing a Shill network configuration
     // which will be appended to the results returned from
     // GetNetworksForGeolocation().
@@ -204,10 +207,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
                           ObjectPathCallback callback,
                           ErrorCallback error_callback) = 0;
 
+  // Force a fresh WiFi scan if a WiFi device is available as a way of
+  // ensuring that recently configured networks can be found.
   // For each technology present, connects to the "best" service available.
   // Called once the user is logged in and certificates are loaded.
-  virtual void ConnectToBestServices(base::OnceClosure callback,
-                                     ErrorCallback error_callback) = 0;
+  virtual void ScanAndConnectToBestServices(base::OnceClosure callback,
+                                            ErrorCallback error_callback) = 0;
 
   // Enable or disable network bandwidth throttling, on all interfaces on the
   // system.
@@ -221,6 +226,13 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
                                        const base::Value& properties,
                                        base::OnceClosure callback,
                                        ErrorCallback error_callback) = 0;
+
+  // Removes all Passpoint credentials that matches all property of |properties|
+  // in the profile referenced by |profile_path|.
+  virtual void RemovePasspointCredentials(const dbus::ObjectPath& profile_path,
+                                          const base::Value& properties,
+                                          base::OnceClosure callback,
+                                          ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

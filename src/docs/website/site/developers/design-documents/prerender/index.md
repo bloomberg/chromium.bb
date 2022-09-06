@@ -17,8 +17,7 @@ title: Chrome Prerendering
 > Javascript. If the user navigates to the page, the hidden page will be swapped
 > into the current tab and made visible.
 
-> [<img alt="image"
-> src="/developers/design-documents/prerender/CroppedPrerenderingDiagram.png">](/developers/design-documents/prerender/CroppedPrerenderingDiagram.png)
+> ![](/developers/design-documents/prerender/CroppedPrerenderingDiagram.png)
 
 > Although the core of prerendering is a fairly simple change to Chrome, there
 > are a number of issues which make the implementation more complex:
@@ -217,7 +216,7 @@ Cancellation on Corner Cases
 > A third option is to have a local storage sandbox while the page is
 > prerendered, and attempt to transactionally commit changes to the shared local
 > storage when the page becomes activated. See
-> <https://sites.google.com/a/chromium.org/dev/developers/design-documents/cookies-and-prerender>
+> <https://www.chromium.org/developers/design-documents/cookies-and-prerender>
 > for some thoughts about how to do this for Cookies.
 
 ### Minimizing server side effects

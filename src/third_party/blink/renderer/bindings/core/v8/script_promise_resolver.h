@@ -8,16 +8,18 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
 
 #if DCHECK_IS_ON()
@@ -43,6 +45,10 @@ class CORE_EXPORT ScriptPromiseResolver
 
  public:
   explicit ScriptPromiseResolver(ScriptState*);
+  // Use this constructor if resolver is intended to be used in a callback
+  // function to reject with exception. ExceptionState will be used for
+  // creating exceptions in functions like RejectWithDOMException method.
+  explicit ScriptPromiseResolver(ScriptState*, const ExceptionContext&);
 
   ScriptPromiseResolver(const ScriptPromiseResolver&) = delete;
   ScriptPromiseResolver& operator=(const ScriptPromiseResolver&) = delete;
@@ -66,8 +72,48 @@ class CORE_EXPORT ScriptPromiseResolver
   void Resolve() { Resolve(ToV8UndefinedGenerator()); }
   void Reject() { Reject(ToV8UndefinedGenerator()); }
 
+  // Returns a callback that will run |callback| with the Entry realm
+  // and the Current realm set to the resolver's ScriptState. Note |callback|
+  // will only be run if the execution context and V8 context are capable
+  // to run. This situation occurs when the resolver's execution context
+  // or V8 context have started their destruction. See
+  // `IsInParallelAlgorithmRunnable` for details.
+  template <class ScriptPromiseResolver, typename... Args>
+  base::OnceCallback<void(Args...)> WrapCallbackInScriptScope(
+      base::OnceCallback<void(ScriptPromiseResolver*, Args...)> callback) {
+    return WTF::Bind(
+        [](ScriptPromiseResolver* resolver,
+           base::OnceCallback<void(ScriptPromiseResolver*, Args...)> callback,
+           Args... args) {
+          ScriptState* script_state = resolver->GetScriptState();
+          if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                             script_state)) {
+            return;
+          }
+          ScriptState::Scope script_state_scope(script_state);
+          std::move(callback).Run(resolver, std::move(args)...);
+        },
+        WrapPersistent(this), std::move(callback));
+  }
+
   // Reject with a given exception.
   void Reject(ExceptionState&);
+
+  // Following functions create exceptions using ExceptionState.
+  // They require ScriptPromiseResolver to be created with ExceptionContext.
+
+  // Reject with DOMException with given exception code.
+  void RejectWithDOMException(DOMExceptionCode exception_code,
+                              const String& message);
+  // Reject with DOMException with SECURITY_ERR.
+  void RejectWithSecurityError(const String& sanitized_message,
+                               const String& unsanitized_message);
+  // Reject with ECMAScript Error object.
+  void RejectWithTypeError(const String& message);
+  void RejectWithRangeError(const String& message);
+
+  // Reject with WebAssembly Error object.
+  void RejectWithWasmCompileError(const String& message);
 
   ScriptState* GetScriptState() const { return script_state_; }
 
@@ -104,6 +150,7 @@ class CORE_EXPORT ScriptPromiseResolver
   void Trace(Visitor*) const override;
 
  private:
+  class ExceptionStateScope;
   typedef ScriptPromise::InternalResolver Resolver;
   enum ResolutionState {
     kPending,
@@ -163,6 +210,7 @@ class CORE_EXPORT ScriptPromiseResolver
   TaskHandle deferred_resolve_task_;
   Resolver resolver_;
   TraceWrapperV8Reference<v8::Value> value_;
+  ExceptionContext exception_context_;
 
   // To support keepAliveWhilePending(), this object needs to keep itself
   // alive while in that state.

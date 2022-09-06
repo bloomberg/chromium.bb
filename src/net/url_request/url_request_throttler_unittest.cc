@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +16,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/url_request/url_request_throttler_test_support.h"
@@ -101,7 +101,7 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
 
 class MockURLRequestThrottlerManager : public URLRequestThrottlerManager {
  public:
-  MockURLRequestThrottlerManager() : create_entry_index_(0) {}
+  MockURLRequestThrottlerManager() = default;
 
   // Method to process the URL using URLRequestThrottlerManager protected
   // method.
@@ -129,7 +129,7 @@ class MockURLRequestThrottlerManager : public URLRequestThrottlerManager {
   }
 
  private:
-  int create_entry_index_;
+  int create_entry_index_ = 0;
 };
 
 struct TimeAndBool {
@@ -161,10 +161,11 @@ struct GurlAndString {
 class URLRequestThrottlerEntryTest : public TestWithTaskEnvironment {
  protected:
   URLRequestThrottlerEntryTest()
-      : request_(context_.CreateRequest(GURL(),
-                                        DEFAULT_PRIORITY,
-                                        nullptr,
-                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {}
+      : context_(CreateTestURLRequestContextBuilder()->Build()),
+        request_(context_->CreateRequest(GURL(),
+                                         DEFAULT_PRIORITY,
+                                         nullptr,
+                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override;
 
@@ -172,7 +173,7 @@ class URLRequestThrottlerEntryTest : public TestWithTaskEnvironment {
   MockURLRequestThrottlerManager manager_;  // Dummy object, not used.
   scoped_refptr<MockURLRequestThrottlerEntry> entry_;
 
-  TestURLRequestContext context_;
+  std::unique_ptr<URLRequestContext> context_;
   std::unique_ptr<URLRequest> request_;
 };
 
@@ -246,7 +247,7 @@ TEST_F(URLRequestThrottlerEntryTest, IsEntryReallyOutdated) {
       TimeAndBool(now_ - lifetime, true, __LINE__),
       TimeAndBool(now_ - (lifetime + kFiveMs), true, __LINE__)};
 
-  for (unsigned int i = 0; i < base::size(test_values); ++i) {
+  for (unsigned int i = 0; i < std::size(test_values); ++i) {
     entry_->set_exponential_backoff_release_time(test_values[i].time);
     EXPECT_EQ(entry_->IsEntryOutdated(), test_values[i].result) <<
         "Test case #" << i << " line " << test_values[i].line << " failed";
@@ -313,15 +314,16 @@ TEST_F(URLRequestThrottlerEntryTest, SlidingWindow) {
 class URLRequestThrottlerManagerTest : public TestWithTaskEnvironment {
  protected:
   URLRequestThrottlerManagerTest()
-      : request_(context_.CreateRequest(GURL(),
-                                        DEFAULT_PRIORITY,
-                                        nullptr,
-                                        TRAFFIC_ANNOTATION_FOR_TESTS)) {}
+      : context_(CreateTestURLRequestContextBuilder()->Build()),
+        request_(context_->CreateRequest(GURL(),
+                                         DEFAULT_PRIORITY,
+                                         nullptr,
+                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override { request_->SetLoadFlags(0); }
 
   // context_ must be declared before request_.
-  TestURLRequestContext context_;
+  std::unique_ptr<URLRequestContext> context_;
   std::unique_ptr<URLRequest> request_;
 };
 
@@ -353,7 +355,7 @@ TEST_F(URLRequestThrottlerManagerTest, IsUrlStandardised) {
                     std::string("http://www.example.com:1234/"),
                     __LINE__)};
 
-  for (unsigned int i = 0; i < base::size(test_values); ++i) {
+  for (unsigned int i = 0; i < std::size(test_values); ++i) {
     std::string temp = manager.DoGetUrlIdFromUrl(test_values[i].url);
     EXPECT_EQ(temp, test_values[i].result) <<
         "Test case #" << i << " line " << test_values[i].line << " failed";

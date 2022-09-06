@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/webrtc/capture_policy_utils.h"
-#include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory_impl.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
@@ -42,6 +41,7 @@ namespace extensions {
 
 namespace {
 
+const char kTargetNotActiveError[] = "The specified target is not active.";
 const char kInvalidSourceNameError[] = "Invalid source type specified.";
 
 DesktopMediaPickerFactory* g_picker_factory = nullptr;
@@ -53,6 +53,10 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::SetPickerFactoryForTests(
     DesktopMediaPickerFactory* factory) {
   g_picker_factory = factory;
 }
+
+const char
+    DesktopCaptureChooseDesktopMediaFunctionBase::kTargetNotFoundError[] =
+        "The specified target is not found.";
 
 DesktopCaptureChooseDesktopMediaFunctionBase::
     DesktopCaptureChooseDesktopMediaFunctionBase() = default;
@@ -77,10 +81,18 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
 ExtensionFunction::ResponseAction
 DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     const std::vector<api::desktop_capture::DesktopCaptureSourceType>& sources,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& origin,
     const std::u16string target_name) {
   DCHECK(!picker_controller_);
+
+  if (!render_frame_host->IsActive())
+    return RespondNow(Error(kTargetNotActiveError));
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return RespondNow(Error(kTargetNotFoundError));
 
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
   // In case of coming from background extension page, |parent_window| will
@@ -137,7 +149,7 @@ DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
 
   DesktopMediaPickerController::DoneCallback callback = base::BindOnce(
       &DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults,
-      this, origin, web_contents);
+      this, origin, render_frame_host->GetGlobalId());
   DesktopMediaPickerController::Params picker_params;
   picker_params.web_contents = web_contents;
   picker_params.context = parent_window;
@@ -166,7 +178,7 @@ std::string DesktopCaptureChooseDesktopMediaFunctionBase::GetCallerDisplayName()
 
 void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
     const GURL& origin,
-    content::WebContents* web_contents,
+    const content::GlobalRenderFrameHostId& render_frame_host_id,
     const std::string& err,
     DesktopMediaID source) {
   picker_controller_.reset();
@@ -183,15 +195,9 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
   }
 
   std::string result;
-  if (source.type != DesktopMediaID::TYPE_NONE && web_contents) {
-    // TODO(miu): Once render_frame_host() is being set, we should register the
-    // exact RenderFrame requesting the stream, not the main RenderFrame.  With
-    // that change, also update
-    // MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest().
-    // http://crbug.com/304341
-    content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
+  if (source.type != DesktopMediaID::TYPE_NONE) {
     result = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
-        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
+        render_frame_host_id.child_id, render_frame_host_id.frame_routing_id,
         url::Origin::Create(origin), source, extension()->name(),
         content::kRegistryStreamTypeDesktop);
   }

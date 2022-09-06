@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -231,15 +229,15 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
       {GoogleServiceAuthError::SERVICE_ERROR, true},
   };
   static_assert(
-      base::size(table) == GoogleServiceAuthError::NUM_STATES -
-                               GoogleServiceAuthError::kDeprecatedStateCount,
+      std::size(table) == GoogleServiceAuthError::NUM_STATES -
+                              GoogleServiceAuthError::kDeprecatedStateCount,
       "table size should match number of auth error types");
   CoreAccountId account_id =
       identity_test_env()
           ->MakePrimaryAccountAvailable(kTestEmail, signin::ConsentLevel::kSync)
           .account_id;
 
-  for (size_t i = 0; i < base::size(table); ++i) {
+  for (size_t i = 0; i < std::size(table); ++i) {
     SetAuthError(account_id, GoogleServiceAuthError(table[i].error_state));
     absl::optional<message_center::Notification> notification =
         display_service_->GetNotification(kPrimaryAccountErrorNotificationId);
@@ -262,7 +260,7 @@ TEST_F(SigninErrorNotifierTest, ChildSecondaryAccountMigrationTest) {
       identity_test_env()->MakeAccountAvailable(kTestSecondaryEmail).account_id;
 
   // Mark the profile as a child user.
-  GetProfile()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  GetProfile()->SetIsSupervisedProfile();
   base::RunLoop().RunUntilIdle();
 
   // Invalidate the secondary account.

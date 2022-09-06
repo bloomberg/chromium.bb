@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -59,6 +60,11 @@ bool TestToolbarActionViewController::IsShowingPopup() const {
   return popup_showing_;
 }
 
+bool TestToolbarActionViewController::IsRequestingSiteAccess(
+    content::WebContents* web_contents) const {
+  return false;
+}
+
 void TestToolbarActionViewController::HidePopup() {
   popup_showing_ = false;
   delegate_->OnPopupClosed();
@@ -68,24 +74,28 @@ gfx::NativeView TestToolbarActionViewController::GetPopupNativeView() {
   return nullptr;
 }
 
-ui::MenuModel* TestToolbarActionViewController::GetContextMenu() {
+ui::MenuModel* TestToolbarActionViewController::GetContextMenu(
+    extensions::ExtensionContextMenuModel::ContextMenuSource
+        context_menu_source) {
   return nullptr;
 }
 
-bool TestToolbarActionViewController::ExecuteAction(bool by_user,
-                                                    InvocationSource source) {
+void TestToolbarActionViewController::ExecuteUserAction(
+    InvocationSource source) {
   ++execute_action_count_;
-  return false;
 }
+
+void TestToolbarActionViewController::TriggerPopupForAPI(
+    ShowPopupCallback callback) {}
 
 void TestToolbarActionViewController::UpdateState() {
   UpdateDelegate();
 }
 
-ToolbarActionViewController::PageInteractionStatus
-TestToolbarActionViewController::GetPageInteractionStatus(
+extensions::SitePermissionsHelper::SiteInteraction
+TestToolbarActionViewController::GetSiteInteraction(
     content::WebContents* web_contents) const {
-  return PageInteractionStatus::kNone;
+  return extensions::SitePermissionsHelper::SiteInteraction::kNone;
 }
 
 void TestToolbarActionViewController::ShowPopup(bool by_user) {

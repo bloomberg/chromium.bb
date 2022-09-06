@@ -6,14 +6,14 @@
 
 #include <algorithm>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/tether/active_host.h"
 #include "ash/components/tether/persistent_host_scan_cache.h"
 #include "ash/components/tether/timer_factory.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -200,4 +200,4 @@ void TopLevelHostScanCache::OnTimerFired(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

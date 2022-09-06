@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -49,7 +50,7 @@ using browsertest_util::WaitForTaskManagerRows;
 class TaskManagerViewTest : public InProcessBrowserTest {
  public:
   TaskManagerViewTest() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     feature_list_.InitAndEnableFeature(features::kViewsTaskManager);
 #endif
   }

@@ -12,7 +12,6 @@
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/url_utils.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,7 +30,7 @@ bool IsDialogOnboardingEnabled() {
 namespace autofill_assistant {
 
 TriggerScriptCoordinator::TriggerScriptCoordinator(
-    StarterPlatformDelegate* starter_delegate,
+    base::WeakPtr<StarterPlatformDelegate> starter_delegate,
     content::WebContents* web_contents,
     std::unique_ptr<WebController> web_controller,
     std::unique_ptr<ServiceRequestSender> request_sender,
@@ -77,13 +76,16 @@ void TriggerScriptCoordinator::Start(
       ProtocolUtils::CreateGetTriggerScriptsRequest(
           deeplink_url_, client_context,
           trigger_context_->GetScriptParameters()),
+      ServiceRequestSender::AuthMode::API_KEY,
       base::BindOnce(&TriggerScriptCoordinator::OnGetTriggerScripts,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      autofill_assistant::RpcType::GET_TRIGGER_SCRIPTS);
 }
 
 void TriggerScriptCoordinator::OnGetTriggerScripts(
     int http_status,
-    const std::string& response) {
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info) {
   if (http_status != net::HTTP_OK) {
     Stop(Metrics::TriggerScriptFinishedState::GET_ACTIONS_FAILED);
     return;
@@ -624,7 +626,8 @@ TriggerScriptCoordinator::GetTriggerUiTypeForVisibleScript() const {
 }
 
 GURL TriggerScriptCoordinator::GetCurrentURL() const {
-  GURL current_url = web_contents()->GetMainFrame()->GetLastCommittedURL();
+  GURL current_url =
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
   if (current_url.is_empty()) {
     return deeplink_url_;
   }

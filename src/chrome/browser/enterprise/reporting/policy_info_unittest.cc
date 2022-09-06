@@ -23,11 +23,11 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace em = enterprise_management;
 
@@ -55,9 +55,9 @@ class PolicyInfoTest : public ::testing::Test {
     profile_ = profile_manager_->CreateTestingProfile(
         test_profile_name,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(test_profile_name), 0, std::string(),
-        TestingProfile::TestingFactories(), absl::optional<bool>(),
-        GetPolicyService());
+        base::UTF8ToUTF16(test_profile_name), 0,
+        TestingProfile::TestingFactories(), /*is_supervised_profile=*/false,
+        absl::optional<bool>(), GetPolicyService());
     profile_manager_->CreateTestingProfile(chrome::kInitialProfile);
   }
 
@@ -113,7 +113,7 @@ TEST_F(PolicyInfoTest, ChromePolicy) {
       policy::DictionaryPolicyConversions(std::move(client))
           .EnableConvertTypes(false)
           .EnablePrettyPrint(false)
-          .ToValue(),
+          .ToValueDict(),
       &profile_info);
   EXPECT_EQ(2, profile_info.chrome_policies_size());
 
@@ -134,7 +134,7 @@ TEST_F(PolicyInfoTest, ChromePolicy) {
   EXPECT_NE("", policy2.error());
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(PolicyInfoTest, ExtensionPolicy) {
   EXPECT_CALL(*policy_service(), GetPolicies(_)).Times(3);
   extensions::ExtensionRegistry* extension_registry =
@@ -162,7 +162,7 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
       policy::DictionaryPolicyConversions(std::move(client))
           .EnableConvertTypes(false)
           .EnablePrettyPrint(false)
-          .ToValue(),
+          .ToValueDict(),
       &profile_info);
   // The second extension is not in the report because it has no policy.
   EXPECT_EQ(1, profile_info.extension_policies_size());
@@ -177,7 +177,7 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
   EXPECT_EQ(em::Policy_PolicySource_SOURCE_PLATFORM, policy1.source());
   EXPECT_NE(std::string(), policy1.error());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(PolicyInfoTest, MachineLevelUserCloudPolicyFetchTimestamp) {
   em::ChromeUserProfileInfo profile_info;

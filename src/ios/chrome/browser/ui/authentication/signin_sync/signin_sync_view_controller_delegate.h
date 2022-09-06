@@ -17,14 +17,16 @@
             (SigninSyncViewController*)signinSyncViewController
       showAccountPickerFromPoint:(CGPoint)point;
 
-// Called when the user taps to see sync settings.
-- (void)signinSyncViewControllerDidTapOnSettings:
-    (SigninSyncViewController*)signinSyncViewController;
-
 // Adds consent string ID.
 - (void)signinSyncViewController:
             (SigninSyncViewController*)signinSyncViewController
               addConsentStringID:(const int)stringID;
+
+// Logs scrollability metric on view appears.
+- (void)signinSyncViewController:
+            (SigninSyncViewController*)signinSyncViewController
+          logScrollButtonVisible:(BOOL)scrollButtonVisible
+        withAccountPickerVisible:(BOOL)accountButtonVisible;
 
 @end
 

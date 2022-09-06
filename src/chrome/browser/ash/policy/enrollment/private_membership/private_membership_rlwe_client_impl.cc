@@ -11,7 +11,6 @@
 
 #include "base/check.h"
 #include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client.h"
-#include "third_party/private_membership/src/membership_response_map.h"
 #include "third_party/private_membership/src/private_membership_rlwe.pb.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 #include "third_party/shell-encryption/src/statusor.h"
@@ -51,10 +50,10 @@ PrivateMembershipRlweClientImpl::CreateQueryRequest(
   return psm_rlwe_client_->CreateQueryRequest(oprf_response);
 }
 
-::rlwe::StatusOr<psm_rlwe::MembershipResponseMap>
-PrivateMembershipRlweClientImpl::ProcessResponse(
+::rlwe::StatusOr<psm_rlwe::RlweMembershipResponses>
+PrivateMembershipRlweClientImpl::ProcessQueryResponse(
     const psm_rlwe::PrivateMembershipRlweQueryResponse& query_response) {
-  return psm_rlwe_client_->ProcessResponse(query_response);
+  return psm_rlwe_client_->ProcessQueryResponse(query_response);
 }
 
 PrivateMembershipRlweClientImpl::PrivateMembershipRlweClientImpl(

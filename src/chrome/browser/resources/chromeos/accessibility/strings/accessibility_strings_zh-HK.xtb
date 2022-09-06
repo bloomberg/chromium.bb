@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">表格「<ph name="TABLENAME" />」<ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">忽略下一個按鍵</translation>
 <translation id="4623097797855662355">版權頁</translation>
+<translation id="4624970070706497034">TalkBack 唔再為 Chromebook 提供自訂項目。你仍然可以用自訂功能，不過用唔到 TalkBack 預設嘅鍵盤快速鍵。先㩒搜尋鍵 + A 鍵，然後㩒 K 鍵就睇到可以用嘅快速鍵。如果您仍然想用 TalkBack，請㩒多次指令鍵。</translation>
 <translation id="463135993322337640">按下 ChromeVox 的 O 鍵、N 鍵，即可瞭解最新功能</translation>
 <translation id="4649220074413114917">以兩指輕按螢幕可以停止目前朗讀的任何內容。如果不希望 ChromeVox 繼續朗讀，這種做法非常實用。如要繼續，請以兩指輕按螢幕。</translation>
 <translation id="4660783501463101648">已移除傳統版。現在無法再透過鍵盤切換回 ChromeVox 傳統版。</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">啟用咗點字字幕</translation>
 <translation id="5183440668879371625">上一行點字</translation>
 <translation id="5189244881767082992">線條</translation>
-<translation id="5234747236692380506">輸入 <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">粟米鬚色</translation>
 <translation id="5263344797180442561">標題 2</translation>
 <translation id="528468243742722775">結束</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">完成快速導覽了！</translation>
 <translation id="5534303576632885660">頁首</translation>
 <translation id="5539820223028224601">庚斯博羅灰色</translation>
+<translation id="554893713779400387">切換語音輸入</translation>
 <translation id="5549179427201066174">開啟或關閉聲音回應 (提示音)</translation>
 <translation id="556042886152191864">按鈕</translation>
 <translation id="5561345396546889625">下一個清單</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">記錄</translation>
 <translation id="5628125749885014029">標題 4</translation>
 <translation id="5632083598315326067">圖像符號</translation>
+<translation id="5648939288050772726">恭喜！您已成功學到基本的 ChromeVox 使用方法。您隨時可按 Search + 句號鍵開啟 ChromeVox 指令選單。如要進一步瞭解 ChromeVox 和 Chrome OS，請參閱下列文章。
+    如要結束教學課程，請使用 ChromeVox 導覽並按一下 [關閉] 按鈕。</translation>
 <translation id="5653397561111110475">使用 Chromebook 輕觸式螢幕無障礙功能</translation>
 <translation id="5655682562155942719">跳躍指令</translation>
 <translation id="56637627897541303">文字區域</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{1 個冒號}other{# 個冒號}}</translation>
 <translation id="6444046323172968959">警示對話方塊</translation>
 <translation id="6452403590345320472">目錄</translation>
+<translation id="6457542714329819968">輸入</translation>
 <translation id="6468049171101508116">下一個按鈕</translation>
 <translation id="646954774886932461">索引</translation>
 <translation id="6475604559827479857">反白顯示文字的顏色：</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">自然語音</translation>
 <translation id="7714340021005120797">冇下一個組合方塊</translation>
-<translation id="772146615414628379">恭喜！您已成功學到基本的 ChromeVox 使用方法。您隨時可以按 Search + 句號鍵開啟 ChromeVox 指令選單。如要進一步瞭解 ChromeVox 和 Chrome 作業系統，請參閱下列文章。
-    如要結束教學課程，請使用 ChromeVox 導覽並按一下 [關閉] 按鈕。</translation>
 <translation id="7724603315864178912">剪下</translation>
 <translation id="7731785449856576010">冇下一個媒體小工具</translation>
 <translation id="7735498529470878067">輕觸探索可助您快速瞭解螢幕上的內容。</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">深紅色</translation>
 <translation id="923331726185079994">已更新 ChromeVox</translation>
 <translation id="93384979447910801">暗海綠色</translation>
+<translation id="937605981140327129">現時未安裝 TalkBack。請透過「Play 商店」安裝 Android 無障礙套件，然後試多次</translation>
 <translation id="948171205378458592">放慢說話速度</translation>
 <translation id="957570623732056069">用一隻手指向左或者向右掃就可以瀏覽呢個課程</translation>
 <translation id="958854023026327378">以一隻手指向下滑動</translation>

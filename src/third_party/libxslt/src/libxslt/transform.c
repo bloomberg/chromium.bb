@@ -637,7 +637,6 @@ xsltNewTransformContext(xsltStylesheetPtr style, xmlDocPtr doc) {
     cur->prof = 0;
 
     cur->style = style;
-    xmlXPathInit();
     cur->xpathCtxt = xmlXPathNewContext(doc);
     if (cur->xpathCtxt == NULL) {
 	xsltTransformError(NULL, NULL, (xmlNodePtr) doc,
@@ -3631,8 +3630,10 @@ xsltDocumentElem(xsltTransformContextPtr ctxt, xmlNodePtr node,
     if (elements != NULL) {
 	if (style->stripSpaces == NULL)
 	    style->stripSpaces = xmlHashCreate(10);
-	if (style->stripSpaces == NULL)
+	if (style->stripSpaces == NULL) {
+	    xmlFree(elements);
 	    return;
+	}
 
 	element = elements;
 	while (*element != 0) {

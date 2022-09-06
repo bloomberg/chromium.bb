@@ -55,23 +55,17 @@ class EndpointPolicy:
 
 
 @dataclasses.dataclass(frozen=True)
-class Router:
+class Mesh:
 
     name: str
     url: str
-    type: str
-    scope: Optional[str]
-    network: Optional[str]
     routes: Optional[List[str]]
 
     @classmethod
-    def from_response(cls, name: str, d: Dict[str, Any]) -> 'Router':
+    def from_response(cls, name: str, d: Dict[str, Any]) -> 'Mesh':
         return cls(
             name=name,
             url=d["name"],
-            type=d["type"],
-            scope=d.get("scope"),
-            network=d.get("network"),
             routes=list(d["routes"]) if "routes" in d else None,
         )
 
@@ -87,7 +81,7 @@ class GrpcRoute:
         case_sensitive: Optional[bool]
 
         @classmethod
-        def from_response(cls, d: Dict[str, Any]) -> 'MethodMatch':
+        def from_response(cls, d: Dict[str, Any]) -> 'GrpcRoute.MethodMatch':
             return cls(
                 type=d.get("type"),
                 grpc_service=d.get("grpcService"),
@@ -102,7 +96,7 @@ class GrpcRoute:
         value: str
 
         @classmethod
-        def from_response(cls, d: Dict[str, Any]) -> 'HeaderMatch':
+        def from_response(cls, d: Dict[str, Any]) -> 'GrpcRoute.HeaderMatch':
             return cls(
                 type=d.get("type"),
                 key=d["key"],
@@ -111,17 +105,17 @@ class GrpcRoute:
 
     @dataclasses.dataclass(frozen=True)
     class RouteMatch:
-        method: Optional['MethodMatch']
-        headers: Tuple['HeaderMatch']
+        method: Optional['GrpcRoute.MethodMatch']
+        headers: Tuple['GrpcRoute.HeaderMatch']
 
         @classmethod
-        def from_response(cls, d: Dict[str, Any]) -> 'RouteMatch':
+        def from_response(cls, d: Dict[str, Any]) -> 'GrpcRoute.RouteMatch':
             return cls(
-                method=MethodMatch.from_response(d["method"])
+                method=GrpcRoute.MethodMatch.from_response(d["method"])
                 if "method" in d else None,
                 headers=tuple(
-                    HeaderMatch.from_response(h) for h in d["headers"])
-                if "headers" in d else (),
+                    GrpcRoute.HeaderMatch.from_response(h)
+                    for h in d["headers"]) if "headers" in d else (),
             )
 
     @dataclasses.dataclass(frozen=True)
@@ -130,7 +124,7 @@ class GrpcRoute:
         weight: Optional[int]
 
         @classmethod
-        def from_response(cls, d: Dict[str, Any]) -> 'Destination':
+        def from_response(cls, d: Dict[str, Any]) -> 'GrpcRoute.Destination':
             return cls(
                 service_name=d["serviceName"],
                 weight=d.get("weight"),
@@ -138,53 +132,54 @@ class GrpcRoute:
 
     @dataclasses.dataclass(frozen=True)
     class RouteAction:
-        destinations: List['Destination']
-        drop: Optional[int]
 
         @classmethod
-        def from_response(cls, d: Dict[str, Any]) -> 'RouteAction':
+        def from_response(cls, d: Dict[str, Any]) -> 'GrpcRoute.RouteAction':
             destinations = [
-                Destination.from_response(dest) for dest in d["destinations"]
+                GrpcRoute.Destination.from_response(dest)
+                for dest in d["destinations"]
             ] if "destinations" in d else []
-            return cls(
-                destinations=destinations,
-                drop=d.get("drop"),
-            )
+            return cls(destinations=destinations)
 
     @dataclasses.dataclass(frozen=True)
     class RouteRule:
-        matches: List['RouteMatch']
-        action: 'RouteAction'
+        matches: List['GrpcRoute.RouteMatch']
+        action: 'GrpcRoute.RouteAction'
 
         @classmethod
-        def from_response(cls, d: Dict[str, Any]) -> 'RouteRule':
-            matches = [RouteMatch.from_response(m) for m in d["matches"]
-                      ] if "matches" in d else []
+        def from_response(cls, d: Dict[str, Any]) -> 'GrpcRoute.RouteRule':
+            matches = [
+                GrpcRoute.RouteMatch.from_response(m) for m in d["matches"]
+            ] if "matches" in d else []
             return cls(
                 matches=matches,
-                action=RouteAction.from_response(d["action"]),
+                action=GrpcRoute.RouteAction.from_response(d["action"]),
             )
 
     name: str
     url: str
     hostnames: Tuple[str]
-    rules: Tuple['RouteRule']
-    routers: Optional[Tuple[str]]
+    rules: Tuple['GrpcRoute.RouteRule']
+    meshes: Optional[Tuple[str]]
 
     @classmethod
-    def from_response(cls, name: str, d: Dict[str, Any]) -> 'RouteRule':
+    def from_response(cls, name: str, d: Dict[str,
+                                              Any]) -> 'GrpcRoute.RouteRule':
         return cls(
             name=name,
             url=d["name"],
             hostnames=tuple(d["hostnames"]),
             rules=tuple(d["rules"]),
-            routers=None if d.get("routers") is None else tuple(d["routers"]),
+            meshes=None if d.get("meshes") is None else tuple(d["meshes"]),
         )
 
 
 class _NetworkServicesBase(gcp.api.GcpStandardCloudApiResource,
                            metaclass=abc.ABCMeta):
     """Base class for NetworkServices APIs."""
+
+    # TODO(https://github.com/grpc/grpc/issues/29532) remove pylint disable
+    # pylint: disable=abstract-method
 
     def __init__(self, api_manager: gcp.api.GcpApiManager, project: str):
         super().__init__(api_manager.networkservices(self.api_version), project)
@@ -195,7 +190,7 @@ class _NetworkServicesBase(gcp.api.GcpStandardCloudApiResource,
     def api_name(self) -> str:
         return 'networkservices'
 
-    def _execute(self, *args, **kwargs):  # pylint: disable=signature-differs
+    def _execute(self, *args, **kwargs):  # pylint: disable=signature-differs,arguments-differ
         # Workaround TD bug: throttled operations are reported as internal.
         # Ref b/175345578
         retryer = tenacity.Retrying(
@@ -247,27 +242,27 @@ class NetworkServicesV1Alpha1(NetworkServicesV1Beta1):
     """
 
     GRPC_ROUTES = 'grpcRoutes'
-    ROUTERS = 'routers'
+    MESHES = 'meshes'
 
     @property
     def api_version(self) -> str:
         return 'v1alpha1'
 
-    def create_router(self, name: str, body: dict) -> GcpResource:
-        return self._create_resource(collection=self._api_locations.routers(),
+    def create_mesh(self, name: str, body: dict) -> GcpResource:
+        return self._create_resource(collection=self._api_locations.meshes(),
                                      body=body,
-                                     routerId=name)
+                                     meshId=name)
 
-    def get_router(self, name: str) -> Router:
-        full_name = self.resource_full_name(name, self.ROUTERS)
-        result = self._get_resource(collection=self._api_locations.routers(),
+    def get_mesh(self, name: str) -> Mesh:
+        full_name = self.resource_full_name(name, self.MESHES)
+        result = self._get_resource(collection=self._api_locations.meshes(),
                                     full_name=full_name)
-        return Router.from_response(name, result)
+        return Mesh.from_response(name, result)
 
-    def delete_router(self, name: str) -> bool:
-        return self._delete_resource(collection=self._api_locations.routers(),
+    def delete_mesh(self, name: str) -> bool:
+        return self._delete_resource(collection=self._api_locations.meshes(),
                                      full_name=self.resource_full_name(
-                                         name, self.ROUTERS))
+                                         name, self.MESHES))
 
     def create_grpc_route(self, name: str, body: dict) -> GcpResource:
         return self._create_resource(

@@ -120,6 +120,8 @@ void aom_convolve_copy_avx2(const uint8_t *src, ptrdiff_t src_stride,
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
+
 static INLINE void highbd_copy_64(const uint16_t *src, uint16_t *dst) {
   __m256i s[4];
   s[0] = _mm256_loadu_si256((__m256i *)(src + 0 * 16));
@@ -250,3 +252,5 @@ void aom_highbd_convolve_copy_avx2(const uint16_t *src, ptrdiff_t src_stride,
     } while (h);
   }
 }
+
+#endif  // CONFIG_AV1_HIGHBITDEPTH

@@ -5,19 +5,19 @@
 #ifndef CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 #define CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }  // namespace base
 
 namespace chromeos {
@@ -55,8 +55,14 @@ class NetworkStateHandler;
 // user consumption.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
  public:
-  using GuidToPolicyMap =
-      std::map<std::string, std::unique_ptr<base::DictionaryValue>>;
+  // Specifies which policy type a caller is interested in.
+  enum class PolicyType {
+    // Original ONC policy as provided by cloud policy.
+    kOriginal,
+    // ONC policy with runtime values set, i.e. variables can be expanded and a
+    // resolved client certificate set.
+    kWithRuntimeValues,
+  };
 
   ManagedNetworkConfigurationHandler& operator=(
       const ManagedNetworkConfigurationHandler&) = delete;
@@ -65,6 +71,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
 
   virtual void AddObserver(NetworkPolicyObserver* observer) = 0;
   virtual void RemoveObserver(NetworkPolicyObserver* observer) = 0;
+  virtual bool HasObserver(NetworkPolicyObserver* observer) const = 0;
 
   // Provides the properties of the network with |service_path| to |callback|.
   // |userhash| is used to set the "Source" property. If not provided then
@@ -88,7 +95,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // will be merged with the existing settings, and it won't clear any existing
   // properties.
   virtual void SetProperties(const std::string& service_path,
-                             const base::DictionaryValue& user_settings,
+                             const base::Value& user_settings,
                              base::OnceClosure callback,
                              network_handler::ErrorCallback error_callback) = 0;
 
@@ -99,7 +106,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // |userhash| is empty, the new configuration will be shared.
   virtual void CreateConfiguration(
       const std::string& userhash,
-      const base::DictionaryValue& properties,
+      const base::Value& properties,
       network_handler::ServiceResultCallback callback,
       network_handler::ErrorCallback error_callback) const = 0;
 
@@ -143,29 +150,50 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // NetworkPolicyObservers are notified about applications finishing.
   virtual bool IsAnyPolicyApplicationRunning() const = 0;
 
+  // Sets ONC variable expansions for |userhash|.
+  // These expansions are profile-wide, i.e. they will apply to all networks
+  // that belong to |userhash|.
+  // This overwrites any previously-set profile-wide variable expansions.
+  // If this call changes the effective ONC policy (after variable expansion) of
+  // any network config, it triggers re-application of that network policy.
+  virtual void SetProfileWideVariableExpansions(
+      const std::string& userhash,
+      base::flat_map<std::string, std::string> expansions) = 0;
+
+  // Sets the resolved certificate for the network |guid|.
+  // Returns true if this resulted in an effective change.
+  virtual bool SetResolvedClientCertificate(
+      const std::string& userhash,
+      const std::string& guid,
+      client_cert::ResolvedCert resolved_cert) = 0;
+
   // Returns the user policy for user |userhash| or device policy, which has
   // |guid|. If |userhash| is empty, only looks for a device policy. If such
   // doesn't exist, returns NULL. Sets |onc_source| accordingly.
-  virtual const base::DictionaryValue* FindPolicyByGUID(
+  virtual const base::Value* FindPolicyByGUID(
       const std::string userhash,
       const std::string& guid,
       ::onc::ONCSource* onc_source) const = 0;
 
-  virtual const GuidToPolicyMap* GetNetworkConfigsFromPolicy(
-      const std::string& userhash) const = 0;
+  // Returns true if the user policy for |userhash| or device policy if
+  // |userhash| is empty has any policy-configured network.
+  // Returns false if |userhash| does not map to any known network profile.
+  virtual bool HasAnyPolicyNetwork(const std::string& userhash) const = 0;
 
   // Returns the global configuration of the policy of user |userhash| or device
   // policy if |userhash| is empty.
-  virtual const base::DictionaryValue* GetGlobalConfigFromPolicy(
+  virtual const base::Value* GetGlobalConfigFromPolicy(
       const std::string& userhash) const = 0;
 
   // Returns the policy with |guid| for profile |profile_path|. If such
-  // doesn't exist, returns nullptr. Sets |onc_source| accordingly if it is not
-  // nullptr.
-  virtual const base::DictionaryValue* FindPolicyByGuidAndProfile(
+  // doesn't exist, returns nullptr. Sets |onc_source| and |userhash|
+  // accordingly if it is not nullptr.
+  virtual const base::Value* FindPolicyByGuidAndProfile(
       const std::string& guid,
       const std::string& profile_path,
-      ::onc::ONCSource* onc_source) const = 0;
+      PolicyType policy_type,
+      ::onc::ONCSource* out_onc_source,
+      std::string* out_userhash) const = 0;
 
   // Returns true if the network with |guid| is configured by device or user
   // policy for profile |profile_path|.
@@ -189,6 +217,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // installed from policy. The network list should be updated at this point.
   virtual void OnCellularPoliciesApplied(const NetworkProfile& profile) = 0;
 
+  // Return true if AllowCellularSimLock policy is enabled.
+  virtual bool AllowCellularSimLock() const = 0;
+
   // Return true if AllowOnlyPolicyCellularNetworks policy is enabled.
   virtual bool AllowOnlyPolicyCellularNetworks() const = 0;
 
@@ -204,6 +235,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
 
   // Return the list of blocked WiFi networks (identified by HexSSIDs).
   virtual std::vector<std::string> GetBlockedHexSSIDs() const = 0;
+
+  // Called just before destruction to give observers a chance to remove
+  // themselves and disable any networking.
+  virtual void Shutdown() = 0;
 
   static std::unique_ptr<ManagedNetworkConfigurationHandler>
   InitializeForTesting(

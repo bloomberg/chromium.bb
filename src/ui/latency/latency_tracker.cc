@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
@@ -59,7 +58,7 @@ enum Jank : int {
 };
 
 void EmitScrollUpdateTime(base::TimeDelta dur, bool janky) {
-  int count = dur.InMicroseconds();
+  int count = dur.InMilliseconds();
   if (count <= 0) {
     // Histograms aren't allowed to add zero counts, this could happen
     // especially in tests when the clock hasn't advanced enough for a
@@ -67,7 +66,7 @@ void EmitScrollUpdateTime(base::TimeDelta dur, bool janky) {
     return;
   }
   auto* histogram = base::BooleanHistogram::FactoryGet(
-      "Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration",
+      "Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration2",
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddCount(janky ? kJanky : kNonJanky, count);
 }
@@ -307,11 +306,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
         metric_name, original_timestamp, gpu_swap_begin_timestamp);
 
-    // Report whether the top-controls visible height changed from this scroll
-    // event.
-    UMA_HISTOGRAM_BOOLEAN("Event.Latency.ScrollBegin.TopControlsMoved",
-                          top_controls_visible_height_changed);
-    // Also report the latency metric separately for the scrolls that caused the
+    // Report the latency metric separately for the scrolls that caused the
     // top-controls to scroll and the ones that didn't.
     if (top_controls_visible_height_changed)
       base::StrAppend(&metric_name, {".TopControlsMoved"});
@@ -346,11 +341,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
                       ".TimeToScrollUpdateSwapBegin4"});
     UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
         metric_name, original_timestamp, gpu_swap_begin_timestamp);
-
-    // Report whether the top-controls visible height changed from this scroll
-    // event.
-    UMA_HISTOGRAM_BOOLEAN("Event.Latency.ScrollUpdate.TopControlsMoved",
-                          top_controls_visible_height_changed);
 
     // Also report the latency metric separately for the scrolls that caused the
     // top-controls to scroll and the ones that didn't.

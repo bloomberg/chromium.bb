@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
 
@@ -60,9 +59,9 @@ class COMPONENT_EXPORT(UI_BASE_METADATA) MetaDataProvider {
   virtual class ClassMetaData* GetClassMetaData() = 0;
 
  protected:
-  base::CallbackListSubscription AddPropertyChangedCallback(
+  [[nodiscard]] base::CallbackListSubscription AddPropertyChangedCallback(
       PropertyKey property,
-      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
+      PropertyChangedCallback callback);
   void TriggerChangedCallback(PropertyKey property);
 
  private:
@@ -111,9 +110,14 @@ class COMPONENT_EXPORT(UI_BASE_METADATA) ClassMetaData {
   //    for(views::MemberMetaDataBase* member : class_meta_data) {
   //      OperateOn(member);
   //    }
-  class COMPONENT_EXPORT(UI_BASE_METADATA) ClassMemberIterator
-      : public std::iterator<std::forward_iterator_tag, MemberMetaDataBase*> {
+  class COMPONENT_EXPORT(UI_BASE_METADATA) ClassMemberIterator {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = MemberMetaDataBase*;
+    using difference_type = std::ptrdiff_t;
+    using pointer = MemberMetaDataBase**;
+    using reference = MemberMetaDataBase*&;
+
     ClassMemberIterator(const ClassMemberIterator& other);
     ~ClassMemberIterator();
 

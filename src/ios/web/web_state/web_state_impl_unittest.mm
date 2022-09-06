@@ -180,41 +180,16 @@ class WebStateImplTest : public web::WebTest {
   std::unique_ptr<WebStateImpl> web_state_;
 };
 
-// Tests WebState::Getter default implementation.
-TEST_F(WebStateImplTest, DefaultGetter) {
-  WebState::Getter getter = web_state_->CreateDefaultGetter();
-  ASSERT_FALSE(getter.is_null());
+// Tests WebState::GetWeakPtr.
+TEST_F(WebStateImplTest, GetWeakPtr) {
+  base::WeakPtr<WebState> weak_ptr = web_state_->GetWeakPtr();
 
-  // Verify that the getter returns |web_state_| if executed before
-  // deallocation.
-  EXPECT_EQ(web_state_.get(), getter.Run());
+  // Verify that |weak_ptr| points to |web_state_|.
+  EXPECT_EQ(weak_ptr.get(), web_state_.get());
 
-  // Destroy |web_state_| and verify that the getter returns nullptr if executed
-  // after destruction.
-  web_state_ = nullptr;
-  EXPECT_FALSE(getter.Run());
-}
-
-// Tests WebState::OnceGetter default implementation before WebState
-// destruction.
-TEST_F(WebStateImplTest, DefaultOnceGetterBeforeDestruction) {
-  WebState::OnceGetter getter = web_state_->CreateDefaultOnceGetter();
-  ASSERT_FALSE(getter.is_null());
-
-  // Verify that the getter returns |web_state_| if executed before
-  // deallocation.
-  EXPECT_EQ(web_state_.get(), std::move(getter).Run());
-}
-
-// Tests WebState::OnceGetter default implementation after WebState destruction.
-TEST_F(WebStateImplTest, DefaultOnceGetterAfterDestruction) {
-  WebState::OnceGetter getter = web_state_->CreateDefaultOnceGetter();
-  ASSERT_FALSE(getter.is_null());
-
-  // Destroy |web_state_| and verify that the getter returns nullptr if executed
-  // after destruction.
-  web_state_ = nullptr;
-  EXPECT_FALSE(std::move(getter).Run());
+  // Verify that |weak_ptr| is null after |web_state_| destruction.
+  web_state_.reset();
+  EXPECT_EQ(weak_ptr.get(), nullptr);
 }
 
 TEST_F(WebStateImplTest, WebUsageEnabled) {
@@ -975,6 +950,7 @@ TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 TEST_F(WebStateImplTest, UncommittedRestoreSession) {
   GURL url("http://test.com");
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.stableIdentifier = [[NSUUID UUID] UUIDString];
   session_storage.lastCommittedItemIndex = 0;
   CRWNavigationItemStorage* item_storage =
       [[CRWNavigationItemStorage alloc] init];
@@ -1025,7 +1001,7 @@ TEST_F(WebStateImplTest, BuildStorageDuringRestore) {
                   GURL("https://chromium.test/2"),
                   GURL("https://chromium.test/3")};
   std::vector<std::unique_ptr<NavigationItem>> items;
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < std::size(urls); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(urls[index]);
   }
@@ -1227,6 +1203,26 @@ TEST_F(WebStateImplTest, VisibilitychangeEventFired) {
   [web_state_->GetView() removeFromSuperview];
 }
 
+// Test that changing visibility update the WebState last active time.
+TEST_F(WebStateImplTest, LastActiveTimeUpdatedWhenBecomeVisible) {
+  base::Time last_active_time = web_state_->GetLastActiveTime();
+
+  // Spin the RunLoop a bit to ensure that the active time changes.
+  {
+    base::RunLoop run_loop;
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(1));
+    run_loop.Run();
+  }
+
+  // Check that the last active time has not changed.
+  EXPECT_EQ(web_state_->GetLastActiveTime(), last_active_time);
+
+  // Mark the WebState has visible. The last active time should be updated.
+  web_state_->WasShown();
+  EXPECT_GT(web_state_->GetLastActiveTime(), last_active_time);
+}
+
 // Tests that WebState sessionState data doesn't load things with unsafe
 // restore.
 TEST_F(WebStateImplTest, MixedSafeUnsafeRestore) {
@@ -1245,7 +1241,7 @@ TEST_F(WebStateImplTest, MixedSafeUnsafeRestore) {
                   GURL("https://chromium.test/2"),
                   GURL("https://chromium.test/3")};
   std::vector<std::unique_ptr<NavigationItem>> items;
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < std::size(urls); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(urls[index]);
   }
@@ -1267,7 +1263,7 @@ TEST_F(WebStateImplTest, MixedSafeUnsafeRestore) {
   scoped_feature_list.Reset();
   scoped_feature_list.InitWithFeatures({features::kSynthesizedRestoreSession},
                                        {});
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < std::size(urls); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(urls[index]);
   }

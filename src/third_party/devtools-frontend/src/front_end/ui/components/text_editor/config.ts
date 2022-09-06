@@ -7,6 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as CM from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
+import * as Icon from '../icon_button/icon_button.js';
 
 import {editorTheme} from './theme.js';
 
@@ -70,16 +71,34 @@ export const tabMovesFocus = DynamicSetting.bool('textEditorTabMovesFocus', [], 
   shift: (view: CM.EditorView): boolean => view.state.doc.length ? CM.indentLess(view) : false,
 }]));
 
-export const autocompletion = CM.autocompletion({
-  icons: false,
-  optionClass: (option: CM.Completion): string => option.type === 'secondary' ? 'cm-secondaryCompletion' : '',
-});
+export const autocompletion: CM.Extension = [
+  CM.autocompletion({
+    icons: false,
+    optionClass: (option: CM.Completion): string => option.type === 'secondary' ? 'cm-secondaryCompletion' : '',
+  }),
+  CM.Prec.highest(CM.keymap.of([{key: 'ArrowRight', run: CM.acceptCompletion}])),
+];
 
 export const sourcesAutocompletion = DynamicSetting.bool('textEditorAutocompletion', autocompletion);
 
 export const bracketMatching = DynamicSetting.bool('textEditorBracketMatching', CM.bracketMatching());
 
-export const codeFolding = DynamicSetting.bool('textEditorCodeFolding', [CM.foldGutter(), CM.keymap.of(CM.foldKeymap)]);
+export const codeFolding = DynamicSetting.bool('textEditorCodeFolding', [
+  CM.foldGutter({
+    markerDOM(open: boolean): HTMLElement {
+      const iconName = open ? 'triangle-expanded' : 'triangle-collapsed';
+      const icon = new Icon.Icon.Icon();
+      icon.data = {
+        iconName,
+        color: 'var(--color-text-secondary)',
+        width: '12px',
+        height: '12px',
+      };
+      return icon;
+    },
+  }),
+  CM.keymap.of(CM.foldKeymap),
+]);
 
 export function guessIndent(doc: CM.Text): string {
   const values: {[indent: string]: number} = Object.create(null);
@@ -185,6 +204,7 @@ function detectLineSeparator(text: string): CM.Extension {
 
 const baseKeymap = CM.keymap.of([
   {key: 'Tab', run: CM.acceptCompletion},
+  {key: 'End', run: CM.acceptCompletion},
   {key: 'Ctrl-m', run: CM.cursorMatchingBracket, shift: CM.selectMatchingBracket},
   {key: 'Mod-/', run: CM.toggleComment},
   {key: 'Mod-d', run: CM.selectNextOccurrence},
@@ -199,10 +219,11 @@ function themeIsDark(): boolean {
   return setting === 'systemPreferred' ? window.matchMedia('(prefers-color-scheme: dark)').matches : setting === 'dark';
 }
 
-const dummyDarkTheme = CM.EditorView.theme({}, {dark: true});
+export const dummyDarkTheme = CM.EditorView.theme({}, {dark: true});
+export const themeSelection = new CM.Compartment();
 
 export function theme(): CM.Extension {
-  return [editorTheme, themeIsDark() ? dummyDarkTheme : []];
+  return [editorTheme, themeIsDark() ? themeSelection.of(dummyDarkTheme) : themeSelection.of([])];
 }
 
 let sideBarElement: HTMLElement|null = null;
@@ -215,24 +236,24 @@ function getTooltipSpace(): DOMRect {
   return sideBarElement.getBoundingClientRect();
 }
 
-export function baseConfiguration(text: string): CM.Extension {
+export function baseConfiguration(text: string|CM.Text): CM.Extension {
   return [
     theme(),
     CM.highlightSpecialChars(),
+    CM.highlightSelectionMatches(),
     CM.history(),
     CM.drawSelection(),
     CM.EditorState.allowMultipleSelections.of(true),
     CM.indentOnInput(),
-    CodeHighlighter.CodeHighlighter.highlightStyle,
+    CM.syntaxHighlighting(CodeHighlighter.CodeHighlighter.highlightStyle),
     baseKeymap,
+    CM.EditorView.clickAddsSelectionRange.of(mouseEvent => mouseEvent.altKey || mouseEvent.ctrlKey),
     tabMovesFocus.instance(),
     bracketMatching.instance(),
     indentUnit.instance(),
     CM.Prec.lowest(CM.EditorView.contentAttributes.of({'aria-label': i18nString(UIStrings.codeEditor)})),
-    detectLineSeparator(text),
-    autocompletion,
+    text instanceof CM.Text ? [] : detectLineSeparator(text),
     CM.tooltips({
-      parent: getTooltipHost() as unknown as HTMLElement,
       tooltipSpace: getTooltipSpace,
     }),
   ];
@@ -242,39 +263,6 @@ export const closeBrackets: CM.Extension = [
   CM.closeBrackets(),
   CM.keymap.of(CM.closeBracketsKeymap),
 ];
-
-// Root editor tooltips at the top of the document, creating a special
-// element with the editor styles mounted in it for them. This is
-// annoying, but necessary because a scrollable parent node clips them
-// otherwise, `position: fixed` doesn't work due to `contain` styles,
-// and appending them directly to `document.body` doesn't work because
-// the necessary style sheets aren't available there.
-let tooltipHost: ShadowRoot|null = null;
-
-function getTooltipHost(): ShadowRoot {
-  if (!tooltipHost) {
-    const styleModules = CM.EditorState
-                             .create({
-                               extensions: [
-                                 editorTheme,
-                                 themeIsDark() ? dummyDarkTheme : [],
-                                 CodeHighlighter.CodeHighlighter.highlightStyle,
-                                 CM.showTooltip.of({
-                                   pos: 0,
-                                   create() {
-                                     return {dom: document.createElement('div')};
-                                   },
-                                 }),
-                               ],
-                             })
-                             .facet(CM.EditorView.styleModule);
-    const host = document.body.appendChild(document.createElement('div'));
-    host.className = 'editor-tooltip-host';
-    tooltipHost = host.attachShadow({mode: 'open'});
-    CM.StyleModule.mount(tooltipHost, styleModules);
-  }
-  return tooltipHost;
-}
 
 class CompletionHint extends CM.WidgetType {
   constructor(readonly text: string) {

@@ -21,6 +21,8 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_testing_support.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/native_theme/native_theme_features.h"
 
@@ -725,7 +727,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureWithTranslateThenRotate) {
   EXPECT_EQ(out_response->links[0]->url, GURL("http://www.example.com"));
   EXPECT_NEAR(out_response->links[0]->rect.x(), 141, 5);
   EXPECT_NEAR(out_response->links[0]->rect.y(), 18, 5);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   EXPECT_NEAR(out_response->links[0]->rect.width(), 58, 10);
   EXPECT_NEAR(out_response->links[0]->rect.height(), 58, 10);
 #endif
@@ -767,7 +769,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureWithRotateThenTranslate) {
   EXPECT_EQ(out_response->links[0]->url, GURL("http://www.example.com"));
   EXPECT_NEAR(out_response->links[0]->rect.x(), 111, 5);
   EXPECT_NEAR(out_response->links[0]->rect.y(), 88, 5);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   EXPECT_NEAR(out_response->links[0]->rect.width(), 58, 10);
   EXPECT_NEAR(out_response->links[0]->rect.height(), 58, 10);
 #endif

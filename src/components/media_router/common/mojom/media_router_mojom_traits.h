@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "base/notreached.h"
 #include "components/media_router/common/discovery/media_sink_internal.h"
 #include "components/media_router/common/issue.h"
 #include "components/media_router/common/mojom/media_router.mojom-shared.h"
 #include "components/media_router/common/route_request_result.h"
+#include "mojo/public/cpp/bindings/optional_as_pointer.h"
 #include "net/base/ip_endpoint.h"
 
 namespace mojo {
@@ -344,15 +346,15 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
     return route.presentation_id();
   }
 
-  static absl::optional<std::string> media_source(
+  static mojo::OptionalAsPointer<const std::string> media_source(
       const media_router::MediaRoute& route) {
     // TODO(imcheng): If we ever convert from C++ to Mojo outside of unit tests,
     // it would be better to make the |media_source_| field on MediaRoute a
     // absl::optional<MediaSource::Id> instead so it can be returned directly
     // here.
-    return route.media_source().id().empty()
-               ? absl::optional<std::string>()
-               : absl::make_optional(route.media_source().id());
+    return mojo::MakeOptionalAsPointer(route.media_source().id().empty()
+                                           ? nullptr
+                                           : &route.media_source().id());
   }
 
   static const std::string& media_sink_id(
@@ -376,10 +378,6 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
   static media_router::RouteControllerType controller_type(
       const media_router::MediaRoute& route) {
     return route.controller_type();
-  }
-
-  static bool for_display(const media_router::MediaRoute& route) {
-    return route.for_display();
   }
 
   static bool is_off_the_record(const media_router::MediaRoute& route) {
@@ -415,9 +413,9 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
         return media_router::mojom::RouteRequestResultCode::SINK_NOT_FOUND;
       case media_router::RouteRequestResult::INVALID_ORIGIN:
         return media_router::mojom::RouteRequestResultCode::INVALID_ORIGIN;
-      case media_router::RouteRequestResult::OFF_THE_RECORD_MISMATCH:
+      case media_router::RouteRequestResult::DEPRECATED_OFF_THE_RECORD_MISMATCH:
         return media_router::mojom::RouteRequestResultCode::
-            OFF_THE_RECORD_MISMATCH;
+            DEPRECATED_OFF_THE_RECORD_MISMATCH;
       case media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER:
         return media_router::mojom::RouteRequestResultCode::
             NO_SUPPORTED_PROVIDER;
@@ -460,8 +458,10 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
       case media_router::mojom::RouteRequestResultCode::INVALID_ORIGIN:
         *output = media_router::RouteRequestResult::INVALID_ORIGIN;
         return true;
-      case media_router::mojom::RouteRequestResultCode::OFF_THE_RECORD_MISMATCH:
-        *output = media_router::RouteRequestResult::OFF_THE_RECORD_MISMATCH;
+      case media_router::mojom::RouteRequestResultCode::
+          DEPRECATED_OFF_THE_RECORD_MISMATCH:
+        *output = media_router::RouteRequestResult::
+            DEPRECATED_OFF_THE_RECORD_MISMATCH;
         return true;
       case media_router::mojom::RouteRequestResultCode::NO_SUPPORTED_PROVIDER:
         *output = media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER;

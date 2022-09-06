@@ -174,7 +174,9 @@ struct GPU_EXPORT Capabilities {
   bool dc_layers = false;
   bool protected_video_swap_chain = false;
   bool gpu_vsync = false;
+  bool shared_image_d3d = false;
   bool shared_image_swap_chain = false;
+  bool angle_rgbx_internal_format = false;
 
   // When this parameter is true, a CHROMIUM image created with RGB format will
   // actually have RGBA format. The client is responsible for handling most of

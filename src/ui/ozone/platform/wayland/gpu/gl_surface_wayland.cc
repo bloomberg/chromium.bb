@@ -24,14 +24,16 @@ void EGLWindowDeleter::operator()(wl_egl_window* egl_window) {
 
 std::unique_ptr<wl_egl_window, EGLWindowDeleter> CreateWaylandEglWindow(
     WaylandWindow* window) {
-  gfx::Size size = window->GetBounds().size();
+  gfx::Size size = window->GetBoundsInPixels().size();
   return std::unique_ptr<wl_egl_window, EGLWindowDeleter>(wl_egl_window_create(
       window->root_surface()->surface(), size.width(), size.height()));
 }
 
-GLSurfaceWayland::GLSurfaceWayland(WaylandEglWindowPtr egl_window,
+GLSurfaceWayland::GLSurfaceWayland(gl::GLDisplayEGL* display,
+                                   WaylandEglWindowPtr egl_window,
                                    WaylandWindow* window)
     : NativeViewGLSurfaceEGL(
+          display,
           reinterpret_cast<EGLNativeWindowType>(egl_window.get()),
           nullptr),
       egl_window_(std::move(egl_window)),
@@ -70,7 +72,7 @@ EGLConfig GLSurfaceWayland::GetConfig() {
                                EGL_SURFACE_TYPE,
                                EGL_WINDOW_BIT,
                                EGL_NONE};
-    config_ = ChooseEGLConfig(GetDisplay(), config_attribs);
+    config_ = ChooseEGLConfig(GetEGLDisplay(), config_attribs);
   }
   return config_;
 }

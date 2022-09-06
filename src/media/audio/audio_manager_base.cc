@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -26,7 +28,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include "base/logging.h"
-#include "build/chromeos_buildflags.h"
 #include "media/audio/audio_input_stream_data_interceptor.h"
 
 namespace media {
@@ -114,7 +115,7 @@ class AudioManagerBase::CompareByParams {
   }
 
  private:
-  const DispatcherParams* dispatcher_;
+  raw_ptr<const DispatcherParams> dispatcher_;
 };
 
 AudioManagerBase::AudioManagerBase(std::unique_ptr<AudioThread> audio_thread,
@@ -228,6 +229,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
       break;
     case AudioParameters::AUDIO_BITSTREAM_AC3:
     case AudioParameters::AUDIO_BITSTREAM_EAC3:
+    case AudioParameters::AUDIO_BITSTREAM_DTS:
+    case AudioParameters::AUDIO_BITSTREAM_DTS_HD:
+    case AudioParameters::AUDIO_BITSTREAM_DTSX_P2:
+    case AudioParameters::AUDIO_BITSTREAM_IEC61937:
       stream = MakeBitstreamOutputStream(params, device_id, log_callback);
       break;
     case AudioParameters::AUDIO_FAKE:
@@ -343,7 +348,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   std::string output_device_id =
       AudioDeviceDescription::IsDefaultDevice(device_id)
           ?
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
           // On ChromeOS, it is expected that, if the default device is given,
           // no specific device ID should be used since the actual output device
           // should change dynamically if the system default device changes.

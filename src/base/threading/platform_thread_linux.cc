@@ -18,16 +18,16 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/notreached.h"
 #include "base/process/internal_linux.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if !defined(OS_NACL) && !defined(OS_AIX)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 #include <pthread.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
@@ -38,13 +38,13 @@
 
 namespace base {
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 const Feature kSchedUtilHints{"SchedUtilHints", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 namespace {
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 std::atomic<bool> g_use_sched_util(true);
 std::atomic<bool> g_scheduler_hints_adjusted(false);
 
@@ -61,7 +61,7 @@ int g_scheduler_boost_adj;
 int g_scheduler_limit_adj;
 bool g_scheduler_use_latency_tune_adj;
 
-#if !defined(OS_NACL) && !defined(OS_AIX)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 
 // Defined by linux uclamp ABI of sched_setattr().
 const uint32_t kSchedulerUclampMin = 0;
@@ -129,10 +129,10 @@ int sched_setattr(pid_t pid,
                   unsigned int flags) {
   return syscall(__NR_sched_setattr, pid, attr, flags);
 }
-#endif  // !defined(OS_NACL) && !defined(OS_AIX)
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
 const FilePath::CharType kCgroupDirectory[] =
     FILE_PATH_LITERAL("/sys/fs/cgroup");
 
@@ -144,7 +144,7 @@ FilePath ThreadPriorityToCgroupDirectory(const FilePath& cgroup_filepath,
     case ThreadPriority::BACKGROUND:
       return cgroup_filepath.Append(FILE_PATH_LITERAL("non-urgent"));
     case ThreadPriority::DISPLAY:
-      FALLTHROUGH;
+      [[fallthrough]];
     case ThreadPriority::REALTIME_AUDIO:
       return cgroup_filepath.Append(FILE_PATH_LITERAL("urgent"));
   }
@@ -176,7 +176,7 @@ void SetThreadCgroupForThreadPriority(PlatformThreadId thread_id,
   SetThreadCgroup(thread_id, cgroup_directory);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 // thread_id should always be the value in the root PID namespace (see
 // FindThreadID).
 void SetThreadLatencySensitivity(ProcessId process_id,
@@ -228,12 +228,12 @@ void SetThreadLatencySensitivity(ProcessId process_id,
 
   switch (priority) {
     case ThreadPriority::NORMAL:
-      FALLTHROUGH;
+      [[fallthrough]];
     case ThreadPriority::BACKGROUND:
       break;
     case ThreadPriority::DISPLAY:
       // Display needs a boost for consistent 60 fps compositing.
-      FALLTHROUGH;
+      [[fallthrough]];
     case ThreadPriority::REALTIME_AUDIO:
       is_urgent = true;
       break;
@@ -286,7 +286,7 @@ void SetThreadCgroupsForThreadPriority(PlatformThreadId thread_id,
 namespace internal {
 
 namespace {
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
 const struct sched_param kRealTimePrio = {8};
 #endif
 }  // namespace
@@ -299,7 +299,7 @@ const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
 };
 
 bool CanSetThreadPriorityToRealtimeAudio() {
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   // A non-zero soft-limit on RLIMIT_RTPRIO is required to be allowed to invoke
   // pthread_setschedparam in SetCurrentThreadPriorityForPlatform().
   struct rlimit rlim;
@@ -310,11 +310,11 @@ bool CanSetThreadPriorityToRealtimeAudio() {
 }
 
 bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   // For legacy schedtune interface
   SetThreadCgroupsForThreadPriority(PlatformThread::CurrentId(), priority);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // For upstream uclamp interface. We try both legacy (schedtune, as done
   // earlier) and upstream (uclamp) interfaces, and whichever succeeds wins.
   SetThreadLatencySensitivity(0 /* ignore */, 0 /* thread-self */, priority);
@@ -328,7 +328,7 @@ bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
 }
 
 absl::optional<ThreadPriority> GetCurrentThreadPriorityForPlatform() {
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   int maybe_sched_rr = 0;
   struct sched_param maybe_realtime_prio = {0};
   if (pthread_getschedparam(pthread_self(), &maybe_sched_rr,
@@ -347,7 +347,7 @@ absl::optional<ThreadPriority> GetCurrentThreadPriorityForPlatform() {
 void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(name);
 
-#if !defined(OS_NACL) && !defined(OS_AIX)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
   // On linux we can get the thread names to show up in the debugger by setting
   // the process name for the LWP.  We don't want to do this for the main
   // thread because that would rename the process, causing tools like killall
@@ -364,10 +364,10 @@ void PlatformThread::SetName(const std::string& name) {
   // We expect EPERM failures in sandboxed processes, just ignore those.
   if (err < 0 && errno != EPERM)
     DPLOG(ERROR) << "prctl(PR_SET_NAME)";
-#endif  //  !defined(OS_NACL) && !defined(OS_AIX)
+#endif  //  !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 }
 
-#if !defined(OS_NACL) && !defined(OS_AIX)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 // static
 void PlatformThread::SetThreadPriority(ProcessId process_id,
                                        PlatformThreadId thread_id,
@@ -380,7 +380,7 @@ void PlatformThread::SetThreadPriority(ProcessId process_id,
   // For legacy schedtune interface
   SetThreadCgroupsForThreadPriority(thread_id, priority);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // For upstream uclamp interface. We try both legacy (schedtune, as done
   // earlier) and upstream (uclamp) interfaces, and whichever succeeds wins.
   SetThreadLatencySensitivity(process_id, thread_id, priority);
@@ -392,9 +392,9 @@ void PlatformThread::SetThreadPriority(ProcessId process_id,
               << nice_setting;
   }
 }
-#endif  //  !defined(OS_NACL) && !defined(OS_AIX)
+#endif  //  !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 void PlatformThread::InitThreadPostFieldTrial() {
   DCHECK(FeatureList::GetInstance());
   if (!FeatureList::IsEnabled(kSchedUtilHints)) {

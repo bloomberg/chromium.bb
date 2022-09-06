@@ -36,6 +36,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/client/sharding_builder.h"
 #include "tensorflow/compiler/xla/service/computation_placer.h"
 #include "tensorflow/compiler/xla/xla.pb.h"
+#include "tensorflow/core/common_runtime/device_propagation.h"
 #include "tensorflow/core/common_runtime/function.h"
 #include "tensorflow/core/common_runtime/graph_constructor.h"
 #include "tensorflow/core/common_runtime/lower_function_call_op.h"
@@ -58,7 +59,9 @@ limitations under the License.
 #include "tensorflow/core/lib/gtl/cleanup.h"
 #include "tensorflow/core/lib/strings/proto_serialization.h"
 #include "tensorflow/core/lib/strings/str_util.h"
+#include "tensorflow/core/platform/error_payloads.h"
 #include "tensorflow/core/platform/fingerprint.h"
+#include "tensorflow/core/protobuf/core_platform_payloads.pb.h"
 #include "tensorflow/core/protobuf/tpu/compile_metadata.pb.h"
 #include "tensorflow/core/protobuf/tpu/dynamic_padding.pb.h"
 #include "tensorflow/core/protobuf/tpu/topology.pb.h"
@@ -1362,63 +1365,21 @@ const string& AssignedOrRequestedDevice(const Node* node) {
   return node->requested_device();
 }
 
-bool IsTpuDevice(const string& device_string) {
+bool IsTpuDevice(StringPiece device_string) {
   DeviceNameUtils::ParsedName device;
   return DeviceNameUtils::ParseFullName(device_string, &device) &&
          device.type == DEVICE_TPU_NODE;
 }
 
-// Returns a set of device ops can be placed on TPU. There is no strict rule of
-// thumb to decide which ops should be in the list, but empirically they are
-// mostly dummy ops like Identity-like ops or control flow related ops. However
-// people can add also add other ops like Pad to allow data stay on TPU.
-const absl::flat_hash_set<std::string>& PlaceOnTPUOpList() {
+bool CanAcceptTPUDevicePropagation(const Node& node) {
+  // A set of device ops can be placed on TPU. There is no strict rule of
+  // thumb to decide which ops should be in the list, but empirically they are
+  // mostly dummy ops like Identity-like ops or control flow related ops.
+  // However one can add also add other ops like Pad to allow data stay on TPU.
   static const auto place_on_tpu_ops = new absl::flat_hash_set<std::string>(
       {"Identity", "IdentityN", "Enter", "Exit", "Switch", "Merge",
        "NextIteration", "Shape", "_Retval"});
-  return *place_on_tpu_ops;
-}
-
-// If an op satisfies the following conditions, it will be placed on the same
-// TPU device as its inputs:
-//   (1) The op can be placed on TPU (in the PlaceOnTPUOpList)
-//   (2) The op itself has no requested or assigned devices.
-//   (3) All the data inputs of this op are placed on the same device on TPUs.
-//       There are exceptions like the NextIterations input of Switch node can
-//       be placed on CPU as it is just a boolean.
-//
-// Returns true if the node device has been changed, otherwise returns false.
-bool PlaceOpsOnTPU(Node* node) {
-  if (!AssignedOrRequestedDevice(node).empty() ||
-      !PlaceOnTPUOpList().contains(node->type_string())) {
-    return false;
-  }
-  string src_tpu_device = "";
-  Node* src_node;
-  for (const Edge* e : node->in_edges()) {
-    if (e->IsControlEdge()) {
-      continue;
-    }
-    Node* src = e->src();
-    const string& src_device = AssignedOrRequestedDevice(src);
-
-    // Make exceptions that we don't force the some inputs to place on TPUs.
-    if (node->IsSwitch() && src->IsLoopCond()) {
-      continue;
-    }
-
-    if (!IsTpuDevice(src_device) ||
-        (!src_tpu_device.empty() && src_device != src_tpu_device)) {
-      return false;
-    }
-    if (src_tpu_device.empty()) {
-      src_tpu_device = src_device;
-      src_node = src;
-    }
-  }
-  node->set_assigned_device_name(src_node->assigned_device_name());
-  node->set_requested_device(src_node->requested_device());
-  return true;
+  return place_on_tpu_ops->contains(node.type_string());
 }
 
 xla::OpMetadata CreateOpMetadataFromNode(const Node& node) {
@@ -1641,7 +1602,8 @@ static Status ParseTopologyAttr(const string& topology_attr,
                                    kTPUTopologyRank);
   }
   if (proto.num_tasks() != num_tasks) {
-    return errors::InvalidArgument("Mismatched number of TPU tasks");
+    return errors::InvalidArgument("Mismatched number of TPU tasks (",
+                                   proto.num_tasks(), " != ", num_tasks, ")");
   }
   if (proto.num_tpu_devices_per_task() != num_tpus_per_task) {
     return errors::InvalidArgument("Mismatched number of TPUs per task (",
@@ -2224,7 +2186,8 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
   CachedFunctionHandles cached_function_handles(flr);
   const bool use_spmd = (UseSpmdForXlaPartitioning(replicate_node) ||
                          replicate_inputs_outputs_by_default_for_xla_spmd_) &&
-                        allow_parameter_replication_for_spmd;
+                        allow_parameter_replication_for_spmd &&
+                        num_cores_per_replica > 1;
 
   // Offset _TPUReplicate non per replica argument indices by
   // (num_replicas - 1) * num_per_replica_args as _TPUReplicate nodes are
@@ -2292,7 +2255,8 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
           (params_info.IsVariableArg(i) || params_info.IsBroadcastArg(i) ||
            ((params_info.IsPerReplicaArg(i) ||
              params_info.IsDistributedArg(i)) &&
-            arg_types[i] != DT_RESOURCE))) {
+            arg_types[i] != DT_RESOURCE) ||
+           params_info.IsConstantArg(i))) {
         // Use replication for host variables or non-variable per-replica
         // inputs.
         node_and_sharding = NodeAndSharding(/*node=*/nullptr,
@@ -2317,7 +2281,11 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
       *node_and_sharding->sharding.add_metadata() =
           CreateOpMetadataFromNode(*replicate_node);
     } else if (node_and_sharding->sharding.type() == xla::OpSharding::MAXIMAL) {
-      assigned_core = node_and_sharding->sharding.tile_assignment_devices(0);
+      if (use_spmd) {
+        node_and_sharding->sharding = xla::sharding_builder::Replicate();
+      } else {
+        assigned_core = node_and_sharding->sharding.tile_assignment_devices(0);
+      }
     } else if (node_and_sharding->sharding.type() !=
                    xla::OpSharding::REPLICATED &&
                node_and_sharding->sharding.type() != xla::OpSharding::OTHER) {
@@ -2407,9 +2375,14 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
       }
 
       if (node_and_sharding->sharding.type() == xla::OpSharding::MAXIMAL) {
-        assigned_core = node_and_sharding->sharding.tile_assignment_devices(0);
-        TF_RETURN_IF_ERROR(
-            ValidateCoreNumber(*assigned_core, num_cores_per_replica));
+        if (use_spmd) {
+          node_and_sharding->sharding = xla::sharding_builder::Replicate();
+        } else {
+          assigned_core =
+              node_and_sharding->sharding.tile_assignment_devices(0);
+          TF_RETURN_IF_ERROR(
+              ValidateCoreNumber(*assigned_core, num_cores_per_replica));
+        }
       } else if (node_and_sharding->sharding.type() !=
                      xla::OpSharding::REPLICATED &&
                  node_and_sharding->sharding.type() != xla::OpSharding::OTHER) {
@@ -2435,7 +2408,7 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
       *node_and_sharding->sharding.add_metadata() =
           CreateOpMetadataFromNode(*replicate_node);
     }
-    if (assigned_core.has_value()) {
+    if (assigned_core.has_value() && !use_spmd) {
       retvals[i]->set_assigned_device_name(CoreDeviceLabel(*assigned_core));
       retvals_device_selector.ReportDeviceAssigned(*assigned_core, i);
       VLOG(3) << "Assigning return value " << i << " ("
@@ -2456,8 +2429,9 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
                      node_and_sharding->sharding.tile_assignment_devices(), ",")
               << " " << FormatNodeAndShardingMsg(node_and_sharding);
     } else {
-      DCHECK_EQ(node_and_sharding->sharding.type(),
-                xla::OpSharding::REPLICATED);
+      if (use_spmd) {
+        node_and_sharding->sharding = xla::sharding_builder::Replicate();
+      }
       for (int64_t core = 0; core < num_cores_per_replica; ++core) {
         retvals_device_selector.ReportDeviceAssigned(core, i);
       }
@@ -2477,14 +2451,9 @@ Status DistributedTPURewritePass::AssignArgsAndRetvalsToCores(
        absl::c_any_of(*retval_sharding, [](const xla::OpSharding& s) {
          return s.type() == xla::OpSharding::MAXIMAL;
        }))) {
-    LOG(WARNING) << "XLA SPMD only supports cases where all inputs/outputs "
-                    "exist on every partition (sharded or replicated). Fall "
-                    "back to MPMD.";
-    return AssignArgsAndRetvalsToCores(
-        num_cores_per_replica, params_info, arg_types, arg_shapes, retval_types,
-        retval_shapes, graph, replicate_node, flr,
-        /*allow_parameter_replication_for_spmd=*/false, arg_sharding,
-        arg_fast_mem, retval_sharding, arg_names);
+    return tensorflow::errors::InvalidArgument(
+        "XLA SPMD only supports cases where all inputs/outputs "
+        "exist on every partition (sharded or replicated).");
   }
   return Status::OK();
 }
@@ -2638,20 +2607,19 @@ Status DistributedTPURewritePass::BuildCompileNode(
   VLOG(1) << "BuildCompileNode";
 
   tpu::TPUCompileMetadataProto proto;
+  if (replicate_node) {
+    std::string str;
+    TF_RETURN_IF_ERROR(GetNodeAttr(replicate_node->attrs(),
+                                   "tpu_compile_options_proto", &str));
+    TF_RET_CHECK(proto.mutable_compile_options()->ParseFromString(str));
+  }
   proto.set_num_replicas(params_info.NumReplicas());
   proto.set_num_cores_per_replica(num_cores_per_replica);
   proto.set_function_library_fingerprint(library_fingerprint);
   proto.set_enable_automatic_model_parallelism(
       enable_cross_replica_sharding_mirrored_variables_);
   const bool use_spmd =
-      UseSpmdForXlaPartitioning(replicate_node) && allow_xla_spmd_partition_ &&
-      !absl::c_any_of(arg_sharding,
-                      [](const xla::OpSharding& s) {
-                        return s.type() == xla::OpSharding::MAXIMAL;
-                      }) &&
-      !absl::c_any_of(retval_sharding, [](const xla::OpSharding& s) {
-        return s.type() == xla::OpSharding::MAXIMAL;
-      });
+      UseSpmdForXlaPartitioning(replicate_node) && allow_xla_spmd_partition_;
   proto.set_use_spmd_for_xla_partitioning(use_spmd);
   const bool mpmd = (num_cores_per_replica > 1) && !use_spmd;
 
@@ -2715,7 +2683,9 @@ Status DistributedTPURewritePass::BuildCompileNode(
         (params_info.IsVariableArg(i) || params_info.IsBroadcastArg(i) ||
          params_info.IsConstantArg(i)));
     if (params_info.mirrored_variable_indices().count(i) > 0) {
-      CHECK_EQ(type, DT_RESOURCE);
+      TF_RET_CHECK(type == DT_RESOURCE)
+          << "Arg type: " << type << " name: " << arg->name()
+          << " shape: " << arg->shape().DebugString();
       arg->set_is_same_data_across_replicas(true);
       // 64-bit type is not shardable by XLA:TPU yet.
       bool sharding_enabled = (arg_shape.handle_type != DT_COMPLEX64 &&
@@ -3298,14 +3268,7 @@ Status DistributedTPURewritePass::BuildExecuteNodes(
   std::vector<Node*> to_be_removed_nodes;
 
   const bool use_spmd =
-      UseSpmdForXlaPartitioning(&replicate_node) && allow_xla_spmd_partition_ &&
-      !absl::c_any_of(arg_shardings,
-                      [](const xla::OpSharding& s) {
-                        return s.type() == xla::OpSharding::MAXIMAL;
-                      }) &&
-      !absl::c_any_of(retval_shardings, [](const xla::OpSharding& s) {
-        return s.type() == xla::OpSharding::MAXIMAL;
-      });
+      UseSpmdForXlaPartitioning(&replicate_node) && allow_xla_spmd_partition_;
   const bool mpmd = (num_cores_per_replica > 1) && !use_spmd;
 
   for (const Edge* e : replicate_input_edges) {
@@ -4959,11 +4922,19 @@ DistributedTPURewritePass::PerformHostTrainingLoopOptimization(
 
 Status DistributedTPURewritePass::PlaceUnassignedDeviceNodesOnTPUIfPossible(
     Graph* graph) {
-  ReverseDFS(*graph, {}, PlaceOpsOnTPU);
+  PropagateDevices(CanAcceptTPUDevicePropagation, IsTpuDevice, graph);
   return Status::OK();
 }
 
 Status DistributedTPURewritePass::Run(
+    const GraphOptimizationPassOptions& options) {
+  Status status = InternalRun(options);
+  OkOrSetErrorCounterPayload(
+      tensorflow::core::platform::ErrorSourceProto::TF_XLA_BRIDGE, status);
+  return status;
+}
+
+Status DistributedTPURewritePass::InternalRun(
     const GraphOptimizationPassOptions& options) {
   VLOG(1) << "DistributedTPURewritePass::Run";
 
@@ -5092,7 +5063,7 @@ bool DistributedTPURewritePass::
 bool DistributedTPURewritePass::
     enable_cross_replica_sharding_mirrored_variables_ = true;
 bool DistributedTPURewritePass::enable_automatic_model_parallelism_ = false;
-bool DistributedTPURewritePass::enable_xla_param_broadcast_ = false;
+bool DistributedTPURewritePass::enable_xla_param_broadcast_ = true;
 bool DistributedTPURewritePass::enable_multicore_locking_ = false;
 bool DistributedTPURewritePass::use_nd_sharding_ops_ = false;
 

@@ -35,7 +35,7 @@ class ConsolidatedConsentScreenView {
 
     bool is_arc_enabled = true;
     bool is_demo = false;
-    bool is_enterprise_managed_account = false;
+    bool is_tos_hidden = false;
     bool is_child_account = false;
     std::string country_code = "us";
 
@@ -62,6 +62,10 @@ class ConsolidatedConsentScreenView {
   virtual void SetUsageMode(bool enabled, bool managed) = 0;
   virtual void SetBackupMode(bool enabled, bool managed) = 0;
   virtual void SetLocationMode(bool enabled, bool managed) = 0;
+
+  // Set the visibility of the usage opt-in. For non-demo scenarios, the screen
+  // will stay in the `loading` step until this method is called.
+  virtual void SetUsageOptinOptinHidden(bool hidden) = 0;
 };
 
 class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
@@ -69,8 +73,7 @@ class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
  public:
   using TView = ConsolidatedConsentScreenView;
 
-  explicit ConsolidatedConsentScreenHandler(
-      JSCallsContainer* js_calls_container);
+  ConsolidatedConsentScreenHandler();
 
   ~ConsolidatedConsentScreenHandler() override;
 
@@ -87,6 +90,7 @@ class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
   void SetUsageMode(bool enabled, bool managed) override;
   void SetBackupMode(bool enabled, bool managed) override;
   void SetLocationMode(bool enabled, bool managed) override;
+  void SetUsageOptinOptinHidden(bool hidden) override;
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
@@ -94,7 +98,7 @@ class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   void HandleAccept(bool enable_stats_usage,
                     bool enable_backup_restore,

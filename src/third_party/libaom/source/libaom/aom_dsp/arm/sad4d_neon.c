@@ -82,7 +82,7 @@ static void sad_neon_32(const uint8x16_t vec_src_00,
 
 void aom_sad64x64x4d_neon(const uint8_t *src, int src_stride,
                           const uint8_t *const ref[4], int ref_stride,
-                          uint32_t *res) {
+                          uint32_t res[4]) {
   int i;
   uint16x8_t vec_sum_ref0_lo = vdupq_n_u16(0);
   uint16x8_t vec_sum_ref0_hi = vdupq_n_u16(0);
@@ -128,7 +128,7 @@ void aom_sad64x64x4d_neon(const uint8_t *src, int src_stride,
 
 void aom_sad32x32x4d_neon(const uint8_t *src, int src_stride,
                           const uint8_t *const ref[4], int ref_stride,
-                          uint32_t *res) {
+                          uint32_t res[4]) {
   int i;
   uint16x8_t vec_sum_ref0_lo = vdupq_n_u16(0);
   uint16x8_t vec_sum_ref0_hi = vdupq_n_u16(0);
@@ -172,7 +172,7 @@ void aom_sad32x32x4d_neon(const uint8_t *src, int src_stride,
 
 void aom_sad16x16x4d_neon(const uint8_t *src, int src_stride,
                           const uint8_t *const ref[4], int ref_stride,
-                          uint32_t *res) {
+                          uint32_t res[4]) {
   int i;
   uint16x8_t vec_sum_ref0_lo = vdupq_n_u16(0);
   uint16x8_t vec_sum_ref0_hi = vdupq_n_u16(0);
@@ -551,7 +551,7 @@ void aom_sadMxNx4d_neon(int width, int height, const uint8_t *src,
   }
 }
 
-#define sad_skip_MxN_neon(m, n)                                             \
+#define SAD_SKIP_MXN_NEON(m, n)                                             \
   void aom_sad_skip_##m##x##n##x4d_neon(const uint8_t *src, int src_stride, \
                                         const uint8_t *const ref[4],        \
                                         int ref_stride, uint32_t res[4]) {  \
@@ -563,29 +563,30 @@ void aom_sadMxNx4d_neon(int width, int height, const uint8_t *src,
     res[3] <<= 1;                                                           \
   }
 
-sad_skip_MxN_neon(4, 8);
-sad_skip_MxN_neon(4, 16);
-sad_skip_MxN_neon(4, 32);
+SAD_SKIP_MXN_NEON(4, 8)
+SAD_SKIP_MXN_NEON(4, 16)
+SAD_SKIP_MXN_NEON(4, 32)
 
-sad_skip_MxN_neon(8, 8);
-sad_skip_MxN_neon(8, 16);
-sad_skip_MxN_neon(8, 32);
+SAD_SKIP_MXN_NEON(8, 8)
+SAD_SKIP_MXN_NEON(8, 16)
+SAD_SKIP_MXN_NEON(8, 32)
 
-sad_skip_MxN_neon(16, 8);
-sad_skip_MxN_neon(16, 16);
-sad_skip_MxN_neon(16, 32);
-sad_skip_MxN_neon(16, 64);
+SAD_SKIP_MXN_NEON(16, 8)
+SAD_SKIP_MXN_NEON(16, 16)
+SAD_SKIP_MXN_NEON(16, 32)
+SAD_SKIP_MXN_NEON(16, 64)
 
-sad_skip_MxN_neon(32, 8);
-sad_skip_MxN_neon(32, 16);
-sad_skip_MxN_neon(32, 32);
-sad_skip_MxN_neon(32, 64);
+SAD_SKIP_MXN_NEON(32, 8)
+SAD_SKIP_MXN_NEON(32, 16)
+SAD_SKIP_MXN_NEON(32, 32)
+SAD_SKIP_MXN_NEON(32, 64)
 
-sad_skip_MxN_neon(64, 16);
-sad_skip_MxN_neon(64, 32);
-sad_skip_MxN_neon(64, 64);
-sad_skip_MxN_neon(64, 128);
+SAD_SKIP_MXN_NEON(64, 16)
+SAD_SKIP_MXN_NEON(64, 32)
+SAD_SKIP_MXN_NEON(64, 64)
+SAD_SKIP_MXN_NEON(64, 128)
 
-sad_skip_MxN_neon(128, 64);
-sad_skip_MxN_neon(128, 128);
-#undef sad_skip_MxN_neon
+SAD_SKIP_MXN_NEON(128, 64)
+SAD_SKIP_MXN_NEON(128, 128)
+
+#undef SAD_SKIP_MXN_NEON

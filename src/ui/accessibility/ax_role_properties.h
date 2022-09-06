@@ -40,6 +40,9 @@ AX_BASE_EXPORT bool IsButton(const ax::mojom::Role role);
 // Returns true if the provided role belongs to a cell or a table header.
 AX_BASE_EXPORT bool IsCellOrTableHeader(const ax::mojom::Role role);
 
+// Returns true if the role is expected to be the parent of a child tree.
+AX_BASE_EXPORT bool IsChildTreeOwner(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to an object on which a click
 // handler is commonly attached, or to an object that carries out an action when
 // clicked, such as activating itself, opening a dialog or closing a menu.
@@ -61,6 +64,11 @@ AX_BASE_EXPORT bool IsCheckBox(ax::mojom::Role role);
 
 // Returns true if the provided role is any of the combobox-related roles.
 AX_BASE_EXPORT bool IsComboBox(ax::mojom::Role role);
+
+// Returns true if the provided role is a container that can hold the choices
+// for a combobox. For example, a dialog could pop up a list of choices for a
+// user, and so a dialog is a potential combobox container.
+AX_BASE_EXPORT bool IsComboBoxContainer(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a container with selectable
 // children.
@@ -86,6 +94,10 @@ AX_BASE_EXPORT bool IsForm(const ax::mojom::Role role);
 // Returns true if crossing into or out of the provided role should count as
 // crossing a format boundary.
 AX_BASE_EXPORT bool IsFormatBoundary(const ax::mojom::Role role);
+
+// Returns true if the provided role belongs to a grid, treegrid, listgrid
+// or tree. Returns false for table.
+AX_BASE_EXPORT bool IsGridLike(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a heading.
 AX_BASE_EXPORT bool IsHeading(const ax::mojom::Role role);
@@ -195,7 +207,13 @@ AX_BASE_EXPORT bool IsTableColumn(ax::mojom::Role role);
 // Returns true if the provided role belongs to a table header.
 AX_BASE_EXPORT bool IsTableHeader(ax::mojom::Role role);
 
+// Returns true if the provided role belongs to an item that could be contained
+// in a table-like container. For example, a cell or a column header.
+AX_BASE_EXPORT bool IsTableItem(ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a table, a grid or a treegrid.
+// On Android this also returns true for the roles: lists, list boxes,
+// trees, description lists and directories.
 AX_BASE_EXPORT bool IsTableLike(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a table or grid row, and the
@@ -213,6 +231,16 @@ AX_BASE_EXPORT bool IsTextField(ax::mojom::Role role);
 // Returns true if the provided role fits the description of a UIA embedded
 // objects. See the method definition for more details.
 AX_BASE_EXPORT bool IsUIAEmbeddedObject(ax::mojom::Role role);
+
+// Returns false if |role| is a layout table, or whatever `IsTableLike` returns.
+AX_BASE_EXPORT bool IsUIATableLike(ax::mojom::Role role);
+
+// Returns false if |role| is a layout table cell, or whatever
+// `IsCellOrTableHeader` returns.
+AX_BASE_EXPORT bool IsUIACellOrTableHeader(ax::mojom::Role role);
+
+// Returns true if the provided role represents a window.
+AX_BASE_EXPORT bool IsWindow(const ax::mojom::Role role);
 
 // Returns true if the node should be read only by default
 AX_BASE_EXPORT bool ShouldHaveReadonlyStateByDefault(

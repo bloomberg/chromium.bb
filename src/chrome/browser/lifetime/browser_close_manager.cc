@@ -99,7 +99,7 @@ void BrowserCloseManager::OnBrowserReportCloseable(bool proceed) {
 }
 
 void BrowserCloseManager::CheckForDownloadsInProgress() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Mac has its own in-progress downloads prompt in app_controller_mac.mm.
   CloseBrowsers();
 #else
@@ -120,7 +120,12 @@ void BrowserCloseManager::ConfirmCloseWithPendingDownloads(
     int download_count,
     base::OnceCallback<void(bool)> callback) {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
-  DCHECK(browser);
+  if (browser == nullptr) {
+    // Background may call CloseAllBrowsers() with no Browsers. In this
+    // case immediately continue with shutting down.
+    std::move(callback).Run(/* proceed= */ true);
+    return;
+  }
   browser->window()->ConfirmBrowserCloseWithPendingDownloads(
       download_count, Browser::DownloadCloseType::kBrowserShutdown,
       std::move(callback));

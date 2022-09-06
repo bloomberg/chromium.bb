@@ -14,27 +14,30 @@
  * limitations under the License.
  */
 import https from 'https';
-import createHttpsProxyAgent from 'https-proxy-agent';
-import os from 'os';
 import ProgressBar from 'progress';
-import { getProxyForUrl } from 'proxy-from-env';
 import URL from 'url';
-
 import puppeteer from '../node.js';
 import { PUPPETEER_REVISIONS } from '../revisions.js';
-
+import createHttpsProxyAgent from 'https-proxy-agent';
+import { getProxyForUrl } from 'proxy-from-env';
 const supportedProducts = {
     chrome: 'Chromium',
     firefox: 'Firefox Nightly',
 };
+function getProduct(input) {
+    if (input !== 'chrome' && input !== 'firefox') {
+        throw new Error(`Unsupported product ${input}`);
+    }
+    return input;
+}
 export async function downloadBrowser() {
     const downloadHost = process.env.PUPPETEER_DOWNLOAD_HOST ||
         process.env.npm_config_puppeteer_download_host ||
         process.env.npm_package_config_puppeteer_download_host;
-    const product = process.env.PUPPETEER_PRODUCT ||
+    const product = getProduct(process.env.PUPPETEER_PRODUCT ||
         process.env.npm_config_puppeteer_product ||
         process.env.npm_package_config_puppeteer_product ||
-        'chrome';
+        'chrome');
     const downloadPath = process.env.PUPPETEER_DOWNLOAD_PATH ||
         process.env.npm_config_puppeteer_download_path ||
         process.env.npm_package_config_puppeteer_download_path;
@@ -45,7 +48,7 @@ export async function downloadBrowser() {
     });
     const revision = await getRevision();
     await fetchBinary(revision);
-    function getRevision() {
+    async function getRevision() {
         if (product === 'chrome') {
             return (process.env.PUPPETEER_CHROMIUM_REVISION ||
                 process.env.npm_config_puppeteer_chromium_revision ||
@@ -81,11 +84,7 @@ export async function downloadBrowser() {
         if (NPM_NO_PROXY)
             process.env.NO_PROXY = NPM_NO_PROXY;
         function onSuccess(localRevisions) {
-            // Use Intel x86 builds on Apple M1 until native macOS arm64
-            // Chromium builds are available.
-            if (os.platform() !== 'darwin' && os.arch() !== 'arm64') {
-                logPolitely(`${supportedProducts[product]} (${revisionInfo.revision}) downloaded to ${revisionInfo.folderPath}`);
-            }
+            logPolitely(`${supportedProducts[product]} (${revisionInfo.revision}) downloaded to ${revisionInfo.folderPath}`);
             localRevisions = localRevisions.filter((revision) => revision !== revisionInfo.revision);
             const cleanupOldVersions = localRevisions.map((revision) => browserFetcher.remove(revision));
             Promise.all([...cleanupOldVersions]);
@@ -120,7 +119,7 @@ export async function downloadBrowser() {
         const mb = bytes / 1024 / 1024;
         return `${Math.round(mb * 10) / 10} Mb`;
     }
-    function getFirefoxNightlyVersion() {
+    async function getFirefoxNightlyVersion() {
         const firefoxVersionsUrl = 'https://product-details.mozilla.org/1.0/firefox_versions.json';
         const proxyURL = getProxyForUrl(firefoxVersionsUrl);
         const requestOptions = {};
@@ -138,7 +137,7 @@ export async function downloadBrowser() {
             logPolitely(`Requesting latest Firefox Nightly version from ${firefoxVersionsUrl}`);
             https
                 .get(firefoxVersionsUrl, requestOptions, (r) => {
-                if (r.statusCode >= 400)
+                if (r.statusCode && r.statusCode >= 400)
                     return reject(new Error(`Got status code ${r.statusCode}`));
                 r.on('data', (chunk) => {
                     data += chunk;
@@ -159,7 +158,7 @@ export async function downloadBrowser() {
     }
 }
 export function logPolitely(toBeLogged) {
-    const logLevel = process.env.npm_config_loglevel;
+    const logLevel = process.env.npm_config_loglevel || '';
     const logLevelDisplay = ['silent', 'error', 'warn'].indexOf(logLevel) > -1;
     // eslint-disable-next-line no-console
     if (!logLevelDisplay)

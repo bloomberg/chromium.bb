@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
 #include "components/enterprise/browser/reporting/report_scheduler.h"
@@ -18,7 +17,6 @@
 #include "ios/chrome/browser/policy/browser_dm_token_storage_ios.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/policy/client_data_delegate_ios.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/reporting/reporting_delegate_factory_ios.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -113,8 +111,7 @@ ChromeBrowserCloudManagementControllerIOS::GetSharedURLLoaderFactory() {
 scoped_refptr<base::SingleThreadTaskRunner>
 ChromeBrowserCloudManagementControllerIOS::GetBestEffortTaskRunner() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return base::CreateSingleThreadTaskRunner(
-      {web::WebThread::UI, base::TaskPriority::BEST_EFFORT});
+  return web::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT});
 }
 
 std::unique_ptr<enterprise_reporting::ReportingDelegateFactory>

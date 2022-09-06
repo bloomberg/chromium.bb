@@ -30,12 +30,10 @@ std::vector<unwindstack::FrameData> stack() {
 
   unwindstack::FrameData data{};
   data.function_name = "fun1";
-  data.map_name = "map1";
   data.pc = 1;
   res.emplace_back(std::move(data));
   data = {};
   data.function_name = "fun2";
-  data.map_name = "map2";
   data.pc = 2;
   res.emplace_back(std::move(data));
   return res;
@@ -45,12 +43,10 @@ std::vector<unwindstack::FrameData> stack2() {
   std::vector<unwindstack::FrameData> res;
   unwindstack::FrameData data{};
   data.function_name = "fun1";
-  data.map_name = "map1";
   data.pc = 1;
   res.emplace_back(std::move(data));
   data = {};
   data.function_name = "fun3";
-  data.map_name = "map3";
   data.pc = 3;
   res.emplace_back(std::move(data));
   return res;
@@ -60,12 +56,10 @@ std::vector<unwindstack::FrameData> stack3() {
   std::vector<unwindstack::FrameData> res;
   unwindstack::FrameData data{};
   data.function_name = "fun1";
-  data.map_name = "map1";
   data.pc = 1;
   res.emplace_back(std::move(data));
   data = {};
   data.function_name = "fun4";
-  data.map_name = "map4";
   data.pc = 4;
   res.emplace_back(std::move(data));
   return res;
@@ -265,7 +259,7 @@ TEST(BookkeepingTest, ArbitraryOrder) {
     uint64_t sequence_number;
     OperationType type;
     uint64_t address;
-    uint64_t bytes;                       // 0 for free
+    uint64_t bytes;                                    // 0 for free
     const std::vector<unwindstack::FrameData>* stack;  // nullptr for free
     const std::vector<std::string>* build_ids;         // nullptr for free
 

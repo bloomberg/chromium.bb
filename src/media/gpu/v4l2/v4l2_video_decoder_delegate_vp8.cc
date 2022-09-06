@@ -179,7 +179,7 @@ bool V4L2VideoDecoderDelegateVP8::SubmitDecode(
                     std::extent<decltype(frame_hdr->dct_partition_sizes)>(),
                 "DCT partition size arrays must have equal number of elements");
   for (size_t i = 0; i < frame_hdr->num_of_dct_partitions &&
-                     i < base::size(v4l2_frame_hdr.dct_part_sizes);
+                     i < std::size(v4l2_frame_hdr.dct_part_sizes);
        ++i)
     v4l2_frame_hdr.dct_part_sizes[i] = frame_hdr->dct_partition_sizes[i];
 
@@ -241,10 +241,9 @@ bool V4L2VideoDecoderDelegateVP8::SubmitDecode(
 }
 
 bool V4L2VideoDecoderDelegateVP8::OutputPicture(scoped_refptr<VP8Picture> pic) {
-  // TODO(crbug.com/647725): Insert correct color space.
   surface_handler_->SurfaceReady(VP8PictureToV4L2DecodeSurface(pic.get()),
                                  pic->bitstream_id(), pic->visible_rect(),
-                                 VideoColorSpace());
+                                 pic->get_colorspace());
   return true;
 }
 

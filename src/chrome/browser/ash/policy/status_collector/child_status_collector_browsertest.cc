@@ -13,6 +13,7 @@
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/environment.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -42,12 +43,12 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -56,7 +57,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -66,12 +67,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace policy {
+
 namespace {
-namespace em = enterprise_management;
+
+namespace em = ::enterprise_management;
 
 using ::base::Time;
 using ::testing::Return;
-using ::testing::ReturnRef;
 
 // Time delta representing midnight 00:00.
 constexpr base::TimeDelta kMidnight;
@@ -103,20 +106,19 @@ const char kDroidGuardInfo[] = "{\"droid_guard_info\":42}";
 
 const char kFakeDmToken[] = "kFakeDmToken";
 
-class TestingChildStatusCollector : public policy::ChildStatusCollector {
+class TestingChildStatusCollector : public ChildStatusCollector {
  public:
   TestingChildStatusCollector(
       PrefService* pref_service,
       Profile* profile,
       chromeos::system::StatisticsProvider* provider,
-      const policy::StatusCollector::AndroidStatusFetcher&
-          android_status_fetcher,
+      const StatusCollector::AndroidStatusFetcher& android_status_fetcher,
       base::TimeDelta activity_day_start)
-      : policy::ChildStatusCollector(pref_service,
-                                     profile,
-                                     provider,
-                                     android_status_fetcher,
-                                     activity_day_start) {}
+      : ChildStatusCollector(pref_service,
+                             profile,
+                             provider,
+                             android_status_fetcher,
+                             activity_day_start) {}
 
   // Each time this is called, returns a time that is a fixed increment
   // later than the previous time.
@@ -137,14 +139,13 @@ int64_t GetActiveMilliseconds(const em::ChildStatusReportRequest& status) {
 }
 
 void CallAndroidStatusReceiver(
-    policy::ChildStatusCollector::AndroidStatusReceiver receiver,
+    ChildStatusCollector::AndroidStatusReceiver receiver,
     const std::string& status,
     const std::string& droid_guard_info) {
   std::move(receiver).Run(status, droid_guard_info);
 }
 
-bool GetEmptyAndroidStatus(
-    policy::StatusCollector::AndroidStatusReceiver receiver) {
+bool GetEmptyAndroidStatus(StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -152,10 +153,9 @@ bool GetEmptyAndroidStatus(
   return true;
 }
 
-bool GetFakeAndroidStatus(
-    const std::string& status,
-    const std::string& droid_guard_info,
-    policy::StatusCollector::AndroidStatusReceiver receiver) {
+bool GetFakeAndroidStatus(const std::string& status,
+                          const std::string& droid_guard_info,
+                          StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver),
@@ -164,8 +164,6 @@ bool GetFakeAndroidStatus(
 }
 
 }  // namespace
-
-namespace policy {
 
 // Though it is a unit test, this test is linked with browser_tests so that it
 // runs in a separate process. The intention is to avoid overriding the timezone
@@ -206,9 +204,9 @@ class ChildStatusCollectorTest : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
 
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
 
@@ -218,11 +216,11 @@ class ChildStatusCollectorTest : public testing::Test {
   ~ChildStatusCollectorTest() override {
     chromeos::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::SeneschalClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
     // |testing_profile_| must be destructed while ConciergeClient is alive.
     testing_profile_.reset();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     // Finish pending tasks.
@@ -330,8 +328,7 @@ class ChildStatusCollectorTest : public testing::Test {
   }
 
   virtual void RestartStatusCollector(
-      const policy::StatusCollector::AndroidStatusFetcher&
-          android_status_fetcher,
+      const StatusCollector::AndroidStatusFetcher& android_status_fetcher,
       const base::TimeDelta activity_day_start = kMidnight) {
     status_collector_ = std::make_unique<TestingChildStatusCollector>(
         pref_service(), testing_profile(), &fake_statistics_provider_,
@@ -367,7 +364,7 @@ class ChildStatusCollectorTest : public testing::Test {
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName(account_id.GetUserEmail());
     testing_profile_ = profile_builder.Build();
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, testing_profile_.get());
 
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
@@ -425,7 +422,7 @@ class ChildStatusCollectorTest : public testing::Test {
   ChromeContentClient content_client_;
   ChromeContentBrowserClient browser_content_client_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::FakeOwnerSettingsService owner_settings_service_{
       scoped_testing_cros_settings_.device_settings(), nullptr};
@@ -704,8 +701,8 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivity) {
   status_collector_->OnSubmittedSuccessfully();
 
   // Report activity for two different apps.
-  const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const ash::app_time::AppId app2(apps::mojom::AppType::kChromeApp, "app2");
+  const ash::app_time::AppId app1(apps::AppType::kWeb, "app1");
+  const ash::app_time::AppId app2(apps::AppType::kChromeApp, "app2");
   const Time start_time = Time::Now();
   const base::TimeDelta app1_interval = base::Minutes(1);
   const base::TimeDelta app2_interval = base::Minutes(2);
@@ -761,8 +758,8 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityNoReport) {
   EXPECT_EQ(0, child_status_.app_activity_size());
   status_collector_->OnSubmittedSuccessfully();
 
-  const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const ash::app_time::AppId app2(apps::mojom::AppType::kChromeApp, "app2");
+  const ash::app_time::AppId app1(apps::AppType::kWeb, "app1");
+  const ash::app_time::AppId app2(apps::AppType::kChromeApp, "app2");
   const base::TimeDelta app1_interval = base::Minutes(1);
   const base::TimeDelta app2_interval = base::Minutes(2);
 
@@ -807,8 +804,8 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityMetrics) {
       /*expected_count=*/0);
 
   // Report activity for two different apps.
-  const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const ash::app_time::AppId app2(apps::mojom::AppType::kChromeApp, "app2");
+  const ash::app_time::AppId app1(apps::AppType::kWeb, "app1");
+  const ash::app_time::AppId app2(apps::AppType::kChromeApp, "app2");
   const base::TimeDelta app1_interval = base::Seconds(1);
   const base::TimeDelta app2_interval = base::Seconds(2);
   SimulateAppActivity(app1, app1_interval);

@@ -79,8 +79,8 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
   auto egl_window = CreateWaylandEglWindow(window);
   if (!egl_window)
     return nullptr;
-  return gl::InitializeGLSurface(
-      new GLSurfaceWayland(std::move(egl_window), window));
+  return gl::InitializeGLSurface(new GLSurfaceWayland(
+      gl::GLSurfaceEGL::GetGLDisplayEGL(), std::move(egl_window), window));
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
@@ -104,11 +104,13 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
     const gfx::Size& size) {
-  if (gl::GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
+  if (gl::GLSurfaceEGL::GetGLDisplayEGL()->IsEGLSurfacelessContextSupported() &&
       size.width() == 0 && size.height() == 0) {
-    return gl::InitializeGLSurface(new gl::SurfacelessEGL(size));
+    return gl::InitializeGLSurface(
+        new gl::SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(), size));
   } else {
-    return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
+    return gl::InitializeGLSurface(
+        new gl::PbufferGLSurfaceEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(), size));
   }
 }
 
@@ -151,8 +153,6 @@ WaylandSurfaceFactory::GetAllowedGLImplementations() {
     impls.emplace_back(
         gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
     impls.emplace_back(
-        gl::GLImplementationParts(gl::kGLImplementationSwiftShaderGL));
-    impls.emplace_back(
         gl::GLImplementationParts(gl::ANGLEImplementation::kSwiftShader));
   }
   return impls;
@@ -162,7 +162,6 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
     const gl::GLImplementationParts& implementation) {
   switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
-    case gl::kGLImplementationSwiftShaderGL:
     case gl::kGLImplementationEGLANGLE:
       return egl_implementation_.get();
     default:
@@ -231,6 +230,18 @@ WaylandSurfaceFactory::CreateNativePixmapFromHandle(
 #else
   return nullptr;
 #endif
+}
+
+bool WaylandSurfaceFactory::SupportsNativePixmaps() const {
+  bool supports_native_pixmaps = false;
+#if defined(WAYLAND_GBM)
+  supports_native_pixmaps = buffer_manager_->GetGbmDevice() != nullptr;
+#endif
+  // Native pixmaps are not supported with swiftshader.
+  if (gl::IsSoftwareGLImplementation(gl::GetGLImplementationParts())) {
+    supports_native_pixmaps = false;
+  }
+  return supports_native_pixmaps;
 }
 
 }  // namespace ui

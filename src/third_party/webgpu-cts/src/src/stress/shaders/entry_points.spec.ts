@@ -10,12 +10,12 @@ export const g = makeTestGroup(GPUTest);
 
 const makeCode = (numEntryPoints: number) => {
   const kBaseCode = `
-      [[block]] struct Buffer { data: u32; };
-      [[group(0), binding(0)]] var<storage, read_write> buffer: Buffer;
+      struct Buffer { data: u32; };
+      @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
       fn main() { buffer.data = buffer.data + 1u;  }
       `;
   const makeEntryPoint = (i: number) => `
-      [[stage(compute), workgroup_size(1)]] fn computeMain${i}() { main(); }
+      @compute @workgroup_size(1) fn computeMain${i}() { main(); }
       `;
   return kBaseCode + range(numEntryPoints, makeEntryPoint).join('');
 };
@@ -70,7 +70,7 @@ a shader, in which case this would become a validation test instead.`
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bindGroup);
       pass.dispatch(1);
-      pass.endPass();
+      pass.end();
     });
 
     t.device.queue.submit([encoder.finish()]);

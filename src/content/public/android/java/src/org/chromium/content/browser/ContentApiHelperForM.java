@@ -4,12 +4,12 @@
 
 package org.chromium.content.browser;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.ActionMode;
 import android.view.View;
 
-import org.chromium.base.annotations.VerifiesOnM;
+import androidx.annotation.RequiresApi;
+
 import org.chromium.content.browser.selection.FloatingActionModeCallback;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 
@@ -19,8 +19,7 @@ import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
  * encountering the new APIs.
  */
 
-@VerifiesOnM
-@TargetApi(Build.VERSION_CODES.M)
+@RequiresApi(Build.VERSION_CODES.M)
 public final class ContentApiHelperForM {
     private ContentApiHelperForM() {}
 

@@ -10,13 +10,16 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/clamped_math.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_codec.h"
 #include "components/bookmarks/browser/bookmark_load_details.h"
 #include "components/bookmarks/browser/titled_url_index.h"
 #include "components/bookmarks/browser/url_index.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
+#include "components/bookmarks/common/url_load_stats.h"
 
 namespace bookmarks {
 
@@ -79,52 +82,13 @@ void LoadBookmarks(const base::FilePath& path,
 
   details->CreateUrlIndex();
 
-  UrlIndex::Stats stats = details->url_index()->ComputeStats();
+  UrlLoadStats stats = details->url_index()->ComputeStats();
+  metrics::RecordUrlLoadStatsOnProfileLoad(stats);
 
-  DCHECK_LE(stats.duplicate_url_bookmark_count, stats.total_url_bookmark_count);
-  DCHECK_LE(stats.duplicate_url_and_title_bookmark_count,
-            stats.duplicate_url_bookmark_count);
-  DCHECK_LE(stats.duplicate_url_and_title_and_parent_bookmark_count,
-            stats.duplicate_url_and_title_bookmark_count);
-
-  base::UmaHistogramCounts100000(
-      "Bookmarks.Count.OnProfileLoad",
-      base::saturated_cast<int>(stats.total_url_bookmark_count));
-
-  if (stats.duplicate_url_bookmark_count != 0) {
-    base::UmaHistogramCounts100000(
-        "Bookmarks.Count.OnProfileLoad.DuplicateUrl2",
-        base::saturated_cast<int>(stats.duplicate_url_bookmark_count));
+  int64_t file_size_bytes;
+  if (bookmark_file_exists && base::GetFileSize(path, &file_size_bytes)) {
+    metrics::RecordFileSizeAtStartup(file_size_bytes);
   }
-
-  if (stats.duplicate_url_and_title_bookmark_count != 0) {
-    base::UmaHistogramCounts100000(
-        "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitle",
-        base::saturated_cast<int>(
-            stats.duplicate_url_and_title_bookmark_count));
-  }
-
-  if (stats.duplicate_url_and_title_and_parent_bookmark_count != 0) {
-    base::UmaHistogramCounts100000(
-        "Bookmarks.Count.OnProfileLoad.DuplicateUrlAndTitleAndParent",
-        base::saturated_cast<int>(
-            stats.duplicate_url_and_title_and_parent_bookmark_count));
-  }
-
-  // Log derived metrics for convenience.
-  base::UmaHistogramCounts100000(
-      "Bookmarks.Count.OnProfileLoad.UniqueUrl",
-      base::saturated_cast<int>(stats.total_url_bookmark_count -
-                                stats.duplicate_url_bookmark_count));
-  base::UmaHistogramCounts100000(
-      "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitle",
-      base::saturated_cast<int>(stats.total_url_bookmark_count -
-                                stats.duplicate_url_and_title_bookmark_count));
-  base::UmaHistogramCounts100000(
-      "Bookmarks.Count.OnProfileLoad.UniqueUrlAndTitleAndParent",
-      base::saturated_cast<int>(
-          stats.total_url_bookmark_count -
-          stats.duplicate_url_and_title_and_parent_bookmark_count));
 }
 
 }  // namespace

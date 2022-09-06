@@ -24,6 +24,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -32,6 +33,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace ash {
 
@@ -79,7 +81,7 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
     const int padding_left_dip =
         icon_view_->GetVisible() ? kIconMarginDip : kChipPaddingDip;
     layout_manager_->set_inside_border_insets(
-        gfx::Insets(0, padding_left_dip, 0, kChipPaddingDip));
+        gfx::Insets::TLBR(0, padding_left_dip, 0, kChipPaddingDip));
   }
   PreferredSizeChanged();
 }
@@ -113,8 +115,9 @@ void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
   // Path is used for the focus ring, i.e. path is not necessary for dark and
   // light mode flag off case. But we always install this as it shouldn't be a
   // problem even if we provide the path to the UI framework.
-  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                height() / 2);
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kMaximum, size());
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(), radius);
 
   // Layout.
   // Note that padding differs depending on icon visibility.
@@ -123,7 +126,8 @@ void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, padding_left_dip, 0, kChipPaddingDip), kIconMarginDip));
+      gfx::Insets::TLBR(0, padding_left_dip, 0, kChipPaddingDip),
+      kIconMarginDip));
 
   layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -153,16 +157,17 @@ void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
   text_view_->SetID(kSuggestionChipViewLabel);
   text_view_->SetAutoColorReadabilityEnabled(false);
   text_view_->SetSubpixelRenderingEnabled(false);
-  text_view_->SetFontList(
-      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
+  const gfx::FontList& font_list = assistant::ui::GetDefaultFontList();
+  text_view_->SetFontList(font_list.Derive(
+      /*size_delta=*/1, font_list.GetFontStyle(), gfx::Font::Weight::MEDIUM));
   SetText(text);
 
   if (!use_dark_light_mode_colors_) {
     SetBackground(
-        views::CreateRoundedRectBackground(SK_ColorTRANSPARENT, height() / 2));
+        views::CreateRoundedRectBackground(SK_ColorTRANSPARENT, radius));
   }
 
-  SetBorder(views::CreateRoundedRectBorder(kStrokeWidthDip, height() / 2,
+  SetBorder(views::CreateRoundedRectBorder(kStrokeWidthDip, radius,
                                            GetStrokeColor()));
 }
 
@@ -204,16 +209,17 @@ void SuggestionChipView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (height() == previous_bounds.height())
     return;
 
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kMaximum, size());
   if (!use_dark_light_mode_colors_) {
     SetBackground(views::CreateRoundedRectBackground(
-        HasFocus() ? kFocusColor : SK_ColorTRANSPARENT, height() / 2));
+        HasFocus() ? kFocusColor : SK_ColorTRANSPARENT, radius));
   }
 
-  SetBorder(views::CreateRoundedRectBorder(kStrokeWidthDip, height() / 2,
+  SetBorder(views::CreateRoundedRectBorder(kStrokeWidthDip, radius,
                                            GetStrokeColor()));
 
-  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                height() / 2);
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(), radius);
 }
 
 void SuggestionChipView::OnThemeChanged() {
@@ -225,7 +231,9 @@ void SuggestionChipView::OnThemeChanged() {
       ColorProvider::ContentLayerType::kTextColorSecondary));
 
   if (use_dark_light_mode_colors_) {
-    SetBorder(views::CreateRoundedRectBorder(kStrokeWidthDip, height() / 2,
+    const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+        views::Emphasis::kMaximum, size());
+    SetBorder(views::CreateRoundedRectBorder(kStrokeWidthDip, radius,
                                              GetStrokeColor()));
 
     views::FocusRing::Get(this)->SetColor(

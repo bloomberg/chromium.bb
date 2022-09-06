@@ -10,15 +10,17 @@
 #define GPU_INFO_UTIL_SYSTEM_INFO_H_
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace angle
 {
 
-using VendorID   = uint32_t;
-using DeviceID   = uint32_t;
-using RevisionID = uint32_t;
+using VendorID       = uint32_t;
+using DeviceID       = uint32_t;
+using RevisionID     = uint32_t;
+using SystemDeviceID = uint64_t;
 
 struct VersionInfo
 {
@@ -35,9 +37,10 @@ struct GPUDeviceInfo
 
     GPUDeviceInfo(const GPUDeviceInfo &other);
 
-    VendorID vendorId     = 0;
-    DeviceID deviceId     = 0;
-    RevisionID revisionId = 0;
+    VendorID vendorId             = 0;
+    DeviceID deviceId             = 0;
+    RevisionID revisionId         = 0;
+    SystemDeviceID systemDeviceId = 0;
 
     std::string driverVendor;
     std::string driverVersion;
@@ -57,6 +60,9 @@ struct SystemInfo
     bool hasNVIDIAGPU() const;
     bool hasIntelGPU() const;
     bool hasAMDGPU() const;
+
+    // Returns the index to `gpus` if the entry matches the preferred device string.
+    std::optional<size_t> getPreferredGPUIndex() const;
 
     std::vector<GPUDeviceInfo> gpus;
 
@@ -92,16 +98,17 @@ bool GetSystemInfo(SystemInfo *info);
 bool GetSystemInfoVulkan(SystemInfo *info);
 
 // Known PCI vendor IDs
-constexpr VendorID kVendorID_AMD      = 0x1002;
-constexpr VendorID kVendorID_ARM      = 0x13B5;
-constexpr VendorID kVendorID_Broadcom = 0x14E4;
-constexpr VendorID kVendorID_GOOGLE   = 0x1AE0;
-constexpr VendorID kVendorID_ImgTec   = 0x1010;
-constexpr VendorID kVendorID_Intel    = 0x8086;
-constexpr VendorID kVendorID_NVIDIA   = 0x10DE;
-constexpr VendorID kVendorID_Qualcomm = 0x5143;
-constexpr VendorID kVendorID_VMWare   = 0x15ad;
-constexpr VendorID kVendorID_Apple    = 0x106B;
+constexpr VendorID kVendorID_AMD       = 0x1002;
+constexpr VendorID kVendorID_ARM       = 0x13B5;
+constexpr VendorID kVendorID_Broadcom  = 0x14E4;
+constexpr VendorID kVendorID_GOOGLE    = 0x1AE0;
+constexpr VendorID kVendorID_ImgTec    = 0x1010;
+constexpr VendorID kVendorID_Intel     = 0x8086;
+constexpr VendorID kVendorID_NVIDIA    = 0x10DE;
+constexpr VendorID kVendorID_Qualcomm  = 0x5143;
+constexpr VendorID kVendorID_VMWare    = 0x15ad;
+constexpr VendorID kVendorID_Apple     = 0x106B;
+constexpr VendorID kVendorID_Microsoft = 0x1414;
 
 // Known non-PCI (i.e. Khronos-registered) vendor IDs
 constexpr VendorID kVendorID_Vivante     = 0x10001;
@@ -112,6 +119,7 @@ constexpr VendorID kVendorID_Kazan       = 0x10003;
 constexpr DeviceID kDeviceID_Swiftshader  = 0xC0DE;
 constexpr DeviceID kDeviceID_Adreno540    = 0x5040001;
 constexpr DeviceID kDeviceID_UHD630Mobile = 0x3E9B;
+constexpr DeviceID kDeviceID_HD630Mobile  = 0x5912;
 
 // Predicates on vendor IDs
 bool IsAMD(VendorID vendorId);
@@ -128,6 +136,7 @@ bool IsVeriSilicon(VendorID vendorId);
 bool IsVMWare(VendorID vendorId);
 bool IsVivante(VendorID vendorId);
 bool IsApple(VendorID vendorId);
+bool IsMicrosoft(VendorID vendorId);
 
 // Returns a readable vendor name given the VendorID
 std::string VendorName(VendorID vendor);
@@ -152,6 +161,13 @@ uint64_t GetGpuIDFromOpenGLDisplayMask(uint32_t displayMask);
 // Get VendorID from metal device's registry ID
 VendorID GetVendorIDFromMetalDeviceRegistryID(uint64_t registryID);
 #endif
+
+uint64_t GetSystemDeviceIdFromParts(uint32_t highPart, uint32_t lowPart);
+uint32_t GetSystemDeviceIdHighPart(uint64_t systemDeviceId);
+uint32_t GetSystemDeviceIdLowPart(uint64_t systemDeviceId);
+
+// Returns lower-case of ANGLE_PREFERRED_DEVICE environment variable contents.
+std::string GetPreferredDeviceString();
 
 }  // namespace angle
 

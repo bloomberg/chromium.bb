@@ -48,6 +48,12 @@ class PeerConnectionDelegateAdapter : public PeerConnectionObserver {
 
   void OnIceCandidate(const IceCandidateInterface *candidate) override;
 
+  void OnIceCandidateError(const std::string &address,
+                           int port,
+                           const std::string &url,
+                           int error_code,
+                           const std::string &error_text) override;
+
   void OnIceCandidatesRemoved(const std::vector<cricket::Candidate> &candidates) override;
 
   void OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent &event) override;
@@ -62,6 +68,8 @@ class PeerConnectionDelegateAdapter : public PeerConnectionObserver {
 };
 
 }  // namespace webrtc
+@protocol RTC_OBJC_TYPE
+(RTCSSLCertificateVerifier);
 
 @interface RTC_OBJC_TYPE (RTCPeerConnection)
 ()
@@ -77,11 +85,12 @@ class PeerConnectionDelegateAdapter : public PeerConnectionObserver {
 /** Initialize an RTCPeerConnection with a configuration, constraints, and
  *  delegate.
  */
-- (nullable instancetype)initWithFactory:(RTC_OBJC_TYPE(RTCPeerConnectionFactory) *)factory
-                           configuration:(RTC_OBJC_TYPE(RTCConfiguration) *)configuration
-                             constraints:(RTC_OBJC_TYPE(RTCMediaConstraints) *)constraints
-                                delegate:
-                                    (nullable id<RTC_OBJC_TYPE(RTCPeerConnectionDelegate)>)delegate;
+- (nullable instancetype)
+        initWithFactory:(RTC_OBJC_TYPE(RTCPeerConnectionFactory) *)factory
+          configuration:(RTC_OBJC_TYPE(RTCConfiguration) *)configuration
+            constraints:(RTC_OBJC_TYPE(RTCMediaConstraints) *)constraints
+    certificateVerifier:(nullable id<RTC_OBJC_TYPE(RTCSSLCertificateVerifier)>)certificateVerifier
+               delegate:(nullable id<RTC_OBJC_TYPE(RTCPeerConnectionDelegate)>)delegate;
 
 /** Initialize an RTCPeerConnection with a configuration, constraints,
  *  delegate and PeerConnectionDependencies.

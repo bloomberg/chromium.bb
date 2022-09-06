@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_FILE_DELEGATE_HOST_IMPL_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/thread_annotations.h"
 #include "components/services/storage/public/cpp/big_io_buffer.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "storage/browser/file_system/file_stream_reader.h"
@@ -15,7 +16,8 @@
 namespace content {
 
 // Browser side implementation of the FileSystemAccessFileDelegateHost mojom
-// interface. Instances of this class are owned by the
+// interface, which facilitates file operations for Access Handles in incognito
+// mode. Instances of this class are owned by the
 // FileSystemAccessAccessHandleHostImpl instance of the associated URL, which
 // constructs it.
 class FileSystemAccessFileDelegateHostImpl
@@ -30,14 +32,12 @@ class FileSystemAccessFileDelegateHostImpl
   ~FileSystemAccessFileDelegateHostImpl() override;
 
   // blink::mojom::FileSystemAccessFileDelegateHost:
-  void Read(uint64_t offset,
-            uint64_t bytes_to_read,
-            ReadCallback callback) override;
-  void Write(uint64_t offset,
+  void Read(int64_t offset, int bytes_to_read, ReadCallback callback) override;
+  void Write(int64_t offset,
              mojo::ScopedDataPipeConsumerHandle data,
              WriteCallback callback) override;
   void GetLength(GetLengthCallback callback) override;
-  void SetLength(uint64_t length, SetLengthCallback callback) override;
+  void SetLength(int64_t length, SetLengthCallback callback) override;
 
  private:
   // State that is kept for the duration of a write operation, to keep track of
@@ -65,12 +65,13 @@ class FileSystemAccessFileDelegateHostImpl
   const raw_ptr<FileSystemAccessManagerImpl> manager_;
   const storage::FileSystemURL url_;
 
-  mojo::Receiver<blink::mojom::FileSystemAccessFileDelegateHost> receiver_;
+  mojo::Receiver<blink::mojom::FileSystemAccessFileDelegateHost> receiver_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<FileSystemAccessFileDelegateHostImpl> weak_factory_{
-      this};
+  base::WeakPtrFactory<FileSystemAccessFileDelegateHostImpl> weak_factory_
+      GUARDED_BY_CONTEXT(sequence_checker_){this};
 };
 
 }  // namespace content

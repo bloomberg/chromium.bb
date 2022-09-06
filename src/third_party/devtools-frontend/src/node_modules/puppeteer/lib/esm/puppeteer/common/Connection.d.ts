@@ -2,6 +2,7 @@ import { Protocol } from 'devtools-protocol';
 import { ProtocolMapping } from 'devtools-protocol/types/protocol-mapping.js';
 import { ConnectionTransport } from './ConnectionTransport.js';
 import { EventEmitter } from './EventEmitter.js';
+import { ProtocolError } from './Errors.js';
 /**
  * @public
  */
@@ -12,7 +13,7 @@ export { ConnectionTransport, ProtocolMapping };
 export interface ConnectionCallback {
     resolve: Function;
     reject: Function;
-    error: Error;
+    error: ProtocolError;
     method: string;
 }
 /**
@@ -24,7 +25,7 @@ export declare const ConnectionEmittedEvents: {
     readonly Disconnected: symbol;
 };
 /**
- * @internal
+ * @public
  */
 export declare class Connection extends EventEmitter {
     _url: string;
@@ -35,7 +36,7 @@ export declare class Connection extends EventEmitter {
     _closed: boolean;
     _callbacks: Map<number, ConnectionCallback>;
     constructor(url: string, transport: ConnectionTransport, delay?: number);
-    static fromSession(session: CDPSession): Connection;
+    static fromSession(session: CDPSession): Connection | undefined;
     /**
      * @param sessionId - The session id
      * @returns The current CDP session if it exists
@@ -63,6 +64,7 @@ export interface CDPSessionOnMessageObject {
     error: {
         message: string;
         data: any;
+        code: number;
     };
     result?: any;
 }
@@ -83,7 +85,7 @@ export declare const CDPSessionEmittedEvents: {
  * events can be subscribed to with `CDPSession.on` method.
  *
  * Useful links: {@link https://chromedevtools.github.io/devtools-protocol/ | DevTools Protocol Viewer}
- * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/master/README.md | Getting Started with DevTools Protocol}.
+ * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/HEAD/README.md | Getting Started with DevTools Protocol}.
  *
  * @example
  * ```js
@@ -103,7 +105,7 @@ export declare class CDPSession extends EventEmitter {
     /**
      * @internal
      */
-    _connection: Connection;
+    _connection?: Connection;
     private _sessionId;
     private _targetType;
     private _callbacks;
@@ -111,7 +113,7 @@ export declare class CDPSession extends EventEmitter {
      * @internal
      */
     constructor(connection: Connection, targetType: string, sessionId: string);
-    connection(): Connection;
+    connection(): Connection | undefined;
     send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
     /**
      * @internal
@@ -126,5 +128,9 @@ export declare class CDPSession extends EventEmitter {
      * @internal
      */
     _onClosed(): void;
+    /**
+     * @internal
+     */
+    id(): string;
 }
 //# sourceMappingURL=Connection.d.ts.map

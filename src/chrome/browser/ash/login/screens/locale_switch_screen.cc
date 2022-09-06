@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -29,10 +28,7 @@ constexpr base::TimeDelta kWaitTimeout = base::Seconds(5);
 // Returns whether all information needed (locale and account capabilities)
 // has been fetched.
 bool IsAllInfoFetched(const AccountInfo& info) {
-  bool result = !info.locale.empty();
-  if (features::IsMinorModeRestrictionEnabled())
-    result &= info.capabilities.AreAllCapabilitiesKnown();
-  return result;
+  return !info.locale.empty() && info.capabilities.AreAllCapabilitiesKnown();
 }
 
 }  // namespace
@@ -70,6 +66,10 @@ LocaleSwitchScreen::~LocaleSwitchScreen() {
 }
 
 bool LocaleSwitchScreen::MaybeSkip(WizardContext* wizard_context) {
+  if (wizard_context->skip_post_login_screens_for_tests) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
   if (user->HasGaiaAccount()) {
     return false;

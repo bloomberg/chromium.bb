@@ -2,32 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/url_formatter/url_fixer.h"
+
 #include <stddef.h>
 #include <stdlib.h>
 
 #include <string>
 
 #include "base/base_paths.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/url_formatter/url_fixer.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
-
-namespace url {
-
-std::ostream& operator<<(std::ostream& os, const Component& part) {
-  return os << "(begin=" << part.begin << ", len=" << part.len << ")";
-}
-
-}  // namespace url
 
 struct SegmentCase {
   const std::string input;
@@ -224,7 +216,7 @@ static const SegmentCase segment_cases[] = {
         url::Component(),       // query
         url::Component(27, 3),  // ref
     },
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     {
         "c:/notahost/path/file#ref", "file",
         url::Component(),       // scheme
@@ -236,7 +228,7 @@ static const SegmentCase segment_cases[] = {
         url::Component(),       // query
         url::Component(22, 3),  // ref
     },
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
     {
         "~/notahost/path/file#ref", "file",
         url::Component(),       // scheme
@@ -268,7 +260,7 @@ TEST(URLFixerTest, SegmentURL) {
   std::string result;
   url::Parsed parts;
 
-  for (size_t i = 0; i < base::size(segment_cases); ++i) {
+  for (size_t i = 0; i < std::size(segment_cases); ++i) {
     SegmentCase value = segment_cases[i];
     SCOPED_TRACE(testing::Message() << "test #" << i << ": " << value.input);
 
@@ -354,13 +346,27 @@ struct FixupCase {
     {"user:passwd@www.google.com:8080/", "user:passwd@www.google.com:8080/"},
     // {"file:///c:/foo/bar%20baz.txt", "file:///C:/foo/bar%20baz.txt"},
     // URLs which end with 0x85 (NEL in ISO-8859).
-    {"http://foo.com/s?q=\xd0\x85", "http://foo.com/s?q=%D0%85"},
-    {"http://foo.com/s?q=\xec\x97\x85", "http://foo.com/s?q=%EC%97%85"},
-    {"http://foo.com/s?q=\xf0\x90\x80\x85", "http://foo.com/s?q=%F0%90%80%85"},
+    {"http://example.com/s?q=\xD0\x85", "http://example.com/s?q=%D0%85"},
+    {"http://example.com/s?q=\xEC\x97\x85", "http://example.com/s?q=%EC%97%85"},
+    {"http://example.com/s?q=\xF0\x90\x80\x85",
+     "http://example.com/s?q=%F0%90%80%85"},
     // URLs which end with 0xA0 (non-break space in ISO-8859).
-    {"http://foo.com/s?q=\xd0\xa0", "http://foo.com/s?q=%D0%A0"},
-    {"http://foo.com/s?q=\xec\x97\xa0", "http://foo.com/s?q=%EC%97%A0"},
-    {"http://foo.com/s?q=\xf0\x90\x80\xa0", "http://foo.com/s?q=%F0%90%80%A0"},
+    {"http://example.com/s?q=\xD0\xA0", "http://example.com/s?q=%D0%A0"},
+    {"http://example.com/s?q=\xEC\x97\xA0", "http://example.com/s?q=%EC%97%A0"},
+    {"http://example.com/s?q=\xF0\x90\x80\xA0",
+     "http://example.com/s?q=%F0%90%80%A0"},
+    // URLs containing Unicode non-characters.
+    {"http://example.com/s?q=\xEF\xB7\x90",  // U+FDD0
+     "http://example.com/s?q=%EF%BF%BD"},
+    {"http://example.com/s?q=\xEF\xBF\xBE",  // U+FFFE
+     "http://example.com/s?q=%EF%BF%BD"},
+    {"http://example.com/s?q=\xEF\xBF\xBF",  // U+FFFF
+     "http://example.com/s?q=%EF%BF%BD"},
+    {"http://example.com/s?q=\xF4\x8F\xBF\xBE",  // U+10FFFE
+     "http://example.com/s?q=%EF%BF%BD"},
+    {"http://example.com/s?q=\xF4\x8F\xBF\xBF",  // U+10FFFF
+     "http://example.com/s?q=%EF%BF%BD"},
+
     // URLs containing IPv6 literals.
     {"[2001:db8::2]", "http://[2001:db8::2]/"},
     {"[::]:80", "http://[::]/"},
@@ -382,10 +388,10 @@ struct FixupCase {
     {"http;/www.google.com/", "http://www.google.com/"},
     // Semicolon at start.
     {";http://www.google.com/", "http://%3Bhttp//www.google.com/"},
-    // Devtools scheme.
+    // DevTools scheme.
     {"devtools://bundled/devtools/node.html",
      "devtools://bundled/devtools/node.html"},
-    // Devtools scheme with websocket query.
+    // DevTools scheme with websocket query.
     {"devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid",
      "devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid"},
     // host:123 should be rewritten to http://host:123/, but only if the port
@@ -491,7 +497,7 @@ TEST(URLFixerTest, FixupFile) {
   EXPECT_EQ(golden, fixedup);
 
   // TODO(port): Make some equivalent tests for posix.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // c|/foo\bar.txt -> file:///c:/foo/bar.txt (pipe allowed instead of colon)
   std::string cur(base::WideToUTF8(original.value()));
   EXPECT_EQ(':', cur[1]);
@@ -525,9 +531,9 @@ TEST(URLFixerTest, FixupFile) {
     //   {"file:///foo:/bar", "file://foo/bar"},
     //   {"file:/\\/server\\folder/file", "file://server/folder/file"},
   };
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #define HOME "/Users/"
 #else
 #define HOME "/home/"

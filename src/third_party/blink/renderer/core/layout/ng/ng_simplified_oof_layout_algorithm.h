@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_SIMPLIFIED_OOF_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_SIMPLIFIED_OOF_LAYOUT_ALGORITHM_H_
 
+#include "base/notreached.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -26,31 +28,21 @@ class CORE_EXPORT NGSimplifiedOOFLayoutAlgorithm
  public:
   NGSimplifiedOOFLayoutAlgorithm(const NGLayoutAlgorithmParams&,
                                  const NGPhysicalBoxFragment&,
-                                 bool is_new_fragment,
-                                 bool should_break_for_oof = false);
+                                 bool is_new_fragment);
 
-  scoped_refptr<const NGLayoutResult> Layout() override;
+  const NGLayoutResult* Layout() override;
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override {
     NOTREACHED();
     return MinMaxSizesResult();
   }
 
-  void AppendOutOfFlowResult(scoped_refptr<const NGLayoutResult> child);
+  void AppendOutOfFlowResult(const NGLayoutResult* child);
 
  private:
   void AddChildFragment(const NGLink& old_fragment);
-  void AdvanceChildIterator();
-  void AdvanceBreakTokenIterator();
 
   const WritingDirectionMode writing_direction_;
   PhysicalSize previous_physical_container_size_;
-
-  base::span<const NGLink> children_;
-  base::span<const NGLink>::iterator child_iterator_;
-  const NGBlockBreakToken* incoming_break_token_;
-  const NGBlockBreakToken* old_fragment_break_token_;
-  base::span<const Member<const NGBreakToken>>::iterator break_token_iterator_;
-  bool only_copy_break_tokens_ = false;
 };
 
 }  // namespace blink

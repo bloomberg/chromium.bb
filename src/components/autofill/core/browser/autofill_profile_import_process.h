@@ -56,6 +56,21 @@ enum class AutofillProfileImportType {
   kMaxValue = kUnusableIncompleteProfile
 };
 
+// Metadata about the import, which is passed through from FormDataImporter to
+// ProfileImportProcess. This is required to do metric collection, depending on
+// the user's decision to (not) import, based on how we construct the candidate
+// profile in FormDataImporter.
+struct ProfileImportMetadata {
+  // Whether the profile's country was complemented automatically.
+  // TODO(crbug.com/1297032): Cleanup when launched.
+  bool did_complement_country = false;
+  // Whether the profile originally contained an invalid phone number, that was:
+  // - removed due to |kAutofillRemoveInvalidPhoneNumberOnImport|
+  // - the only requirement preventing an import.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  bool did_remove_invalid_phone_number = false;
+};
+
 // This class holds the state associated with the import of an AutofillProfile
 // observed in a form submission and should be used as the follows:
 //
@@ -78,7 +93,8 @@ class ProfileImportProcess {
                        const std::string& app_locale,
                        const GURL& form_source_url,
                        const PersonalDataManager* personal_data_manager,
-                       bool allow_only_silent_updates);
+                       bool allow_only_silent_updates,
+                       ProfileImportMetadata import_metadata = {});
 
   ProfileImportProcess(const ProfileImportProcess&);
   ProfileImportProcess& operator=(const ProfileImportProcess& other);
@@ -220,6 +236,10 @@ class ProfileImportProcess {
 
   // If true, denotes that the import process allows only silent updates.
   bool allow_only_silent_updates_;
+
+  // Metadata about the import, used for metric collection after the user's
+  // decision.
+  ProfileImportMetadata import_metadata_;
 };
 
 }  // namespace autofill

@@ -12,9 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_test_helper.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -25,12 +25,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace ash {
+
 namespace {
+
 const char kUserId[] = "test@example.com";
 const char kNetworkId[] = "wifi1_guid";  // Matches FakeShillManagerClient
-}  // namespace
 
-namespace chromeos {
+}  // namespace
 
 class NetworkPrefStateObserverTest : public testing::Test {
  public:
@@ -100,8 +102,8 @@ TEST_F(NetworkPrefStateObserverTest, LoginUser) {
   // Set the profile pref to PAC script mode.
   std::unique_ptr<base::DictionaryValue> proxy_config(
       std::make_unique<base::DictionaryValue>());
-  proxy_config->SetString("mode", ProxyPrefs::kPacScriptProxyModeName);
-  proxy_config->SetString("pac_url", "http://proxy");
+  proxy_config->SetStringKey("mode", ProxyPrefs::kPacScriptProxyModeName);
+  proxy_config->SetStringKey("pac_url", "http://proxy");
   profile->GetPrefs()->Set(proxy_config::prefs::kProxy, *proxy_config.get());
   base::RunLoop().RunUntilIdle();
 
@@ -116,4 +118,4 @@ TEST_F(NetworkPrefStateObserverTest, LoginUser) {
   EXPECT_EQ(base::Value(::onc::proxy::kPAC), *mode);
 }
 
-}  // namespace chromeos
+}  // namespace ash

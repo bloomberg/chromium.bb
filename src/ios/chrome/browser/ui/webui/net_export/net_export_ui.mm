@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
@@ -98,7 +99,7 @@ NetExportMessageHandler::NetExportMessageHandler()
 }
 
 NetExportMessageHandler::~NetExportMessageHandler() {
-  file_writer_->StopNetLog(nullptr);
+  file_writer_->StopNetLog();
 }
 
 void NetExportMessageHandler::RegisterMessages() {
@@ -134,7 +135,7 @@ void NetExportMessageHandler::OnEnableNotifyUIWithState(
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
-  base::Value::ConstListView params = list->GetList();
+  base::Value::ConstListView params = list->GetListDeprecated();
 
   // Determine the capture mode.
   net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::kDefault;
@@ -161,7 +162,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  file_writer_->StopNetLog(nullptr);
+  file_writer_->StopNetLog();
 }
 
 void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {

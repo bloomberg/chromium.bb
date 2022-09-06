@@ -27,12 +27,15 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
-// |navigationController|: Handles user movement to check subpages.
-// |browser|: browser state for preferences and password check.
+// `navigationController`: Handles user movement to check subpages.
+// `browser`: browser state for preferences and password check.
 - (instancetype)initWithBaseNavigationController:
                     (UINavigationController*)navigationController
                                          browser:(Browser*)browser
     NS_DESIGNATED_INITIALIZER;
+
+// Start a safety check if it is not currently running.
+- (void)startCheckIfNotRunning;
 
 @end
 

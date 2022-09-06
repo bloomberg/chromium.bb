@@ -4,8 +4,8 @@
 
 #include "src/execution/microtask-queue.h"
 
-#include <stddef.h>
 #include <algorithm>
+#include <cstddef>
 
 #include "src/api/api-inl.h"
 #include "src/base/logging.h"
@@ -179,6 +179,8 @@ int MicrotaskQueue::RunMicrotasks(Isolate* isolate) {
                      processed_microtask_count);
   }
 
+  DCHECK_IMPLIES(isolate->has_scheduled_exception(),
+                 maybe_result.is_null() && maybe_exception.is_null());
   // If execution is terminating, clean up and propagate that to TryCatch scope.
   if (maybe_result.is_null() && maybe_exception.is_null()) {
     delete[] ring_buffer_;
@@ -187,7 +189,7 @@ int MicrotaskQueue::RunMicrotasks(Isolate* isolate) {
     size_ = 0;
     start_ = 0;
     DCHECK(isolate->has_scheduled_exception());
-    isolate->SetTerminationOnExternalTryCatch();
+    isolate->OnTerminationDuringRunMicrotasks();
     OnCompleted(isolate);
     return -1;
   }

@@ -40,6 +40,7 @@ void av1_nonrd_pick_partition(AV1_COMP *cpi, ThreadData *td,
                               PC_TREE *pc_tree);
 #endif
 void av1_reset_part_sf(PARTITION_SPEED_FEATURES *part_sf);
+void av1_reset_sf_for_ext_part(AV1_COMP *const cpi);
 
 bool av1_rd_partition_search(AV1_COMP *const cpi, ThreadData *td,
                              TileDataEnc *tile_data, TokenExtra **tp,

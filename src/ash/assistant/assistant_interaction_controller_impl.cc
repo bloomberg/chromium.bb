@@ -36,7 +36,6 @@
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -140,8 +139,6 @@ void AssistantInteractionControllerImpl::StartTextInteraction(
     AssistantQuerySource query_source) {
   DCHECK(assistant_);
 
-  StopActiveInteraction(false);
-
   model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text, query_source));
 
@@ -185,7 +182,6 @@ void AssistantInteractionControllerImpl::OnDeepLinkReceived(
         const absl::optional<std::string>& client_id =
             GetDeepLinkParam(params, DeepLinkParam::kClientId);
         if (client_id && !client_id.value().empty()) {
-          StopActiveInteraction(false);
           model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
               l10n_util::GetStringUTF8(IDS_ASSISTANT_EDIT_REMINDER_QUERY),
               /*query_source=*/AssistantQuerySource::kDeepLink));
@@ -264,9 +260,7 @@ void AssistantInteractionControllerImpl::OnHighlighterSelectionRecognized(
   DCHECK(AssistantState::Get()->IsScreenContextAllowed());
 
   AssistantUiController::Get()->ShowUi(AssistantEntryPoint::kStylus);
-  StartScreenContextInteraction(
-      /*include_assistant_structure=*/false, rect,
-      AssistantQuerySource::kStylus);
+  StartScreenContextInteraction(rect, AssistantQuerySource::kStylus);
 }
 
 void AssistantInteractionControllerImpl::OnInteractionStateChanged(
@@ -495,9 +489,11 @@ void AssistantInteractionControllerImpl::OnHtmlResponse(
     return;
   }
 
+  DCHECK(AssistantUiController::Get());
   AssistantResponse* response = GetResponseForActiveInteraction();
-  response->AddUiElement(
-      std::make_unique<AssistantCardElement>(html, fallback));
+  response->AddUiElement(std::make_unique<AssistantCardElement>(
+      html, fallback,
+      AssistantUiController::Get()->GetModel()->AppListBubbleWidth()));
 
   // If |response| is pending, commit it to cause the response for the
   // previous interaction, if one exists, to be animated off stage and the new
@@ -793,7 +789,6 @@ void AssistantInteractionControllerImpl::OnUiVisible(
 }
 
 void AssistantInteractionControllerImpl::StartScreenContextInteraction(
-    bool include_assistant_structure,
     const gfx::Rect& region,
     AssistantQuerySource query_source) {
   StopActiveInteraction(false);
@@ -802,24 +797,20 @@ void AssistantInteractionControllerImpl::StartScreenContextInteraction(
       l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN),
       query_source));
 
-  assistant_controller_->screen_context_controller()->RequestScreenContext(
-      include_assistant_structure, region,
+  assistant_controller_->screen_context_controller()->RequestScreenshot(
+      region,
       base::BindOnce(
           [](const base::WeakPtr<AssistantInteractionControllerImpl>& self,
-             ax::mojom::AssistantStructurePtr assistant_structure,
              const std::vector<uint8_t>& screenshot) {
             if (!self)
               return;
 
-            self->assistant_->StartScreenContextInteraction(
-                std::move(assistant_structure), screenshot);
+            self->assistant_->StartScreenContextInteraction(screenshot);
           },
           screen_context_request_factory_.GetWeakPtr()));
 }
 
 void AssistantInteractionControllerImpl::StartVoiceInteraction() {
-  StopActiveInteraction(false);
-
   model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
 
   assistant_->StartVoiceInteraction();

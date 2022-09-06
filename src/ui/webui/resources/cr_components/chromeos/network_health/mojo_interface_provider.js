@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-// #import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
-// #import 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-lite.js';
-// clang-format on
+// TODO(crbug/1127165, crbug/1179821): Remove these Mojo lite bindings once the
+// Tast test JS fixtures are converted from a hardcoded string to a file and
+// the global chromeos.networkDiagnostics.mojom namespace is avoided. In the
+// meantime, these lite bindings are required to expose the namespace.
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
+import 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-lite.js';
+
+import {NetworkDiagnosticsRoutines, NetworkDiagnosticsRoutinesInterface} from 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-webui.js';
 
 /**
  * @fileoverview
@@ -15,31 +19,26 @@
  */
 
 /**
- * @type
- *     {?chromeos.networkDiagnostics.mojom.NetworkDiagnosticsRoutinesInterface}
+ * @type {?NetworkDiagnosticsRoutinesInterface}
  */
 let networkDiagnosticsService = null;
 
 /**
- * @param
- *     {!chromeos.networkDiagnostics.mojom.NetworkDiagnosticsRoutinesInterface}
- *     testNetworkDiagnosticsService
+ * @param {!NetworkDiagnosticsRoutinesInterface} testNetworkDiagnosticsService
  */
-/* #export */ function setNetworkDiagnosticsServiceForTesting(
+export function setNetworkDiagnosticsServiceForTesting(
     testNetworkDiagnosticsService) {
   networkDiagnosticsService = testNetworkDiagnosticsService;
 }
 
 /**
- * @return
- *     {!chromeos.networkDiagnostics.mojom.NetworkDiagnosticsRoutinesInterface}
+ * @return {!NetworkDiagnosticsRoutinesInterface}
  */
-/* #export */ function getNetworkDiagnosticsService() {
+export function getNetworkDiagnosticsService() {
   if (networkDiagnosticsService) {
     return networkDiagnosticsService;
   }
 
-  networkDiagnosticsService =
-      chromeos.networkDiagnostics.mojom.NetworkDiagnosticsRoutines.getRemote();
+  networkDiagnosticsService = NetworkDiagnosticsRoutines.getRemote();
   return networkDiagnosticsService;
 }

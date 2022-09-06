@@ -26,11 +26,12 @@ std::u16string ConcatAncestorsTitles(
     std::vector<base::StringPiece16> ancestors) {
   return ancestors.empty()
              ? std::u16string()
-             : std::accumulate(std::next(ancestors.rbegin()), ancestors.rend(),
-                               std::u16string(*ancestors.rbegin()),
-                               [](std::u16string& a, base::StringPiece16& b) {
-                                 return a + u"/" + std::u16string(b);
-                               });
+             : std::accumulate(
+                   std::next(ancestors.rbegin()), ancestors.rend(),
+                   std::u16string(*ancestors.rbegin()),
+                   [](const std::u16string& a, const base::StringPiece16& b) {
+                     return a + u"/" + std::u16string(b);
+                   });
 }
 
 }  // namespace
@@ -68,7 +69,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   auto format_types = AutocompleteMatch::GetFormatTypes(
       input.parts().scheme.len > 0 || match_in_scheme, match_in_subdomain);
   const std::u16string formatted_url = url_formatter::FormatUrl(
-      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+      url, format_types, base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 
   if (OmniboxFieldTrial::kBookmarkPathsUiReplaceUrl.Get()) {
     match.contents = path;
@@ -124,7 +125,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           url,
           url_formatter::FormatUrl(url, fill_into_edit_format_types,
-                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   base::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           scheme_classifier, &inline_autocomplete_offset);
 

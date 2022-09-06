@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "build/chromecast_buildflags.h"
 #include "media/audio/audio_device_description.h"
+#include "media/base/media_switches.h"
 #include "services/audio/input_stream.h"
 #include "services/audio/local_muter.h"
 #include "services/audio/loopback_stream.h"
@@ -24,30 +25,35 @@
 
 namespace audio {
 
-#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-const base::Feature kMixingForChromeWideAec{"MixingForChromeWideAec",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 namespace {
-
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 std::unique_ptr<OutputDeviceMixerManager> MaybeCreateOutputDeviceMixerManager(
     media::AudioManager* audio_manager) {
-  if (!base::FeatureList::IsEnabled(kMixingForChromeWideAec))
+  if (!media::IsChromeWideEchoCancellationEnabled())
     return nullptr;
 
   return std::make_unique<OutputDeviceMixerManager>(
       audio_manager, base::BindRepeating(&OutputDeviceMixer::Create));
 }
+#endif  // BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 
+// Ideally, this would be based on the incoming audio's buffer durations.
+// However, we might deal with multiple streams, with multiple buffer durations.
+// Using a 10ms constant instead is acceptable (and better than the default)
+// since there are no super-strict realtime requirements (no system audio calls
+// waiting on these threads).
+constexpr base::TimeDelta kReatimeThreadPeriod = base::Milliseconds(10);
 }  // namespace
-#endif
 
-StreamFactory::StreamFactory(media::AudioManager* audio_manager)
+StreamFactory::StreamFactory(media::AudioManager* audio_manager,
+                             AecdumpRecordingManager* aecdump_recording_manager)
     : audio_manager_(audio_manager),
+      aecdump_recording_manager_(aecdump_recording_manager),
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
       output_device_mixer_manager_(
           MaybeCreateOutputDeviceMixerManager(audio_manager)),
 #endif
-      loopback_worker_thread_("Loopback Worker") {
+      loopback_worker_thread_("Loopback Worker", kReatimeThreadPeriod) {
 }
 
 StreamFactory::~StreamFactory() {
@@ -70,6 +76,7 @@ void StreamFactory::CreateInputStream(
     uint32_t shared_memory_count,
     bool enable_agc,
     base::ReadOnlySharedMemoryRegion key_press_count_buffer,
+    media::mojom::AudioProcessingConfigPtr processing_config,
     CreateInputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateInputStream", this,
@@ -83,13 +90,13 @@ void StreamFactory::CreateInputStream(
   input_streams_.insert(std::make_unique<InputStream>(
       std::move(created_callback), std::move(deleter_callback),
       std::move(stream_receiver), std::move(client), std::move(observer),
-      std::move(pending_log), audio_manager_,
+      std::move(pending_log), audio_manager_, aecdump_recording_manager_,
       UserInputMonitor::Create(std::move(key_press_count_buffer)),
       &stream_count_metric_reporter_,
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-      output_device_mixer_manager_.get(),
+      output_device_mixer_manager_.get(), std::move(processing_config),
 #else
-      nullptr,
+      nullptr, nullptr,
 #endif
       device_id, params, shared_memory_count, enable_agc));
 }
@@ -174,7 +181,7 @@ void StreamFactory::BindMuter(
   if (it == muters_.end()) {
     auto muter_ptr = std::make_unique<LocalMuter>(&coordinator_, group_id);
     muter = muter_ptr.get();
-    muter->SetAllBindingsLostCallback(base::BindOnce(
+    muter->SetAllBindingsLostCallback(base::BindRepeating(
         &StreamFactory::DestroyMuter, base::Unretained(this), muter));
     muters_.emplace_back(std::move(muter_ptr));
   } else {
@@ -265,7 +272,12 @@ void StreamFactory::DestroyMuter(LocalMuter* muter) {
           std::find_if(weak_this->muters_.begin(), weak_this->muters_.end(),
                        base::MatchesUniquePtr(muter));
       DCHECK(it != weak_this->muters_.end());
-      weak_this->muters_.erase(it);
+
+      // The LocalMuter can still have receivers if a receiver was bound after
+      // DestroyMuter is called but before the do_destroy task is run.
+      if (!muter->HasReceivers()) {
+        weak_this->muters_.erase(it);
+      }
     }
   };
 

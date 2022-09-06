@@ -38,8 +38,16 @@ parentMessagePipe.registerHandler(
   notificationCallback(/** @type {!NotificationInfo} */ (message));
 });
 
+let streamActionCallback = null;
+parentMessagePipe.registerHandler(Message.STREAM_ACTION, async (message) => {
+  if (!streamActionCallback) {
+    return;
+  }
+  streamActionCallback(/** @type {!StreamAction} */ (message.action));
+});
+
 // The implementation of echeapi.d.ts
-const EcheApiBindingImpl = new class {
+const EcheApiBindingImpl = new (class {
   closeWindow() {
     console.log('echeapi receiver.js closeWindow');
     parentMessagePipe.sendMessage(Message.CLOSE_WINDOW);
@@ -93,6 +101,16 @@ const EcheApiBindingImpl = new class {
         Message.SHOW_NOTIFICATION, {title, message, notificationType});
   }
 
+  showToast(text) {
+    console.log('echeapi receiver.js showToast');
+    parentMessagePipe.sendMessage(Message.SHOW_TOAST, {text});
+  }
+
+  startStreaming() {
+    console.log('echeapi receiver.js startStreaming');
+    parentMessagePipe.sendMessage(Message.START_STREAMING);
+  }
+
   sendTimeHistogram(histogram, value) {
     console.log('echeapi receiver.js sendTimeHistogram');
     parentMessagePipe.sendMessage(
@@ -104,7 +122,12 @@ const EcheApiBindingImpl = new class {
     parentMessagePipe.sendMessage(
         Message.ENUM_HISTOGRAM_MESSAGE, {histogram, value, maxValue});
   }
-};
+
+  onStreamAction(callback) {
+    console.log('echeapi receiver.js onStreamAction');
+    streamActionCallback = callback;
+  }
+})();
 
 // Declare module echeapi and bind the implementation to echeapi.d.ts
 console.log('echeapi receiver.js start bind the implementation of echeapi');
@@ -131,9 +154,15 @@ echeapi.system.registerNotificationReceiver =
     EcheApiBindingImpl.onReceivedNotification.bind(EcheApiBindingImpl);
 echeapi.system.showCrOSNotification =
     EcheApiBindingImpl.showNotification.bind(EcheApiBindingImpl);
+echeapi.system.showToast =
+    EcheApiBindingImpl.showToast.bind(EcheApiBindingImpl);
+echeapi.system.startStreaming =
+    EcheApiBindingImpl.startStreaming.bind(EcheApiBindingImpl);
 echeapi.system.sendTimeHistogram =
     EcheApiBindingImpl.sendTimeHistogram.bind(EcheApiBindingImpl);
 echeapi.system.sendEnumHistogram =
     EcheApiBindingImpl.sendEnumHistogram.bind(EcheApiBindingImpl);
+echeapi.system.registerStreamActionReceiver =
+    EcheApiBindingImpl.onStreamAction.bind(EcheApiBindingImpl);
 window['echeapi'] = echeapi;
 console.log('echeapi receiver.js finish bind the implementation of echeapi');

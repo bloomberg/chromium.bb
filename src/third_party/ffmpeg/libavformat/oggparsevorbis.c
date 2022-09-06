@@ -26,13 +26,13 @@
 
 #include "libavutil/avstring.h"
 #include "libavutil/base64.h"
-#include "libavutil/bswap.h"
 #include "libavutil/dict.h"
 
 #include "libavcodec/bytestream.h"
 #include "libavcodec/vorbis_parser.h"
 
 #include "avformat.h"
+#include "demux.h"
 #include "flac_picture.h"
 #include "internal.h"
 #include "oggdec.h"
@@ -320,10 +320,9 @@ static int vorbis_header(AVFormatContext *s, int idx)
         return priv->vp ? 0 : AVERROR_INVALIDDATA;
 
     priv->len[pkt_type >> 1]    = os->psize;
-    priv->packet[pkt_type >> 1] = av_mallocz(os->psize);
+    priv->packet[pkt_type >> 1] = av_memdup(os->buf + os->pstart, os->psize);
     if (!priv->packet[pkt_type >> 1])
         return AVERROR(ENOMEM);
-    memcpy(priv->packet[pkt_type >> 1], os->buf + os->pstart, os->psize);
     if (os->buf[os->pstart] == 1) {
         const uint8_t *p = os->buf + os->pstart + 7; /* skip "\001vorbis" tag */
         unsigned blocksize, bs0, bs1;
@@ -337,11 +336,12 @@ static int vorbis_header(AVFormatContext *s, int idx)
             return AVERROR_INVALIDDATA;
 
         channels = bytestream_get_byte(&p);
-        if (st->codecpar->channels && channels != st->codecpar->channels) {
+        if (st->codecpar->ch_layout.nb_channels &&
+            channels != st->codecpar->ch_layout.nb_channels) {
             av_log(s, AV_LOG_ERROR, "Channel change is not supported\n");
             return AVERROR_PATCHWELCOME;
         }
-        st->codecpar->channels = channels;
+        st->codecpar->ch_layout.nb_channels = channels;
         srate               = bytestream_get_le32(&p);
         p += 4; // skip maximum bitrate
         st->codecpar->bit_rate = bytestream_get_le32(&p); // nominal bitrate

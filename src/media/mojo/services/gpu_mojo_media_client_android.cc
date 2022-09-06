@@ -30,7 +30,7 @@ using media::android_mojo_util::CreateProvisionFetcher;
 namespace media {
 
 std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
-    const VideoDecoderTraits& traits) {
+    VideoDecoderTraits& traits) {
   scoped_refptr<gpu::RefCountedLock> ref_counted_lock;
 
   // When this feature is enabled, CodecImage, CodecBufferWaitCorrdinator and
@@ -92,6 +92,11 @@ GetPlatformSupportedVideoDecoderConfigs(
 std::unique_ptr<AudioDecoder> CreatePlatformAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return std::make_unique<MediaCodecAudioDecoder>(std::move(task_runner));
+}
+
+std::unique_ptr<AudioEncoder> CreatePlatformAudioEncoder(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  return nullptr;
 }
 
 std::unique_ptr<CdmFactory> CreatePlatformCdmFactory(

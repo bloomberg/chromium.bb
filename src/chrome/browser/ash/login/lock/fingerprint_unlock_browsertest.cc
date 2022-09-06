@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/biod/fake_biod_client.h"
+#include "chromeos/ash/components/dbus/biod/fake_biod_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -41,8 +41,11 @@ constexpr char kFingerprint[] = "pinky";
 void AuthenticateAndCheckThroughHistogram(
     base::HistogramTester& histogram_tester,
     FakeBiodClient* biod) {
-  biod->SendAuthScanDone(kFingerprint, biod::SCAN_RESULT_TOO_FAST);
-  biod->SendAuthScanDone(kFingerprint, biod::SCAN_RESULT_SUCCESS);
+  biod::FingerprintMessage msg;
+  msg.set_scan_result(biod::SCAN_RESULT_TOO_FAST);
+  biod->SendAuthScanDone(kFingerprint, msg);
+  msg.set_scan_result(biod::SCAN_RESULT_SUCCESS);
+  biod->SendAuthScanDone(kFingerprint, msg);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(histogram_tester.GetAllSamples("Fingerprint.Auth.ScanResult"),
@@ -65,14 +68,13 @@ class FingerprintUnlockTest : public InProcessBrowserTest {
   ~FingerprintUnlockTest() override = default;
 
   void SetUp() override {
-    quick_unlock::EnabledForTesting(true);
+    test_api_ = std::make_unique<quick_unlock::TestApi>(
+        /*override_quick_unlock=*/true);
+    test_api_->EnableFingerprintByPolicy(quick_unlock::Purpose::kUnlock);
     InProcessBrowserTest::SetUp();
   }
 
-  void TearDown() override {
-    quick_unlock::EnabledForTesting(false);
-    InProcessBrowserTest::TearDown();
-  }
+  void TearDown() override { InProcessBrowserTest::TearDown(); }
 
   void SetUpInProcessBrowserTestFixture() override {
     zero_duration_mode_ =
@@ -105,7 +107,9 @@ class FingerprintUnlockTest : public InProcessBrowserTest {
   }
 
   void AuthenticateWithFingerprint() {
-    biod_->SendAuthScanDone(kFingerprint, biod::SCAN_RESULT_SUCCESS);
+    biod::FingerprintMessage msg;
+    msg.set_scan_result(biod::SCAN_RESULT_SUCCESS);
+    biod_->SendAuthScanDone(kFingerprint, msg);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -230,6 +234,7 @@ class FingerprintUnlockTest : public InProcessBrowserTest {
   QuickUnlockStorage* quick_unlock_storage_;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<quick_unlock::TestApi> test_api_;
 };
 
 // Provides test clocks, quick unlock and an enrolled fingerprint to the tests.
@@ -304,6 +309,8 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, BiodFailsBeforeLockScreenReady) {
 IN_PROC_BROWSER_TEST_F(FingerprintUnlockEnrollTest,
                        ExceedAttemptsAndBiodRestart) {
   ScreenLockerTester tester;
+  biod::FingerprintMessage msg;
+
   tester.Lock();
 
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
@@ -319,7 +326,8 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockEnrollTest,
         lock_contents_test.GetFingerPrintState(user_manager::StubAccountId());
     EXPECT_EQ(state, FingerprintState::AVAILABLE_DEFAULT);
     // Simulate bad attempt.
-    biod_->SendAuthScanDone(kFingerprint, biod::SCAN_RESULT_TOO_FAST);
+    msg.set_scan_result(biod::SCAN_RESULT_TOO_FAST);
+    biod_->SendAuthScanDone(kFingerprint, msg);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -432,10 +440,13 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockEnrollTest, FeatureUsageMetrics) {
   tester.Lock();
 
   base::HistogramTester histogram_tester;
+  biod::FingerprintMessage msg;
 
   EXPECT_TRUE(HasStrongAuth());
-  biod_->SendAuthScanDone(kFingerprint, biod::SCAN_RESULT_TOO_FAST);
-  biod_->SendAuthScanDone(kFingerprint, biod::SCAN_RESULT_SUCCESS);
+  msg.set_scan_result(biod::SCAN_RESULT_TOO_FAST);
+  biod_->SendAuthScanDone(kFingerprint, msg);
+  msg.set_scan_result(biod::SCAN_RESULT_SUCCESS);
+  biod_->SendAuthScanDone(kFingerprint, msg);
   tester.WaitForUnlock();
   histogram_tester.ExpectBucketCount(kFingerprintSuccessHistogramName,
                                      /*success=*/1, 1);

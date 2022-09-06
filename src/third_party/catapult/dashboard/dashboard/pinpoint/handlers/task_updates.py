@@ -10,22 +10,24 @@ import base64
 import binascii
 import json
 import logging
-import webapp2
+import six
 
 from dashboard.pinpoint.models import job as job_module
 from dashboard.pinpoint.models import task as task_module
 from dashboard.pinpoint.models import event as event_module
 from dashboard.pinpoint.models.tasks import evaluator
 from dashboard.pinpoint.models import errors
+from dashboard.common import utils
 
 
 def HandleTaskUpdate(request_body):
   # Read the JSON body of the message, as how Pub/Sub will use.
   try:
     body = json.loads(request_body)
-  except ValueError as error:
-    raise ValueError('Failed JSON parsing request body: %s (%s)' %
-                     (error, request_body[:40] + '...'))
+  except ValueError as e:
+    six.raise_from(
+        ValueError('Failed JSON parsing request body: %s (%s)' %
+                   (str(e), request_body[:40] + '...')), e)
 
   message = body.get('message')
   if not message:
@@ -42,15 +44,17 @@ def HandleTaskUpdate(request_body):
 
   try:
     decoded_data = base64.urlsafe_b64decode(data.encode('utf-8'))
-  except TypeError as error:
-    raise ValueError('Failed decoding `data` field in `message`: %s (%s)' %
-                     (error, data))
+  except TypeError as e:
+    six.raise_from(
+        ValueError('Failed decoding `data` field in `message`: %s (%s)' %
+                   (str(e), data)), e)
 
   try:
     update_data = json.loads(decoded_data)
-  except ValueError as error:
-    raise ValueError('Failed JSON parsing `data` field in `message`: %s (%s)' %
-                     (error, data))
+  except ValueError as e:
+    six.raise_from(
+        ValueError('Failed JSON parsing `data` field in `message`: %s (%s)' %
+                   (str(e), data)), e)
   logging.debug('Received: %s', update_data)
 
   # From the swarming data, we can determine the job id and task id (if
@@ -147,15 +151,30 @@ def HandleTaskUpdate(request_body):
     raise
 
 
-class TaskUpdates(webapp2.RequestHandler):
-  """Handle updates received from Pub/Sub on Swarming Tasks."""
+if utils.IsRunningFlask():
+  from flask import make_response, request
 
-  def post(self):
-    """Handle push messages including information about the swarming task."""
+  def TaskUpdatesHandler():
+    """Handle updates received from Pub/Sub on Swarming Tasks."""
     try:
-      HandleTaskUpdate(self.request.body)
+      HandleTaskUpdate(request.data)
     except (ValueError, binascii.Error) as error:
       logging.error('Failed: %s', error)
 
-    self.response.status = 204
-    self.response.write('')
+    make_response('', 204)
+
+else:
+  import webapp2
+
+  class TaskUpdates(webapp2.RequestHandler):
+    """Handle updates received from Pub/Sub on Swarming Tasks."""
+
+    def post(self):
+      """Handle push messages including information about the swarming task."""
+      try:
+        HandleTaskUpdate(self.request.body)
+      except (ValueError, binascii.Error) as error:
+        logging.error('Failed: %s', error)
+
+      self.response.status = 204
+      self.response.write('')

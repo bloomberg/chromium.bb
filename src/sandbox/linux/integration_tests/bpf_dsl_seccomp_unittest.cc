@@ -18,8 +18,6 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#include "base/memory/raw_ptr.h"
-
 #if defined(ANDROID)
 // Work-around for buggy headers in Android's NDK
 #define __user
@@ -28,6 +26,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
@@ -183,7 +182,12 @@ bool IsSyscallForTestHarness(int sysno) {
   // ASan and MSan don't need any of these for normal operation, but they
   // require at least mmap & munmap to print a report if an error is detected.
   // ASan requires sigaltstack.
-  if (sysno == kMMapNr || sysno == __NR_munmap || sysno == __NR_pipe ||
+  if (sysno == kMMapNr || sysno == __NR_munmap ||
+#if !defined(__aarch64__)
+      sysno == __NR_pipe ||
+#else
+      sysno == __NR_pipe2 ||
+#endif
       sysno == __NR_sigaltstack) {
     return true;
   }
@@ -801,7 +805,7 @@ ResultExpr SimpleCondTestPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__NR_open)
     case __NR_open:
       flags_argument_position = 1;
-      FALLTHROUGH;
+      [[fallthrough]];
 #endif
     case __NR_openat: {  // open can be a wrapper for openat(2).
       if (sysno == __NR_openat)
@@ -2087,7 +2091,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
 }
 
 // Android does not expose pread64 nor pwrite64.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 bool FullPwrite64(int fd, const char* buffer, size_t count, off64_t offset) {
   while (count > 0) {
@@ -2168,7 +2172,7 @@ BPF_TEST_C(SandboxBPF, Pread64, TrapPread64Policy) {
   BPF_ASSERT(pread_64_was_forwarded);
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
   base::WaitableEvent* event = static_cast<base::WaitableEvent*>(cond_ptr);

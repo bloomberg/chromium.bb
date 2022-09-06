@@ -26,7 +26,6 @@
 
 namespace {
 
-const int kCdpMethodNotFoundCode = -32601;
 const char kInspectorDefaultContextError[] =
     "Cannot find default execution context";
 const char kInspectorContextError[] = "Cannot find context with specified id";
@@ -37,6 +36,11 @@ const char kInspectorOpaqueOrigins[] =
     "Permission can't be granted to opaque origins.";
 const char kInspectorPushPermissionError[] =
     "Push Permission without userVisibleOnly:true isn't supported";
+const char kInspectorNoSuchFrameError[] =
+    "Frame with the given id was not found.";
+
+static constexpr int kSessionNotFoundInspectorCode = -32001;
+static constexpr int kCdpMethodNotFoundCode = -32601;
 static constexpr int kInvalidParamsInspectorCode = -32602;
 
 class ScopedIncrementer {
@@ -77,12 +81,14 @@ InspectorCommandResponse::~InspectorCommandResponse() {}
 
 const char DevToolsClientImpl::kBrowserwideDevToolsClientId[] = "browser";
 
-DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
+DevToolsClientImpl::DevToolsClientImpl(const std::string& id,
+                                       const std::string& session_id,
                                        const std::string& url,
-                                       const std::string& id)
+                                       const SyncWebSocketFactory& factory)
     : socket_(factory.Run()),
       url_(url),
       owner_(nullptr),
+      session_id_(session_id),
       parent_(nullptr),
       crashed_(false),
       detached_(false),
@@ -93,36 +99,24 @@ DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
       next_id_(1),
       stack_count_(0) {
   socket_->SetId(id_);
+  // If error happens during proactive event consumption we ignore it
+  // as there is no active user request where the error might be returned.
+  // Unretained 'this' won't cause any problems as we reset the callback in the
+  // .dtor.
+  socket_->SetNotificationCallback(base::BindRepeating(
+      base::IgnoreResult(&DevToolsClientImpl::HandleReceivedEvents),
+      base::Unretained(this)));
 }
 
-DevToolsClientImpl::DevToolsClientImpl(
-    const SyncWebSocketFactory& factory,
-    const std::string& url,
-    const std::string& id,
-    const FrontendCloserFunc& frontend_closer_func)
-    : socket_(factory.Run()),
-      url_(url),
-      owner_(nullptr),
-      parent_(nullptr),
-      crashed_(false),
-      detached_(false),
-      id_(id),
-      frontend_closer_func_(frontend_closer_func),
-      parser_func_(base::BindRepeating(&internal::ParseInspectorMessage)),
-      unnotified_event_(nullptr),
-      next_id_(1),
-      stack_count_(0) {
-  socket_->SetId(id_);
-}
-
-DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
-                                       const std::string& session_id)
+DevToolsClientImpl::DevToolsClientImpl(const std::string& id,
+                                       const std::string& session_id,
+                                       DevToolsClientImpl* parent)
     : owner_(nullptr),
       session_id_(session_id),
       parent_(parent),
       crashed_(false),
       detached_(false),
-      id_(session_id),
+      id_(id),
       frontend_closer_func_(base::BindRepeating(&FakeCloseFrontends)),
       parser_func_(base::BindRepeating(&internal::ParseInspectorMessage)),
       unnotified_event_(nullptr),
@@ -131,35 +125,25 @@ DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
   parent->children_[session_id] = this;
 }
 
-DevToolsClientImpl::DevToolsClientImpl(
-    const SyncWebSocketFactory& factory,
-    const std::string& url,
-    const std::string& id,
-    const FrontendCloserFunc& frontend_closer_func,
-    const ParserFunc& parser_func)
-    : socket_(factory.Run()),
-      url_(url),
-      owner_(nullptr),
-      parent_(nullptr),
-      crashed_(false),
-      detached_(false),
-      id_(id),
-      frontend_closer_func_(frontend_closer_func),
-      parser_func_(parser_func),
-      unnotified_event_(nullptr),
-      next_id_(1),
-      stack_count_(0) {
-  socket_->SetId(id_);
-}
-
 DevToolsClientImpl::~DevToolsClientImpl() {
-  if (parent_ != nullptr)
+  if (parent_ != nullptr) {
     parent_->children_.erase(session_id_);
+  } else {
+    // Resetting the callback is redundant as we assume
+    // that .dtor won't start a nested message loop.
+    // Doing this just in case.
+    socket_->SetNotificationCallback(base::RepeatingClosure());
+  }
 }
 
 void DevToolsClientImpl::SetParserFuncForTesting(
     const ParserFunc& parser_func) {
   parser_func_ = parser_func;
+}
+
+void DevToolsClientImpl::SetFrontendCloserFunc(
+    const FrontendCloserFunc& frontend_closer_func) {
+  frontend_closer_func_ = frontend_closer_func;
 }
 
 const std::string& DevToolsClientImpl::GetId() {
@@ -243,21 +227,21 @@ Status DevToolsClientImpl::SendCommandWithTimeout(
     const std::string& method,
     const base::DictionaryValue& params,
     const Timeout* timeout) {
-  std::unique_ptr<base::DictionaryValue> result;
+  base::Value result;
   return SendCommandInternal(method, params, &result, true, true, 0, timeout);
 }
 
 Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
-  std::unique_ptr<base::DictionaryValue> result;
+  base::Value result;
   return SendCommandInternal(method, params, &result, false, false, 0, nullptr);
 }
 
 Status DevToolsClientImpl::SendCommandAndGetResult(
     const std::string& method,
     const base::DictionaryValue& params,
-    std::unique_ptr<base::DictionaryValue>* result) {
+    base::Value* result) {
   return SendCommandAndGetResultWithTimeout(method, params, nullptr, result);
 }
 
@@ -265,13 +249,13 @@ Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
     const std::string& method,
     const base::DictionaryValue& params,
     const Timeout* timeout,
-    std::unique_ptr<base::DictionaryValue>* result) {
-  std::unique_ptr<base::DictionaryValue> intermediate_result;
+    base::Value* result) {
+  base::Value intermediate_result;
   Status status = SendCommandInternal(method, params, &intermediate_result,
                                       true, true, 0, timeout);
   if (status.IsError())
     return status;
-  if (!intermediate_result)
+  if (!intermediate_result.is_dict())
     return Status(kUnknownError, "inspector response missing result");
   *result = std::move(intermediate_result);
   return Status(kOk);
@@ -353,7 +337,7 @@ DevToolsClient* DevToolsClientImpl::GetRootClient() {
 Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
-    std::unique_ptr<base::DictionaryValue>* result,
+    base::Value* result,
     bool expect_response,
     bool wait_for_response,
     const int client_command_id,
@@ -367,7 +351,7 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.SetInteger("id", command_id);
   command.SetString("method", method);
   command.SetKey("params", params.Clone());
-  if (parent_ != nullptr) {
+  if (!session_id_.empty()) {
     command.SetString("sessionId", session_id_);
   }
   std::string message = SerializeValue(&command);
@@ -420,10 +404,12 @@ Status DevToolsClientImpl::SendCommandInternal(
       if (!response.result) {
         return internal::ParseInspectorError(response.error);
       }
-      *result = std::move(response.result);
+      *result = std::move(*response.result);
     }
   } else {
     CHECK(!wait_for_response);
+    if (result)
+      *result = base::Value(base::Value::Type::DICTIONARY);
   }
   return Status(kOk);
 }
@@ -580,8 +566,23 @@ Status DevToolsClientImpl::ProcessCommandResponse(
             << " (id=" << response.id << ") " << id_ << " " << result;
   }
 
-  if (iter == response_info_map_.end())
+  if (iter == response_info_map_.end()) {
+    // A CDP session may become detached while a command sent to that session
+    // is still pending. When the browser eventually tries to process this
+    // command, it sends a response with an error and no session ID. Since
+    // there is no session ID, this message will be routed here to the root
+    // DevToolsClientImpl. If we receive such a response, just ignore it
+    // since the session it belongs to is already detached.
+    if (parent_ == nullptr) {
+      if (!response.result) {
+        const Status status = internal::ParseInspectorError(response.error);
+        if (status.code() == StatusCode::kNoSuchFrame) {
+          return Status(kOk);
+        }
+      }
+    }
     return Status(kUnknownError, "unexpected command response");
+  }
 
   scoped_refptr<ResponseInfo> response_info = response_info_map_[response.id];
   response_info_map_.erase(response.id);
@@ -661,10 +662,11 @@ bool ParseInspectorMessage(const std::string& message,
   if (!message_value || !message_value->GetAsDictionary(&message_dict))
     return false;
   session_id->clear();
-  if (message_dict->HasKey("sessionId"))
-    message_dict->GetString("sessionId", session_id);
-  int id;
-  if (!message_dict->HasKey("id")) {
+  if (const std::string* str = message_dict->FindStringKey("sessionId"))
+    *session_id = *str;
+
+  base::Value* id_value = message_dict->FindKey("id");
+  if (!id_value) {
     std::string method;
     if (!message_dict->GetString("method", &method))
       return false;
@@ -678,11 +680,11 @@ bool ParseInspectorMessage(const std::string& message,
     else
       event->params = std::make_unique<base::DictionaryValue>();
     return true;
-  } else if (message_dict->GetInteger("id", &id)) {
+  } else if (id_value->is_int()) {
     base::DictionaryValue* unscoped_error = nullptr;
     base::DictionaryValue* unscoped_result = nullptr;
     *type = kCommandResponseMessageType;
-    command_response->id = id;
+    command_response->id = id_value->GetInt();
     // As per Chromium issue 392577, DevTools does not necessarily return a
     // "result" dictionary for every valid response. In particular,
     // Tracing.start and Tracing.end command responses do not contain one.
@@ -713,6 +715,9 @@ Status ParseInspectorError(const std::string& error_json) {
     if (maybe_code.value() == kCdpMethodNotFoundCode) {
       return Status(kUnknownCommand,
                     maybe_message ? *maybe_message : "UnknownCommand");
+    } else if (maybe_code.value() == kSessionNotFoundInspectorCode) {
+      return Status(kNoSuchFrame,
+                    maybe_message ? *maybe_message : "inspector detached");
     }
   }
 
@@ -729,6 +734,10 @@ Status ParseInspectorError(const std::string& error_json) {
     } else if (error_message == kInspectorPushPermissionError ||
                error_message == kInspectorOpaqueOrigins) {
       return Status(kInvalidArgument, error_message);
+    } else if (error_message == kInspectorNoSuchFrameError) {
+      // As the server returns the generic error code: SERVER_ERROR = -32000
+      // we have to rely on the error message content.
+      return Status(kNoSuchFrame, error_message);
     }
     absl::optional<int> error_code = error_dict->FindIntPath("code");
     if (error_code == kInvalidParamsInspectorCode)

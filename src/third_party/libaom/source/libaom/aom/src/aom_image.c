@@ -63,6 +63,7 @@ static aom_image_t *img_alloc_helper(
   switch (fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
+    case AOM_IMG_FMT_NV12:
     case AOM_IMG_FMT_AOMI420:
     case AOM_IMG_FMT_AOMYV12: bps = 12; break;
     case AOM_IMG_FMT_I422: bps = 16; break;
@@ -80,6 +81,7 @@ static aom_image_t *img_alloc_helper(
   switch (fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
+    case AOM_IMG_FMT_NV12:
     case AOM_IMG_FMT_AOMI420:
     case AOM_IMG_FMT_AOMYV12:
     case AOM_IMG_FMT_I422:
@@ -92,6 +94,7 @@ static aom_image_t *img_alloc_helper(
   switch (fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
+    case AOM_IMG_FMT_NV12:
     case AOM_IMG_FMT_AOMI420:
     case AOM_IMG_FMT_AOMYV12:
     case AOM_IMG_FMT_YV1216:
@@ -154,6 +157,13 @@ static aom_image_t *img_alloc_helper(
   /* Calculate strides */
   img->stride[AOM_PLANE_Y] = stride_in_bytes;
   img->stride[AOM_PLANE_U] = img->stride[AOM_PLANE_V] = stride_in_bytes >> xcs;
+
+  if (fmt == AOM_IMG_FMT_NV12) {
+    // Each row is a row of U and a row of V interleaved, so the stride is twice
+    // as long.
+    img->stride[AOM_PLANE_U] *= 2;
+    img->stride[AOM_PLANE_V] = 0;
+  }
 
   /* Default viewport to entire image. (This aom_img_set_rect call always
    * succeeds.) */
@@ -225,7 +235,11 @@ int aom_img_set_rect(aom_image_t *img, unsigned int x, unsigned int y,
       unsigned int uv_border_h = border >> img->y_chroma_shift;
       unsigned int uv_x = x >> img->x_chroma_shift;
       unsigned int uv_y = y >> img->y_chroma_shift;
-      if (!(img->fmt & AOM_IMG_FMT_UV_FLIP)) {
+      if (img->fmt == AOM_IMG_FMT_NV12) {
+        img->planes[AOM_PLANE_U] = data + uv_x * bytes_per_sample * 2 +
+                                   uv_y * img->stride[AOM_PLANE_U];
+        img->planes[AOM_PLANE_V] = NULL;
+      } else if (!(img->fmt & AOM_IMG_FMT_UV_FLIP)) {
         img->planes[AOM_PLANE_U] =
             data + uv_x * bytes_per_sample + uv_y * img->stride[AOM_PLANE_U];
         data += ((img->h >> img->y_chroma_shift) + 2 * uv_border_h) *

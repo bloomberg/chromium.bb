@@ -6,7 +6,7 @@
 
 #include <utility>
 #include "third_party/blink/public/mojom/loader/referrer.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -61,9 +60,11 @@ HTMLPortalElement::HTMLPortalElement(
         portal_client_receiver)
     : HTMLFrameOwnerElement(html_names::kPortalTag, document),
       feature_handle_for_scheduler_(
-          document.GetExecutionContext()->GetScheduler()->RegisterFeature(
-              SchedulingPolicy::Feature::kPortal,
-              {SchedulingPolicy::DisableBackForwardCache()})) {
+          document.GetExecutionContext()
+              ? document.GetExecutionContext()->GetScheduler()->RegisterFeature(
+                    SchedulingPolicy::Feature::kPortal,
+                    {SchedulingPolicy::DisableBackForwardCache()})
+              : FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle()) {
   if (remote_portal) {
     DCHECK(portal_token);
     was_just_adopted_ = true;
@@ -106,21 +107,12 @@ void HTMLPortalElement::PortalContentsWillBeDestroyed(PortalContents* portal) {
   portal_ = nullptr;
 }
 
-bool HTMLPortalElement::IsCurrentlyWithinFrameLimit() const {
-  auto* frame = GetDocument().GetFrame();
-  if (!frame)
-    return false;
-  auto* page = frame->GetPage();
-  if (!page)
-    return false;
-  return page->SubframeCount() < Page::MaxNumberOfFrames();
-}
-
 String HTMLPortalElement::PreActivateChecksCommon() {
   if (!portal_)
     return "The HTMLPortalElement is not associated with a portal context.";
 
-  if (DocumentPortals::From(GetDocument()).IsPortalInDocumentActivating())
+  if (DocumentPortals::GetOrCreate(GetDocument())
+          .IsPortalInDocumentActivating())
     return "Another portal in this document is activating.";
 
   if (GetDocument().GetPage()->InsidePortal())
@@ -216,7 +208,8 @@ HTMLPortalElement::GetGuestContentsEligibility() const {
   if (!is_connected && !was_just_adopted_)
     return GuestContentsEligibility::kIneligible;
 
-  const bool is_top_level = frame && frame->IsMainFrame();
+  const bool is_top_level =
+      frame && frame->IsMainFrame() && !frame->IsInFencedFrameTree();
   if (!is_top_level)
     return GuestContentsEligibility::kNotTopLevel;
 

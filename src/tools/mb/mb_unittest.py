@@ -36,9 +36,9 @@ class FakeMBW(mb.MetaBuildWrapper):
     if win32:
       self.chromium_src_dir = 'c:\\fake_src'
       self.default_config = 'c:\\fake_src\\tools\\mb\\mb_config.pyl'
-
       self.default_isolate_map = ('c:\\fake_src\\testing\\buildbot\\'
                                   'gn_isolate_map.pyl')
+      self.temp = 'c:\\temp'
       self.platform = 'win32'
       self.executable = 'c:\\python\\python.exe'
       self.sep = '\\'
@@ -47,8 +47,9 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.chromium_src_dir = '/fake_src'
       self.default_config = '/fake_src/tools/mb/mb_config.pyl'
       self.default_isolate_map = '/fake_src/testing/buildbot/gn_isolate_map.pyl'
-      self.executable = '/usr/bin/python'
+      self.temp = '/tmp'
       self.platform = 'linux'
+      self.executable = '/usr/bin/python'
       self.sep = '/'
       self.cwd = '/fake_src/out/Default'
 
@@ -111,7 +112,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.out += sep.join(args) + end
 
   def TempDir(self):
-    tmp_dir = os.path.join(tempfile.gettempdir(), 'mb_test')
+    tmp_dir = self.temp + self.sep + 'mb_test'
     self.dirs.add(tmp_dir)
     return tmp_dir
 
@@ -158,24 +159,27 @@ TEST_CONFIG = """\
   'builder_groups': {
     'chromium': {},
     'fake_builder_group': {
+      'fake_args_bot': 'fake_args_bot',
+      'fake_args_file': 'args_file_goma',
       'fake_builder': 'rel_bot',
       'fake_debug_builder': 'debug_goma',
-      'fake_args_bot': 'fake_args_bot',
-      'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
-      'fake_args_file': 'args_file_goma',
       'fake_ios_error': 'ios_error',
+      'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
     },
   },
   'configs': {
     'args_file_goma': ['fake_args_bot', 'goma'],
-    'fake_args_bot': ['fake_args_bot'],
-    'rel_bot': ['rel', 'goma', 'fake_feature1'],
     'debug_goma': ['debug', 'goma'],
+    'fake_args_bot': ['fake_args_bot'],
+    'ios_error': ['error'],
     'phase_1': ['rel', 'phase_1'],
     'phase_2': ['rel', 'phase_2'],
-    'ios_error': ['error'],
+    'rel_bot': ['rel', 'goma', 'fake_feature1'],
   },
   'mixins': {
+    'debug': {
+      'gn_args': 'is_debug=true',
+    },
     'error': {
       'gn_args': 'error',
     },
@@ -196,9 +200,6 @@ TEST_CONFIG = """\
     },
     'rel': {
       'gn_args': 'is_debug=false dcheck_always_on=false',
-    },
-    'debug': {
-      'gn_args': 'is_debug=true',
     },
   },
 }
@@ -293,6 +294,8 @@ TRYSERVER_CONFIG = """\
 
 
 class UnitTest(unittest.TestCase):
+  maxDiff = None
+
   def fake_mbw(self, files=None, win32=False):
     mbw = FakeMBW(win32=win32)
     mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
@@ -750,8 +753,13 @@ class UnitTest(unittest.TestCase):
         '/fake_src/out/Default/base_unittests.runtime_deps':
         ("base_unittests\n"),
     }
-    self.check(['run', '-c', 'debug_goma', '//out/Default',
-                'base_unittests'], files=files, ret=0)
+    mbw = self.check(['run', '-c', 'debug_goma', '//out/Default',
+                     'base_unittests'], files=files, ret=0)
+    # pylint: disable=line-too-long
+    self.assertEqual(
+        mbw.files['/fake_src/out/Default/base_unittests.isolate'],
+          '{"variables": {"command": ["vpython3", "../../testing/test_env.py", "./base_unittests", "--test-launcher-bot-mode", "--asan=0", "--lsan=0", "--msan=0", "--tsan=0", "--cfi-diag=0"], "files": ["../../.vpython3", "../../testing/test_env.py"]}}\n')
+    # pylint: enable=line-too-long
 
   def test_run_swarmed(self):
     files = {

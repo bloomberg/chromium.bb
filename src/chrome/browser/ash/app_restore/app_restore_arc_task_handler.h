@@ -18,6 +18,7 @@ class Profile;
 namespace ash {
 namespace full_restore {
 class ArcWindowHandler;
+class FullRestoreAppLaunchHandlerArcAppBrowserTest;
 }  // namespace full_restore
 
 namespace app_restore {
@@ -46,12 +47,21 @@ class AppRestoreArcTaskHandler : public KeyedService,
   }
 #endif
 
-  ArcAppLaunchHandler* desks_templates_arc_app_launch_handler() {
-    return desks_templates_arc_app_launch_handler_.get();
-  }
+  // Check if the AppId existed in any arc app launch handler restore queue.
+  // When different launch handler which corresponding to different restore
+  // purpose trying to restore the same ARC app, it will be confusing ARC that
+  // which window info should be applied.
+  bool IsAppPendingRestore(const std::string& arc_app_id) const;
+
   ArcAppLaunchHandler* full_restore_arc_app_launch_handler() {
-    return full_restore_arc_app_launch_handler_.get();
+    return full_restore_arc_app_launch_handler_observer_;
   }
+  ArcAppLaunchHandler* window_predictor_arc_app_launch_handler() {
+    return window_predictor_arc_app_launch_handler_observer_;
+  }
+
+  ArcAppLaunchHandler* GetDeskTemplateArcAppLaunchHandler(int32_t launch_id);
+  void ClearDeskTemplateArcAppLaunchHandler(int32_t launch_id);
 
   // ArcAppListPrefs::Observer.
   void OnTaskCreated(int32_t task_id,
@@ -75,9 +85,14 @@ class AppRestoreArcTaskHandler : public KeyedService,
   // Invoked when ChromeShelfController is created.
   void OnShelfReady();
 
- private:
   // KeyedService:
   void Shutdown() override;
+
+ private:
+  friend class ash::full_restore::FullRestoreAppLaunchHandlerArcAppBrowserTest;
+
+  // Used for testing to install a handler for full restore.
+  void CreateFullRestoreHandlerForTest();
 
   base::ScopedObservation<ArcAppListPrefs, ArcAppListPrefs::Observer>
       arc_prefs_observer_{this};
@@ -86,10 +101,22 @@ class AppRestoreArcTaskHandler : public KeyedService,
   std::unique_ptr<full_restore::ArcWindowHandler> window_handler_;
 #endif
 
-  // The ArcAppLaunchHandlers, one for each feature that wants to launch ARC
-  // apps.
-  std::unique_ptr<ArcAppLaunchHandler> desks_templates_arc_app_launch_handler_;
-  std::unique_ptr<ArcAppLaunchHandler> full_restore_arc_app_launch_handler_;
+  // Maps launch ids to ArcAppLaunchHandlers. Positive ids are used for desk
+  // template launches. Negative ids are used for full restore and the window
+  // predictor.
+  std::map<int32_t, std::unique_ptr<ArcAppLaunchHandler>>
+      arc_app_launch_handlers_;
+
+  ArcAppLaunchHandler* full_restore_arc_app_launch_handler_observer_ = nullptr;
+  ArcAppLaunchHandler* window_predictor_arc_app_launch_handler_observer_ =
+      nullptr;
+
+  // These cache the readiness status of the subsystems needed to launch ARC
+  // apps. They are used when new handlers are dynamically created so that the
+  // handlers can learn the status of these systems.
+  bool arc_play_store_enabled_ = false;
+  bool shelf_ready_ = false;
+  bool app_connection_ready_ = false;
 };
 
 }  // namespace app_restore

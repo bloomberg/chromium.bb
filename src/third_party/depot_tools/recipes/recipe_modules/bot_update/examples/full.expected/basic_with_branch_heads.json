@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
@@ -18,8 +18,7 @@
       "src@2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--refs",
       "refs/heads/main",
-      "--with_branch_heads",
-      "--disable-syntax-validation"
+      "--with_branch_heads"
     ],
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/src/ci/linux/8945511751514863184",

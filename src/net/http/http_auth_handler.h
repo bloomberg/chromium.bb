@@ -11,6 +11,7 @@
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "net/log/net_log_with_source.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -44,8 +45,8 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // |challenge| must be non-nullptr and have already tokenized the
   //      authentication scheme, but none of the tokens occurring after the
   //      authentication scheme.
-  // |target| and |origin| are both stored for later use, and are not part of
-  //      the initial challenge.
+  // |target| and |scheme_host_port| are both stored for later use, and are not
+  //      part of the initial challenge.
   // |ssl_info| must be valid if the underlying connection used a certificate.
   // |network_isolation_key| the NetworkIsolationKey associated with the
   //      challenge. Used for host resolutions, if any are needed.
@@ -54,7 +55,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
                          HttpAuth::Target target,
                          const SSLInfo& ssl_info,
                          const NetworkIsolationKey& network_isolation_key,
-                         const GURL& origin,
+                         const url::SchemeHostPort& scheme_host_port,
                          const NetLogWithSource& net_log);
 
   // Determines how the previous authorization attempt was received.
@@ -122,10 +123,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   }
 
   // Returns the proxy or server which issued the authentication challenge
-  // that this HttpAuthHandler is handling. The URL includes scheme, host, and
-  // port, but does not include path.
-  const GURL& origin() const {
-    return origin_;
+  // that this HttpAuthHandler is handling.
+  const url::SchemeHostPort& scheme_host_port() const {
+    return scheme_host_port_;
   }
 
   // Returns true if the authentication scheme does not send the username and
@@ -208,7 +208,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
       HttpAuthChallengeTokenizer* challenge) = 0;
 
   // The auth-scheme as an enumerated value.
-  HttpAuth::Scheme auth_scheme_;
+  HttpAuth::Scheme auth_scheme_ = HttpAuth::AUTH_SCHEME_MAX;
 
   // The realm, encoded as UTF-8. Used by "basic" and "digest".
   std::string realm_;
@@ -218,17 +218,17 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
 
   // The {scheme, host, port} for the authentication target.  Used by "ntlm"
   // and "negotiate" to construct the service principal name.
-  GURL origin_;
+  url::SchemeHostPort scheme_host_port_;
 
   // The score for this challenge. Higher numbers are better.
-  int score_;
+  int score_ = -1;
 
   // Whether this authentication request is for a proxy server, or an
   // origin server.
-  HttpAuth::Target target_;
+  HttpAuth::Target target_ = HttpAuth::AUTH_NONE;
 
   // A bitmask of the properties of the authentication scheme.
-  int properties_;
+  int properties_ = -1;
 
  private:
   void OnGenerateAuthTokenComplete(int rv);

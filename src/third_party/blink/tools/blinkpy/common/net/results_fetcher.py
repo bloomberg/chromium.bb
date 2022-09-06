@@ -49,6 +49,11 @@ TEST_RESULTS_SERVER = 'https://test-results.appspot.com'
 RESULTS_URL_BASE = '%s/data/layout_results' % TEST_RESULTS_SERVER
 RESULTS_SUMMARY_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'
 
+PREDICATE_UNEXPECTED_RESULTS = {
+    "expectancy": "VARIANTS_WITH_ONLY_UNEXPECTED_RESULTS",
+    "excludeExonerated": True
+}
+
 
 class Build(collections.namedtuple('Build', ('builder_name', 'build_number',
                                              'build_id'))):
@@ -71,9 +76,10 @@ class TestResultsFetcher(object):
         https://www.chromium.org/developers/the-json-test-results-format
     """
 
-    def __init__(self):
+    def __init__(self, builders=None):
         self.web = Web()
-        self.builders = BuilderList.load_default_builder_list(FileSystem())
+        self.builders = builders or BuilderList.load_default_builder_list(
+            FileSystem())
 
     def results_url(self, builder_name, build_number=None, step_name=None):
         """Returns a URL for one set of archived web test results.
@@ -86,15 +92,41 @@ class TestResultsFetcher(object):
             assert str(build_number).isdigit(), \
                 'expected numeric build number, got %s' % build_number
             url_base = self.builder_results_url_base(builder_name)
-            if step_name is None:
-                step_name = self.get_layout_test_step_name(
-                    Build(builder_name, build_number))
             if step_name:
                 return '%s/%s/%s/layout-test-results' % (
                     url_base, build_number,
                     six.moves.urllib.parse.quote(step_name))
             return '%s/%s/layout-test-results' % (url_base, build_number)
         return self.accumulated_results_url_base(builder_name)
+
+    def get_artifact_list_for_test(self, host, result_name):
+        """Fetches the list of artifacts for a test-result.
+        """
+        luci_token = LuciAuth(host).get_access_token()
+
+        url = 'https://results.api.cr.dev/prpc/luci.resultdb.v1.ResultDB/ListArtifacts'
+        header = {
+            'Authorization': 'Bearer ' + luci_token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+
+        data = {
+            "parent": result_name,
+        }
+
+        req_body = json.dumps(data).encode("utf-8")
+        response = self.do_request_with_retries('POST', url, req_body, header)
+        if response is None:
+            _log.warning("Failed to get baseline artifacts")
+        if response.getcode() == 200:
+            response_body = response.read()
+
+        RESPONSE_PREFIX = b")]}'"
+        if response_body.startswith(RESPONSE_PREFIX):
+            response_body = response_body[len(RESPONSE_PREFIX):]
+        res = json.loads(response_body)
+        return res['artifacts']
 
     def get_full_builder_url(self, url_base, builder_name):
         """ Returns the url for a builder directory in google storage.
@@ -162,6 +194,20 @@ class TestResultsFetcher(object):
         _log.error("Http request failed for %s" % data)
         return None
 
+    @memoized
+    def fetch_results_from_resultdb_layout_tests(self, host, build,
+                                                 unexpected_results):
+        if unexpected_results:
+            predicate = PREDICATE_UNEXPECTED_RESULTS
+        else:
+            predicate = ""
+        rv = self.fetch_results_from_resultdb(host, [build], predicate)
+        # Rebaselining should still work correctly on this object, even though
+        # it holds results for possibly multiple steps. ResultDB only exposes
+        # the test suite name (like 'blink_web_tests'), not the full step name
+        # with the '(with patch)' suffix.
+        return WebTestResults.results_from_resultdb(rv)
+
     def fetch_results_from_resultdb(self, host, builds, predicate):
         """Returns a list of test results from ResultDB
         """
@@ -223,7 +269,6 @@ class TestResultsFetcher(object):
         if not build.builder_name or not build.build_number:
             _log.debug('Builder name or build number is None')
             return None
-        step_name = step_name or self.get_layout_test_step_name(build)
         return self.fetch_web_test_results(
             self.results_url(
                 build.builder_name,
@@ -231,16 +276,16 @@ class TestResultsFetcher(object):
                 step_name=step_name), full, step_name)
 
     @memoized
-    def get_layout_test_step_name(self, build):
+    def get_layout_test_step_names(self, build):
         if not build.builder_name or not build.build_number:
             _log.debug('Builder name or build number is None')
-            return None
+            return []
 
-        # We were not able to retrieve step name for some builders from
+        # We were not able to retrieve step names for some builders from
         # https://test-results.appspot.com. Read from config file instead
-        step_name = self.builders.step_name_for_builder(build.builder_name)
-        if step_name:
-            return step_name
+        step_names = self.builders.step_names_for_builder(build.builder_name)
+        if step_names:
+            return step_names
 
         url = '%s/testfile?%s' % (
             TEST_RESULTS_SERVER,
@@ -254,7 +299,7 @@ class TestResultsFetcher(object):
         data = self.web.get_binary(url, return_none_on_404=True)
         if not data:
             _log.debug('Got 404 response from:\n%s', url)
-            return None
+            return []
 
         # Strip out the callback
         data = json.loads(json_results_generator.strip_json_wrapper(data))
@@ -265,18 +310,18 @@ class TestResultsFetcher(object):
             # runs with a patch. This should be changed eventually to use actual
             # structured data from the test results server.
             if re.match(
-                r'(blink_web_tests|wpt_tests_suite|high_dpi_blink_web_tests).*\(with patch\)$',
+                r'([\w\-]*blink_web_tests|wpt_tests_suite).*\(with patch\)$',
                 entry['TestType'])
         ]
         # In manual testing, I sometimes saw results where the same suite was
         # repeated twice. De-duplicate here to try to catch this.
         suites = list(set(suites))
-        if len(suites) != 1:
+        if not suites:
             raise Exception(
-                'build %s on builder %s expected to only have one web test '
-                'step, instead has %s' % (build.build_number,
-                                          build.builder_name, suites))
-        return suites[0]
+                'build %s on builder %s expected to have at least one web test '
+                'step, instead has none' %
+                (build.build_number, build.builder_name))
+        return suites
 
     @memoized
     def fetch_web_test_results(self, results_url, full=False, step_name=None):

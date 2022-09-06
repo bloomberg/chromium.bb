@@ -8,7 +8,16 @@ config("zlib_config") {
 
 config("zlib_internal_config") {
   defines = [ "ZLIB_IMPLEMENTATION" ]
-  cflags = [ "-w" ]  # Disable all warnings.
+  cflags = [
+    "-Wno-implicit-function-declaration",
+    "-Wno-implicit-fallthrough",
+  ]
+
+  # TODO(issuetracker.google.com/202964797): Switch to Chromium's clang version
+  # to eliminate version mismatch issues.
+  if (!is_mac) {
+    cflags += [ "-Wno-deprecated-non-prototype" ]
+  }
 }
 
 static_library("zlib") {

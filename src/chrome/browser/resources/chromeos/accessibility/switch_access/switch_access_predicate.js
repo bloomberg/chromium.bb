@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {SACache} from './cache.js';
-import {SAChildNode, SARootNode} from './nodes/switch_access_node.js';
+import {SACache} from '/switch_access/cache.js';
+import {SAChildNode, SARootNode} from '/switch_access/nodes/switch_access_node.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 const StateType = chrome.automation.StateType;
@@ -181,9 +181,10 @@ export const SwitchAccessPredicate = {
    * @param {AutomationNode} node
    * @return {boolean}
    */
-  isVisible: (node) => !node.state[StateType.OFFSCREEN] && !!node.location &&
+  isVisible: (node) => Boolean(
+      !node.state[StateType.OFFSCREEN] && node.location &&
       node.location.top >= 0 && node.location.left >= 0 &&
-      !node.state[StateType.INVISIBLE],
+      !node.state[StateType.INVISIBLE]),
 
   /**
    * Returns true if there is an interesting node in the subtree containing
@@ -215,17 +216,18 @@ export const SwitchAccessPredicate = {
    * @param {AutomationNode} node
    * @return {boolean}
    */
-  isTextInput: (node) => !!node && !!node.state[StateType.EDITABLE],
+  isTextInput: (node) => Boolean(node && node.state[StateType.EDITABLE]),
 
   /**
    * Returns true if |node| should be considered a window.
    * @param {AutomationNode} node
    * @return {boolean}
    */
-  isWindow: (node) => !!node &&
+  isWindow: (node) => Boolean(
+      node &&
       (node.role === chrome.automation.RoleType.WINDOW ||
-       (node.role === chrome.automation.RoleType.CLIENT && !!node.parent &&
-        node.parent.role === chrome.automation.RoleType.WINDOW)),
+       (node.role === chrome.automation.RoleType.CLIENT && node.parent &&
+        node.parent.role === chrome.automation.RoleType.WINDOW))),
 
   /**
    * Returns a Restrictions object ready to be passed to AutomationTreeWalker.

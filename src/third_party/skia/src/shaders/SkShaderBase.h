@@ -19,17 +19,21 @@
 #include "src/core/SkVM_fwd.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrFPArgs.h"
+#include "src/gpu/ganesh/GrFPArgs.h"
 #endif
 
 class GrFragmentProcessor;
 class SkArenaAlloc;
+enum class SkBackend : uint8_t;
 class SkColorSpace;
 class SkImage;
 struct SkImageInfo;
 class SkPaint;
+class SkPaintParamsKeyBuilder;
+class SkPipelineDataGatherer;
 class SkRasterPipeline;
 class SkRuntimeEffect;
+class SkKeyContext;
 class SkStageUpdater;
 
 class SkUpdatableShader;
@@ -208,6 +212,21 @@ public:
     skvm::Color program(skvm::Builder*, skvm::Coord device, skvm::Coord local, skvm::Color paint,
                         const SkMatrixProvider&, const SkMatrix* localM, const SkColorInfo& dst,
                         skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const;
+
+
+#ifdef SK_ENABLE_SKSL
+    /**
+        Add implementation details, for the specified backend, of this SkShader to the
+        provided key.
+
+        @param keyContext backend context for key creation
+        @param builder    builder for creating the key for this SkShader
+        @param gatherer   if non-null, storage for this shader's data
+    */
+    virtual void addToKey(const SkKeyContext& keyContext,
+                          SkPaintParamsKeyBuilder* builder,
+                          SkPipelineDataGatherer* gatherer) const;
+#endif
 
 protected:
     SkShaderBase(const SkMatrix* localMatrix = nullptr);

@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 
 class Browser;
@@ -21,7 +22,7 @@ class Browser;
     : SettingsRootTableViewController <PasswordsConsumer,
                                        SettingsControllerProtocol>
 
-// The designated initializer. |browser| must not be nil.
+// The designated initializer. `browser` must not be nil.
 - (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
@@ -41,6 +42,9 @@ class Browser;
 // Reauthentication module.
 @property(nonatomic, strong) id<ReauthenticationProtocol>
     reauthenticationModule;
+
+// Data source for favicon images.
+@property(nonatomic, weak) id<TableViewFaviconDataSource> imageDataSource;
 
 @end
 

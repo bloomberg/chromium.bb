@@ -17,8 +17,6 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
-#include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
 #include "media/base/silent_sink_suspender.h"
@@ -89,12 +87,13 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
 }
 
 blink::LocalFrameToken FrameTokenFromCurrentContext() {
-  // Assumption: This method is being invoked within a V8 call stack. CHECKs
-  // will fail in the call to frameForCurrentContext() otherwise.
-  //
-  // Therefore, we can perform look-ups to determine which RenderView is
-  // starting the audio device.  The reason for all this is because the creator
-  // of the WebAudio objects might not be the actual source of the audio (e.g.,
+  // TODO(crbug.com/1307461): The assumption here is incorrect;
+  // RendererWebAudioDevice can be created without a valid frame/document. In
+  // that case, FrameForCurrentContext() below will be invalid.
+
+  // We can perform look-ups to determine which RenderView is starting the
+  // audio device.  The reason for all this is because the creator of the
+  // WebAudio objects might not be the actual source of the audio (e.g.,
   // an extension creates a object that is passed and used within a page).
   return blink::WebLocalFrame::FrameForCurrentContext()->GetLocalFrameToken();
 }

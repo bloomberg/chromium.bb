@@ -22,7 +22,6 @@ namespace internal {
   * \sa class CwiseUnaryOp, MatrixBase::operator-
   */
 template<typename Scalar> struct scalar_opposite_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_opposite_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const { return -a; }
   template<typename Packet>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Packet packetOp(const Packet& a) const
@@ -41,7 +40,6 @@ struct functor_traits<scalar_opposite_op<Scalar> >
   * \sa class CwiseUnaryOp, Cwise::abs
   */
 template<typename Scalar> struct scalar_abs_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_abs_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const Scalar& a) const { return numext::abs(a); }
   template<typename Packet>
@@ -72,14 +70,12 @@ struct functor_traits<scalar_score_coeff_op<Scalar> > : functor_traits<scalar_ab
 /* Avoid recomputing abs when we know the score and they are the same. Not a true Eigen functor.  */
 template<typename Scalar, typename=void> struct abs_knowing_score
 {
-  EIGEN_EMPTY_STRUCT_CTOR(abs_knowing_score)
   typedef typename NumTraits<Scalar>::Real result_type;
   template<typename Score>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const Scalar& a, const Score&) const { return numext::abs(a); }
 };
 template<typename Scalar> struct abs_knowing_score<Scalar, typename scalar_score_coeff_op<Scalar>::Score_is_abs>
 {
-  EIGEN_EMPTY_STRUCT_CTOR(abs_knowing_score)
   typedef typename NumTraits<Scalar>::Real result_type;
   template<typename Scal>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const Scal&, const result_type& a) const { return a; }
@@ -91,7 +87,6 @@ template<typename Scalar> struct abs_knowing_score<Scalar, typename scalar_score
   * \sa class CwiseUnaryOp, Cwise::abs2
   */
 template<typename Scalar> struct scalar_abs2_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_abs2_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE const result_type operator() (const Scalar& a) const { return numext::abs2(a); }
@@ -109,7 +104,6 @@ struct functor_traits<scalar_abs2_op<Scalar> >
   * \sa class CwiseUnaryOp, MatrixBase::conjugate()
   */
 template<typename Scalar> struct scalar_conjugate_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_conjugate_op)
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const { return numext::conj(a); }
   template<typename Packet>
@@ -138,7 +132,6 @@ struct functor_traits<scalar_conjugate_op<Scalar> >
   * \sa class CwiseUnaryOp, Cwise::arg
   */
 template<typename Scalar> struct scalar_arg_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_arg_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const Scalar& a) const { return numext::arg(a); }
   template<typename Packet>
@@ -160,7 +153,6 @@ struct functor_traits<scalar_arg_op<Scalar> >
   */
 template<typename Scalar, typename NewType>
 struct scalar_cast_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cast_op)
   typedef NewType result_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const NewType operator() (const Scalar& a) const { return cast<Scalar, NewType>(a); }
 };
@@ -175,7 +167,6 @@ struct functor_traits<scalar_cast_op<Scalar,NewType> >
   */
 template<typename Scalar, int N>
 struct scalar_shift_right_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_shift_right_op)
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const
   { return a >> N; }
@@ -194,8 +185,6 @@ struct functor_traits<scalar_shift_right_op<Scalar,N> >
   */
 template<typename Scalar, int N>
 struct scalar_shift_left_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_shift_left_op)
-
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const
   { return a << N; }
   template<typename Packet>
@@ -213,7 +202,6 @@ struct functor_traits<scalar_shift_left_op<Scalar,N> >
   */
 template<typename Scalar>
 struct scalar_real_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_real_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE result_type operator() (const Scalar& a) const { return numext::real(a); }
@@ -229,7 +217,6 @@ struct functor_traits<scalar_real_op<Scalar> >
   */
 template<typename Scalar>
 struct scalar_imag_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_imag_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE result_type operator() (const Scalar& a) const { return numext::imag(a); }
@@ -245,7 +232,6 @@ struct functor_traits<scalar_imag_op<Scalar> >
   */
 template<typename Scalar>
 struct scalar_real_ref_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_real_ref_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE result_type& operator() (const Scalar& a) const { return numext::real_ref(*const_cast<Scalar*>(&a)); }
@@ -261,7 +247,6 @@ struct functor_traits<scalar_real_ref_op<Scalar> >
   */
 template<typename Scalar>
 struct scalar_imag_ref_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_imag_ref_op)
   typedef typename NumTraits<Scalar>::Real result_type;
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE result_type& operator() (const Scalar& a) const { return numext::imag_ref(*const_cast<Scalar*>(&a)); }
@@ -277,8 +262,7 @@ struct functor_traits<scalar_imag_ref_op<Scalar> >
   * \sa class CwiseUnaryOp, Cwise::exp()
   */
 template<typename Scalar> struct scalar_exp_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_exp_op)
-  EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::exp(a); }
+  EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return internal::pexp(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pexp(a); }
 };
@@ -317,7 +301,6 @@ struct functor_traits<scalar_exp_op<Scalar> > {
   * \sa class CwiseUnaryOp, ArrayBase::expm1()
   */
 template<typename Scalar> struct scalar_expm1_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_expm1_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::expm1(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pexpm1(a); }
@@ -337,7 +320,6 @@ struct functor_traits<scalar_expm1_op<Scalar> > {
   * \sa class CwiseUnaryOp, ArrayBase::log()
   */
 template<typename Scalar> struct scalar_log_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_log_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::log(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::plog(a); }
@@ -368,7 +350,6 @@ struct functor_traits<scalar_log_op<Scalar> > {
   * \sa class CwiseUnaryOp, ArrayBase::log1p()
   */
 template<typename Scalar> struct scalar_log1p_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_log1p_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::log1p(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::plog1p(a); }
@@ -388,7 +369,6 @@ struct functor_traits<scalar_log1p_op<Scalar> > {
   * \sa class CwiseUnaryOp, Cwise::log10()
   */
 template<typename Scalar> struct scalar_log10_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_log10_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { EIGEN_USING_STD(log10) return log10(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::plog10(a); }
@@ -404,7 +384,6 @@ struct functor_traits<scalar_log10_op<Scalar> >
   * \sa class CwiseUnaryOp, Cwise::log2()
   */
 template<typename Scalar> struct scalar_log2_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_log2_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return Scalar(EIGEN_LOG2E) * numext::log(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::plog2(a); }
@@ -418,7 +397,6 @@ struct functor_traits<scalar_log2_op<Scalar> >
   * \sa class CwiseUnaryOp, Cwise::sqrt()
   */
 template<typename Scalar> struct scalar_sqrt_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sqrt_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::sqrt(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::psqrt(a); }
@@ -442,7 +420,6 @@ struct functor_traits<scalar_sqrt_op<Scalar> > {
 
 // Boolean specialization to eliminate -Wimplicit-conversion-floating-point-to-bool warnings.
 template<> struct scalar_sqrt_op<bool> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sqrt_op)
   EIGEN_DEPRECATED EIGEN_DEVICE_FUNC inline bool operator() (const bool& a) const { return a; }
   template <typename Packet>
   EIGEN_DEPRECATED EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return a; }
@@ -457,7 +434,6 @@ struct functor_traits<scalar_sqrt_op<bool> > {
   * \sa class CwiseUnaryOp, Cwise::rsqrt()
   */
 template<typename Scalar> struct scalar_rsqrt_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_rsqrt_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::rsqrt(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::prsqrt(a); }
@@ -476,7 +452,6 @@ struct functor_traits<scalar_rsqrt_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::cos()
   */
 template<typename Scalar> struct scalar_cos_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cos_op)
   EIGEN_DEVICE_FUNC inline Scalar operator() (const Scalar& a) const { return numext::cos(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pcos(a); }
@@ -495,7 +470,6 @@ struct functor_traits<scalar_cos_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::sin()
   */
 template<typename Scalar> struct scalar_sin_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sin_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::sin(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::psin(a); }
@@ -515,7 +489,6 @@ struct functor_traits<scalar_sin_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::tan()
   */
 template<typename Scalar> struct scalar_tan_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_tan_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::tan(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::ptan(a); }
@@ -534,7 +507,6 @@ struct functor_traits<scalar_tan_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::acos()
   */
 template<typename Scalar> struct scalar_acos_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_acos_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::acos(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pacos(a); }
@@ -553,7 +525,6 @@ struct functor_traits<scalar_acos_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::asin()
   */
 template<typename Scalar> struct scalar_asin_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_asin_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::asin(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pasin(a); }
@@ -573,7 +544,6 @@ struct functor_traits<scalar_asin_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::atan()
   */
 template<typename Scalar> struct scalar_atan_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_atan_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::atan(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::patan(a); }
@@ -593,7 +563,6 @@ struct functor_traits<scalar_atan_op<Scalar> >
   */
 template <typename Scalar>
 struct scalar_tanh_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_tanh_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator()(const Scalar& a) const { return numext::tanh(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& x) const { return ptanh(x); }
@@ -631,7 +600,6 @@ struct functor_traits<scalar_tanh_op<Scalar> > {
   */
 template <typename Scalar>
 struct scalar_atanh_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_atanh_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator()(const Scalar& a) const { return numext::atanh(a); }
 };
 
@@ -646,7 +614,6 @@ struct functor_traits<scalar_atanh_op<Scalar> > {
   * \sa class CwiseUnaryOp, ArrayBase::sinh()
   */
 template<typename Scalar> struct scalar_sinh_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sinh_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::sinh(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::psinh(a); }
@@ -667,7 +634,6 @@ struct functor_traits<scalar_sinh_op<Scalar> >
   */
 template <typename Scalar>
 struct scalar_asinh_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_asinh_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator()(const Scalar& a) const { return numext::asinh(a); }
 };
 
@@ -682,7 +648,6 @@ struct functor_traits<scalar_asinh_op<Scalar> > {
   * \sa class CwiseUnaryOp, ArrayBase::cosh()
   */
 template<typename Scalar> struct scalar_cosh_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cosh_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const { return numext::cosh(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pcosh(a); }
@@ -703,7 +668,6 @@ struct functor_traits<scalar_cosh_op<Scalar> >
   */
 template <typename Scalar>
 struct scalar_acosh_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_acosh_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator()(const Scalar& a) const { return numext::acosh(a); }
 };
 
@@ -719,17 +683,21 @@ struct functor_traits<scalar_acosh_op<Scalar> > {
   */
 template<typename Scalar>
 struct scalar_inverse_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_inverse_op)
   EIGEN_DEVICE_FUNC inline Scalar operator() (const Scalar& a) const { return Scalar(1)/a; }
   template<typename Packet>
   EIGEN_DEVICE_FUNC inline const Packet packetOp(const Packet& a) const
-  { return internal::pdiv(pset1<Packet>(Scalar(1)),a); }
+  { return internal::preciprocal(a); }
 };
 template <typename Scalar>
 struct functor_traits<scalar_inverse_op<Scalar> > {
   enum {
     PacketAccess = packet_traits<Scalar>::HasDiv,
-    Cost = scalar_div_cost<Scalar, PacketAccess>::value
+    // If packet_traits<Scalar>::HasReciprocal then the Estimated cost is that
+    // of computing an approximation plus a single Newton-Raphson step, which
+    // consists of 1 pmul + 1 pmadd.
+    Cost = (packet_traits<Scalar>::HasReciprocal
+                ? 4 * NumTraits<Scalar>::MulCost
+                : scalar_div_cost<Scalar, PacketAccess>::value)
   };
 };
 
@@ -739,7 +707,6 @@ struct functor_traits<scalar_inverse_op<Scalar> > {
   */
 template<typename Scalar>
 struct scalar_square_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_square_op)
   EIGEN_DEVICE_FUNC inline Scalar operator() (const Scalar& a) const { return a*a; }
   template<typename Packet>
   EIGEN_DEVICE_FUNC inline const Packet packetOp(const Packet& a) const
@@ -752,7 +719,6 @@ struct functor_traits<scalar_square_op<Scalar> >
 // Boolean specialization to avoid -Wint-in-bool-context warnings on GCC.
 template<>
 struct scalar_square_op<bool> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_square_op)
   EIGEN_DEPRECATED EIGEN_DEVICE_FUNC inline bool operator() (const bool& a) const { return a; }
   template<typename Packet>
   EIGEN_DEPRECATED EIGEN_DEVICE_FUNC inline const Packet packetOp(const Packet& a) const
@@ -768,7 +734,6 @@ struct functor_traits<scalar_square_op<bool> >
   */
 template<typename Scalar>
 struct scalar_cube_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cube_op)
   EIGEN_DEVICE_FUNC inline Scalar operator() (const Scalar& a) const { return a*a*a; }
   template<typename Packet>
   EIGEN_DEVICE_FUNC inline const Packet packetOp(const Packet& a) const
@@ -781,7 +746,6 @@ struct functor_traits<scalar_cube_op<Scalar> >
 // Boolean specialization to avoid -Wint-in-bool-context warnings on GCC.
 template<>
 struct scalar_cube_op<bool> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cube_op)
   EIGEN_DEPRECATED EIGEN_DEVICE_FUNC inline bool operator() (const bool& a) const { return a; }
   template<typename Packet>
   EIGEN_DEPRECATED EIGEN_DEVICE_FUNC inline const Packet packetOp(const Packet& a) const
@@ -796,7 +760,6 @@ struct functor_traits<scalar_cube_op<bool> >
   * \sa class CwiseUnaryOp, ArrayBase::round()
   */
 template<typename Scalar> struct scalar_round_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_round_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const { return numext::round(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pround(a); }
@@ -815,7 +778,6 @@ struct functor_traits<scalar_round_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::floor()
   */
 template<typename Scalar> struct scalar_floor_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_floor_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const { return numext::floor(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pfloor(a); }
@@ -834,7 +796,6 @@ struct functor_traits<scalar_floor_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::rint()
   */
 template<typename Scalar> struct scalar_rint_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_rint_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const { return numext::rint(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::print(a); }
@@ -853,7 +814,6 @@ struct functor_traits<scalar_rint_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::ceil()
   */
 template<typename Scalar> struct scalar_ceil_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_ceil_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const { return numext::ceil(a); }
   template <typename Packet>
   EIGEN_DEVICE_FUNC inline Packet packetOp(const Packet& a) const { return internal::pceil(a); }
@@ -872,7 +832,6 @@ struct functor_traits<scalar_ceil_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::isnan()
   */
 template<typename Scalar> struct scalar_isnan_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_isnan_op)
   typedef bool result_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE result_type operator() (const Scalar& a) const {
 #if defined(SYCL_DEVICE_ONLY)
@@ -896,7 +855,6 @@ struct functor_traits<scalar_isnan_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::isinf()
   */
 template<typename Scalar> struct scalar_isinf_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_isinf_op)
   typedef bool result_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE result_type operator() (const Scalar& a) const {
 #if defined(SYCL_DEVICE_ONLY)
@@ -920,7 +878,6 @@ struct functor_traits<scalar_isinf_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::isfinite()
   */
 template<typename Scalar> struct scalar_isfinite_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_isfinite_op)
   typedef bool result_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE result_type operator() (const Scalar& a) const {
 #if defined(SYCL_DEVICE_ONLY)
@@ -945,7 +902,6 @@ struct functor_traits<scalar_isfinite_op<Scalar> >
   * \sa class CwiseUnaryOp, ArrayBase::operator!
   */
 template<typename Scalar> struct scalar_boolean_not_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_boolean_not_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool operator() (const bool& a) const { return !a; }
 };
 template<typename Scalar>
@@ -963,7 +919,6 @@ struct functor_traits<scalar_boolean_not_op<Scalar> > {
 template<typename Scalar,bool is_complex=(NumTraits<Scalar>::IsComplex!=0), bool is_integer=(NumTraits<Scalar>::IsInteger!=0) > struct scalar_sign_op;
 template<typename Scalar>
 struct scalar_sign_op<Scalar, false, true> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sign_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const
   {
       return Scalar( (a>Scalar(0)) - (a<Scalar(0)) );
@@ -975,7 +930,6 @@ struct scalar_sign_op<Scalar, false, true> {
 
 template<typename Scalar>
 struct scalar_sign_op<Scalar, false, false> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sign_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const
   {
     return (numext::isnan)(a) ? a : Scalar( (a>Scalar(0)) - (a<Scalar(0)) );
@@ -987,7 +941,6 @@ struct scalar_sign_op<Scalar, false, false> {
 
 template<typename Scalar, bool is_integer>
 struct scalar_sign_op<Scalar,true, is_integer> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_sign_op)
   EIGEN_DEVICE_FUNC inline const Scalar operator() (const Scalar& a) const
   {
     typedef typename NumTraits<Scalar>::Real real_type;
@@ -1018,7 +971,6 @@ struct functor_traits<scalar_sign_op<Scalar> >
   */
 template <typename T>
 struct scalar_logistic_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_logistic_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE T operator()(const T& x) const {
     return packetOp(x);
   }
@@ -1026,86 +978,103 @@ struct scalar_logistic_op {
   template <typename Packet> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
   Packet packetOp(const Packet& x) const {
     const Packet one = pset1<Packet>(T(1));
-    return pdiv(one, padd(one, pexp(pnegate(x))));
+    const Packet inf = pset1<Packet>(NumTraits<T>::infinity());
+    const Packet e = pexp(x);
+    const Packet inf_mask = pcmp_eq(e, inf);
+    return pselect(inf_mask, one, pdiv(e, padd(one, e)));
   }
 };
 
-#ifndef EIGEN_GPU_COMPILE_PHASE
+// TODO(rmlarsen): Enable the following on host when integer_packet is defined
+// for the relevant packet types.
+#ifdef EIGEN_GPU_CC
+
 /** \internal
   * \brief Template specialization of the logistic function for float.
-  *
-  *  Uses just a 9/10-degree rational interpolant which
-  *  interpolates 1/(1+exp(-x)) - 0.5 up to a couple of ulps in the range
-  *  [-9, 18]. Below -9 we use the more accurate approximation
-  *  1/(1+exp(-x)) ~= exp(x), and above 18 the logistic function is 1 within
-  *  one ulp. The shifted logistic is interpolated because it was easier to
-  *  make the fit converge.
-  *
+  * Computes S(x) = exp(x) / (1 + exp(x)), where exp(x) is implemented
+  * using an algorithm partly adopted from the implementation of
+  * pexp_float. See the individual steps described in the code below.
+  * Note that compared to pexp, we use an additional outer multiplicative
+  * range reduction step using the identity exp(x) = exp(x/2)^2.
+  * This prevert us from having to call ldexp on values that could produce
+  * a denormal result, which allows us to call the faster implementation in
+  * pldexp_fast_impl<Packet>::run(p, m).
+  * The final squaring, however, doubles the error bound on the final
+  * approximation. Exhaustive testing shows that we have a worst case error
+  * of 4.5 ulps (compared to computing S(x) in double precision), which is
+  * acceptable.
   */
 template <>
 struct scalar_logistic_op<float> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_logistic_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE float operator()(const float& x) const {
-    return packetOp(x);
+    // Truncate at the first point where the interpolant is exactly one.
+    const float cst_exp_hi = 16.6355324f;
+    const float e = numext::exp(numext::mini(x, cst_exp_hi));
+    return e / (1.0f + e);
   }
 
-  template <typename Packet> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  Packet packetOp(const Packet& _x) const {
-    const Packet cutoff_lower = pset1<Packet>(-9.f);
-    const Packet lt_mask = pcmp_lt<Packet>(_x, cutoff_lower);
-    const bool any_small = predux_any(lt_mask);
+  template <typename Packet>
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Packet
+  packetOp(const Packet& _x) const {
+    const Packet cst_zero = pset1<Packet>(0.0f);
+    const Packet cst_one = pset1<Packet>(1.0f);
+    const Packet cst_half = pset1<Packet>(0.5f);
+    // Truncate at the first point where the interpolant is exactly one.
+    const Packet cst_exp_hi = pset1<Packet>(16.6355324f);
+    const Packet cst_exp_lo = pset1<Packet>(-104.f);
 
-    // The upper cut-off is the smallest x for which the rational approximation evaluates to 1.
-    // Choosing this value saves us a few instructions clamping the results at the end.
-#ifdef EIGEN_VECTORIZE_FMA
-    const Packet cutoff_upper = pset1<Packet>(15.7243833541870117f);
-#else
-    const Packet cutoff_upper = pset1<Packet>(15.6437711715698242f);
-#endif
-    const Packet x = pmin(_x, cutoff_upper);
+    // Clamp x to the non-trivial range where S(x). Outside this
+    // interval the correctly rounded value of S(x) is either zero
+    // or one.
+    Packet zero_mask = pcmp_lt(_x, cst_exp_lo);
+    Packet x = pmin(_x, cst_exp_hi);
 
-    // The monomial coefficients of the numerator polynomial (odd).
-    const Packet alpha_1 = pset1<Packet>(2.48287947061529e-01f);
-    const Packet alpha_3 = pset1<Packet>(8.51377133304701e-03f);
-    const Packet alpha_5 = pset1<Packet>(6.08574864600143e-05f);
-    const Packet alpha_7 = pset1<Packet>(1.15627324459942e-07f);
-    const Packet alpha_9 = pset1<Packet>(4.37031012579801e-11f);
+    // 1. Multiplicative range reduction:
+    // Reduce the range of x by a factor of 2. This avoids having
+    // to compute exp(x) accurately where the result is a denormalized
+    // value.
+    x = pmul(x, cst_half);
 
-    // The monomial coefficients of the denominator polynomial (even).
-    const Packet beta_0 = pset1<Packet>(9.93151921023180e-01f);
-    const Packet beta_2 = pset1<Packet>(1.16817656904453e-01f);
-    const Packet beta_4 = pset1<Packet>(1.70198817374094e-03f);
-    const Packet beta_6 = pset1<Packet>(6.29106785017040e-06f);
-    const Packet beta_8 = pset1<Packet>(5.76102136993427e-09f);
-    const Packet beta_10 = pset1<Packet>(6.10247389755681e-13f);
+    // 2. Subtractive range reduction:
+    // Express exp(x) as exp(m*ln(2) + r) = 2^m*exp(r), start by extracting
+    // m = floor(x/ln(2) + 0.5), such that x = m*ln(2) + r.
+    const Packet cst_cephes_LOG2EF = pset1<Packet>(1.44269504088896341f);
+    Packet m = pfloor(pmadd(x, cst_cephes_LOG2EF, cst_half));
+    // Get r = x - m*ln(2). We use a trick from Cephes where the term
+    // m*ln(2) is subtracted out in two parts, m*C1+m*C2 = m*ln(2),
+    // to avoid accumulating truncation errors.
+    const Packet cst_cephes_exp_C1 = pset1<Packet>(-0.693359375f);
+    const Packet cst_cephes_exp_C2 = pset1<Packet>(2.12194440e-4f);
+    Packet r = pmadd(m, cst_cephes_exp_C1, x);
+    r = pmadd(m, cst_cephes_exp_C2, r);
 
-    // Since the polynomials are odd/even, we need x^2.
-    const Packet x2 = pmul(x, x);
+    // 3. Compute an approximation to exp(r) using a degree 5 minimax polynomial.
+    // We compute even and odd terms separately to increase instruction level
+    // parallelism.
+    Packet r2 = pmul(r, r);
+    const Packet cst_p2 = pset1<Packet>(0.49999141693115234375f);
+    const Packet cst_p3 = pset1<Packet>(0.16666877269744873046875f);
+    const Packet cst_p4 = pset1<Packet>(4.1898667812347412109375e-2f);
+    const Packet cst_p5 = pset1<Packet>(8.33471305668354034423828125e-3f);
 
-    // Evaluate the numerator polynomial p.
-    Packet p = pmadd(x2, alpha_9, alpha_7);
-    p = pmadd(x2, p, alpha_5);
-    p = pmadd(x2, p, alpha_3);
-    p = pmadd(x2, p, alpha_1);
-    p = pmul(x, p);
+    const Packet p_even = pmadd(r2, cst_p4, cst_p2);
+    const Packet p_odd = pmadd(r2, cst_p5, cst_p3);
+    const Packet p_low = padd(r, cst_one);
+    Packet p = pmadd(r, p_odd, p_even);
+    p = pmadd(r2, p, p_low);
 
-    // Evaluate the denominator polynomial q.
-    Packet q = pmadd(x2, beta_10, beta_8);
-    q = pmadd(x2, q, beta_6);
-    q = pmadd(x2, q, beta_4);
-    q = pmadd(x2, q, beta_2);
-    q = pmadd(x2, q, beta_0);
-    // Divide the numerator by the denominator and shift it up.
-    const Packet logistic = padd(pdiv(p, q), pset1<Packet>(0.5f));
-    if (EIGEN_PREDICT_FALSE(any_small)) {
-      const Packet exponential = pexp(_x);
-      return pselect(lt_mask, exponential, logistic);
-    } else {
-      return logistic;
-    }
+    // 4. Undo subtractive range reduction exp(m*ln(2) + r) = 2^m * exp(r).
+    Packet e = pldexp_fast_impl<Packet>::run(p, m);
+
+    // 5. Undo multiplicative range reduction by using exp(r) = exp(r/2)^2.
+    e = pmul(e, e);
+
+    // Return exp(x) / (1 + exp(x))
+    return pselect(zero_mask, cst_zero, pdiv(e, padd(cst_one, e)));
   }
 };
 #endif  // #ifndef EIGEN_GPU_COMPILE_PHASE
+
 
 template <typename T>
 struct functor_traits<scalar_logistic_op<T> > {

@@ -82,7 +82,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -96,10 +95,11 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
+import org.chromium.chrome.features.start_surface.TabSwitcherAndStartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -107,6 +107,7 @@ import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.test.util.NightModeTestUtils;
@@ -141,7 +142,10 @@ public class TabGridDialogTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(
+                            ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_SWITCHER_GRID)
+                    .build();
 
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
@@ -160,7 +164,7 @@ public class TabGridDialogTest {
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(true);
         mActivityTestRule.startMainActivityOnBlankPage();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof StartSurfaceLayout);
+        assertTrue(layout instanceof TabSwitcherAndStartSurfaceLayout);
         CriteriaHelper.pollUiThread(
                 mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
@@ -194,7 +198,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Enter first tab page.
-        assertTrue(cta.getLayoutManager().overviewVisible());
+        assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
         clickFirstCardFromTabSwitcher(cta);
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
@@ -229,7 +233,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Enter first tab page.
-        assertTrue(cta.getLayoutManager().overviewVisible());
+        assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
         clickFirstCardFromTabSwitcher(cta);
         clickFirstTabInDialog(cta);
         waitForDialogHidingAnimation(cta);
@@ -736,7 +740,7 @@ public class TabGridDialogTest {
     }
 
     @Test
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/1065153")
     @MediumTest
     @Feature({"RenderTest"})
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
@@ -924,7 +928,8 @@ public class TabGridDialogTest {
         // Tab switcher is created, and the dummy signal to hide dialog is sent. This line would
         // crash if the dummy signal is not properly handled. See crbug.com/1096358.
         enterTabSwitcher(cta);
-        onView(allOf(withParent(withId(R.id.tasks_surface_body)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(org.chromium.chrome.R.id.tasks_surface_body)),
+                       withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollUiThread(() -> isDialogShowing(mActivityTestRule.getActivity()));
         verifyShowingDialog(cta, 2, null);
@@ -963,7 +968,8 @@ public class TabGridDialogTest {
 
         // Test undo closure in dialog from StartSurface tab switcher.
         enterTabSwitcher(cta);
-        onView(allOf(withParent(withId(R.id.tasks_surface_body)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(org.chromium.chrome.R.id.tasks_surface_body)),
+                       withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollUiThread(() -> isDialogShowing(cta));
         verifyShowingDialog(cta, 2, null);
@@ -974,8 +980,8 @@ public class TabGridDialogTest {
 
         // Test undo closure in dialog from StartSurface home page.
         clickScrimToExitDialog(cta);
-        onView(withId(org.chromium.chrome.start_surface.R.id.new_tab_button)).perform(click());
-        onView(allOf(withParent(withId(R.id.carousel_tab_switcher_container)),
+        onView(withId(R.id.new_tab_button)).perform(click());
+        onView(allOf(withParent(withId(org.chromium.chrome.R.id.carousel_tab_switcher_container)),
                        withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollUiThread(() -> isDialogShowing(cta));
@@ -1073,12 +1079,8 @@ public class TabGridDialogTest {
                 || !resources.getBoolean(R.bool.window_light_navigation_bar)) {
             return;
         }
-        @ColorInt
-        int scrimDefaultColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.default_scrim_color);
-        @ColorInt
-        int navigationBarColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.bottom_system_nav_color);
+        final @ColorInt int scrimDefaultColor = cta.getColor(R.color.default_scrim_color);
+        final @ColorInt int navigationBarColor = SemanticColorUtils.getBottomSystemNavColor(cta);
         float scrimColorAlpha = (scrimDefaultColor >>> 24) / 255f;
         int scrimColorOpaque = scrimDefaultColor & 0xFF000000;
         int navigationBarColorWithScrimOverlay = ColorUtils.getColorWithOverlay(
@@ -1099,7 +1101,7 @@ public class TabGridDialogTest {
     }
 
     private void showDialogFromStrip(ChromeTabbedActivity cta) {
-        assertFalse(cta.getLayoutManager().overviewVisible());
+        assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
         onView(allOf(withId(R.id.toolbar_left_button),
                        isDescendantOfA(withId(R.id.bottom_controls))))
                 .perform(click());

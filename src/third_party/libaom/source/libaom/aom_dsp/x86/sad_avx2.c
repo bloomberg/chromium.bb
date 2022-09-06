@@ -101,19 +101,19 @@ static INLINE unsigned int sad32xh_avx2(const uint8_t *src_ptr, int src_stride,
                             h / 2);                                           \
   }
 
-#define FSAD64   \
-  FSAD64_H(64);  \
-  FSAD64_H(32);  \
-  FSADS64_H(64); \
-  FSADS64_H(32);
+#define FSAD64  \
+  FSAD64_H(64)  \
+  FSAD64_H(32)  \
+  FSADS64_H(64) \
+  FSADS64_H(32)
 
-#define FSAD32   \
-  FSAD32_H(64);  \
-  FSAD32_H(32);  \
-  FSAD32_H(16);  \
-  FSADS32_H(64); \
-  FSADS32_H(32); \
-  FSADS32_H(16);
+#define FSAD32  \
+  FSAD32_H(64)  \
+  FSAD32_H(32)  \
+  FSAD32_H(16)  \
+  FSADS32_H(64) \
+  FSADS32_H(32) \
+  FSADS32_H(16)
 
 /* clang-format off */
 FSAD64
@@ -199,14 +199,14 @@ FSAD32
     return res;                                                               \
   }
 
-#define FSADAVG64  \
-  FSADAVG64_H(64); \
-  FSADAVG64_H(32);
+#define FSADAVG64 \
+  FSADAVG64_H(64) \
+  FSADAVG64_H(32)
 
-#define FSADAVG32  \
-  FSADAVG32_H(64); \
-  FSADAVG32_H(32); \
-  FSADAVG32_H(16);
+#define FSADAVG32 \
+  FSADAVG32_H(64) \
+  FSADAVG32_H(32) \
+  FSADAVG32_H(16)
 
 /* clang-format off */
 FSADAVG64

@@ -110,6 +110,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     s_test_delegate_->SetIsAccountStoreDefault(is_default);
   }
 
+  const std::string& last_change_flow_url() {
+    return s_test_delegate_->last_change_flow_url();
+  }
+
   const std::vector<int>& last_moved_passwords() const {
     return s_test_delegate_->last_moved_passwords();
   }
@@ -179,6 +183,12 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
                        ChangeSavedPasswordWithEmptyArrayIdFails) {
   EXPECT_TRUE(RunPasswordsSubtest("changeSavedPasswordWithEmptyArrayIdFails"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       ChangeSavedPasswordWithNoteSucceeds) {
+  EXPECT_TRUE(RunPasswordsSubtest("ChangeSavedPasswordWithNoteSucceeds"))
       << message_;
 }
 
@@ -310,6 +320,51 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
   AddCompromisedCredential(0);
   EXPECT_TRUE(RunPasswordsSubtest("removeInsecureCredentialSucceeds"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       MuteInsecureCredentialSucceeds) {
+  AddCompromisedCredential(0);
+  EXPECT_TRUE(RunPasswordsSubtest("muteInsecureCredentialSucceeds"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, MuteInsecureCredentialFails) {
+  EXPECT_TRUE(RunPasswordsSubtest("muteInsecureCredentialFails")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       UnmuteInsecureCredentialSucceeds) {
+  AddCompromisedCredential(0);
+  EXPECT_TRUE(RunPasswordsSubtest("unmuteInsecureCredentialSucceeds"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, UnmuteInsecureCredentialFails) {
+  EXPECT_TRUE(RunPasswordsSubtest("unmuteInsecureCredentialFails")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RecordChangePasswordFlowStartedManual) {
+  EXPECT_TRUE(RunPasswordsSubtest("recordChangePasswordFlowStartedManual"))
+      << message_;
+  EXPECT_EQ(last_change_flow_url(),
+            "https://example.com/.well-known/change-password");
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RecordChangePasswordFlowStartedAutomated) {
+  EXPECT_TRUE(RunPasswordsSubtest("recordChangePasswordFlowStartedAutomated"))
+      << message_;
+  EXPECT_EQ(last_change_flow_url(),
+            "https://example.com/.well-known/change-password");
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RecordChangePasswordFlowStartedAppNoUrl) {
+  EXPECT_TRUE(RunPasswordsSubtest("recordChangePasswordFlowStartedAppNoUrl"))
+      << message_;
+  EXPECT_EQ(last_change_flow_url(), "");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheck) {

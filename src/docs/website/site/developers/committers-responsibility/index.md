@@ -9,8 +9,8 @@ title: Responsibilities of Committers and Reviewers
 <table>
 <tr>
 <td>This content should be migrated eventually to in-repo documentation:</td>
-<td><a href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/contributing.md">master/docs/contributing.md</a></td>
-<td><a href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/code_reviews.md">master/docs/code_reviews.md</a></td>
+<td><a href="https://chromium.googlesource.com/chromium/src/+/main/docs/contributing.md">main/docs/contributing.md</a></td>
+<td><a href="https://chromium.googlesource.com/chromium/src/+/main/docs/code_reviews.md">main/docs/code_reviews.md</a></td>
 </tr>
 </table>
 

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PictureInPictureParams;
 import android.content.pm.PackageManager;
@@ -16,11 +15,11 @@ import android.util.Rational;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
-import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.compat.ApiHelperForS;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -44,8 +43,7 @@ import java.util.List;
  *
  * Do not inline to prevent class verification errors on pre-O runtimes.
  */
-@VerifiesOnO
-@TargetApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.O)
 public class PictureInPictureController {
     private static final String TAG = "VideoPersist";
 
@@ -433,7 +431,8 @@ public class PictureInPictureController {
         mIsAutoEnterAllowed = allowed;
         try {
             mActivity.setPictureInPictureParams(builder.build());
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Error setting PiP params", e);
         }
     }
 

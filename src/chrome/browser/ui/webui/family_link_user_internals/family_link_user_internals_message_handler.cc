@@ -40,11 +40,11 @@ base::ListValue* AddSection(base::ListValue* parent_list,
                             const std::string& title) {
   std::unique_ptr<base::DictionaryValue> section(new base::DictionaryValue);
   std::unique_ptr<base::ListValue> section_contents(new base::ListValue);
-  section->SetString("title", title);
+  section->SetStringKey("title", title);
   // Grab a raw pointer to the result before |Pass()|ing it on.
   base::ListValue* result =
       section->SetList("data", std::move(section_contents));
-  parent_list->Append(std::move(section));
+  parent_list->Append(base::Value::FromUniquePtrValue(std::move(section)));
   return result;
 }
 
@@ -52,22 +52,22 @@ base::ListValue* AddSection(base::ListValue* parent_list,
 void AddSectionEntry(base::ListValue* section_list,
                      const std::string& name,
                      bool value) {
-  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-  entry->SetString("stat_name", name);
-  entry->SetBoolean("stat_value", value);
-  entry->SetBoolean("is_valid", true);
-  section_list->Append(std::move(entry));
+  base::Value::Dict entry;
+  entry.Set("stat_name", name);
+  entry.Set("stat_value", value);
+  entry.Set("is_valid", true);
+  section_list->GetList().Append(std::move(entry));
 }
 
 // Adds a string entry to a section (created with |AddSection| above).
 void AddSectionEntry(base::ListValue* section_list,
                      const std::string& name,
                      const std::string& value) {
-  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-  entry->SetString("stat_name", name);
-  entry->SetString("stat_value", value);
-  entry->SetBoolean("is_valid", true);
-  section_list->Append(std::move(entry));
+  base::Value::Dict entry;
+  entry.Set("stat_name", name);
+  entry.Set("stat_value", value);
+  entry.Set("is_valid", true);
+  section_list->GetList().Append(std::move(entry));
 }
 
 std::string FilteringBehaviorToString(
@@ -75,8 +75,6 @@ std::string FilteringBehaviorToString(
   switch (behavior) {
     case SupervisedUserURLFilter::ALLOW:
       return "Allow";
-    case SupervisedUserURLFilter::WARN:
-      return "Warn";
     case SupervisedUserURLFilter::BLOCK:
       return "Block";
     case SupervisedUserURLFilter::INVALID:
@@ -161,7 +159,7 @@ FamilyLinkUserInternalsMessageHandler::GetSupervisedUserService() {
 
 void FamilyLinkUserInternalsMessageHandler::HandleRegisterForEvents(
     const base::ListValue* args) {
-  DCHECK(args->GetList().empty());
+  DCHECK(args->GetListDeprecated().empty());
   AllowJavascript();
   if (scoped_observation_.IsObserving())
     return;
@@ -176,11 +174,12 @@ void FamilyLinkUserInternalsMessageHandler::HandleGetBasicInfo(
 
 void FamilyLinkUserInternalsMessageHandler::HandleTryURL(
     const base::ListValue* args) {
-  DCHECK_EQ(2u, args->GetList().size());
-  if (!args->GetList()[0].is_string() || !args->GetList()[1].is_string())
+  DCHECK_EQ(2u, args->GetListDeprecated().size());
+  if (!args->GetListDeprecated()[0].is_string() ||
+      !args->GetListDeprecated()[1].is_string())
     return;
-  const std::string& callback_id = args->GetList()[0].GetString();
-  const std::string& url_str = args->GetList()[1].GetString();
+  const std::string& callback_id = args->GetListDeprecated()[0].GetString();
+  const std::string& url_str = args->GetListDeprecated()[1].GetString();
 
   GURL url = url_formatter::FixupURL(url_str, std::string());
   if (!url.is_valid())
@@ -274,9 +273,9 @@ void FamilyLinkUserInternalsMessageHandler::OnTryURLResult(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
   base::DictionaryValue result;
-  result.SetString("allowResult",
-                   FilteringBehaviorToString(behavior, uncertain));
-  result.SetBoolean("manual", reason == supervised_user_error_page::MANUAL &&
+  result.SetStringKey("allowResult",
+                      FilteringBehaviorToString(behavior, uncertain));
+  result.SetBoolKey("manual", reason == supervised_user_error_page::MANUAL &&
                                   behavior == SupervisedUserURLFilter::ALLOW);
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }
@@ -290,8 +289,8 @@ void FamilyLinkUserInternalsMessageHandler::OnURLChecked(
     bool uncertain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::DictionaryValue result;
-  result.SetString("url", url.possibly_invalid_spec());
-  result.SetString("result", FilteringBehaviorToString(behavior, uncertain));
-  result.SetString("reason", FilteringBehaviorReasonToString(reason));
+  result.SetStringKey("url", url.possibly_invalid_spec());
+  result.SetStringKey("result", FilteringBehaviorToString(behavior, uncertain));
+  result.SetStringKey("reason", FilteringBehaviorReasonToString(reason));
   FireWebUIListener("filtering-result-received", result);
 }

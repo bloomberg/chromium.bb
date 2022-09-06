@@ -17,6 +17,7 @@
 
 #include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_factory.h"
+#include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
 #include "api/video/recordable_encoded_frame.h"
 #include "call/call.h"
@@ -25,7 +26,6 @@
 #include "call/video_receive_stream.h"
 #include "modules/rtp_rtcp/include/flexfec_receiver.h"
 #include "modules/rtp_rtcp/source/source_tracker.h"
-#include "modules/video_coding/frame_buffer2.h"
 #include "modules/video_coding/nack_requester.h"
 #include "modules/video_coding/video_receiver2.h"
 #include "rtc_base/system/no_unique_address.h"
@@ -33,6 +33,7 @@
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "rtc_base/thread_annotations.h"
 #include "system_wrappers/include/clock.h"
+#include "video/frame_buffer_proxy.h"
 #include "video/receive_statistics_proxy2.h"
 #include "video/rtp_streams_synchronizer2.h"
 #include "video/rtp_video_stream_receiver2.h"
@@ -53,7 +54,7 @@ class CallStats;
 // Utility struct for grabbing metadata from a VideoFrame and processing it
 // asynchronously without needing the actual frame data.
 // Additionally the caller can bundle information from the current clock
-// when the metadata is captured, for accurate reporting and not needeing
+// when the metadata is captured, for accurate reporting and not needing
 // multiple calls to clock->Now().
 struct VideoFrameMetaData {
   VideoFrameMetaData(const webrtc::VideoFrame& frame, Timestamp now)
@@ -78,16 +79,14 @@ struct VideoFrameMetaData {
 };
 
 class VideoReceiveStream2
-    : public webrtc::VideoReceiveStream,
+    : public webrtc::VideoReceiveStreamInterface,
       public rtc::VideoSinkInterface<VideoFrame>,
       public NackSender,
       public RtpVideoStreamReceiver2::OnCompleteFrameCallback,
       public Syncable,
-      public CallStatsObserver {
+      public CallStatsObserver,
+      public FrameSchedulingReceiver {
  public:
-  // The default number of milliseconds to pass before re-requesting a key frame
-  // to be sent.
-  static constexpr int kMaxWaitForKeyFrameMs = 200;
   // The maximum number of buffered encoded frames when encoded output is
   // configured.
   static constexpr size_t kBufferedEncodedFramesMaxSize = 60;
@@ -96,11 +95,12 @@ class VideoReceiveStream2
                       Call* call,
                       int num_cpu_cores,
                       PacketRouter* packet_router,
-                      VideoReceiveStream::Config config,
+                      VideoReceiveStreamInterface::Config config,
                       CallStats* call_stats,
                       Clock* clock,
-                      VCMTiming* timing,
-                      NackPeriodicProcessor* nack_periodic_processor);
+                      std::unique_ptr<VCMTiming> timing,
+                      NackPeriodicProcessor* nack_periodic_processor,
+                      DecodeSynchronizer* decode_sync);
   // Destruction happens on the worker thread. Prior to destruction the caller
   // must ensure that a registration with the transport has been cleared. See
   // `RegisterWithTransport` for details.
@@ -117,28 +117,34 @@ class VideoReceiveStream2
   // network thread.
   void UnregisterFromTransport();
 
-  // Convenience getters for parts of the receive stream's config.
-  // The accessors must be called on the packet delivery thread in accordance
-  // to documentation for RtpConfig (see receive_stream.h), the returned
-  // values should not be cached and should just be used within the calling
-  // context as some values might change.
-  const Config::Rtp& rtp() const;
+  // Accessor for the a/v sync group. This value may change and the caller
+  // must be on the packet delivery thread.
   const std::string& sync_group() const;
+
+  // Getters for const remote SSRC values that won't change throughout the
+  // object's lifetime.
+  uint32_t remote_ssrc() const { return config_.rtp.remote_ssrc; }
+  uint32_t rtx_ssrc() const { return config_.rtp.rtx_ssrc; }
 
   void SignalNetworkState(NetworkState state);
   bool DeliverRtcp(const uint8_t* packet, size_t length);
 
   void SetSync(Syncable* audio_syncable);
 
-  // Implements webrtc::VideoReceiveStream.
+  // Updates the `rtp_video_stream_receiver_`'s `local_ssrc` when the default
+  // sender has been created, changed or removed.
+  void SetLocalSsrc(uint32_t local_ssrc);
+
+  // Implements webrtc::VideoReceiveStreamInterface.
   void Start() override;
   void Stop() override;
 
   void SetRtpExtensions(std::vector<RtpExtension> extensions) override;
+  RtpHeaderExtensionMap GetRtpExtensionMap() const override;
+  bool transport_cc() const override;
+  void SetTransportCc(bool transport_cc) override;
 
-  const RtpConfig& rtp_config() const override { return rtp(); }
-
-  webrtc::VideoReceiveStream::Stats GetStats() const override;
+  webrtc::VideoReceiveStreamInterface::Stats GetStats() const override;
 
   // SetBaseMinimumPlayoutDelayMs and GetBaseMinimumPlayoutDelayMs are called
   // from webrtc/api level and requested by user code. For e.g. blink/js layer
@@ -184,23 +190,23 @@ class VideoReceiveStream2
   void GenerateKeyFrame() override;
 
  private:
+  void OnEncodedFrame(std::unique_ptr<EncodedFrame> frame) override;
+  void OnDecodableFrameTimeout(TimeDelta wait_time) override;
   void CreateAndRegisterExternalDecoder(const Decoder& decoder);
-  int64_t GetMaxWaitMs() const RTC_RUN_ON(decode_queue_);
-  void StartNextDecode() RTC_RUN_ON(decode_queue_);
+  TimeDelta GetMaxWait() const RTC_RUN_ON(decode_queue_);
   void HandleEncodedFrame(std::unique_ptr<EncodedFrame> frame)
       RTC_RUN_ON(decode_queue_);
-  void HandleFrameBufferTimeout(int64_t now_ms, int64_t wait_ms)
+  void HandleFrameBufferTimeout(Timestamp now, TimeDelta wait)
       RTC_RUN_ON(packet_sequence_checker_);
   void UpdatePlayoutDelays() const
       RTC_EXCLUSIVE_LOCKS_REQUIRED(worker_sequence_checker_);
-  void RequestKeyFrame(int64_t timestamp_ms)
-      RTC_RUN_ON(packet_sequence_checker_);
+  void RequestKeyFrame(Timestamp now) RTC_RUN_ON(packet_sequence_checker_);
   void HandleKeyFrameGeneration(bool received_frame_is_keyframe,
-                                int64_t now_ms,
+                                Timestamp now,
                                 bool always_request_key_frame,
                                 bool keyframe_request_is_due)
       RTC_RUN_ON(packet_sequence_checker_);
-  bool IsReceivingKeyFrame(int64_t timestamp_ms) const
+  bool IsReceivingKeyFrame(Timestamp timestamp) const
       RTC_RUN_ON(packet_sequence_checker_);
   int DecodeAndMaybeDispatchEncodedFrame(std::unique_ptr<EncodedFrame> frame)
       RTC_RUN_ON(decode_queue_);
@@ -220,7 +226,7 @@ class VideoReceiveStream2
   TaskQueueFactory* const task_queue_factory_;
 
   TransportAdapter transport_adapter_;
-  const VideoReceiveStream::Config config_;
+  const VideoReceiveStreamInterface::Config config_;
   const int num_cpu_cores_;
   Call* const call_;
   Clock* const clock_;
@@ -247,8 +253,7 @@ class VideoReceiveStream2
   // moved to the new VideoStreamDecoder.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders_;
 
-  // Members for the new jitter buffer experiment.
-  std::unique_ptr<video_coding::FrameBuffer> frame_buffer_;
+  std::unique_ptr<FrameBufferProxy> frame_buffer_;
 
   std::unique_ptr<RtpStreamReceiverInterface> media_receiver_
       RTC_GUARDED_BY(packet_sequence_checker_);
@@ -264,31 +269,32 @@ class VideoReceiveStream2
   // If we have successfully decoded any frame.
   bool frame_decoded_ RTC_GUARDED_BY(decode_queue_) = false;
 
-  int64_t last_keyframe_request_ms_ RTC_GUARDED_BY(decode_queue_) = 0;
-  int64_t last_complete_frame_time_ms_
-      RTC_GUARDED_BY(worker_sequence_checker_) = 0;
+  absl::optional<Timestamp> last_keyframe_request_
+      RTC_GUARDED_BY(decode_queue_);
+  absl::optional<Timestamp> last_complete_frame_time_
+      RTC_GUARDED_BY(worker_sequence_checker_);
 
   // Keyframe request intervals are configurable through field trials.
-  const int max_wait_for_keyframe_ms_;
-  const int max_wait_for_frame_ms_;
+  const TimeDelta max_wait_for_keyframe_;
+  const TimeDelta max_wait_for_frame_;
 
   // All of them tries to change current min_playout_delay on `timing_` but
   // source of the change request is different in each case. Among them the
   // biggest delay is used. -1 means use default value from the `timing_`.
   //
   // Minimum delay as decided by the RTP playout delay extension.
-  int frame_minimum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
-      -1;
+  absl::optional<TimeDelta> frame_minimum_playout_delay_
+      RTC_GUARDED_BY(worker_sequence_checker_);
   // Minimum delay as decided by the setLatency function in "webrtc/api".
-  int base_minimum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
-      -1;
+  absl::optional<TimeDelta> base_minimum_playout_delay_
+      RTC_GUARDED_BY(worker_sequence_checker_);
   // Minimum delay as decided by the A/V synchronization feature.
-  int syncable_minimum_playout_delay_ms_
-      RTC_GUARDED_BY(worker_sequence_checker_) = -1;
+  absl::optional<TimeDelta> syncable_minimum_playout_delay_
+      RTC_GUARDED_BY(worker_sequence_checker_);
 
   // Maximum delay as decided by the RTP playout delay extension.
-  int frame_maximum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
-      -1;
+  absl::optional<TimeDelta> frame_maximum_playout_delay_
+      RTC_GUARDED_BY(worker_sequence_checker_);
 
   // Function that is triggered with encoded frames, if not empty.
   std::function<void(const RecordableEncodedFrame&)>
@@ -307,20 +313,12 @@ class VideoReceiveStream2
   std::vector<std::unique_ptr<EncodedFrame>> buffered_encoded_frames_
       RTC_GUARDED_BY(decode_queue_);
 
-  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter `enabled`
-  // determines if the low-latency renderer algorithm should be used for the
-  // case min playout delay=0 and max playout delay>0.
-  FieldTrialParameter<bool> low_latency_renderer_enabled_;
-  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter
-  // `include_predecode_buffer` determines if the predecode buffer should be
-  // taken into account when calculating maximum number of frames in composition
-  // queue.
-  FieldTrialParameter<bool> low_latency_renderer_include_predecode_buffer_;
-
   // Set by the field trial WebRTC-PreStreamDecoders. The parameter `max`
   // determines the maximum number of decoders that are created up front before
   // any video frame has been received.
   FieldTrialParameter<int> maximum_pre_stream_decoders_;
+
+  DecodeSynchronizer* decode_sync_;
 
   // Defined last so they are destroyed before all other members.
   rtc::TaskQueue decode_queue_;
@@ -328,6 +326,7 @@ class VideoReceiveStream2
   // Used to signal destruction to potentially pending tasks.
   ScopedTaskSafety task_safety_;
 };
+
 }  // namespace internal
 }  // namespace webrtc
 

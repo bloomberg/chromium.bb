@@ -60,9 +60,7 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : AppBrowserController(
           browser,
-          web_app::GetAppIdFromApplicationName(browser->app_name())) {
-  DCHECK(!GetExtension() || !GetExtension()->from_bookmark());
-}
+          web_app::GetAppIdFromApplicationName(browser->app_name())) {}
 
 HostedAppBrowserController::~HostedAppBrowserController() = default;
 
@@ -83,8 +81,7 @@ ui::ImageModel HostedAppBrowserController::GetWindowAppIcon() const {
     if (extension &&
         apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
                 ->AppRegistryCache()
-                .GetAppType(extension->id()) !=
-            apps::mojom::AppType::kUnknown) {
+                .GetAppType(extension->id()) != apps::AppType::kUnknown) {
       LoadAppIcon(true /* allow_placeholder_icon */);
       return GetFallbackAppIcon();
     }
@@ -218,8 +215,6 @@ void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
 
   const Extension* extension = GetExtension();
-  if (extension && extension->from_bookmark())
-    extension = nullptr;
   extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(extension);
   web_app::SetAppPrefsForWebContents(contents);
 }

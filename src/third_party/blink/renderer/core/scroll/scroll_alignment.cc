@@ -43,6 +43,7 @@
 
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -256,7 +257,6 @@ ScrollAlignment::CreateScrollIntoViewParams(
     bool make_visible_in_visual_viewport,
     mojom::blink::ScrollBehavior scroll_behavior,
     bool is_for_scroll_sequence,
-    bool zoom_into_rect,
     bool cross_origin_boundaries) {
   auto params = mojom::blink::ScrollIntoViewParams::New();
   params->align_x = mojom::blink::ScrollAlignment::New(align_x);
@@ -265,7 +265,6 @@ ScrollAlignment::CreateScrollIntoViewParams(
   params->make_visible_in_visual_viewport = make_visible_in_visual_viewport;
   params->behavior = scroll_behavior;
   params->is_for_scroll_sequence = is_for_scroll_sequence;
-  params->zoom_into_rect = zoom_into_rect;
   params->cross_origin_boundaries = cross_origin_boundaries;
   return params;
 }

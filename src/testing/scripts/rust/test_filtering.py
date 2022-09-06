@@ -56,8 +56,7 @@ class _TestFilter:
         """
         if self._is_prefix_match:
             return test_name.startswith(self._filter_text)
-        else:
-            return test_name == self._filter_text
+        return test_name == self._filter_text
 
     def is_exclusion_filter(self):
         """Rreturns whether this filter excludes (rather than includes) matching
@@ -212,7 +211,8 @@ def add_cmdline_args(argparse_parser):
                   'a prefix plus a "*" on the end (to form a glob). If the ' \
                   'string has a "-" at the front, the test (or glob of ' \
                   'tests) will be skipped, not run.'
-    argparse_parser.add_argument('--isolated-script-test-filter',
+    argparse_parser.add_argument('--test-filter',
+                                 '--isolated-script-test-filter',
                                  action='append',
                                  default=[],
                                  dest='test_filters',
@@ -221,7 +221,8 @@ def add_cmdline_args(argparse_parser):
     file_help = 'Path to a file with test filters in Chromium Test List ' \
                 'Format. See also //testing/buildbot/filters/README.md and ' \
                 'bit.ly/chromium-test-list-format'
-    argparse_parser.add_argument('--isolated-script-test-filter-file',
+    argparse_parser.add_argument('--test-filter-file',
+                                 '--isolated-script-test-filter-file',
                                  action='append',
                                  default=[],
                                  dest='test_filter_files',

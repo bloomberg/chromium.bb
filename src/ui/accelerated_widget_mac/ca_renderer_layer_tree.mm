@@ -120,12 +120,12 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
   if (__builtin_available(macos 11.0, *)) {
     if (io_surface_color_space ==
             gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                            gfx::ColorSpace::TransferID::SMPTEST2084,
+                            gfx::ColorSpace::TransferID::PQ,
                             gfx::ColorSpace::MatrixID::BT2020_NCL,
                             gfx::ColorSpace::RangeID::LIMITED) ||
         io_surface_color_space ==
             gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                            gfx::ColorSpace::TransferID::ARIB_STD_B67,
+                            gfx::ColorSpace::TransferID::HLG,
                             gfx::ColorSpace::MatrixID::BT2020_NCL,
                             gfx::ColorSpace::RangeID::LIMITED)) {
       CVBufferSetAttachment(cv_pixel_buffer, kCVImageBufferColorPrimariesKey,
@@ -137,7 +137,7 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
       CVBufferSetAttachment(
           cv_pixel_buffer, kCVImageBufferTransferFunctionKey,
           io_surface_color_space.GetTransferID() ==
-                  gfx::ColorSpace::TransferID::ARIB_STD_B67
+                  gfx::ColorSpace::TransferID::HLG
               ? kCVImageBufferTransferFunction_ITU_R_2100_HLG
               : kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ,
           kCVAttachmentMode_ShouldPropagate);
@@ -468,19 +468,19 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   // without content (solid color layers), the top edge in the AA mask is the
   // top edge on-screen.
   // https://crbug.com/567946
-  if (edge_aa_mask & GL_CA_LAYER_EDGE_LEFT_CHROMIUM)
+  if (edge_aa_mask & CALayerEdge::kLayerEdgeLeft)
     ca_edge_aa_mask_ |= kCALayerLeftEdge;
-  if (edge_aa_mask & GL_CA_LAYER_EDGE_RIGHT_CHROMIUM)
+  if (edge_aa_mask & CALayerEdge::kLayerEdgeRight)
     ca_edge_aa_mask_ |= kCALayerRightEdge;
   if (io_surface || solid_color_contents_) {
-    if (edge_aa_mask & GL_CA_LAYER_EDGE_TOP_CHROMIUM)
+    if (edge_aa_mask & CALayerEdge::kLayerEdgeTop)
       ca_edge_aa_mask_ |= kCALayerBottomEdge;
-    if (edge_aa_mask & GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM)
+    if (edge_aa_mask & CALayerEdge::kLayerEdgeBottom)
       ca_edge_aa_mask_ |= kCALayerTopEdge;
   } else {
-    if (edge_aa_mask & GL_CA_LAYER_EDGE_TOP_CHROMIUM)
+    if (edge_aa_mask & CALayerEdge::kLayerEdgeTop)
       ca_edge_aa_mask_ |= kCALayerTopEdge;
-    if (edge_aa_mask & GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM)
+    if (edge_aa_mask & CALayerEdge::kLayerEdgeBottom)
       ca_edge_aa_mask_ |= kCALayerBottomEdge;
   }
 
@@ -506,8 +506,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
         }
       }
 
-      if (protected_video_type_ ==
-          gfx::ProtectedVideoType::kHardwareProtected) {
+      if (protected_video_type_ != gfx::ProtectedVideoType::kClear) {
         if (@available(macOS 10.15, *)) {
           type_ = CALayerType::kVideo;
           video_type_can_downgrade_ = false;
@@ -535,12 +534,12 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       const float width_correction =
           rect_.width() * ratio_error - rect_.width();
       if (width_correction < 1)
-        rect_.Inset(-width_correction / 2, 0);
+        rect_.Inset(gfx::InsetsF::VH(0, -width_correction / 2));
     } else if (ratio_error < 1) {
       const float height_correction =
           rect_.height() / ratio_error - rect_.height();
       if (height_correction < 1)
-        rect_.Inset(0, -height_correction / 2);
+        rect_.Inset(gfx::InsetsF::VH(-height_correction / 2, 0));
     }
   }
 }
@@ -818,8 +817,8 @@ void CARendererLayerTree::TransformLayer::CommitToCA(CALayer* superlayer,
     post_scale.Scale(scale_factor, scale_factor);
     gfx::Transform conjugated_transform = pre_scale * transform_ * post_scale;
 
-    CATransform3D ca_transform;
-    conjugated_transform.matrix().asColMajord(&ca_transform.m11);
+    CATransform3D ca_transform =
+        conjugated_transform.matrix().ToCATransform3D();
     [ca_layer_ setTransform:ca_transform];
   }
 
@@ -864,8 +863,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
         av_layer_.reset([[AVSampleBufferDisplayLayer alloc] init]);
         ca_layer_.reset([av_layer_ retain]);
         [av_layer_ setVideoGravity:AVLayerVideoGravityResize];
-        if (protected_video_type_ ==
-            gfx::ProtectedVideoType::kHardwareProtected) {
+        if (protected_video_type_ != gfx::ProtectedVideoType::kClear) {
           if (@available(macOS 10.15, *)) {
             [av_layer_ setPreventsCapture:true];
           }

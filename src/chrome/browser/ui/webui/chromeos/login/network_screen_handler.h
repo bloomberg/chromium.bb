@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -39,9 +40,6 @@ class NetworkScreenView {
 
   // Hides error messages showing no error state.
   virtual void ClearErrors() = 0;
-
-  // Enables or disables offline Demo Mode during Demo Mode network selection.
-  virtual void SetOfflineDemoModeEnabled(bool enabled) = 0;
 };
 
 // WebUI implementation of NetworkScreenView. It is used to interact with
@@ -51,7 +49,7 @@ class NetworkScreenHandler : public NetworkScreenView,
  public:
   using TView = NetworkScreenView;
 
-  explicit NetworkScreenHandler(JSCallsContainer* js_calls_container);
+  NetworkScreenHandler();
 
   NetworkScreenHandler(const NetworkScreenHandler&) = delete;
   NetworkScreenHandler& operator=(const NetworkScreenHandler&) = delete;
@@ -66,13 +64,12 @@ class NetworkScreenHandler : public NetworkScreenView,
   void Unbind() override;
   void ShowError(const std::u16string& message) override;
   void ClearErrors() override;
-  void SetOfflineDemoModeEnabled(bool enabled) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  void Initialize() override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
+  void InitializeDeprecated() override;
 
   ash::NetworkScreen* screen_ = nullptr;
 

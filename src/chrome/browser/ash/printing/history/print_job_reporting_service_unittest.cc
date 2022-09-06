@@ -10,8 +10,8 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/printing/history/print_job_info.pb.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/reporting/client/mock_report_queue.h"
@@ -26,7 +26,7 @@ namespace ash {
 
 namespace {
 
-namespace print = ::chromeos::printing::proto;
+namespace print = printing::proto;
 namespace em = ::enterprise_management;
 
 using ::testing::_;
@@ -129,19 +129,6 @@ print::PrintJobInfo JobInfo2() {
   return CreateJobInfo("id2", "title2", print::PrintJobInfo::CANCELED,
                        print::PrintSettings::COLOR,
                        print::PrintSettings::TWO_SIDED_LONG_EDGE);
-}
-
-em::PrintJobEvent JobEvent3() {
-  return CreateJobEvent("id3", "title3",
-                        ::reporting::error::FAILED_PRECONDITION,
-                        em::PrintJobEvent::PrintSettings::BLACK_AND_WHITE,
-                        em::PrintJobEvent::PrintSettings::TWO_SIDED_SHORT_EDGE);
-}
-
-print::PrintJobInfo JobInfo3() {
-  return CreateJobInfo("id3", "title3", print::PrintJobInfo::FAILED,
-                       print::PrintSettings::BLACK_AND_WHITE,
-                       print::PrintSettings::TWO_SIDED_SHORT_EDGE);
 }
 
 class PrintJobEventMatcher : public MatcherInterface<const em::PrintJobEvent&> {
@@ -257,13 +244,13 @@ class PrintJobEventMatcher : public MatcherInterface<const em::PrintJobEvent&> {
   std::string id_;
   std::string title_;
   ::reporting::error::Code status_;
-  uint64_t creation_timestamp_ms_;
-  uint64_t completion_timestamp_ms_;
-  uint32_t pages_;
+  int64_t creation_timestamp_ms_;
+  int64_t completion_timestamp_ms_;
+  int pages_;
   em::PrintJobEvent_PrintSettings_ColorMode color_;
   em::PrintJobEvent_PrintSettings_DuplexMode duplex_;
   em::PrintJobEvent_PrintSettings_MediaSize media_size_;
-  uint32_t copies_;
+  int32_t copies_;
   std::string printer_uri_;
   std::string printer_name_;
   em::PrintJobEvent_UserType user_type_;

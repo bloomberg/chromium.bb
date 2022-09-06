@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
@@ -38,6 +39,11 @@ namespace {
 
 // Runs a loop for the given |milliseconds| duration.
 void WaitForMilliseconds(int milliseconds) {
+#if defined(MEMORY_SANITIZER)
+  // MSAN runs much slower than regular tests, so give it more time to complete
+  milliseconds *= 2;
+#endif
+
   base::RunLoop loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, loop.QuitClosure(), base::Milliseconds(milliseconds));
@@ -278,9 +284,6 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest,
   VerifyVideoFileAndDelete(video_path, /*allow_empty=*/true);
 }
 
-// Doing multiple recordings one after the other should produce non-corrupt webm
-// files (i.e. the recording service should send webm chunks that are not
-// affected by buffered chunks from a previous recording).
 IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, SuccessiveRecording) {
   ash::CaptureModeTestApi test_api;
   // Do a fullscreen recording, followed by a region recording.
@@ -304,10 +307,6 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest,
   VerifyVideoFileAndDelete(video_path);
 }
 
-// Tests that an invalid downloads path set in the browser settings (such as one
-// that points to a location in a non-existing removable device) won't affect
-// where the recordings are saved, and the recording file will be successfully
-// saved. https://crbug.com/1192406.
 IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, InvalidDownloadsPath) {
   auto* download_prefs =
       DownloadPrefs::FromBrowserContext(browser()->profile());

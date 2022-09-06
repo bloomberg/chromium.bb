@@ -76,22 +76,20 @@ class ChromeTrustedVaultService {
       UIViewController* presentingViewController,
       void (^callback)(BOOL success, NSError* error)) = 0;
 
-  // Presents the trusted vault key reauthentication UI for |identity| for the
-  // purpose of opting into trusted vault passphrase. Once the reauth is done
-  // and the UI is dismissed, |callback| is called. |callback| is not called if
-  // the reauthentication is canceled.
-  // TODO(crbug.com/1202088): Make pure.
-  virtual void ReauthenticationForOptIn(
-      ChromeIdentity* chrome_identity,
-      UIViewController* presentingViewController,
-      void (^callback)(BOOL success, NSError* error));
-
   // Cancels the presented trusted vault reauthentication UI, triggered via
   // either Reauthentication() or via
   // FixDegradedRecoverability(). The reauthentication callback
   // will not be called. If no reauthentication dialog is not present,
   // |callback| is called synchronously.
   virtual void CancelDialog(BOOL animated, void (^callback)(void)) = 0;
+
+  // Clears local data belonging for the security domain and identity, such as
+  // shared keys. Data not specific for a specific domain (e.g. private key) is
+  // not removed. |identity| The identity for which the domain-specific local
+  // data is cleared. |callback| Block called when clearing data is complete.
+  virtual void ClearLocalDataForIdentity(ChromeIdentity* chrome_identity,
+                                         void (^callback)(BOOL success,
+                                                          NSError* error)) = 0;
 
  protected:
   // Functions to notify observers.

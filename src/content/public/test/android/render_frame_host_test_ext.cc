@@ -61,7 +61,8 @@ void RenderFrameHostTestExt::ExecuteJavaScript(
       &OnExecuteJavaScriptResult,
       base::android::ScopedJavaGlobalRef<jobject>(env, jcallback));
   if (with_user_gesture) {
-    render_frame_host_->ExecuteJavaScriptWithUserGestureForTests(script);
+    render_frame_host_->ExecuteJavaScriptWithUserGestureForTests(
+        script, std::move(callback));
   } else {
     render_frame_host_->ExecuteJavaScriptForTests(script, std::move(callback));
   }
@@ -86,7 +87,8 @@ void RenderFrameHostTestExt::NotifyVirtualKeyboardOverlayRect(
     jint height) {
   gfx::Size size(width, height);
   gfx::Point origin(x, y);
-  render_frame_host_->NotifyVirtualKeyboardOverlayRect(gfx::Rect(origin, size));
+  render_frame_host_->GetPage().NotifyVirtualKeyboardOverlayRect(
+      gfx::Rect(origin, size));
 }
 
 }  // namespace content

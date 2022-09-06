@@ -166,6 +166,8 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
   switch (rule_type) {
     case StyleRule::kFontFace:
       return Parser::ParseFontFaceDescriptor(id, range, context);
+    case StyleRule::kFontPaletteValues:
+      return Parser::ParseAtFontPaletteValuesDescriptor(id, range, context);
     case StyleRule::kProperty:
       return Parser::ParseAtPropertyDescriptor(id, tokenized_value, context);
     case StyleRule::kCounterStyle:
@@ -183,8 +185,11 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kLayerBlock:
     case StyleRule::kLayerStatement:
     case StyleRule::kNamespace:
+    case StyleRule::kScope:
     case StyleRule::kSupports:
     case StyleRule::kViewport:
+    case StyleRule::kPositionFallback:
+    case StyleRule::kTry:
       // TODO(andruud): Handle other descriptor types here.
       NOTREACHED();
       return nullptr;
@@ -364,7 +369,7 @@ bool AtRuleDescriptorParser::ParseAtRule(
     AtRuleDescriptorID id,
     const CSSTokenizedValue& tokenized_value,
     const CSSParserContext& context,
-    HeapVector<CSSPropertyValue, 256>& parsed_descriptors) {
+    HeapVector<CSSPropertyValue, 64>& parsed_descriptors) {
   CSSValue* result = ConsumeDescriptor(rule_type, id, tokenized_value, context);
 
   if (!result)

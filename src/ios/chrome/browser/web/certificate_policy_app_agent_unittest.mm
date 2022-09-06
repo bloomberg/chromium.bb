@@ -7,7 +7,6 @@
 #import "base/bind.h"
 #import "base/memory/scoped_refptr.h"
 #import "base/run_loop.h"
-#import "base/task/post_task.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -169,10 +168,11 @@ class CertificatePolicyAppStateAgentTest : public BlockCleanupTest {
     __block web::CertPolicy::Judgment judgement =
         web::CertPolicy::Judgment::UNKNOWN;
     __block bool completed = false;
-    base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-                     completed = true;
-                     judgement = cache->QueryPolicy(cert_.get(), host, status_);
-                   }));
+    web::GetIOThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(^{
+                                               completed = true;
+                                               judgement = cache->QueryPolicy(
+                                                   cert_.get(), host, status_);
+                                             }));
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
       return completed;
     }));
@@ -184,10 +184,11 @@ class CertificatePolicyAppStateAgentTest : public BlockCleanupTest {
   void ClearPolicyCache(
       const scoped_refptr<web::CertificatePolicyCache>& cache) {
     __block bool policies_cleared = false;
-    base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-                     cache->ClearCertificatePolicies();
-                     policies_cleared = true;
-                   }));
+    web::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(^{
+          cache->ClearCertificatePolicies();
+          policies_cleared = true;
+        }));
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
       return policies_cleared;
     }));
@@ -224,8 +225,8 @@ class CertificatePolicyAppStateAgentTest : public BlockCleanupTest {
       }
       hosts_added = true;
     };
-    base::PostTask(FROM_HERE, {web::WebThread::IO},
-                   base::BindOnce(populate_cache));
+    web::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
+                                             base::BindOnce(populate_cache));
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
       return hosts_added;
     }));

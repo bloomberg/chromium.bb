@@ -18,9 +18,10 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
-#include "ash/system/holding_space/holding_space_progress_ring.h"
-#include "ash/system/holding_space/holding_space_progress_ring_animation.h"
+#include "ash/system/holding_space/holding_space_progress_indicator_util.h"
 #include "ash/system/holding_space/holding_space_view_delegate.h"
+#include "ash/system/progress_indicator/progress_indicator.h"
+#include "ash/system/progress_indicator/progress_ring_animation.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -50,10 +51,11 @@ namespace {
 // Appearance.
 constexpr int kChildSpacing = 8;
 constexpr int kLabelMaskGradientWidth = 16;
-constexpr gfx::Insets kLabelMargins(/*top=*/4, 0, /*bottom=*/4, /*right=*/2);
-constexpr gfx::Insets kPadding(0, /*left=*/8, 0, /*right=*/10);
+constexpr auto kLabelMargins = gfx::Insets::TLBR(4, 0, 4, 2);
+constexpr auto kPadding = gfx::Insets::TLBR(0, 8, 0, 10);
 constexpr int kPreferredHeight = 40;
 constexpr int kPreferredWidth = 160;
+constexpr int kProgressIndicatorSize = 26;
 constexpr int kSecondaryActionIconSize = 16;
 
 // Animation.
@@ -67,6 +69,11 @@ template <typename... T>
 base::RepeatingCallback<void(T...)> IgnoreArgs(
     base::RepeatingCallback<void()> callback) {
   return base::BindRepeating([](T...) {}).Then(std::move(callback));
+}
+
+void ToCenteredSize(gfx::Rect* rect, const gfx::Size& size) {
+  rect->Outset(gfx::Outsets::VH(size.height(), size.width()));
+  rect->ClampToCenteredSize(size);
 }
 
 // ObservableRoundedImageView --------------------------------------------------
@@ -143,43 +150,56 @@ VIEW_BUILDER_PROPERTY(bool, PaintToLayer)
 VIEW_BUILDER_PROPERTY(bool, ViewAccessibilityIsIgnored)
 END_VIEW_BUILDER
 
-// ProgressRingView ------------------------------------------------------------
+// ProgressIndicatorView -------------------------------------------------------
 
-class ProgressRingView : public views::View {
+class ProgressIndicatorView : public views::View {
  public:
-  ProgressRingView() = default;
-  ProgressRingView(const ProgressRingView&) = delete;
-  ProgressRingView& operator=(const ProgressRingView&) = delete;
-  ~ProgressRingView() override = default;
+  ProgressIndicatorView() = default;
+  ProgressIndicatorView(const ProgressIndicatorView&) = delete;
+  ProgressIndicatorView& operator=(const ProgressIndicatorView&) = delete;
+  ~ProgressIndicatorView() override = default;
+
+  // Copies the address of `progress_indicator_` to the specified `ptr`.
+  // NOTE: This method should only be invoked after `SetHoldingSpaceItem()`.
+  void CopyProgressIndicatorAddressTo(ProgressIndicator** ptr) {
+    DCHECK(progress_indicator_);
+    *ptr = progress_indicator_.get();
+  }
 
   // Sets the underlying `item` for which to indicate progress.
   // NOTE: This method should be invoked only once.
   void SetHoldingSpaceItem(const HoldingSpaceItem* item) {
-    DCHECK(!progress_ring_);
-    progress_ring_ = HoldingSpaceProgressRing::CreateForItem(item);
+    DCHECK(!progress_indicator_);
+    progress_indicator_ =
+        holding_space_util::CreateProgressIndicatorForItem(item);
 
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
-    layer()->Add(progress_ring_->layer());
+    layer()->Add(progress_indicator_->CreateLayer());
   }
 
  private:
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    if (progress_ring_)
-      progress_ring_->layer()->SetBounds(GetLocalBounds());
+    if (progress_indicator_) {
+      gfx::Rect bounds(GetLocalBounds());
+      ToCenteredSize(&bounds,
+                     gfx::Size(kProgressIndicatorSize, kProgressIndicatorSize));
+      progress_indicator_->layer()->SetBounds(bounds);
+    }
   }
 
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    if (progress_ring_)
-      progress_ring_->InvalidateLayer();
+    if (progress_indicator_)
+      progress_indicator_->InvalidateLayer();
   }
 
-  std::unique_ptr<HoldingSpaceProgressRing> progress_ring_;
+  std::unique_ptr<ProgressIndicator> progress_indicator_;
 };
 
-BEGIN_VIEW_BUILDER(/*no export*/, ProgressRingView, views::View)
+BEGIN_VIEW_BUILDER(/*no export*/, ProgressIndicatorView, views::View)
+VIEW_BUILDER_METHOD(CopyProgressIndicatorAddressTo, ProgressIndicator**)
 VIEW_BUILDER_PROPERTY(const HoldingSpaceItem*, HoldingSpaceItem)
 END_VIEW_BUILDER
 
@@ -188,7 +208,7 @@ END_VIEW_BUILDER
 
 DEFINE_VIEW_BUILDER(/*no export*/, ash::ObservableRoundedImageView)
 DEFINE_VIEW_BUILDER(/*no export*/, ash::PaintCallbackLabel)
-DEFINE_VIEW_BUILDER(/*no export*/, ash::ProgressRingView)
+DEFINE_VIEW_BUILDER(/*no export*/, ash::ProgressIndicatorView)
 
 namespace ash {
 namespace {
@@ -241,7 +261,7 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
       .SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetInteriorMargin(gfx::Insets(kPadding))
-      .SetDefault(views::kMarginsKey, gfx::Insets(0, kChildSpacing));
+      .SetDefault(views::kMarginsKey, gfx::Insets::VH(0, kChildSpacing));
 
   auto paint_label_mask_callback = base::BindRepeating(
       &HoldingSpaceItemChipView::OnPaintLabelMask, base::Unretained(this));
@@ -254,8 +274,9 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
       .SetPreferredSize(gfx::Size(kPreferredWidth, kPreferredHeight))
       .SetLayoutManager(std::move(layout_manager))
       .AddChild(
-          views::Builder<ProgressRingView>()
+          views::Builder<ProgressIndicatorView>()
               .SetHoldingSpaceItem(item)
+              .CopyProgressIndicatorAddressTo(&progress_indicator_)
               .SetUseDefaultFillLayout(true)
               .AddChild(views::Builder<ObservableRoundedImageView>()
                             .SetCornerRadius(kHoldingSpaceChipIconSize / 2)
@@ -326,12 +347,12 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
   progress_ring_animation_changed_subscription_ =
       HoldingSpaceAnimationRegistry::GetInstance()
           ->AddProgressRingAnimationChangedCallbackForKey(
-              item, IgnoreArgs<HoldingSpaceProgressRingAnimation*>(
-                        base::BindRepeating(
-                            &HoldingSpaceItemChipView::UpdateImageTransform,
-                            base::Unretained(this))));
+              item, IgnoreArgs<ProgressRingAnimation*>(base::BindRepeating(
+                        &HoldingSpaceItemChipView::UpdateImageTransform,
+                        base::Unretained(this))));
 
   UpdateImage();
+  UpdateImageAndProgressIndicatorVisibility();
   UpdateLabels();
 }
 
@@ -494,6 +515,32 @@ void HoldingSpaceItemChipView::UpdateImage() {
   UpdateImageTransform();
 }
 
+void HoldingSpaceItemChipView::UpdateImageAndProgressIndicatorVisibility() {
+  // If the associated `item()` has been deleted then `this` is in the process
+  // of being destroyed and no action needs to be taken.
+  if (!item())
+    return;
+
+  const bool is_secondary_action_visible =
+      secondary_action_container_->GetVisible();
+
+  // The inner icon of the `progress_indicator_` may be visible iff there is
+  // no visible secondary action or multiselect UI.
+  const bool is_progress_indicator_inner_icon_visible =
+      !is_secondary_action_visible && !checkmark()->GetVisible();
+
+  // Similarly, the `image_` may be visible iff there is no visible secondary
+  // action or multiselect UI but additionally the `image_` may only be visible
+  // when `progress` is hidden or complete.
+  bool is_image_visible = is_progress_indicator_inner_icon_visible;
+  const HoldingSpaceProgress& progress = item()->progress();
+  is_image_visible &= progress.IsHidden() || progress.IsComplete();
+
+  image_->SetVisible(is_image_visible);
+  progress_indicator_->SetInnerIconVisible(
+      is_progress_indicator_inner_icon_visible);
+}
+
 void HoldingSpaceItemChipView::UpdateImageTransform() {
   // If the associated `item()` has been deleted then `this` is in the process
   // of being destroyed and no action needs to be taken.
@@ -508,7 +555,7 @@ void HoldingSpaceItemChipView::UpdateImageTransform() {
   const bool is_item_visibly_in_progress =
       !item()->progress().IsHidden() && !item()->progress().IsComplete();
 
-  const HoldingSpaceProgressRingAnimation* progress_ring_animation =
+  const ProgressRingAnimation* progress_ring_animation =
       HoldingSpaceAnimationRegistry::GetInstance()
           ->GetProgressRingAnimationForKey(item());
 
@@ -596,8 +643,8 @@ void HoldingSpaceItemChipView::UpdateSecondaryAction() {
       HoldingSpaceItem::IsDownload(item()->type()) && IsMouseHovered();
 
   if (!has_secondary_action) {
-    image_->SetVisible(!checkmark()->GetVisible());
     secondary_action_container_->SetVisible(false);
+    UpdateImageAndProgressIndicatorVisibility();
     return;
   }
 
@@ -606,8 +653,8 @@ void HoldingSpaceItemChipView::UpdateSecondaryAction() {
   secondary_action_pause_->SetVisible(!is_item_paused);
   secondary_action_resume_->SetVisible(is_item_paused);
 
-  image_->SetVisible(false);
   secondary_action_container_->SetVisible(true);
+  UpdateImageAndProgressIndicatorVisibility();
 }
 
 BEGIN_METADATA(HoldingSpaceItemChipView, HoldingSpaceItemView)

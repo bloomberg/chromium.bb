@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -204,14 +205,15 @@ TEST_F(ComponentLoaderTest, LoadAll) {
   unsigned int default_count = registry->enabled_extensions().size();
 
   // Clear the list of loaded extensions, and reload with one more.
-  registry->ClearAll();
+  extension_system_->extension_service()->UnloadAllExtensionsForTest();
   component_loader_.Add(manifest_contents_, extension_path_);
   component_loader_.LoadAll();
 
   EXPECT_EQ(default_count + 1, registry->enabled_extensions().size());
 }
 
-TEST_F(ComponentLoaderTest, AddOrReplace) {
+// Test is flaky. https://crbug.com/1306983
+TEST_F(ComponentLoaderTest, DISABLED_AddOrReplace) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(&profile_);
   ExtensionUnloadedObserver unload_observer(registry);
   EXPECT_EQ(0u, component_loader_.registered_extensions_count());

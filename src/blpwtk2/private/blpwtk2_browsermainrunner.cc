@@ -27,12 +27,10 @@
 #include <blpwtk2_viewsdelegateimpl.h>
 #include <blpwtk2_devtoolsmanagerdelegateimpl.h>
 
-#include <base/ignore_result.h>
 #include <base/logging.h>  // for DCHECK
 #include <base/task/single_thread_task_executor.h>
 #include <base/task/current_thread.h>
 #include <base/strings/string_number_conversions.h>
-#include <base/task/post_task.h>
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include <chrome/browser/printing/print_job_manager.h>
 #include <components/discardable_memory/service/discardable_shared_memory_manager.h>
@@ -48,6 +46,8 @@
 #include <content/browser/startup_helper.h>
 #include <services/tracing/public/cpp/trace_startup.h>
 
+#include <tuple>
+
 namespace blpwtk2 {
 
                         // -----------------------
@@ -61,14 +61,14 @@ BrowserMainRunner::BrowserMainRunner(
     , d_delegate(delegate)
 {
     Statics::initBrowserMainThread();
-    if (d_delegate->ShouldCreateFeatureList()) {
+    if (d_delegate->ShouldCreateFeatureList(
+          content::ContentMainDelegate::InvokedIn::kBrowserProcess)) {
       // This is intentionally leaked since it needs to live for the duration
       // of the process and there's no benefit in cleaning it up at exit.
       base::FieldTrialList* leaked_field_trial_list =
           content::SetUpFieldTrialsAndFeatureList().release();
       ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
-      ignore_result(leaked_field_trial_list);
-      d_delegate->PostFieldTrialInitialization();
+      std::ignore = leaked_field_trial_list;
     }
 
     content::MainFunctionParams mainParams(

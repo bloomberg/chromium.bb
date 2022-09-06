@@ -18,7 +18,6 @@
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/test_activity_data_service.h"
-#include "components/update_client/updater_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -50,24 +49,28 @@ TEST(SerializeRequestJSON, Serialize) {
 
     std::vector<protocol_request::App> apps;
     apps.push_back(MakeProtocolApp(
-        "id1", base::Version("1.0"), "ap1", "BRND", "source1", "location1",
-        "fp1", {{"attr1", "1"}, {"attr2", "2"}}, "c1", "ch1", "cn1", "test",
-        {0, 1}, MakeProtocolUpdateCheck(true, "33.12", true, false),
+        "id1", base::Version("1.0"), "ap1", "BRND", "lang", "source1",
+        "location1", "fp1", {{"attr1", "1"}, {"attr2", "2"}}, "c1", "ch1",
+        "cn1", "test", {0, 1},
+        MakeProtocolUpdateCheck(true, "33.12", true, false),
+        {{"install", "foobar_install_data_index", ""}},
         MakeProtocolPing("id1", metadata.get(), {}), std::move(events)));
 
     const auto request = std::make_unique<ProtocolSerializerJSON>()->Serialize(
         MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}",
-                            "prod_id", "1.0", "lang", "channel", "OS",
-                            "cacheable", {{"extra", "params"}}, nullptr,
+                            "prod_id", "1.0", "channel", "OS", "cacheable",
+                            absl::nullopt, {{"extra", "params"}}, {},
                             std::move(apps)));
     constexpr char regex[] =
         R"({"request":{"@os":"\w+","@updater":"prod_id",)"
         R"("acceptformat":"crx3",)"
         R"("app":\[{"ap":"ap1","appid":"id1","attr1":"1","attr2":"2",)"
         R"("brand":"BRND","cohort":"c1","cohorthint":"ch1","cohortname":"cn1",)"
+        R"("data":\[{"index":"foobar_install_data_index","name":"install"}],)"
         R"("disabled":\[{"reason":0},{"reason":1}],"enabled":false,)"
         R"("event":\[{"a":1,"b":"2"},{"error":0}],)"
         R"("installedby":"location1","installsource":"source1",)"
+        R"("lang":"lang",)"
         R"("packages":{"package":\[{"fp":"fp1"}]},)"
         R"("ping":{"ping_freshness":"{[-\w]{36}}","rd":1234},)"
         R"("release_channel":"test",)"
@@ -78,7 +81,7 @@ TEST(SerializeRequestJSON, Serialize) {
         R"("physmemory":\d+,"sse":(true|false),"sse2":(true|false),)"
         R"("sse3":(true|false),"sse41":(true|false),"sse42":(true|false),)"
         R"("ssse3":(true|false)},)"
-        R"("ismachine":false,"lang":"lang","nacl_arch":"[-\w]+",)"
+        R"("ismachine":false,"nacl_arch":"[-\w]+",)"
         R"("os":{"arch":"[_,-.\w]+","platform":"OS",)"
         R"(("sp":"[\s\w]+",)?"version":"[+-.\w]+"},"prodchannel":"channel",)"
         R"("prodversion":"1.0","protocol":"3.1","requestid":"{[-\w]{36}}",)"
@@ -91,13 +94,14 @@ TEST(SerializeRequestJSON, Serialize) {
     // Tests `sameversionupdate` presence with a minimal request for one app.
     std::vector<protocol_request::App> apps;
     apps.push_back(MakeProtocolApp(
-        "id1", base::Version("1.0"), "", "", "", "", "", {}, "", "", "", "", {},
-        MakeProtocolUpdateCheck(false, "", false, true), absl::nullopt,
+        "id1", base::Version("1.0"), "", "", "", "", "", "", {}, "", "", "", "",
+        {}, MakeProtocolUpdateCheck(false, "", false, true), {}, absl::nullopt,
         absl::nullopt));
 
     const auto request = std::make_unique<ProtocolSerializerJSON>()->Serialize(
         MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "",
-                            "", "", "", "", "", {}, nullptr, std::move(apps)));
+                            "", "", "", "", absl::nullopt, {}, {},
+                            std::move(apps)));
 
     constexpr char regex[] =
         R"("app":\[{"appid":"id1","enabled":true,)"
@@ -113,13 +117,13 @@ TEST(SerializeRequestJSON, DownloadPreference) {
   const auto serializer = std::make_unique<ProtocolSerializerJSON>();
   auto request = serializer->Serialize(
       MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "",
-                          "", "", "", "", "", {}, nullptr, {}));
+                          "", "", "", "", absl::nullopt, {}, {}, {}));
   EXPECT_FALSE(RE2::PartialMatch(request, R"("dlpref":)")) << request;
 
   // Verifies that |download_preference| is serialized.
   request = serializer->Serialize(
       MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "",
-                          "", "", "", "", "cacheable", {}, nullptr, {}));
+                          "", "", "", "cacheable", absl::nullopt, {}, {}, {}));
   EXPECT_TRUE(RE2::PartialMatch(request, R"("dlpref":"cacheable")")) << request;
 }
 
@@ -128,18 +132,18 @@ TEST(SerializeRequestJSON, DownloadPreference) {
 TEST(SerializeRequestJSON, UpdaterStateAttributes) {
   base::test::TaskEnvironment env;
   const auto serializer = std::make_unique<ProtocolSerializerJSON>();
-  UpdaterState::Attributes attributes;
-  attributes["ismachine"] = "1";
-  attributes["domainjoined"] = "1";
-  attributes["name"] = "Omaha";
-  attributes["version"] = "1.2.3.4";
-  attributes["laststarted"] = "1";
-  attributes["lastchecked"] = "2";
-  attributes["autoupdatecheckenabled"] = "0";
-  attributes["updatepolicy"] = "-1";
+
   const auto request = serializer->Serialize(MakeProtocolRequest(
-      true, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "prod_id", "1.0", "lang",
-      "channel", "OS", "cacheable", {{"extra", "params"}}, &attributes, {}));
+      true, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "prod_id", "1.0",
+      "channel", "OS", "cacheable", true, {{"extra", "params"}},
+      {{"ismachine", "1"},
+       {"name", "Omaha"},
+       {"version", "1.2.3.4"},
+       {"laststarted", "1"},
+       {"lastchecked", "2"},
+       {"autoupdatecheckenabled", "0"},
+       {"updatepolicy", "-1"}},
+      {}));
   constexpr char regex[] =
       R"({"request":{"@os":"\w+","@updater":"prod_id",)"
       R"("acceptformat":"crx3","arch":"\w+","dedup":"cr",)"
@@ -148,7 +152,7 @@ TEST(SerializeRequestJSON, UpdaterStateAttributes) {
       R"("physmemory":\d+,"sse":(true|false),"sse2":(true|false),)"
       R"("sse3":(true|false),"sse41":(true|false),"sse42":(true|false),)"
       R"("ssse3":(true|false)},)"
-      R"("ismachine":true,"lang":"lang",)"
+      R"("ismachine":true,)"
       R"("nacl_arch":"[-\w]+",)"
       R"("os":{"arch":"[,-.\w]+","platform":"OS",("sp":"[\s\w]+",)?)"
       R"("version":"[+-.\w]+"},"prodchannel":"channel","prodversion":"1.0",)"
@@ -160,6 +164,26 @@ TEST(SerializeRequestJSON, UpdaterStateAttributes) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
       R"("updaterchannel":"channel","updaterversion":"1.0"(,"wow64":true)?}})";
   EXPECT_TRUE(RE2::FullMatch(request, regex)) << request << "\n VS \n" << regex;
+}
+
+TEST(SerializeRequestJSON, DomainJoined) {
+  base::test::TaskEnvironment env;
+
+  const auto serializer = std::make_unique<ProtocolSerializerJSON>();
+  std::string request = serializer->Serialize(
+      MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "",
+                          "", "", "", "", absl::nullopt, {}, {}, {}));
+  EXPECT_FALSE(RE2::PartialMatch(request, R"("domainjoined")")) << request;
+
+  request = serializer->Serialize(
+      MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "",
+                          "", "", "", "", true, {}, {}, {}));
+  EXPECT_TRUE(RE2::PartialMatch(request, R"("domainjoined":true)")) << request;
+
+  request = serializer->Serialize(
+      MakeProtocolRequest(false, "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "",
+                          "", "", "", "", false, {}, {}, {}));
+  EXPECT_TRUE(RE2::PartialMatch(request, R"("domainjoined":false)")) << request;
 }
 
 }  // namespace update_client

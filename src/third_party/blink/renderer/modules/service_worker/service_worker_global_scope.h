@@ -48,21 +48,21 @@
 #include "third_party/blink/renderer/modules/service_worker/cross_origin_resource_policy_checker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_event_queue.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
+class InterfaceRegistry;
 class ExceptionState;
 class FetchEvent;
-class PendingURLLoaderFactoryBundle;
 class RespondWithObserver;
 class RequestInit;
 class ScriptPromise;
@@ -102,8 +102,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin,
-      const ServiceWorkerToken& service_worker_token);
+      const ServiceWorkerToken& service_worker_token,
+      InterfaceRegistry* interface_registry);
   ~ServiceWorkerGlobalScope() override;
+
+  InterfaceRegistry& GetInterfaceRegistry() { return *interface_registry_; }
 
   // ExecutionContext overrides:
   bool IsServiceWorkerGlobalScope() const override { return true; }
@@ -113,7 +116,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      network::mojom::IPAddressSpace response_address_space,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens) override;
   // Fetches and runs the top-level classic worker script.
@@ -350,7 +352,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void RunClassicScript(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      network::mojom::IPAddressSpace response_address_space,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens,
       const String& source_code,
@@ -408,8 +409,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
       mojom::blink::FetchHandlerExistence fetch_handler_existence,
-      std::unique_ptr<PendingURLLoaderFactoryBundle>
-          subresource_loader_factories,
       mojo::PendingReceiver<mojom::blink::ReportingObserver>) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
   void AbortInstallEvent(int event_id,
@@ -486,6 +485,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void SetIdleDelay(base::TimeDelta delay) override;
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel,
                            const String& message) override;
+  void ExecuteScriptForTest(const String& script,
+                            bool wants_result,
+                            ExecuteScriptForTestCallback callback) override;
 
   void NoteNewFetchEvent(const mojom::blink::FetchAPIRequest& request);
   void NoteRespondedToFetchEvent(const KURL& request_url, bool range_request);
@@ -568,6 +570,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;
   Member<::blink::ServiceWorker> service_worker_;
+
+  // Registry of interfaces exposed to the browser from Service Workers.
+  InterfaceRegistry* const interface_registry_;
 
   // Map from service worker version id to JavaScript ServiceWorker object in
   // current execution context.

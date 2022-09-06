@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/page_dismissal_scope.h"
+#include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -97,6 +98,7 @@ static bool IsAllowed(ExecutionContext* execution_context,
 void WindowOrWorkerGlobalScope::reportError(ScriptState* script_state,
                                             EventTarget& event_target,
                                             const ScriptValue& e) {
+  ScriptState::Scope scope(script_state);
   V8ScriptRunner::ReportException(script_state->GetIsolate(), e.V8Value());
 }
 
@@ -226,12 +228,30 @@ bool WindowOrWorkerGlobalScope::crossOriginIsolated(
   return execution_context.CrossOriginIsolatedCapability();
 }
 
+// See https://github.com/whatwg/html/issues/7912
+// static
+String WindowOrWorkerGlobalScope::crossOriginEmbedderPolicy(
+    const ExecutionContext& execution_context) {
+  const PolicyContainer* policy_container =
+      execution_context.GetPolicyContainer();
+  CHECK(policy_container);
+  switch (policy_container->GetPolicies().cross_origin_embedder_policy) {
+    case network::mojom::CrossOriginEmbedderPolicyValue::kNone:
+      return "unsafe-none";
+    case network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless:
+      return "credentialless";
+    case network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp:
+      return "require-corp";
+  }
+}
+
 ScriptValue WindowOrWorkerGlobalScope::structuredClone(
     ScriptState* script_state,
     EventTarget& event_target,
     const ScriptValue& message,
     const StructuredSerializeOptions* options,
     ExceptionState& exception_state) {
+  ScriptState::Scope scope(script_state);
   v8::Isolate* isolate = script_state->GetIsolate();
 
   Transferables transferables;

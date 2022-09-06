@@ -59,14 +59,10 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   CommonModeInfoParams *const mi_params = &cm->mi_params;
 
   // Setup mi_params
-  mi_params->set_mb_mi(mi_params, cm->width, cm->height, cpi->oxcf.mode,
+  mi_params->set_mb_mi(mi_params, cm->width, cm->height,
                        cpi->sf.part_sf.default_min_partition_size);
 
-  if (!is_stat_generation_stage(cpi)) {
-    av1_alloc_txb_buf(cpi);
-
-    alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
-  }
+  if (!is_stat_generation_stage(cpi)) av1_alloc_txb_buf(cpi);
 
   if (cpi->td.mb.mv_costs) {
     aom_free(cpi->td.mb.mv_costs);
@@ -77,13 +73,6 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
     CHECK_MEM_ERROR(cm, cpi->td.mb.mv_costs,
                     (MvCosts *)aom_calloc(1, sizeof(MvCosts)));
   }
-
-  if (cpi->td.mb.dv_costs) {
-    aom_free(cpi->td.mb.dv_costs);
-    cpi->td.mb.dv_costs = NULL;
-  }
-  CHECK_MEM_ERROR(cm, cpi->td.mb.dv_costs,
-                  (IntraBCMVCosts *)aom_malloc(sizeof(*cpi->td.mb.dv_costs)));
 
   av1_setup_shared_coeff_buffer(cm->seq_params, &cpi->td.shared_coeff_buf,
                                 cm->error);
@@ -96,11 +85,14 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
 // level.
 static AOM_INLINE void alloc_mb_mode_info_buffers(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  if (av1_alloc_context_buffers(cm, cm->width, cm->height, cpi->oxcf.mode,
+  if (av1_alloc_context_buffers(cm, cm->width, cm->height,
                                 cpi->sf.part_sf.default_min_partition_size)) {
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate context buffers");
   }
+
+  if (!is_stat_generation_stage(cpi))
+    alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
 }
 
 static AOM_INLINE void realloc_segmentation_maps(AV1_COMP *cpi) {
@@ -205,6 +197,9 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->ssim_rdmult_scaling_factors);
   cpi->ssim_rdmult_scaling_factors = NULL;
 
+  aom_free(cpi->tpl_rdmult_scaling_factors);
+  cpi->tpl_rdmult_scaling_factors = NULL;
+
 #if CONFIG_TUNE_VMAF
   aom_free(cpi->vmaf_info.rdmult_scaling_factors);
   cpi->vmaf_info.rdmult_scaling_factors = NULL;
@@ -244,6 +239,11 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
     cpi->td.pixel_gradient_info = NULL;
   }
 
+  if (cpi->td.src_var_info_of_4x4_sub_blocks) {
+    aom_free(cpi->td.src_var_info_of_4x4_sub_blocks);
+    cpi->td.src_var_info_of_4x4_sub_blocks = NULL;
+  }
+
   if (cpi->td.vt64x64) {
     aom_free(cpi->td.vt64x64);
     cpi->td.vt64x64 = NULL;
@@ -261,15 +261,14 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
 #endif
 
   if (!is_stat_generation_stage(cpi)) {
-    int num_cdef_workers =
-        av1_get_num_mod_workers_for_alloc(&cpi->ppi->p_mt_info, MOD_CDEF);
     av1_free_cdef_buffers(cm, &cpi->ppi->p_mt_info.cdef_worker,
-                          &cpi->mt_info.cdef_sync, num_cdef_workers);
+                          &cpi->mt_info.cdef_sync);
   }
 
   aom_free_frame_buffer(&cpi->trial_frame_rst);
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
+  aom_free_frame_buffer(&cpi->orig_source);
 
   free_token_info(token_info);
 
@@ -301,6 +300,11 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
     cpi->consec_zero_mv = NULL;
   }
 
+  if (cpi->src_sad_blk_64x64) {
+    aom_free(cpi->src_sad_blk_64x64);
+    cpi->src_sad_blk_64x64 = NULL;
+  }
+
   aom_free(cpi->mb_weber_stats);
   cpi->mb_weber_stats = NULL;
 
@@ -308,19 +312,37 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->mb_delta_q = NULL;
 }
 
-static AOM_INLINE void allocate_gradient_info_for_hog(
-    PixelLevelGradientInfo **pixel_gradient_info, AV1_COMP *cpi) {
+static AOM_INLINE void allocate_gradient_info_for_hog(AV1_COMP *cpi) {
   if (!is_gradient_caching_for_hog_enabled(cpi)) return;
-  const AV1_COMMON *const cm = &cpi->common;
 
-  if (!*pixel_gradient_info) {
+  PixelLevelGradientInfo *pixel_gradient_info = cpi->td.pixel_gradient_info;
+  if (!pixel_gradient_info) {
+    const AV1_COMMON *const cm = &cpi->common;
     const int plane_types = PLANE_TYPES >> cm->seq_params->monochrome;
-    CHECK_MEM_ERROR(cm, *pixel_gradient_info,
-                    aom_malloc(sizeof(**pixel_gradient_info) * plane_types *
-                               MAX_SB_SQUARE));
+    CHECK_MEM_ERROR(
+        cm, pixel_gradient_info,
+        aom_malloc(sizeof(*pixel_gradient_info) * plane_types * MAX_SB_SQUARE));
+    cpi->td.pixel_gradient_info = pixel_gradient_info;
   }
 
-  cpi->td.mb.pixel_gradient_info = *pixel_gradient_info;
+  cpi->td.mb.pixel_gradient_info = pixel_gradient_info;
+}
+
+static AOM_INLINE void allocate_src_var_of_4x4_sub_block_buf(AV1_COMP *cpi) {
+  if (!is_src_var_for_4x4_sub_blocks_caching_enabled(cpi)) return;
+
+  Block4x4VarInfo *source_variance_info =
+      cpi->td.src_var_info_of_4x4_sub_blocks;
+  if (!source_variance_info) {
+    const AV1_COMMON *const cm = &cpi->common;
+    const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
+    const int mi_count_in_sb = mi_size_wide[sb_size] * mi_size_high[sb_size];
+    CHECK_MEM_ERROR(cm, source_variance_info,
+                    aom_malloc(sizeof(*source_variance_info) * mi_count_in_sb));
+    cpi->td.src_var_info_of_4x4_sub_blocks = source_variance_info;
+  }
+
+  cpi->td.mb.src_var_info_of_4x4_sub_blocks = source_variance_info;
 }
 
 static AOM_INLINE void variance_partition_alloc(AV1_COMP *cpi) {
@@ -354,7 +376,7 @@ static AOM_INLINE YV12_BUFFER_CONFIG *realloc_and_scale_source(
           cm->seq_params->subsampling_x, cm->seq_params->subsampling_y,
           cm->seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
           cm->features.byte_alignment, NULL, NULL, NULL,
-          cpi->oxcf.tool_cfg.enable_global_motion))
+          cpi->oxcf.tool_cfg.enable_global_motion, 0))
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to reallocate scaled source buffer");
   assert(cpi->scaled_source.y_crop_width == scaled_width);

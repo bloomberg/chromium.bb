@@ -5,24 +5,27 @@
 #import <UIKit/UIKit.h>
 
 #import "base/check.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation DiscoverFeedWrapperViewController
+@implementation DiscoverFeedWrapperViewController {
+  __weak id<DiscoverFeedWrapperViewControllerDelegate> _delegate;
+}
 
-- (instancetype)initWithDiscoverFeedViewController:
-    (UIViewController*)discoverFeed {
+- (instancetype)initWithDelegate:
+                    (id<DiscoverFeedWrapperViewControllerDelegate>)delegate
+      discoverFeedViewController:(UIViewController*)discoverFeed {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     if (discoverFeed) {
       _discoverFeed = discoverFeed;
+      _delegate = delegate;
 
       // Iterates through subviews to find collection view containing feed
       // articles.
@@ -46,7 +49,7 @@
   // |discoverFeed| exists, then the feed must be enabled and visible.
   if (self.discoverFeed && self.contentCollectionView) {
     [self configureDiscoverFeedAsWrapper];
-    ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->UpdateTheme();
+    [_delegate updateTheme];
   } else {
     [self configureEmptyCollectionAsWrapper];
   }
@@ -73,9 +76,13 @@
   UICollectionView* emptyCollectionView =
       [[UICollectionView alloc] initWithFrame:CGRectZero
                          collectionViewLayout:layout];
+  [emptyCollectionView setShowsVerticalScrollIndicator:NO];
   [self.view addSubview:emptyCollectionView];
   self.contentCollectionView = emptyCollectionView;
-  self.contentCollectionView.backgroundColor = ntp_home::kNTPBackgroundColor();
+  self.contentCollectionView.backgroundColor =
+      IsContentSuggestionsUIModuleRefreshEnabled()
+          ? [UIColor clearColor]
+          : ntp_home::kNTPBackgroundColor();
   self.contentCollectionView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.contentCollectionView, self.view);
 }

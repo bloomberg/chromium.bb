@@ -36,16 +36,19 @@ class ReportingServiceSettings {
   // false, then GetAnalysisSettings will always return absl::nullopt.
   bool IsValid() const;
 
-  // The service provider matching the name given in a Connector policy. nullptr
-  // implies that a corresponding service provider doesn't exist and that these
-  // settings are not valid.
-  raw_ptr<const ServiceProviderConfig::ServiceProvider> service_provider_ =
-      nullptr;
+  // The reporting config matching the name given in a Connector policy. nullptr
+  // implies that a corresponding service provider (if one exists) doesn't have
+  // a reporting config and that these settings are not valid.
+  raw_ptr<const ReportingConfig> reporting_config_ = nullptr;
 
   std::string service_provider_name_;
 
   // The events that are enabled for the current service provider.
   std::set<std::string> enabled_event_names_;
+
+  // The enabled opt-in events for the current service provider, mapping to the
+  // URL patterns that represent on which URL they are enabled.
+  std::map<std::string, std::vector<std::string>> enabled_opt_in_events_;
 };
 
 }  // namespace enterprise_connectors

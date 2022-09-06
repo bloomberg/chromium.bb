@@ -119,7 +119,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
 
     this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'largeicon-delete');
     this.deleteSelectedButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
-      this.deleteButtonClicked(null);
+      void this.deleteButtonClicked(null);
     });
     editorToolbar.appendToolbarItem(this.deleteSelectedButton);
 
@@ -128,7 +128,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     const entryPathFilterThrottler = new Common.Throttler.Throttler(300);
     this.entryPathFilter = '';
     entryPathFilterBox.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, () => {
-      entryPathFilterThrottler.schedule(() => {
+      void entryPathFilterThrottler.schedule(() => {
         this.entryPathFilter = entryPathFilterBox.value();
         return this.updateData(true);
       });
@@ -154,7 +154,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     this.model.addEventListener(
         SDK.ServiceWorkerCacheModel.Events.CacheStorageContentUpdated, this.cacheContentUpdated, this);
     this.registerCSSFiles([serviceWorkerCacheViewsStyles]);
-    this.updateData(true);
+    void this.updateData(true);
   }
 
   willHide(): void {
@@ -216,7 +216,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
 
     dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
-      this.previewCachedResponse(event.data.data as SDK.NetworkRequest.NetworkRequest);
+      void this.previewCachedResponse(event.data.data as SDK.NetworkRequest.NetworkRequest);
     }, this);
     dataGrid.setStriped(true);
     return dataGrid;
@@ -269,7 +269,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
   update(cache: SDK.ServiceWorkerCacheModel.Cache): void {
     this.cache = cache;
     this.resetDataGrid();
-    this.updateData(true);
+    void this.updateData(true);
   }
 
   private updateSummaryBar(): void {
@@ -354,7 +354,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
   }
 
   private refreshButtonClicked(): void {
-    this.updateData(true);
+    void this.updateData(true);
   }
 
   private cacheContentUpdated(
@@ -363,7 +363,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     if (this.cache.securityOrigin !== origin || this.cache.cacheName !== cacheName) {
       return;
     }
-    this.refreshThrottler.schedule(() => Promise.resolve(this.updateData(true)), true);
+    void this.refreshThrottler.schedule(() => Promise.resolve(this.updateData(true)), true);
   }
 
   private async previewCachedResponse(request: SDK.NetworkRequest.NetworkRequest): Promise<void> {
@@ -381,7 +381,8 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
 
   private createRequest(entry: Protocol.CacheStorage.DataEntry): SDK.NetworkRequest.NetworkRequest {
     const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest(
-        'cache-storage-' + entry.requestURL, entry.requestURL, '', null);
+        'cache-storage-' + entry.requestURL, entry.requestURL as Platform.DevToolsPath.UrlString,
+        Platform.DevToolsPath.EmptyUrlString, null);
     request.requestMethod = entry.requestMethod;
     request.setRequestHeaders(entry.requestHeaders);
     request.statusCode = entry.responseStatus;
@@ -454,7 +455,7 @@ export class DataGridNode extends DataGrid.DataGrid.DataGridNode<DataGridNode> {
   createCell(columnId: string): HTMLElement {
     const cell = this.createTD(columnId);
     let value;
-    let tooltip = this.request.url();
+    let tooltip = this.request.url() as string;
     if (columnId === 'number') {
       value = String(this.number);
     } else if (columnId === 'name') {
@@ -479,7 +480,12 @@ export class DataGridNode extends DataGrid.DataGrid.DataGridNode<DataGridNode> {
         tooltip = i18nString(UIStrings.varyHeaderWarning);
       }
     }
-    DataGrid.DataGrid.DataGridImpl.setElementText(cell, value || '', true);
+    const parentElement = cell.parentElement;
+    let gridNode;
+    if (parentElement && this.dataGrid) {
+      gridNode = this.dataGrid.elementToDataGridNode.get(parentElement);
+    }
+    DataGrid.DataGrid.DataGridImpl.setElementText(cell, value || '', /* longText= */ true, gridNode);
     UI.Tooltip.Tooltip.install(cell, tooltip);
     return cell;
   }

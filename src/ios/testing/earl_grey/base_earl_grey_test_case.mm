@@ -16,6 +16,10 @@
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
+#if DCHECK_IS_ON()
+#include "ui/display/screen_base.h"
+#endif
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -32,6 +36,25 @@ bool g_needs_set_up_for_test_case = true;
 @implementation BaseEarlGreyTestCase
 
 + (void)setUpForTestCase {
+}
+
++ (void)setUp {
+  // TODO(crbug.com/1316613): app-measurement.com network request started
+  // causing EG synchronization timeouts since iOS 15.4 on simulators. Remove
+  // when the root cause is fixed.
+  NSArray<NSString*>* blockedURLs = @[
+    @"https://app-measurement.com/.*",
+  ];
+  [[GREYConfiguration sharedConfiguration]
+          setValue:blockedURLs
+      forConfigKey:kGREYConfigKeyBlockedURLRegex];
+
+  // Configuration for not tracking hidden animations. By default, all hidden
+  // animations are tracked, and these sometimes cause flake. Set to YES so
+  // tracking *should not* happen for hidden animations.
+  [[GREYConfiguration sharedConfiguration]
+          setValue:@(YES)
+      forConfigKey:kGREYConfigKeyIgnoreHiddenAnimations];
 }
 
 // Invoked upon starting each test method in a test case.
@@ -60,8 +83,18 @@ bool g_needs_set_up_for_test_case = true;
 }
 
 + (void)tearDown {
-  [CoverageUtils writeClangCoverageProfile];
-  [CoverageUtils resetCoverageProfileCounters];
+#if DCHECK_IS_ON()
+  // The same screen object is shared across multiple test runs on IOS build.
+  // Make sure that all display observers are removed at the end of each
+  // test.
+  display::ScreenBase* screen =
+      static_cast<display::ScreenBase*>(display::Screen::GetScreen());
+  DCHECK(!screen->HasDisplayObservers());
+#endif
+  if ([[AppLaunchManager sharedManager] appIsLaunched]) {
+    [CoverageUtils writeClangCoverageProfile];
+    [CoverageUtils resetCoverageProfileCounters];
+  }
   g_needs_set_up_for_test_case = true;
   [super tearDown];
 }

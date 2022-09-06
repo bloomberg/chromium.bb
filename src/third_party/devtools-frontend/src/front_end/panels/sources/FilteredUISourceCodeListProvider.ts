@@ -110,8 +110,14 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
       multiplier = 5;
     }
 
+    let contentTypeBonus = 0;
+    if (uiSourceCode.contentType().isFromSourceMap()) {
+      contentTypeBonus = 100;
+      // Maybe also have a bonus for being a script?
+    }
+
     const fullDisplayName = uiSourceCode.fullDisplayName();
-    return score + multiplier * this.scorer.calculateScore(fullDisplayName, null);
+    return score + multiplier * (contentTypeBonus + this.scorer.calculateScore(fullDisplayName, null));
   }
 
   renderItem(itemIndex: number, query: string, titleElement: Element, subtitleElement: Element): void {
@@ -124,7 +130,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
 
     titleElement.textContent = uiSourceCode.displayName() + (this.queryLineNumberAndColumnNumber || '');
     this.renderSubtitleElement(subtitleElement, fullDisplayName.substring(0, fileNameIndex + 1));
-    /** @type {!HTMLElement} */ UI.Tooltip.Tooltip.install((subtitleElement as HTMLElement), fullDisplayName);
+    UI.Tooltip.Tooltip.install((subtitleElement as HTMLElement), fullDisplayName);
     const ranges = [];
     for (let i = 0; i < indexes.length; ++i) {
       ranges.push({offset: indexes[i], length: 1});
@@ -151,7 +157,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     first.textContent = text.substring(0, splitPosition);
     const second = element.createChild('div', 'second-part');
     second.textContent = text.substring(splitPosition);
-    /** @type {!HTMLElement} */ UI.Tooltip.Tooltip.install((element as HTMLElement), text);
+    UI.Tooltip.Tooltip.install((element as HTMLElement), text);
   }
 
   selectItem(itemIndex: number|null, promptValue: string): void {

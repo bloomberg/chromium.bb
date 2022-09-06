@@ -9,6 +9,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -78,14 +79,25 @@ class TrustSafetySentimentService : public KeyedService,
   // determining elibigility for a survey.
 
   // These values are persisted to logs and entries should not be renumbered or
-  // reused.
+  // reused and kept up to date with TrustSafetySentimentFeatureArea in
+  // enums.xml.
   enum class FeatureArea {
     kIneligible = 0,
     kPrivacySettings = 1,
     kTrustedSurface = 2,
     kTransactions = 3,
-    kMaxValue = kTransactions,
+    kPrivacySandbox3ConsentAccept = 4,
+    kPrivacySandbox3ConsentDecline = 5,
+    kPrivacySandbox3NoticeDismiss = 6,
+    kPrivacySandbox3NoticeOk = 7,
+    kPrivacySandbox3NoticeSettings = 8,
+    kPrivacySandbox3NoticeLearnMore = 9,
+    kMaxValue = kPrivacySandbox3NoticeLearnMore,
   };
+
+  // Called when the user interacts with Privacy Sandbox 3, |feature_area|
+  // specifies what type of interaction occurred.
+  virtual void InteractedWithPrivacySandbox3(FeatureArea feature_area);
 
  private:
   friend class TrustSafetySentimentServiceTest;
@@ -102,6 +114,8 @@ class TrustSafetySentimentService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest, RanSafetyCheck);
   FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest,
                            PrivacySettingsProductSpecificData);
+  FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest,
+                           InteractedWithPrivacySandbox3ConsentAccept);
 
   // Struct representing a trigger (user action relevant to T&S) that previously
   // occurred, and is awaiting the appropriate eligibility steps before causing

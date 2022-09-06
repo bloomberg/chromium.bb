@@ -20,10 +20,8 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
-#include "components/app_restore/features.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -202,7 +200,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 bool CanIncludeWindowInMruList(aura::Window* window) {
   // If `window` was launched from Full Restore it won't be activatable
   // temporarily, but it should still be included in the MRU list.
-  if (window->GetProperty(app_restore::kLaunchedFromFullRestoreKey))
+  if (window->GetProperty(app_restore::kLaunchedFromAppRestoreKey))
     return true;
 
   return wm::CanActivateWindow(window) &&
@@ -213,14 +211,10 @@ bool CanIncludeWindowInMruList(aura::Window* window) {
 // MruWindowTracker, public:
 
 MruWindowTracker::MruWindowTracker() {
-  if (full_restore::features::IsFullRestoreEnabled())
-    aura::Env::GetInstance()->AddObserver(this);
-
   Shell::Get()->activation_client()->AddObserver(this);
 }
 
 MruWindowTracker::~MruWindowTracker() {
-  aura::Env::GetInstance()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto* window : mru_windows_)
     window->RemoveObserver(this);
@@ -278,6 +272,28 @@ void MruWindowTracker::OnWindowMovedOutFromRemovingDesk(aura::Window* window) {
   }
 }
 
+void MruWindowTracker::OnWindowAlteredByWindowRestore(aura::Window* window) {
+  int32_t* activation_index =
+      window->GetProperty(app_restore::kActivationIndexKey);
+  DCHECK(activation_index);
+
+  // A window may shift desks and get restacked but already be created. In this
+  // case remove it from `mru_windows_` and reinsert it at the correct location.
+  // If nothing was erased, this is a window not currently observed so we want
+  // to observe it as windows created from window restore aren't activated on
+  // creation.
+  size_t num_erased = base::Erase(mru_windows_, window);
+  if (num_erased == 0u)
+    window->AddObserver(this);
+
+  // When windows are restored from a window restore feature, they are restored
+  // inactive so we have to manually insert them into the window tracker and
+  // restore their MRU order.
+  mru_windows_.insert(
+      WindowRestoreController::GetWindowToInsertBefore(window, mru_windows_),
+      window);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, private:
 
@@ -303,7 +319,7 @@ void MruWindowTracker::OnWindowActivated(ActivationReason reason,
 
   SetActiveWindow(gained_active);
 
-  if (gained_active && full_restore::features::IsFullRestoreEnabled())
+  if (gained_active)
     WindowRestoreController::Get()->OnWindowActivated(gained_active);
 }
 
@@ -313,23 +329,6 @@ void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {
   // else we may end up with a deleted window in |mru_windows_|.
   base::Erase(mru_windows_, window);
   window->RemoveObserver(this);
-}
-
-void MruWindowTracker::OnWindowInitialized(aura::Window* window) {
-  DCHECK(full_restore::features::IsFullRestoreEnabled());
-
-  int32_t* activation_index =
-      window->GetProperty(app_restore::kActivationIndexKey);
-  if (!activation_index)
-    return;
-
-  // When windows are restored from Full Restore, they are restored inactive
-  // so we have to manually insert them into the window tracker and restore
-  // their MRU order.
-  window->AddObserver(this);
-  mru_windows_.insert(
-      WindowRestoreController::GetWindowToInsertBefore(window, mru_windows_),
-      window);
 }
 
 }  // namespace ash

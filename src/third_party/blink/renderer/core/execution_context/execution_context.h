@@ -30,8 +30,8 @@
 
 #include <memory>
 
+#include "base/notreached.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -57,7 +57,8 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-callbacks.h"
+#include "v8/include/v8-forward.h"
 
 namespace base {
 class UnguessableToken;
@@ -66,6 +67,10 @@ class UnguessableToken;
 namespace ukm {
 class UkmRecorder;
 }  // namespace ukm
+
+namespace v8 {
+class MicrotaskQueue;
+}  // namespace v8
 
 namespace blink {
 
@@ -286,7 +291,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   }
   bool IsSecureContext(String& error_message) const;
 
-  virtual bool HasInsecureContextInAncestors() { return false; }
+  virtual bool HasInsecureContextInAncestors() const { return false; }
 
   // Returns a referrer to be used in the "Determine request's Referrer"
   // algorithm defined in the Referrer Policy spec.
@@ -307,6 +312,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
   PolicyContainer* GetPolicyContainer() { return policy_container_.get(); }
+  const PolicyContainer* GetPolicyContainer() const {
+    return policy_container_.get();
+  }
   void SetPolicyContainer(std::unique_ptr<PolicyContainer> container);
   std::unique_ptr<PolicyContainer> TakePolicyContainer();
 
@@ -367,10 +375,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
       mojom::blink::PolicyDisposition,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const {}
-
-  String addressSpaceForBindings() const;
-  network::mojom::IPAddressSpace AddressSpace() const;
-  void SetAddressSpace(network::mojom::blink::IPAddressSpace ip_address_space);
 
   HeapObserverSet<ContextLifecycleObserver>& ContextLifecycleObserverSet();
   unsigned ContextLifecycleStateObserverCountForTesting() const;

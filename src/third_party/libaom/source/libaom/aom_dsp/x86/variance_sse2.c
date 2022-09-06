@@ -240,6 +240,29 @@ void aom_get8x8var_sse2(const uint8_t *src_ptr, int src_stride,
   variance_final_128_pel_sse2(vsse, vsum, sse, sum);
 }
 
+void aom_get_sse_sum_8x8_quad_sse2(const uint8_t *src_ptr, int src_stride,
+                                   const uint8_t *ref_ptr, int ref_stride,
+                                   unsigned int *sse, int *sum) {
+  // Loop over 4 8x8 blocks. Process one 8x32 block.
+  for (int k = 0; k < 4; k++) {
+    const uint8_t *src = src_ptr;
+    const uint8_t *ref = ref_ptr;
+    __m128i vsum = _mm_setzero_si128();
+    __m128i vsse = _mm_setzero_si128();
+    for (int i = 0; i < 8; i++) {
+      const __m128i s = load8_8to16_sse2(src + (k * 8));
+      const __m128i r = load8_8to16_sse2(ref + (k * 8));
+      const __m128i diff = _mm_sub_epi16(s, r);
+      vsse = _mm_add_epi32(vsse, _mm_madd_epi16(diff, diff));
+      vsum = _mm_add_epi16(vsum, diff);
+
+      src += src_stride;
+      ref += ref_stride;
+    }
+    variance_final_128_pel_sse2(vsse, vsum, &sse[k], &sum[k]);
+  }
+}
+
 #define AOM_VAR_NO_LOOP_SSE2(bw, bh, bits, max_pixels)                        \
   unsigned int aom_variance##bw##x##bh##_sse2(                                \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
@@ -254,26 +277,26 @@ void aom_get8x8var_sse2(const uint8_t *src_ptr, int src_stride,
     return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
   }
 
-AOM_VAR_NO_LOOP_SSE2(4, 4, 4, 128);
-AOM_VAR_NO_LOOP_SSE2(4, 8, 5, 128);
-AOM_VAR_NO_LOOP_SSE2(4, 16, 6, 128);
+AOM_VAR_NO_LOOP_SSE2(4, 4, 4, 128)
+AOM_VAR_NO_LOOP_SSE2(4, 8, 5, 128)
+AOM_VAR_NO_LOOP_SSE2(4, 16, 6, 128)
 
-AOM_VAR_NO_LOOP_SSE2(8, 4, 5, 128);
-AOM_VAR_NO_LOOP_SSE2(8, 8, 6, 128);
-AOM_VAR_NO_LOOP_SSE2(8, 16, 7, 128);
+AOM_VAR_NO_LOOP_SSE2(8, 4, 5, 128)
+AOM_VAR_NO_LOOP_SSE2(8, 8, 6, 128)
+AOM_VAR_NO_LOOP_SSE2(8, 16, 7, 128)
 
-AOM_VAR_NO_LOOP_SSE2(16, 8, 7, 128);
-AOM_VAR_NO_LOOP_SSE2(16, 16, 8, 256);
-AOM_VAR_NO_LOOP_SSE2(16, 32, 9, 512);
+AOM_VAR_NO_LOOP_SSE2(16, 8, 7, 128)
+AOM_VAR_NO_LOOP_SSE2(16, 16, 8, 256)
+AOM_VAR_NO_LOOP_SSE2(16, 32, 9, 512)
 
-AOM_VAR_NO_LOOP_SSE2(32, 8, 8, 256);
-AOM_VAR_NO_LOOP_SSE2(32, 16, 9, 512);
-AOM_VAR_NO_LOOP_SSE2(32, 32, 10, 1024);
+AOM_VAR_NO_LOOP_SSE2(32, 8, 8, 256)
+AOM_VAR_NO_LOOP_SSE2(32, 16, 9, 512)
+AOM_VAR_NO_LOOP_SSE2(32, 32, 10, 1024)
 
 #if !CONFIG_REALTIME_ONLY
-AOM_VAR_NO_LOOP_SSE2(16, 4, 6, 128);
-AOM_VAR_NO_LOOP_SSE2(8, 32, 8, 256);
-AOM_VAR_NO_LOOP_SSE2(16, 64, 10, 1024);
+AOM_VAR_NO_LOOP_SSE2(16, 4, 6, 128)
+AOM_VAR_NO_LOOP_SSE2(8, 32, 8, 256)
+AOM_VAR_NO_LOOP_SSE2(16, 64, 10, 1024)
 #endif
 
 #define AOM_VAR_LOOP_SSE2(bw, bh, bits, uh)                                   \
@@ -297,17 +320,17 @@ AOM_VAR_NO_LOOP_SSE2(16, 64, 10, 1024);
     return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
   }
 
-AOM_VAR_LOOP_SSE2(32, 64, 11, 32);  // 32x32 * ( 64/32 )
+AOM_VAR_LOOP_SSE2(32, 64, 11, 32)  // 32x32 * ( 64/32 )
 
-AOM_VAR_LOOP_SSE2(64, 32, 11, 16);   // 64x16 * ( 32/16 )
-AOM_VAR_LOOP_SSE2(64, 64, 12, 16);   // 64x16 * ( 64/16 )
-AOM_VAR_LOOP_SSE2(64, 128, 13, 16);  // 64x16 * ( 128/16 )
+AOM_VAR_LOOP_SSE2(64, 32, 11, 16)   // 64x16 * ( 32/16 )
+AOM_VAR_LOOP_SSE2(64, 64, 12, 16)   // 64x16 * ( 64/16 )
+AOM_VAR_LOOP_SSE2(64, 128, 13, 16)  // 64x16 * ( 128/16 )
 
-AOM_VAR_LOOP_SSE2(128, 64, 13, 8);   // 128x8 * ( 64/8 )
-AOM_VAR_LOOP_SSE2(128, 128, 14, 8);  // 128x8 * ( 128/8 )
+AOM_VAR_LOOP_SSE2(128, 64, 13, 8)   // 128x8 * ( 64/8 )
+AOM_VAR_LOOP_SSE2(128, 128, 14, 8)  // 128x8 * ( 128/8 )
 
 #if !CONFIG_REALTIME_ONLY
-AOM_VAR_NO_LOOP_SSE2(64, 16, 10, 1024);
+AOM_VAR_NO_LOOP_SSE2(64, 16, 10, 1024)
 #endif
 
 unsigned int aom_mse8x8_sse2(const uint8_t *src, int src_stride,
@@ -384,51 +407,51 @@ DECLS(ssse3);
   }
 
 #if !CONFIG_REALTIME_ONLY
-#define FNS(opt)                                     \
-  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)); \
-  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t));  \
-  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t));  \
-  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));   \
-  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t));   \
-  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t));   \
-  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t));   \
-  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t));  \
-  FN(16, 8, 16, 4, 3, opt, (int32_t), (int32_t));    \
-  FN(8, 16, 8, 3, 4, opt, (int32_t), (int32_t));     \
-  FN(8, 8, 8, 3, 3, opt, (int32_t), (int32_t));      \
-  FN(8, 4, 8, 3, 2, opt, (int32_t), (int32_t));      \
-  FN(4, 8, 4, 2, 3, opt, (int32_t), (int32_t));      \
-  FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t));      \
-  FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t));     \
-  FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t));    \
-  FN(8, 32, 8, 3, 5, opt, (uint32_t), (int64_t));    \
-  FN(32, 8, 16, 5, 3, opt, (uint32_t), (int64_t));   \
-  FN(16, 64, 16, 4, 6, opt, (int64_t), (int64_t));   \
+#define FNS(opt)                                    \
+  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)) \
+  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t))  \
+  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t))  \
+  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t))   \
+  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t))   \
+  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t))   \
+  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t))   \
+  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t))  \
+  FN(16, 8, 16, 4, 3, opt, (int32_t), (int32_t))    \
+  FN(8, 16, 8, 3, 4, opt, (int32_t), (int32_t))     \
+  FN(8, 8, 8, 3, 3, opt, (int32_t), (int32_t))      \
+  FN(8, 4, 8, 3, 2, opt, (int32_t), (int32_t))      \
+  FN(4, 8, 4, 2, 3, opt, (int32_t), (int32_t))      \
+  FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t))      \
+  FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t))     \
+  FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t))    \
+  FN(8, 32, 8, 3, 5, opt, (uint32_t), (int64_t))    \
+  FN(32, 8, 16, 5, 3, opt, (uint32_t), (int64_t))   \
+  FN(16, 64, 16, 4, 6, opt, (int64_t), (int64_t))   \
   FN(64, 16, 16, 6, 4, opt, (int64_t), (int64_t))
 #else
-#define FNS(opt)                                     \
-  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)); \
-  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t));  \
-  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t));  \
-  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));   \
-  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t));   \
-  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t));   \
-  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t));   \
-  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t));  \
-  FN(16, 8, 16, 4, 3, opt, (int32_t), (int32_t));    \
-  FN(8, 16, 8, 3, 4, opt, (int32_t), (int32_t));     \
-  FN(8, 8, 8, 3, 3, opt, (int32_t), (int32_t));      \
-  FN(8, 4, 8, 3, 2, opt, (int32_t), (int32_t));      \
-  FN(4, 8, 4, 2, 3, opt, (int32_t), (int32_t));      \
-  FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t));
+#define FNS(opt)                                    \
+  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)) \
+  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t))  \
+  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t))  \
+  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t))   \
+  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t))   \
+  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t))   \
+  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t))   \
+  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t))  \
+  FN(16, 8, 16, 4, 3, opt, (int32_t), (int32_t))    \
+  FN(8, 16, 8, 3, 4, opt, (int32_t), (int32_t))     \
+  FN(8, 8, 8, 3, 3, opt, (int32_t), (int32_t))      \
+  FN(8, 4, 8, 3, 2, opt, (int32_t), (int32_t))      \
+  FN(4, 8, 4, 2, 3, opt, (int32_t), (int32_t))      \
+  FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t))
 #endif
 
-FNS(sse2);
-FNS(ssse3);
+FNS(sse2)
+FNS(ssse3)
 
 #undef FNS
 #undef FN
@@ -483,51 +506,51 @@ DECLS(ssse3);
   }
 
 #if !CONFIG_REALTIME_ONLY
-#define FNS(opt)                                     \
-  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)); \
-  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t));  \
-  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t));  \
-  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));   \
-  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t));   \
-  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t));   \
-  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t));   \
-  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t));  \
-  FN(16, 8, 16, 4, 3, opt, (uint32_t), (int32_t));   \
-  FN(8, 16, 8, 3, 4, opt, (uint32_t), (int32_t));    \
-  FN(8, 8, 8, 3, 3, opt, (uint32_t), (int32_t));     \
-  FN(8, 4, 8, 3, 2, opt, (uint32_t), (int32_t));     \
-  FN(4, 8, 4, 2, 3, opt, (uint32_t), (int32_t));     \
-  FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t));     \
-  FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t));     \
-  FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t));    \
-  FN(8, 32, 8, 3, 5, opt, (uint32_t), (int64_t));    \
-  FN(32, 8, 16, 5, 3, opt, (uint32_t), (int64_t));   \
-  FN(16, 64, 16, 4, 6, opt, (int64_t), (int64_t));   \
+#define FNS(opt)                                    \
+  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)) \
+  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t))  \
+  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t))  \
+  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t))   \
+  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t))   \
+  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t))   \
+  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t))   \
+  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t))  \
+  FN(16, 8, 16, 4, 3, opt, (uint32_t), (int32_t))   \
+  FN(8, 16, 8, 3, 4, opt, (uint32_t), (int32_t))    \
+  FN(8, 8, 8, 3, 3, opt, (uint32_t), (int32_t))     \
+  FN(8, 4, 8, 3, 2, opt, (uint32_t), (int32_t))     \
+  FN(4, 8, 4, 2, 3, opt, (uint32_t), (int32_t))     \
+  FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t))     \
+  FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t))     \
+  FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t))    \
+  FN(8, 32, 8, 3, 5, opt, (uint32_t), (int64_t))    \
+  FN(32, 8, 16, 5, 3, opt, (uint32_t), (int64_t))   \
+  FN(16, 64, 16, 4, 6, opt, (int64_t), (int64_t))   \
   FN(64, 16, 16, 6, 4, opt, (int64_t), (int64_t))
 #else
-#define FNS(opt)                                     \
-  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)); \
-  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t));  \
-  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t));  \
-  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));   \
-  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t));   \
-  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t));   \
-  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t));   \
-  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t));   \
-  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t));  \
-  FN(16, 8, 16, 4, 3, opt, (uint32_t), (int32_t));   \
-  FN(8, 16, 8, 3, 4, opt, (uint32_t), (int32_t));    \
-  FN(8, 8, 8, 3, 3, opt, (uint32_t), (int32_t));     \
-  FN(8, 4, 8, 3, 2, opt, (uint32_t), (int32_t));     \
-  FN(4, 8, 4, 2, 3, opt, (uint32_t), (int32_t));     \
-  FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t));
+#define FNS(opt)                                    \
+  FN(128, 128, 16, 7, 7, opt, (int64_t), (int64_t)) \
+  FN(128, 64, 16, 7, 6, opt, (int64_t), (int64_t))  \
+  FN(64, 128, 16, 6, 7, opt, (int64_t), (int64_t))  \
+  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t))   \
+  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t))   \
+  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t))   \
+  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t))   \
+  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t))   \
+  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t))  \
+  FN(16, 8, 16, 4, 3, opt, (uint32_t), (int32_t))   \
+  FN(8, 16, 8, 3, 4, opt, (uint32_t), (int32_t))    \
+  FN(8, 8, 8, 3, 3, opt, (uint32_t), (int32_t))     \
+  FN(8, 4, 8, 3, 2, opt, (uint32_t), (int32_t))     \
+  FN(4, 8, 4, 2, 3, opt, (uint32_t), (int32_t))     \
+  FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t))
 #endif
 
-FNS(sse2);
-FNS(ssse3);
+FNS(sse2)
+FNS(ssse3)
 
 #undef FNS
 #undef FN

@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -50,6 +51,11 @@ class CORE_EXPORT DisplayLockDocumentState final
   // viewport intersections for content-visibility: auto locks.
   void RegisterDisplayLockActivationObservation(Element*);
   void UnregisterDisplayLockActivationObservation(Element*);
+
+  // Returns true if we have activatable locks.
+  // This compares LockedDisplayLockCount() and
+  // DisplayLockBlockingAllActivationCount().
+  bool HasActivatableLocks() const;
 
   // Returns true if all activatable locks have been forced.
   bool ActivatableDisplayLocksForced() const;
@@ -107,6 +113,9 @@ class CORE_EXPORT DisplayLockDocumentState final
       const Range* range,
       DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
   void EndForcedScope(DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
+  bool HasForcedScopes() const {
+    return forced_node_infos_.size() > 0 || forced_range_infos_.size() > 0;
+  }
 
   // This is called to make sure that any of the currently forced locks allow at
   // least the specified phase for updates. This is used when a scope is
@@ -167,8 +176,24 @@ class CORE_EXPORT DisplayLockDocumentState final
   };
 
   void NotifyPrintingOrPreviewChanged();
+  void UnlockShapingDeferredElements();
+  // Unlock shaping-deferred elements so that |target| can return the precise
+  // value of |property_id|.
+  // If |property_id| is kInvalid, this function unlocks elements necessary for
+  // any geometry of the target node.
+  void UnlockShapingDeferredElements(
+      const Node& target,
+      CSSPropertyID property_id = CSSPropertyID::kInvalid);
+  // Unlock shaping-deferred elements so that |object| can return the precise
+  // width.
+  void UnlockToDetermineWidth(const LayoutObject& object);
+  // Unlock shaping-deferred elements so that |object| can return the precise
+  // height.
+  void UnlockToDetermineHeight(const LayoutObject& object);
 
   base::TimeTicks GetLockUpdateTimestamp();
+
+  static constexpr float kViewportMarginPercentage = 150.f;
 
  private:
   IntersectionObserver& EnsureIntersectionObserver();
@@ -182,6 +207,8 @@ class CORE_EXPORT DisplayLockDocumentState final
   // one of the contexts skips its descendants, this return true. Otherwise, it
   // returns false.
   bool MarkAncestorContextsHaveTopLayerElement(Element*);
+
+  void UnlockShapingDeferredInclusiveDescendants(const LayoutObject& ancestor);
 
   Member<Document> document_;
 

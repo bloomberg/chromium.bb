@@ -8,10 +8,12 @@
 
 #include <memory>
 #include <set>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/cryptohome/userdataauth_util.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_pref_names.h"
@@ -21,11 +23,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -34,7 +36,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -59,9 +60,6 @@
 #include "chrome/browser/ash/policy/external_data/handlers/printers_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/user_avatar_image_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/wallpaper_image_external_data_handler.h"
-#include "chrome/browser/ash/policy/networking/device_network_configuration_updater.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
-#include "chrome/browser/ash/policy/networking/user_network_configuration_updater.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/session_length_limiter.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -75,25 +73,25 @@
 #include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/policy/networking/policy_cert_service_factory.h"
+#include "chrome/browser/policy/networking/user_network_configuration_updater_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cryptohome/userdataauth_util.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
+#include "chromeos/ash/components/network/proxy/proxy_config_service_impl.h"
+#include "chromeos/components/onc/certificate_scope.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/onc/certificate_scope.h"
-#include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/policy_details.h"
@@ -162,7 +160,7 @@ void OnRemoveUserComplete(const AccountId& account_id,
 // Runs on SequencedWorkerPool thread. Passes resolved locale to UI thread.
 void ResolveLocale(const std::string& raw_locale,
                    std::string* resolved_locale) {
-  ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
+  std::ignore = l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale);
 }
 
 bool GetUserLockAttributes(const user_manager::User* user,
@@ -209,8 +207,8 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
   if (!gaia::IsGoogleInternalAccountEmail(account_id.GetUserEmail()))
     return;
 
-  chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
-                                           base::DoNothing());
+  UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
+                                 base::DoNothing());
 }
 
 bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -219,7 +217,8 @@ bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
           policy::key::kDeviceLocalAccountManagedSessionEnabled);
   if (!entry)
     return kManagedSessionEnabledByDefault;
-  return entry->value() && entry->value()->GetBool();
+  return entry->value(base::Value::Type::BOOLEAN) &&
+         entry->value(base::Value::Type::BOOLEAN)->GetBool();
 }
 
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -253,7 +252,7 @@ bool IsProxyUsed(const PrefService* local_state_prefs) {
 
 bool PolicyHasWebTrustedAuthorityCertificate(
     policy::DeviceLocalAccountPolicyBroker* broker) {
-  return policy::UserNetworkConfigurationUpdater::
+  return policy::UserNetworkConfigurationUpdaterAsh::
       PolicyHasWebTrustedAuthorityCertificate(
           broker->core()->store()->policy_map());
 }
@@ -283,7 +282,7 @@ void CheckProfileForSanity() {
   // Confirm that we hadn't loaded the new profile previously.
   base::FilePath user_profile_dir =
       g_browser_process->profile_manager()->user_data_dir().Append(
-          chromeos::ProfileHelper::Get()->GetActiveUserProfileDir());
+          ProfileHelper::Get()->GetActiveUserProfileDir());
   CHECK(
       !g_browser_process->profile_manager()->GetProfileByPath(user_profile_dir))
       << "The user profile was loaded before we mounted the cryptohome.";
@@ -358,7 +357,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       kAccountsPrefUsers,
       base::BindRepeating(&UserManager::NotifyUsersSignInConstraintsChanged,
                           weak_factory_.GetWeakPtr()));
-  users_subscription_ = cros_settings_->AddSettingsObserver(
+  family_link_accounts_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefFamilyLinkAccountsAllowed,
       base::BindRepeating(&UserManager::NotifyUsersSignInConstraintsChanged,
                           weak_factory_.GetWeakPtr()));
@@ -369,6 +368,15 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
                           weak_factory_.GetWeakPtr()));
   multi_profile_user_controller_ =
       std::make_unique<MultiProfileUserController>(this, GetLocalState());
+
+  // |this| is sometimes initialized before owner is ready in CrosSettings for
+  // the consoldiated consent screen flow. Listen for changes to owner setting
+  // to ensure that owner changes are reflected in |this|.
+  // TODO(crbug.com/1307359): Investigate using RetrieveTrustedDevicePolicies
+  // instead of UpdateOwnerId.
+  owner_subscription_ = cros_settings_->AddSettingsObserver(
+      kDeviceOwner, base::BindRepeating(&ChromeUserManagerImpl::UpdateOwnerId,
+                                        weak_factory_.GetWeakPtr()));
 
   policy::DeviceLocalAccountPolicyService* device_local_account_policy_service =
       g_browser_process->platform_part()
@@ -401,6 +409,16 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   // Record the stored session length for enrolled device.
   if (IsEnterpriseManaged())
     enterprise_user_session_metrics::RecordStoredSessionLength();
+}
+
+void ChromeUserManagerImpl::UpdateOwnerId() {
+  std::string owner_email;
+  cros_settings_->GetString(kDeviceOwner, &owner_email);
+
+  user_manager::KnownUser known_user(GetLocalState());
+  const AccountId owner_account_id = known_user.GetAccountId(
+      owner_email, std::string() /* id */, AccountType::UNKNOWN);
+  SetOwnerId(owner_account_id);
 }
 
 ChromeUserManagerImpl::~ChromeUserManagerImpl() {
@@ -717,11 +735,12 @@ bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
 
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
     std::set<AccountId>* device_local_accounts_set) {
-  const base::ListValue* prefs_device_local_accounts =
+  const base::Value* prefs_device_local_accounts =
       GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData);
   std::vector<AccountId> device_local_accounts;
-  ParseUserList(*prefs_device_local_accounts, std::set<AccountId>(),
-                &device_local_accounts, device_local_accounts_set);
+  ParseUserList(prefs_device_local_accounts->GetListDeprecated(),
+                std::set<AccountId>(), &device_local_accounts,
+                device_local_accounts_set);
   for (const AccountId& account_id : device_local_accounts) {
     policy::DeviceLocalAccount::Type type;
     if (!policy::IsDeviceLocalAccountUser(account_id.GetUserEmail(), &type)) {
@@ -1073,20 +1092,21 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
   user_manager::User* const active_user = GetActiveUser();
   const bool is_device_local_account_session =
       active_user && active_user->IsDeviceLocalAccount();
-  for (auto it = device_local_accounts.rbegin();
-       it != device_local_accounts.rend(); ++it) {
+  for (const policy::DeviceLocalAccount& account :
+       base::Reversed(device_local_accounts)) {
     if (is_device_local_account_session &&
-        AccountId::FromUserEmail(it->user_id) == active_user->GetAccountId()) {
+        AccountId::FromUserEmail(account.user_id) ==
+            active_user->GetAccountId()) {
       users_.insert(users_.begin(), active_user);
     } else {
       users_.insert(users_.begin(),
                     CreateUserFromDeviceLocalAccount(
-                        AccountId::FromUserEmail(it->user_id), it->type)
+                        AccountId::FromUserEmail(account.user_id), account.type)
                         .release());
     }
-    if (it->type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
-        it->type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION) {
-      UpdatePublicAccountDisplayName(it->user_id);
+    if (account.type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
+        account.type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION) {
+      UpdatePublicAccountDisplayName(account.user_id);
     }
   }
 
@@ -1181,12 +1201,11 @@ void ChromeUserManagerImpl::OnProfileAdded(Profile* profile) {
     if (user->HasGaiaAccount())
       GetUserImageManager(user->GetAccountId())->UserProfileCreated();
 
-    // Allow managed guest session user to lock if
-    // `kLoginExtensionApiLaunchExtensionId` is set.
+    // Managed Guest Sessions can be lockable if launched via the chrome.login
+    // extension API.
     if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
-        !profile->GetPrefs()
-             ->GetString(::prefs::kLoginExtensionApiLaunchExtensionId)
-             .empty()) {
+        profile->GetPrefs()->GetBoolean(
+            ::prefs::kLoginExtensionApiCanLockManagedGuestSession)) {
       user->set_can_lock(true);
     }
   }
@@ -1236,8 +1255,6 @@ void ChromeUserManagerImpl::OnUserNotAllowed(const std::string& user_email) {
   LOG(ERROR) << "Shutdown session because a user is not allowed to be in the "
                 "current session";
   SessionController::Get()->ShowMultiprofilesSessionAbortedDialog(user_email);
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::MULTIPROFILES_SESSION_ABORTED);
 }
 
 void ChromeUserManagerImpl::UpdateNumberOfUsers() {
@@ -1302,14 +1319,15 @@ void ChromeUserManagerImpl::SetUserAffiliation(
 }
 
 bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
-  const base::ListValue& reporting_users =
+  const base::Value& reporting_users =
       *(GetLocalState()->GetList(::prefs::kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
   // TODO(crbug.com/1187106): Use base::Contains once |reporting_users| is not a
   // ListValue.
-  return !(std::find(reporting_users.GetList().begin(),
-                     reporting_users.GetList().end(),
-                     user_id_value) == reporting_users.GetList().end());
+  return !(std::find(reporting_users.GetListDeprecated().begin(),
+                     reporting_users.GetListDeprecated().end(),
+                     user_id_value) ==
+           reporting_users.GetListDeprecated().end());
 }
 
 bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
@@ -1350,14 +1368,15 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   base::Value email_value(account_id.GetUserEmail());
-  if (!base::Contains(users_update->GetList(), email_value))
+  if (!base::Contains(users_update->GetListDeprecated(), email_value))
     users_update->Append(std::move(email_value));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   users_update->EraseListIter(
-      std::find(users_update->GetList().begin(), users_update->GetList().end(),
+      std::find(users_update->GetListDeprecated().begin(),
+                users_update->GetListDeprecated().end(),
                 base::Value(FullyCanonicalize(account_id.GetUserEmail()))));
 }
 
@@ -1367,7 +1386,7 @@ const AccountId& ChromeUserManagerImpl::GetGuestAccountId() const {
 
 bool ChromeUserManagerImpl::IsFirstExecAfterBoot() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kFirstExecAfterBoot);
+      switches::kFirstExecAfterBoot);
 }
 
 void ChromeUserManagerImpl::AsyncRemoveCryptohome(
@@ -1407,7 +1426,7 @@ bool ChromeUserManagerImpl::IsDeprecatedSupervisedAccountId(
 bool ChromeUserManagerImpl::HasBrowserRestarted() const {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return base::SysInfo::IsRunningOnChromeOS() &&
-         command_line->HasSwitch(chromeos::switches::kLoginUser);
+         command_line->HasSwitch(switches::kLoginUser);
 }
 
 const gfx::ImageSkia& ChromeUserManagerImpl::GetResourceImagekiaNamed(

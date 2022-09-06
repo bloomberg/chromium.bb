@@ -73,6 +73,8 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
         }
         return DESKTOP_ENVIRONMENT_UNITY;
       }
+      if (value == "Deepin")
+        return DESKTOP_ENVIRONMENT_DEEPIN;
       if (value == "GNOME")
         return DESKTOP_ENVIRONMENT_GNOME;
       if (value == "X-Cinnamon")
@@ -90,12 +92,16 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
         return DESKTOP_ENVIRONMENT_PANTHEON;
       if (value == "XFCE")
         return DESKTOP_ENVIRONMENT_XFCE;
+      if (value == "UKUI")
+        return DESKTOP_ENVIRONMENT_UKUI;
     }
   }
 
   // DESKTOP_SESSION was what everyone used in 2010.
   std::string desktop_session;
   if (env->GetVar("DESKTOP_SESSION", &desktop_session)) {
+    if (desktop_session == "deepin")
+      return DESKTOP_ENVIRONMENT_DEEPIN;
     if (desktop_session == "gnome" || desktop_session == "mate")
       return DESKTOP_ENVIRONMENT_GNOME;
     if (desktop_session == "kde4" || desktop_session == "kde-plasma")
@@ -110,6 +116,8 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
         desktop_session == "xubuntu") {
       return DESKTOP_ENVIRONMENT_XFCE;
     }
+    if (desktop_session == "ukui")
+      return DESKTOP_ENVIRONMENT_UKUI;
   }
 
   // Fall back on some older environment variables.
@@ -131,6 +139,8 @@ const char* GetDesktopEnvironmentName(DesktopEnvironment env) {
       return nullptr;
     case DESKTOP_ENVIRONMENT_CINNAMON:
       return "CINNAMON";
+    case DESKTOP_ENVIRONMENT_DEEPIN:
+      return "DEEPIN";
     case DESKTOP_ENVIRONMENT_GNOME:
       return "GNOME";
     case DESKTOP_ENVIRONMENT_KDE3:
@@ -145,6 +155,8 @@ const char* GetDesktopEnvironmentName(DesktopEnvironment env) {
       return "UNITY";
     case DESKTOP_ENVIRONMENT_XFCE:
       return "XFCE";
+    case DESKTOP_ENVIRONMENT_UKUI:
+      return "UKUI";
   }
   return nullptr;
 }

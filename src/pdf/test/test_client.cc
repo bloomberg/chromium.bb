@@ -53,7 +53,7 @@ bool TestClient::IsPrintPreview() const {
   return false;
 }
 
-SkColor TestClient::GetBackgroundColor() {
+SkColor TestClient::GetBackgroundColor() const {
   return SK_ColorTRANSPARENT;
 }
 
@@ -64,10 +64,5 @@ void TestClient::SetLinkUnderCursor(const std::string& link_under_cursor) {}
 bool TestClient::IsValidLink(const std::string& url) {
   return !url.empty();
 }
-
-void TestClient::ScheduleTaskOnMainThread(const base::Location& from_here,
-                                          ResultCallback callback,
-                                          int32_t result,
-                                          base::TimeDelta delay) {}
 
 }  // namespace chrome_pdf

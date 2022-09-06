@@ -17,6 +17,7 @@
 #include <set>
 #include <vector>
 
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/units/time_delta.h"
 #include "modules/include/module_common_types.h"
@@ -70,7 +71,8 @@ class NackRequester final : public NackRequesterBase {
                 NackPeriodicProcessor* periodic_processor,
                 Clock* clock,
                 NackSender* nack_sender,
-                KeyFrameRequestSender* keyframe_request_sender);
+                KeyFrameRequestSender* keyframe_request_sender,
+                const FieldTrialsView& field_trials);
   ~NackRequester();
 
   void ProcessNacks() override;
@@ -104,7 +106,8 @@ class NackRequester final : public NackRequesterBase {
 
   struct BackoffSettings {
     BackoffSettings(TimeDelta min_retry, TimeDelta max_rtt, double base);
-    static absl::optional<BackoffSettings> ParseFromFieldTrials();
+    static absl::optional<BackoffSettings> ParseFromFieldTrials(
+        const FieldTrialsView& field_trials);
 
     // Min time between nacks.
     const TimeDelta min_retry_interval;

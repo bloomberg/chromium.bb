@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
@@ -22,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -414,7 +414,7 @@ void FocusWindowClient(ServiceWorkerContainerHost* container_host,
 
   // Focus the frame in the frame tree node, in case it has changed.
   frame_tree_node->frame_tree()->SetFocusedFrame(
-      frame_tree_node, render_frame_host->GetSiteInstance());
+      frame_tree_node, render_frame_host->GetSiteInstance()->group());
 
   // Focus the frame's view to make sure the frame is now considered as focused.
   render_frame_host->GetView()->Focus();
@@ -532,6 +532,7 @@ void NavigateClient(const GURL& url,
           url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       WindowOpenDisposition::CURRENT_TAB,
       false /* should_replace_current_entry */, false /* user_gesture */,
+      false /* is_unfenced_top_navigation */,
       blink::mojom::TriggeringEventInfo::kUnknown,
       std::string() /* href_translate */, nullptr /* blob_url_loader_factory */,
       absl::nullopt);

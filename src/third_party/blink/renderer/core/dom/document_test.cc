@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
@@ -39,6 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
@@ -50,6 +52,7 @@
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -68,8 +71,8 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
@@ -78,7 +81,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -432,6 +434,33 @@ TEST_F(DocumentTest, PrintRelayout) {
   EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 400);
   GetDocument().GetFrame()->EndPrinting();
   EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 800);
+}
+
+// This tests whether we properly set the bits for indicating if a media feature
+// has been evaluated.
+TEST_F(DocumentTest, MediaFeatureEvaluated) {
+  GetDocument().SetMediaFeatureEvaluated(
+      static_cast<int>(IdentifiableSurface::MediaFeatureName::kForcedColors));
+  for (int i = 0; i < 64; i++) {
+    if (i == static_cast<int>(
+                 IdentifiableSurface::MediaFeatureName::kForcedColors)) {
+      EXPECT_TRUE(GetDocument().WasMediaFeatureEvaluated(i));
+    } else {
+      EXPECT_FALSE(GetDocument().WasMediaFeatureEvaluated(i));
+    }
+  }
+  GetDocument().SetMediaFeatureEvaluated(
+      static_cast<int>(IdentifiableSurface::MediaFeatureName::kAnyHover));
+  for (int i = 0; i < 64; i++) {
+    if ((i == static_cast<int>(
+                  IdentifiableSurface::MediaFeatureName::kForcedColors)) ||
+        (i ==
+         static_cast<int>(IdentifiableSurface::MediaFeatureName::kAnyHover))) {
+      EXPECT_TRUE(GetDocument().WasMediaFeatureEvaluated(i));
+    } else {
+      EXPECT_FALSE(GetDocument().WasMediaFeatureEvaluated(i));
+    }
+  }
 }
 
 // This test checks that Documunt::linkManifest() returns a value conform to the
@@ -888,7 +917,7 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
 }
 
 // Android does not support non-overlay top-level scrollbars.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(DocumentTest, ElementFromPointOnScrollbar) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
@@ -915,7 +944,7 @@ TEST_F(DocumentTest, ElementFromPointOnScrollbar) {
   // A hit test above the horizontal scrollbar should hit the body element.
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 580), GetDocument().body());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
@@ -1085,7 +1114,7 @@ TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
   EXPECT_EQ(50, description.margin_right);
   EXPECT_EQ(50, description.margin_bottom);
   EXPECT_EQ(50, description.margin_left);
-  EXPECT_EQ(WebDoubleSize(400, 960), description.size);
+  EXPECT_EQ(gfx::SizeF(400, 960), description.size);
 }
 
 TEST(Document, HandlesDisconnectDuringHasTrustToken) {
@@ -1342,72 +1371,6 @@ INSTANTIATE_TEST_SUITE_P(
         ViewportTestCase("cover", mojom::ViewportFit::kCover),
         ViewportTestCase("invalid", mojom::ViewportFit::kAuto)));
 
-class BatterySavingsChromeClient : public EmptyChromeClient {
- public:
-  MOCK_METHOD2(BatterySavingsChanged, void(LocalFrame&, BatterySavingsFlags));
-};
-
-class DocumentBatterySavingsTest : public PageTestBase,
-                                   private ScopedBatterySavingsMetaForTest {
- protected:
-  DocumentBatterySavingsTest() : ScopedBatterySavingsMetaForTest(true) {}
-
-  void SetUp() override {
-    chrome_client_ = MakeGarbageCollected<BatterySavingsChromeClient>();
-    SetupPageWithClients(chrome_client_);
-  }
-
-  Persistent<BatterySavingsChromeClient> chrome_client_;
-};
-
-TEST_F(DocumentBatterySavingsTest, ChromeClientCalls) {
-  testing::InSequence s;
-  // The client is called twice, once for each meta element, but is called with
-  // the same parameter both times because the first meta in DOM order takes
-  // precedence.
-  EXPECT_CALL(*chrome_client_,
-              BatterySavingsChanged(testing::_, kAllowReducedFrameRate))
-      .Times(2);
-
-  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().IsCounted(
-      WebFeature::kBatterySavingsMeta));
-
-  SetHtmlInnerHTML(R"HTML(
-    <meta id="first" name="battery-savings" content="allow-reduced-framerate">
-    <meta id="second" name="battery-savings" content="allow-reduced-script-speed">
-  )HTML");
-
-  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().IsCounted(
-      WebFeature::kBatterySavingsMeta));
-
-  // Remove the first meta causing the second to apply.
-  EXPECT_CALL(*chrome_client_,
-              BatterySavingsChanged(testing::_, kAllowReducedScriptSpeed))
-      .Times(1);
-
-  GetDocument().getElementById("first")->remove();
-
-  // Change the content attribute to an unsupported value.
-  EXPECT_CALL(*chrome_client_, BatterySavingsChanged(testing::_, 0)).Times(1);
-
-  Element* second = GetDocument().getElementById("second");
-  second->setAttribute(html_names::kContentAttr, "allow-blah");
-
-  // Change the content attribute to both supported values.
-  EXPECT_CALL(*chrome_client_,
-              BatterySavingsChanged(testing::_, kAllowReducedFrameRate |
-                                                    kAllowReducedScriptSpeed))
-      .Times(1);
-
-  second->setAttribute(html_names::kContentAttr,
-                       "allow-reduced-framerate allow-reduced-script-speed");
-
-  // Change the meta name to "viewport".
-  EXPECT_CALL(*chrome_client_, BatterySavingsChanged(testing::_, 0)).Times(1);
-
-  second->setAttribute(html_names::kNameAttr, "viewport");
-}
-
 namespace {
 class MockReportingContext final : public ReportingContext {
  public:
@@ -1421,6 +1384,21 @@ class MockReportingContext final : public ReportingContext {
 };
 
 }  // namespace
+
+TEST_F(DocumentSimTest, LastModified) {
+  const char kLastModified[] = "Tue, 15 Nov 1994 12:45:26 GMT";
+  SimRequest::Params params;
+  params.response_http_headers = {{"Last-Modified", kLastModified}};
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  // We test lastModifiedTime() instead of lastModified() because the latter
+  // returns a string in the local time zone.
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(kLastModified, &time));
+  EXPECT_EQ(time, GetDocument().lastModifiedTime());
+}
 
 TEST_F(DocumentSimTest, DuplicatedDocumentPolicyViolationsAreIgnored) {
   blink::ScopedDocumentPolicyForTest scoped_document_policy(true);
@@ -1692,6 +1670,156 @@ TEST_F(UnassociatedListedElementTest,
   div->remove();
   listed_elements = GetDocument().UnassociatedListedElements();
   EXPECT_EQ(0u, listed_elements.size());
+}
+
+TEST_F(DocumentTest, DocumentDefiningElementWithMultipleBodies) {
+  SetHtmlInnerHTML(R"HTML(
+    <body style="overflow: auto; height: 100%">
+      <div style="height: 10000px"></div>
+    </body>
+  )HTML");
+
+  Element* body1 = GetDocument().body();
+  EXPECT_EQ(body1, GetDocument().ViewportDefiningElement());
+  EXPECT_FALSE(body1->GetLayoutBox()->GetScrollableArea());
+
+  Element* body2 = To<Element>(body1->cloneNode(true));
+  GetDocument().documentElement()->appendChild(body2);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(body1, GetDocument().ViewportDefiningElement());
+  EXPECT_FALSE(body1->GetLayoutBox()->GetScrollableArea());
+  EXPECT_TRUE(body2->GetLayoutBox()->GetScrollableArea());
+
+  GetDocument().documentElement()->appendChild(body1);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(body2, GetDocument().ViewportDefiningElement());
+  EXPECT_TRUE(body1->GetLayoutBox()->GetScrollableArea());
+  EXPECT_FALSE(body2->GetLayoutBox()->GetScrollableArea());
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterNoStyles) {
+  SetHtmlInnerHTML(R"HTML(
+    <img>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyHidden) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> .tag { overflow: hidden } </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyVisible) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> .tag { overflow: visible } </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyVisibleWithObjectFit) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> .tag { overflow: visible; object-fit: cover; } </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyVisibleLaterHidden) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      img { overflow: visible; }
+      .tag { overflow: hidden; }
+    </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterIframe) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      iframe { overflow: visible; }
+    </style>
+    <iframe></iframe>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterSvg) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      svg { overflow: visible; }
+    </style>
+    <svg></svg>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+// https://crbug.com/1311370
+TEST_F(DocumentSimTest, HeaderPreloadRemoveReaddClient) {
+  SimRequest::Params main_params;
+  main_params.response_http_headers = {
+      {"Link", "<https://example.com/sheet.css>;rel=preload;as=style;"}};
+
+  SimRequest main_resource("https://example.com", "text/html", main_params);
+  SimSubresourceRequest css_resource("https://example.com/sheet.css",
+                                     "text/css");
+
+  LoadURL("https://example.com");
+  main_resource.Write(R"HTML(
+    <!doctype html>
+    <link rel="stylesheet" href="sheet.css">
+  )HTML");
+
+  // Remove and garbage-collect the pending stylesheet link element, which will
+  // remove it from the list of ResourceClients of the Resource being preloaded.
+  GetDocument().QuerySelector("link")->remove();
+  ThreadState::Current()->CollectAllGarbageForTesting();
+
+  // Removing the ResourceClient should not affect the preloading.
+  css_resource.Complete(".target { width: 100px; }");
+
+  // After the preload finishes, when a new ResourceClient is added, it should
+  // be able to use the Resource immediately.
+  main_resource.Complete(R"HTML(
+    <link rel="stylesheet" href="sheet.css">
+    <div class="target"></div>
+  )HTML");
+
+  Element* target = GetDocument().QuerySelector(".target");
+  EXPECT_EQ(100, target->OffsetWidth());
 }
 
 }  // namespace blink

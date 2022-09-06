@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">razpr <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Prezrtje naslednjega pritiska tipke</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">Funkcija TalkBack prilagajanja po meri za Chromebooke ne zagotavlja več. Še vedno jo lahko uporabljate, vendar uporabljajte privzete bližnjične tipke za TalkBack. Za prikaz razpoložljivih bližnjic pritisnite gumb za iskanje + A, nato K. Če še vedno želite uporabljati TalkBack, znova pritisnite tipke za ukaz.</translation>
 <translation id="463135993322337640">Pritisnite tipki za ChromeVox O in N, če želite izvedeti novosti</translation>
 <translation id="4649220074413114917">Z dotikom zaslona z dvema prstoma lahko ustavite kateri koli trenutni govor. To je koristno, če ne želite, da ChromeVox kaj prebere. Če želite nadaljevati, se dotaknite zaslona z dvema prstoma.</translation>
 <translation id="4660783501463101648">Klasična različica je bila odstranjena. Preklopna tipka za preklop v klasično različico ChromeVoxa je odstranjena.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Braillovi napisi so omogočeni</translation>
 <translation id="5183440668879371625">Braillova pisava – prejšnja vrstica</translation>
 <translation id="5189244881767082992">Vrstica</translation>
-<translation id="5234747236692380506">vnesi <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Umazano bež</translation>
 <translation id="5263344797180442561">n2</translation>
 <translation id="528468243742722775">Konec</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Hitri tečaj je končan.</translation>
 <translation id="5534303576632885660">nsl</translation>
 <translation id="5539820223028224601">Gainsboro siva</translation>
+<translation id="554893713779400387">Preklop narekovanja</translation>
 <translation id="5549179427201066174">Vklop/izklop zvočnih povratnih informacij (zvočnih ikon)</translation>
 <translation id="556042886152191864">Gumb</translation>
 <translation id="5561345396546889625">Naslednji seznam</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Dnevnik</translation>
 <translation id="5628125749885014029">n4</translation>
 <translation id="5632083598315326067">Grafični simbol</translation>
+<translation id="5648939288050772726">Čestitamo! Naučili ste se osnovne stvari, ki jih morate vedeti, če želite uspešno uporabljati ChromeVox. Ukazni meni ChromeVoxa lahko kadar koli odprete, tako da pritisnete tipko za iskanje in piko. Če želite izvedeti še več o ChromeVoxu in operacijskem sistemu Chrome OS, si oglejte te članke.
+    Če ste dokončali vadnico, se s ChromeVoxom pomaknite do gumba za zapiranje in ga kliknite.</translation>
 <translation id="5653397561111110475">Uporaba Chromebookovih funkcij zaslona na dotik za ljudi s posebnimi potrebami</translation>
 <translation id="5655682562155942719">Skočni ukazi</translation>
 <translation id="56637627897541303">Besedilno polje</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dvopičje}one{# dvopičje}two{# dvopičji}few{# dvopičja}other{# dvopičij}}</translation>
 <translation id="6444046323172968959">Pogovorno okno z opozorilom</translation>
 <translation id="6452403590345320472">Kazalo</translation>
+<translation id="6457542714329819968">vnesi</translation>
 <translation id="6468049171101508116">Gumb Naprej</translation>
 <translation id="646954774886932461">Kazalo</translation>
 <translation id="6475604559827479857">Barva za označevanje besed:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">samosez</translation>
 <translation id="7713139339518499741">Naraven glas</translation>
 <translation id="7714340021005120797">Ni naslednjega kombiniranega polja</translation>
-<translation id="772146615414628379">Čestitamo! Naučili ste se osnovne stvari, ki jih morate vedeti, če želite uspešno uporabljati ChromeVox. Ukazni meni ChromeVoxa lahko kadar koli odprete, tako da pritisnete tipko za iskanje in piko. Če želite izvedeti še več o ChromeVoxu in operacijskem sistemu Chrome OS, si oglejte te članke.
-    Če ste dokončali vadnico, se s ChromeVoxom pomaknite do gumba za zapiranje in ga kliknite.</translation>
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7731785449856576010">Ni pripomočka za naslednjo predstavnost</translation>
 <translation id="7735498529470878067">Z raziskovanjem z dotikom lahko hitro dobite občutek, kaj je na zaslonu.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Temno rdeča</translation>
 <translation id="923331726185079994">ChromeVox je posodobljen</translation>
 <translation id="93384979447910801">Temna morsko zelena</translation>
+<translation id="937605981140327129">TalkBack trenutno ni nameščen. Namestite Orodja za dostopnost Androida v Trgovini Play in poskusite znova.</translation>
 <translation id="948171205378458592">Zmanjšanje hitrosti govora</translation>
 <translation id="957570623732056069">Z enim prstom povlecite v levo ali desno, če se želite premikati po tej lekciji.</translation>
 <translation id="958854023026327378">Z enim prstom povlecite dol</translation>

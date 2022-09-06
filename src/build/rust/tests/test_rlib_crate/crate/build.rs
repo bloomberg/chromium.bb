@@ -43,6 +43,9 @@ fn main() {
     assert!(Path::new(&env::var_os("CARGO_MANIFEST_DIR").unwrap()).join("build.rs").exists());
     assert!(Path::new("build.rs").exists());
     assert!(Path::new(&env::var_os("OUT_DIR").unwrap()).exists());
+    // Confirm the following env var is set, but do not attempt to validate content
+    // since the whole point is that it will differ on different platforms.
+    env::var_os("CARGO_CFG_TARGET_ARCH").unwrap();
 
     generate_some_code().unwrap();
 }
@@ -50,8 +53,10 @@ fn main() {
 fn generate_some_code() -> std::io::Result<()> {
     let output_dir = Path::new(&env::var_os("OUT_DIR").unwrap()).join("generated");
     let _ = std::fs::create_dir_all(&output_dir);
+    // Test that environment variables from .gn files are passed to build scripts
+    let preferred_number = env::var("ENV_VAR_FOR_BUILD_SCRIPT").unwrap();
     let mut file = std::fs::File::create(output_dir.join("generated.rs"))?;
-    file.write_all(b"fn run_some_generated_code() -> u32 { 42 }")?;
+    write!(file, "fn run_some_generated_code() -> u32 {{ {} }}", preferred_number)?;
     Ok(())
 }
 

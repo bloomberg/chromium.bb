@@ -29,7 +29,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -328,7 +327,8 @@ bool BrowserViewRenderer::OnDrawHardware() {
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame_sink_id_, viewport_size_for_tile_priority,
       external_draw_constraints_.transform, offscreen_pre_raster_, dip_scale_,
-      std::move(requests), did_invalidate);
+      std::move(requests), did_invalidate,
+      begin_frame_source_->LastDispatchedBeginFrameArgs());
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame)));
@@ -369,6 +369,11 @@ bool BrowserViewRenderer::DoUpdateParentDrawData() {
 void BrowserViewRenderer::OnViewTreeForceDarkStateChanged(
     bool view_tree_force_dark_state) {
   client_->OnViewTreeForceDarkStateChanged(view_tree_force_dark_state);
+}
+
+void BrowserViewRenderer::ChildSurfaceWasEvicted() {
+  if (compositor_)
+    compositor_->WasEvicted();
 }
 
 void BrowserViewRenderer::RemoveCompositorFrameConsumer(
@@ -653,11 +658,8 @@ void BrowserViewRenderer::SetDipScale(float dip_scale) {
 
 gfx::Point BrowserViewRenderer::max_scroll_offset() const {
   DCHECK_GT(dip_scale_, 0.f);
-  float scale = content::IsUseZoomForDSFEnabled()
-                    ? page_scale_factor_
-                    : dip_scale_ * page_scale_factor_;
   return gfx::ToCeiledPoint(
-      gfx::ScalePoint(max_scroll_offset_unscaled_, scale));
+      gfx::ScalePoint(max_scroll_offset_unscaled_, page_scale_factor_));
 }
 
 void BrowserViewRenderer::ScrollTo(const gfx::Point& scroll_offset) {
@@ -774,8 +776,7 @@ void BrowserViewRenderer::UpdateRootLayerState(
     return;
 
   gfx::SizeF scrollable_size_dip = scrollable_size;
-  if (content::IsUseZoomForDSFEnabled())
-    scrollable_size_dip.Scale(1 / dip_scale_);
+  scrollable_size_dip.Scale(1 / dip_scale_);
 
   TRACE_EVENT_INSTANT1(
       "android_webview", "BrowserViewRenderer::UpdateRootLayerState",
@@ -856,7 +857,8 @@ void BrowserViewRenderer::DidOverscroll(
   gfx::Vector2dF fling_velocity_pixels =
       gfx::ScaleVector2d(current_fling_velocity, physical_pixel_scale);
 
-  client_->DidOverscroll(rounded_overscroll_delta, fling_velocity_pixels);
+  client_->DidOverscroll(rounded_overscroll_delta, fling_velocity_pixels,
+                         begin_frame_source_->inside_begin_frame());
 }
 
 ui::TouchHandleDrawable* BrowserViewRenderer::CreateDrawable() {
@@ -904,7 +906,8 @@ void BrowserViewRenderer::PostInvalidate(
     return;
 
   did_invalidate_since_last_draw_ = true;
-  client_->PostInvalidate();
+  client_->PostInvalidate(
+      RootBeginFrameSourceWebView::GetInstance()->inside_begin_frame());
 }
 
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas, bool software_canvas) {

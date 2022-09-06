@@ -8,6 +8,7 @@
 #include "base/check.h"
 #include "base/strings/string_piece.h"
 #include "media/formats/hls/items.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace {
@@ -17,24 +18,37 @@ bool IsSubstring(base::StringPiece sub, base::StringPiece base) {
          base.data() + base.size() >= sub.data() + sub.size();
 }
 
-media::hls::SourceString GetItemContent(media::hls::TagItem tag) {
+absl::optional<media::hls::SourceString> GetItemContent(
+    media::hls::TagItem tag) {
   // Ensure the tag kind returned was valid
-  CHECK(tag.kind >= media::hls::TagKind::kUnknown &&
-        tag.kind <= media::hls::TagKind::kMaxValue);
+  if (tag.GetName()) {
+    auto kind = media::hls::GetTagKind(*tag.GetName());
+    CHECK(kind >= media::hls::TagKind::kMinValue &&
+          kind <= media::hls::TagKind::kMaxValue);
+  }
 
-  return tag.content;
+  return tag.GetContent();
 }
 
-media::hls::SourceString GetItemContent(media::hls::UriItem uri) {
+absl::optional<media::hls::SourceString> GetItemContent(
+    media::hls::UriItem uri) {
   return uri.content;
+}
+
+size_t GetItemLineNumber(media::hls::TagItem tag) {
+  return tag.GetLineNumber();
+}
+
+size_t GetItemLineNumber(media::hls::UriItem uri) {
+  return uri.content.Line();
 }
 
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Create a StringPiece from the given input
-  const base::StringPiece manifest(reinterpret_cast<const char*>(data), size);
-  media::hls::SourceLineIterator iterator{manifest};
+  const base::StringPiece source(reinterpret_cast<const char*>(data), size);
+  media::hls::SourceLineIterator iterator{source};
 
   while (true) {
     const auto prev_iterator = iterator;
@@ -42,10 +56,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     if (result.has_error()) {
       // Ensure that this was an error this function is expected to return
-      CHECK(result.code() == media::hls::ParseStatusCode::kReachedEOF ||
-            result.code() == media::hls::ParseStatusCode::kInvalidEOL);
+      CHECK(result == media::hls::ParseStatusCode::kReachedEOF ||
+            result == media::hls::ParseStatusCode::kInvalidEOL);
 
-      // Ensure that `manifest` is still a substring of the previous manifest
+      // Ensure that `source` is still a substring of the previous source
       CHECK(IsSubstring(iterator.SourceForTesting(),
                         prev_iterator.SourceForTesting()));
       CHECK(iterator.CurrentLineForTesting() >=
@@ -55,15 +69,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     auto value = std::move(result).value();
     auto content = absl::visit([](auto x) { return GetItemContent(x); }, value);
+    auto line_number =
+        absl::visit([](auto x) { return GetItemLineNumber(x); }, value);
 
     // Ensure that the line number associated with this item is between the
     // original line number and the updated line number
-    CHECK(content.Line() >= prev_iterator.CurrentLineForTesting() &&
-          content.Line() < iterator.CurrentLineForTesting());
+    CHECK(line_number >= prev_iterator.CurrentLineForTesting() &&
+          line_number < iterator.CurrentLineForTesting());
 
     // Ensure that the content associated with this item is a substring of the
     // previous iterator
-    CHECK(IsSubstring(content.Str(), prev_iterator.SourceForTesting()));
+    if (content) {
+      CHECK(IsSubstring(content->Str(), prev_iterator.SourceForTesting()));
+    }
 
     // Ensure that the updated iterator contains a substring of the previous
     // iterator
@@ -72,7 +90,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     // Ensure that the content associated with this item is NOT a substring of
     // the updated iterator
-    CHECK(!IsSubstring(content.Str(), iterator.SourceForTesting()));
+    if (content) {
+      CHECK(!IsSubstring(content->Str(), iterator.SourceForTesting()));
+    }
   }
 
   return 0;

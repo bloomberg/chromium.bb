@@ -13,6 +13,7 @@
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/disks/disk.h"
 #include "base/notreached.h"
+#include "base/values.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
@@ -85,22 +86,22 @@ StorageHandler::~StorageHandler() {
 void StorageHandler::RegisterMessages() {
   DCHECK(web_ui());
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "updateAndroidEnabled",
       base::BindRepeating(&StorageHandler::HandleUpdateAndroidEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "updateStorageInfo",
       base::BindRepeating(&StorageHandler::HandleUpdateStorageInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "openMyFiles", base::BindRepeating(&StorageHandler::HandleOpenMyFiles,
                                          base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "openArcStorage",
       base::BindRepeating(&StorageHandler::HandleOpenArcStorage,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "updateExternalStorages",
       base::BindRepeating(&StorageHandler::HandleUpdateExternalStorages,
                           base::Unretained(this)));
@@ -161,12 +162,12 @@ int64_t StorageHandler::RoundByteSize(int64_t bytes) {
 }
 
 void StorageHandler::HandleUpdateAndroidEnabled(
-    const base::ListValue* unused_args) {
+    const base::Value::List& unused_args) {
   // OnJavascriptAllowed() calls ArcSessionManager::AddObserver() later.
   AllowJavascript();
 }
 
-void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
+void StorageHandler::HandleUpdateStorageInfo(const base::Value::List& args) {
   AllowJavascript();
   total_disk_space_calculator_.StartCalculation();
   free_disk_space_calculator_.StartCalculation();
@@ -177,7 +178,7 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   other_users_size_calculator_.StartCalculation();
 }
 
-void StorageHandler::HandleOpenMyFiles(const base::ListValue* unused_args) {
+void StorageHandler::HandleOpenMyFiles(const base::Value::List& unused_args) {
   const base::FilePath my_files_path =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
   platform_util::OpenItem(profile_, my_files_path, platform_util::OPEN_FOLDER,
@@ -185,7 +186,7 @@ void StorageHandler::HandleOpenMyFiles(const base::ListValue* unused_args) {
 }
 
 void StorageHandler::HandleOpenArcStorage(
-    const base::ListValue* unused_args) {
+    const base::Value::List& unused_args) {
   auto* arc_storage_manager =
       arc::ArcStorageManager::GetForBrowserContext(profile_);
   if (arc_storage_manager)
@@ -193,7 +194,7 @@ void StorageHandler::HandleOpenArcStorage(
 }
 
 void StorageHandler::HandleUpdateExternalStorages(
-    const base::ListValue* unused_args) {
+    const base::Value::List& unused_args) {
   UpdateExternalStorages();
 }
 
@@ -227,8 +228,8 @@ void StorageHandler::UpdateExternalStorages() {
 }
 
 void StorageHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
-  auto update = std::make_unique<base::DictionaryValue>();
-  update->SetKey(
+  base::Value::Dict update;
+  update.Set(
       kAndroidEnabled,
       base::Value(features::ShouldShowExternalStorageSettings(profile_)));
   content::WebUIDataSource::Update(profile_, source_name_, std::move(update));
@@ -343,8 +344,8 @@ void StorageHandler::UpdateOverallStatistics() {
   }
 
   base::DictionaryValue size_stat;
-  size_stat.SetString("availableSize", ui::FormatBytes(available_bytes));
-  size_stat.SetString("usedSize", ui::FormatBytes(in_use_bytes));
+  size_stat.SetStringKey("availableSize", ui::FormatBytes(available_bytes));
+  size_stat.SetStringKey("usedSize", ui::FormatBytes(in_use_bytes));
   size_stat.SetDoubleKey("usedRatio",
                          static_cast<double>(in_use_bytes) / total_bytes);
   int storage_space_state =
@@ -354,7 +355,7 @@ void StorageHandler::UpdateOverallStatistics() {
         static_cast<int>(StorageSpaceState::kStorageSpaceCriticallyLow);
   else if (available_bytes < kSpaceLowBytes)
     storage_space_state = static_cast<int>(StorageSpaceState::kStorageSpaceLow);
-  size_stat.SetInteger("spaceState", storage_space_state);
+  size_stat.SetIntKey("spaceState", storage_space_state);
 
   FireWebUIListener(CalculationTypeToEventName(
                         calculator::SizeCalculator::CalculationType::kTotal),

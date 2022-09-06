@@ -12,7 +12,7 @@
 
 #include "ash/components/phonehub/proto/phonehub_api.pb.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/services/secure_channel/public/cpp/client/connection_manager.h"
+#include "ash/services/secure_channel/public/cpp/client/connection_manager.h"
 
 namespace ash {
 namespace phonehub {
@@ -33,6 +33,7 @@ class MessageSenderImpl : public MessageSender {
       int64_t notification_id,
       const std::u16string& reply_text) override;
   void SendShowNotificationAccessSetupRequest() override;
+  void SendFeatureSetupRequest(bool camera_roll, bool notifications) override;
   void SendRingDeviceRequest(bool device_ringing_enabled) override;
   void SendFetchCameraRollItemsRequest(
       const proto::FetchCameraRollItemsRequest& request) override;

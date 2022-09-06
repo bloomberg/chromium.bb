@@ -9,7 +9,7 @@
 #include <ostream>
 #include <utility>
 
-#include "base/cxx17_backports.h"
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -18,18 +18,6 @@
 namespace logging {
 
 const int VlogInfo::kDefaultVlogLevel = 0;
-
-struct VlogInfo::VmodulePattern {
-  enum MatchTarget { MATCH_MODULE, MATCH_FILE };
-
-  explicit VmodulePattern(const std::string& pattern);
-
-  VmodulePattern();
-
-  std::string pattern;
-  int vlog_level;
-  MatchTarget match_target;
-};
 
 VlogInfo::VmodulePattern::VmodulePattern(const std::string& pattern)
     : pattern(pattern),
@@ -45,10 +33,32 @@ VlogInfo::VmodulePattern::VmodulePattern(const std::string& pattern)
 VlogInfo::VmodulePattern::VmodulePattern()
     : vlog_level(VlogInfo::kDefaultVlogLevel), match_target(MATCH_MODULE) {}
 
+// static
+std::vector<VlogInfo::VmodulePattern> VlogInfo::ParseVmoduleLevels(
+    const std::string& vmodule_switch) {
+  std::vector<VmodulePattern> vmodule_levels;
+  base::StringPairs kv_pairs;
+  if (!base::SplitStringIntoKeyValuePairs(vmodule_switch, '=', ',',
+                                          &kv_pairs)) {
+    DLOG(WARNING) << "Could not fully parse vmodule switch \"" << vmodule_switch
+                  << "\"";
+  }
+  for (const auto& pair : kv_pairs) {
+    VmodulePattern pattern(pair.first);
+    if (!base::StringToInt(pair.second, &pattern.vlog_level)) {
+      DLOG(WARNING) << "Parsed vlog level for \"" << pair.first << "="
+                    << pair.second << "\" as " << pattern.vlog_level;
+    }
+    vmodule_levels.push_back(pattern);
+  }
+  return vmodule_levels;
+}
+
 VlogInfo::VlogInfo(const std::string& v_switch,
                    const std::string& vmodule_switch,
                    int* min_log_level)
-    : min_log_level_(min_log_level) {
+    : vmodule_levels_(ParseVmoduleLevels(vmodule_switch)),
+      min_log_level_(min_log_level) {
   DCHECK_NE(min_log_level, nullptr);
 
   int vlog_level = 0;
@@ -58,23 +68,6 @@ VlogInfo::VlogInfo(const std::string& v_switch,
     } else {
       DLOG(WARNING) << "Could not parse v switch \"" << v_switch << "\"";
     }
-  }
-
-  base::StringPairs kv_pairs;
-  if (!base::SplitStringIntoKeyValuePairs(
-          vmodule_switch, '=', ',', &kv_pairs)) {
-    DLOG(WARNING) << "Could not fully parse vmodule switch \""
-                  << vmodule_switch << "\"";
-  }
-  for (base::StringPairs::const_iterator it = kv_pairs.begin();
-       it != kv_pairs.end(); ++it) {
-    VmodulePattern pattern(it->first);
-    if (!base::StringToInt(it->second, &pattern.vlog_level)) {
-      DLOG(WARNING) << "Parsed vlog level for \""
-                    << it->first << "=" << it->second
-                    << "\" as " << pattern.vlog_level;
-    }
-    vmodule_levels_.push_back(pattern);
   }
 }
 
@@ -93,7 +86,7 @@ base::StringPiece GetModule(base::StringPiece file) {
   base::StringPiece::size_type extension_start = module.rfind('.');
   module = module.substr(0, extension_start);
   static const char kInlSuffix[] = "-inl";
-  static const int kInlSuffixLen = base::size(kInlSuffix) - 1;
+  static const int kInlSuffixLen = std::size(kInlSuffix) - 1;
   if (base::EndsWith(module, kInlSuffix))
     module.remove_suffix(kInlSuffixLen);
   return module;

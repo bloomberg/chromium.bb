@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -35,7 +36,6 @@
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-exception.h"
 #include "v8/include/v8-function.h"
-#include "v8/include/v8-initialization.h"
 #include "v8/include/v8-inspector.h"
 #include "v8/include/v8-json.h"
 #include "v8/include/v8-message.h"
@@ -43,6 +43,7 @@
 #include "v8/include/v8-primitive.h"
 #include "v8/include/v8-script.h"
 #include "v8/include/v8-template.h"
+#include "v8/include/v8-wasm.h"
 
 namespace auction_worklet {
 
@@ -56,22 +57,6 @@ void InitV8() {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot();
 #endif
-
-  // Each script is run once using its own isolate, so tune down V8 to use as
-  // little memory as possible.
-  static const char kOptimizeForSize[] = "--optimize_for_size";
-  v8::V8::SetFlagsFromString(kOptimizeForSize, strlen(kOptimizeForSize));
-
-  // Running v8 in jitless mode allows dynamic code to be disabled in the
-  // process, and since each isolate is used only once, this may be best for
-  // performance as well.
-  static const char kJitless[] = "--jitless";
-  v8::V8::SetFlagsFromString(kJitless, strlen(kJitless));
-
-  // WebAssembly isn't encountered during resolution, so reduce the
-  // potential attack surface.
-  static const char kNoExposeWasm[] = "--no-expose-wasm";
-  v8::V8::SetFlagsFromString(kNoExposeWasm, strlen(kNoExposeWasm));
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::ArrayBufferAllocator::SharedInstance());
@@ -116,7 +101,7 @@ class DebugContextScope {
 
 // Utility class to timeout running a v8::Script or calling a v8::Function.
 // Instantiate a ScriptTimeoutHelper, and it will terminate script if
-// kScriptTimeout passes before it is destroyed.
+// `script_timeout` passes before it is destroyed.
 //
 // Creates a v8::SafeForTerminationScope(), so the caller doesn't have to.
 class AuctionV8Helper::ScriptTimeoutHelper {
@@ -262,8 +247,7 @@ constexpr base::TimeDelta AuctionV8Helper::kScriptTimeout =
     base::Milliseconds(50);
 
 AuctionV8Helper::FullIsolateScope::FullIsolateScope(AuctionV8Helper* v8_helper)
-    : locker_(v8_helper->isolate()),
-      isolate_scope_(v8_helper->isolate()),
+    : isolate_scope_(v8_helper->isolate()),
       handle_scope_(v8_helper->isolate()) {}
 
 AuctionV8Helper::FullIsolateScope::~FullIsolateScope() = default;
@@ -309,25 +293,19 @@ AuctionV8Helper::CreateTaskRunner() {
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 }
 
+void AuctionV8Helper::SetDestroyedCallback(base::OnceClosure callback) {
+  DCHECK(!destroyed_callback_);
+  destroyed_callback_ = std::move(callback);
+}
+
 v8::Local<v8::Context> AuctionV8Helper::CreateContext(
     v8::Handle<v8::ObjectTemplate> global_template) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   v8::Local<v8::Context> context =
-      v8::Context::New(isolate(), nullptr /* extensions */, global_template);
+      v8::Context::New(isolate(), /*extensions=*/nullptr, global_template);
   auto result =
       context->Global()->Delete(context, CreateStringFromLiteral("Date"));
-
-  v8::Local<v8::ObjectTemplate> console_emulation =
-      console_.GetConsoleTemplate();
-  v8::Local<v8::Object> console_obj;
-  if (console_emulation->NewInstance(context).ToLocal(&console_obj)) {
-    result = context->Global()->Set(context, CreateStringFromLiteral("console"),
-                                    console_obj);
-    DCHECK(!result.IsNothing());
-  } else {
-    DCHECK(false);
-  }
-
+  DCHECK(!result.IsNothing());
   return context;
 }
 
@@ -458,19 +436,54 @@ v8::MaybeLocal<v8::UnboundScript> AuctionV8Helper::Compile(
   return result;
 }
 
+v8::MaybeLocal<v8::WasmModuleObject> AuctionV8Helper::CompileWasm(
+    const std::string& payload,
+    const GURL& src_url,
+    const DebugId* debug_id,
+    absl::optional<std::string>& error_out) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  v8::Isolate* v8_isolate = isolate();
+
+  DebugContextScope maybe_debug(inspector(), v8_isolate->GetCurrentContext(),
+                                debug_id, src_url.spec());
+
+  v8::TryCatch try_catch(isolate());
+  v8::MaybeLocal<v8::WasmModuleObject> result = v8::WasmModuleObject::Compile(
+      isolate(),
+      v8::MemorySpan<const uint8_t>(
+          reinterpret_cast<const uint8_t*>(payload.data()), payload.size()));
+  if (try_catch.HasCaught()) {
+    // WasmModuleObject::Compile doesn't know the URL, so FormatExceptionMessage
+    // would produce unhelpful message w/o that important bit of context.
+    error_out =
+        base::StrCat({src_url.spec(), " ",
+                      try_catch.Message().IsEmpty()
+                          ? "Unknown exception"
+                          : FormatValue(isolate(), try_catch.Message()->Get()),
+                      "."});
+  }
+  return result;
+}
+
+v8::MaybeLocal<v8::WasmModuleObject> AuctionV8Helper::CloneWasmModule(
+    v8::Local<v8::WasmModuleObject> in) {
+  return v8::WasmModuleObject::FromCompiledModule(isolate(),
+                                                  in->GetCompiledModule());
+}
+
 v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
     v8::Local<v8::Context> context,
     v8::Local<v8::UnboundScript> script,
     const DebugId* debug_id,
     base::StringPiece function_name,
     base::span<v8::Local<v8::Value>> args,
+    absl::optional<base::TimeDelta> script_timeout,
     std::vector<std::string>& error_out) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(isolate(), context->GetIsolate());
 
   std::string script_name = FormatScriptName(script);
   DebugContextScope maybe_debug(inspector(), context, debug_id, script_name);
-  ScopedConsoleTarget direct_console(this, script_name, &error_out);
 
   v8::Local<v8::String> v8_function_name;
   if (!CreateUtf8String(function_name).ToLocal(&v8_function_name))
@@ -480,7 +493,8 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
 
   // Run script.
   v8::TryCatch try_catch(isolate());
-  ScriptTimeoutHelper timeout_helper(this, timer_task_runner_, script_timeout_);
+  ScriptTimeoutHelper timeout_helper(this, timer_task_runner_,
+                                     script_timeout.value_or(script_timeout_));
   auto result = local_script->Run(context);
 
   if (try_catch.HasTerminated()) {
@@ -615,7 +629,7 @@ void AuctionV8Helper::ResumeAllForTesting() {
 }
 
 void AuctionV8Helper::ConnectDevToolsAgent(
-    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
     scoped_refptr<base::SequencedTaskRunner> mojo_sequence,
     const DebugId& debug_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -661,22 +675,6 @@ std::string AuctionV8Helper::FormatScriptName(
   return FormatValue(isolate(), script->GetScriptName());
 }
 
-AuctionV8Helper::ScopedConsoleTarget::ScopedConsoleTarget(
-    AuctionV8Helper* owner,
-    const std::string& console_script_name,
-    std::vector<std::string>* out)
-    : owner_(owner) {
-  DCHECK(!owner_->console_buffer_);
-  DCHECK(owner_->console_script_name_.empty());
-  owner_->console_buffer_ = out;
-  owner_->console_script_name_ = console_script_name;
-}
-
-AuctionV8Helper::ScopedConsoleTarget::~ScopedConsoleTarget() {
-  owner_->console_buffer_ = nullptr;
-  owner_->console_script_name_ = std::string();
-}
-
 AuctionV8Helper::AuctionV8Helper(
     scoped_refptr<base::SingleThreadTaskRunner> v8_runner)
     : base::RefCountedDeleteOnSequence<AuctionV8Helper>(v8_runner),
@@ -701,6 +699,8 @@ AuctionV8Helper::~AuctionV8Helper() {
   // destroyed before `devtools_agent_`.
   if (devtools_agent_)
     devtools_agent_->DestroySessions();
+  if (destroyed_callback_)
+    std::move(destroyed_callback_).Run();
 }
 
 void AuctionV8Helper::CreateIsolate() {
@@ -708,7 +708,7 @@ void AuctionV8Helper::CreateIsolate() {
 
   // Now the initialization is completed, create an isolate.
   isolate_holder_ = std::make_unique<gin::IsolateHolder>(
-      base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kUseLocker,
+      base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kSingleThread,
       gin::IsolateHolder::IsolateType::kUtility);
   FullIsolateScope v8_scope(this);
   scratch_context_.Reset(isolate(), CreateContext());

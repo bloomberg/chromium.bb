@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/atomic_flag.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
 using content::BrowserThread;
@@ -31,7 +31,7 @@ const char* const kWallpaperLayoutArrays[] = {
   "TILE"
 };
 
-const int kWallpaperLayoutCount = base::size(kWallpaperLayoutArrays);
+const int kWallpaperLayoutCount = std::size(kWallpaperLayoutArrays);
 
 base::LazyThreadPoolSequencedTaskRunner g_blocking_task_runner =
     LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
@@ -60,6 +60,8 @@ gfx::ImageSkia ScaleAspectRatioAndCropCenter(const gfx::Size& size,
       scaled_and_cropped_image, skia::ImageOperations::RESIZE_LANCZOS3, size);
 }
 
+const int kThumbnailEncodeQuality = 90;
+
 }  // namespace
 
 const char kCancelWallpaperMessage[] = "Set wallpaper was canceled.";
@@ -83,65 +85,66 @@ void RecordCustomWallpaperLayout(const ash::WallpaperLayout& layout) {
                             ash::NUM_WALLPAPER_LAYOUT);
 }
 
+std::vector<uint8_t> GenerateThumbnail(const gfx::ImageSkia& image,
+                                       const gfx::Size& size) {
+  std::vector<uint8_t> data_out;
+  gfx::JPEGCodec::Encode(
+      *wallpaper_api_util::ScaleAspectRatioAndCropCenter(size, image).bitmap(),
+      kThumbnailEncodeQuality, &data_out);
+  return data_out;
+}
+
+WallpaperDecoder::WallpaperDecoder(DecodedCallback decoded_cb,
+                                   CanceledCallback canceled_cb,
+                                   FailedCallback failed_cb)
+    : decoded_cb_(std::move(decoded_cb)),
+      canceled_cb_(std::move(canceled_cb)),
+      failed_cb_(std::move(failed_cb)) {}
+
+WallpaperDecoder::~WallpaperDecoder() = default;
+
+void WallpaperDecoder::Start(const std::vector<uint8_t>& image_data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  CHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
+  ImageDecoder::StartWithOptions(this, image_data, ImageDecoder::DEFAULT_CODEC,
+                                 true);
+}
+
+void WallpaperDecoder::Cancel() {
+  cancel_flag_.Set();
+}
+
+void WallpaperDecoder::OnImageDecoded(const SkBitmap& decoded_image) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Make the SkBitmap immutable as we won't modify it. This is important
+  // because otherwise it gets duplicated during painting, wasting memory.
+  SkBitmap immutable(decoded_image);
+  immutable.setImmutable();
+  gfx::ImageSkia final_image = gfx::ImageSkia::CreateFrom1xBitmap(immutable);
+  final_image.MakeThreadSafe();
+  if (cancel_flag_.IsSet()) {
+    std::move(canceled_cb_).Run();
+    delete this;
+    return;
+  }
+  std::move(decoded_cb_).Run(final_image);
+  delete this;
+}
+
+void WallpaperDecoder::OnDecodeImageFailed() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::move(failed_cb_)
+      .Run(l10n_util::GetStringUTF8(IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER));
+  delete this;
+}
+
 }  // namespace wallpaper_api_util
 
-class WallpaperFunctionBase::UnsafeWallpaperDecoder
-    : public ImageDecoder::ImageRequest {
- public:
-  explicit UnsafeWallpaperDecoder(scoped_refptr<WallpaperFunctionBase> function)
-      : function_(function) {}
-
-  UnsafeWallpaperDecoder(const UnsafeWallpaperDecoder&) = delete;
-  UnsafeWallpaperDecoder& operator=(const UnsafeWallpaperDecoder&) = delete;
-
-  void Start(const std::vector<uint8_t>& image_data) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // This function can only be called after user login. It is fine to use
-    // unsafe image decoder here. Before user login, a robust jpeg decoder will
-    // be used.
-    CHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
-    ImageDecoder::StartWithOptions(this, image_data,
-                                   ImageDecoder::DEFAULT_CODEC, true);
-  }
-
-  void Cancel() {
-    cancel_flag_.Set();
-  }
-
-  void OnImageDecoded(const SkBitmap& decoded_image) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // Make the SkBitmap immutable as we won't modify it. This is important
-    // because otherwise it gets duplicated during painting, wasting memory.
-    SkBitmap immutable(decoded_image);
-    immutable.setImmutable();
-    gfx::ImageSkia final_image = gfx::ImageSkia::CreateFrom1xBitmap(immutable);
-    final_image.MakeThreadSafe();
-    if (cancel_flag_.IsSet()) {
-      function_->OnCancel();
-      delete this;
-      return;
-    }
-    function_->OnWallpaperDecoded(final_image);
-    delete this;
-  }
-
-  void OnDecodeImageFailed() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    function_->OnFailure(
-        l10n_util::GetStringUTF8(IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER));
-    delete this;
-  }
-
- private:
-  scoped_refptr<WallpaperFunctionBase> function_;
-  base::AtomicFlag cancel_flag_;
-};
-
-WallpaperFunctionBase::UnsafeWallpaperDecoder*
-    WallpaperFunctionBase::unsafe_wallpaper_decoder_;
+wallpaper_api_util::WallpaperDecoder*
+    WallpaperFunctionBase::wallpaper_decoder_ = nullptr;
 
 const int WallpaperFunctionBase::kWallpaperThumbnailWidth = 108;
 const int WallpaperFunctionBase::kWallpaperThumbnailHeight = 68;
@@ -167,28 +170,21 @@ void WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
 
 void WallpaperFunctionBase::StartDecode(const std::vector<uint8_t>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (unsafe_wallpaper_decoder_)
-    unsafe_wallpaper_decoder_->Cancel();
-  unsafe_wallpaper_decoder_ = new UnsafeWallpaperDecoder(this);
-  unsafe_wallpaper_decoder_->Start(data);
+  if (wallpaper_decoder_)
+    wallpaper_decoder_->Cancel();
+  wallpaper_decoder_ = new wallpaper_api_util::WallpaperDecoder(
+      base::BindOnce(&WallpaperFunctionBase::OnWallpaperDecoded, this),
+      base::BindOnce(&WallpaperFunctionBase::OnCancel, this),
+      base::BindOnce(&WallpaperFunctionBase::OnFailure, this));
+  wallpaper_decoder_->Start(data);
 }
 
 void WallpaperFunctionBase::OnCancel() {
-  unsafe_wallpaper_decoder_ = nullptr;
+  wallpaper_decoder_ = nullptr;
   Respond(Error(wallpaper_api_util::kCancelWallpaperMessage));
 }
 
 void WallpaperFunctionBase::OnFailure(const std::string& error) {
-  unsafe_wallpaper_decoder_ = nullptr;
+  wallpaper_decoder_ = nullptr;
   Respond(Error(error));
-}
-
-std::vector<uint8_t> WallpaperFunctionBase::GenerateThumbnail(
-    const gfx::ImageSkia& image,
-    const gfx::Size& size) {
-  std::vector<uint8_t> data_out;
-  gfx::JPEGCodec::Encode(
-      *wallpaper_api_util::ScaleAspectRatioAndCropCenter(size, image).bitmap(),
-      90 /*quality=*/, &data_out);
-  return data_out;
 }

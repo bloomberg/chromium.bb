@@ -8,21 +8,20 @@
 #include "ash/components/tether/connect_tethering_operation.h"
 #include "ash/components/tether/host_connection_metrics_logger.h"
 #include "ash/components/tether/tether_connector.h"
+#include "base/time/time.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/network_connection_handler.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_state_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-
-class NetworkStateHandler;
+namespace ash {
 
 namespace device_sync {
 class DeviceSyncClient;
-}  // namespace device_sync
-
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
+}
 
 namespace tether {
 
@@ -127,6 +126,6 @@ class TetherConnectorImpl : public TetherConnector,
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_TETHER_CONNECTOR_IMPL_H_

@@ -14,7 +14,6 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -39,7 +38,6 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -171,19 +169,17 @@ void PluginInfoHostImpl::RegisterUserPrefs(
 PluginInfoHostImpl::~PluginInfoHostImpl() {}
 
 struct PluginInfoHostImpl::GetPluginInfo_Params {
-  int render_frame_id;
   GURL url;
   url::Origin main_frame_origin;
   std::string mime_type;
 };
 
-void PluginInfoHostImpl::GetPluginInfo(int32_t render_frame_id,
-                                       const GURL& url,
+void PluginInfoHostImpl::GetPluginInfo(const GURL& url,
                                        const url::Origin& origin,
                                        const std::string& mime_type,
                                        GetPluginInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GetPluginInfo_Params params = {render_frame_id, url, origin, mime_type};
+  GetPluginInfo_Params params = {url, origin, mime_type};
   PluginService::GetInstance()->GetPlugins(
       base::BindOnce(&PluginInfoHostImpl::PluginsLoaded,
                      weak_factory_.GetWeakPtr(), params, std::move(callback)));
@@ -196,10 +192,10 @@ void PluginInfoHostImpl::PluginsLoaded(
   chrome::mojom::PluginInfoPtr output = chrome::mojom::PluginInfo::New();
   // This also fills in |actual_mime_type|.
   std::unique_ptr<PluginMetadata> plugin_metadata;
-  if (context_.FindEnabledPlugin(params.render_frame_id, params.url,
-                                 params.main_frame_origin, params.mime_type,
-                                 &output->status, &output->plugin,
-                                 &output->actual_mime_type, &plugin_metadata)) {
+  if (context_.FindEnabledPlugin(params.url, params.mime_type, &output->status,
+                                 &output->plugin, &output->actual_mime_type,
+                                 &plugin_metadata)) {
+    // TODO(crbug.com/1167278): Simplify this once PDF is the only "plugin."
     context_.DecidePluginStatus(
         params.url, params.main_frame_origin, output->plugin,
         plugin_metadata->GetSecurityStatus(output->plugin),
@@ -298,11 +294,8 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
 #endif
 }
 
-// TODO(crbug.com/850278): Remove unused parameters.
 bool PluginInfoHostImpl::Context::FindEnabledPlugin(
-    int /*render_frame_id*/,
     const GURL& url,
-    const url::Origin& /*main_frame_origin*/,
     const std::string& mime_type,
     chrome::mojom::PluginStatus* status,
     WebPluginInfo* plugin,

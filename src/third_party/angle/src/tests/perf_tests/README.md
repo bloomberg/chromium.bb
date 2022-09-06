@@ -33,6 +33,7 @@ Several command-line arguments control how the tests run:
 * `--render-test-output-dir=dir`: Equivalent to `--screenshot-dir dir`.
 * `--verbose`: Print extra timing information.
 * `--warmup-loops x`: Number of times to warm up the test before starting timing. Defaults to 3.
+* `--warmup-steps x`: Maximum number of steps for the warmup loops. Defaults to unlimited.
 * `--no-warmup`: Skip warming up the tests. Equivalent to `--warmup-steps 0`.
 * `--calibration-time`: Run each test calibration step in a fixed time. Defaults to 1 second.
 * `--max-trial-time x`: Run each test trial under this max time. Defaults to 10 seconds.
@@ -42,6 +43,7 @@ Several command-line arguments control how the tests run:
 * `--enable-all-trace-tests`: Offscreen and vsync-limited trace tests are disabled by default to reduce test time.
 * `--minimize-gpu-work`: Modify API calls so that GPU work is reduced to minimum.
 * `--validation`: Enable serialization validation in the trace tests. Normally used with SwiftShader and retracing.
+* `--perf-counters`: Additional performance counters to include in the result output. Separate multiple entries with colons: ':'.
 
 For example, for an endless run with no warmup, run:
 
@@ -74,3 +76,17 @@ The command line arguments implementations are located in [`ANGLEPerfTestArgs.cp
 * [`TracePerfTest`](TracePerfTest.cpp): Runs replays of restricted traces, not available publicly. To enable, read more in [`RestrictedTraceTests`](../restricted_traces/README.md)
 
 Many other tests can be found that have documentation in their classes.
+
+## Understanding the Metrics
+
+* `cpu_time`: Amount of CPU time consumed by an iteration of the test. This is backed by
+`GetProcessTimes` on Windows, `getrusage` on Linux/Android, and `zx_object_get_info` on Fuchsia.
+  * This value may sometimes be larger than `wall_time`. That is because we are summing up the time
+on all CPU threads for the test.
+* `wall_time`: Wall time taken to run a single iteration, calculated by dividing the total wall
+clock time by the number of test iterations.
+  * For trace tests, each rendered frame is an iteration.
+* `gpu_time`: Estimated GPU elapsed time per test iteration. We compute the estimate using GLES
+[timestamp queries](https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_disjoint_timer_query.txt)
+at the beginning and ending of each test loop.
+  * For trace tests, this metric is only enabled in `vsync` mode.

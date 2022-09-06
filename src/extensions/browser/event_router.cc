@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
@@ -29,11 +29,11 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/event_filtering_info_type_converters.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
@@ -44,6 +44,7 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "ipc/ipc_channel_proxy.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -104,7 +105,7 @@ constexpr char kRemoveEventListenerWithInvalidExtensionID[] =
 void NotifyEventDispatched(content::BrowserContext* browser_context,
                            const std::string& extension_id,
                            const std::string& event_name,
-                           const base::ListValue& args) {
+                           const base::Value::List& args) {
   // Notify the ApiActivityMonitor about the event dispatch.
   activity_monitor::OnApiEventDispatched(browser_context, extension_id,
                                          event_name, args);
@@ -151,25 +152,44 @@ const char EventRouter::kRegisteredServiceWorkerEvents[] =
 
 // static
 void EventRouter::DispatchExtensionMessage(
-    IPC::Sender* ipc_sender,
+    content::RenderProcessHost* rph,
     int worker_thread_id,
     content::BrowserContext* browser_context,
     const std::string& extension_id,
     int event_id,
     const std::string& event_name,
-    ListValue* event_args,
+    base::Value::List event_args,
     UserGestureState user_gesture,
     mojom::EventFilteringInfoPtr info) {
-  NotifyEventDispatched(browser_context, extension_id, event_name, *event_args);
-  mojom::DispatchEventParams params;
-  params.worker_thread_id = worker_thread_id;
-  params.extension_id = extension_id;
-  params.event_name = event_name;
-  params.event_id = event_id;
-  params.is_user_gesture = user_gesture == USER_GESTURE_ENABLED;
-  params.filtering_info = info->To<EventFilteringInfo>();
+  NotifyEventDispatched(browser_context, extension_id, event_name, event_args);
+  auto params = mojom::DispatchEventParams::New();
+  params->worker_thread_id = worker_thread_id;
+  params->extension_id = extension_id;
+  params->event_name = event_name;
+  params->event_id = event_id;
+  params->is_user_gesture = user_gesture == USER_GESTURE_ENABLED;
+  params->filtering_info = std::move(info);
 
-  ipc_sender->Send(new ExtensionMsg_DispatchEvent(params, *event_args));
+  Get(browser_context)
+      ->RouteDispatchEvent(rph, std::move(params), std::move(event_args));
+}
+
+void EventRouter::RouteDispatchEvent(content::RenderProcessHost* rph,
+                                     mojom::DispatchEventParamsPtr params,
+                                     base::Value::List event_args) {
+  // TODO(crbug.com/1302000) Add bindings for worker threads to be directly
+  // channel-associated.
+  mojo::AssociatedRemote<mojom::EventDispatcher>& dispatcher =
+      rph_dispatcher_map_[rph];
+  if (!dispatcher.is_bound()) {
+    IPC::ChannelProxy* channel = rph->GetChannel();
+    if (!channel) {
+      return;
+    }
+    channel->GetRemoteAssociatedInterface(
+        dispatcher.BindNewEndpointAndPassReceiver());
+  }
+  dispatcher->DispatchEvent(std::move(params), std::move(event_args));
 }
 
 // static
@@ -185,7 +205,7 @@ std::string EventRouter::GetBaseEventName(const std::string& full_event_name) {
 
 // static
 void EventRouter::DispatchEventToSender(
-    IPC::Sender* ipc_sender,
+    content::RenderProcessHost* rph,
     content::BrowserContext* browser_context,
     const std::string& extension_id,
     events::HistogramValue histogram_value,
@@ -193,7 +213,7 @@ void EventRouter::DispatchEventToSender(
     int render_process_id,
     int worker_thread_id,
     int64_t service_worker_version_id,
-    std::unique_ptr<ListValue> event_args,
+    base::Value::List event_args,
     mojom::EventFilteringInfoPtr info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int event_id = g_extension_event_id.GetNext();
@@ -202,8 +222,8 @@ void EventRouter::DispatchEventToSender(
       browser_context, extension_id, event_id, render_process_id,
       service_worker_version_id, histogram_value, event_name);
 
-  DispatchExtensionMessage(ipc_sender, worker_thread_id, browser_context,
-                           extension_id, event_id, event_name, event_args.get(),
+  DispatchExtensionMessage(rph, worker_thread_id, browser_context, extension_id,
+                           event_id, event_name, std::move(event_args),
                            UserGestureState::USER_GESTURE_UNKNOWN,
                            std::move(info));
 }
@@ -570,6 +590,7 @@ void EventRouter::RenderProcessExited(
     const content::ChildProcessTerminationInfo& info) {
   listeners_.RemoveListenersForProcess(host);
   observed_process_set_.erase(host);
+  rph_dispatcher_map_.erase(host);
   host->RemoveObserver(this);
 }
 
@@ -709,7 +730,7 @@ std::set<std::string> EventRouter::GetRegisteredEvents(
     return events;
   }
 
-  for (const base::Value& event_val : events_value->GetList()) {
+  for (const base::Value& event_val : events_value->GetListDeprecated()) {
     const std::string* event = event_val.GetIfString();
     if (event)
       events.insert(*event);
@@ -759,7 +780,7 @@ void EventRouter::RemoveFilterFromEvent(const std::string& event_name,
     return;
   }
   filter_list->EraseListIter(
-      base::ranges::find(filter_list->GetList(), *filter));
+      base::ranges::find(filter_list->GetListDeprecated(), *filter));
 }
 
 const DictionaryValue* EventRouter::GetFilteredEvents(
@@ -821,6 +842,7 @@ void EventRouter::DispatchEventWithLazyListener(const std::string& extension_id,
 
 void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
                                     std::unique_ptr<Event> event) {
+  DCHECK(event);
   // We don't expect to get events from a completely different browser context.
   DCHECK(!event->restrict_to_browser_context ||
          ExtensionsBrowserClient::Get()->IsSameContext(
@@ -870,7 +892,7 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     DispatchEventToProcess(
         listener->extension_id(), listener->listener_url(), listener->process(),
         listener->service_worker_version_id(), listener->worker_thread_id(),
-        event.get(), listener->filter(), false /* did_enqueue */);
+        *event, listener->filter(), false /* did_enqueue */);
   }
 }
 
@@ -880,7 +902,7 @@ void EventRouter::DispatchEventToProcess(
     RenderProcessHost* process,
     int64_t service_worker_version_id,
     int worker_thread_id,
-    Event* event,
+    const Event& event,
     const base::DictionaryValue* listener_filter,
     bool did_enqueue) {
   BrowserContext* listener_context = process->GetBrowserContext();
@@ -904,17 +926,16 @@ void EventRouter::DispatchEventToProcess(
     // Extension-specific checks.
     // Firstly, if the event is for a URL, the Extension must have permission
     // to access that URL.
-    if (!event->event_url.is_empty() &&
-        event->event_url.host() != extension->id() &&  // event for self is ok
+    if (!event.event_url.is_empty() &&
+        event.event_url.host() != extension->id() &&  // event for self is ok
         !extension->permissions_data()
              ->active_permissions()
-             .HasEffectiveAccessToURL(event->event_url)) {
+             .HasEffectiveAccessToURL(event.event_url)) {
       return;
     }
     // Secondly, if the event is for incognito mode, the Extension must be
     // enabled in incognito mode.
-    if (!CanDispatchEventToBrowserContext(listener_context, extension,
-                                          *event)) {
+    if (!CanDispatchEventToBrowserContext(listener_context, extension, event)) {
       return;
     }
   }
@@ -931,45 +952,57 @@ void EventRouter::DispatchEventToProcess(
   // We shouldn't be dispatching an event to a webpage, since all such events
   // (e.g.  messaging) don't go through EventRouter.
   DCHECK_NE(Feature::WEB_PAGE_CONTEXT, target_context)
-      << "Trying to dispatch event " << event->event_name << " to a webpage,"
+      << "Trying to dispatch event " << event.event_name << " to a webpage,"
       << " but this shouldn't be possible";
 
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
-          event->event_name, extension, target_context, listener_url,
-          CheckAliasStatus::ALLOWED);
+          event.event_name, extension, target_context, listener_url,
+          CheckAliasStatus::ALLOWED,
+          util::GetBrowserContextId(browser_context_));
   if (!availability.is_available()) {
     // It shouldn't be possible to reach here, because access is checked on
     // registration. However, for paranoia, check on dispatch as well.
-    NOTREACHED() << "Trying to dispatch event " << event->event_name
+    NOTREACHED() << "Trying to dispatch event " << event.event_name
                  << " which the target does not have access to: "
                  << availability.message();
     return;
   }
 
-  if (!event->will_dispatch_callback.is_null() &&
-      !event->will_dispatch_callback.Run(listener_context, target_context,
-                                         extension, event, listener_filter)) {
+  std::unique_ptr<base::Value::List> modified_event_args;
+  mojom::EventFilteringInfoPtr modified_event_filter_info;
+  if (!event.will_dispatch_callback.is_null() &&
+      !event.will_dispatch_callback.Run(
+          listener_context, target_context, extension, listener_filter,
+          &modified_event_args, &modified_event_filter_info)) {
     return;
   }
 
+  base::Value::List event_args_to_use =
+      modified_event_args ? std::move(*modified_event_args)
+                          : event.event_args->GetList().Clone();
+
+  mojom::EventFilteringInfoPtr filter_info =
+      modified_event_filter_info ? std::move(modified_event_filter_info)
+                                 : event.filter_info.Clone();
+
   int event_id = g_extension_event_id.GetNext();
   DispatchExtensionMessage(process, worker_thread_id, listener_context,
-                           extension_id, event_id, event->event_name,
-                           event->event_args.get(), event->user_gesture,
-                           event->filter_info.Clone());
+                           extension_id, event_id, event.event_name,
+                           std::move(event_args_to_use), event.user_gesture,
+                           std::move(filter_info));
 
   for (TestObserver& observer : test_observers_)
-    observer.OnDidDispatchEventToProcess(*event);
+    observer.OnDidDispatchEventToProcess(event);
 
   // TODO(lazyboy): This is wrong for extensions SW events. We need to:
   // 1. Increment worker ref count
   // 2. Add EventAck IPC to decrement that ref count.
   if (extension) {
-    ReportEvent(event->histogram_value, extension, did_enqueue);
+    ReportEvent(event.histogram_value, extension, did_enqueue);
 
     IncrementInFlightEvents(listener_context, process, extension, event_id,
-                            event->event_name, service_worker_version_id);
+                            event.event_name, service_worker_version_id);
   }
 }
 
@@ -1113,14 +1146,14 @@ void EventRouter::DispatchPendingEvent(
     std::unique_ptr<LazyContextTaskQueue::ContextInfo> params) {
   if (!params)
     return;
-
+  DCHECK(event);
   if (listeners_.HasProcessListener(params->render_process_host,
                                     params->worker_thread_id,
                                     params->extension_id)) {
     DispatchEventToProcess(
         params->extension_id, params->url, params->render_process_host,
-        params->service_worker_version_id, params->worker_thread_id,
-        event.get(), nullptr, true /* did_enqueue */);
+        params->service_worker_version_id, params->worker_thread_id, *event,
+        nullptr, true /* did_enqueue */);
   }
 }
 
@@ -1155,7 +1188,7 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
     filtered_events->GetListWithoutPathExpansion(event_name, &filter_list);
   }
 
-  filter_list->Append(filter->CreateDeepCopy());
+  filter_list->Append(filter->Clone());
 }
 
 void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -1263,7 +1296,7 @@ Event::~Event() = default;
 
 std::unique_ptr<Event> Event::DeepCopy() const {
   auto copy = std::make_unique<Event>(histogram_value, event_name,
-                                      event_args->Clone().TakeList(),
+                                      event_args->Clone().TakeListDeprecated(),
                                       restrict_to_browser_context, event_url,
                                       user_gesture, filter_info.Clone());
   copy->will_dispatch_callback = will_dispatch_callback;

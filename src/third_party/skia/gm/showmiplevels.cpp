@@ -18,7 +18,6 @@
 #include "include/core/SkScalar.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
-#include "include/private/SkNx.h"
 #include "src/core/SkMipmap.h"
 #include "src/core/SkMipmapBuilder.h"
 #include "tools/Resources.h"
@@ -48,11 +47,6 @@ class ShowMipLevels3 : public skiagm::GM {
     }
 
     DrawResult onDraw(SkCanvas* canvas, SkString*) override {
-        if (canvas->recordingContext()) {
-            // mips not supported yet
-            return DrawResult::kSkip;
-        }
-
         canvas->drawColor(0xFFDDDDDD);
 
         canvas->translate(10, 10);

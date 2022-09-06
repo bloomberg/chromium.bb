@@ -10,7 +10,6 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/devtools/protocol/forward.h"
 #include "chrome/browser/devtools/protocol/protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
@@ -18,6 +17,7 @@ namespace content {
 class DevToolsAgentHostClientChannel;
 }  // namespace content
 
+class EmulationHandler;
 class BrowserHandler;
 class CastHandler;
 class PageHandler;
@@ -59,6 +59,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   protocol::UberDispatcher dispatcher_;
   std::unique_ptr<BrowserHandler> browser_handler_;
   std::unique_ptr<CastHandler> cast_handler_;
+  std::unique_ptr<EmulationHandler> emulation_handler_;
   std::unique_ptr<PageHandler> page_handler_;
   std::unique_ptr<SecurityHandler> security_handler_;
   std::unique_ptr<TargetHandler> target_handler_;

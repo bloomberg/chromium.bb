@@ -53,11 +53,11 @@ const char kStartupUrl1[] = "http://start1.com";
 const char kStartupUrl2[] = "http://start2.com";
 const char kStartupUrl3[] = "http://start3.com";
 
-bool ListValueContainsUrl(const base::ListValue* list, const GURL& url) {
-  if (!list)
+bool ListValueContainsUrl(const base::Value* list, const GURL& url) {
+  if (!list || !list->is_list())
     return false;
 
-  for (const base::Value& i : list->GetList()) {
+  for (const base::Value& i : list->GetListDeprecated()) {
     const std::string* url_text = i.GetIfString();
     if (url_text && url == *url_text)
       return true;
@@ -85,14 +85,14 @@ class SettingsResetPromptModelTest
     init_params.pref_file.clear();
     InitializeExtensionService(init_params);
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     // In production code, the settings reset prompt profile preferences are
     // registered on Windows only. We explicitly register the prefs on
     // non-Windows systems so that we can continue testing the model on more
     // than just Windows.
     SettingsResetPromptPrefsManager::RegisterProfilePrefs(
         testing_pref_service()->registry());
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
     profile_->CreateWebDataService();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
@@ -296,6 +296,15 @@ TEST_F(SettingsResetPromptModelTest, StartupUrls) {
     EXPECT_THAT(model->startup_urls(),
                 UnorderedElementsAre(GURL(kStartupUrl1), GURL(kStartupUrl2)));
   }
+
+  // Should return the list of startup URLs if startup type is set to
+  // |SessionStartupPref::LAST_AND_URLS|.
+  SetStartupType(SessionStartupPref::LAST_AND_URLS);
+  {
+    ModelPointer model = CreateModel();
+    EXPECT_THAT(model->startup_urls(),
+                UnorderedElementsAre(GURL(kStartupUrl1), GURL(kStartupUrl2)));
+  }
 }
 
 TEST_F(SettingsResetPromptModelTest, StartupUrlsToReset) {
@@ -326,6 +335,15 @@ TEST_F(SettingsResetPromptModelTest, StartupUrlsToReset) {
                 ElementsAre(GURL(kStartupUrl2)));
   }
 
+  {
+    ModelPointer model = CreateModel({kStartupUrl1, kStartupUrl2});
+    EXPECT_THAT(model->startup_urls_to_reset(),
+                UnorderedElementsAre(GURL(kStartupUrl1), GURL(kStartupUrl2)));
+  }
+
+  // Should return the URLs that have a match in the config when startup type is
+  // set to |SessionStartupPref::LAST_AND_URLS|.
+  SetStartupType(SessionStartupPref::LAST_AND_URLS);
   {
     ModelPointer model = CreateModel({kStartupUrl1, kStartupUrl2});
     EXPECT_THAT(model->startup_urls_to_reset(),

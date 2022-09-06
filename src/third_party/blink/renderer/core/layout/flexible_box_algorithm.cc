@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_line.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 namespace {
@@ -142,6 +143,12 @@ LayoutUnit FlexItem::FlowAwareMarginBefore() const {
   }
   NOTREACHED();
   return LayoutUnit();
+}
+
+LayoutUnit FlexItem::MarginBlockEnd() const {
+  NGBoxStrut margins = physical_margins_.ConvertToLogical(
+      algorithm_->Style()->GetWritingDirection());
+  return margins.block_end;
 }
 
 LayoutUnit FlexItem::MainAxisMarginExtent() const {
@@ -278,6 +285,8 @@ void FlexItem::ComputeStretchedSize() {
 
 void FlexItem::Trace(Visitor* visitor) const {
   visitor->Trace(box_);
+  visitor->Trace(ng_input_node_);
+  visitor->Trace(layout_result_);
 }
 
 // static
@@ -800,7 +809,7 @@ LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
 
 void FlexLayoutAlgorithm::AlignFlexLines(
     LayoutUnit cross_axis_content_extent,
-    Vector<NGFlexLine>* flex_line_outputs) {
+    HeapVector<NGFlexLine>* flex_line_outputs) {
   const StyleContentAlignmentData align_content = ResolvedAlignContent(*style_);
   if (align_content.GetPosition() == ContentPosition::kFlexStart &&
       gap_between_lines_ == 0) {
@@ -820,6 +829,10 @@ void FlexLayoutAlgorithm::AlignFlexLines(
   for (wtf_size_t i = 0; i < flex_lines_.size(); i++) {
     FlexLine& line_context = flex_lines_[i];
     line_context.cross_axis_offset_ += line_offset;
+    if (flex_line_outputs) {
+      (*flex_line_outputs)[i].cross_axis_offset =
+          line_context.cross_axis_offset_;
+    }
 
     for (FlexItem& flex_item : line_context.line_items_) {
       flex_item.offset_->cross_axis_offset += line_offset;
@@ -899,13 +912,19 @@ void FlexLayoutAlgorithm::AlignChildren() {
 
 void FlexLayoutAlgorithm::FlipForWrapReverse(
     LayoutUnit cross_axis_start_edge,
-    LayoutUnit cross_axis_content_size) {
+    LayoutUnit cross_axis_content_size,
+    HeapVector<NGFlexLine>* flex_line_outputs) {
   DCHECK_EQ(Style()->FlexWrap(), EFlexWrap::kWrapReverse);
-  for (FlexLine& line_context : flex_lines_) {
+  for (wtf_size_t i = 0; i < flex_lines_.size(); i++) {
+    FlexLine& line_context = flex_lines_[i];
     LayoutUnit original_offset =
         line_context.cross_axis_offset_ - cross_axis_start_edge;
     LayoutUnit new_offset = cross_axis_content_size - original_offset -
                             line_context.cross_axis_extent_;
+    if (flex_line_outputs) {
+      line_context.cross_axis_offset_ = new_offset;
+      (*flex_line_outputs)[i].cross_axis_offset = new_offset;
+    }
     LayoutUnit wrap_reverse_difference = new_offset - original_offset;
     for (FlexItem& flex_item : line_context.line_items_)
       flex_item.offset_->cross_axis_offset += wrap_reverse_difference;
@@ -1033,10 +1052,15 @@ ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
           : child_style
                 .ResolvedAlignSelf(ItemPosition::kStretch, &flexbox_style)
                 .GetPosition();
+  return TranslateItemPosition(flexbox_style, child_style, align);
+}
+
+ItemPosition FlexLayoutAlgorithm::TranslateItemPosition(
+    const ComputedStyle& flexbox_style,
+    const ComputedStyle& child_style,
+    ItemPosition align) {
   DCHECK_NE(align, ItemPosition::kAuto);
   DCHECK_NE(align, ItemPosition::kNormal);
-  DCHECK_NE(align, ItemPosition::kLeft) << "left, right are only for justify";
-  DCHECK_NE(align, ItemPosition::kRight) << "left, right are only for justify";
 
   if (align == ItemPosition::kStart)
     return ItemPosition::kFlexStart;
@@ -1059,6 +1083,30 @@ ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
     }
     return align == ItemPosition::kSelfStart ? logical.BlockStart()
                                              : logical.BlockEnd();
+  }
+
+  if (align == ItemPosition::kLeft || align == ItemPosition::kRight) {
+    DCHECK_EQ(
+        align,
+        child_style.ResolvedJustifySelf(ItemPosition::kStretch).GetPosition())
+        << "justify-self is the only way that we can get a left or right "
+           "ItemPosition";
+    DCHECK(IsColumnFlow(flexbox_style))
+        << "We can also only get left or right ItemPositions when checking "
+           "compat data for column flexboxes. The rest of this logic assumes a "
+           "column flexbox.";
+    switch (flexbox_style.GetWritingMode()) {
+      case WritingMode::kHorizontalTb:
+      case WritingMode::kVerticalLr:
+        return align == ItemPosition::kLeft ? ItemPosition::kFlexStart
+                                            : ItemPosition::kFlexEnd;
+      case WritingMode::kVerticalRl:
+        return align == ItemPosition::kLeft ? ItemPosition::kFlexEnd
+                                            : ItemPosition::kFlexStart;
+      case WritingMode::kSidewaysLr:
+      case WritingMode::kSidewaysRl:
+        return ItemPosition::kFlexStart;
+    }
   }
 
   if (align == ItemPosition::kBaseline &&
@@ -1180,7 +1228,12 @@ bool FlexLayoutAlgorithm::IsNGFlexBox() const {
 FlexItem* FlexLayoutAlgorithm::FlexItemAtIndex(wtf_size_t line_index,
                                                wtf_size_t item_index) const {
   DCHECK_LT(line_index, flex_lines_.size());
+  if (StyleRef().FlexWrap() == EFlexWrap::kWrapReverse)
+    line_index = flex_lines_.size() - line_index - 1;
+
   DCHECK_LT(item_index, flex_lines_[line_index].line_items_.size());
+  if (Style()->ResolvedIsColumnReverseFlexDirection())
+    item_index = flex_lines_[line_index].line_items_.size() - item_index - 1;
   return const_cast<FlexItem*>(
       &flex_lines_[line_index].line_items_[item_index]);
 }

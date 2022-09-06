@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "components/permissions/permission_request_manager.h"
@@ -113,7 +114,7 @@ cc::BrowserControlsState GetBrowserControlsStateConstraints(
 void SynchronizeVisualProperties(content::WebContents* contents) {
   DCHECK(contents);
 
-  content::RenderFrameHost* main_frame = contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = contents->GetPrimaryMainFrame();
   if (!main_frame)
     return;
 
@@ -199,19 +200,17 @@ class TopControlsSlideTabObserver
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-    // frames. This caller was converted automatically to the primary main frame
-    // to preserve its semantics. Follow up to confirm correctness.
     if (navigation_handle->IsInPrimaryMainFrame() &&
-        navigation_handle->HasCommitted())
+        navigation_handle->HasCommitted()) {
       UpdateBrowserControlsStateShown(/*animate=*/true);
+    }
   }
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code) override {
     if (render_frame_host->IsActive() &&
-        (render_frame_host == web_contents()->GetMainFrame())) {
+        (render_frame_host == web_contents()->GetPrimaryMainFrame())) {
       UpdateBrowserControlsStateShown(/*animate=*/true);
     }
   }

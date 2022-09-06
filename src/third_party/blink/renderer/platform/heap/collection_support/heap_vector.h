@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator_impl.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -73,6 +74,23 @@ class HeapVector final : public GarbageCollected<HeapVector<T, inlineCapacity>>,
   }
 
  private:
+  template <typename U>
+  struct IsHeapVector {
+   private:
+    typedef char YesType;
+    struct NoType {
+      char padding[8];
+    };
+
+    template <typename X, wtf_size_t Y>
+    static YesType SubclassCheck(HeapVector<X, Y>*);
+    static NoType SubclassCheck(...);
+    static U* u_;
+
+   public:
+    static const bool value = sizeof(SubclassCheck(u_)) == sizeof(YesType);
+  };
+
   static constexpr void CheckType() {
     static_assert(
         std::is_trivially_destructible<HeapVector>::value || inlineCapacity,
@@ -82,6 +100,9 @@ class HeapVector final : public GarbageCollected<HeapVector<T, inlineCapacity>>,
                   "instead of HeapVector<>.");
     static_assert(!WTF::IsWeak<T>::value,
                   "Weak types are not allowed in HeapVector.");
+    static_assert(
+        !WTF::IsGarbageCollectedType<T>::value || IsHeapVector<T>::value,
+        "GCed types should not be inlined in a HeapVector.");
     static_assert(WTF::IsTraceableInCollectionTrait<VectorTraits<T>>::value,
                   "Type must be traceable in collection");
   }

@@ -19,7 +19,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -357,7 +356,7 @@ RulesMonitorService::GetSessionRules(const ExtensionId& extension_id) const {
   std::vector<api::declarative_net_request::Rule> result;
   std::u16string error;
   bool populate_result = json_schema_compiler::util::PopulateArrayFromList(
-      GetSessionRulesValue(extension_id).GetList(), &result, &error);
+      GetSessionRulesValue(extension_id).GetListDeprecated(), &result, &error);
   DCHECK(populate_result);
   DCHECK(error.empty());
   return result;
@@ -581,8 +580,7 @@ void RulesMonitorService::OnExtensionUninstalled(
       FileBackedRulesetSource::CreateDynamic(browser_context, extension->id());
   DCHECK_EQ(source.json_path().DirName(), source.indexed_path().DirName());
   GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(),
-                                source.json_path().DirName()));
+      FROM_HERE, base::GetDeleteFileCallback(source.json_path().DirName()));
 }
 
 void RulesMonitorService::UpdateDynamicRulesInternal(

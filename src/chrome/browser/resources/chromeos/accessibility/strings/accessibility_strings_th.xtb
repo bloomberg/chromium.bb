@@ -492,7 +492,7 @@
 <translation id="4221012616705981690">ไม่มีรายการก่อนหน้า</translation>
 <translation id="4225355998815256469">ตัวควบคุมแบบฟอร์ม</translation>
 <translation id="4230834257931120629">สีเทาอมฟ้าอ่อน</translation>
-<translation id="4231102694147661229">เปิดใช้ตัวเลือกสำหรับนักพัฒนาซอฟต์แวร์</translation>
+<translation id="4231102694147661229">เปิดใช้ตัวเลือกสำหรับนักพัฒนาแอป</translation>
 <translation id="423428485095722850">กด Search+Space เพื่อสลับ</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" /> ระดับ <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">สีฟ้าสตีลบลู</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">ตร.<ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">เพิกเฉยการกดแป้นครั้งถัดไป</translation>
 <translation id="4623097797855662355">ข้อมูลทางบรรณานุกรม</translation>
+<translation id="4624970070706497034">TalkBack ไม่มีการปรับแต่งสำหรับ Chromebook แล้ว แต่คุณจะยังใช้งานแป้นพิมพ์ลัดเริ่มต้นของ TalkBack ได้อยู่ กด Search+A จากนั้น K เพื่อดูแป้นพิมพ์ลัดที่มี หากยังต้องการใช้ TalkBack ให้กดคำสั่งอีกครั้ง</translation>
 <translation id="463135993322337640">กด ChromeVox o, n เพื่อดูเวอร์ชันใหม่</translation>
 <translation id="4649220074413114917">คุณใช้ 2 นิ้วแตะเพื่อหยุดเสียงที่กำลังพูดอยู่ได้ วิธีนี้มีประโยชน์ในกรณีที่คุณไม่ต้องการให้ ChromeVox อ่านออกเสียง หากต้องการไปต่อ ให้ใช้ 2 นิ้วแตะหน้าจอ</translation>
 <translation id="4660783501463101648">นำเวอร์ชันคลาสสิกออกแล้ว ระบบนำการสลับแป้นพิมพ์เพื่อสลับกลับไปยัง ChromeVox คลาสสิกออกแล้ว</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">เปิดใช้คำบรรยายอักษรเบรลล์แล้ว</translation>
 <translation id="5183440668879371625">เบรลล์บรรทัดก่อนหน้า</translation>
 <translation id="5189244881767082992">บรรทัด</translation>
-<translation id="5234747236692380506">พิมพ์ <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">สีเหลืองคอร์นซิลค์</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">สิ้นสุด</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">จบบทเรียนการแนะนำเบื้องต้นแบบด่วนแล้ว</translation>
 <translation id="5534303576632885660">ส่วนหัว</translation>
 <translation id="5539820223028224601">สีเทาเกนส์โบโร</translation>
+<translation id="554893713779400387">สลับการเขียนตามคำบอก</translation>
 <translation id="5549179427201066174">เปิดหรือปิดการตอบสนองด้วยเสียง (เอียร์คอน)</translation>
 <translation id="556042886152191864">ปุ่ม</translation>
 <translation id="5561345396546889625">รายการถัดไป</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">บันทึก</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">สัญลักษณ์กราฟิก</translation>
+<translation id="5648939288050772726">ยินดีด้วย คุณได้เรียนรู้ข้อมูลสำคัญเกี่ยวกับการใช้งาน ChromeVox เรียบร้อยแล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกดแป้นค้นหา + เครื่องหมายจุด ดูข้อมูลเพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ได้จากบทความต่อไปนี้
+    หากศึกษาบทแนะนำเรียบร้อยแล้ว ให้ใช้ ChromeVox เพื่อนำทางไปยังปุ่ม "ปิด" แล้วคลิกปุ่มดังกล่าว</translation>
 <translation id="5653397561111110475">ใช้ฟีเจอร์การเข้าถึงบนหน้าจอสัมผัสของ Chromebook</translation>
 <translation id="5655682562155942719">คำสั่งข้าม</translation>
 <translation id="56637627897541303">พื้นที่ข้อความ</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{เครื่องหมายทวิภาค}other{# เครื่องหมายทวิภาค}}</translation>
 <translation id="6444046323172968959">ช่องโต้ตอบการแจ้งเตือน</translation>
 <translation id="6452403590345320472">สารบัญ</translation>
+<translation id="6457542714329819968">พิมพ์</translation>
 <translation id="6468049171101508116">ปุ่มถัดไป</translation>
 <translation id="646954774886932461">ดัชนี</translation>
 <translation id="6475604559827479857">สีสำหรับการไฮไลต์คำ:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">เสียงตามธรรมชาติ</translation>
 <translation id="7714340021005120797">ไม่มีช่องตัวเลือกรวมถัดไป</translation>
-<translation id="772146615414628379">ยินดีด้วย! คุณได้เรียนรู้ข้อมูลสำคัญเกี่ยวกับการใช้งาน ChromeVox เรียบร้อยแล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกดแป้นค้นหา + เครื่องหมายจุด ดูข้อมูลเพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ได้ที่บทความต่อไปนี้
-    หากศึกษาบทแนะนำเรียบร้อยแล้ว ให้ใช้ ChromeVox เพื่อนำทางไปยังปุ่ม "ปิด" แล้วคลิกปุ่มดังกล่าว</translation>
 <translation id="7724603315864178912">ตัด</translation>
 <translation id="7731785449856576010">ไม่มีวิดเจ็ตสื่อถัดไป</translation>
 <translation id="7735498529470878067">การแตะเพื่อสำรวจจะช่วยให้คุณทราบสิ่งที่อยู่ในหน้าจอได้อย่างรวดเร็ว</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">สีแดงเข้ม</translation>
 <translation id="923331726185079994">ChromeVox อัปเดตแล้ว</translation>
 <translation id="93384979447910801">สีเขียวน้ำทะเลเข้ม</translation>
+<translation id="937605981140327129">ไม่ได้ติดตั้ง TalkBack อยู่ในขณะนี้ โปรดติดตั้งชุดเครื่องมือช่วยเหลือพิเศษใน Android ผ่าน Play Store แล้วลองอีกครั้ง</translation>
 <translation id="948171205378458592">ลดความเร็วการพูด</translation>
 <translation id="957570623732056069">ใช้นิ้วเดียวปัดไปทางซ้ายหรือขวาเพื่อสำรวจบทเรียนนี้</translation>
 <translation id="958854023026327378">เลื่อน 1 นิ้วลง</translation>

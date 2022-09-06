@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/ash/login/user_board_view_mojo.h"
 #include "chrome/browser/ash/system/system_clock.h"
@@ -38,6 +39,10 @@
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
+
+// TODO(b/228873153): Remove after figuring out the root cause of the bug
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 
@@ -57,6 +62,7 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 }
 
 void ViewsScreenLocker::Init() {
+  VLOG(1) << "b/228873153 : ViewsScreenLocker::Init()";
   lock_time_ = base::TimeTicks::Now();
   user_selection_screen_->Init(screen_locker_->GetUsersToShow());
 
@@ -114,7 +120,7 @@ void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
   DCHECK(user);
   UserContext user_context(*user);
   user_context.SetKey(
-      Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, std::string(), password));
+      Key(Key::KEY_TYPE_PASSWORD_PLAIN, std::string(), password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   user_context.SetSyncPasswordData(password_manager::PasswordHashData(
       account_id.GetUserEmail(), base::UTF8ToUTF16(password),
@@ -197,8 +203,9 @@ void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
   quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
-      account_id, base::BindOnce(&ViewsScreenLocker::OnPinCanAuthenticate,
-                                 weak_factory_.GetWeakPtr(), account_id));
+      account_id, quick_unlock::Purpose::kUnlock,
+      base::BindOnce(&ViewsScreenLocker::OnPinCanAuthenticate,
+                     weak_factory_.GetWeakPtr(), account_id));
 }
 
 void ViewsScreenLocker::UpdateChallengeResponseAuthAvailability(

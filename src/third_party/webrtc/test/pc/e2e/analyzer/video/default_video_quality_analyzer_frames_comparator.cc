@@ -18,6 +18,7 @@
 #include "api/array_view.h"
 #include "api/scoped_refptr.h"
 #include "api/video/i420_buffer.h"
+#include "api/video/video_frame_type.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/platform_thread.h"
@@ -363,20 +364,25 @@ void DefaultVideoQualityAnalyzerFramesComparator::ProcessComparison(
   // Perform expensive psnr and ssim calculations while not holding lock.
   double psnr = -1.0;
   double ssim = -1.0;
-  if (options_.heavy_metrics_computation_enabled &&
+  if ((options_.compute_psnr || options_.compute_ssim) &&
       comparison.captured.has_value() && comparison.rendered.has_value()) {
     rtc::scoped_refptr<I420BufferInterface> reference_buffer =
         comparison.captured->video_frame_buffer()->ToI420();
     rtc::scoped_refptr<I420BufferInterface> test_buffer =
         comparison.rendered->video_frame_buffer()->ToI420();
     if (options_.adjust_cropping_before_comparing_frames) {
-      test_buffer =
-          ScaleVideoFrameBuffer(*test_buffer.get(), reference_buffer->width(),
-                                reference_buffer->height());
+      test_buffer = ScaleVideoFrameBuffer(
+          *test_buffer, reference_buffer->width(), reference_buffer->height());
       reference_buffer = test::AdjustCropping(reference_buffer, test_buffer);
     }
-    psnr = I420PSNR(*reference_buffer.get(), *test_buffer.get());
-    ssim = I420SSIM(*reference_buffer.get(), *test_buffer.get());
+    if (options_.compute_psnr) {
+      psnr = options_.use_weighted_psnr
+                 ? I420WeightedPSNR(*reference_buffer, *test_buffer)
+                 : I420PSNR(*reference_buffer, *test_buffer);
+    }
+    if (options_.compute_ssim) {
+      ssim = I420SSIM(*reference_buffer, *test_buffer);
+    }
   }
 
   const FrameStats& frame_stats = comparison.frame_stats;
@@ -420,9 +426,15 @@ void DefaultVideoQualityAnalyzerFramesComparator::ProcessComparison(
         (frame_stats.encoded_time - frame_stats.pre_encode_time).ms(),
         frame_stats.encoded_time));
     stats->encode_frame_rate.AddEvent(frame_stats.encoded_time);
-    stats->total_encoded_images_payload += frame_stats.encoded_image_size;
+    stats->total_encoded_images_payload +=
+        frame_stats.encoded_image_size.bytes();
     stats->target_encode_bitrate.AddSample(StatsSample(
         frame_stats.target_encode_bitrate, frame_stats.encoded_time));
+
+    // Stats sliced on encoded frame type.
+    if (frame_stats.encoded_frame_type == VideoFrameType::kVideoFrameKey) {
+      ++stats->num_send_key_frames;
+    }
   }
   // Next stats can be calculated only if frame was received on remote side.
   if (comparison.type != FrameComparisonType::kDroppedFrame) {
@@ -442,6 +454,20 @@ void DefaultVideoQualityAnalyzerFramesComparator::ProcessComparison(
       stats->transport_time_ms.AddSample(StatsSample(
           (frame_stats.decode_start_time - frame_stats.encoded_time).ms(),
           frame_stats.decode_start_time));
+
+      // Stats sliced on decoded frame type.
+      if (frame_stats.pre_decoded_frame_type ==
+          VideoFrameType::kVideoFrameKey) {
+        ++stats->num_recv_key_frames;
+        stats->recv_key_frame_size_bytes.AddSample(
+            StatsSample(frame_stats.pre_decoded_image_size.bytes(),
+                        frame_stats.decode_start_time));
+      } else if (frame_stats.pre_decoded_frame_type ==
+                 VideoFrameType::kVideoFrameDelta) {
+        stats->recv_delta_frame_size_bytes.AddSample(
+            StatsSample(frame_stats.pre_decoded_image_size.bytes(),
+                        frame_stats.decode_start_time));
+      }
     }
     if (frame_stats.decode_end_time.IsFinite()) {
       stats->decode_time_ms.AddSample(StatsSample(

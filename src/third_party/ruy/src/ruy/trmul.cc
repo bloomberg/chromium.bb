@@ -21,6 +21,7 @@ limitations under the License.
 #include <atomic>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -256,12 +257,24 @@ int GetTentativeThreadCount(Ctx* ctx, int rows, int cols, int depth) {
   // Empirically determined rule for reasonable number of
   // threads to use. This is proportional to the number of arithmetic ops
   // in this Mul (product of the 3 sizes).
-  static constexpr int kDivisorLog2 = 15;
-  const int guess_log2 = std::max(
-      0, ceil_log2(rows) + ceil_log2(cols) + ceil_log2(depth) - kDivisorLog2);
-  int tentative_thread_count =
-      std::min(1 << guess_log2, ctx->max_num_threads());
-  RUY_TRACE_INFO(GET_TENTATIVE_THREAD_COUNT);
+  // Be defensive here by explicitly promoting operands to int64 to avoid the
+  // pitfall of `int64 result = x * y;` overflowing as x and y are still narrow.
+  const std::int64_t rows_i64 = rows;
+  const std::int64_t cols_i64 = cols;
+  const std::int64_t depth_i64 = depth;
+  const std::int64_t problem_size = rows_i64 * cols_i64 * depth_i64;
+  // Division is cheap when the denominator is constant
+  static constexpr std::int64_t kSizePerAdditionalThread = 32768;
+  std::int64_t tentative_thread_count = problem_size / kSizePerAdditionalThread;
+  // tentative_thread_count is still an int64, still not necessarily in the
+  // range of type int. It probably is as long as kSizePerAdditionalThread is
+  // large, but imagine that that constant might change in the future.
+  tentative_thread_count = std::max<std::int64_t>(tentative_thread_count, 1);
+  tentative_thread_count =
+      std::min<std::int64_t>(tentative_thread_count, ctx->max_num_threads());
+  // now tentative_thread_count must be in the range of type int, because
+  // ctx->max_num_threads() is.
+  RUY_DCHECK_LE(tentative_thread_count, std::numeric_limits<int>::max());
   return tentative_thread_count;
 }
 
@@ -377,20 +390,22 @@ void TrMul(Ctx* ctx, TrMulParams* params) {
   // reservation granule.
   std::atomic<int>* atomic_block_id;
   main_allocator->Allocate(1, &atomic_block_id);
-
-  // Create task objects.
-  TrMulTask* tasks;
-  main_allocator->Allocate(thread_count, &tasks);
-
   atomic_block_id->store(thread_count);
 
+  // Create task objects. We allocate a single buffer and then use placement-new
+  // to construct N TrMulTask objects within it. To avoid having the Clang CFI
+  // sanitizer complain about a TrMulTask* pointer temporarily pointing to
+  // garbage, we keep the pointer a plain char* until finished constructing.
+  char* tasks_buf =
+      main_allocator->Allocate<char>(thread_count * sizeof(TrMulTask));
   for (int i = 0; i < thread_count; i++) {
     auto* allocator = ctx->GetThreadSpecificAllocator(i);
     auto* tuning_resolver = ctx->GetThreadSpecificTuningResolver(i);
-    new (tasks + i) TrMulTask(params, block_map, atomic_block_id, i,
-                              need_atomics, packing_status, tuning_resolver,
-                              allocator, ctx->mutable_cpuinfo());
+    new (tasks_buf + i * sizeof(TrMulTask)) TrMulTask(
+        params, block_map, atomic_block_id, i, need_atomics, packing_status,
+        tuning_resolver, allocator, ctx->mutable_cpuinfo());
   }
+  TrMulTask* tasks = reinterpret_cast<TrMulTask*>(tasks_buf);
 
   // Do the computation.
   ctx->mutable_thread_pool()->Execute(thread_count, tasks);

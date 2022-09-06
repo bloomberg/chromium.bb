@@ -30,6 +30,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Platform from '../../core/platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -99,14 +100,14 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
     const uiSourceCode = event.data;
     if (uiSourceCode.contentType().isDocument()) {
       for (const script of this.#debuggerModel.scriptsForSourceURL(uiSourceCode.url())) {
-        this.#debuggerWorkspaceBinding.updateLocations(script);
+        void this.#debuggerWorkspaceBinding.updateLocations(script);
       }
     }
   }
 
   private addStubUISourceCode(script: SDK.Script.Script): void {
     const stubUISourceCode = this.#stubProject.addContentProvider(
-        script.sourceURL + ':sourcemap',
+        Common.ParsedURL.ParsedURL.concatenate(script.sourceURL, ':sourcemap'),
         TextUtils.StaticContentProvider.StaticContentProvider.fromString(
             script.sourceURL, Common.ResourceType.resourceTypes.Script,
             '\n\n\n\n\n// Please wait a bit.\n// Compiled script is not shown while source map is being loaded!'),
@@ -123,7 +124,7 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
     await this.#debuggerWorkspaceBinding.updateLocations(script);
   }
 
-  static uiSourceCodeOrigin(uiSourceCode: Workspace.UISourceCode.UISourceCode): string[] {
+  static uiSourceCodeOrigin(uiSourceCode: Workspace.UISourceCode.UISourceCode): Platform.DevToolsPath.UrlString[] {
     const binding = uiSourceCodeToBinding.get(uiSourceCode);
     if (binding) {
       return binding.getReferringSourceMaps().map((sourceMap: SDK.SourceMap.SourceMap) => sourceMap.compiledURL());
@@ -160,7 +161,8 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
     }
   }
 
-  uiSourceCodeForURL(url: string, isContentScript: boolean): Workspace.UISourceCode.UISourceCode|null {
+  uiSourceCodeForURL(url: Platform.DevToolsPath.UrlString, isContentScript: boolean):
+      Workspace.UISourceCode.UISourceCode|null {
     return isContentScript ? this.#contentScriptsProject.uiSourceCodeForURL(url) :
                              this.#regularProject.uiSourceCodeForURL(url);
   }
@@ -327,11 +329,11 @@ const uiSourceCodeToBinding = new WeakMap<Workspace.UISourceCode.UISourceCode, B
 
 class Binding {
   readonly #project: ContentProviderBasedProject;
-  readonly #url: string;
+  readonly #url: Platform.DevToolsPath.UrlString;
   referringSourceMaps: SDK.SourceMap.SourceMap[];
   uiSourceCode: Workspace.UISourceCode.UISourceCode|null;
 
-  constructor(project: ContentProviderBasedProject, url: string) {
+  constructor(project: ContentProviderBasedProject, url: Platform.DevToolsPath.UrlString) {
     this.#project = project;
     this.#url = url;
 

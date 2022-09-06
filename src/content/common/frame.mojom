@@ -9,6 +9,7 @@ import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/web_ui.mojom";
+import "content/public/common/extra_mojo_js_features.mojom";
 import "content/public/common/window_container_type.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
@@ -57,11 +58,8 @@ import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/accessibility/mojom/ax_tree_update.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "url/mojom/origin.mojom";
+import "url/mojom/scheme_host_port.mojom";
 import "url/mojom/url.mojom";
-
-[Native]
-struct PageState;
 
 // A View (i.e. a "main frame") can be created for a few different cases, these
 // values are used to specify which it is.
@@ -148,6 +146,14 @@ struct CreateViewParams {
   // Indicates whether the view is a regular top-level widget or some other
   // nested "main frame" widget type.
   ViewWidgetType type;
+
+  // If the frame being created is a fenced frame, stores the mode the fenced
+  // frame is set to. For all other frame types (type != kFencedFrame), this
+  // value will always be set to kDefault. Frames embedded in fenced frames
+  // will also have this value set to kDefault.
+  // Used by fenced frames to determine various security restrictions such as
+  // the URL type and size constraints.
+  blink.mojom.FencedFrameMode fenced_frame_mode;
 
   // Endpoint for any messages that are broadcast to all views in a WebContents.
   pending_associated_receiver<blink.mojom.PageBroadcast> blink_page_broadcast;
@@ -469,6 +475,11 @@ interface Frame {
   SnapshotAccessibilityTree(SnapshotAccessibilityTreeParams params)
       => (ax.mojom.AXTreeUpdate snapshot);
 
+  // Requests a one-time distillation of the accessibility tree without enabling
+  // accessibility if it wasn't already enabled.
+  SnapshotAndDistillAXTree() => (ax.mojom.AXTreeUpdate snapshot,
+                                 array<int32> content_node_ids);
+
   // Get HTML data by serializing the target frame and replacing all resource
   // links with a path to the local copy passed in the message payload. In order
   // to report progress to the the browser process, a pending remote is passed
@@ -493,8 +504,13 @@ interface FrameBindingsControl {
   // Used to tell the RenderFrame to enable Mojo JS bindings, which allows
   // JS code running in the renderer process to connect to Mojo interfaces
   // and make method calls on them.
+  //
+  // ExtraMojoJsFeatures describes a set of additional features that can be
+  // used with MojoJs. For example, helper methods for MojoJs to better work
+  // with Web API objects.
+  //
   // This is used for WebUI only at this time.
-  EnableMojoJsBindings();
+  EnableMojoJsBindings(ExtraMojoJsFeatures? features);
 
   // Used to enable MojoJS bindings, exposing only the interfaces provided
   // by `broker`.
@@ -554,8 +570,10 @@ struct CreateNewWindowParams {
 
 // Operation result when the renderer asks the browser to create a new window.
 enum CreateNewWindowStatus {
-  // Ignore creation of the new window. This can happen because creation is
-  // blocked or because the new window should have no opener relationship.
+  // Creation of the new window was blocked, e.g. because the source frame
+  // doesn't have user activation.
+  kBlocked,
+  // Ignore creation of the new window, e.g. because noopener is in effect.
   kIgnore,
   // Reuse the current window rather than creating a new window.
   kReuse,
@@ -673,7 +691,8 @@ interface FrameHost {
   //                          the "inner" fenced frame FrameTree
   [Sync] CreateFencedFrame(
       pending_associated_receiver<blink.mojom.FencedFrameOwnerHost>
-        fenced_frame)
+        fenced_frame,
+      blink.mojom.FencedFrameMode mode)
       => (int32 proxy_routing_id,
           blink.mojom.FrameReplicationState initial_replication_state,
           blink.mojom.RemoteFrameToken frame_token,
@@ -758,9 +777,17 @@ interface FrameHost {
           initiator_policy_container_keep_alive_handle);
 
   // Sent when a subresource response has started.
+  //
+  // |final_response_url| is the final (after all redirects) URL of the
+  // subresource response.  The full URL is not available, because in some
+  // cases the path and query may be sanitized away
+  // - see https://crbug.com/973885.
+  //
   // |cert_status| is the bitmask of status info of the SSL certificate. (see
   // net/cert/cert_status_flags.h).
-  SubresourceResponseStarted(url.mojom.Url url, uint32 cert_status);
+  SubresourceResponseStarted(
+      url.mojom.SchemeHostPort final_response_url,
+      uint32 cert_status);
 
   // Sent when a resource load finished, successfully or not.
   ResourceLoadComplete(blink.mojom.ResourceLoadInfo url_load_info);

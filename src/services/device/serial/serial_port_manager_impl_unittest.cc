@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/threading/thread.h"
@@ -372,7 +371,7 @@ TEST_F(SerialPortManagerImplTest, BluetoothPortRemovedAndAdded) {
   }
   ASSERT_FALSE(port1_token.is_empty());
 
-  bluetooth_enumerator_->PortRemoved(kDeviceAddress);
+  bluetooth_enumerator_->DeviceRemoved(kDeviceAddress);
   {
     base::RunLoop run_loop;
     EXPECT_CALL(client, OnPortRemoved(_))

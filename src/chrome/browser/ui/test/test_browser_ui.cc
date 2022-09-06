@@ -15,11 +15,11 @@
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-#include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "ui/base/test/skia_gold_matching_algorithm.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/views/test/view_skia_gold_pixel_diff.h"
 #include "ui/views/widget/widget.h"
 #endif
 
@@ -37,9 +37,9 @@ std::string NameFromTestCase() {
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 void InstallUIControlsAura() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(nullptr));
 #elif defined(USE_OZONE)
   ui_controls::InstallUIControlsAura(
@@ -55,7 +55,7 @@ void InstallUIControlsAura() {
 TestBrowserUi::TestBrowserUi() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // Default to fuzzy diff. The magic number is chosen based on
   // past experiments.
   SetPixelMatchAlgorithm(
@@ -68,7 +68,7 @@ TestBrowserUi::~TestBrowserUi() = default;
 // TODO(https://crbug.com/958242) support Mac for pixel tests.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 bool TestBrowserUi::VerifyPixelUi(views::Widget* widget,
                                   const std::string& screenshot_prefix,
                                   const std::string& screenshot_name) {
@@ -86,7 +86,7 @@ bool TestBrowserUi::VerifyPixelUi(views::View* view,
   // Move the mouse away from the dialog to prvent any interference with the
   // screenshots.
   InstallUIControlsAura();
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   EXPECT_TRUE(
       ui_controls::SendMouseMoveNotifyWhenDone(0, 0, run_loop.QuitClosure()));
   run_loop.Run();
@@ -99,10 +99,10 @@ bool TestBrowserUi::VerifyPixelUi(views::View* view,
   auto* compositor = view->GetWidget()->GetCompositor();
   ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
 
-  BrowserSkiaGoldPixelDiff pixel_diff;
-  pixel_diff.Init(view->GetWidget(), screenshot_prefix);
-  return pixel_diff.CompareScreenshot(screenshot_name, view,
-                                      GetPixelMatchAlgorithm());
+  views::ViewSkiaGoldPixelDiff pixel_diff;
+  pixel_diff.Init(screenshot_prefix);
+  return pixel_diff.CompareViewScreenshot(screenshot_name, view,
+                                          GetPixelMatchAlgorithm());
 }
 
 void TestBrowserUi::SetPixelMatchAlgorithm(
@@ -115,9 +115,13 @@ void TestBrowserUi::ShowAndVerifyUi() {
   PreShow();
   ShowUi(NameFromTestCase());
   ASSERT_TRUE(VerifyUi());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherInteractive))
+  if (IsInteractiveUi())
     WaitForUserDismissal();
   else
     DismissUi();
+}
+
+bool TestBrowserUi::IsInteractiveUi() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTestLauncherInteractive);
 }

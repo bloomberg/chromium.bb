@@ -7,6 +7,7 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/build_config.h"');
+GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
@@ -14,14 +15,14 @@ GEN('#include "content/public/test/browser_test.h"');
 class NewTabPageBrowserTest extends PolymerTest {
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overriden by subclasses';
+    throw new Error('this is abstract and should be overriden by subclasses');
   }
 }
 
 var NewTabPageAppTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/app_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/app_test.js&host=webui-test';
   }
 };
 
@@ -56,7 +57,7 @@ TEST_F('NewTabPageAppTest', 'CustomizeUrl', function() {
 var NewTabPageCustomizeDialogTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_dialog_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_dialog_test.js&host=webui-test';
   }
 };
 
@@ -67,7 +68,7 @@ TEST_F('NewTabPageCustomizeDialogTest', 'All', function() {
 var NewTabPageUtilsTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/utils_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/utils_test.js&host=webui-test';
   }
 };
 
@@ -78,7 +79,7 @@ TEST_F('NewTabPageUtilsTest', 'All', function() {
 var NewTabPageMetricsUtilsTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/metrics_utils_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/metrics_utils_test.js&host=webui-test';
   }
 };
 
@@ -89,7 +90,7 @@ TEST_F('NewTabPageMetricsUtilsTest', 'All', function() {
 var NewTabPageCustomizeShortcutsTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_shortcuts_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_shortcuts_test.js&host=webui-test';
   }
 };
 
@@ -100,7 +101,7 @@ TEST_F('NewTabPageCustomizeShortcutsTest', 'All', function() {
 var NewTabPageCustomizeModulesTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_modules_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_modules_test.js&host=webui-test';
   }
 };
 
@@ -111,7 +112,7 @@ TEST_F('NewTabPageCustomizeModulesTest', 'All', function() {
 var NewTabPageCustomizeBackgroundsTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_backgrounds_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_backgrounds_test.js&host=webui-test';
   }
 };
 
@@ -122,7 +123,7 @@ TEST_F('NewTabPageCustomizeBackgroundsTest', 'All', function() {
 var NewTabPageVoiceSearchOverlayTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/voice_search_overlay_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/voice_search_overlay_test.js&host=webui-test';
   }
 };
 
@@ -133,7 +134,7 @@ TEST_F('NewTabPageVoiceSearchOverlayTest', 'All', function() {
 var NewTabPageRealboxTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/realbox/realbox_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/realbox/realbox_test.js&host=webui-test';
   }
 };
 
@@ -144,7 +145,7 @@ TEST_F('NewTabPageRealboxTest', 'All', function() {
 var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/logo_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/logo_test.js&host=webui-test';
   }
 };
 
@@ -155,7 +156,7 @@ TEST_F('NewTabPageLogoTest', 'All', function() {
 var NewTabPageDoodleShareDialogTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/doodle_share_dialog_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/doodle_share_dialog_test.js&host=webui-test';
   }
 };
 
@@ -166,7 +167,7 @@ TEST_F('NewTabPageDoodleShareDialogTest', 'All', function() {
 var NewTabPageBackgroundManagerTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/background_manager_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/background_manager_test.js&host=webui-test';
   }
 };
 
@@ -177,7 +178,7 @@ TEST_F('NewTabPageBackgroundManagerTest', 'All', function() {
 var NewTabPageModulesModuleWrapperTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_wrapper_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_wrapper_test.js&host=webui-test';
   }
 };
 
@@ -188,7 +189,7 @@ TEST_F('NewTabPageModulesModuleWrapperTest', 'All', function() {
 var NewTabPageModulesModulesTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/modules_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/modules_test.js&host=webui-test';
   }
 };
 
@@ -200,7 +201,7 @@ var NewTabPageModulesModuleDescriptorTest =
     class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_descriptor_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_descriptor_test.js&host=webui-test';
   }
 };
 
@@ -211,7 +212,7 @@ TEST_F('NewTabPageModulesModuleDescriptorTest', 'All', function() {
 var NewTabPageModulesModuleRegistryTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_registry_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_registry_test.js&host=webui-test';
   }
 };
 
@@ -222,7 +223,7 @@ TEST_F('NewTabPageModulesModuleRegistryTest', 'All', function() {
 var NewTabPageModulesModuleHeaderTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_header_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_header_test.js&host=webui-test';
   }
 };
 
@@ -233,7 +234,7 @@ TEST_F('NewTabPageModulesModuleHeaderTest', 'All', function() {
 var NewTabPageModulesInfoDialogTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/info_dialog_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/info_dialog_test.js&host=webui-test';
   }
 };
 
@@ -247,7 +248,7 @@ GEN('#if !defined(OFFICIAL_BUILD)');
 var NewTabPageModulesDummyModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/dummy/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/dummy_v2/module_test.js&host=webui-test';
   }
 };
 
@@ -260,7 +261,7 @@ GEN('#endif  // !defined(OFFICIAL_BUILD)');
 var NewTabPageMiddleSlotPromoTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/middle_slot_promo_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/middle_slot_promo_test.js&host=webui-test';
   }
 };
 
@@ -271,7 +272,7 @@ TEST_F('NewTabPageMiddleSlotPromoTest', 'All', function() {
 var NewTabPageModulesDriveModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/drive/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/drive/module_test.js&host=webui-test';
   }
 };
 
@@ -282,7 +283,7 @@ TEST_F('NewTabPageModulesDriveModuleTest', 'All', function() {
 var NewTabPageModulesDriveV2ModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/drive_v2/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/drive_v2/module_test.js&host=webui-test';
   }
 };
 
@@ -293,7 +294,7 @@ TEST_F('NewTabPageModulesDriveV2ModuleTest', 'All', function() {
 var NewTabPageModulesTaskModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/task_module/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/task_module/module_test.js&host=webui-test';
   }
 };
 
@@ -304,7 +305,7 @@ TEST_F('NewTabPageModulesTaskModuleTest', 'All', function() {
 var NewTabPageModulesRecipesV2ModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/recipes_v2/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/recipes_v2/module_test.js&host=webui-test';
   }
 };
 
@@ -316,7 +317,7 @@ var NewTabPageModulesChromeCartModuleTest =
     class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart/module_test.js&host=webui-test';
   }
 };
 
@@ -328,16 +329,28 @@ var NewTabPageModulesChromeCartV2ModuleTest =
     class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart_v2/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart_v2/module_test.js&host=webui-test';
   }
 };
+
+// https://crbug.com/1227564: Flaky on Chrome OS.
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
+TEST_F('NewTabPageModulesChromeCartV2ModuleTest', 'MAYBE_All', function() {
+  mocha.run();
+});
+GEN('#undef MAYBE_All');
 
 GEN('#if !defined(OFFICIAL_BUILD)');
 
 var NewTabPageModulesPhotosModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/photos/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/photos/module_test.js&host=webui-test';
   }
 };
 
@@ -347,13 +360,24 @@ TEST_F('NewTabPageModulesPhotosModuleTest', 'All', function() {
 
 GEN('#endif  // !defined(OFFICIAL_BUILD)');
 
-// https://crbug.com/1227564: Flaky on Chrome OS.
-GEN('#if defined(OS_CHROMEOS)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
+var NewTabPageDiscountConsentDialogTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart/discount_consent_dialog_test.js&host=webui-test';
+  }
+};
 
-TEST_F('NewTabPageModulesChromeCartV2ModuleTest', 'MAYBE_All', function() {
+TEST_F('NewTabPageDiscountConsentDialogTest', 'All', function() {
+  mocha.run();
+});
+
+var NewTabPageDiscountConsentCartTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart/discount_consent_card_test.js&host=webui-test';
+  }
+};
+
+TEST_F('NewTabPageDiscountConsentCartTest', 'All', function() {
   mocha.run();
 });

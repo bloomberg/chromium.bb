@@ -8,8 +8,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 
-#include "base/bits.h"
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"

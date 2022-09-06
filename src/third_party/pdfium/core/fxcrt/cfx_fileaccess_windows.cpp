@@ -11,24 +11,6 @@
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxcrt/fx_string.h"
 
-namespace {
-
-void GetFileMode(uint32_t dwMode,
-                 uint32_t& dwAccess,
-                 uint32_t& dwShare,
-                 uint32_t& dwCreation) {
-  dwAccess = GENERIC_READ;
-  dwShare = FILE_SHARE_READ | FILE_SHARE_WRITE;
-  if (!(dwMode & FX_FILEMODE_ReadOnly)) {
-    dwAccess |= GENERIC_WRITE;
-    dwCreation = (dwMode & FX_FILEMODE_Truncate) ? CREATE_ALWAYS : OPEN_ALWAYS;
-  } else {
-    dwCreation = OPEN_EXISTING;
-  }
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<FileAccessIface> FileAccessIface::Create() {
   return std::make_unique<CFX_FileAccess_Windows>();
@@ -40,29 +22,14 @@ CFX_FileAccess_Windows::~CFX_FileAccess_Windows() {
   Close();
 }
 
-bool CFX_FileAccess_Windows::Open(ByteStringView fileName, uint32_t dwMode) {
+bool CFX_FileAccess_Windows::Open(ByteStringView fileName) {
   if (m_hFile)
     return false;
 
-  uint32_t dwAccess, dwShare, dwCreation;
-  GetFileMode(dwMode, dwAccess, dwShare, dwCreation);
-  m_hFile = ::CreateFileA(fileName.unterminated_c_str(), dwAccess, dwShare,
-                          nullptr, dwCreation, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (m_hFile == INVALID_HANDLE_VALUE)
-    m_hFile = nullptr;
-
-  return !!m_hFile;
-}
-
-bool CFX_FileAccess_Windows::Open(WideStringView fileName, uint32_t dwMode) {
-  if (m_hFile)
-    return false;
-
-  uint32_t dwAccess, dwShare, dwCreation;
-  GetFileMode(dwMode, dwAccess, dwShare, dwCreation);
-  m_hFile =
-      ::CreateFileW((LPCWSTR)fileName.unterminated_c_str(), dwAccess, dwShare,
-                    nullptr, dwCreation, FILE_ATTRIBUTE_NORMAL, nullptr);
+  WideString wname = FX_UTF8Decode(fileName);
+  m_hFile = ::CreateFileW(wname.c_str(), GENERIC_READ,
+                          FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (m_hFile == INVALID_HANDLE_VALUE)
     m_hFile = nullptr;
 

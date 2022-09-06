@@ -137,7 +137,7 @@ void AppWindowMetricsTracker::Reset() {
 
 void AppWindowMetricsTracker::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
-  if (frame_host->GetParent())
+  if (frame_host->GetParentOrOuterDocument())
     return;
   SetState(State::kWindowShown);
 
@@ -146,8 +146,7 @@ void AppWindowMetricsTracker::RenderFrameCreated(
       clock_->NowTicks() - time_stamps_[State::kLaunchRequested]);
 }
 
-void AppWindowMetricsTracker::DocumentOnLoadCompletedInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void AppWindowMetricsTracker::DocumentOnLoadCompletedInPrimaryMainFrame() {
   State next_state = state_after_window_contents_load_.value();
   state_after_window_contents_load_.reset();
   SetState(next_state);

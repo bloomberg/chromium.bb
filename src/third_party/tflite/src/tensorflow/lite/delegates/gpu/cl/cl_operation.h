@@ -61,24 +61,56 @@ class ClOperation {
   const GPUOperation& GetGpuOperation() const { return *operation_; }
   uint64_t GetKernelFingerprint() const { return kernel_fingerprint_; }
 
-  const OperationDef& GetDefinition() const { return operation_->definition_; }
+  const OperationDef& GetDefinition() const {
+    return operation_->GetDefinition();
+  }
 
   absl::Status AddOperation(ClOperation* operation);
 
   // should be called after changes of inputs/outputs.
   absl::Status UpdateParams();
 
+  absl::Status SetSrcTensor(int index, Tensor* tensor);
+  absl::Status SetDstTensor(int index, Tensor* tensor);
+
   absl::Status AddToQueue(CLCommandQueue* queue) {
     RETURN_IF_ERROR(cl_args_.Bind(kernel_.kernel()));
-    return queue->Dispatch(kernel_, operation_->work_groups_count_,
+    return queue->Dispatch(kernel_, operation_->GetWorkGroupsCount(),
                            operation_->work_group_size_);
+  }
+
+  absl::Status AddToCommanBuffer(cl_command_buffer_khr cb) {
+    RETURN_IF_ERROR(cl_args_.Bind(kernel_.kernel()));
+    std::array<size_t, 3> local;
+    std::array<size_t, 3> global;
+    for (int i = 0; i < 3; ++i) {
+      local[i] = operation_->work_group_size_[i];
+      global[i] =
+          operation_->GetWorkGroupsCount()[i] * operation_->work_group_size_[i];
+    }
+    const int error_code = clCommandNDRangeKernelKHR(
+        cb, nullptr, nullptr, kernel_.kernel(), 3, nullptr, global.data(),
+        local.data(), 0, nullptr, nullptr, nullptr);
+    if (error_code != CL_SUCCESS) {
+      return absl::UnknownError(
+          absl::StrCat("Failed to clCommandNDRangeKernelKHR - ",
+                       CLErrorCodeToString(error_code)));
+    }
+    return absl::OkStatus();
+  }
+
+  absl::Status AddToQueue(ProfilingCommandQueue* queue, CLEvent* event) {
+    RETURN_IF_ERROR(cl_args_.Bind(kernel_.kernel()));
+    return queue->CLCommandQueue::Dispatch(kernel_,
+                                           operation_->GetWorkGroupsCount(),
+                                           operation_->work_group_size_, event);
   }
 
   // for better profiling
   absl::Status AddToQueueNTimes(ProfilingCommandQueue* queue, int n,
                                 int flush_period = 0) {
     RETURN_IF_ERROR(cl_args_.Bind(kernel_.kernel()));
-    return queue->DispatchNTimes(kernel_, operation_->work_groups_count_,
+    return queue->DispatchNTimes(kernel_, operation_->GetWorkGroupsCount(),
                                  operation_->work_group_size_, n, flush_period);
   }
 
@@ -87,20 +119,13 @@ class ClOperation {
 
   absl::Status Compile(const CreationContext& creation_context);
 
-  absl::Status RestoreDeserialized(const CreationContext& creation_context);
-  absl::Status InitFromCache(uint64_t fingerprint,
-                             const ProgramCache& program_cache);
-
-  void MoveObjectRefsFromCLToGeneric() {
-    cl_args_.MoveObjectRefsOut(&operation_->args_);
-  }
-  void MoveObjectRefsFromGenericToCL() {
-    cl_args_.MoveObjectRefsIn(&operation_->args_);
-  }
+  absl::Status RestoreDeserialized(const ProgramCache& program_cache,
+                                   uint64_t fingerprint,
+                                   const GpuInfo& gpu_info,
+                                   const int3& work_group_size,
+                                   CLContext* context);
 
   int3 GetWorkGroupSize() const { return operation_->work_group_size_; }
-
-  void SetWorkGroupSize(const int3& work_group_size);
 
  private:
   std::unique_ptr<GPUOperation> operation_;

@@ -13,7 +13,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/drag_window_from_shelf_controller_test_api.h"
@@ -50,6 +49,7 @@
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -113,7 +113,7 @@ class HotseatWidgetTest
 
   void TearDown() override {
     // Some tests may override this value, make sure it's reset.
-    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+    ui::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         false);
     ShelfLayoutManagerTestBase::TearDown();
   }
@@ -122,6 +122,9 @@ class HotseatWidgetTest
     return shelf_auto_hide_behavior_;
   }
   bool is_assistant_enabled() const { return is_assistant_enabled_; }
+  bool navigation_buttons_shown_in_tablet_mode() const {
+    return navigation_buttons_shown_in_tablet_mode_;
+  }
   AssistantTestApi* assistant_test_api() { return assistant_test_api_.get(); }
 
   void ShowShelfAndActivateAssistant() {
@@ -322,14 +325,15 @@ class HotseatTransitionAnimationObserver
   HotseatTransitionAnimator* hotseat_transition_animator_;
 };
 
-// Used to test the Hotseat, ScrollabeShelf, and DenseShelf features.
+// Used to test the Hotseat, ScrollableShelf, and DenseShelf features.
 INSTANTIATE_TEST_SUITE_P(
     All,
     HotseatWidgetTest,
-    testing::Combine(testing::Values(ShelfAutoHideBehavior::kNever,
-                                     ShelfAutoHideBehavior::kAlways),
-                     testing::Bool(),
-                     testing::Bool()));
+    testing::Combine(
+        testing::Values(ShelfAutoHideBehavior::kNever,
+                        ShelfAutoHideBehavior::kAlways),
+        /*is_assistant_enabled*/ testing::Bool(),
+        /*navigation_buttons_shown_in_tablet_mode*/ testing::Bool()));
 
 TEST_P(HotseatWidgetTest, LongPressHomeWithoutAppWindow) {
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
@@ -374,6 +378,10 @@ TEST_P(HotseatWidgetTest, LongPressHomeWithAppWindow) {
     // |ShowShelfAndActivateAssistant()| will bring up shelf so it will trigger
     // one hotseat state change.
     expected_state.push_back(HotseatState::kExtended);
+    // Launching the assistant from a shelf button on an autohidden shelf will
+    // hide the shelf at the end of the operation.
+    if (is_assistant_enabled() && navigation_buttons_shown_in_tablet_mode())
+      expected_state.push_back(HotseatState::kHidden);
   }
   watcher.CheckEqual(expected_state);
 }
@@ -445,6 +453,8 @@ TEST_P(HotseatWidgetTest, InAppShelfShowingContextMenu) {
 
   // Accelerate the generation of the long press event.
   ui::GestureConfiguration::GetInstance()->set_show_press_delay_in_ms(1);
+  ui::GestureConfiguration::GetInstance()->set_short_press_time(
+      base::Milliseconds(1));
   ui::GestureConfiguration::GetInstance()->set_long_press_time_in_ms(1);
 
   // Press the icon enough long time to generate the long press event.
@@ -490,6 +500,47 @@ TEST_P(HotseatWidgetTest, CloseLastWindowOpenedInTabletMode) {
   EXPECT_EQ(HotseatState::kShownHomeLauncher,
             GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(true);
+}
+
+// Verifies removing a shelf item by dragging it off the extended hotseat.
+TEST_P(HotseatWidgetTest, DragItemOffExtendedHotseat) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  ShelfTestUtil::AddAppShortcut("app_id_1", TYPE_PINNED_APP);
+  ShelfTestUtil::AddAppShortcut("app_id_2", TYPE_PINNED_APP);
+
+  ShelfView* shelf_view = GetPrimaryShelf()
+                              ->hotseat_widget()
+                              ->scrollable_shelf_view()
+                              ->shelf_view();
+  EXPECT_EQ(2, shelf_view->view_model_for_test()->view_size());
+
+  // Show the in-app shelf.
+  SwipeUpOnShelf();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Start mouse drag on a shelf item.
+  ShelfAppButton* dragged_button =
+      ShelfViewTestAPI(shelf_view).GetButton(/*index=*/0);
+  GetEventGenerator()->MoveMouseTo(
+      dragged_button->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  EXPECT_TRUE(dragged_button->FireDragTimerForTest());
+  EXPECT_TRUE(shelf_view->drag_view());
+
+  // Move mouse. Verify that the hotseat is still extended.
+  GetEventGenerator()->MoveMouseBy(/*x=*/0, /*y=*/-80);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Release the mouse press. Verify that:
+  // 1. Shelf item count decreases by one; and
+  // 2. Hotseat is still extended.
+  GetEventGenerator()->ReleaseLeftButton();
+  EXPECT_EQ(1, shelf_view->view_model_for_test()->view_size());
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
 // Tests that swiping up on an autohidden shelf shows the hotseat, and swiping
@@ -764,6 +815,8 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
 
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
@@ -777,7 +830,8 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller->BothSnapped());
 
   // We should still be able to drag up the hotseat.
   SwipeUpOnShelf();
@@ -2263,6 +2317,12 @@ TEST_P(HotseatWidgetTest, InitialAnimationPositionWithNonIdentityTransform) {
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
 
+  // Make sure that all shelf item views complete their bounds animations
+  // before starting the test (tests depend on the first item bounds within the
+  // shelf view).
+  auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
+  ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
+
   HotseatWidget* const hotseat_widget = GetPrimaryShelf()->hotseat_widget();
   gfx::Point last_app_views_position =
       hotseat_widget->GetWindowBoundsInScreen().origin();
@@ -2375,7 +2435,8 @@ TEST_P(HotseatWidgetTest, InitialAnimationPositionWithNonIdentityTransform) {
 }
 
 TEST_P(HotseatWidgetTest, PresentationTimeMetricDuringDrag) {
-  PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
+  ui::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+      true);
 
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));

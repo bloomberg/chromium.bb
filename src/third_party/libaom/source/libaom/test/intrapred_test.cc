@@ -210,7 +210,7 @@ class HighbdIntraPredTest : public AV1IntraPredTest<HighbdIntraPred, uint16_t> {
   void PredictFncSpeedTest(int num) {
     const int bit_depth = params_.bit_depth;
     for (int i = 0; i < num; i++) {
-      params_.pred_fn(ref_dst_, stride_, above_row_, left_col_, bit_depth);
+      params_.pred_fn(dst_, stride_, above_row_, left_col_, bit_depth);
     }
   }
 };
@@ -250,6 +250,17 @@ TEST_P(HighbdIntraPredTest, Bitexact) {
   av1_zero(left_col);
   av1_zero(above_data);
   RunTest(left_col, above_data, dst, ref_dst);
+}
+
+TEST_P(HighbdIntraPredTest, DISABLED_Speed) {
+  // max block size is 64
+  DECLARE_ALIGNED(16, uint16_t, left_col[2 * 64]);
+  DECLARE_ALIGNED(16, uint16_t, above_data[2 * 64 + 64]);
+  DECLARE_ALIGNED(16, uint16_t, dst[3 * 64 * 64]);
+  DECLARE_ALIGNED(16, uint16_t, ref_dst[3 * 64 * 64]);
+  av1_zero(left_col);
+  av1_zero(above_data);
+  RunSpeedTest(left_col, above_data, dst, ref_dst);
 }
 #endif
 
@@ -322,19 +333,51 @@ INSTANTIATE_TEST_SUITE_P(SSE2, LowbdIntraPredTest,
 
 #if HAVE_NEON
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorNeon[] = {
-  lowbd_entry(smooth, 4, 4, neon),   lowbd_entry(smooth, 4, 8, neon),
-  lowbd_entry(smooth, 8, 4, neon),   lowbd_entry(smooth, 8, 8, neon),
-  lowbd_entry(smooth, 8, 16, neon),  lowbd_entry(smooth, 16, 8, neon),
-  lowbd_entry(smooth, 16, 16, neon), lowbd_entry(smooth, 16, 32, neon),
-  lowbd_entry(smooth, 32, 16, neon), lowbd_entry(smooth, 32, 32, neon),
-  lowbd_entry(smooth, 32, 64, neon), lowbd_entry(smooth, 64, 32, neon),
+  lowbd_entry(smooth, 4, 4, neon),     lowbd_entry(smooth, 4, 8, neon),
+  lowbd_entry(smooth, 4, 16, neon),    lowbd_entry(smooth, 8, 4, neon),
+  lowbd_entry(smooth, 8, 8, neon),     lowbd_entry(smooth, 8, 16, neon),
+  lowbd_entry(smooth, 8, 32, neon),    lowbd_entry(smooth, 16, 4, neon),
+  lowbd_entry(smooth, 16, 8, neon),    lowbd_entry(smooth, 16, 16, neon),
+  lowbd_entry(smooth, 16, 32, neon),   lowbd_entry(smooth, 16, 64, neon),
+  lowbd_entry(smooth, 32, 8, neon),    lowbd_entry(smooth, 32, 16, neon),
+  lowbd_entry(smooth, 32, 32, neon),   lowbd_entry(smooth, 32, 64, neon),
+  lowbd_entry(smooth, 64, 16, neon),   lowbd_entry(smooth, 64, 32, neon),
   lowbd_entry(smooth, 64, 64, neon),
-#if !CONFIG_REALTIME_ONLY
-  lowbd_entry(smooth, 4, 16, neon),  lowbd_entry(smooth, 8, 32, neon),
-  lowbd_entry(smooth, 16, 4, neon),  lowbd_entry(smooth, 16, 64, neon),
-  lowbd_entry(smooth, 32, 8, neon),  lowbd_entry(smooth, 64, 16, neon),
-#endif
+
+  lowbd_entry(smooth_v, 4, 4, neon),   lowbd_entry(smooth_v, 4, 8, neon),
+  lowbd_entry(smooth_v, 4, 16, neon),  lowbd_entry(smooth_v, 8, 4, neon),
+  lowbd_entry(smooth_v, 8, 8, neon),   lowbd_entry(smooth_v, 8, 16, neon),
+  lowbd_entry(smooth_v, 8, 32, neon),  lowbd_entry(smooth_v, 16, 4, neon),
+  lowbd_entry(smooth_v, 16, 8, neon),  lowbd_entry(smooth_v, 16, 16, neon),
+  lowbd_entry(smooth_v, 16, 32, neon), lowbd_entry(smooth_v, 16, 64, neon),
+  lowbd_entry(smooth_v, 32, 8, neon),  lowbd_entry(smooth_v, 32, 16, neon),
+  lowbd_entry(smooth_v, 32, 32, neon), lowbd_entry(smooth_v, 32, 64, neon),
+  lowbd_entry(smooth_v, 64, 16, neon), lowbd_entry(smooth_v, 64, 32, neon),
+  lowbd_entry(smooth_v, 64, 64, neon),
+
+  lowbd_entry(smooth_h, 4, 4, neon),   lowbd_entry(smooth_h, 4, 8, neon),
+  lowbd_entry(smooth_h, 4, 16, neon),  lowbd_entry(smooth_h, 8, 4, neon),
+  lowbd_entry(smooth_h, 8, 8, neon),   lowbd_entry(smooth_h, 8, 16, neon),
+  lowbd_entry(smooth_h, 8, 32, neon),  lowbd_entry(smooth_h, 16, 4, neon),
+  lowbd_entry(smooth_h, 16, 8, neon),  lowbd_entry(smooth_h, 16, 16, neon),
+  lowbd_entry(smooth_h, 16, 32, neon), lowbd_entry(smooth_h, 16, 64, neon),
+  lowbd_entry(smooth_h, 32, 8, neon),  lowbd_entry(smooth_h, 32, 16, neon),
+  lowbd_entry(smooth_h, 32, 32, neon), lowbd_entry(smooth_h, 32, 64, neon),
+  lowbd_entry(smooth_h, 64, 16, neon), lowbd_entry(smooth_h, 64, 32, neon),
+  lowbd_entry(smooth_h, 64, 64, neon),
+
+  lowbd_entry(paeth, 4, 4, neon),      lowbd_entry(paeth, 4, 8, neon),
+  lowbd_entry(paeth, 4, 16, neon),     lowbd_entry(paeth, 8, 4, neon),
+  lowbd_entry(paeth, 8, 8, neon),      lowbd_entry(paeth, 8, 16, neon),
+  lowbd_entry(paeth, 8, 32, neon),     lowbd_entry(paeth, 16, 4, neon),
+  lowbd_entry(paeth, 16, 8, neon),     lowbd_entry(paeth, 16, 16, neon),
+  lowbd_entry(paeth, 16, 32, neon),    lowbd_entry(paeth, 16, 64, neon),
+  lowbd_entry(paeth, 32, 8, neon),     lowbd_entry(paeth, 32, 16, neon),
+  lowbd_entry(paeth, 32, 32, neon),    lowbd_entry(paeth, 32, 64, neon),
+  lowbd_entry(paeth, 64, 16, neon),    lowbd_entry(paeth, 64, 32, neon),
+  lowbd_entry(paeth, 64, 64, neon),
 };
+
 INSTANTIATE_TEST_SUITE_P(NEON, LowbdIntraPredTest,
                          ::testing::ValuesIn(LowbdIntraPredTestVectorNeon));
 #endif  // HAVE_NEON
@@ -370,9 +413,111 @@ INSTANTIATE_TEST_SUITE_P(AVX2, LowbdIntraPredTest,
 #if CONFIG_AV1_HIGHBITDEPTH
 #if HAVE_NEON
 const IntraPredFunc<HighbdIntraPred> HighbdIntraPredTestVectorNeon[] = {
-  highbd_entry(dc, 4, 4, neon, 8),   highbd_entry(dc, 8, 8, neon, 8),
-  highbd_entry(dc, 16, 16, neon, 8), highbd_entry(dc, 32, 32, neon, 8),
+  highbd_entry(dc, 4, 4, neon, 8),
+  highbd_entry(dc, 8, 8, neon, 8),
+  highbd_entry(dc, 16, 16, neon, 8),
+  highbd_entry(dc, 32, 32, neon, 8),
   highbd_entry(dc, 64, 64, neon, 8),
+
+  highbd_entry(v, 4, 4, neon, 12),
+  highbd_entry(v, 4, 8, neon, 12),
+  highbd_entry(v, 4, 16, neon, 12),
+  highbd_entry(v, 8, 4, neon, 12),
+  highbd_entry(v, 8, 8, neon, 12),
+  highbd_entry(v, 8, 16, neon, 12),
+  highbd_entry(v, 8, 32, neon, 12),
+  highbd_entry(v, 16, 4, neon, 12),
+  highbd_entry(v, 16, 8, neon, 12),
+  highbd_entry(v, 16, 16, neon, 12),
+  highbd_entry(v, 16, 32, neon, 12),
+  highbd_entry(v, 16, 64, neon, 12),
+  highbd_entry(v, 32, 8, neon, 12),
+  highbd_entry(v, 32, 16, neon, 12),
+  highbd_entry(v, 32, 32, neon, 12),
+  highbd_entry(v, 32, 64, neon, 12),
+  highbd_entry(v, 64, 16, neon, 12),
+  highbd_entry(v, 64, 32, neon, 12),
+  highbd_entry(v, 64, 64, neon, 12),
+
+  highbd_entry(paeth, 4, 4, neon, 12),
+  highbd_entry(paeth, 4, 8, neon, 12),
+  highbd_entry(paeth, 4, 16, neon, 12),
+  highbd_entry(paeth, 8, 4, neon, 12),
+  highbd_entry(paeth, 8, 8, neon, 12),
+  highbd_entry(paeth, 8, 16, neon, 12),
+  highbd_entry(paeth, 8, 32, neon, 12),
+  highbd_entry(paeth, 16, 4, neon, 12),
+  highbd_entry(paeth, 16, 8, neon, 12),
+  highbd_entry(paeth, 16, 16, neon, 12),
+  highbd_entry(paeth, 16, 32, neon, 12),
+  highbd_entry(paeth, 16, 64, neon, 12),
+  highbd_entry(paeth, 32, 8, neon, 12),
+  highbd_entry(paeth, 32, 16, neon, 12),
+  highbd_entry(paeth, 32, 32, neon, 12),
+  highbd_entry(paeth, 32, 64, neon, 12),
+  highbd_entry(paeth, 64, 16, neon, 12),
+  highbd_entry(paeth, 64, 32, neon, 12),
+  highbd_entry(paeth, 64, 64, neon, 12),
+
+  highbd_entry(smooth, 4, 4, neon, 12),
+  highbd_entry(smooth, 4, 8, neon, 12),
+  highbd_entry(smooth, 4, 16, neon, 12),
+  highbd_entry(smooth, 8, 4, neon, 12),
+  highbd_entry(smooth, 8, 8, neon, 12),
+  highbd_entry(smooth, 8, 16, neon, 12),
+  highbd_entry(smooth, 8, 32, neon, 12),
+  highbd_entry(smooth, 16, 4, neon, 12),
+  highbd_entry(smooth, 16, 8, neon, 12),
+  highbd_entry(smooth, 16, 16, neon, 12),
+  highbd_entry(smooth, 16, 32, neon, 12),
+  highbd_entry(smooth, 16, 64, neon, 12),
+  highbd_entry(smooth, 32, 8, neon, 12),
+  highbd_entry(smooth, 32, 16, neon, 12),
+  highbd_entry(smooth, 32, 32, neon, 12),
+  highbd_entry(smooth, 32, 64, neon, 12),
+  highbd_entry(smooth, 64, 16, neon, 12),
+  highbd_entry(smooth, 64, 32, neon, 12),
+  highbd_entry(smooth, 64, 64, neon, 12),
+
+  highbd_entry(smooth_v, 4, 4, neon, 12),
+  highbd_entry(smooth_v, 4, 8, neon, 12),
+  highbd_entry(smooth_v, 4, 16, neon, 12),
+  highbd_entry(smooth_v, 8, 4, neon, 12),
+  highbd_entry(smooth_v, 8, 8, neon, 12),
+  highbd_entry(smooth_v, 8, 16, neon, 12),
+  highbd_entry(smooth_v, 8, 32, neon, 12),
+  highbd_entry(smooth_v, 16, 4, neon, 12),
+  highbd_entry(smooth_v, 16, 8, neon, 12),
+  highbd_entry(smooth_v, 16, 16, neon, 12),
+  highbd_entry(smooth_v, 16, 32, neon, 12),
+  highbd_entry(smooth_v, 16, 64, neon, 12),
+  highbd_entry(smooth_v, 32, 8, neon, 12),
+  highbd_entry(smooth_v, 32, 16, neon, 12),
+  highbd_entry(smooth_v, 32, 32, neon, 12),
+  highbd_entry(smooth_v, 32, 64, neon, 12),
+  highbd_entry(smooth_v, 64, 16, neon, 12),
+  highbd_entry(smooth_v, 64, 32, neon, 12),
+  highbd_entry(smooth_v, 64, 64, neon, 12),
+
+  highbd_entry(smooth_h, 4, 4, neon, 12),
+  highbd_entry(smooth_h, 4, 8, neon, 12),
+  highbd_entry(smooth_h, 4, 16, neon, 12),
+  highbd_entry(smooth_h, 8, 4, neon, 12),
+  highbd_entry(smooth_h, 8, 8, neon, 12),
+  highbd_entry(smooth_h, 8, 16, neon, 12),
+  highbd_entry(smooth_h, 8, 32, neon, 12),
+  highbd_entry(smooth_h, 16, 4, neon, 12),
+  highbd_entry(smooth_h, 16, 8, neon, 12),
+  highbd_entry(smooth_h, 16, 16, neon, 12),
+  highbd_entry(smooth_h, 16, 32, neon, 12),
+  highbd_entry(smooth_h, 16, 64, neon, 12),
+  highbd_entry(smooth_h, 32, 8, neon, 12),
+  highbd_entry(smooth_h, 32, 16, neon, 12),
+  highbd_entry(smooth_h, 32, 32, neon, 12),
+  highbd_entry(smooth_h, 32, 64, neon, 12),
+  highbd_entry(smooth_h, 64, 16, neon, 12),
+  highbd_entry(smooth_h, 64, 32, neon, 12),
+  highbd_entry(smooth_h, 64, 64, neon, 12),
 };
 
 INSTANTIATE_TEST_SUITE_P(NEON, HighbdIntraPredTest,

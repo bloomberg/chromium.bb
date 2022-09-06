@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/omnibox/browser/in_memory_url_index.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,7 +15,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -27,12 +28,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
-#include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/url_index_private_data.h"
@@ -278,7 +279,7 @@ void InMemoryURLIndexTest::SetUp() {
 
   // Set up a simple template URL service with a default search engine.
   template_url_service_ = std::make_unique<TemplateURLService>(
-      kTemplateURLData, base::size(kTemplateURLData));
+      kTemplateURLData, std::size(kTemplateURLData));
   TemplateURL* template_url = template_url_service_->GetTemplateURLForKeyword(
       kDefaultTemplateURLKeyword);
   template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
@@ -1097,7 +1098,7 @@ TEST_F(InMemoryURLIndexTest, AllowlistedURLs) {
   };
 
   const SchemeSet& allowlist(scheme_allowlist());
-  for (size_t i = 0; i < base::size(data); ++i) {
+  for (size_t i = 0; i < std::size(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_allowlisted,
               URLIndexPrivateData::URLSchemeIsAllowlisted(url, allowlist));
@@ -1357,7 +1358,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
                     {"abcd :", 5, 2, {0, 1, kInvalid}},
                     {"abcd :", 2, 3, {0, 0, 1}}};
 
-  for (size_t i = 0; i < base::size(test_cases); ++i) {
+  for (size_t i = 0; i < std::size(test_cases); ++i) {
     SCOPED_TRACE(testing::Message()
                  << "search_string = " << test_cases[i].search_string
                  << ", cursor_position = " << test_cases[i].cursor_position);
@@ -1397,7 +1398,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsetsUnderscore) {
                     {"abcd_", 4, 2, {0, 1, kInvalid}},
                     {"ab_cd", 5, 1, {0, kInvalid, kInvalid}}};
 
-  for (size_t i = 0; i < base::size(test_cases); ++i) {
+  for (size_t i = 0; i < std::size(test_cases); ++i) {
     SCOPED_TRACE(testing::Message()
                  << "search_string = " << test_cases[i].search_string
                  << ", cursor_position = " << test_cases[i].cursor_position);
@@ -1462,14 +1463,14 @@ bool InMemoryURLIndexCacheTest::GetCacheFilePath(
 }
 
 TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
-  base::FilePath expectedPath =
+  base::FilePath expected_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("History Provider Cache"));
-  std::vector<base::FilePath::StringType> expected_parts;
-  expectedPath.GetComponents(&expected_parts);
+  std::vector<base::FilePath::StringType> expected_parts =
+      expected_path.GetComponents();
   base::FilePath full_file_path;
   ASSERT_TRUE(GetCacheFilePath(&full_file_path));
-  std::vector<base::FilePath::StringType> actual_parts;
-  full_file_path.GetComponents(&actual_parts);
+  std::vector<base::FilePath::StringType> actual_parts =
+      full_file_path.GetComponents();
   ASSERT_EQ(expected_parts.size(), actual_parts.size());
   size_t count = expected_parts.size();
   for (size_t i = 0; i < count; ++i)

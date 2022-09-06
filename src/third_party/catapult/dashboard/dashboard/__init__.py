@@ -19,8 +19,10 @@ THIRD_PARTY_LIBRARIES = [
     'cachetools',
     'certifi',
     'chardet',
+    'click',
     'cloudstorage',
     'depot_tools',
+    'flask',
     'flot',
     'gae_ts_mon',
     'google-auth',
@@ -28,8 +30,11 @@ THIRD_PARTY_LIBRARIES = [
     'html5lib-python',
     'idna',
     'ijson',
+    'itsdangerous',
+    'jinja2',
     'jquery',
     'mapreduce',
+    'markupsafe',
     'mock',
     'oauth2client',
     'pipeline',
@@ -49,6 +54,7 @@ THIRD_PARTY_LIBRARIES = [
     'urllib3',
     'webapp2',
     'webtest',
+    'werkzeug',
 ]
 
 THIRD_PARTY_LIBRARIES_PY2 = THIRD_PARTY_LIBRARIES + [
@@ -69,7 +75,9 @@ DASHBOARD_FILES = [
     'dispatch.yaml',
     'index.yaml',
     'pinpoint.yaml',
+    'pinpoint-py3.yaml',  # remove after py3 migration is finalized.
     'queue.yaml',
+    'requirements.txt',
     'scripts.yaml',
     'upload-processing.yaml',
     'upload.yaml',
@@ -138,16 +146,16 @@ def _AllSdkThirdPartyLibraryPaths():
     appengine_path = os.path.join(sdk_bin_path, 'platform', 'google_appengine')
     paths.append(appengine_path)
     sys.path.insert(0, appengine_path)
-    break
 
   try:
     import dev_appserver
   except ImportError:
     # TODO: Put the Cloud SDK in the path with the binary dependency manager.
     # https://github.com/catapult-project/catapult/issues/2135
-    print('This script requires the Google Cloud SDK to be in PATH.')
-    print('Install at https://cloud.google.com/sdk and then run')
-    print('`gcloud components install app-engine-python`')
+    print('This script requires the Google Cloud SDK to be in PYTHONPATH.')
+    print(
+        'See https://chromium.googlesource.com/catapult/+/HEAD/dashboard/README.md'
+    )
     sys.exit(1)
 
   paths.extend(dev_appserver.EXTRA_PATHS)

@@ -6,7 +6,6 @@
 
 #include "base/ranges/algorithm.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cookie_access_details.h"
@@ -119,15 +118,21 @@ void EmitCookieWarningsAndMetrics(
 
   bool samesite_cookie_inclusion_changed_by_cross_site_redirect = false;
 
+  bool partitioned_cookies_exist = false;
+
+  bool cookie_has_not_been_refreshed_in_201_to_300_days = false;
+  bool cookie_has_not_been_refreshed_in_301_to_350_days = false;
+  bool cookie_has_not_been_refreshed_in_351_to_400_days = false;
+
   for (const network::mojom::CookieOrLineWithAccessResultPtr& cookie :
        cookie_details->cookie_list) {
     if (ShouldReportDevToolsIssueForStatus(cookie->access_result.status)) {
-      devtools_instrumentation::ReportSameSiteCookieIssue(
+      devtools_instrumentation::ReportCookieIssue(
           root_frame_host, cookie, cookie_details->url,
           cookie_details->site_for_cookies,
           cookie_details->type == CookieAccessDetails::Type::kRead
-              ? blink::mojom::SameSiteCookieOperation::kReadCookie
-              : blink::mojom::SameSiteCookieOperation::kSetCookie,
+              ? blink::mojom::CookieOperation::kReadCookie
+              : blink::mojom::CookieOperation::kSetCookie,
           cookie_details->devtools_request_id);
     }
 
@@ -201,6 +206,11 @@ void EmitCookieWarningsAndMetrics(
                   WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION);
     }
 
+    partitioned_cookies_exist =
+        partitioned_cookies_exist ||
+        (cookie->cookie_or_line->is_cookie() &&
+         cookie->cookie_or_line->get_cookie().IsPartitioned());
+
     breaking_context_downgrade =
         breaking_context_downgrade ||
         cookie->access_result.status.HasDowngradeWarning();
@@ -210,6 +220,27 @@ void EmitCookieWarningsAndMetrics(
       RecordContextDowngradeUKM(rfh, cookie_details->type,
                                 cookie->access_result.status,
                                 cookie_details->url);
+    }
+
+    // In order to anticipate the potential effects of the expiry limit in
+    // rfc6265bis, we need to check how long it's been since the cookie was
+    // refreshed (if LastUpdateDate is populated). These three buckets were
+    // picked so we could engage sites with some granularity around urgency.
+    // We ignore the space under 200 days as these cookies are not at risk
+    // of expiring and we ignore the space over 400 days as these cookies
+    // have already expired. Metrics will take 200 days from M103 to populate.
+    base::Time last_update_date =
+        cookie->cookie_or_line->is_cookie()
+            ? cookie->cookie_or_line->get_cookie().LastUpdateDate()
+            : base::Time();
+    if (!last_update_date.is_null()) {
+      int days_since_refresh = (base::Time::Now() - last_update_date).InDays();
+      cookie_has_not_been_refreshed_in_201_to_300_days |=
+          days_since_refresh > 200 && days_since_refresh <= 300;
+      cookie_has_not_been_refreshed_in_301_to_350_days |=
+          days_since_refresh > 300 && days_since_refresh <= 350;
+      cookie_has_not_been_refreshed_in_351_to_400_days |=
+          days_since_refresh > 350 && days_since_refresh <= 400;
     }
   }
 
@@ -277,6 +308,29 @@ void EmitCookieWarningsAndMetrics(
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::
                  kSameSiteCookieInclusionChangedByCrossSiteRedirect);
+  }
+
+  if (partitioned_cookies_exist) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kPartitionedCookies);
+  }
+
+  if (cookie_has_not_been_refreshed_in_201_to_300_days) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh,
+        blink::mojom::WebFeature::kCookieHasNotBeenRefreshedIn201To300Days);
+  }
+
+  if (cookie_has_not_been_refreshed_in_301_to_350_days) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh,
+        blink::mojom::WebFeature::kCookieHasNotBeenRefreshedIn301To350Days);
+  }
+
+  if (cookie_has_not_been_refreshed_in_351_to_400_days) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh,
+        blink::mojom::WebFeature::kCookieHasNotBeenRefreshedIn351To400Days);
   }
 }
 

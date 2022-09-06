@@ -43,7 +43,7 @@ device_test::mojom::ControllerFrameDataPtr DeviceToMojoControllerFrameData(
   ret->pose_data->device_to_origin = gfx::Transform();
   for (int col = 0; col < 4; ++col) {
     for (int row = 0; row < 4; ++row) {
-      ret->pose_data->device_to_origin->matrix().set(
+      ret->pose_data->device_to_origin->matrix().setRC(
           row, col, data.pose_data.device_to_origin[row + col * 4]);
     }
   }
@@ -76,7 +76,7 @@ void MockXRDeviceHookBase::StopHooking() {
 }
 
 void MockXRDeviceHookBase::OnFrameSubmitted(
-    device_test::mojom::SubmittedFrameDataPtr frame_data,
+    std::vector<device_test::mojom::ViewDataPtr> views,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   std::move(callback).Run();
 }
@@ -217,4 +217,13 @@ device::ControllerFrameData MockXRDeviceHookBase::CreateValidController(
 
 void MockXRDeviceHookBase::PopulateEvent(device_test::mojom::EventData data) {
   event_data_queue_.push(data);
+}
+
+void MockXRDeviceHookBase::WaitGetCanCreateSession(
+    device_test::mojom::XRTestHook::WaitGetCanCreateSessionCallback callback) {
+  std::move(callback).Run(can_create_session_);
+}
+
+void MockXRDeviceHookBase::SetCanCreateSession(bool can_create_session) {
+  can_create_session_ = can_create_session;
 }

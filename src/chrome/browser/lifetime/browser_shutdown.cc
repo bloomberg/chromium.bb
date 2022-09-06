@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
@@ -46,12 +45,12 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/win/browser_util.h"
 #endif
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/first_run/upgrade_util.h"
 #endif
 
@@ -64,15 +63,12 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/service_process/service_process_control.h"
-#endif
-
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"  // nogncheck crbug.com/1125897
 #endif
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
+#include "base/run_loop.h"
 #include "content/public/browser/profiling_utils.h"
 #endif
 
@@ -140,7 +136,11 @@ void OnShutdownStarting(ShutdownType type) {
   // TODO(https://crbug.com/1071664): Check if this should also be enabled for
   // coverage builds.
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
-  content::WaitForAllChildrenToDumpProfilingData();
+  // Wait for all the child processes to dump their profiling data without
+  // blocking the main thread.
+  base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  content::AskAllChildrenToDumpProfilingData(nested_run_loop.QuitClosure());
+  nested_run_loop.Run();
 #endif  // BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
 
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
@@ -170,15 +170,11 @@ ShutdownType GetShutdownType() {
   return g_shutdown_type;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 bool ShutdownPreThreadsStop() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserShutdownStarted",
                                                      false);
-#endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Shutdown the IPC channel to the service processes.
-  ServiceProcessControl::GetInstance()->Disconnect();
 #endif
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
@@ -237,7 +233,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
   ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted", true);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (!browser_util::IsBrowserAlreadyRunning() &&
       g_shutdown_type != ShutdownType::kEndSession) {
     upgrade_util::SwapNewChromeExeIfPresent();
@@ -262,7 +258,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
 
       case RestartMode::kRestartInBackground:
         new_cl.AppendSwitch(switches::kNoStartupWindow);
-        FALLTHROUGH;
+        [[fallthrough]];
 
       case RestartMode::kRestartLastSession:
         // Relaunch the browser without any command line URLs or certain one-off
@@ -306,7 +302,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
   NotifyAndTerminate(false /* fast_path */);
 #endif
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 void ReadLastShutdownFile(ShutdownType type,
                           int num_procs,
@@ -324,40 +320,34 @@ void ReadLastShutdownFile(ShutdownType type,
   if (shutdown_ms == 0 || num_procs == 0)
     return;
 
-  const char* time2_metric_name = nullptr;
-  const char* per_proc_metric_name = nullptr;
-
+  const char* time_metric_name = nullptr;
   switch (type) {
     case ShutdownType::kNotValid:
+      time_metric_name = "Shutdown.NotValid.Time";
+      break;
+
     case ShutdownType::kSilentExit:
-      // The histograms below have expired, so do not record metrics for silent
-      // exits; see https://crbug.com/975118.
+      time_metric_name = "Shutdown.SilentExit.time";
       break;
 
     case ShutdownType::kWindowClose:
-      time2_metric_name = "Shutdown.window_close.time2";
-      per_proc_metric_name = "Shutdown.window_close.time_per_process";
+      time_metric_name = "Shutdown.WindowClose.Time";
       break;
 
     case ShutdownType::kBrowserExit:
-      time2_metric_name = "Shutdown.browser_exit.time2";
-      per_proc_metric_name = "Shutdown.browser_exit.time_per_process";
+      time_metric_name = "Shutdown.BrowserExit.Time";
       break;
 
     case ShutdownType::kEndSession:
-      time2_metric_name = "Shutdown.end_session.time2";
-      per_proc_metric_name = "Shutdown.end_session.time_per_process";
+      time_metric_name = "Shutdown.EndSession.Time";
       break;
   }
-  if (!time2_metric_name)
-    return;
+  DCHECK(time_metric_name);
 
-  base::UmaHistogramMediumTimes(time2_metric_name,
+  base::UmaHistogramMediumTimes(time_metric_name,
                                 base::Milliseconds(shutdown_ms));
-  base::UmaHistogramTimes(per_proc_metric_name,
-                          base::Milliseconds(shutdown_ms / num_procs));
-  base::UmaHistogramCounts100("Shutdown.renderers.total", num_procs);
-  base::UmaHistogramCounts100("Shutdown.renderers.slow", num_procs_slow);
+  base::UmaHistogramCounts100("Shutdown.Renderers.Total", num_procs);
+  base::UmaHistogramCounts100("Shutdown.Renderers.Slow", num_procs_slow);
 }
 
 void ReadLastShutdownInfo() {
@@ -392,9 +382,9 @@ void SetTryingToQuit(bool quitting) {
   // attempt is cancelled.
   PrefService* pref_service = g_browser_process->local_state();
   if (pref_service) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     pref_service->ClearPref(prefs::kWasRestarted);
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
     pref_service->ClearPref(prefs::kRestartLastSessionOnShutdown);
   }
 

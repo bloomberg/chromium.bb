@@ -6,12 +6,12 @@
  * @fileoverview Handles speech parsing for dictation.
  */
 
-import {InputController} from './../input_controller.js';
-import {Macro} from './../macros/macro.js';
-import {InputTextStrategy} from './input_text_strategy.js';
-import {ParseStrategy} from './parse_strategy.js';
-import {PumpkinParseStrategy} from './pumpkin_parse_strategy.js';
-import {SimpleParseStrategy} from './simple_parse_strategy.js';
+import {InputController} from '/accessibility_common/dictation/input_controller.js';
+import {Macro} from '/accessibility_common/dictation/macros/macro.js';
+import {InputTextStrategy} from '/accessibility_common/dictation/parse/input_text_strategy.js';
+import {ParseStrategy} from '/accessibility_common/dictation/parse/parse_strategy.js';
+import {PumpkinParseStrategy} from '/accessibility_common/dictation/parse/pumpkin_parse_strategy.js';
+import {SimpleParseStrategy} from '/accessibility_common/dictation/parse/simple_parse_strategy.js';
 
 /** SpeechParser handles parsing spoken transcripts into Macros. */
 export class SpeechParser {
@@ -34,11 +34,11 @@ export class SpeechParser {
   }
 
   /**
-   * Enables commands.
    * @param {string} locale The Dictation recognition locale. Only some locales
    *     are supported by Pumpkin.
+   * @return {!Promise}
    */
-  async setCommandsEnabled(locale) {
+  async initialize(locale) {
     this.isRTLLocale_ = SpeechParser.RTLLocales.has(locale);
 
     // Initialize additional parsing strategies.
@@ -52,7 +52,7 @@ export class SpeechParser {
    * Parses user text to produce a macro command. Async to allow pumpkin to
    * complete loading if needed.
    * @param {string} text The text to parse.
-   * @return {Promise<Macro>}
+   * @return {!Promise<!Macro>}
    */
   async parse(text) {
     // Try pumpkin parsing first.
@@ -65,11 +65,13 @@ export class SpeechParser {
 
     // Fall-back to simple parsing.
     if (this.simpleParseStrategy_) {
-      return await this.simpleParseStrategy_.parse(text);
+      return await /** @type {!Promise<!Macro>} */ (
+          this.simpleParseStrategy_.parse(text));
     }
 
     // Input text as-is as a catch-all.
-    return await this.inputTextStrategy_.parse(text);
+    return await /** @type {!Promise<!Macro>} */ (
+        this.inputTextStrategy_.parse(text));
   }
 }
 

@@ -49,6 +49,8 @@
 @property(nonatomic, strong) AuthenticationFlow* authenticationFlow;
 // Sync service.
 @property(nonatomic, assign) syncer::SyncService* syncService;
+// Whether the setting screen was presented.
+@property(nonatomic, assign) BOOL settingsScreenShown;
 
 @end
 
@@ -83,9 +85,7 @@
             self, _accountManagerService);
 
     _logger = [[FirstRunSigninLogger alloc]
-          initWithAccessPoint:signin_metrics::AccessPoint::
-                                  ACCESS_POINT_START_PAGE
-                  promoAction:signin_metrics::PromoAction::
+          initWithPromoAction:signin_metrics::PromoAction::
                                   PROMO_ACTION_NO_SIGNIN_PROMO
         accountManagerService:accountManagerService];
 
@@ -104,17 +104,20 @@
   _accountManagerServiceObserver.reset();
 }
 
-- (void)
-    cancelSigninWithIdentitySigninState:(IdentitySigninState)signinStateOnStart
+- (void)cancelSyncAndRestoreSigninState:(IdentitySigninState)signinStateOnStart
                   signinIdentityOnStart:(ChromeIdentity*)signinIdentityOnStart {
+  [self.consumer setUIEnabled:NO];
   [self.authenticationFlow cancelAndDismissAnimated:NO];
 
   self.syncService->GetUserSettings()->SetSyncRequested(false);
   switch (signinStateOnStart) {
     case IdentitySigninStateSignedOut: {
-      self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
-                                          /*force_clear_browsing_data=*/false,
-                                          nil);
+      __weak __typeof(self) weakSelf = self;
+      self.authenticationService->SignOut(
+          signin_metrics::ABORT_SIGNIN,
+          /*force_clear_browsing_data=*/false, ^{
+            [weakSelf onSigninStateRestorationCompleted];
+          });
       break;
     }
     case IdentitySigninStateSignedInWithSyncDisabled: {
@@ -124,6 +127,7 @@
               signin::ConsentLevel::kSignin) isEqual:signinIdentityOnStart]) {
         // Can't be synced in this option because sync has to be disabled.
         _syncService->StopAndClear();
+        [self onSigninStateRestorationCompleted];
       } else {
         __weak __typeof(self) weakSelf = self;
         self.authenticationService->SignOut(
@@ -137,8 +141,9 @@
               if (authenticationService && identity &&
                   accountManagerService->IsValidIdentity(identity)) {
                 // Sign back in with a valid identity.
-                authenticationService->SignIn(identity);
+                authenticationService->SignIn(identity, nil);
               }
+              [weakSelf onSigninStateRestorationCompleted];
             });
       }
       break;
@@ -175,6 +180,8 @@
 - (void)prepareAdvancedSettingsWithAuthenticationFlow:
     (AuthenticationFlow*)authenticationFlow {
   DCHECK(!self.authenticationFlow);
+
+  self.settingsScreenShown = YES;
 
   [self.consumer setUIEnabled:NO];
 
@@ -241,12 +248,12 @@
   }
 }
 
-// Callback used when the sign-in flow is complete, with/without |success|.
+// Callback used when the sign-in flow is complete, with/without `success`.
 - (void)signinCompletedWithSuccess:(BOOL)success
                     confirmationID:(const int)confirmationID
                         consentIDs:(NSArray<NSNumber*>*)consentIDs {
   self.authenticationFlow = nil;
-  [self.consumer setUIEnabled:YES];
+  [self.consumer setActionToDone];
 
   if (!success) {
     return;
@@ -254,6 +261,10 @@
 
   // TODO(crbug.com/1254359): Dedupe duplicated code, here and in
   // user_signin_mediator.
+
+  [self.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
+                               addedAccount:self.addedAccount
+                      advancedSettingsShown:self.settingsScreenShown];
 
   // Set sync consent.
   sync_pb::UserConsentTypes::SyncConsent syncConsent;
@@ -285,10 +296,10 @@
 }
 
 // Callback used when the sign-in flow used for advanced settings is complete,
-// with/without |success|.
+// with/without `success`.
 - (void)signinForAdvancedSettingsCompletedWithSuccess:(BOOL)success {
   self.authenticationFlow = nil;
-  [self.consumer setUIEnabled:YES];
+  [self.consumer setActionToDone];
 
   if (!success) {
     return;
@@ -301,6 +312,12 @@
 
   [self.delegate
       signinSyncMediatorDidSuccessfulyFinishSigninForAdvancedSettings:self];
+}
+
+- (void)onSigninStateRestorationCompleted {
+  // Stop the loading overlay and call back to the coordinator.
+  [self.consumer setActionToDone];
+  [self.delegate signinSyncMediatorDidSuccessfulyFinishSignout:self];
 }
 
 @end

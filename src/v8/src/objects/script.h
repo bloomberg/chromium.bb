@@ -157,6 +157,7 @@ class Script : public TorqueGeneratedScript<Script, Struct> {
   inline bool IsMaybeUnfinalized(Isolate* isolate) const;
 
   Object GetNameOrSourceURL();
+  Handle<String> GetScriptHash(bool forceForInspector);
 
   // Retrieve source position from where eval was called.
   static int GetEvalPosition(Isolate* isolate, Handle<Script> script);
@@ -190,6 +191,13 @@ class Script : public TorqueGeneratedScript<Script, Struct> {
                               PositionInfo* info, OffsetFlag offset_flag);
   V8_EXPORT_PRIVATE bool GetPositionInfo(int position, PositionInfo* info,
                                          OffsetFlag offset_flag) const;
+
+  // Tells whether this script should be subject to debugging, e.g. for
+  // - scope inspection
+  // - internal break points
+  // - coverage and type profile
+  // - error stack trace
+  bool IsSubjectToDebugging() const;
 
   bool IsUserJavaScript() const;
 

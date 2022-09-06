@@ -211,7 +211,7 @@ MatrixType randomRotationMatrix()
   // https://www.isprs-ann-photogramm-remote-sens-spatial-inf-sci.net/III-7/103/2016/isprs-annals-III-7-103-2016.pdf
   const MatrixType rand = MatrixType::Random();
   const MatrixType q = rand.householderQr().householderQ();
-  const JacobiSVD<MatrixType> svd = q.jacobiSvd(ComputeFullU | ComputeFullV);
+  const JacobiSVD<MatrixType, ComputeFullU | ComputeFullV> svd(q);
   const typename MatrixType::Scalar det = (svd.matrixU() * svd.matrixV().transpose()).determinant();
   MatrixType diag = rand.Identity();
   diag(MatrixType::RowsAtCompileTime - 1, MatrixType::ColsAtCompileTime - 1) = det;

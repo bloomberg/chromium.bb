@@ -48,8 +48,13 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/tpm/stub_install_attributes.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/signin/core/browser/mirror_landing_account_reconcilor_delegate.h"
+#include "components/signin/public/base/signin_switches.h"
 #endif
 
 using signin_metrics::AccountReconcilorState;
@@ -70,15 +75,6 @@ class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
   }
 
   bool ShouldAbortReconcileIfPrimaryHasError() const override { return true; }
-
-  CoreAccountId GetFirstGaiaAccountForReconcile(
-      const std::vector<CoreAccountId>& chrome_accounts,
-      const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const CoreAccountId& primary_account,
-      bool first_execution,
-      bool will_logout) const override {
-    return primary_account;
-  }
 
   std::vector<CoreAccountId> GetChromeAccountsForReconcile(
       const std::vector<CoreAccountId>& chrome_accounts,
@@ -114,11 +110,11 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
       signin::IdentityManager* identity_manager,
       SigninClient* client,
       signin::AccountConsistencyMethod account_consistency)
-      : AccountReconcilor(
-            identity_manager,
-            client,
-            CreateAccountReconcilorDelegate(identity_manager,
-                                            account_consistency)) {
+      : AccountReconcilor(identity_manager,
+                          client,
+                          CreateAccountReconcilorDelegate(identity_manager,
+                                                          account_consistency,
+                                                          client)) {
     Initialize(false /* start_reconcile_if_tokens_available */);
   }
 
@@ -138,16 +134,26 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
   static std::unique_ptr<signin::AccountReconcilorDelegate>
   CreateAccountReconcilorDelegate(
       signin::IdentityManager* identity_manager,
-      signin::AccountConsistencyMethod account_consistency) {
+      signin::AccountConsistencyMethod account_consistency,
+      SigninClient* client) {
     switch (account_consistency) {
       case signin::AccountConsistencyMethod::kMirror:
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+        if (base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
+          bool is_main_profile = client->GetInitialPrimaryAccount().has_value();
+          return std::make_unique<
+              signin::MirrorLandingAccountReconcilorDelegate>(identity_manager,
+                                                              is_main_profile);
+        }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
         return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
             identity_manager);
       case signin::AccountConsistencyMethod::kDisabled:
         return std::make_unique<signin::AccountReconcilorDelegate>();
       case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-        return std::make_unique<signin::DiceAccountReconcilorDelegate>();
+        return std::make_unique<signin::DiceAccountReconcilorDelegate>(
+            identity_manager);
 #else
         NOTREACHED();
         return nullptr;
@@ -615,8 +621,9 @@ class AccountReconcilorTestTable
   }
 };
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-
+// On Lacros, the reconcilor is always registered as reconcile is always
+// enabled.
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(AccountReconcilorMirrorTest, IdentityManagerRegistration) {
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
@@ -650,7 +657,7 @@ TEST_F(AccountReconcilorMirrorTest, Reauth) {
   ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 }
 
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 TEST_F(AccountReconcilorMirrorTest, ProfileAlreadyConnected) {
   ConnectProfileToAccount("user@gmail.com");
@@ -1208,9 +1215,7 @@ TEST_F(AccountReconcilorDiceTest, UnverifiedAccountMerge) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 }
 
-TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
-  SetAccountConsistency(signin::AccountConsistencyMethod::kDice);
-
+TEST_F(AccountReconcilorDiceTest, DeleteCookie) {
   const CoreAccountId primary_account_id =
       identity_test_env()
           ->MakePrimaryAccountAvailable("user@gmail.com",
@@ -1428,10 +1433,9 @@ class AccountReconcilorTestActiveDirectory : public AccountReconcilorTestTable {
   }
 
  private:
-  chromeos::ScopedStubInstallAttributes install_attributes_{
-      chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
-          "realm.com",
-          "device_id")};
+  ash::ScopedStubInstallAttributes install_attributes_{
+      ash::StubInstallAttributes::CreateActiveDirectoryManaged("realm.com",
+                                                               "device_id")};
 };
 
 // clang-format off
@@ -1818,6 +1822,7 @@ TEST_F(AccountReconcilorMirrorTest,
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // This test is needed until chrome changes to use gaia obfuscated id.
 // The primary account manager and token service use the gaia "email" property,
 // which preserves dots in usernames and preserves case.
@@ -1827,10 +1832,9 @@ TEST_F(AccountReconcilorMirrorTest,
 // "Dot.S@hmail.com", as seen by the token service, will be considered the same
 // as "dots@gmail.com" as returned by gaia::ParseListAccountsData().
 TEST_F(AccountReconcilorMirrorTest, StartReconcileNoopWithDots) {
-  if (identity_test_env()->identity_manager()->GetAccountIdMigrationState() !=
-      signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED) {
-    return;
-  }
+  ASSERT_EQ(
+      identity_test_env()->identity_manager()->GetAccountIdMigrationState(),
+      signin::IdentityManager::AccountIdMigrationState::MIGRATION_DONE);
 
   AccountInfo account_info = ConnectProfileToAccount("Dot.S@gmail.com");
   signin::SetListAccountsResponseOneAccount(
@@ -1842,6 +1846,7 @@ TEST_F(AccountReconcilorMirrorTest, StartReconcileNoopWithDots) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
+#endif
 
 TEST_F(AccountReconcilorMirrorTest, StartReconcileNoopMultiple) {
   AccountInfo account_info = ConnectProfileToAccount("user@gmail.com");
@@ -1939,7 +1944,14 @@ TEST_F(AccountReconcilorTest, AuthErrorTriggersListAccount) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   signin::SetListAccountsResponseOneAccount(
       account_info.email, account_info.gaia, &test_url_loader_factory_);
-  if (account_consistency == signin::AccountConsistencyMethod::kDice) {
+
+  bool expect_logout =
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles);
+#else
+      account_consistency == signin::AccountConsistencyMethod::kDice;
+#endif
+  if (expect_logout) {
     EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction())
         .Times(1);
   }
@@ -2026,21 +2038,34 @@ TEST_F(AccountReconcilorMirrorTest, StartReconcileRemoveFromCookie) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
-// Check that reconcile is aborted if there is token error on primary account.
+// Check that token error on primary account results in a logout to all accounts
+// on Lacros. For other mirror platforms, reconcile is aborted.
 TEST_F(AccountReconcilorMirrorTest, TokenErrorOnPrimary) {
   AccountInfo account_info = ConnectProfileToAccount("user@gmail.com");
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_test_env()->identity_manager(), account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
+    EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
+  }
+#endif
+  AccountReconcilor* reconcilor = GetMockReconcilor();
   signin::SetListAccountsResponseTwoAccounts(
       account_info.email, account_info.gaia, "other@gmail.com", "67890",
       &test_url_loader_factory_);
-
-  AccountReconcilor* reconcilor = GetMockReconcilor();
   reconcilor->StartReconcile(AccountReconcilor::Trigger::kCookieChange);
-
   base::RunLoop().RunUntilIdle();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
+    ASSERT_TRUE(reconcilor->is_reconcile_started_);
+    SimulateLogOutFromCookieCompleted(reconcilor,
+                                      GoogleServiceAuthError::AuthErrorNone());
+    testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
+    base::RunLoop().RunUntilIdle();
+  }
+#endif
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 

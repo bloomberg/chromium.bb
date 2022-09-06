@@ -45,8 +45,7 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
                                  const ImageTilingInfo& tiling_info,
                                  const ImageDrawOptions& draw_options) {
   gfx::RectF tile_rect = tiling_info.image_rect;
-  tile_rect.Outset(0, 0, tiling_info.spacing.width(),
-                   tiling_info.spacing.height());
+  tile_rect.set_size(tile_rect.size() + tiling_info.spacing);
 
   SkMatrix pattern_matrix =
       SkMatrix::Translate(tiling_info.phase.x(), tiling_info.phase.y());
@@ -56,7 +55,7 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   sk_sp<PaintShader> tile_shader = CreateShader(
       tile_rect, &pattern_matrix, tiling_info.image_rect, draw_options);
 
-  PaintFlags fill_flags(base_flags);
+  cc::PaintFlags fill_flags(base_flags);
   fill_flags.setShader(std::move(tile_shader));
   fill_flags.setColor(SK_ColorBLACK);
 

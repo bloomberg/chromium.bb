@@ -153,6 +153,7 @@ if(CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/av1/encoder/tx_search.h"
       "${AOM_ROOT}/av1/encoder/txb_rdopt.h"
       "${AOM_ROOT}/av1/encoder/var_based_part.h"
+      "${AOM_ROOT}/av1/encoder/nonrd_opt.h"
       "${AOM_ROOT}/av1/encoder/nonrd_pickmode.c")
 endif()
 

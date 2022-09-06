@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {goToResource, step, waitFor, waitForFunction} from '../../shared/helper.js';
+import {click, goToResource, step, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {waitForSelectedTreeElementSelectorWhichIncludesText} from '../helpers/elements-helpers.js';
+import {
+  expandSelectedNodeRecursively,
+  waitForAdorners,
+  waitForPartialContentOfSelectedElementsNode,
+  waitForSelectedTreeElementSelectorWhichIncludesText,
+} from '../helpers/elements-helpers.js';
 import {expandIssue, navigateToIssuesTab, revealNodeInElementsPanel} from '../helpers/issues-helpers.js';
 import {clickOnContextMenu} from '../helpers/sources-helpers.js';
 
@@ -38,5 +43,24 @@ describe('The Elements panel', async () => {
     await step('The correct frame is selected in the sidebar', async () => {
       await waitFor('[aria-label="frameId (iframe.html)"][aria-selected="true"]');
     });
+  });
+
+  it('has link from a slot to assigned elements', async () => {
+    await goToResource('elements/slot-element.html');
+    await expandSelectedNodeRecursively();
+    const revealElementLink = await waitFor('reveal[role="link"]', undefined, undefined, 'aria');
+    await click(revealElementLink);
+    await waitForPartialContentOfSelectedElementsNode('<h1>​headline​</h1>');
+  });
+
+  it('has link from a slot element to a slot', async () => {
+    await goToResource('elements/slot-element.html');
+    await expandSelectedNodeRecursively();
+    await waitForAdorners(([
+      {textContent: 'slot', isActive: false},
+    ]));
+    const revealSlotLink = await waitFor('[aria-label="slot"]', undefined, undefined);
+    await click(revealSlotLink);
+    await waitForPartialContentOfSelectedElementsNode('<slot>');
   });
 });

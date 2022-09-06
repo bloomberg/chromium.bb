@@ -12,28 +12,24 @@
 #if SK_SUPPORT_GPU
 
 #include "src/core/SkCanvasPriv.h"
-#include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
-#include "src/gpu/ops/TessellationPathRenderer.h"
+#include "src/gpu/ganesh/GrOpFlushState.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/ops/GrDrawOp.h"
+#include "src/gpu/ganesh/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/ganesh/ops/TessellationPathRenderer.h"
+#include "src/gpu/ganesh/tessellate/GrPathTessellationShader.h"
+#include "src/gpu/ganesh/tessellate/PathTessellator.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 #include "src/gpu/tessellate/AffineMatrix.h"
-#include "src/gpu/tessellate/PathCurveTessellator.h"
-#include "src/gpu/tessellate/PathWedgeTessellator.h"
-#include "src/gpu/tessellate/shaders/GrPathTessellationShader.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/tessellate/MiddleOutPolygonTriangulator.h"
 
-namespace skgpu {
-
-using TrianglePatch = PatchWriter::TrianglePatch;
+namespace skgpu::v1 {
 
 namespace {
 
 enum class Mode {
     kWedgeMiddleOut,
-    kCurveMiddleOut,
-    kWedgeTessellate,
-    kCurveTessellate
+    kCurveMiddleOut
 };
 
 static const char* ModeName(Mode mode) {
@@ -42,10 +38,6 @@ static const char* ModeName(Mode mode) {
             return "MiddleOutShader (kWedges)";
         case Mode::kCurveMiddleOut:
             return "MiddleOutShader (kCurves)";
-        case Mode::kWedgeTessellate:
-            return "HardwareWedgeShader";
-        case Mode::kCurveTessellate:
-            return "HardwareCurveShader";
     }
     SkUNREACHABLE;
 }
@@ -84,43 +76,42 @@ private:
         const SkMatrix& pathMatrix = fMatrix;
         const GrCaps& caps = flushState->caps();
         const GrShaderCaps& shaderCaps = *caps.shaderCaps();
-        int numVerbsToGetMiddleOut = 0;
-        int numVerbsToGetTessellation = caps.minPathVerbsForHwTessellation();
+
+        PathTessellator::PathDrawList pathList{pathMatrix, fPath, kCyan};
+        if (fMode == Mode::kCurveMiddleOut) {
+            // This emulates what PathStencilCoverOp does when using curves, except we include the
+            // middle-out triangles directly in the written patches for convenience (normally they
+            // use a simple triangle pipeline). But PathCurveTessellator only knows how to read
+            // extra triangles from BreadcrumbTriangleList, so build on from the middle-out stack.
+            SkArenaAlloc storage{256};
+            GrInnerFanTriangulator::BreadcrumbTriangleList triangles;
+            for (tess::PathMiddleOutFanIter it(fPath); !it.done();) {
+                for (auto [p0, p1, p2] : it.nextStack()) {
+                    triangles.append(&storage,
+                                     pathMatrix.mapPoint(p0),
+                                     pathMatrix.mapPoint(p1),
+                                     pathMatrix.mapPoint(p2),
+                                     /*winding=*/1);
+                }
+            }
+
+            auto* tess = PathCurveTessellator::Make(alloc, shaderCaps.fInfinitySupport);
+            tess->prepareWithTriangles(flushState, shaderMatrix, &triangles, pathList,
+                                       fPath.countVerbs());
+            fTessellator = tess;
+        } else {
+            // This emulates what PathStencilCoverOp does when using wedges.
+            fTessellator = PathWedgeTessellator::Make(alloc, shaderCaps.fInfinitySupport);
+            fTessellator->prepare(flushState, shaderMatrix, pathList, fPath.countVerbs());
+        }
+
         auto pipeline = GrSimpleMeshDrawOpHelper::CreatePipeline(flushState, std::move(fProcessors),
                                                                  fPipelineFlags);
-        int numVerbs;
-        bool needsInnerFan;
-        switch (fMode) {
-            case Mode::kWedgeMiddleOut:
-                fTessellator = PathWedgeTessellator::Make(alloc, shaderCaps.infinitySupport());
-                numVerbs = numVerbsToGetMiddleOut;
-                needsInnerFan = false;
-                break;
-            case Mode::kCurveMiddleOut:
-                fTessellator = PathCurveTessellator::Make(alloc,
-                                                          shaderCaps.infinitySupport());
-                numVerbs = numVerbsToGetMiddleOut;
-                needsInnerFan = true;
-                break;
-            case Mode::kWedgeTessellate:
-                fTessellator = PathWedgeTessellator::Make(alloc, shaderCaps.infinitySupport());
-                numVerbs = numVerbsToGetTessellation;
-                needsInnerFan = false;
-                break;
-            case Mode::kCurveTessellate:
-                fTessellator = PathCurveTessellator::Make(alloc,
-                                                          shaderCaps.infinitySupport());
-                numVerbs = numVerbsToGetTessellation;
-                needsInnerFan = true;
-                break;
-        }
-        auto* tessShader = GrPathTessellationShader::Make(alloc,
+        auto* tessShader = GrPathTessellationShader::Make(*caps.shaderCaps(),
+                                                          alloc,
                                                           shaderMatrix,
                                                           kCyan,
-                                                          numVerbs,
-                                                          *pipeline,
-                                                          fTessellator->patchAttribs(),
-                                                          caps);
+                                                          fTessellator->patchAttribs());
         fProgram = GrTessellationShader::MakeProgram({alloc, flushState->writeView(),
                                                      flushState->usesMSAASurface(),
                                                      &flushState->dstProxyView(),
@@ -129,38 +120,11 @@ private:
                                                      tessShader,
                                                      pipeline,
                                                      &GrUserStencilSettings::kUnused);
-
-
-        int patchPreallocCount = fTessellator->patchPreallocCount(fPath.countVerbs());
-        if (needsInnerFan) {
-            patchPreallocCount += fPath.countVerbs() - 1;
-        }
-        PatchWriter patchWriter(flushState, fTessellator, patchPreallocCount);
-
-        if (needsInnerFan) {
-            // Write out inner fan triangles.
-            AffineMatrix m(pathMatrix);
-            for (PathMiddleOutFanIter it(fPath); !it.done();) {
-                for (auto [p0, p1, p2] : it.nextStack()) {
-                    TrianglePatch(patchWriter) << m.map2Points(p0, p1) << m.mapPoint(p2);
-                }
-            }
-        }
-
-        // Write out the curves.
-        fTessellator->writePatches(patchWriter,
-                                   tessShader->maxTessellationSegments(*caps.shaderCaps()),
-                                   shaderMatrix,
-                                   {pathMatrix, fPath, kCyan});
-
-        if (!tessShader->willUseTessellationShaders()) {
-            fTessellator->prepareFixedCountBuffers(flushState);
-        }
-
     }
+
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
         flushState->bindPipeline(*fProgram, chainBounds);
-        fTessellator->draw(flushState, fProgram->geomProc().willUseTessellationShaders());
+        fTessellator->draw(flushState);
     }
 
     const SkPath fPath;
@@ -227,9 +191,6 @@ void SamplePathTessellators::onDrawContent(SkCanvas* canvas) {
         error = "GPU Only.";
     } else if (!skgpu::v1::TessellationPathRenderer::IsSupported(*ctx->priv().caps())) {
         error = "TessellationPathRenderer not supported.";
-    } else if (fMode >= Mode::kWedgeTessellate &&
-               !ctx->priv().caps()->shaderCaps()->tessellationSupport()) {
-        error.printf("%s requires hardware tessellation support.", ModeName(fMode));
     }
     if (!error.isEmpty()) {
         canvas->clear(SK_ColorRED);
@@ -350,8 +311,6 @@ bool SamplePathTessellators::onChar(SkUnichar unichar) {
             return true;
         case '1':
         case '2':
-        case '3':
-        case '4':
             fMode = (Mode)(unichar - '1');
             return true;
     }
@@ -361,6 +320,6 @@ bool SamplePathTessellators::onChar(SkUnichar unichar) {
 Sample* MakeTessellatedPathSample() { return new SamplePathTessellators; }
 static SampleRegistry gTessellatedPathSample(MakeTessellatedPathSample);
 
-}  // namespace skgpu
+}  // namespace skgpu::v1
 
 #endif  // SK_SUPPORT_GPU

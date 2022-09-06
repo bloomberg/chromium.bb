@@ -36,6 +36,7 @@ exports.FrameManagerEmittedEvents = {
     FrameAttached: Symbol('FrameManager.FrameAttached'),
     FrameNavigated: Symbol('FrameManager.FrameNavigated'),
     FrameDetached: Symbol('FrameManager.FrameDetached'),
+    FrameSwapped: Symbol('FrameManager.FrameSwapped'),
     LifecycleEvent: Symbol('FrameManager.LifecycleEvent'),
     FrameNavigatedWithinDocument: Symbol('FrameManager.FrameNavigatedWithinDocument'),
     ExecutionContextCreated: Symbol('FrameManager.ExecutionContextCreated'),
@@ -69,6 +70,9 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
         session.on('Page.frameDetached', (event) => {
             this._onFrameDetached(event.frameId, event.reason);
         });
+        session.on('Page.frameStartedLoading', (event) => {
+            this._onFrameStartedLoading(event.frameId);
+        });
         session.on('Page.frameStoppedLoading', (event) => {
             this._onFrameStoppedLoading(event.frameId);
         });
@@ -96,6 +100,13 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
             const result = await Promise.all([
                 client.send('Page.enable'),
                 client.send('Page.getFrameTree'),
+                client !== this._client
+                    ? client.send('Target.setAutoAttach', {
+                        autoAttach: true,
+                        waitForDebuggerOnStart: false,
+                        flatten: true,
+                    })
+                    : Promise.resolve(),
             ]);
             const { frameTree } = result[1];
             this._handleFrameTree(client, frameTree);
@@ -142,7 +153,7 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
         watcher.dispose();
         if (error)
             throw error;
-        return watcher.navigationResponse();
+        return await watcher.navigationResponse();
         async function navigate(client, url, referrer, frameId) {
             try {
                 const response = await client.send('Page.navigate', {
@@ -172,7 +183,7 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
         watcher.dispose();
         if (error)
             throw error;
-        return watcher.navigationResponse();
+        return await watcher.navigationResponse();
     }
     async _onAttachedToTarget(event) {
         if (event.targetInfo.type !== 'iframe') {
@@ -180,7 +191,8 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
         }
         const frame = this._frames.get(event.targetInfo.targetId);
         const session = Connection_js_1.Connection.fromSession(this._client).session(event.sessionId);
-        frame._updateClient(session);
+        if (frame)
+            frame._updateClient(session);
         this.setupEventListeners(session);
         await this.initialize(session);
     }
@@ -198,6 +210,12 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
             return;
         frame._onLifecycleEvent(event.loaderId, event.name);
         this.emit(exports.FrameManagerEmittedEvents.LifecycleEvent, frame);
+    }
+    _onFrameStartedLoading(frameId) {
+        const frame = this._frames.get(frameId);
+        if (!frame)
+            return;
+        frame._onLoadingStarted();
     }
     _onFrameStoppedLoading(frameId) {
         const frame = this._frames.get(frameId);
@@ -287,11 +305,13 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
         // Frames might be removed before we send this.
         await Promise.all(this.frames()
             .filter((frame) => frame._client === session)
-            .map((frame) => session.send('Page.createIsolatedWorld', {
+            .map((frame) => session
+            .send('Page.createIsolatedWorld', {
             frameId: frame._id,
             worldName: name,
             grantUniveralAccess: true,
-        })));
+        })
+            .catch(helper_js_1.debugError)));
     }
     _onFrameNavigatedWithinDocument(frameId, url) {
         const frame = this._frames.get(frameId);
@@ -309,6 +329,9 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
             // For frames that become OOP iframes, the reason would be 'swap'.
             if (frame)
                 this._removeFramesRecursively(frame);
+        }
+        else if (reason === 'swap') {
+            this.emit(exports.FrameManagerEmittedEvents.FrameSwapped, frame);
         }
     }
     _onExecutionContextCreated(contextPayload, session) {
@@ -331,7 +354,7 @@ class FrameManager extends EventEmitter_js_1.EventEmitter {
                 world = frame._secondaryWorld;
             }
         }
-        const context = new ExecutionContext_js_1.ExecutionContext(frame._client || this._client, contextPayload, world);
+        const context = new ExecutionContext_js_1.ExecutionContext((frame === null || frame === void 0 ? void 0 : frame._client) || this._client, contextPayload, world);
         if (world)
             world._setContext(context);
         const key = `${session.id()}:${contextPayload.id}`;
@@ -435,6 +458,10 @@ class Frame {
         /**
          * @internal
          */
+        this._hasStartedLoading = false;
+        /**
+         * @internal
+         */
         this._lifecycleEvents = new Set();
         this._frameManager = frameManager;
         this._parentFrame = parentFrame;
@@ -455,6 +482,11 @@ class Frame {
         this._mainWorld = new DOMWorld_js_1.DOMWorld(this._client, this._frameManager, this, this._frameManager._timeoutSettings);
         this._secondaryWorld = new DOMWorld_js_1.DOMWorld(this._client, this._frameManager, this, this._frameManager._timeoutSettings);
     }
+    /**
+     * @remarks
+     *
+     * @returns `true` if the frame is an OOP frame, or `false` otherwise.
+     */
     isOOPFrame() {
         return this._client !== this._frameManager._client;
     }
@@ -522,6 +554,12 @@ class Frame {
      */
     async waitForNavigation(options = {}) {
         return await this._frameManager.waitForFrameNavigation(this, options);
+    }
+    /**
+     * @internal
+     */
+    client() {
+        return this._client;
     }
     /**
      * @returns a promise that resolves to the frame's default execution context.
@@ -592,7 +630,7 @@ class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     async $eval(selector, pageFunction, ...args) {
         return this._mainWorld.$eval(selector, pageFunction, ...args);
@@ -614,7 +652,7 @@ class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     async $$eval(selector, pageFunction, ...args) {
         return this._mainWorld.$$eval(selector, pageFunction, ...args);
@@ -1026,6 +1064,12 @@ class Frame {
     _onLoadingStopped() {
         this._lifecycleEvents.add('DOMContentLoaded');
         this._lifecycleEvents.add('load');
+    }
+    /**
+     * @internal
+     */
+    _onLoadingStarted() {
+        this._hasStartedLoading = true;
     }
     /**
      * @internal

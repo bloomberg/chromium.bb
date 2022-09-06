@@ -35,9 +35,8 @@
 namespace blink {
 class DOMFeaturePolicy;
 
-class CORE_EXPORT HTMLIFrameElement final
-    : public HTMLFrameElementBase,
-      public Supplementable<HTMLIFrameElement> {
+class CORE_EXPORT HTMLIFrameElement : public HTMLFrameElementBase,
+                                      public Supplementable<HTMLIFrameElement> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -59,6 +58,10 @@ class CORE_EXPORT HTMLIFrameElement final
   FrameOwnerElementType OwnerType() const final {
     return FrameOwnerElementType::kIframe;
   }
+
+  bool Anonymous() const override { return anonymous_; }
+
+  bool IsSupportedByRegionCapture() const override { return true; }
 
  private:
   void SetCollapsed(bool) override;

@@ -43,6 +43,15 @@ void HitTestingTransformState::ApplyTransform(
   }
 }
 
+void HitTestingTransformState::ApplyTransform(
+    const GeometryMapper::Translation2DOrMatrix& transform) {
+  if (transform.IsIdentityOr2DTranslation()) {
+    Translate(transform.Translation2D());
+  } else {
+    accumulated_transform_.Multiply(transform.Matrix());
+  }
+}
+
 void HitTestingTransformState::Flatten() {
   TransformationMatrix inverse_transform = accumulated_transform_.Inverse();
   last_planar_point_ = inverse_transform.ProjectPoint(last_planar_point_);
@@ -56,7 +65,7 @@ gfx::PointF HitTestingTransformState::MappedPoint() const {
   return accumulated_transform_.Inverse().ProjectPoint(last_planar_point_);
 }
 
-FloatQuad HitTestingTransformState::MappedQuad() const {
+gfx::QuadF HitTestingTransformState::MappedQuad() const {
   return accumulated_transform_.Inverse().ProjectQuad(last_planar_quad_);
 }
 

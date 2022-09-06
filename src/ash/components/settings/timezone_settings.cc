@@ -11,7 +11,6 @@
 
 #include "ash/components/settings/timezone_settings_helper.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/unicodestring.h"
@@ -23,7 +22,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
 
@@ -374,7 +372,7 @@ TimezoneSettingsBaseImpl::GetTimezoneList() const {
 }
 
 TimezoneSettingsBaseImpl::TimezoneSettingsBaseImpl() {
-  for (size_t i = 0; i < base::size(kTimeZones); ++i) {
+  for (size_t i = 0; i < std::size(kTimeZones); ++i) {
     timezones_.push_back(base::WrapUnique(icu::TimeZone::createTimeZone(
         icu::UnicodeString(kTimeZones[i], -1, US_INV))));
   }

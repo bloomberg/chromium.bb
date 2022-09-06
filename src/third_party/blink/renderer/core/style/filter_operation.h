@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -33,7 +34,8 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_convolve_matrix.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_turbulence.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -65,6 +67,7 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
     kColorMatrix,
     kComponentTransfer,
     kConvolveMatrix,
+    kTurbulence,
     kNone
   };
 
@@ -82,6 +85,7 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
       case kBlur:
       case kDropShadow:
       case kColorMatrix:
+      case kTurbulence:
         return true;
       case kReference:
       case kComponentTransfer:
@@ -98,7 +102,9 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
   virtual ~FilterOperation() = default;
   virtual void Trace(Visitor* visitor) const {}
 
-  virtual bool operator==(const FilterOperation&) const = 0;
+  bool operator==(const FilterOperation& o) const {
+    return IsSameType(o) && IsEqualAssumingSameType(o);
+  }
   bool operator!=(const FilterOperation& o) const { return !(*this == o); }
 
   OperationType GetType() const { return type_; }
@@ -119,6 +125,8 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
 
  protected:
   FilterOperation(OperationType type) : type_(type) {}
+
+  virtual bool IsEqualAssumingSameType(const FilterOperation&) const = 0;
 
   OperationType type_;
 
@@ -147,9 +155,10 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
 
   void Trace(Visitor*) const override;
 
- private:
-  bool operator==(const FilterOperation&) const override;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation&) const override;
 
+ private:
   AtomicString url_;
   Member<SVGResource> resource_;
   Member<Filter> filter_;
@@ -172,15 +181,14 @@ class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
 
   double Amount() const { return amount_; }
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const BasicColorMatrixFilterOperation* other =
         static_cast<const BasicColorMatrixFilterOperation*>(&o);
     return amount_ == other->amount_;
   }
 
+ private:
   double amount_;
 };
 
@@ -192,15 +200,14 @@ class CORE_EXPORT ColorMatrixFilterOperation : public FilterOperation {
 
   const Vector<float>& Values() const { return values_; }
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const ColorMatrixFilterOperation* other =
         static_cast<const ColorMatrixFilterOperation*>(&o);
     return values_ == other->values_;
   }
 
+ private:
   Vector<float> values_;
 };
 
@@ -240,15 +247,14 @@ class CORE_EXPORT BasicComponentTransferFilterOperation
 
   bool AffectsOpacity() const override { return type_ == kOpacity; }
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const BasicComponentTransferFilterOperation* other =
         static_cast<const BasicComponentTransferFilterOperation*>(&o);
     return amount_ == other->amount_;
   }
 
+ private:
   double amount_;
 };
 
@@ -279,15 +285,14 @@ class CORE_EXPORT BlurFilterOperation : public FilterOperation {
   bool MovesPixels() const override { return true; }
   gfx::RectF MapRect(const gfx::RectF&) const override;
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const BlurFilterOperation* other =
         static_cast<const BlurFilterOperation*>(&o);
     return std_deviation_ == other->std_deviation_;
   }
 
+ private:
   Length std_deviation_;
 };
 
@@ -309,15 +314,14 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
   bool MovesPixels() const override { return true; }
   gfx::RectF MapRect(const gfx::RectF&) const override;
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const DropShadowFilterOperation* other =
         static_cast<const DropShadowFilterOperation*>(&o);
     return shadow_ == other->shadow_;
   }
 
+ private:
   ShadowData shadow_;
 };
 
@@ -339,9 +343,10 @@ class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
   bool MovesPixels() const override { return true; }
   gfx::RectF MapRect(const gfx::RectF&) const override;
 
- private:
-  bool operator==(const FilterOperation&) const override;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation&) const override;
 
+ private:
   BoxReflection reflection_;
 };
 
@@ -378,10 +383,8 @@ class CORE_EXPORT ConvolveMatrixFilterOperation : public FilterOperation {
   bool PreserveAlpha() const { return preserve_alpha_; }
   const Vector<float>& KernelMatrix() const { return kernel_matrix_; }
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const ConvolveMatrixFilterOperation* other =
         static_cast<const ConvolveMatrixFilterOperation*>(&o);
     return (kernel_size_ == other->kernel_size_ &&
@@ -392,6 +395,7 @@ class CORE_EXPORT ConvolveMatrixFilterOperation : public FilterOperation {
             kernel_matrix_ == other->kernel_matrix_);
   }
 
+ private:
   gfx::Size kernel_size_;
   float divisor_;
   float bias_;
@@ -425,10 +429,8 @@ class CORE_EXPORT ComponentTransferFilterOperation : public FilterOperation {
   ComponentTransferFunction BlueFunc() const { return blue_func_; }
   ComponentTransferFunction AlphaFunc() const { return alpha_func_; }
 
- private:
-  bool operator==(const FilterOperation& o) const override {
-    if (!IsSameType(o))
-      return false;
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
     const ComponentTransferFilterOperation* other =
         static_cast<const ComponentTransferFilterOperation*>(&o);
     return (
@@ -436,6 +438,7 @@ class CORE_EXPORT ComponentTransferFilterOperation : public FilterOperation {
         blue_func_ == other->blue_func_ && alpha_func_ == other->alpha_func_);
   }
 
+ private:
   ComponentTransferFunction red_func_;
   ComponentTransferFunction green_func_;
   ComponentTransferFunction blue_func_;
@@ -446,6 +449,56 @@ template <>
 struct DowncastTraits<ComponentTransferFilterOperation> {
   static bool AllowFrom(const FilterOperation& op) {
     return op.GetType() == FilterOperation::kComponentTransfer;
+  }
+};
+
+class CORE_EXPORT TurbulenceFilterOperation : public FilterOperation {
+ public:
+  TurbulenceFilterOperation(TurbulenceType type,
+                            float base_frequency_x,
+                            float base_frequency_y,
+                            int num_octaves,
+                            float seed,
+                            bool stitch_tiles)
+      : FilterOperation(kTurbulence),
+        type_(type),
+        base_frequency_x_(base_frequency_x),
+        base_frequency_y_(base_frequency_y),
+        num_octaves_(num_octaves),
+        seed_(seed),
+        stitch_tiles_(stitch_tiles) {}
+
+  TurbulenceType Type() const { return type_; }
+  float BaseFrequencyX() const { return base_frequency_x_; }
+  float BaseFrequencyY() const { return base_frequency_y_; }
+  int NumOctaves() const { return num_octaves_; }
+  float Seed() const { return seed_; }
+  bool StitchTiles() const { return stitch_tiles_; }
+
+ protected:
+  bool IsEqualAssumingSameType(const FilterOperation& o) const override {
+    const TurbulenceFilterOperation* other =
+        static_cast<const TurbulenceFilterOperation*>(&o);
+    return (type_ == other->type_ &&
+            base_frequency_x_ == other->base_frequency_x_ &&
+            base_frequency_y_ == other->base_frequency_y_ &&
+            num_octaves_ == other->num_octaves_ && seed_ == other->seed_ &&
+            stitch_tiles_ == other->stitch_tiles_);
+  }
+
+ private:
+  TurbulenceType type_;
+  float base_frequency_x_;
+  float base_frequency_y_;
+  int num_octaves_;
+  float seed_;
+  bool stitch_tiles_;
+};
+
+template <>
+struct DowncastTraits<TurbulenceFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::kTurbulence;
   }
 };
 

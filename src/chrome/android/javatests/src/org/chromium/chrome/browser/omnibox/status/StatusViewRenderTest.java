@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconRes
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.ToolbarTestUtils;
+import org.chromium.chrome.test.util.ToolbarUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
@@ -43,7 +43,7 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 
 import java.io.IOException;
 
@@ -51,10 +51,12 @@ import java.io.IOException;
  * Render tests for {@link StatusView}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class StatusViewRenderTest extends DummyUiActivityTestCase {
+public class StatusViewRenderTest extends BlankUiTestActivityTestCase {
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_OMNIBOX)
+                    .build();
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -91,11 +93,9 @@ public class StatusViewRenderTest extends DummyUiActivityTestCase {
             // clang-format off
             mLocationBarModel = new LocationBarModel(mStatusView.getContext(),
                     NewTabPageDelegate.EMPTY, url -> url.getSpec(), window -> null,
-                    ToolbarTestUtils.OFFLINE_STATUS, mSearchEngineLogoUtils);
+                    ToolbarUnitTestUtils.OFFLINE_STATUS, mSearchEngineLogoUtils);
             // clang-format on
             mLocationBarModel.setTab(null, /*  incognito= */ false);
-            mStatusView.setLocationBarDataProvider(mLocationBarModel);
-            mStatusView.setSearchEngineLogoUtils(mSearchEngineLogoUtils);
             mStatusModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS).build();
             PropertyModelChangeProcessor.create(mStatusModel, mStatusView, new StatusViewBinder());
 

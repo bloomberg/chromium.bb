@@ -37,8 +37,6 @@ const size_t kHashSize = 32;
 
 namespace syncer {
 
-const char kNigoriKeyName[] = "nigori-key";
-
 namespace {
 
 // NigoriStream simplifies the concatenation operation of the Nigori protocol.
@@ -240,9 +238,6 @@ bool Nigori::Permute(Type type,
 
 // Enc[Kenc,Kmac](value)
 bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
-  if (0U >= value.size())
-    return false;
-
   std::string iv;
   crypto::RandBytes(base::WriteInto(&iv, kIvSize + 1), kIvSize);
 
@@ -326,7 +321,7 @@ std::string Nigori::GenerateScryptSalt() {
   static const size_t kSaltSizeInBytes = 32;
   std::string salt;
   salt.resize(kSaltSizeInBytes);
-  crypto::RandBytes(base::data(salt), salt.size());
+  crypto::RandBytes(std::data(salt), salt.size());
   return salt;
 }
 

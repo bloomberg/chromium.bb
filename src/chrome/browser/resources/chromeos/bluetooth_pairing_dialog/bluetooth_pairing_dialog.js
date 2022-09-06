@@ -6,7 +6,7 @@ import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_dialog.js'
 import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_pairing_ui.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
+import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import './strings.m.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
@@ -57,23 +57,36 @@ Polymer({
       type: String,
       value: null,
     },
+
+    /**
+     * Flag indicating whether links should be displayed or not. In some
+     * cases, such as the user being in OOBE or the login screen, links will
+     * not work and should not be displayed.
+     * This is set by the dialog arguments when |isBluetoothRevampEnabled_| is
+     * true.
+     */
+    shouldOmitLinks_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @override */
   attached() {
-    let dialogArgs = chrome.getVariableValue('dialogArguments');
+    const dialogArgs = chrome.getVariableValue('dialogArguments');
 
     if (this.isBluetoothRevampEnabled_) {
       if (!dialogArgs) {
         return;
       }
 
-      let parsedDialogArgs = JSON.parse(dialogArgs);
+      const parsedDialogArgs = JSON.parse(dialogArgs);
       if (!parsedDialogArgs) {
         return;
       }
 
       this.deviceAddress_ = parsedDialogArgs.address;
+      this.shouldOmitLinks_ = !!parsedDialogArgs.shouldOmitLinks;
       return;
     }
 
@@ -87,7 +100,7 @@ Polymer({
       return;
     }
 
-    let parsedDialogArgs = JSON.parse(dialogArgs);
+    const parsedDialogArgs = JSON.parse(dialogArgs);
 
     // Wait for next render or deviceDialog has not been created yet.
     afterNextRender(this, () => this.connect_(parsedDialogArgs.address));

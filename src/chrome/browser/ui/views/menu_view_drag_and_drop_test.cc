@@ -7,6 +7,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/views/menu_test_base.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -83,7 +84,6 @@ class TestTargetView : public views::View {
   bool CanDrop(const OSExchangeData& data) override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  DragOperation OnPerformDrop(const ui::DropTargetEvent& event) override;
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
 
@@ -134,13 +134,6 @@ void TestTargetView::OnDragEntered(const ui::DropTargetEvent& event) {
 
 int TestTargetView::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
-}
-
-DragOperation TestTargetView::OnPerformDrop(const ui::DropTargetEvent& event) {
-  auto drop_cb = GetDropCallback(event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(event, output_drag_op);
-  return output_drag_op;
 }
 
 views::View::DropCallback TestTargetView::GetDropCallback(
@@ -200,9 +193,6 @@ class MenuViewDragAndDropTest : public MenuTestBase,
   DragOperation GetDropOperation(views::MenuItemView* item,
                                  const ui::DropTargetEvent& event,
                                  DropPosition* position) override;
-  DragOperation OnPerformDrop(views::MenuItemView* menu,
-                              DropPosition position,
-                              const ui::DropTargetEvent& event) override;
   views::View::DropCallback GetDropCallback(
       views::MenuItemView* menu,
       DropPosition position,
@@ -300,16 +290,6 @@ DragOperation MenuViewDragAndDropTest::GetDropOperation(
     const ui::DropTargetEvent& event,
     DropPosition* position) {
   return DragOperation::kMove;
-}
-
-DragOperation MenuViewDragAndDropTest::OnPerformDrop(
-    views::MenuItemView* menu,
-    DropPosition position,
-    const ui::DropTargetEvent& event) {
-  auto drop_cb = GetDropCallback(menu, position, event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(event, output_drag_op);
-  return output_drag_op;
 }
 
 views::View::DropCallback MenuViewDragAndDropTest::GetDropCallback(
@@ -417,7 +397,7 @@ void MenuViewDragAndDropTestTestInMenuDrag::StartDrag() {
 // menu automatically once the drag is complete, and does not ask the delegate
 // to stay open.
 // TODO(pkasting): https://crbug.com/939621 Fails on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_TestInMenuDrag DISABLED_TestInMenuDrag
 #else
 #define MAYBE_TestInMenuDrag TestInMenuDrag
@@ -509,7 +489,7 @@ void MenuViewDragAndDropTestNestedDrag::StartDrag() {
 // implemented in menu code) will consult the delegate before closing the view
 // after the drag.
 // TODO(pkasting): https://crbug.com/939621 Fails on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_MenuViewDragAndDropNestedDrag \
   DISABLED_MenuViewDragAndDropNestedDrag
 #else
@@ -547,7 +527,15 @@ void MenuViewDragAndDropForDropStayOpen::DoTestWithMenuOpen() {
 // Test that if a menu is opened for a drop which is handled by a child view
 // that the menu does not immediately try to close.
 // If this flakes, disable and log details in http://crbug.com/523255.
-VIEW_TEST(MenuViewDragAndDropForDropStayOpen, MenuViewStaysOpenForNestedDrag)
+// Flaky on Lacros. https://crbug.com/1281104
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_MenuViewStaysOpenForNestedDrag \
+  DISABLED_MenuViewStaysOpenForNestedDrag
+#else
+#define MAYBE_MenuViewStaysOpenForNestedDrag MenuViewStaysOpenForNestedDrag
+#endif
+VIEW_TEST(MenuViewDragAndDropForDropStayOpen,
+          MAYBE_MenuViewStaysOpenForNestedDrag)
 
 class MenuViewDragAndDropForDropCancel : public MenuViewDragAndDropTest {
  public:
@@ -576,4 +564,11 @@ void MenuViewDragAndDropForDropCancel::DoTestWithMenuOpen() {
 
 // Test that if a menu is opened for a drop handled entirely by menu code, the
 // menu will try to close if it does not receive any drag updates.
-VIEW_TEST(MenuViewDragAndDropForDropCancel, MenuViewCancelsForOwnDrag)
+// Flaky on Lacros. https://crbug.com/1281103
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_MenuViewCancelsForOwnDrag \
+  DISABLED_MenuViewCancelsForOwnDrag
+#else
+#define MAYBE_MenuViewCancelsForOwnDrag MenuViewCancelsForOwnDrag
+#endif
+VIEW_TEST(MenuViewDragAndDropForDropCancel, MAYBE_MenuViewCancelsForOwnDrag)

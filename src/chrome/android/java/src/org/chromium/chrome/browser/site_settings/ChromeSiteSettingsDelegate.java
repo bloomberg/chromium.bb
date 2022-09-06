@@ -15,9 +15,10 @@ import androidx.preference.Preference;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappPermissionManager;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSnackbarController;
@@ -36,6 +37,7 @@ import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.ContentFeatureList;
+import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.url.GURL;
 
@@ -159,6 +161,8 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
             case SiteSettingsCategory.Type.BLUETOOTH_SCANNING:
                 return CommandLine.getInstance().hasSwitch(
                         ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES);
+            case SiteSettingsCategory.Type.FEDERATED_IDENTITY_API:
+                return ContentFeatureList.isEnabled(ContentFeatures.FED_CM);
             case SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE:
                 return ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_GLOBAL);
             case SiteSettingsCategory.Type.NFC:
@@ -166,6 +170,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
             default:
                 return true;
         }
+    }
+
+    @Override
+    public boolean isIncognitoModeEnabled() {
+        return IncognitoUtils.isIncognitoModeEnabled();
     }
 
     @Override
@@ -187,7 +196,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     @Nullable
     public String getDelegateAppNameForOrigin(Origin origin, @ContentSettingsType int type) {
         if (type == ContentSettingsType.NOTIFICATIONS) {
-            return TrustedWebActivityPermissionManager.get().getDelegateAppName(origin);
+            return InstalledWebappPermissionManager.get().getDelegateAppName(origin);
         }
 
         return null;
@@ -197,7 +206,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     @Nullable
     public String getDelegatePackageNameForOrigin(Origin origin, @ContentSettingsType int type) {
         if (type == ContentSettingsType.NOTIFICATIONS) {
-            return TrustedWebActivityPermissionManager.get().getDelegatePackageName(origin);
+            return InstalledWebappPermissionManager.get().getDelegatePackageName(origin);
         }
 
         return null;
@@ -230,14 +239,14 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     @Override
     public Set<String> getAllDelegatedNotificationOrigins() {
-        return TrustedWebActivityPermissionManager.get().getAllDelegatedOrigins();
+        return InstalledWebappPermissionManager.get().getAllDelegatedOrigins();
     }
 
     @Override
     public void maybeDisplayPrivacySandboxSnackbar() {
         // Only show the snackbar when the Privacy Sandbox APIs are enabled.
-        if (mPrivacySandboxController != null
-                && PrivacySandboxBridge.isPrivacySandboxEnabled()) {
+        if (mPrivacySandboxController != null && PrivacySandboxBridge.isPrivacySandboxEnabled()
+                && !PrivacySandboxBridge.isPrivacySandboxRestricted()) {
             mPrivacySandboxController.showSnackbar();
         }
     }

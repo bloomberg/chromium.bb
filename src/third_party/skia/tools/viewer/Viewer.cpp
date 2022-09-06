@@ -19,6 +19,7 @@
 #include "include/utils/SkPaintFilterCanvas.h"
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkColorSpacePriv.h"
+#include "src/core/SkGlyphRun.h"
 #include "src/core/SkImagePriv.h"
 #include "src/core/SkMD5.h"
 #include "src/core/SkOSFile.h"
@@ -30,14 +31,14 @@
 #include "src/core/SkTaskGroup.h"
 #include "src/core/SkTextBlobPriv.h"
 #include "src/core/SkVMBlitter.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrPersistentCacheUtils.h"
-#include "src/gpu/GrShaderUtils.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrPersistentCacheUtils.h"
 #include "src/image/SkImage_Base.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/utils/SkJSONWriter.h"
 #include "src/utils/SkOSPath.h"
+#include "src/utils/SkShaderUtils.h"
 #include "tools/Resources.h"
 #include "tools/RuntimeBlendUtils.h"
 #include "tools/ToolUtils.h"
@@ -51,13 +52,14 @@
 #include "tools/viewer/ParticlesSlide.h"
 #include "tools/viewer/SKPSlide.h"
 #include "tools/viewer/SampleSlide.h"
+#include "tools/viewer/SkSLDebuggerSlide.h"
 #include "tools/viewer/SkSLSlide.h"
 #include "tools/viewer/SlideDir.h"
 #include "tools/viewer/SvgSlide.h"
 
 #if SK_GPU_V1
-#include "src/gpu/ops/AtlasPathRenderer.h"
-#include "src/gpu/ops/TessellationPathRenderer.h"
+#include "src/gpu/ganesh/ops/AtlasPathRenderer.h"
+#include "src/gpu/ganesh/ops/TessellationPathRenderer.h"
 #endif
 
 #include <cstdlib>
@@ -73,8 +75,11 @@
 #if defined(SK_ENABLE_SKOTTIE)
     #include "tools/viewer/SkottieSlide.h"
 #endif
-#if defined(SK_ENABLE_SKRIVE)
-    #include "tools/viewer/SkRiveSlide.h"
+
+#include "tools/viewer/RiveSlide.h"
+
+#if defined(SK_ENABLE_SVG)
+    #include "modules/svg/include/SkSVGOpenTypeSVGDecoder.h"
 #endif
 
 class CapturingShaderErrorHandler : public GrContextOptions::ShaderErrorHandler {
@@ -165,13 +170,15 @@ static DEFINE_string2(match, m, nullptr,
 #endif
 
 static DEFINE_string(jpgs   , PATH_PREFIX "jpgs"   , "Directory to read jpgs from.");
+static DEFINE_string(jxls   , PATH_PREFIX "jxls"   , "Directory to read jxls from.");
 static DEFINE_string(skps   , PATH_PREFIX "skps"   , "Directory to read skps from.");
 static DEFINE_string(mskps  , PATH_PREFIX "mskps"  , "Directory to read mskps from.");
 static DEFINE_string(lotties, PATH_PREFIX "lotties", "Directory to read (Bodymovin) jsons from.");
-static DEFINE_string(rives  , PATH_PREFIX "rives"  , "Directory to read Rive (Flare) files from.");
 #undef PATH_PREFIX
 
 static DEFINE_string(svgs, "", "Directory to read SVGs from, or a single SVG file.");
+
+static DEFINE_string(rives, "", "Directory to read RIVs from, or a single .riv file.");
 
 static DEFINE_int_2(threads, j, -1,
                "Run threadsafe tests on a threadpool with this many extra threads, "
@@ -355,6 +362,9 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     , fPerspectiveMode(kPerspective_Off)
 {
     SkGraphics::Init();
+#if defined(SK_ENABLE_SVG)
+    SkGraphics::SetOpenTypeSVGDecoderFactory(SkSVGOpenTypeSVGDecoder::Make);
+#endif
 
     gPathRendererNames[GpuPathRenderers::kDefault] = "Default Path Renderers";
     gPathRendererNames[GpuPathRenderers::kAtlas] = "Atlas (tessellation)";
@@ -768,18 +778,20 @@ void Viewer::initSlides() {
             [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
                 return sk_make_sp<ImageSlide>(name, path);}
         },
+        { ".jxl", "jxl-dir", FLAGS_jxls,
+            [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
+                return sk_make_sp<ImageSlide>(name, path);}
+        },
 #if defined(SK_ENABLE_SKOTTIE)
         { ".json", "skottie-dir", FLAGS_lotties,
             [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
                 return sk_make_sp<SkottieSlide>(name, path);}
         },
 #endif
-    #if defined(SK_ENABLE_SKRIVE)
-            { ".flr", "skrive-dir", FLAGS_rives,
-                [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
-                    return sk_make_sp<SkRiveSlide>(name, path);}
-            },
-    #endif
+        { ".riv", "rive-dir", FLAGS_rives,
+            [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
+                return sk_make_sp<RiveSlide>(name, path);}
+        },
 #if defined(SK_ENABLE_SVG)
         { ".svg", "svg-dir", FLAGS_svgs,
             [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
@@ -873,6 +885,14 @@ void Viewer::initSlides() {
     // Runtime shader editor
     {
         auto slide = sk_make_sp<SkSLSlide>();
+        if (!CommandLineFlags::ShouldSkip(FLAGS_match, slide->getName().c_str())) {
+            fSlides.push_back(std::move(slide));
+        }
+    }
+
+    // Runtime shader debugger
+    {
+        auto slide = sk_make_sp<SkSLDebuggerSlide>();
         if (!CommandLineFlags::ShouldSkip(FLAGS_match, slide->getName().c_str())) {
             fSlides.push_back(std::move(slide));
         }
@@ -1369,6 +1389,20 @@ public:
         this->SkPaintFilterCanvas::onDrawTextBlob(
             this->filterTextBlob(paint, blob, &cache), x, y, paint);
     }
+
+    void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) override {
+        sk_sp<SkTextBlob> cache;
+        sk_sp<SkTextBlob> blob = glyphRunList.makeBlob();
+        this->filterTextBlob(paint, blob.get(), &cache);
+        if (!cache) {
+            this->SkPaintFilterCanvas::onDrawGlyphRunList(glyphRunList, paint);
+            return;
+        }
+        SkGlyphRunBuilder builder;
+        const SkGlyphRunList& filtered = builder.blobToGlyphRunList(*cache, glyphRunList.origin());
+        this->SkPaintFilterCanvas::onDrawGlyphRunList(filtered, paint);
+    }
+
     bool filterFont(SkTCopyOnFirstWrite<SkFont>* font) const {
         if (fFontOverrides->fTypeface) {
             font->writable()->setTypeface(fFont->refTypeface());
@@ -1445,7 +1479,7 @@ public:
             paint.setDither(fPaint->isDither());
         }
         if (fPaintOverrides->fForceRuntimeBlend) {
-            if (skstd::optional<SkBlendMode> mode = paint.asBlendMode()) {
+            if (std::optional<SkBlendMode> mode = paint.asBlendMode()) {
                 paint.setBlender(GetRuntimeBlendForBlendMode(*mode));
             }
         }
@@ -1835,12 +1869,12 @@ static bool ImGui_DragQuad(SkPoint* pts) {
     return dc.fDragging;
 }
 
-static SkSL::String build_sksl_highlight_shader() {
-    return SkSL::String("out half4 sk_FragColor;\n"
+static std::string build_sksl_highlight_shader() {
+    return std::string("out half4 sk_FragColor;\n"
                         "void main() { sk_FragColor = half4(1, 0, 1, 0.5); }");
 }
 
-static SkSL::String build_metal_highlight_shader(const SkSL::String& inShader) {
+static std::string build_metal_highlight_shader(const std::string& inShader) {
     // Metal fragment shaders need a lot of non-trivial boilerplate that we don't want to recompute
     // here. So keep all shader code, but right before `return *_out;`, swap out the sk_FragColor.
     size_t pos = inShader.rfind("return *_out;\n");
@@ -1848,19 +1882,19 @@ static SkSL::String build_metal_highlight_shader(const SkSL::String& inShader) {
         return inShader;
     }
 
-    SkSL::String replacementShader = inShader;
+    std::string replacementShader = inShader;
     replacementShader.insert(pos, "_out->sk_FragColor = float4(1.0, 0.0, 1.0, 0.5); ");
     return replacementShader;
 }
 
-static SkSL::String build_glsl_highlight_shader(const GrShaderCaps& shaderCaps) {
-    const char* versionDecl = shaderCaps.versionDeclString();
-    SkSL::String highlight = versionDecl ? versionDecl : "";
-    if (shaderCaps.usesPrecisionModifiers()) {
+static std::string build_glsl_highlight_shader(const GrShaderCaps& shaderCaps) {
+    const char* versionDecl = shaderCaps.fVersionDeclString;
+    std::string highlight = versionDecl ? versionDecl : "";
+    if (shaderCaps.fUsesPrecisionModifiers) {
         highlight.append("precision mediump float;\n");
     }
-    highlight.appendf("out vec4 sk_FragColor;\n"
-                      "void main() { sk_FragColor = vec4(1, 0, 1, 0.5); }");
+    SkSL::String::appendf(&highlight, "out vec4 sk_FragColor;\n"
+                                      "void main() { sk_FragColor = vec4(1, 0, 1, 0.5); }");
     return highlight;
 }
 
@@ -2317,12 +2351,12 @@ void Viewer::drawImGui() {
                 ImGui::Checkbox("Override Size", &fFontOverrides.fSize);
                 if (fFontOverrides.fSize) {
                     ImGui::DragFloat2("TextRange", fFontOverrides.fSizeRange,
-                                      0.001f, -10.0f, 300.0f, "%.6f", 2.0f);
+                                      0.001f, -10.0f, 300.0f, "%.6f", ImGuiSliderFlags_Logarithmic);
                     float textSize = fFont.getSize();
                     if (ImGui::DragFloat("TextSize", &textSize, 0.001f,
                                          fFontOverrides.fSizeRange[0],
                                          fFontOverrides.fSizeRange[1],
-                                         "%.6f", 2.0f))
+                                         "%.6f", ImGuiSliderFlags_Logarithmic))
                     {
                         fFont.setSize(textSize);
                         uiParamsChanged = true;
@@ -2516,7 +2550,7 @@ void Viewer::drawImGui() {
                         spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_0);
                         for (auto& entry : fCachedShaders) {
                             for (int i = 0; i < kGrShaderTypeCount; ++i) {
-                                const SkSL::String& spirv(entry.fShader[i]);
+                                const std::string& spirv(entry.fShader[i]);
                                 std::string disasm;
                                 tools.Disassemble((const uint32_t*)spirv.c_str(), spirv.size() / 4,
                                                   &disasm);
@@ -2544,13 +2578,14 @@ void Viewer::drawImGui() {
 
                 // If we are changing the compile mode, we want to reset the cache and redo
                 // everything.
-                if (doDump || newOptLevel != fOptLevel) {
+                static bool sDoDeferredView = false;
+                if (doView || doDump || newOptLevel != fOptLevel) {
                     sksl = doDump || (newOptLevel == kShaderOptLevel_Source);
                     fOptLevel = (ShaderOptLevel)newOptLevel;
                     switch (fOptLevel) {
                         case kShaderOptLevel_Source:
-                            Compiler::EnableOptimizer(OverrideFlag::kDefault);
-                            Compiler::EnableInliner(OverrideFlag::kDefault);
+                            Compiler::EnableOptimizer(OverrideFlag::kOff);
+                            Compiler::EnableInliner(OverrideFlag::kOff);
                             break;
                         case kShaderOptLevel_Compile:
                             Compiler::EnableOptimizer(OverrideFlag::kOff);
@@ -2570,11 +2605,12 @@ void Viewer::drawImGui() {
                             sksl ? GrContextOptions::ShaderCacheStrategy::kSkSL
                                  : GrContextOptions::ShaderCacheStrategy::kBackendSource;
                     displayParamsChanged = true;
-                    doView = true;
 
                     fDeferredActions.push_back([=]() {
                         // Reset the cache.
                         fPersistentCache.reset();
+                        sDoDeferredView = true;
+
                         // Dump the cache once we have drawn a frame with it.
                         if (doDump) {
                             fDeferredActions.push_back([this]() {
@@ -2611,10 +2647,11 @@ void Viewer::drawImGui() {
                 }
                 ImGui::EndChild();
 
-                if (doView) {
+                if (doView || sDoDeferredView) {
                     fPersistentCache.reset();
                     ctx->priv().getGpu()->resetShaderCacheForTesting();
                     gLoadPending = true;
+                    sDoDeferredView = false;
                 }
 
                 // We don't support updating SPIRV shaders. We could re-assemble them (with edits),
@@ -2626,11 +2663,11 @@ void Viewer::drawImGui() {
                     fPersistentCache.reset();
                     ctx->priv().getGpu()->resetShaderCacheForTesting();
                     for (auto& entry : fCachedShaders) {
-                        SkSL::String backup = entry.fShader[kFragment_GrShaderType];
+                        std::string backup = entry.fShader[kFragment_GrShaderType];
                         if (entry.fHovered) {
                             // The hovered item (if any) gets a special shader to make it
                             // identifiable.
-                            SkSL::String& fragShader = entry.fShader[kFragment_GrShaderType];
+                            std::string& fragShader = entry.fShader[kFragment_GrShaderType];
                             switch (entry.fShaderType) {
                                 case SkSetFourByteTag('S', 'K', 'S', 'L'): {
                                     fragShader = build_sksl_highlight_shader();
@@ -2746,8 +2783,8 @@ void Viewer::drawImGui() {
         ImGui::Begin("Shader Errors", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
         for (int i = 0; i < gShaderErrorHandler.fErrors.count(); ++i) {
             ImGui::TextWrapped("%s", gShaderErrorHandler.fErrors[i].c_str());
-            SkSL::String sksl(gShaderErrorHandler.fShaders[i].c_str());
-            GrShaderUtils::VisitLineByLine(sksl, [](int lineNumber, const char* lineText) {
+            std::string sksl(gShaderErrorHandler.fShaders[i].c_str());
+            SkShaderUtils::VisitLineByLine(sksl, [](int lineNumber, const char* lineText) {
                 ImGui::TextWrapped("%4i\t%s\n", lineNumber, lineText);
             });
         }
@@ -2868,7 +2905,7 @@ void Viewer::dumpShadersToResources() {
         SkString vertPath = SkStringPrintf("%s/Vertex_%02d.vert", directory.c_str(), index);
         FILE* vertFile = sk_fopen(vertPath.c_str(), kWrite_SkFILE_Flag);
         if (vertFile) {
-            const SkSL::String& vertText = entry->fShader[kVertex_GrShaderType];
+            const std::string& vertText = entry->fShader[kVertex_GrShaderType];
             SkAssertResult(sk_fwrite(vertText.c_str(), vertText.size(), vertFile));
             sk_fclose(vertFile);
         } else {
@@ -2878,7 +2915,7 @@ void Viewer::dumpShadersToResources() {
         SkString fragPath = SkStringPrintf("%s/Fragment_%02d.frag", directory.c_str(), index);
         FILE* fragFile = sk_fopen(fragPath.c_str(), kWrite_SkFILE_Flag);
         if (fragFile) {
-            const SkSL::String& fragText = entry->fShader[kFragment_GrShaderType];
+            const std::string& fragText = entry->fShader[kFragment_GrShaderType];
             SkAssertResult(sk_fwrite(fragText.c_str(), fragText.size(), fragFile));
             sk_fclose(fragFile);
         } else {

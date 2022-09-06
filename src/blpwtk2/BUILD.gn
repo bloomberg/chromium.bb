@@ -90,7 +90,11 @@ mojom("interfaces") {
 }
 
 repack("pak") {
-  output = "${root_out_dir}/blpwtk2.pak"
+  if (bb_version != "") {
+    output = "${root_out_dir}/blpwtk2.$bb_version.pak"
+  } else {
+    output = "${root_out_dir}/blpwtk2.pak"
+  }
 
   sources = [
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
@@ -117,6 +121,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2.rc",
     "private/blpwtk2_browsercontextimpl.cc",
     "private/blpwtk2_browsercontextimpl.h",
+    "private/blpwtk2_permissionmanager.cc",
+    "private/blpwtk2_permissionmanager.h",
     "private/blpwtk2_browsermainparts.cc",
     "private/blpwtk2_browsermainparts.h",
     "private/blpwtk2_browsermainrunner.cc",
@@ -327,7 +333,6 @@ shared_library("blpwtk2") {
     "//content",
     "//content:content_resources",
     "//content:sandbox_helper_win",
-    "//content/app/resources",
     "//ipc",
     "//net",
     "//net:extras",
@@ -411,7 +416,6 @@ executable("blpwtk2_shell") {
 
   deps = [
     ":blpwtk2",
-    "//base/allocator",
   ]
 
 }

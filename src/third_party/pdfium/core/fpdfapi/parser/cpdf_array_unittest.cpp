@@ -4,6 +4,7 @@
 
 #include "core/fpdfapi/parser/cpdf_array.h"
 
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -12,9 +13,8 @@
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/cxx17_backports.h"
 
-TEST(cpdf_array, GetBooleanAt) {
+TEST(ArrayTest, GetBooleanAt) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
   arr->AppendNew<CPDF_Boolean>(true);
   arr->AppendNew<CPDF_Boolean>(false);
@@ -34,88 +34,88 @@ TEST(cpdf_array, GetBooleanAt) {
   EXPECT_FALSE(arr->GetBooleanAt(99, false));
 }
 
-TEST(cpdf_array, RemoveAt) {
+TEST(ArrayTest, RemoveAt) {
   {
     const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto arr = pdfium::MakeRetain<CPDF_Array>();
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
+    for (size_t i = 0; i < std::size(elems); ++i)
       arr->AppendNew<CPDF_Number>(elems[i]);
     for (size_t i = 0; i < 3; ++i)
       arr->RemoveAt(3);
     const int expected[] = {1, 2, 3, 7, 8, 9, 10};
-    ASSERT_EQ(pdfium::size(expected), arr->size());
-    for (size_t i = 0; i < pdfium::size(expected); ++i)
+    ASSERT_EQ(std::size(expected), arr->size());
+    for (size_t i = 0; i < std::size(expected); ++i)
       EXPECT_EQ(expected[i], arr->GetIntegerAt(i));
     arr->RemoveAt(4);
     arr->RemoveAt(4);
     const int expected2[] = {1, 2, 3, 7, 10};
-    ASSERT_EQ(pdfium::size(expected2), arr->size());
-    for (size_t i = 0; i < pdfium::size(expected2); ++i)
+    ASSERT_EQ(std::size(expected2), arr->size());
+    for (size_t i = 0; i < std::size(expected2); ++i)
       EXPECT_EQ(expected2[i], arr->GetIntegerAt(i));
   }
   {
     // When the range is out of bound, RemoveAt() has no effect.
     const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto arr = pdfium::MakeRetain<CPDF_Array>();
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
+    for (size_t i = 0; i < std::size(elems); ++i)
       arr->AppendNew<CPDF_Number>(elems[i]);
     arr->RemoveAt(11);
-    EXPECT_EQ(pdfium::size(elems), arr->size());
+    EXPECT_EQ(std::size(elems), arr->size());
   }
 }
 
-TEST(cpdf_array, Clear) {
+TEST(ArrayTest, Clear) {
   const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   auto arr = pdfium::MakeRetain<CPDF_Array>();
   EXPECT_EQ(0U, arr->size());
-  for (size_t i = 0; i < pdfium::size(elems); ++i)
+  for (size_t i = 0; i < std::size(elems); ++i)
     arr->AppendNew<CPDF_Number>(elems[i]);
-  EXPECT_EQ(pdfium::size(elems), arr->size());
+  EXPECT_EQ(std::size(elems), arr->size());
   arr->Clear();
   EXPECT_EQ(0U, arr->size());
 }
 
-TEST(cpdf_array, SetAtBeyond) {
+TEST(ArrayTest, SetAtBeyond) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
-  EXPECT_EQ(nullptr, arr->SetNewAt<CPDF_Number>(0, 0));
-  EXPECT_NE(nullptr, arr->InsertNewAt<CPDF_Number>(0, 0));
-  EXPECT_EQ(nullptr, arr->SetNewAt<CPDF_Number>(1, 0));
+  EXPECT_FALSE(arr->SetNewAt<CPDF_Number>(0, 0));
+  EXPECT_TRUE(arr->InsertNewAt<CPDF_Number>(0, 0));
+  EXPECT_FALSE(arr->SetNewAt<CPDF_Number>(1, 0));
 }
 
-TEST(cpdf_array, InsertAt) {
+TEST(ArrayTest, InsertAt) {
   const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   auto arr = pdfium::MakeRetain<CPDF_Array>();
-  for (size_t i = 0; i < pdfium::size(elems); ++i)
+  for (size_t i = 0; i < std::size(elems); ++i)
     arr->InsertNewAt<CPDF_Number>(i, elems[i]);
-  ASSERT_EQ(pdfium::size(elems), arr->size());
-  for (size_t i = 0; i < pdfium::size(elems); ++i)
+  ASSERT_EQ(std::size(elems), arr->size());
+  for (size_t i = 0; i < std::size(elems); ++i)
     EXPECT_EQ(elems[i], arr->GetIntegerAt(i));
   arr->InsertNewAt<CPDF_Number>(3, 33);
   arr->InsertNewAt<CPDF_Number>(6, 55);
   arr->InsertNewAt<CPDF_Number>(12, 12);
   const int expected[] = {1, 2, 3, 33, 4, 5, 55, 6, 7, 8, 9, 10, 12};
-  ASSERT_EQ(pdfium::size(expected), arr->size());
-  for (size_t i = 0; i < pdfium::size(expected); ++i)
+  ASSERT_EQ(std::size(expected), arr->size());
+  for (size_t i = 0; i < std::size(expected); ++i)
     EXPECT_EQ(expected[i], arr->GetIntegerAt(i));
 }
 
-TEST(cpdf_array, InsertAtBeyond) {
+TEST(ArrayTest, InsertAtBeyond) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
-  EXPECT_EQ(nullptr, arr->InsertNewAt<CPDF_Number>(1, 0));
-  EXPECT_NE(nullptr, arr->InsertNewAt<CPDF_Number>(0, 0));
-  EXPECT_EQ(nullptr, arr->InsertNewAt<CPDF_Number>(2, 0));
+  EXPECT_FALSE(arr->InsertNewAt<CPDF_Number>(1, 0));
+  EXPECT_TRUE(arr->InsertNewAt<CPDF_Number>(0, 0));
+  EXPECT_FALSE(arr->InsertNewAt<CPDF_Number>(2, 0));
 }
 
-TEST(cpdf_array, Clone) {
+TEST(ArrayTest, Clone) {
   {
     // Basic case.
     const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto arr = pdfium::MakeRetain<CPDF_Array>();
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
+    for (size_t i = 0; i < std::size(elems); ++i)
       arr->InsertNewAt<CPDF_Number>(i, elems[i]);
     RetainPtr<CPDF_Array> arr2 = ToArray(arr->Clone());
     ASSERT_EQ(arr->size(), arr2->size());
-    for (size_t i = 0; i < pdfium::size(elems); ++i) {
+    for (size_t i = 0; i < std::size(elems); ++i) {
       // Clone() always create new objects.
       EXPECT_NE(arr->GetObjectAt(i), arr2->GetObjectAt(i));
       EXPECT_EQ(arr->GetIntegerAt(i), arr2->GetIntegerAt(i));
@@ -189,7 +189,7 @@ TEST(cpdf_array, Clone) {
   }
 }
 
-TEST(cpdf_array, Find) {
+TEST(ArrayTest, Find) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
   auto dict0 = pdfium::MakeRetain<CPDF_Dictionary>();
   auto dict1 = pdfium::MakeRetain<CPDF_Dictionary>();
@@ -212,7 +212,7 @@ TEST(cpdf_array, Find) {
   EXPECT_FALSE(maybe_found.has_value());
 }
 
-TEST(cpdf_array, Contains) {
+TEST(ArrayTest, Contains) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
   auto dict0 = pdfium::MakeRetain<CPDF_Dictionary>();
   auto dict1 = pdfium::MakeRetain<CPDF_Dictionary>();
@@ -224,16 +224,16 @@ TEST(cpdf_array, Contains) {
   EXPECT_FALSE(arr->Contains(dict2.Get()));
 }
 
-TEST(cpdf_array, Iterator) {
+TEST(ArrayTest, Iterator) {
   const int elems[] = {-23, -11,     3,         455,   2345877,
                        0,   7895330, -12564334, 10000, -100000};
   auto arr = pdfium::MakeRetain<CPDF_Array>();
-  for (size_t i = 0; i < pdfium::size(elems); ++i)
+  for (size_t i = 0; i < std::size(elems); ++i)
     arr->InsertNewAt<CPDF_Number>(i, elems[i]);
   size_t index = 0;
 
   CPDF_ArrayLocker locker(arr.Get());
   for (const auto& it : locker)
     EXPECT_EQ(elems[index++], it->AsNumber()->GetInteger());
-  EXPECT_EQ(pdfium::size(elems), index);
+  EXPECT_EQ(std::size(elems), index);
 }

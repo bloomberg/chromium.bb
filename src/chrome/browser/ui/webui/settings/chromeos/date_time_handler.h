@@ -9,12 +9,8 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "components/prefs/pref_change_registrar.h"
-
-namespace base {
-class ListValue;
-}
 
 namespace chromeos {
 namespace settings {
@@ -40,17 +36,17 @@ class DateTimeHandler : public ::settings::SettingsPageUIHandler,
   void SystemClockCanSetTimeChanged(bool can_set_time) override;
 
   // Called when the page is ready.
-  void HandleDateTimePageReady(const base::ListValue* args);
+  void HandleDateTimePageReady(const base::Value::List& args);
 
   // Handler to fetch the list of time zones.
-  void HandleGetTimeZones(const base::ListValue* args);
+  void HandleGetTimeZones(const base::Value::List& args);
 
   // Called to show the Set Time UI.
-  void HandleShowSetDateTimeUI(const base::ListValue* args);
+  void HandleShowSetDateTimeUI(const base::Value::List& args);
 
   // Handles clicks on the timezone row on the settings page. This should only
   // be called when the current user is a child.
-  void HandleShowParentAccessForTimeZone(const base::ListValue* args);
+  void HandleShowParentAccessForTimeZone(const base::Value::List& args);
 
   // Called when the parent access code was validated with result equals
   // |success|.

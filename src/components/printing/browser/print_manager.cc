@@ -44,15 +44,20 @@ void PrintManager::DidPrintDocument(mojom::DidPrintDocumentParamsPtr params,
 
 void PrintManager::ShowInvalidPrinterSettingsError() {}
 
-void PrintManager::PrintingFailed(int32_t cookie) {
+void PrintManager::PrintingFailed(int32_t cookie,
+                                  mojom::PrintFailureReason reason) {
   // Note: Not redundant with cookie checks in the same method in other parts of
   // the class hierarchy.
   if (!IsValidCookie(cookie))
     return;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   PdfWritingDone(0);
 #endif
+}
+
+void PrintManager::ClearPrintRenderFramesForTesting() {
+  print_render_frames_.clear();
 }
 
 bool PrintManager::IsPrintRenderFrameConnected(
@@ -93,7 +98,7 @@ content::RenderFrameHost* PrintManager::GetCurrentTargetFrame() {
 }
 
 void PrintManager::PrintingRenderFrameDeleted() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   PdfWritingDone(0);
 #endif
 }

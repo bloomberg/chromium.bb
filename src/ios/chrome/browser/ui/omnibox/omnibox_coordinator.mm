@@ -22,18 +22,22 @@
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
+#import "ios/chrome/browser/ui/gestures/view_revealing_animatee.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_return_key_forwarding_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -54,6 +58,12 @@
 
 // The mediator for the omnibox.
 @property(nonatomic, strong) OmniboxMediator* mediator;
+
+// The paste delegate for the omnibox that prevents multipasting.
+@property(nonatomic, strong) OmniboxTextFieldPasteDelegate* pasteDelegate;
+
+// The return delegate.
+@property(nonatomic, strong) ForwardingReturnDelegate* returnDelegate;
 
 @end
 
@@ -99,6 +109,8 @@
   _editView = std::make_unique<OmniboxViewIOS>(
       self.textField, self.editController, self.mediator,
       self.browser->GetBrowserState(), focuser);
+  self.pasteDelegate = [[OmniboxTextFieldPasteDelegate alloc] init];
+  [self.textField setPasteDelegate:self.pasteDelegate];
 
   self.viewController.textChangeDelegate = _editView.get();
 
@@ -120,10 +132,12 @@
 
 - (void)stop {
   self.viewController.textChangeDelegate = nil;
+  self.returnDelegate.acceptDelegate = nil;
   _editView.reset();
   self.editController = nil;
   self.viewController = nil;
   self.mediator = nil;
+  self.returnDelegate = nil;
 
   [NSNotificationCenter.defaultCenter removeObserver:self];
 }
@@ -145,7 +159,8 @@
             dispatchingForProtocol:@protocol(ThumbStripCommands)]) {
       id<ThumbStripCommands> thumbStripHandler = HandlerForProtocol(
           self.browser->GetCommandDispatcher(), ThumbStripCommands);
-      [thumbStripHandler closeThumbStrip];
+      [thumbStripHandler
+          closeThumbStripWithTrigger:ViewRevealTrigger::OmniboxFocus];
     }
 
     // In multiwindow context, -becomeFirstRepsonder is not enough to get the
@@ -190,6 +205,17 @@
                          browser:self.browser
                        popupView:std::move(popupView)];
   coordinator.presenterDelegate = presenterDelegate;
+
+  self.returnDelegate = [[ForwardingReturnDelegate alloc] init];
+  self.returnDelegate.acceptDelegate = _editView.get();
+
+  if (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
+    coordinator.pedalExtractor.matchPreviewDelegate = self.mediator;
+    coordinator.pedalExtractor.acceptDelegate = self.returnDelegate;
+    self.viewController.returnKeyDelegate = coordinator.pedalExtractor;
+  } else {
+    self.viewController.returnKeyDelegate = self.returnDelegate;
+  }
 
   return coordinator;
 }

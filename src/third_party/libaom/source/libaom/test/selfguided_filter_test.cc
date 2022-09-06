@@ -57,9 +57,12 @@ class AV1SelfguidedFilterTest
 
     uint8_t *input_ =
         (uint8_t *)aom_memalign(32, stride * (height + 32) * sizeof(uint8_t));
+    ASSERT_NE(input_, nullptr);
     uint8_t *output_ = (uint8_t *)aom_memalign(
         32, out_stride * (height + 32) * sizeof(uint8_t));
+    ASSERT_NE(output_, nullptr);
     int32_t *tmpbuf = (int32_t *)aom_memalign(32, RESTORATION_TMPBUF_SIZE);
+    ASSERT_NE(tmpbuf, nullptr);
     uint8_t *input = input_ + stride * 16 + 16;
     uint8_t *output = output_ + out_stride * 16 + 16;
 
@@ -138,11 +141,15 @@ class AV1SelfguidedFilterTest
 
     uint8_t *input_ =
         (uint8_t *)aom_memalign(32, stride * (max_h + 32) * sizeof(uint8_t));
+    ASSERT_NE(input_, nullptr);
     uint8_t *output_ = (uint8_t *)aom_memalign(
         32, out_stride * (max_h + 32) * sizeof(uint8_t));
+    ASSERT_NE(output_, nullptr);
     uint8_t *output2_ = (uint8_t *)aom_memalign(
         32, out_stride * (max_h + 32) * sizeof(uint8_t));
+    ASSERT_NE(output2_, nullptr);
     int32_t *tmpbuf = (int32_t *)aom_memalign(32, RESTORATION_TMPBUF_SIZE);
+    ASSERT_NE(tmpbuf, nullptr);
 
     uint8_t *input = input_ + stride * 16 + 16;
     uint8_t *output = output_ + out_stride * 16 + 16;
@@ -245,9 +252,12 @@ class AV1HighbdSelfguidedFilterTest
 
     uint16_t *input_ =
         (uint16_t *)aom_memalign(32, stride * (height + 32) * sizeof(uint16_t));
+    ASSERT_NE(input_, nullptr);
     uint16_t *output_ = (uint16_t *)aom_memalign(
         32, out_stride * (height + 32) * sizeof(uint16_t));
+    ASSERT_NE(output_, nullptr);
     int32_t *tmpbuf = (int32_t *)aom_memalign(32, RESTORATION_TMPBUF_SIZE);
+    ASSERT_NE(tmpbuf, nullptr);
     uint16_t *input = input_ + stride * 16 + 16;
     uint16_t *output = output_ + out_stride * 16 + 16;
 
@@ -330,11 +340,15 @@ class AV1HighbdSelfguidedFilterTest
 
     uint16_t *input_ =
         (uint16_t *)aom_memalign(32, stride * (max_h + 32) * sizeof(uint16_t));
+    ASSERT_NE(input_, nullptr);
     uint16_t *output_ = (uint16_t *)aom_memalign(
         32, out_stride * (max_h + 32) * sizeof(uint16_t));
+    ASSERT_NE(output_, nullptr);
     uint16_t *output2_ = (uint16_t *)aom_memalign(
         32, out_stride * (max_h + 32) * sizeof(uint16_t));
+    ASSERT_NE(output2_, nullptr);
     int32_t *tmpbuf = (int32_t *)aom_memalign(32, RESTORATION_TMPBUF_SIZE);
+    ASSERT_NE(tmpbuf, nullptr);
 
     uint16_t *input = input_ + stride * 16 + 16;
     uint16_t *output = output_ + out_stride * 16 + 16;

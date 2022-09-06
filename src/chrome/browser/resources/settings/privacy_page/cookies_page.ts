@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import '../controls/settings_toggle_button.js';
-import '../icons.js';
+import '../icons.html.js';
 import '../prefs/prefs.js';
 import '../settings_shared_css.js';
 import '../site_settings/site_list.js';
@@ -21,11 +21,11 @@ import './do_not_track_toggle.js';
 import '../controls/settings_radio_group.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -37,6 +37,7 @@ import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.j
 import {CookiePrimarySetting} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 import {SettingsCollapseRadioButtonElement} from './collapse_radio_button.js';
+import {getTemplate} from './cookies_page.html.js';
 
 /**
  * Must be kept in sync with the C++ enum of the same name (see
@@ -66,9 +67,9 @@ export interface SettingsCookiesPageElement {
 const SettingsCookiesPageElementBase =
     RouteObserverMixin(
         WebUIListenerMixin(I18nMixin(PrefsMixin(PolymerElement)))) as {
-      new ():
-          PolymerElement & I18nMixinInterface & WebUIListenerMixinInterface &
-      PrefsMixinInterface & RouteObserverMixinInterface
+      new (): PolymerElement & I18nMixinInterface &
+          WebUIListenerMixinInterface & PrefsMixinInterface &
+          RouteObserverMixinInterface,
     };
 
 export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
@@ -77,7 +78,7 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -175,8 +176,9 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
             routes.SITE_SETTINGS_ALL :
             routes.SITE_SETTINGS_SITE_DATA);
     const selectSiteDataLinkRow = () => {
-      focusWithoutInk(
-          assert(this.shadowRoot!.querySelector('#site-data-trigger')!));
+      const toFocus = this.shadowRoot!.querySelector('#site-data-trigger');
+      assert(toFocus);
+      focusWithoutInk(toFocus);
     };
     if (this.enableConsolidatedSiteStorageControls_) {
       this.focusConfig.set(
@@ -188,11 +190,23 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
     }
   }
 
-  currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route) {
     if (route !== routes.COOKIES) {
       this.$.toast.hide();
     }
   }
+
+  // <if expr="not chromeos_ash">
+  private getClearOnExitSubLabel_(): string {
+    // <if expr="chromeos_lacros">
+    if (loadTimeData.getBoolean('isSecondaryUser')) {
+      return '';
+    }
+    // </if>
+
+    return this.i18n('cookiePageClearOnExitDesc');
+  }
+  // </if>
 
   private getSiteDataLabel_(): string {
     return this.enableConsolidatedSiteStorageControls_ ?
@@ -255,13 +269,20 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
     // the privacy sandbox toast should be shown.
     const currentCookieSetting =
         this.getPref('generated.cookie_primary_setting').value;
-    if (this.getPref('privacy_sandbox.apis_enabled').value &&
+    const privacySandboxEnabled =
+        loadTimeData.getBoolean('privacySandboxSettings3Enabled') ?
+        this.getPref('privacy_sandbox.apis_enabled_v2').value :
+        this.getPref('privacy_sandbox.apis_enabled').value;
+
+    if (privacySandboxEnabled &&
         (currentCookieSetting === CookiePrimarySetting.ALLOW_ALL ||
          currentCookieSetting ===
              CookiePrimarySetting.BLOCK_THIRD_PARTY_INCOGNITO) &&
         (selection === CookiePrimarySetting.BLOCK_THIRD_PARTY ||
          selection === CookiePrimarySetting.BLOCK_ALL)) {
-      this.$.toast.show();
+      if (!loadTimeData.getBoolean('isPrivacySandboxRestricted')) {
+        this.$.toast.show();
+      }
       this.metricsBrowserProxy_.recordAction(
           'Settings.PrivacySandbox.Block3PCookies');
     } else if (

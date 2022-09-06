@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -104,7 +103,6 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
     constrained_window::ShowWebModalDialogViews(this,
                                                 controller->WebContents());
   }
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::MEDIA_GALLERIES);
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {
@@ -148,8 +146,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   scroll_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       small_vertical_padding));
-  scroll_container->SetBorder(
-      views::CreateEmptyBorder(vertical_padding, 0, vertical_padding, 0));
+  scroll_container->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(vertical_padding, 0, vertical_padding, 0)));
 
   std::vector<std::u16string> section_headers =
       controller_->GetSectionHeaders();
@@ -164,10 +162,10 @@ void MediaGalleriesDialogViews::InitChildViews() {
       auto header = std::make_unique<views::Label>(section_headers[i]);
       header->SetMultiLine(true);
       header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      header->SetBorder(views::CreateEmptyBorder(
+      header->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
           vertical_padding,
           provider->GetInsetsMetric(views::INSETS_DIALOG).left(),
-          vertical_padding, 0));
+          vertical_padding, 0)));
       scroll_container->AddChildView(std::move(header));
     }
 
@@ -272,8 +270,7 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                           base::Unretained(this)));
 
   context_menu_runner_->RunMenuAt(
-      GetWidget(), nullptr,
-      gfx::Rect(point.x(), point.y(), views::GridLayout::kFixedSize, 0),
+      GetWidget(), nullptr, gfx::Rect(point.x(), point.y(), 0, 0),
       views::MenuAnchorPosition::kTopLeft, source_type);
 }
 

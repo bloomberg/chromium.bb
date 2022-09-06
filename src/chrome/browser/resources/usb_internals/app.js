@@ -6,9 +6,9 @@
  * Javascript for usb_internals.html, served from chrome://usb-internals/.
  */
 
+import 'chrome://resources/cr_elements/cr_tab_box/cr_tab_box.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {TabBox} from 'chrome://resources/js/cr/ui/tabs.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 
 import {DevicesPage} from './devices_page.js';
@@ -52,7 +52,7 @@ class UsbInternalsAppElement extends HTMLElement {
     // Connection to the UsbInternalsPageHandler instance running in the
     // browser process.
     /** @type {UsbDeviceManagerRemote} */
-    const usbManager = new UsbDeviceManagerRemote;
+    const usbManager = new UsbDeviceManagerRemote();
     await pageHandler.bindUsbDeviceManagerInterface(
         usbManager.$.bindNewPipeAndPassReceiver());
 
@@ -60,7 +60,7 @@ class UsbInternalsAppElement extends HTMLElement {
     this.devicesPage_ = new DevicesPage(usbManager, assert(this.shadowRoot));
 
     /** @private {UsbDeviceManagerTestRemote} */
-    this.usbManagerTest_ = new UsbDeviceManagerTestRemote;
+    this.usbManagerTest_ = new UsbDeviceManagerTestRemote();
     await pageHandler.bindTestInterface(
         this.usbManagerTest_.$.bindNewPipeAndPassReceiver());
 
@@ -69,7 +69,8 @@ class UsbInternalsAppElement extends HTMLElement {
     });
     this.refreshTestDeviceList();
 
-    decorate(assert(this.$('tabbox')), TabBox);
+    const tabbox = this.$('cr-tab-box');
+    tabbox.hidden = false;
   }
 
   async refreshTestDeviceList() {

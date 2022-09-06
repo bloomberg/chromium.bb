@@ -5,33 +5,42 @@
 #include "chrome/browser/ui/views/profiles/signin_view_controller_delegate_views.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/reauth_result.h"
-#include "chrome/browser/signin/reauth_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/layout_types.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -41,8 +50,11 @@ const int kModalDialogWidth = 448;
 const int kSyncConfirmationDialogWidth = 512;
 const int kSyncConfirmationDialogHeight = 487;
 const int kSigninErrorDialogHeight = 164;
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const int kReauthDialogWidth = 540;
 const int kReauthDialogHeight = 520;
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
   // If sync is disabled, then the sync confirmation dialog looks like an error
@@ -51,6 +63,29 @@ int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
              ? kSyncConfirmationDialogHeight
              : kSigninErrorDialogHeight;
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+void CloseModalSigninInBrowser(base::WeakPtr<Browser> browser) {
+  if (browser)
+    browser->signin_view_controller()->CloseModalSignin();
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+// This layout auto-resizes the host view widget to always adapt to changes in
+// the size of the child views.
+class WidgetAutoResizingLayout : public views::FillLayout {
+ public:
+  WidgetAutoResizingLayout() = default;
+
+ private:
+  // views::FillLayout:
+  void OnLayoutChanged() override {
+    FillLayout::OnLayoutChanged();
+    if (views::Widget* widget = host_view()->GetWidget(); widget) {
+      widget->SetSize(widget->non_client_view()->GetPreferredSize());
+    }
+  }
+};
 
 }  // namespace
 
@@ -61,38 +96,64 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
   return CreateDialogWebView(
       browser, GURL(chrome::kChromeUISyncConfirmationURL),
       GetSyncConfirmationDialogPreferredHeight(browser->profile()),
-      kSyncConfirmationDialogWidth);
+      kSyncConfirmationDialogWidth, InitializeSigninWebDialogUI(true));
 }
 
 // static
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSigninErrorWebView(Browser* browser) {
   return CreateDialogWebView(browser, GURL(chrome::kChromeUISigninErrorURL),
-                             kSigninErrorDialogHeight, absl::nullopt);
+                             kSigninErrorDialogHeight, absl::nullopt,
+                             InitializeSigninWebDialogUI(true));
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // static
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
     Browser* browser,
     signin_metrics::ReauthAccessPoint access_point) {
-  return CreateDialogWebView(browser,
-                             signin::GetReauthConfirmationURL(access_point),
-                             kReauthDialogHeight, kReauthDialogWidth);
+  return CreateDialogWebView(browser, GetReauthConfirmationURL(access_point),
+                             kReauthDialogHeight, kReauthDialogWidth,
+                             InitializeSigninWebDialogUI(false));
 }
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+// static
+std::unique_ptr<views::WebView>
+SigninViewControllerDelegateViews::CreateProfileCustomizationWebView(
+    Browser* browser) {
+  std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
+      browser, GURL(chrome::kChromeUIProfileCustomizationURL),
+      ProfileCustomizationUI::kPreferredHeight,
+      ProfileCustomizationUI::kPreferredWidth,
+      InitializeSigninWebDialogUI(false));
+
+  ProfileCustomizationUI* web_ui = web_view->GetWebContents()
+                                       ->GetWebUI()
+                                       ->GetController()
+                                       ->GetAs<ProfileCustomizationUI>();
+  DCHECK(web_ui);
+  web_ui->Initialize(
+      base::BindOnce(&CloseModalSigninInBrowser, browser->AsWeakPtr()));
+  return web_view;
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
     Browser* browser,
     const AccountInfo& account_info,
+    bool profile_creation_required_by_policy,
+    bool show_link_data_option,
     SkColor profile_color,
-    base::OnceCallback<void(bool)> callback) {
+    signin::SigninChoiceCallback callback) {
   std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
       browser, GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
-      kSyncConfirmationDialogHeight, kSyncConfirmationDialogWidth);
+      kSyncConfirmationDialogHeight, kSyncConfirmationDialogWidth,
+      InitializeSigninWebDialogUI(false));
 
   EnterpriseProfileWelcomeUI* web_dialog_ui =
       web_view->GetWebContents()
@@ -103,36 +164,24 @@ SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
   web_dialog_ui->Initialize(
       browser,
       EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation,
-      account_info, profile_color, std::move(callback));
+      account_info, profile_creation_required_by_policy, show_link_data_option,
+      profile_color, std::move(callback));
 
   return web_view;
 }
 #endif
-
-views::View* SigninViewControllerDelegateViews::GetContentsView() {
-  return content_view_;
-}
-
-views::Widget* SigninViewControllerDelegateViews::GetWidget() {
-  return content_view_->GetWidget();
-}
-
-const views::Widget* SigninViewControllerDelegateViews::GetWidget() const {
-  return content_view_->GetWidget();
-}
 
 bool SigninViewControllerDelegateViews::ShouldShowCloseButton() const {
   return should_show_close_button_;
 }
 
 void SigninViewControllerDelegateViews::CloseModalSignin() {
-  NotifyModalSigninClosed();
-  // Either `modal_signin_widget_` or `owned_content_view_` is nullptr.
+  NotifyModalDialogClosed();
+  // Either `this` is owned by the view hierarchy through `modal_signin_widget_`
+  // or `modal_signin_widget_` is nullptr and then `this` is self-owned.
   if (modal_signin_widget_) {
-    DCHECK(!owned_content_view_);
     modal_signin_widget_->Close();
   } else {
-    DCHECK(owned_content_view_);
     delete this;
   }
 }
@@ -207,17 +256,35 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     ui::ModalType dialog_modal_type,
     bool wait_for_size,
     bool should_show_close_button)
-    : owned_content_view_(std::move(content_view)),
-      web_contents_(owned_content_view_->GetWebContents()),
+    : content_view_(content_view.get()),
+      web_contents_(content_view->GetWebContents()),
       browser_(browser),
-      content_view_(owned_content_view_.get()),
       should_show_close_button_(should_show_close_button) {
   DCHECK(web_contents_);
   DCHECK(browser_);
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
       << "A tab must be active to present the sign-in modal dialog.";
-  DCHECK(owned_content_view_);
   DCHECK(content_view_);
+
+  // Use the layout manager of `this` to automatically translate its preferred
+  // size to the owning Widget.
+  SetLayoutManager(std::make_unique<WidgetAutoResizingLayout>());
+  // `AnimatingLayoutManager` resizes `animated_view` to match `content_view`'s
+  // preferred size with animation.
+  views::View* animated_view = AddChildView(std::make_unique<views::View>());
+  views::AnimatingLayoutManager* animating_layout =
+      animated_view->SetLayoutManager(
+          std::make_unique<views::AnimatingLayoutManager>());
+  animating_layout
+      ->SetBoundsAnimationMode(
+          views::AnimatingLayoutManager::BoundsAnimationMode::kAnimateMainAxis)
+      .SetOrientation(views::LayoutOrientation::kVertical);
+  // Using `FlexLayout` because `AnimatingLayoutManager` doesn't work properly
+  // with `FillLayout`.
+  auto* flex_layout = animating_layout->SetTargetLayoutManager(
+      std::make_unique<views::FlexLayout>());
+  flex_layout->SetOrientation(views::LayoutOrientation::kVertical);
+  animated_view->AddChildView(std::move(content_view));
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
@@ -229,7 +296,7 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
   SetModalType(dialog_modal_type);
 
   RegisterDeleteDelegateCallback(base::BindOnce(
-      &SigninViewControllerDelegateViews::NotifyModalSigninClosed,
+      &SigninViewControllerDelegateViews::NotifyModalDialogClosed,
       base::Unretained(this)));
 
   if (!wait_for_size)
@@ -244,14 +311,17 @@ SigninViewControllerDelegateViews::CreateDialogWebView(
     Browser* browser,
     const GURL& url,
     int dialog_height,
-    absl::optional<int> opt_width) {
+    absl::optional<int> opt_width,
+    InitializeSigninWebDialogUI initialize_signin_web_dialog_ui) {
   int dialog_width = opt_width.value_or(kModalDialogWidth);
   views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(url);
 
-  SigninWebDialogUI* web_dialog_ui = static_cast<SigninWebDialogUI*>(
-      web_view->GetWebContents()->GetWebUI()->GetController());
-  web_dialog_ui->InitializeMessageHandlerWithBrowser(browser);
+  if (initialize_signin_web_dialog_ui) {
+    SigninWebDialogUI* web_dialog_ui = static_cast<SigninWebDialogUI*>(
+        web_view->GetWebContents()->GetWebUI()->GetController());
+    web_dialog_ui->InitializeMessageHandlerWithBrowser(browser);
+  }
 
   int max_height = browser->window()
                        ->GetWebContentsModalDialogHost()
@@ -274,10 +344,6 @@ void SigninViewControllerDelegateViews::DisplayModal() {
   if (!host_web_contents)
     return;
 
-  // Ownership of this and the content view is transferred to the view
-  // hierarchy, through `modal_signin_widget_`.
-  owned_content_view_.release();
-
   gfx::NativeWindow window = host_web_contents->GetTopLevelNativeWindow();
   switch (GetModalType()) {
     case ui::MODAL_TYPE_WINDOW:
@@ -289,10 +355,10 @@ void SigninViewControllerDelegateViews::DisplayModal() {
       modal_signin_widget_ = constrained_window::CreateWebModalDialogViews(
           this, host_web_contents);
       if (should_show_close_button_) {
-        GetBubbleFrameView()->SetBubbleBorder(
-            std::make_unique<views::BubbleBorder>(
-                views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
-                SK_ColorWHITE));
+        auto border = std::make_unique<views::BubbleBorder>(
+            views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
+            kColorProfilesReauthDialogBorder);
+        GetBubbleFrameView()->SetBubbleBorder(std::move(border));
       }
       constrained_window::ShowModalDialog(
           modal_signin_widget_->GetNativeWindow(), host_web_contents);
@@ -328,6 +394,7 @@ SigninViewControllerDelegate::CreateSigninErrorDelegate(Browser* browser) {
       browser, ui::MODAL_TYPE_WINDOW, true, false);
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // static
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
@@ -340,18 +407,32 @@ SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
       browser, ui::MODAL_TYPE_CHILD, false, true);
 }
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+// static
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateProfileCustomizationDelegate(
+    Browser* browser) {
+  return new SigninViewControllerDelegateViews(
+      SigninViewControllerDelegateViews::CreateProfileCustomizationWebView(
+          browser),
+      browser, ui::MODAL_TYPE_WINDOW, false, false);
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateEnterpriseConfirmationDelegate(
     Browser* browser,
     const AccountInfo& account_info,
+    bool profile_creation_required_by_policy,
+    bool show_link_data_option,
     SkColor profile_color,
-    base::OnceCallback<void(bool)> callback) {
+    signin::SigninChoiceCallback callback) {
   return new SigninViewControllerDelegateViews(
       SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
-          browser, account_info, profile_color, std::move(callback)),
+          browser, account_info, profile_creation_required_by_policy,
+          show_link_data_option, profile_color, std::move(callback)),
       browser, ui::MODAL_TYPE_WINDOW, true, false);
 }
 #endif

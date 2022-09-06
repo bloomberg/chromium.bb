@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {beforeNextRender, dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
@@ -33,7 +33,7 @@ export enum RouteState {
 }
 
 let guestTopLevelRoute = routes.SEARCH;
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 guestTopLevelRoute = routes.PRIVACY;
 // </if>
 
@@ -107,7 +107,7 @@ export const MainPageMixin = dedupingMixin(
           })();
         }
 
-        connectedCallback() {
+        override connectedCallback() {
           this.scroller =
               this.domHost ? this.domHost.parentElement : document.body;
 
@@ -288,6 +288,8 @@ export const MainPageMixin = dedupingMixin(
           return [classifyRoute(oldRoute), classifyRoute(newRoute)];
         }
 
+        // TODO(dpapad): Figure out why adding the |override| keyword here
+        // throws an error.
         currentRouteChanged(newRoute: Route, oldRoute: Route|null) {
           const transition = this.getStateTransition_(newRoute, oldRoute);
           if (transition === null) {
@@ -308,8 +310,12 @@ export const MainPageMixin = dedupingMixin(
               // Case when navigating from '/?search=foo' to '/' (clearing
               // search results).
               this.switchToSections_(TOP_LEVEL_EQUIVALENT_ROUTE);
+            } else if (newState === RouteState.DIALOG) {
+              // Case when user clicks "Reset all settings" from within the
+              // settings-reset-profile-banner to navigate to
+              // /resetProfileSettings.
+              this.switchToSections_(newRoute);
             }
-            // Nothing to do here for the case of RouteState.DIALOG.
             return;
           }
 
@@ -353,6 +359,12 @@ export const MainPageMixin = dedupingMixin(
               // sub-subpage entry point.
             } else if (newState === RouteState.TOP_LEVEL) {
               this.enterMainPage_(oldRoute!);
+            } else if (newState === RouteState.DIALOG) {
+              // The only known cases currently for such a transition are from
+              // 1) /synceSetup to /signOut
+              // 2) /synceSetup to /clearBrowserData using the "back" arrow
+              this.enterMainPage_(oldRoute!);
+              this.switchToSections_(newRoute);
             }
             return;
           }
@@ -419,5 +431,6 @@ export const MainPageMixin = dedupingMixin(
     });
 
 export interface MainPageMixinInterface {
+  scroller: HTMLElement|null;
   containsRoute(route: Route|null): boolean;
 }

@@ -28,6 +28,7 @@ static_library("metrics") {
     "//components/metrics:ui",
     "//components/prefs",
     "//components/ukm",
+    "//components/variations:variations",
     "//components/version_info",
     "//components/version_info/android:channel_getter",
     "//content/public/browser",
@@ -49,6 +50,7 @@ android_library("java") {
 
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
   srcjar_deps = [ ":java_enum_srcjar" ]
@@ -70,6 +72,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/metrics",
     "//components/prefs:test_support",
+    "//components/variations/service:constants",
     "//content/test:test_support",
     "//testing/gtest",
   ]

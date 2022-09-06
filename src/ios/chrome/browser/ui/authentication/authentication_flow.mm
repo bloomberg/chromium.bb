@@ -10,6 +10,7 @@
 #include "base/notreached.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -40,6 +41,8 @@ enum AuthenticationState {
   CLEAR_DATA,
   SIGN_IN,
   COMMIT_SYNC,
+  REGISTER_FOR_USER_POLICY,
+  FETCH_USER_POLICY,
   COMPLETE_WITH_SUCCESS,
   COMPLETE_WITH_FAILURE,
   CLEANUP_BEFORE_DONE,
@@ -53,15 +56,27 @@ enum AuthenticationState {
 // Whether this flow is curently handling an error.
 @property(nonatomic, assign) BOOL handlingError;
 
+// Indicates how to handle existing data when the signed in account is being
+// switched. Possible values:
+//   * User choice: present an alert view asking the user whether the data
+//     should be cleared or merged.
+//   * Clear data: data is removed before signing in with `identity`.
+//   * Merge data: data is not removed before signing in with `identity`.
+@property(nonatomic, assign) ShouldClearData localDataClearingStrategy;
+
 // Checks which sign-in steps to perform and updates member variables
 // accordingly.
 - (void)checkSigninSteps;
 
-// Continues the sign-in state machine starting from |_state| and invokes
-// |completion_| when finished.
+// Continues the sign-in state machine starting from `_state` and invokes
+// `_signInCompletion` when finished.
 - (void)continueSignin;
 
-// Runs |completion_| asynchronously with |success| argument.
+// Handles authentication related errors or continues sign-in if the
+// authentication was successful.
+- (void)handlePostAuthenticationFlow:(BOOL)success;
+
+// Runs `_signInCompletion` asynchronously with `success` argument.
 - (void)completeSignInWithSuccess:(BOOL)success;
 
 // Cancels the current sign-in flow.
@@ -73,7 +88,6 @@ enum AuthenticationState {
 @end
 
 @implementation AuthenticationFlow {
-  ShouldClearData _shouldClearData;
   PostSignInAction _postSignInAction;
   UIViewController* _presentingViewController;
   CompletionCallback _signInCompletion;
@@ -89,13 +103,21 @@ enum AuthenticationState {
   // includes sync.
   BOOL _shouldShowManagedConfirmation;
   BOOL _shouldCommitSync;
+  // YES if user policies have to be fetched.
+  BOOL _shouldFetchUserPolicy;
+
   Browser* _browser;
   ChromeIdentity* _identityToSignIn;
   NSString* _identityToSignInHostedDomain;
 
-  // This AuthenticationFlow keeps a reference to |self| while a sign-in flow is
+  // Token to have access to user policies from dmserver.
+  NSString* _dmToken;
+  // ID of the client that is registered for user policy.
+  NSString* _clientID;
+
+  // This AuthenticationFlow keeps a reference to `self` while a sign-in flow is
   // is in progress to ensure it outlives any attempt to destroy it in
-  // |_signInCompletion|.
+  // `_signInCompletion`.
   AuthenticationFlow* _selfRetainer;
 }
 
@@ -106,7 +128,6 @@ enum AuthenticationState {
 
 - (instancetype)initWithBrowser:(Browser*)browser
                        identity:(ChromeIdentity*)identity
-                shouldClearData:(ShouldClearData)shouldClearData
                postSignInAction:(PostSignInAction)postSignInAction
        presentingViewController:(UIViewController*)presentingViewController {
   if ((self = [super init])) {
@@ -115,7 +136,7 @@ enum AuthenticationState {
     DCHECK(identity);
     _browser = browser;
     _identityToSignIn = identity;
-    _shouldClearData = shouldClearData;
+    _localDataClearingStrategy = SHOULD_CLEAR_DATA_USER_CHOICE;
     _postSignInAction = postSignInAction;
     _presentingViewController = presentingViewController;
     _state = BEGIN;
@@ -170,6 +191,8 @@ enum AuthenticationState {
     case CLEAR_DATA:
     case SIGN_IN:
     case COMMIT_SYNC:
+    case REGISTER_FOR_USER_POLICY:
+    case FETCH_USER_POLICY:
       return COMPLETE_WITH_FAILURE;
     case COMPLETE_WITH_SUCCESS:
     case COMPLETE_WITH_FAILURE:
@@ -197,11 +220,15 @@ enum AuthenticationState {
     case FETCH_MANAGED_STATUS:
       return CHECK_MERGE_CASE;
     case CHECK_MERGE_CASE:
+      // If the user enabled Sync, expect the data clearing strategy to be set.
+      DCHECK(_postSignInAction == POST_SIGNIN_ACTION_NONE ||
+             (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC &&
+              self.localDataClearingStrategy != SHOULD_CLEAR_DATA_USER_CHOICE));
       if (_shouldShowManagedConfirmation)
         return SHOW_MANAGED_CONFIRMATION;
       else if (_shouldSignOut)
         return SIGN_OUT_IF_NEEDED;
-      else if (_shouldClearData == SHOULD_CLEAR_DATA_CLEAR_DATA)
+      else if (self.localDataClearingStrategy == SHOULD_CLEAR_DATA_CLEAR_DATA)
         return CLEAR_DATA;
       else if (_shouldSignIn)
         return SIGN_IN;
@@ -210,15 +237,16 @@ enum AuthenticationState {
     case SHOW_MANAGED_CONFIRMATION:
       if (_shouldSignOut)
         return SIGN_OUT_IF_NEEDED;
-      else if (_shouldClearData == SHOULD_CLEAR_DATA_CLEAR_DATA)
+      else if (self.localDataClearingStrategy == SHOULD_CLEAR_DATA_CLEAR_DATA)
         return CLEAR_DATA;
       else if (_shouldSignIn)
         return SIGN_IN;
       else
         return COMPLETE_WITH_SUCCESS;
     case SIGN_OUT_IF_NEEDED:
-      return _shouldClearData == SHOULD_CLEAR_DATA_CLEAR_DATA ? CLEAR_DATA
-                                                              : SIGN_IN;
+      return self.localDataClearingStrategy == SHOULD_CLEAR_DATA_CLEAR_DATA
+                 ? CLEAR_DATA
+                 : SIGN_IN;
     case CLEAR_DATA:
       return SIGN_IN;
     case SIGN_IN:
@@ -227,6 +255,17 @@ enum AuthenticationState {
       else
         return COMPLETE_WITH_SUCCESS;
     case COMMIT_SYNC:
+      if (policy::IsUserPolicyEnabled() && _shouldFetchUserPolicy)
+        return REGISTER_FOR_USER_POLICY;
+      return COMPLETE_WITH_SUCCESS;
+    case REGISTER_FOR_USER_POLICY:
+      if ([_dmToken length] == 0) {
+        // Skip fetching user policies when registration failed.
+        return COMPLETE_WITH_SUCCESS;
+      }
+      // Fetch user policies when registration is successful.
+      return FETCH_USER_POLICY;
+    case FETCH_USER_POLICY:
       return COMPLETE_WITH_SUCCESS;
     case COMPLETE_WITH_SUCCESS:
     case COMPLETE_WITH_FAILURE:
@@ -261,14 +300,19 @@ enum AuthenticationState {
       return;
 
     case CHECK_MERGE_CASE:
-      if (([_performer shouldHandleMergeCaseForIdentity:_identityToSignIn
-                                           browserState:browserState]) &&
-          (_shouldClearData == SHOULD_CLEAR_DATA_USER_CHOICE) &&
-          (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC)) {
-        [_performer promptMergeCaseForIdentity:_identityToSignIn
-                                       browser:_browser
-                                viewController:_presentingViewController];
-        return;
+      DCHECK_EQ(SHOULD_CLEAR_DATA_USER_CHOICE, self.localDataClearingStrategy);
+      if (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC) {
+        if (([_performer shouldHandleMergeCaseForIdentity:_identityToSignIn
+                                             browserState:browserState])) {
+          [_performer promptMergeCaseForIdentity:_identityToSignIn
+                                         browser:_browser
+                                  viewController:_presentingViewController];
+          return;
+        } else {
+          // If the user is not prompted to choose a data clearing strategy,
+          // Chrome defaults to merging the account data.
+          self.localDataClearingStrategy = SHOULD_CLEAR_DATA_MERGE_DATA;
+        }
       }
       [self continueSignin];
       return;
@@ -297,6 +341,18 @@ enum AuthenticationState {
       [self continueSignin];
       return;
 
+    case REGISTER_FOR_USER_POLICY:
+      [_performer registerUserPolicy:browserState
+                         forIdentity:_identityToSignIn];
+      return;
+
+    case FETCH_USER_POLICY:
+      [_performer fetchUserPolicy:browserState
+                      withDmToken:_dmToken
+                         clientID:_clientID
+                         identity:_identityToSignIn];
+      return;
+
     case COMPLETE_WITH_SUCCESS:
       [self completeSignInWithSuccess:YES];
       return;
@@ -311,7 +367,7 @@ enum AuthenticationState {
       [self completeSignInWithSuccess:NO];
       return;
     case CLEANUP_BEFORE_DONE: {
-      // Clean up asynchronously to ensure that |self| does not die while
+      // Clean up asynchronously to ensure that `self` does not die while
       // the flow is running.
       DCHECK([NSThread isMainThread]);
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -346,9 +402,20 @@ enum AuthenticationState {
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
 
   if (accountManagerService->IsValidIdentity(identity)) {
+    __weak AuthenticationFlow* weakSelf = self;
     [_performer signInIdentity:identity
               withHostedDomain:_identityToSignInHostedDomain
-                toBrowserState:browserState];
+                toBrowserState:browserState
+                    completion:^(BOOL success) {
+                      [weakSelf handlePostAuthenticationFlow:success];
+                    }];
+  } else {
+    [self handlePostAuthenticationFlow:NO];
+  }
+}
+
+- (void)handlePostAuthenticationFlow:(BOOL)success {
+  if (success) {
     _didSignIn = YES;
     [self continueSignin];
   } else {
@@ -422,9 +489,12 @@ enum AuthenticationState {
 }
 
 - (void)didChooseClearDataPolicy:(ShouldClearData)shouldClearData {
+  // Assumes this is the first time the user has updated their data clearing
+  // strategy.
   DCHECK_NE(SHOULD_CLEAR_DATA_USER_CHOICE, shouldClearData);
+  DCHECK_EQ(SHOULD_CLEAR_DATA_USER_CHOICE, self.localDataClearingStrategy);
   _shouldSignOut = YES;
-  _shouldClearData = shouldClearData;
+  self.localDataClearingStrategy = shouldClearData;
 
   [self continueSignin];
 }
@@ -439,6 +509,7 @@ enum AuthenticationState {
       [hostedDomain length] > 0 &&
       (_postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC);
   _identityToSignInHostedDomain = hostedDomain;
+  _shouldFetchUserPolicy = YES;
   [self continueSignin];
 }
 
@@ -461,6 +532,22 @@ enum AuthenticationState {
 
 - (void)didCancelManagedConfirmation {
   [self cancelFlow];
+}
+
+- (void)didRegisterForUserPolicyWithDMToken:(NSString*)dmToken
+                                   clientID:(NSString*)clientID {
+  DCHECK_EQ(REGISTER_FOR_USER_POLICY, _state);
+  DCHECK(clientID.length);
+
+  _dmToken = dmToken;
+  _clientID = clientID;
+  [self continueSignin];
+}
+
+- (void)didFetchUserPolicyWithSuccess:(BOOL)success {
+  DCHECK_EQ(FETCH_USER_POLICY, _state);
+  DLOG_IF(ERROR, !success) << "Error fetching policy for user";
+  [self continueSignin];
 }
 
 - (void)dismissPresentingViewControllerAnimated:(BOOL)animated

@@ -99,9 +99,7 @@ void SaveDevicePermissionEntry(BrowserContext* context,
   }
 
   base::Value device_entry(entry->ToValue());
-  // TODO(crbug.com/1187106): Use base::Contains once |devices| not a ListValue.
-  DCHECK(std::find(devices->GetList().begin(), devices->GetList().end(),
-                   device_entry) == devices->GetList().end());
+  DCHECK(!base::Contains(devices->GetList(), device_entry));
   devices->Append(std::move(device_entry));
 }
 
@@ -139,17 +137,16 @@ void UpdateDevicePermissionEntry(BrowserContext* context,
     return;
   }
 
-  for (auto it = devices->GetList().begin(); it != devices->GetList().end();
-       ++it) {
+  for (auto& value : devices->GetList()) {
     base::DictionaryValue* dict_value;
-    if (!it->GetAsDictionary(&dict_value)) {
+    if (!value.GetAsDictionary(&dict_value)) {
       continue;
     }
     if (!MatchesDevicePermissionEntry(dict_value, entry)) {
       continue;
     }
 
-    *it = entry->ToValue();
+    value = entry->ToValue();
     break;
   }
 }
@@ -174,7 +171,7 @@ void RemoveDevicePermissionEntry(BrowserContext* context,
     if (!MatchesDevicePermissionEntry(dict_value, entry)) {
       continue;
     }
-    devices->EraseListIter(it);
+    devices->GetList().erase(it);
     break;
   }
 }

@@ -50,7 +50,7 @@ class BaseTest : public testing::Test {
             : src_rect,
         PaintFlags::FilterQuality::kMedium,
         CreateMatrix(SkSize::Make(scale, scale), true),
-        PaintImage::kDefaultFrameIndex, GetColorSpace());
+        PaintImage::kDefaultFrameIndex, GetTargetColorParams());
   }
 
   SoftwareImageDecodeCache& cache() { return *cache_; }
@@ -65,7 +65,10 @@ class BaseTest : public testing::Test {
   virtual std::unique_ptr<SoftwareImageDecodeCache> CreateCache() = 0;
   virtual CacheEntryResult GenerateCacheEntry(const DrawImage& image) = 0;
   virtual PaintImage CreatePaintImage(const gfx::Size& size) = 0;
-  virtual gfx::ColorSpace GetColorSpace() = 0;
+  virtual TargetColorParams GetTargetColorParams() const = 0;
+  gfx::ColorSpace GetColorSpace() const {
+    return GetTargetColorParams().color_space;
+  }
   virtual void VerifyEntryExists(int line,
                                  const DrawImage& draw_image,
                                  const gfx::Size& expected_size) = 0;
@@ -80,7 +83,7 @@ class N32Cache : public virtual BaseTest {
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
     return std::make_unique<SoftwareImageDecodeCache>(
         kN32_SkColorType, kLockedMemoryLimitBytes,
-        PaintImage::kDefaultGeneratorClientId);
+        PaintImage::GetNextGeneratorClientId());
   }
 };
 
@@ -89,7 +92,7 @@ class RGBA4444Cache : public virtual BaseTest {
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
     return std::make_unique<SoftwareImageDecodeCache>(
         kARGB_4444_SkColorType, kLockedMemoryLimitBytes,
-        PaintImage::kDefaultGeneratorClientId);
+        PaintImage::GetNextGeneratorClientId());
   }
 };
 
@@ -98,7 +101,7 @@ class RGBA_F16Cache : public virtual BaseTest {
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
     return std::make_unique<SoftwareImageDecodeCache>(
         kRGBA_F16_SkColorType, kLockedMemoryLimitBytes,
-        PaintImage::kDefaultGeneratorClientId);
+        PaintImage::GetNextGeneratorClientId());
   }
 };
 
@@ -165,24 +168,25 @@ class NoDecodeToScaleSupportF16 : public virtual BaseTest {
 
 class DefaultColorSpace : public virtual BaseTest {
  protected:
-  gfx::ColorSpace GetColorSpace() override {
-    return gfx::ColorSpace::CreateSRGB();
+  TargetColorParams GetTargetColorParams() const override {
+    return TargetColorParams();
   }
 };
 
 class ExoticColorSpace : public virtual BaseTest {
  protected:
-  gfx::ColorSpace GetColorSpace() override {
-    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::XYZ_D50,
-                           gfx::ColorSpace::TransferID::IEC61966_2_1);
+  TargetColorParams GetTargetColorParams() const override {
+    return TargetColorParams(
+        gfx::ColorSpace(gfx::ColorSpace::PrimaryID::XYZ_D50,
+                        gfx::ColorSpace::TransferID::SRGB));
   }
 };
 
 class WideGamutCanvasColorSpace : public virtual BaseTest {
  protected:
-  gfx::ColorSpace GetColorSpace() override {
-    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTEST432_1,  // P3
-                           gfx::ColorSpace::TransferID::LINEAR);
+  TargetColorParams GetTargetColorParams() const override {
+    return TargetColorParams(gfx::ColorSpace(
+        gfx::ColorSpace::PrimaryID::P3, gfx::ColorSpace::TransferID::LINEAR));
   }
 };
 class SoftwareImageDecodeCacheTest_Typical : public N32Cache,

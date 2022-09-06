@@ -4,9 +4,12 @@
 
 package org.chromium.net.impl;
 
+import android.net.Network;
+import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.Process;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
@@ -154,6 +157,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     @GuardedBy("mLock")
     private boolean mIsStoppingNetLog;
 
+    /** If not null, the network to be used for requests that do not explicitly specify one. **/
+    private @Nullable Network mNetwork;
+
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngineBuilderImpl builder) {
         mRttListenerList.disableThreadAsserts();
@@ -209,6 +215,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                         builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled(),
                         builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled(),
                         builder.threadPriority(Process.THREAD_PRIORITY_BACKGROUND));
+        if (urlRequestContextConfig == 0) {
+            throw new IllegalArgumentException("Experimental options parsing failed.");
+        }
         for (CronetEngineBuilderImpl.QuicHint quicHint : builder.quicHints()) {
             CronetUrlRequestContextJni.get().addQuicHint(urlRequestContextConfig, quicHint.mHost,
                     quicHint.mPort, quicHint.mAlternatePort);
@@ -232,13 +241,16 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             boolean disableConnectionMigration, boolean allowDirectExecutor,
             boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
             int trafficStatsUid, RequestFinishedInfo.Listener requestFinishedListener,
-            int idempotency) {
+            int idempotency, @Nullable Network network) {
+        if (network == null) {
+            network = mNetwork;
+        }
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
                     disableCache, disableConnectionMigration, allowDirectExecutor,
                     trafficStatsTagSet, trafficStatsTag, trafficStatsUidSet, trafficStatsUid,
-                    requestFinishedListener, idempotency);
+                    requestFinishedListener, idempotency, network);
         }
     }
 
@@ -248,13 +260,16 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             List<Map.Entry<String, String>> requestHeaders, @StreamPriority int priority,
             boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations,
             boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
-            int trafficStatsUid) {
+            int trafficStatsUid, @Nullable Network network) {
+        if (network == null) {
+            network = mNetwork;
+        }
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetBidirectionalStream(this, url, priority, callback, executor,
                     httpMethod, requestHeaders, delayRequestHeadersUntilFirstFlush,
                     requestAnnotations, trafficStatsTagSet, trafficStatsTag, trafficStatsUidSet,
-                    trafficStatsUid);
+                    trafficStatsUid, network);
         }
     }
 
@@ -402,6 +417,15 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                     ? mDownstreamThroughputKbps
                     : CONNECTION_METRIC_UNKNOWN;
         }
+    }
+
+    @Override
+    public void bindToNetwork(@Nullable Network network) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            throw new UnsupportedOperationException(
+                    "The multi-network API is available starting from Android Marshmallow");
+        }
+        mNetwork = network;
     }
 
     @VisibleForTesting
@@ -724,32 +748,32 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         long createRequestContextAdapter(long urlRequestContextConfig);
         int setMinLogLevel(int loggingLevel);
         byte[] getHistogramDeltas();
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void destroy(long nativePtr, CronetUrlRequestContext caller);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         boolean startNetLogToFile(
                 long nativePtr, CronetUrlRequestContext caller, String fileName, boolean logAll);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void startNetLogToDisk(long nativePtr, CronetUrlRequestContext caller, String dirPath,
                 boolean logAll, int maxSize);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void stopNetLog(long nativePtr, CronetUrlRequestContext caller);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void initRequestContextOnInitThread(long nativePtr, CronetUrlRequestContext caller);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void configureNetworkQualityEstimatorForTesting(long nativePtr,
                 CronetUrlRequestContext caller, boolean useLocalHostRequests,
                 boolean useSmallerResponses, boolean disableOfflineCheck);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void provideRTTObservations(long nativePtr, CronetUrlRequestContext caller, boolean should);
 
-        @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+        @NativeClassQualifiedName("CronetContextAdapter")
         void provideThroughputObservations(
                 long nativePtr, CronetUrlRequestContext caller, boolean should);
     }

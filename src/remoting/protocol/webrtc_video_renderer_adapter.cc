@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -82,7 +81,7 @@ WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
 }
 
 void WebrtcVideoRendererAdapter::SetMediaStream(
-    scoped_refptr<webrtc::MediaStreamInterface> media_stream) {
+    rtc::scoped_refptr<webrtc::MediaStreamInterface> media_stream) {
   DCHECK_EQ(media_stream->id(), label());
 
   media_stream_ = std::move(media_stream);

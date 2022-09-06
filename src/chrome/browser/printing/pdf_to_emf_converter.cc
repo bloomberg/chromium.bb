@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -29,7 +28,6 @@
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -41,55 +39,6 @@ using content::BrowserThread;
 namespace printing {
 
 namespace {
-
-class PdfToEmfConverterClientImpl : public mojom::PdfToEmfConverterClient {
- public:
-  explicit PdfToEmfConverterClientImpl(
-      mojo::PendingReceiver<mojom::PdfToEmfConverterClient> receiver)
-      : receiver_(this, std::move(receiver)) {}
-
- private:
-  // mojom::PdfToEmfConverterClient implementation.
-  void PreCacheFontCharacters(
-      const std::vector<uint8_t>& logfont_data,
-      const std::u16string& characters,
-      PreCacheFontCharactersCallback callback) override {
-    // TODO(scottmg): pdf/ppapi still require the renderer to be able to
-    // precache GDI fonts (http://crbug.com/383227), even when using
-    // DirectWrite. Eventually this shouldn't be added and should be moved to
-    // FontCacheDispatcher too. http://crbug.com/356346.
-
-    // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here
-    // too. Except that for True Type fonts, GetTextMetrics will not load the
-    // font in memory. The only way windows seem to load properly, it is to
-    // create a similar device (like the one in which we print), then do an
-    // ExtTextOut, as we do in the printing thread, which is sandboxed.
-    const LOGFONT* logfont =
-        reinterpret_cast<const LOGFONT*>(&logfont_data.at(0));
-
-    HDC hdc = CreateEnhMetaFile(nullptr, nullptr, nullptr, nullptr);
-    HFONT font_handle = CreateFontIndirect(logfont);
-    DCHECK(font_handle != nullptr);
-
-    HGDIOBJ old_font = SelectObject(hdc, font_handle);
-    DCHECK(old_font != nullptr);
-
-    ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, base::as_wcstr(characters),
-               characters.length(), nullptr);
-
-    SelectObject(hdc, old_font);
-    DeleteObject(font_handle);
-
-    HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
-
-    if (metafile)
-      DeleteEnhMetaFile(metafile);
-
-    std::move(callback).Run();
-  }
-
-  mojo::Receiver<mojom::PdfToEmfConverterClient> receiver_;
-};
 
 // Emf subclass that knows how to play back PostScript data embedded as EMF
 // comment records.
@@ -201,9 +150,6 @@ class PdfConverterImpl : public PdfConverter {
   uint32_t pages_generated_ = 0;
   uint32_t page_count_ = 0;
 
-  std::unique_ptr<PdfToEmfConverterClientImpl>
-      pdf_to_emf_converter_client_impl_;
-
   mojo::Remote<mojom::PdfToEmfConverter> pdf_to_emf_converter_;
 
   mojo::Remote<mojom::PdfToEmfConverterFactory> pdf_to_emf_converter_factory_;
@@ -287,15 +233,8 @@ void PdfConverterImpl::Initialize(scoped_refptr<base::RefCountedMemory> data) {
       &PdfConverterImpl::OnFailed, weak_ptr_factory_.GetWeakPtr(),
       std::string("Connection to PdfToEmfConverterFactory error.")));
 
-  mojo::PendingRemote<mojom::PdfToEmfConverterClient>
-      pdf_to_emf_converter_client_remote;
-  pdf_to_emf_converter_client_impl_ =
-      std::make_unique<PdfToEmfConverterClientImpl>(
-          pdf_to_emf_converter_client_remote.InitWithNewPipeAndPassReceiver());
-
   pdf_to_emf_converter_factory_->CreateConverter(
       std::move(memory.region), settings_,
-      std::move(pdf_to_emf_converter_client_remote),
       base::BindOnce(&PdfConverterImpl::OnPageCount,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -353,7 +292,7 @@ void PdfConverterImpl::OnPageDone(base::ReadOnlySharedMemoryRegion emf_region,
 
   base::WeakPtr<PdfConverterImpl> weak_this = weak_ptr_factory_.GetWeakPtr();
   data.callback().Run(data.page_number(), scale_factor, std::move(metafile));
-  // WARNING: the callback might have deleted |this|!
+  // WARNING: the callback might have deleted `this`!
   if (!weak_this)
     return;
   get_page_callbacks_.pop();
@@ -373,7 +312,7 @@ void PdfConverterImpl::OnFailed(const std::string& error_message) {
   if (!start_callback_.is_null()) {
     std::move(start_callback_).Run(/*page_count=*/0);
     if (!weak_this)
-      return;  // Protect against the |start_callback_| deleting |this|.
+      return;  // Protect against the `start_callback_` deleting `this`.
   }
 
   while (!get_page_callbacks_.empty()) {

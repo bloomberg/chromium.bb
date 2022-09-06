@@ -10,18 +10,21 @@ import * as Comlink from './lib/comlink.js';
 import * as loadTimeData from './models/load_time_data.js';
 import * as state from './state.js';
 import * as tooltip from './tooltip.js';
-import {Facing} from './type.js';
+import {AspectRatioSet, Facing, Resolution} from './type.js';
 import {WaitableEvent} from './waitable_event.js';
 
 /**
  * Creates a canvas element for 2D drawing.
- * @param params Width/Height of the canvas.
+ *
+ * @param params Size of the canvas.
+ * @param params.width Width of the canvas.
+ * @param params.height Height of the canvas.
  * @return Returns canvas element and the context for 2D drawing.
  */
 export function newDrawingCanvas(
     {width, height}: {width: number, height: number}):
     {canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D} {
-  const canvas = dom.create('canvas', HTMLCanvasElement);
+  const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx =
@@ -29,23 +32,34 @@ export function newDrawingCanvas(
   return {canvas, ctx};
 }
 
-export function bitmapToJpegBlob(bitmap: ImageBitmap): Promise<Blob> {
-  const {canvas, ctx} =
-      newDrawingCanvas({width: bitmap.width, height: bitmap.height});
-  ctx.drawImage(bitmap, 0, 0);
+/**
+ * Converts canvas content to a JPEG Blob.
+ */
+export function canvasToJpegBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
-      if (blob) {
+      if (blob !== null) {
         resolve(blob);
       } else {
-        reject(new Error('Photo blob error.'));
+        reject(new Error('Failed to convert canvas to jpeg blob.'));
       }
     }, 'image/jpeg');
   });
 }
 
 /**
+ * Converts ImageBitmap to a JPEG Blob.
+ */
+export function bitmapToJpegBlob(bitmap: ImageBitmap): Promise<Blob> {
+  const {canvas, ctx} =
+      newDrawingCanvas({width: bitmap.width, height: bitmap.height});
+  ctx.drawImage(bitmap, 0, 0);
+  return canvasToJpegBlob(canvas);
+}
+
+/**
  * Returns a shortcut string, such as Ctrl-Alt-A.
+ *
  * @param event Keyboard event.
  * @return Shortcut identifier.
  */
@@ -82,40 +96,43 @@ export function getShortcutIdentifier(event: KeyboardEvent): string {
 }
 
 /**
- * Opens help.
- */
-export function openHelp(): void {
-  window.open(
-      'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
-}
-
-/**
  * Sets up i18n messages on DOM subtree by i18n attributes.
+ *
  * @param rootElement Root of DOM subtree to be set up with.
  */
-export function setupI18nElements(rootElement: Element|DocumentFragment): void {
-  const getElements = (attr) =>
-      dom.getAllFrom(rootElement, '[' + attr + ']', HTMLElement);
-  const getMessage = (element, attr) =>
-      loadTimeData.getI18nMessage(element.getAttribute(attr));
-  const setAriaLabel = (element, attr) =>
-      element.setAttribute('aria-label', getMessage(element, attr));
+export function setupI18nElements(rootElement: DocumentFragment|Element): void {
+  function getElements(attr: string) {
+    const elements = [...dom.getAllFrom(rootElement, `[${attr}]`, HTMLElement)];
+    if (rootElement instanceof HTMLElement && rootElement.hasAttribute(attr)) {
+      elements.push(rootElement);
+    }
+    return elements;
+  }
+  function getMessage(element: HTMLElement, attr: string) {
+    return loadTimeData.getI18nMessage(
+        assertEnumVariant(I18nString, element.getAttribute(attr)));
+  }
+  function setAriaLabel(element: HTMLElement, attr: string) {
+    element.setAttribute('aria-label', getMessage(element, attr));
+  }
 
-  getElements('i18n-text')
-      .forEach(
-          (element) => element.textContent = getMessage(element, 'i18n-text'));
-  getElements('i18n-tooltip-true')
-      .forEach(
-          (element) => element.setAttribute(
-              'tooltip-true', getMessage(element, 'i18n-tooltip-true')));
-  getElements('i18n-tooltip-false')
-      .forEach(
-          (element) => element.setAttribute(
-              'tooltip-false', getMessage(element, 'i18n-tooltip-false')));
-  getElements('i18n-aria')
-      .forEach((element) => setAriaLabel(element, 'i18n-aria'));
-  tooltip.setup(getElements('i18n-label'))
-      .forEach((element) => setAriaLabel(element, 'i18n-label'));
+  for (const element of getElements('i18n-text')) {
+    element.textContent = getMessage(element, 'i18n-text');
+  }
+  for (const element of getElements('i18n-tooltip-true')) {
+    element.setAttribute(
+        'tooltip-true', getMessage(element, 'i18n-tooltip-true'));
+  }
+  for (const element of getElements('i18n-tooltip-false')) {
+    element.setAttribute(
+        'tooltip-false', getMessage(element, 'i18n-tooltip-false'));
+  }
+  for (const element of getElements('i18n-aria')) {
+    setAriaLabel(element, 'i18n-aria');
+  }
+  for (const element of tooltip.setup(getElements('i18n-label'))) {
+    setAriaLabel(element, 'i18n-label');
+  }
 }
 
 /**
@@ -156,11 +173,11 @@ export function bindElementAriaLabelWithState(
       onLabel: I18nString,
       offLabel: I18nString,
     }): void {
-  const update = (value) => {
+  function update(value: boolean) {
     const label = value ? onLabel : offLabel;
     element.setAttribute('i18n-label', label);
     element.setAttribute('aria-label', loadTimeData.getI18nMessage(label));
-  };
+  }
   update(state.get(s));
   state.addObserver(s, update);
 }
@@ -201,12 +218,13 @@ export function instantiateTemplate(selector: string): DocumentFragment {
 /**
  * Creates JS module by given |scriptUrl| under untrusted context with given
  * origin and returns its proxy.
+ *
  * @param scriptUrl The URL of the script to load.
  */
-export async function createUntrustedJSModule(scriptUrl: string):
-    Promise<unknown> {
+export async function createUntrustedJSModule<T>(scriptUrl: string):
+    Promise<Comlink.Remote<T>> {
   const untrustedPageReady = new WaitableEvent();
-  const iFrame = dom.create('iframe', HTMLIFrameElement);
+  const iFrame = document.createElement('iframe');
   iFrame.addEventListener('load', () => untrustedPageReady.signal());
   iFrame.setAttribute(
       'src',
@@ -215,14 +233,20 @@ export async function createUntrustedJSModule(scriptUrl: string):
   document.body.appendChild(iFrame);
   await untrustedPageReady.wait();
 
+  assert(iFrame.contentWindow !== null);
+  // TODO(pihsun): actually get correct type from the function definition.
   const untrustedRemote =
-      await Comlink.wrap(Comlink.windowEndpoint(iFrame.contentWindow, self));
+      Comlink.wrap<{loadScript(url: string): Promise<void>}>(
+          Comlink.windowEndpoint(iFrame.contentWindow, self));
   await untrustedRemote.loadScript(scriptUrl);
-  return untrustedRemote;
+  // loadScript adds the script exports to what's exported by the
+  // untrustedRemote, so we manually cast it to the expected type.
+  return untrustedRemote as unknown as Comlink.Remote<T>;
 }
 
 /**
  * Sleeps for a specified time.
+ *
  * @param ms Milliseconds to sleep.
  */
 export function sleep(ms: number): Promise<void> {
@@ -230,10 +254,10 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Gets value in px of a property in a StylePropertyMapReadOnly
+ * Gets value in px of a property in a StylePropertyMapReadOnly.
  */
 export function getStyleValueInPx(
-    style: (StylePropertyMapReadOnly|StylePropertyMap), prop: string): number {
+    style: (StylePropertyMap|StylePropertyMapReadOnly), prop: string): number {
   return assertInstanceof(style.get(prop), CSSNumericValue).to('px').value;
 }
 
@@ -243,8 +267,11 @@ export function getStyleValueInPx(
  */
 export class DelayInterval {
   private intervalId: number|null = null;
+
   private readonly delayTimeoutId: number;
+
   /**
+   * @param callback Callback to be triggered in fixed interval.
    * @param delayMs Delay milliseconds at start.
    * @param intervalMs Interval in milliseconds.
    */
@@ -288,12 +315,15 @@ export async function share(file: File): Promise<void> {
 
 /**
  * Check if a string value is a variant of an enum.
- * @param value value to be checked
- * @return the value if it's an enum variant, null otherwise
+ *
+ * @param enumType The enum type to be checked.
+ * @param value Value to be checked.
+ * @return The value if it's an enum variant, null otherwise.
  */
 export function checkEnumVariant<T extends string>(
-    enumType: {[key: string]: T}, value: string|null): T|null {
-  if (value === null || !Object.values<string>(enumType).includes(value)) {
+    enumType: {[key: string]: T}, value: string|null|undefined): T|null {
+  if (value === null || value === undefined ||
+      !Object.values<string>(enumType).includes(value)) {
     return null;
   }
   return value as T;
@@ -301,12 +331,50 @@ export function checkEnumVariant<T extends string>(
 
 /**
  * Asserts that a string value is a variant of an enum.
- * @param value value to be checked
- * @return the value if it's an enum variant, throws assertion error otherwise.
+ *
+ * @param enumType The enum type to be checked.
+ * @param value Value to be checked.
+ * @return The value if it's an enum variant, throws assertion error otherwise.
  */
 export function assertEnumVariant<T extends string>(
-    enumType: {[key: string]: T}, value: string): T {
+    enumType: {[key: string]: T}, value: string|null|undefined): T {
   const ret = checkEnumVariant(enumType, value);
-  assert(ret !== null);
+  assert(ret !== null, `${value} is not a valid enum variant`);
   return ret;
+}
+
+/**
+ * Crops out maximum possible centered square from the image blob.
+ *
+ * @return Promise with result cropped square image.
+ */
+export async function cropSquare(blob: Blob): Promise<Blob> {
+  const img = await blobToImage(blob);
+  try {
+    const side = Math.min(img.width, img.height);
+    const {canvas, ctx} = newDrawingCanvas({width: side, height: side});
+    ctx.drawImage(
+        img, Math.floor((img.width - side) / 2),
+        Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
+    // TODO(b/174190121): Patch important exif entries from input blob to
+    // result blob.
+    const croppedBlob = await canvasToJpegBlob(canvas);
+    return croppedBlob;
+  } finally {
+    URL.revokeObjectURL(img.src);
+  }
+}
+
+/**
+ * Returns the mapped aspect ratio set according to the given resolution.
+ */
+export function toAspectRatioSet(resolution: Resolution|null): AspectRatioSet {
+  switch (resolution?.aspectRatio) {
+    case 1.3333:
+      return AspectRatioSet.RATIO_4_3;
+    case 1.7778:
+      return AspectRatioSet.RATIO_16_9;
+    default:
+      return AspectRatioSet.RATIO_OTHER;
+  }
 }

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/check_op.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -53,6 +53,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace payments {
 namespace {
@@ -64,8 +65,7 @@ std::u16string GetPaymentHandlerDialogTitle(
 
   const std::u16string title = web_contents->GetTitle();
   const std::u16string https_prefix =
-      base::ASCIIToUTF16(url::kHttpsScheme) +
-      base::ASCIIToUTF16(url::kStandardSchemeSeparator);
+      base::StrCat({url::kHttpsScheme16, url::kStandardSchemeSeparator16});
   return base::StartsWith(title, https_prefix, base::CompareCase::SENSITIVE)
              ? std::u16string()
              : title;
@@ -112,8 +112,8 @@ class ReadOnlyOriginView : public views::View {
 
       // Pad to keep header as the same height as when the page title is valid.
       constexpr int kVerticalPadding = 10;
-      origin_label->SetBorder(
-          views::CreateEmptyBorder(kVerticalPadding, 0, kVerticalPadding, 0));
+      origin_label->SetBorder(views::CreateEmptyBorder(
+          gfx::Insets::TLBR(kVerticalPadding, 0, kVerticalPadding, 0)));
     }
     // Turn off autoreadability because the computed |foreground| color takes
     // contrast into account.
@@ -146,7 +146,8 @@ class ReadOnlyOriginView : public views::View {
       app_icon_view->SetImageSize(gfx::Size(
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
-      app_icon_view->SetProperty(views::kMarginsKey, gfx::Insets(0, 0, 0, 8));
+      app_icon_view->SetProperty(views::kMarginsKey,
+                                 gfx::Insets::TLBR(0, 0, 0, 8));
     }
   }
   ReadOnlyOriginView(const ReadOnlyOriginView&) = delete;
@@ -199,7 +200,6 @@ void PaymentHandlerWebFlowViewController::FillContentView(
     // separator as the initially-visible one.
     progress_bar_ = header_content_separator_container()->AddChildView(
         std::make_unique<views::ProgressBar>(/*preferred_height=*/2));
-    progress_bar_->SetForegroundColor(gfx::kGoogleBlue500);
     progress_bar_->SetBackgroundColor(SK_ColorTRANSPARENT);
     progress_bar_->SetVisible(false);
     separator_ = header_content_separator_container()->AddChildView(
@@ -248,8 +248,9 @@ std::unique_ptr<views::View>
 PaymentHandlerWebFlowViewController::CreateHeaderContentView(
     views::View* header_view) {
   const url::Origin origin =
-      web_contents() ? web_contents()->GetMainFrame()->GetLastCommittedOrigin()
-                     : url::Origin::Create(target_);
+      web_contents()
+          ? web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin()
+          : url::Origin::Create(target_);
   std::unique_ptr<views::Background> background =
       GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
@@ -265,6 +266,8 @@ PaymentHandlerWebFlowViewController::GetHeaderBackground(
   auto default_header_background =
       PaymentRequestSheetController::GetHeaderBackground(header_view);
   if (web_contents() && header_view->GetWidget()) {
+    // Make sure the color is actually set before using it.
+    default_header_background->OnViewThemeChanged(header_view);
     return views::CreateSolidBackground(color_utils::GetResultingPaintColor(
         web_contents()->GetThemeColor().value_or(SK_ColorTRANSPARENT),
         default_header_background->get_color()));
@@ -290,11 +293,6 @@ void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
   } else {
     UpdateHeaderView();
   }
-}
-
-void PaymentHandlerWebFlowViewController::PrimaryPageChanged(
-    content::Page& page) {
-  UpdateHeaderView();
 }
 
 void PaymentHandlerWebFlowViewController::AddNewContents(
@@ -329,31 +327,28 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
   if (!is_active())
     return;
 
-  if (navigation_handle->IsSameDocument())
+  // Ignore non-primary main frame or same page navigations which aren't
+  // relevant to below.
+  if (navigation_handle->IsSameDocument() ||
+      !navigation_handle->IsInPrimaryMainFrame())
     return;
 
   // Checking uncommitted navigations (e.g., Network errors) is unnecessary
   // because the new pages have no chance to be loaded, rendered nor execute js.
-  // TODO(crbug.com/1198274): Only main frame is checked because unsafe iframes
-  // are blocked by the MixContentNavigationThrottle. But this design is
+  // TODO(crbug.com/1198274): Only primary main frame is checked because unsafe
+  // iframes are blocked by the MixContentNavigationThrottle. But this design is
   // fragile.
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (navigation_handle->HasCommitted() &&
-      navigation_handle->IsInPrimaryMainFrame() &&
       !SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
     AbortPayment();
     return;
   }
 
-  DCHECK(FrameSupportsPayments(navigation_handle->GetRenderFrameHost()));
-
   if (first_navigation_complete_callback_) {
     std::move(first_navigation_complete_callback_)
-        .Run(true, web_contents()->GetMainFrame()->GetProcess()->GetID(),
-             web_contents()->GetMainFrame()->GetRoutingID());
+        .Run(true, web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID(),
+             web_contents()->GetPrimaryMainFrame()->GetRoutingID());
   }
 
   UpdateHeaderView();
@@ -369,13 +364,6 @@ void PaymentHandlerWebFlowViewController::LoadProgressChanged(double progress) {
 void PaymentHandlerWebFlowViewController::TitleWasSet(
     content::NavigationEntry* entry) {
   UpdateHeaderView();
-}
-
-bool PaymentHandlerWebFlowViewController::FrameSupportsPayments(
-    content::RenderFrameHost* rfh) const {
-  return rfh && rfh->IsActive() &&
-         rfh->IsFeatureEnabled(
-             blink::mojom::PermissionsPolicyFeature::kPayment);
 }
 
 void PaymentHandlerWebFlowViewController::AbortPayment() {

@@ -193,7 +193,7 @@ void NetEqDecodingTest::PopulateRtpInfo(int frame_index,
   rtp_info->timestamp = timestamp;
   rtp_info->ssrc = 0x1234;     // Just an arbitrary SSRC.
   rtp_info->payloadType = 94;  // PCM16b WB codec.
-  rtp_info->markerBit = 0;
+  rtp_info->markerBit = false;
 }
 
 void NetEqDecodingTest::PopulateCng(int frame_index,
@@ -205,7 +205,7 @@ void NetEqDecodingTest::PopulateCng(int frame_index,
   rtp_info->timestamp = timestamp;
   rtp_info->ssrc = 0x1234;     // Just an arbitrary SSRC.
   rtp_info->payloadType = 98;  // WB CNG.
-  rtp_info->markerBit = 0;
+  rtp_info->markerBit = false;
   payload[0] = 64;   // Noise level -64 dBov, quite arbitrarily chosen.
   *payload_len = 1;  // Only noise level, no spectral parameters.
 }
@@ -225,7 +225,6 @@ void NetEqDecodingTest::WrapTest(uint16_t start_seq_no,
 
   // Insert speech for 2 seconds.
   const int kSpeechDurationMs = 2000;
-  int packets_inserted = 0;
   uint16_t last_seq_no;
   uint32_t last_timestamp;
   bool timestamp_wrapped = false;
@@ -240,7 +239,6 @@ void NetEqDecodingTest::WrapTest(uint16_t start_seq_no,
       if (drop_seq_numbers.find(seq_no) == drop_seq_numbers.end()) {
         // This sequence number was not in the set to drop. Insert it.
         ASSERT_EQ(0, neteq_->InsertPacket(rtp_info, payload));
-        ++packets_inserted;
       }
       NetEqNetworkStatistics network_stats;
       ASSERT_EQ(0, neteq_->NetworkStatistics(&network_stats));

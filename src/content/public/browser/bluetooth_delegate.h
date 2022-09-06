@@ -19,7 +19,7 @@
 // Some OS Bluetooth stacks (macOS and Android) automatically bond to a device
 // when accessing a characteristic/descriptor which requires an authenticated
 // client. For other platforms Chrome does the on-demand pairing.
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 #define PAIR_BLUETOOTH_ON_DEMAND() true
 #else
 #define PAIR_BLUETOOTH_ON_DEMAND() false
@@ -53,11 +53,21 @@ class CONTENT_EXPORT BluetoothDelegate {
     kCancelled,  // User cancelled, or agent cancelled on their behalf.
   };
 
+  // The result of the prompt when requesting confirm-only pairing.
+  enum class DevicePairConfirmPromptResult {
+    kSuccess,    // User grant permission for pairing.
+    kCancelled,  // User cancelled, or agent cancelled on their behalf.
+  };
+
   // Callback for Bluetooth device auth credential (i.e. PIN) prompt.
   // |result| is only valid when status is SUCCESS.
   using CredentialsCallback =
       base::OnceCallback<void(DeviceCredentialsPromptResult status,
                               const std::u16string& result)>;
+
+  // Callback for Bluetooth device confirm-only prompt.
+  using PairConfirmCallback =
+      base::OnceCallback<void(DevicePairConfirmPromptResult status)>;
 
   // An observer used to track permission revocation events for a particular
   // render frame host.
@@ -93,6 +103,17 @@ class CONTENT_EXPORT BluetoothDelegate {
       RenderFrameHost* frame,
       const std::u16string& device_identifier,
       CredentialsCallback callback) = 0;
+
+  // Prompt the user to consent to pair Bluetooth device
+  // |device_identifier| is any string the caller wants to display
+  // to the user to identify the device (MAC address, name, etc.). |callback|
+  // will be called with the prompt result. |callback| may be called immediately
+  // from this function, for example, if a pair confirm prompt for the given
+  // |frame| is already displayed.
+  virtual void ShowDevicePairConfirmPrompt(
+      RenderFrameHost* frame,
+      const std::u16string& device_identifier,
+      PairConfirmCallback callback) = 0;
 
   // This should return the WebBluetoothDeviceId that corresponds to the device
   // with |device_address| in the current |frame|. If there is not a
@@ -130,6 +151,11 @@ class CONTENT_EXPORT BluetoothDelegate {
   // the device with |device_id| through GrantServiceAccessPermission().
   // |device_id|s generated with AddScannedDevices() should return false.
   virtual bool HasDevicePermission(
+      RenderFrameHost* frame,
+      const blink::WebBluetoothDeviceId& device_id) = 0;
+
+  // Revokes |frame| access to the Bluetooth device ordered by website.
+  virtual void RevokeDevicePermissionWebInitiated(
       RenderFrameHost* frame,
       const blink::WebBluetoothDeviceId& device_id) = 0;
 

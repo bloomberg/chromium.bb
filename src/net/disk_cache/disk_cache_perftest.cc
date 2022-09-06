@@ -21,6 +21,7 @@
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
@@ -101,7 +102,7 @@ perf_test::PerfResultReporter SetUpSimpleIndexReporter(
 }
 
 void MaybeIncreaseFdLimitTo(unsigned int max_descriptors) {
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   base::IncreaseFdLimitTo(max_descriptors);
 #endif
 }
@@ -461,7 +462,7 @@ void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
        file_path = enumerator.Next()) {
     ASSERT_TRUE(base::EvictFileFromSystemCache(file_path));
   }
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   // And, cache directories, on platforms where the eviction utility supports
   // this (currently Linux and Android only).
   if (simple_cache_mode_) {
@@ -484,7 +485,7 @@ void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   InitCache();
   EXPECT_TRUE(TimeWrites(story));
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
@@ -493,7 +494,7 @@ void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_ONLY,
                         kMetricCacheHeadersReadTimeWarmMs, story));
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
@@ -502,15 +503,28 @@ void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_AND_BODY,
                         kMetricCacheEntriesReadTimeWarmMs, story));
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/851083): Fix this test on Fuchsia and re-enable.
+#define MAYBE_CacheBackendPerformance DISABLED_CacheBackendPerformance
+#else
+#define MAYBE_CacheBackendPerformance CacheBackendPerformance
+#endif
+TEST_F(DiskCachePerfTest, MAYBE_CacheBackendPerformance) {
   CacheBackendPerformance("blockfile_cache");
 }
 
-TEST_F(DiskCachePerfTest, SimpleCacheBackendPerformance) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/851083): Fix this test on Fuchsia and re-enable.
+#define MAYBE_SimpleCacheBackendPerformance \
+  DISABLED_SimpleCacheBackendPerformance
+#else
+#define MAYBE_SimpleCacheBackendPerformance SimpleCacheBackendPerformance
+#endif
+TEST_F(DiskCachePerfTest, MAYBE_SimpleCacheBackendPerformance) {
   SetSimpleCacheMode();
   CacheBackendPerformance("simple_cache");
 }
@@ -634,7 +648,7 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
   for (int i = 0; i < kBatchSize; ++i)
     cache_entry[i]->Close();
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
   auto reporter = SetUpDiskCacheReporter("early_portion");
   reporter.AddResult(kMetricSimpleCacheInitTotalTimeMs, elapsed_early);
@@ -646,8 +660,14 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
                      1000 * (elapsed_late / (kIterations * kBatchSize)));
 }
 
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1318120): Fix this test on Fuchsia and re-enable.
+#define MAYBE_EvictionPerformance DISABLED_EvictionPerformance
+#else
+#define MAYBE_EvictionPerformance EvictionPerformance
+#endif
 // Measures how quickly SimpleIndex can compute which entries to evict.
-TEST(SimpleIndexPerfTest, EvictionPerformance) {
+TEST(SimpleIndexPerfTest, MAYBE_EvictionPerformance) {
   const int kEntries = 10000;
 
   class NoOpDelegate : public disk_cache::SimpleIndexDelegate {

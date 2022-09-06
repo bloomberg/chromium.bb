@@ -50,10 +50,8 @@ WebUsbAllowDevicesForUrlsPolicyHandler::
 bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  const base::Value* value = policies.GetValue(policy_name());
-  if (!value)
+  if (!policies.IsPolicySet(policy_name()))
     return true;
-
   bool result =
       SchemaValidatingPolicyHandler::CheckPolicySettings(policies, errors);
 
@@ -62,15 +60,18 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
   if (!result)
     return result;
 
+  const base::Value* value =
+      policies.GetValue(policy_name(), base::Value::Type::LIST);
+  DCHECK(value);
   int item_index = 0;
-  for (const auto& item : value->GetList()) {
+  for (const auto& item : value->GetListDeprecated()) {
     // The vendor and product ID descriptors of a USB devices should be
     // unsigned short integers.
     int device_index = 0;
     auto* devices_list =
         item.FindKeyOfType(kDevicesKey, base::Value::Type::LIST);
     DCHECK(devices_list);
-    for (const auto& device : devices_list->GetList()) {
+    for (const auto& device : devices_list->GetListDeprecated()) {
       auto* vendor_id_value =
           device.FindKeyOfType(kVendorIdKey, base::Value::Type::INTEGER);
       auto* product_id_value =
@@ -93,7 +94,7 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
     int url_index = 0;
     auto* urls_list = item.FindKeyOfType(kUrlsKey, base::Value::Type::LIST);
     DCHECK(urls_list);
-    for (const auto& url_value : urls_list->GetList()) {
+    for (const auto& url_value : urls_list->GetListDeprecated()) {
       const std::string url_error_path = base::StringPrintf(
           kErrorPathTemplate, item_index, kUrlsKey, url_index);
 

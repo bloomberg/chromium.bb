@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "ash/components/login/auth/user_context.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
@@ -20,7 +20,6 @@
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -48,7 +47,7 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();
-    bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
+    bounds.Inset(gfx::Insets::VH(vertical_diff / 2, horizontal_diff / 2));
   }
   return bounds;
 }

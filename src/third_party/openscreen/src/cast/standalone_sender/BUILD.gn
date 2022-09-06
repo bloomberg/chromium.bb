@@ -2,25 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/external_libraries.gni")
 import("//build_overrides/build.gni")
-
-config("ffmpeg_warnings") {
-  if (is_clang) {
-    cflags_cc = [
-      # ffmpeg's av_err2str macro uses C99 compound literals :-/
-      "-Wno-c99-extensions",
-    ]
-  }
-}
+import("//cast/streaming/external_libraries.gni")
 
 # Define the executable target only when the build is configured to use the
 # standalone platform implementation; since this is itself a standalone
 # application.
 if (!build_with_chromium) {
-  declare_args() {
-    have_external_libs = have_ffmpeg && have_libopus && have_libvpx
-  }
+  have_external_libs = have_ffmpeg && have_libopus && have_libvpx
 
   config("standalone_external_libs") {
     defines = []
@@ -40,6 +29,7 @@ if (!build_with_chromium) {
       "../../platform:standalone_impl",
       "../../third_party/jsoncpp",
       "../../util",
+      "../common:certificate_boringssl",
       "../common:public",
       "../common/channel/proto:channel_proto",
       "../sender:channel",
@@ -95,10 +85,7 @@ if (!build_with_chromium) {
       }
     }
 
-    configs += [
-      "../common:certificate_config",
-      ":ffmpeg_warnings",
-    ]
+    configs += [ "../common:certificate_config" ]
 
     public_configs = [
       "../../build:openscreen_include_dirs",

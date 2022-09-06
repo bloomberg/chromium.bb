@@ -59,7 +59,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptFetcher
   // network::mojom::URLLoaderClient
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override;
+      network::mojom::URLResponseHeadPtr response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -68,8 +69,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptFetcher
                         OnUploadProgressCallback callback) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle response_body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   ServiceWorkerContextCore& context_;
@@ -78,9 +77,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptFetcher
   blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object_;
   // Request ID for a browser-initiated request.
   const int request_id_;
-
-  // Stores the response header until the data pipe for the body is received.
-  network::mojom::URLResponseHeadPtr response_head_;
 
   // Called when the header and the data pipe for the body are ready.
   StartCallback callback_;

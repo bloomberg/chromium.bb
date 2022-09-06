@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/proximity_auth/messenger_observer.h"
 #include "ash/components/proximity_auth/remote_status_update.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "base/callback.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,8 +61,7 @@ class MockMessengerObserver : public MessengerObserver {
 
 class TestMessenger : public MessengerImpl {
  public:
-  TestMessenger(
-      std::unique_ptr<chromeos::secure_channel::ClientChannel> channel)
+  TestMessenger(std::unique_ptr<ash::secure_channel::ClientChannel> channel)
       : MessengerImpl(std::move(channel)) {}
 
   TestMessenger(const TestMessenger&) = delete;
@@ -85,7 +84,7 @@ class ProximityAuthMessengerImplTest : public testing::Test {
 
   void CreateMessenger(bool is_multi_device_api_enabled) {
     auto fake_channel =
-        std::make_unique<chromeos::secure_channel::FakeClientChannel>();
+        std::make_unique<ash::secure_channel::FakeClientChannel>();
     fake_channel_ = fake_channel.get();
 
     messenger_ = std::make_unique<TestMessenger>(std::move(fake_channel));
@@ -104,7 +103,7 @@ class ProximityAuthMessengerImplTest : public testing::Test {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  chromeos::secure_channel::FakeClientChannel* fake_channel_;
+  ash::secure_channel::FakeClientChannel* fake_channel_;
 
   std::unique_ptr<TestMessenger> messenger_;
 

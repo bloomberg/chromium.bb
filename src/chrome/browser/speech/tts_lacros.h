@@ -51,13 +51,14 @@ class TtsPlatformImplLacros : public content::TtsPlatform,
   void ClearError() override {}
   void SetError(const std::string& error) override {}
   bool IsSpeaking() override;
-  bool PreferEngineDelegateVoices() override;
+  void FinalizeVoiceOrdering(std::vector<content::VoiceData>& voices) override;
   void Pause() override {}
   void Resume() override {}
   void WillSpeakUtteranceWithVoice(
       content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override {}
   void Shutdown() override {}
+  void RefreshVoices() override {}
 
  private:
   friend class base::NoDestructor<TtsPlatformImplLacros>;

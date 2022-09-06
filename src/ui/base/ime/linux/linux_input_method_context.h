@@ -5,10 +5,13 @@
 #ifndef UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace gfx {
@@ -21,12 +24,13 @@ namespace ui {
 struct CompositionText;
 class KeyEvent;
 struct ImeTextSpan;
+class VirtualKeyboardController;
 
 // An interface of input method context for input method frameworks on
 // GNU/Linux and likes.
 class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContext {
  public:
-  virtual ~LinuxInputMethodContext() {}
+  virtual ~LinuxInputMethodContext() = default;
 
   // Dispatches the key event to an underlying IME.  Returns true if the key
   // event is handled, otherwise false.  A client must set the text input type
@@ -45,17 +49,23 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContext {
                                   const gfx::Range& selection_range) = 0;
 
   // Tells the system IME the content type of the text input client is changed.
-  virtual void SetContentType(TextInputType input_type, int input_flags) = 0;
+  virtual void SetContentType(TextInputType type,
+                              TextInputMode mode,
+                              uint32_t flags,
+                              bool should_do_learning) = 0;
 
   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
   // before calling DispatchKeyEvent().
   virtual void Reset() = 0;
 
-  // Focuses the context.
-  virtual void Focus() = 0;
+  // Called when text input focus is changed.
+  virtual void UpdateFocus(bool has_client,
+                           TextInputType old_type,
+                           TextInputType new_type) = 0;
 
-  // Blurs the context.
-  virtual void Blur() = 0;
+  // Returns the corresponding VirtualKeyboardController instance.
+  // Or nullptr, if not supported.
+  virtual VirtualKeyboardController* GetVirtualKeyboardController() = 0;
 };
 
 // An interface of callback functions called from LinuxInputMethodContext.

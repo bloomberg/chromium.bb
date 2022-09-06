@@ -29,6 +29,7 @@ GPU_CRASH_SIGNATURES = [
 FORCED_RENDERER_CRASH_SIGNATURES = [
     'base::debug::BreakDebugger',
     'blink::DevToolsSession::IOSession::DispatchProtocolCommand',
+    'blink::HandleChromeDebugURL',
     'chrome!DispatchProtocolCommand',
     'logging::LogMessage::~LogMessage',
 ]
@@ -63,7 +64,6 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
-      'mac',  # https://crbug.com/1271097
       'win7'  # https://crbug.com/1084931
   )
   def testSymbolizeMinidump(self):
@@ -109,7 +109,6 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
       'chromeos-local',
-      'mac',  # https://crbug.com/1271097
       'win7'  # https://crbug.com/1084931
   )
   def testMultipleCrashMinidumps(self):
@@ -202,9 +201,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
   @decorators.Disabled(
-      'chromeos',  # https://crbug.com/1247948
       'chromeos-local',
-      'mac',  # https://crbug.com/1271097
       'win7'  # https://crbug.com/1084931
   )
   def testMinidumpFromRendererHang(self):

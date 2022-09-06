@@ -40,7 +40,8 @@ bool HitTestButton(const views::FrameCaptionButton* button,
   gfx::Rect expanded_bounds_in_screen = button->GetBoundsInScreen();
   if (button->GetState() == views::Button::STATE_HOVERED ||
       button->GetState() == views::Button::STATE_PRESSED) {
-    expanded_bounds_in_screen.Inset(-kMaxOvershootX, -kMaxOvershootY);
+    expanded_bounds_in_screen.Inset(
+        gfx::Insets::VH(-kMaxOvershootY, -kMaxOvershootX));
   }
   return expanded_bounds_in_screen.Contains(location_in_screen);
 }
@@ -60,6 +61,7 @@ SnapDirection GetSnapDirection(const views::FrameCaptionButton* to_hover) {
       case views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED:
         return is_primary_snap ? SnapDirection::kSecondary
                                : SnapDirection::kPrimary;
+      case views::CAPTION_BUTTON_ICON_FLOAT:
       case views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
       case views::CAPTION_BUTTON_ICON_MINIMIZE:
       case views::CAPTION_BUTTON_ICON_CLOSE:
@@ -243,6 +245,15 @@ void FrameSizeButton::SetButtonsToSnapMode(
     delegate_->SetButtonIcons(views::CAPTION_BUTTON_ICON_LEFT_TOP_SNAPPED,
                               views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED,
                               animate);
+  }
+  // Show Multitask Menu if float is enabled. Note here float flag is also used
+  // to represent other relatable UI/UX changes.
+  // TODO(shidi) Move this when long hover trigger (crbug.com/1330016) is
+  // implemented.
+  if (chromeos::wm::features::IsFloatWindowEnabled()) {
+    multitask_menu_ = std::make_unique<MultitaskMenu>(
+        /*anchor=*/this, GetWidget()->GetNativeWindow());
+    multitask_menu_->ShowBubble();
   }
 }
 

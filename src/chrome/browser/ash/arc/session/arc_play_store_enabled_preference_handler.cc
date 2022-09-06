@@ -27,6 +27,10 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 using sync_pb::UserConsentTypes;
 
 namespace arc {
@@ -168,10 +172,16 @@ void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
         IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
   }
 
-  if (ShouldArcAlwaysStart() || IsArcPlayStoreEnabledForProfile(profile_))
+  if (ShouldArcAlwaysStart()) {
     arc_session_manager_->RequestEnable();
-  else
+  } else if (IsArcPlayStoreEnabledForProfile(profile_)) {
+    if (!ShouldArcStartManually())
+      arc_session_manager_->RequestEnable();
+    else
+      VLOG(1) << "ARC is not started automatically";
+  } else {
     arc_session_manager_->RequestDisableWithArcDataRemoval();
+  }
 }
 
 }  // namespace arc

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/internal/background_service/entry.h"
@@ -147,8 +148,12 @@ base::Value EntryToValue(
   if (driver.has_value()) {
     serialized_entry.SetDoubleKey("bytes_downloaded", driver->bytes_downloaded);
     serialized_entry.SetKey("driver", DriverEntryToValue(driver.value()));
+    serialized_entry.SetStringKey(
+        "time_downloaded", base::TimeFormatHTTP(driver->completion_time));
   } else {
     serialized_entry.SetDoubleKey("bytes_downloaded", entry.bytes_downloaded);
+    serialized_entry.SetStringKey("time_downloaded",
+                                  base::TimeFormatHTTP(entry.completion_time));
   }
 
   if (completion_type.has_value()) {

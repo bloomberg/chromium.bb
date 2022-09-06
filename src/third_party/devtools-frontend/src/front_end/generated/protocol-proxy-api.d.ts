@@ -593,6 +593,15 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.CSS.GetStyleSheetTextResponse>;
 
     /**
+     * Returns all layers parsed by the rendering engine for the tree scope of a node.
+     * Given a DOM element identified by nodeId, getLayersForNode returns the root
+     * layer for the nearest ancestor document or shadow root. The layer root contains
+     * the full layer tree for the tree scope and their ordering.
+     */
+    invoke_getLayersForNode(params: Protocol.CSS.GetLayersForNodeRequest):
+        Promise<Protocol.CSS.GetLayersForNodeResponse>;
+
+    /**
      * Starts tracking the given computed styles for updates. The specified array of properties
      * replaces the one previously specified. Pass empty array to disable tracking.
      * Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.
@@ -630,6 +639,11 @@ declare namespace ProtocolProxyApi {
      */
     invoke_setContainerQueryText(params: Protocol.CSS.SetContainerQueryTextRequest):
         Promise<Protocol.CSS.SetContainerQueryTextResponse>;
+
+    /**
+     * Modifies the expression of a supports at-rule.
+     */
+    invoke_setSupportsText(params: Protocol.CSS.SetSupportsTextRequest): Promise<Protocol.CSS.SetSupportsTextResponse>;
 
     /**
      * Modifies the rule selector.
@@ -824,7 +838,7 @@ declare namespace ProtocolProxyApi {
     /**
      * Enables DOM agent for the given page.
      */
-    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+    invoke_enable(params: Protocol.DOM.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Focuses the given element.
@@ -1458,10 +1472,19 @@ declare namespace ProtocolProxyApi {
     invoke_setDisabledImageTypes(params: Protocol.Emulation.SetDisabledImageTypesRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
+    invoke_setHardwareConcurrencyOverride(params: Protocol.Emulation.SetHardwareConcurrencyOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
     /**
      * Allows overriding user agent with the given string.
      */
     invoke_setUserAgentOverride(params: Protocol.Emulation.SetUserAgentOverrideRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Allows overriding the automation flag.
+     */
+    invoke_setAutomationOverride(params: Protocol.Emulation.SetAutomationOverrideRequest):
         Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface EmulationDispatcher {
@@ -1476,7 +1499,7 @@ declare namespace ProtocolProxyApi {
      * Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
      * screenshot from the resulting frame. Requires that the target was created with enabled
      * BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
-     * https://goo.gl/3zHXhB for more background.
+     * https://goo.gle/chrome-headless-rendering for more background.
      */
     invoke_beginFrame(params: Protocol.HeadlessExperimental.BeginFrameRequest):
         Promise<Protocol.HeadlessExperimental.BeginFrameResponse>;
@@ -2318,7 +2341,7 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
-     * Requests that backend shows hit-test borders on layers
+     * Deprecated, no longer has any effect.
      */
     invoke_setShowHitTestBorders(params: Protocol.Overlay.SetShowHitTestBordersRequest):
         Promise<Protocol.ProtocolResponseWithError>;
@@ -2799,6 +2822,11 @@ declare namespace ProtocolProxyApi {
      */
     backForwardCacheNotUsed(params: Protocol.Page.BackForwardCacheNotUsedEvent): void;
 
+    /**
+     * Fired when a prerender attempt is completed.
+     */
+    prerenderAttemptCompleted(params: Protocol.Page.PrerenderAttemptCompletedEvent): void;
+
     loadEventFired(params: Protocol.Page.LoadEventFiredEvent): void;
 
     /**
@@ -2967,6 +2995,12 @@ declare namespace ProtocolProxyApi {
 
   export interface StorageApi {
     /**
+     * Returns a storage key given a frame id.
+     */
+    invoke_getStorageKeyForFrame(params: Protocol.Storage.GetStorageKeyForFrameRequest):
+        Promise<Protocol.Storage.GetStorageKeyForFrameResponse>;
+
+    /**
      * Clears storage for origin.
      */
     invoke_clearDataForOrigin(params: Protocol.Storage.ClearDataForOriginRequest):
@@ -3035,6 +3069,18 @@ declare namespace ProtocolProxyApi {
      */
     invoke_clearTrustTokens(params: Protocol.Storage.ClearTrustTokensRequest):
         Promise<Protocol.Storage.ClearTrustTokensResponse>;
+
+    /**
+     * Gets details for a named interest group.
+     */
+    invoke_getInterestGroupDetails(params: Protocol.Storage.GetInterestGroupDetailsRequest):
+        Promise<Protocol.Storage.GetInterestGroupDetailsResponse>;
+
+    /**
+     * Enables/Disables issuing of interestGroupAccessed events.
+     */
+    invoke_setInterestGroupTracking(params: Protocol.Storage.SetInterestGroupTrackingRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface StorageDispatcher {
     /**
@@ -3056,6 +3102,11 @@ declare namespace ProtocolProxyApi {
      * The origin's IndexedDB database list has been modified.
      */
     indexedDBListUpdated(params: Protocol.Storage.IndexedDBListUpdatedEvent): void;
+
+    /**
+     * One of the interest groups was accessed by the associated page.
+     */
+    interestGroupAccessed(params: Protocol.Storage.InterestGroupAccessedEvent): void;
   }
 
   export interface SystemInfoApi {
@@ -3463,7 +3514,7 @@ declare namespace ProtocolProxyApi {
      * Enable the WebAuthn domain and start intercepting credential storage and
      * retrieval with a virtual authenticator.
      */
-    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+    invoke_enable(params: Protocol.WebAuthn.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disable the WebAuthn domain.
@@ -3635,7 +3686,19 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
-     * Restarts particular call frame from the beginning.
+     * Restarts particular call frame from the beginning. The old, deprecated
+     * behavior of `restartFrame` is to stay paused and allow further CDP commands
+     * after a restart was scheduled. This can cause problems with restarting, so
+     * we now continue execution immediatly after it has been scheduled until we
+     * reach the beginning of the restarted frame.
+     *
+     * To stay back-wards compatible, `restartFrame` now expects a `mode`
+     * parameter to be present. If the `mode` parameter is missing, `restartFrame`
+     * errors out.
+     *
+     * The various return values are deprecated and `callFrames` is always empty.
+     * Use the call frames from the `Debugger#paused` events instead, that fires
+     * once V8 pauses at the beginning of the restarted function.
      */
     invoke_restartFrame(params: Protocol.Debugger.RestartFrameRequest): Promise<Protocol.Debugger.RestartFrameResponse>;
 
@@ -4033,6 +4096,16 @@ declare namespace ProtocolProxyApi {
      * unsubscribes current runtime agent from Runtime.bindingCalled notifications.
      */
     invoke_removeBinding(params: Protocol.Runtime.RemoveBindingRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * This method tries to lookup and populate exception details for a
+     * JavaScript Error object.
+     * Note that the stackTrace portion of the resulting exceptionDetails will
+     * only be populated if the Runtime domain was enabled at the time when the
+     * Error was thrown.
+     */
+    invoke_getExceptionDetails(params: Protocol.Runtime.GetExceptionDetailsRequest):
+        Promise<Protocol.Runtime.GetExceptionDetailsResponse>;
   }
   export interface RuntimeDispatcher {
     /**

@@ -17,7 +17,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -34,6 +33,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_backend.h"
 #include "components/favicon_base/favicon_usage_data.h"
@@ -84,6 +84,12 @@ const int kLargeEdgeSize = 32;
 const gfx::Size kSmallSize = gfx::Size(kSmallEdgeSize, kSmallEdgeSize);
 const gfx::Size kLargeSize = gfx::Size(kLargeEdgeSize, kLargeEdgeSize);
 
+// Minimal representation of a `Cluster` for verifying 2 clusters are equal.
+struct ClusterExpectation {
+  int64_t cluster_id;
+  std::vector<VisitID> visit_ids;
+};
+
 using SimulateNotificationCallback =
     base::RepeatingCallback<void(const URLRow*, const URLRow*, const URLRow*)>;
 
@@ -99,10 +105,8 @@ void SimulateNotificationURLVisited(HistoryServiceObserver* observer,
     rows.push_back(*row3);
 
   base::Time visit_time;
-  RedirectList redirects;
   for (const URLRow& row : rows) {
-    observer->OnURLVisited(nullptr, ui::PAGE_TRANSITION_LINK, row, redirects,
-                           visit_time);
+    observer->OnURLVisited(nullptr, ui::PAGE_TRANSITION_LINK, row, visit_time);
   }
 }
 
@@ -142,7 +146,6 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                              const GURL& icon_url) override;
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
-                        const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& changed_urls) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
@@ -150,6 +153,9 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                                       KeywordID keyword_id,
                                       const std::u16string& term) override;
   void NotifyKeywordSearchTermDeleted(URLID url_id) override;
+  void NotifyContentModelAnnotationModified(
+      const URLRow& row,
+      const VisitContentModelAnnotations& model_annotations) override;
   void DBLoaded() override;
 
  private:
@@ -161,7 +167,6 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
 class TestHistoryBackend : public HistoryBackend {
  public:
   using HistoryBackend::AddPageVisit;
-  using HistoryBackend::AnnotatedVisitsFromRows;
   using HistoryBackend::DeleteAllHistory;
   using HistoryBackend::DeleteFTSIndexDatabases;
   using HistoryBackend::HistoryBackend;
@@ -218,12 +223,18 @@ class HistoryBackendTestBase : public testing::Test {
     return urls_deleted_notifications_;
   }
 
+  const std::vector<VisitContentModelAnnotations>
+  modified_content_model_annotations() const {
+    return modified_content_model_annotations_;
+  }
+
   void ClearBroadcastedNotifications() {
     url_visited_notifications_.clear();
     urls_modified_notifications_.clear();
     urls_deleted_notifications_.clear();
     favicon_changed_notifications_page_urls_.clear();
     favicon_changed_notifications_icon_urls_.clear();
+    modified_content_model_annotations_.clear();
   }
 
   base::FilePath test_dir() { return test_dir_; }
@@ -239,10 +250,9 @@ class HistoryBackendTestBase : public testing::Test {
 
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
-                        const RedirectList& redirects,
                         base::Time visit_time) {
     // Send the notifications directly to the in-memory database.
-    mem_backend_->OnURLVisited(nullptr, transition, row, redirects, visit_time);
+    mem_backend_->OnURLVisited(nullptr, transition, row, visit_time);
     url_visited_notifications_.push_back(std::make_pair(transition, row));
   }
 
@@ -266,6 +276,12 @@ class HistoryBackendTestBase : public testing::Test {
 
   void NotifyKeywordSearchTermDeleted(URLID url_id) {
     mem_backend_->OnKeywordSearchTermDeleted(nullptr, url_id);
+  }
+
+  void NotifyContentModelAnnotationModified(
+      const URLRow& row,
+      const VisitContentModelAnnotations& model_annotations) {
+    modified_content_model_annotations_.push_back(model_annotations);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -309,6 +325,7 @@ class HistoryBackendTestBase : public testing::Test {
   URLVisitedList url_visited_notifications_;
   URLsModifiedList urls_modified_notifications_;
   URLsDeletedList urls_deleted_notifications_;
+  std::vector<VisitContentModelAnnotations> modified_content_model_annotations_;
 
   base::FilePath test_dir_;
 };
@@ -326,9 +343,8 @@ void HistoryBackendTestDelegate::NotifyFaviconsChanged(
 
 void HistoryBackendTestDelegate::NotifyURLVisited(ui::PageTransition transition,
                                                   const URLRow& row,
-                                                  const RedirectList& redirects,
                                                   base::Time visit_time) {
-  test_->NotifyURLVisited(transition, row, redirects, visit_time);
+  test_->NotifyURLVisited(transition, row, visit_time);
 }
 
 void HistoryBackendTestDelegate::NotifyURLsModified(
@@ -349,6 +365,12 @@ void HistoryBackendTestDelegate::NotifyKeywordSearchTermUpdated(
 
 void HistoryBackendTestDelegate::NotifyKeywordSearchTermDeleted(URLID url_id) {
   test_->NotifyKeywordSearchTermDeleted(url_id);
+}
+
+void HistoryBackendTestDelegate::NotifyContentModelAnnotationModified(
+    const URLRow& row,
+    const VisitContentModelAnnotations& model_annotations) {
+  test_->NotifyContentModelAnnotationModified(row, model_annotations);
 }
 
 void HistoryBackendTestDelegate::DBLoaded() {
@@ -523,11 +545,44 @@ class HistoryBackendTest : public HistoryBackendTestBase {
            *bitmap_data->front() == expected_data;
   }
 
-  // Helper to get all annotated visits.
-  std::vector<AnnotatedVisit> GetAnnotatedVisitRowsFromBackend() {
-    return backend_
-        ->GetRecentClusterIdsAndAnnotatedVisits(base::Time::Min(), 100)
-        .annotated_visits;
+  // Helper to add visit, URL, and context annotation entries to the
+  // corresponding databases.
+  void AddAnnotatedVisit(int relative_seconds) {
+    const auto ids = backend_->AddPageVisit(
+        GURL("https://google.com/" + base::NumberToString(relative_seconds)),
+        GetRelativeTime(relative_seconds), 0,
+        ui::PageTransition::PAGE_TRANSITION_FIRST, false, SOURCE_BROWSED, false,
+        false);
+    backend_->AddContextAnnotationsForVisit(ids.second, {});
+  }
+
+  // Helper to add a cluster.
+  void AddCluster(const std::vector<int64_t>& visit_ids) {
+    backend_->db_->AddClusters({CreateCluster(visit_ids)});
+  }
+
+  // Verifies a cluster has the expected ID and visit IDs.
+  void VerifyCluster(const Cluster& actual,
+                     const ClusterExpectation& expected) {
+    EXPECT_EQ(actual.cluster_id, expected.cluster_id);
+    EXPECT_EQ(GetVisitIds(actual.visits), expected.visit_ids);
+  }
+
+  // Verifies clusters have the expected IDs and visit IDs.
+  void VerifyClusters(const std::vector<Cluster>& actual,
+                      const std::vector<ClusterExpectation>& expected) {
+    ASSERT_EQ(actual.size(), expected.size());
+    for (size_t i = 0; i < actual.size(); i++) {
+      SCOPED_TRACE(i);
+      VerifyCluster(actual[i], expected[i]);
+    }
+  }
+
+  // Helper to get a consistent time; i.e. given the same `relative_seconds`,
+  // will return the same `Time`.
+  base::Time GetRelativeTime(int relative_seconds) {
+    static const base::Time time_now = base::Time::Now();
+    return time_now + base::Seconds(relative_seconds);
   }
 };
 
@@ -553,7 +608,7 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
 
   size_t GetNumberOfMatchingSearchTerms(const int keyword_id,
                                         const std::u16string& prefix) {
-    std::vector<KeywordSearchTermVisit> matching_terms;
+    std::vector<std::unique_ptr<KeywordSearchTermVisit>> matching_terms;
     mem_backend_->db()->GetMostRecentKeywordSearchTerms(
         keyword_id, prefix, 1, &matching_terms);
     return matching_terms.size();
@@ -606,11 +661,11 @@ const char16_t InMemoryHistoryBackendTest::kTestSearchTerm1[] = u"banana";
 const char16_t InMemoryHistoryBackendTest::kTestSearchTerm2[] = u"orange";
 
 // http://crbug.com/114287
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_Loaded DISABLED_Loaded
 #else
 #define MAYBE_Loaded Loaded
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 TEST_F(HistoryBackendTest, MAYBE_Loaded) {
   ASSERT_TRUE(backend_.get());
   ASSERT_TRUE(loaded_);
@@ -1275,7 +1330,7 @@ TEST_F(HistoryBackendTest, SetPageTitleFiresNotificationWithCorrectDetails) {
 }
 
 // There's no importer on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Setup test data - two Urls in the history, one with favicon assigned and
   // one without.
@@ -1349,7 +1404,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   EXPECT_NE(0, backend_->db_->GetRowForURL(url3, &url_row3));
   EXPECT_EQ(0, url_row3.visit_count());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
   ASSERT_TRUE(backend_.get());
@@ -1640,6 +1695,7 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotationsWithNoEntryInVisitTable) {
   VisitContentAnnotations got_content_annotations;
   ASSERT_FALSE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
+  ASSERT_TRUE(modified_content_model_annotations().empty());
 }
 
 TEST_F(HistoryBackendTest, AddRelatedSearchesWithNoEntryInVisitTable) {
@@ -1675,7 +1731,40 @@ TEST_F(HistoryBackendTest, AddRelatedSearchesWithNoEntryInVisitTable) {
       visit_id, &got_content_annotations));
 }
 
-TEST_F(HistoryBackendTest, SetFlocAllowed) {
+TEST_F(HistoryBackendTest, AddSearchMetadataWithNoEntryInVisitTable) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://pagewithvisit.com?q=search");
+  ContextID context_id = reinterpret_cast<ContextID>(1);
+  int nav_entry_id = 1;
+
+  HistoryAddPageArgs request(url, base::Time::Now(), context_id, nav_entry_id,
+                             GURL(), RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                             false, SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request);
+
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  VisitID visit_id = visits[0].visit_id;
+
+  // Delete the visit.
+  backend_->DeleteURL(url);
+
+  // Try adding the search metadata. It should be a no-op as there's no
+  // matching entry in the visits table.
+  backend_->AddSearchMetadataForVisit(
+      visit_id, GURL("http://pagewithvisit.com?q=search"), u"search");
+
+  // The content_annotations table should have no entries.
+  VisitContentAnnotations got_content_annotations;
+  ASSERT_FALSE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+}
+
+TEST_F(HistoryBackendTest, SetBrowsingTopicsAllowed) {
   ASSERT_TRUE(backend_.get());
 
   GURL url("http://test-set-floc-allowed.com");
@@ -1694,13 +1783,13 @@ TEST_F(HistoryBackendTest, SetFlocAllowed) {
   ASSERT_EQ(1U, visits.size());
   VisitID visit_id = visits[0].visit_id;
 
-  backend_->SetFlocAllowed(context_id, nav_entry_id, url);
+  backend_->SetBrowsingTopicsAllowed(context_id, nav_entry_id, url);
 
   VisitContentAnnotations got_content_annotations;
   ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
 
-  EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
+  EXPECT_EQ(VisitContentAnnotationFlag::kBrowsingTopicsEligible,
             got_content_annotations.annotation_flags);
   EXPECT_EQ(-1, got_content_annotations.model_annotations.visibility_score);
   EXPECT_TRUE(got_content_annotations.model_annotations.categories.empty());
@@ -1712,7 +1801,7 @@ TEST_F(HistoryBackendTest, SetFlocAllowed) {
   QueryResults results = backend_->QueryHistory(/*text_query=*/{}, options);
 
   ASSERT_EQ(results.size(), 1u);
-  EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
+  EXPECT_EQ(VisitContentAnnotationFlag::kBrowsingTopicsEligible,
             results[0].content_annotations().annotation_flags);
   EXPECT_EQ(
       -1, results[0].content_annotations().model_annotations.visibility_score);
@@ -1746,6 +1835,11 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
       0.5f, {{/*id=*/"1", /*weight=*/1}, {/*id=*/"2", /*weight=*/1}}, 123, {}};
   backend_->AddContentModelAnnotationsForVisit(
       visit_id, model_annotations_without_entities);
+  std::vector<VisitContentModelAnnotations> annotations =
+      modified_content_model_annotations();
+  ASSERT_EQ(annotations.size(), 1u);
+  ASSERT_EQ(annotations.at(0).visibility_score, 0.5f);
+  ASSERT_EQ(annotations.at(0).categories.size(), 2u);
   VisitContentModelAnnotations model_annotations_only_entities = {
       -1.0f,
       {},
@@ -1757,6 +1851,10 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
   VisitContentAnnotations got_content_annotations;
   ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
+  annotations = modified_content_model_annotations();
+  ASSERT_EQ(annotations.size(), 2u);
+  ASSERT_EQ(annotations.at(1).visibility_score, -1.0f);
+  ASSERT_EQ(annotations.at(1).categories.size(), 0u);
 
   // Model annotations should be merged from both calls.
   EXPECT_EQ(VisitContentAnnotationFlag::kNone,
@@ -1864,6 +1962,129 @@ TEST_F(HistoryBackendTest, AddRelatedSearches) {
       visit_id, &got_content_annotations));
 }
 
+TEST_F(HistoryBackendTest, AddSearchMetadata) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://pagewithvisit.com?q=search#garbage");
+  ContextID context_id = reinterpret_cast<ContextID>(1);
+  int nav_entry_id = 1;
+
+  HistoryAddPageArgs request(url, base::Time::Now(), context_id, nav_entry_id,
+                             GURL(), RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                             false, SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request);
+
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  VisitID visit_id = visits[0].visit_id;
+
+  backend_->AddSearchMetadataForVisit(
+      visit_id, GURL("http://pagewithvisit.com?q=search"), u"search");
+
+  VisitContentAnnotations got_content_annotations;
+  ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            got_content_annotations.annotation_flags);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
+  ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
+  EXPECT_EQ(
+      -1, got_content_annotations.model_annotations.page_topics_model_version);
+  ASSERT_TRUE(got_content_annotations.model_annotations.entities.empty());
+  ASSERT_TRUE(got_content_annotations.related_searches.empty());
+  EXPECT_EQ(got_content_annotations.search_normalized_url,
+            GURL("http://pagewithvisit.com?q=search"));
+  EXPECT_EQ(got_content_annotations.search_terms, u"search");
+
+  QueryOptions options;
+  options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  QueryResults results = backend_->QueryHistory(/*text_query=*/{}, options);
+
+  ASSERT_EQ(results.size(), 1u);
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            results[0].content_annotations().annotation_flags);
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            got_content_annotations.annotation_flags);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
+  ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
+  EXPECT_EQ(
+      -1, got_content_annotations.model_annotations.page_topics_model_version);
+  ASSERT_TRUE(got_content_annotations.model_annotations.entities.empty());
+  EXPECT_TRUE(got_content_annotations.related_searches.empty());
+  EXPECT_EQ(got_content_annotations.search_normalized_url,
+            GURL("http://pagewithvisit.com?q=search"));
+  EXPECT_EQ(got_content_annotations.search_terms, u"search");
+
+  // Now, delete the URL. Content Annotations should be deleted.
+  backend_->DeleteURL(url);
+  ASSERT_FALSE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+}
+
+TEST_F(HistoryBackendTest, AddPageMetadata) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://pagewithvisit.com");
+  ContextID context_id = reinterpret_cast<ContextID>(1);
+  int nav_entry_id = 1;
+
+  HistoryAddPageArgs request(url, base::Time::Now(), context_id, nav_entry_id,
+                             GURL(), RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                             false, SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request);
+
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  VisitID visit_id = visits[0].visit_id;
+
+  backend_->AddPageMetadataForVisit(visit_id, "alternative title");
+
+  VisitContentAnnotations got_content_annotations;
+  ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            got_content_annotations.annotation_flags);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
+  ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
+  EXPECT_EQ(
+      -1, got_content_annotations.model_annotations.page_topics_model_version);
+  ASSERT_TRUE(got_content_annotations.model_annotations.entities.empty());
+  ASSERT_TRUE(got_content_annotations.related_searches.empty());
+  ASSERT_TRUE(got_content_annotations.search_normalized_url.is_empty());
+  ASSERT_TRUE(got_content_annotations.search_terms.empty());
+  EXPECT_EQ(got_content_annotations.alternative_title, "alternative title");
+
+  QueryOptions options;
+  options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  QueryResults results = backend_->QueryHistory(/*text_query=*/{}, options);
+
+  ASSERT_EQ(results.size(), 1u);
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            results[0].content_annotations().annotation_flags);
+  EXPECT_EQ(VisitContentAnnotationFlag::kNone,
+            got_content_annotations.annotation_flags);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
+  ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
+  EXPECT_EQ(
+      -1, got_content_annotations.model_annotations.page_topics_model_version);
+  ASSERT_TRUE(got_content_annotations.model_annotations.entities.empty());
+  ASSERT_TRUE(got_content_annotations.related_searches.empty());
+  EXPECT_EQ(got_content_annotations.alternative_title, "alternative title");
+
+  // Now, delete the URL. Content Annotations should be deleted.
+  backend_->DeleteURL(url);
+  ASSERT_FALSE(backend_->db()->GetContentAnnotationsForVisit(
+      visit_id, &got_content_annotations));
+}
+
 TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
   ASSERT_TRUE(backend_.get());
 
@@ -1883,7 +2104,7 @@ TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
   ASSERT_EQ(1U, visits.size());
   VisitID visit_id = visits[0].visit_id;
 
-  backend_->SetFlocAllowed(context_id, nav_entry_id, url);
+  backend_->SetBrowsingTopicsAllowed(context_id, nav_entry_id, url);
 
   VisitContentModelAnnotations model_annotations = {
       0.5f,
@@ -1896,7 +2117,7 @@ TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
   ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
 
-  EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
+  EXPECT_EQ(VisitContentAnnotationFlag::kBrowsingTopicsEligible,
             got_content_annotations.annotation_flags);
   EXPECT_EQ(0.5f, got_content_annotations.model_annotations.visibility_score);
   EXPECT_THAT(
@@ -1917,7 +2138,7 @@ TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
   QueryResults results = backend_->QueryHistory(/*text_query=*/{}, options);
 
   ASSERT_EQ(results.size(), 1u);
-  EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
+  EXPECT_EQ(VisitContentAnnotationFlag::kBrowsingTopicsEligible,
             results[0].content_annotations().annotation_flags);
   EXPECT_EQ(
       0.5f,
@@ -2642,6 +2863,51 @@ TEST_F(HistoryBackendTest, UpdateVisitDuration) {
   ASSERT_TRUE(backend_->RemoveVisits(visits1));
 }
 
+TEST_F(HistoryBackendTest, UpdateVisitDurationForReferrer) {
+  const ContextID context_id = reinterpret_cast<ContextID>(0x1);
+  base::Time start_ts = base::Time::Now() - base::Days(1);
+  base::Time end_ts = start_ts + base::Seconds(2);
+
+  // Add two visits, the first referring to the second. Adding the second visit
+  // should populate the visit_duration for the first one.
+
+  GURL referrer_url("https://referrer.url");
+  GURL second_url("https://other.url");
+
+  HistoryAddPageArgs referrer_args(referrer_url, start_ts, context_id,
+                                   /*nav_entry_id=*/0, GURL(), RedirectList(),
+                                   ui::PAGE_TRANSITION_TYPED, false,
+                                   SOURCE_BROWSED,
+                                   /*did_replace_entry=*/false,
+                                   /*consider_for_ntp_most_visited=*/false,
+                                   /*floc_allowed=*/false);
+  backend_->AddPage(referrer_args);
+
+  // So far, the visit duration should be empty.
+  URLRow row;
+  URLID referrer_url_id = backend_->db()->GetRowForURL(referrer_url, &row);
+  VisitVector visits;
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(referrer_url_id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  ASSERT_EQ(0, visits[0].visit_duration.ToInternalValue());
+
+  HistoryAddPageArgs second_args(second_url, end_ts, context_id,
+                                 /*nav_entry_id=*/0, referrer_url,
+                                 RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                                 false, SOURCE_BROWSED,
+                                 /*did_replace_entry=*/false,
+                                 /*consider_for_ntp_most_visited=*/false,
+                                 /*floc_allowed=*/false);
+  backend_->AddPage(second_args);
+
+  // Adding the second visit should have populated the visit duration for the
+  // first one.
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(referrer_url_id, &visits));
+  base::TimeDelta expected_duration = end_ts - start_ts;
+  EXPECT_EQ(expected_duration.ToInternalValue(),
+            visits[0].visit_duration.ToInternalValue());
+}
+
 // Test for migration of adding visit_duration column.
 TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   ASSERT_TRUE(backend_.get());
@@ -2712,7 +2978,7 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
   ASSERT_TRUE(backend_.get());
 
   HistoryAddPageArgs args[10];
-  for (size_t i = 0; i < base::size(args); ++i) {
+  for (size_t i = 0; i < std::size(args); ++i) {
     args[i].url =
         GURL("http://example" + std::string((i % 2 == 0 ? ".com" : ".net")));
     args[i].time = base::Time::FromInternalValue(i);
@@ -2768,14 +3034,14 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
 
   // Insert 4 entries into the database.
   HistoryAddPageArgs args[4];
-  for (size_t i = 0; i < base::size(args); ++i) {
+  for (size_t i = 0; i < std::size(args); ++i) {
     args[i].url = GURL("http://example" + base::NumberToString(i) + ".com");
     args[i].time = reference_time + base::Days(i);
     backend_->AddPage(args[i]);
   }
 
   URLRow url_rows[4];
-  for (unsigned int i = 0; i < base::size(args); ++i)
+  for (unsigned int i = 0; i < std::size(args); ++i)
     ASSERT_TRUE(backend_->GetURL(args[i].url, &url_rows[i]));
 
   std::vector<ExpireHistoryArgs> expire_list;
@@ -2809,7 +3075,7 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
   EXPECT_EQ(backend_->GetFirstRecordedTimeForTest(), args[1].time);
 
   // Now delete the rest of the visits in one call.
-  for (unsigned int i = 1; i < base::size(args); ++i) {
+  for (unsigned int i = 1; i < std::size(args); ++i) {
     expire_list.resize(expire_list.size() + 1);
     expire_list[i].SetTimeRangeForOneDay(args[i].time);
     expire_list[i].urls.insert(args[i].url);
@@ -2898,7 +3164,7 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
             base::WriteFile(db1_wal, data, data_len));
   ASSERT_EQ(static_cast<int>(data_len),
             base::WriteFile(db2_actual, data, data_len));
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   EXPECT_TRUE(base::CreateSymbolicLink(db2_actual, db2_symlink));
 #endif
 
@@ -2914,10 +3180,16 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
 // Tests that calling DatabaseErrorCallback doesn't cause crash. (Regression
 // test for https://crbug.com/796138)
 TEST_F(HistoryBackendTest, DatabaseError) {
+  base::HistogramTester histogram_tester;
+
   backend_->SetTypedURLSyncBridgeForTest(nullptr);
-  backend_->DatabaseErrorCallback(SQLITE_CORRUPT, nullptr);
+  backend_->DatabaseErrorCallback(SQLITE_CANTOPEN, nullptr);
   // Run loop to let any posted callbacks run before TearDown().
   base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "History.DatabaseSqliteError",
+      static_cast<int>(sql::SqliteLoggedResultCode::kCantOpen), 1);
 }
 
 // Tests that calling DatabaseErrorCallback results in killing the database and
@@ -3042,6 +3314,53 @@ TEST_F(HistoryBackendTest, RedirectScoring) {
   EXPECT_EQ(0, url_row.typed_count());
   ASSERT_TRUE(backend_->GetURL(GURL("https://foo8.com:9876"), &url_row));
   EXPECT_EQ(1, url_row.typed_count());
+}
+
+TEST_F(HistoryBackendTest, RedirectWithQualifiers) {
+  // Create a redirect chain with 3 entries, with a page transition that
+  // includes a qualifier.
+  const ui::PageTransition page_transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  const char* redirects[] = {"https://foo.com/page1.html",
+                             "https://foo.com/page2.html",
+                             "https://foo.com/page3.html", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirects, 0, page_transition,
+                                        base::Time::Now());
+
+  URLRow url1;
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo.com/page1.html"), &url1));
+  URLRow url2;
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo.com/page2.html"), &url2));
+  URLRow url3;
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo.com/page3.html"), &url3));
+
+  // Grab the resulting visits.
+  VisitVector visits1;
+  backend_->GetVisitsForURL(url1.id(), &visits1);
+  ASSERT_EQ(visits1.size(), 1u);
+  VisitVector visits2;
+  backend_->GetVisitsForURL(url2.id(), &visits2);
+  ASSERT_EQ(visits2.size(), 1u);
+  VisitVector visits3;
+  backend_->GetVisitsForURL(url3.id(), &visits3);
+  ASSERT_EQ(visits3.size(), 1u);
+
+  // The page transition, including the qualifier, should have been preserved
+  // across all the visits. Additionally, the appropriate redirect qualifiers
+  // should have been set.
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      visits1[0].transition,
+      ui::PageTransitionFromInt(page_transition |
+                                ui::PAGE_TRANSITION_CHAIN_START)));
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      visits2[0].transition,
+      ui::PageTransitionFromInt(page_transition |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT)));
+  EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
+      visits3[0].transition,
+      ui::PageTransitionFromInt(page_transition |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT |
+                                ui::PAGE_TRANSITION_CHAIN_END)));
 }
 
 // Tests that a typed navigation will accrue the typed count even when a client
@@ -3291,7 +3610,7 @@ TEST_F(HistoryBackendTest, QueryMostVisitedURLs) {
     backend_->AddPage(args);
   }
 
-  MostVisitedURLList most_visited = backend_->QueryMostVisitedURLs(100, 100);
+  MostVisitedURLList most_visited = backend_->QueryMostVisitedURLs(100);
 
   const std::u16string kSomeTitle;  // Ignored by equality operator.
   EXPECT_THAT(
@@ -3320,7 +3639,7 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   const auto add_url_and_visit = [&](std::string url) {
     // Each visit should have a unique `visit_time` to avoid deduping visits to
     // the same URL. The exact times don't matter, but we use increasing values
-    // to making the test cases easy to reason about.
+    // to make the test cases easy to reason about.
     last_visit_time += base::Milliseconds(1);
     return backend_->AddPageVisit(
         GURL(url), last_visit_time, /*referring_visit=*/0,
@@ -3339,13 +3658,6 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
     backend_->db_->DeleteVisit(row);
   };
 
-  // Helper function to get the # of rows in the db before the backend prunes
-  // annotated visits without an associated URL. Use this to verify row count.
-  const auto get_annotated_visit_row_count_in_db = [&]() {
-    return backend_->db_->GetRecentAnnotatedVisitIds(base::Time::Min(), 100)
-        .size();
-  };
-
   // For test purposes, keep all the duplicates.
   history::QueryOptions query_options;
   query_options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
@@ -3361,12 +3673,10 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   backend_->AddContextAnnotationsForVisit(3, {false});
   backend_->AddContextAnnotationsForVisit(2, {true});
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
-  EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
   // Annotated visits should have a visit IDs.
   EXPECT_DCHECK_DEATH(backend_->AddContextAnnotationsForVisit(0, {true}));
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
-  EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
   // `GetAnnotatedVisits()` should still succeed to fetch visits that lack
   // annotations. They just won't have annotations attached.
@@ -3374,8 +3684,6 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   EXPECT_EQ(add_url_and_visit("http://3.com/"),
             (std::pair<URLID, VisitID>{3, 4}));
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 4u);
-  // Context annotations added before the visit itself are discarded.
-  EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
   // Annotations associated with a removed visit should not be added.
   EXPECT_EQ(add_url_and_visit("http://4.com/"),
@@ -3383,7 +3691,6 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   delete_visit(5);
   backend_->AddContextAnnotationsForVisit(5, {true});
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 4u);
-  EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
   // Verify only the correct annotated visits are retrieved ordered recent
   // visits first.
@@ -3418,9 +3725,7 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   delete_url(3);
   delete_visit(3);
   // Annotated visits should be unfetchable if their associated URL or visit is
-  // removed. Notably, because of that, the row count in the DB and the fetched
-  // vector from `GetAnnotatedVisits()` differ in size here.
-  EXPECT_EQ(get_annotated_visit_row_count_in_db(), 2u);
+  // removed.
   annotated_visits = backend_->GetAnnotatedVisits(query_options);
   ASSERT_EQ(annotated_visits.size(), 1u);
   EXPECT_EQ(annotated_visits[0].url_row.id(), 1);
@@ -3430,96 +3735,43 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   EXPECT_EQ(annotated_visits[0].context_annotations.omnibox_url_copied, true);
 }
 
-TEST_F(HistoryBackendTest, GetRecentClusterIdsAndAnnotatedVisits) {
-  const auto time_now = base::Time::Now();
-  const auto get_relative_time = [&](int seconds) {
-    return time_now + base::Seconds(seconds);
-  };
-
-  const auto add_annotated_visit = [&](int relative_time) {
-    const auto ids = backend_->AddPageVisit(
-        GURL("https://google.com/" + base::NumberToString(relative_time)),
-        get_relative_time(relative_time), 0,
-        ui::PageTransition::PAGE_TRANSITION_FIRST, false, SOURCE_BROWSED, false,
-        false);
-    backend_->AddContextAnnotationsForVisit(ids.second, {});
-  };
-
-  const auto add_cluster = [&](const std::vector<int64_t>& visit_ids) {
-    backend_->db_->AddClusters({CreateCluster(visit_ids)});
-  };
-
-  const auto verify_result =
-      [&](const ClusterIdsAndAnnotatedVisitsResult& result,
-          const std::vector<int64_t>& expected_cluster,
-          const std::vector<VisitID>& expected_visits) {
-        EXPECT_EQ(result.cluster_ids, expected_cluster);
-        EXPECT_EQ(GetVisitIds(result.annotated_visits), expected_visits);
-      };
-
+TEST_F(HistoryBackendTest, GetMostRecentClusters) {
   // Setup some visits and clusters.
-  add_annotated_visit(1);   // Old and unclustered
-  add_annotated_visit(2);   // Old and unclustered (2)
-  add_annotated_visit(3);   // Old and clustered in a old cluster
-  add_annotated_visit(4);   // Old and clustered in a old cluster (2)
-  add_annotated_visit(5);   // Old and clustered in a new cluster
-  add_annotated_visit(6);   // Old and clustered in a new cluster (2)
-  add_annotated_visit(7);   // New and unclustered
-  add_annotated_visit(8);   // New and unclustered (2)
-  add_annotated_visit(9);   // New and clustered in a new cluster
-  add_annotated_visit(10);  // New and clustered in a new cluster (2)
-  add_cluster({3, 4});
-  add_cluster({5, 6, 9});
-  add_cluster({10});
+  AddAnnotatedVisit(1);
+  AddAnnotatedVisit(2);
+  AddAnnotatedVisit(3);
+  AddAnnotatedVisit(4);
+  AddAnnotatedVisit(5);
+  AddAnnotatedVisit(6);
+  AddAnnotatedVisit(7);
+  AddAnnotatedVisit(8);
+  AddAnnotatedVisit(9);
+  AddAnnotatedVisit(10);
+  AddCluster({3, 4});
+  AddCluster({5, 6, 9});
+  AddCluster({10});
 
   {
-    SCOPED_TRACE("time: 7, max_results: 10");
-    verify_result(
-        backend_->GetRecentClusterIdsAndAnnotatedVisits(get_relative_time(7),
-                                                        10),
-        // Verify returns clusters with an annotated visit with a visit times >=
-        // `time`.
-        {3, 2},
-        // Verify returns clustered (5, 6, 9, 10) and unclustered (7, 8)
-        // annotated visits with a visit time >= `time`.
-        // Also verify returns annotated visits with a visit time of exactly
-        // `time` (7).
-        {5, 6, 7, 8, 9, 10});
+    // Verify returns clusters with a visit >= min_time. Verify returns complete
+    // clusters, including visits < min_time.
+    SCOPED_TRACE("time: [9, 20), max_clusters: 10");
+    VerifyClusters(backend_->GetMostRecentClusters(GetRelativeTime(9),
+                                                   GetRelativeTime(20), 10),
+                   {{3, {10}}, {2, {9, 6, 5}}});
   }
   {
-    SCOPED_TRACE("time: 9, max_results: 10");
-    verify_result(backend_->GetRecentClusterIdsAndAnnotatedVisits(
-                      get_relative_time(9), 10),
-                  // Verify returns clusters whose most recent annotated visit's
-                  // visit time is exactly `time` (cluster 2).
-                  {3, 2}, {5, 6, 9, 10});
+    // Verify doesn't return clusters with a visit > max_time.
+    SCOPED_TRACE("time: [9, 20), max_clusters: 10");
+    VerifyClusters(backend_->GetMostRecentClusters(GetRelativeTime(4),
+                                                   GetRelativeTime(8), 10),
+                   {{1, {4, 3}}});
   }
   {
-    SCOPED_TRACE("time: 10, max_results: 10");
-    verify_result(backend_->GetRecentClusterIdsAndAnnotatedVisits(
-                      get_relative_time(10), 10),
-                  {3}, {10});
-  }
-  {
-    SCOPED_TRACE("time: 0, max_results: 2, less than recent visits");
-    verify_result(
-        backend_->GetRecentClusterIdsAndAnnotatedVisits(get_relative_time(0),
-                                                        2),
-        // Verify returns all recent clusters, regardless of `max_results`.
-        {3, 2, 1},
-        // Verify returns the `max_results` most recent visits, regardless of
-        // clusters.
-        {9, 10});
-  }
-  {
-    SCOPED_TRACE("time: 7, max_results: 5, more than recent visits");
-    verify_result(backend_->GetRecentClusterIdsAndAnnotatedVisits(
-                      get_relative_time(7), 5),
-                  // Verify prioritizes returning recent visits over visits in
-                  // recent clusters. Also verify checks all visits in clusters
-                  // and not just the remaining # of visits to add (i.e.
-                  // `max_results` - # of visits added).
-                  {3, 2}, {6, 7, 8, 9, 10});
+    // Verify `max_clusters`.`
+    SCOPED_TRACE("time: [0, 20), max_clusters: 1");
+    VerifyClusters(backend_->GetMostRecentClusters(GetRelativeTime(0),
+                                                   GetRelativeTime(20), 1),
+                   {{3, {10}}});
   }
 }
 
@@ -3552,15 +3804,19 @@ TEST_F(HistoryBackendTest, ExpireVisitDeletes) {
 
 TEST_F(HistoryBackendTest, GetRedirectChainStart) {
   auto last_visit_time = base::Time::Now();
-  auto add_visit = [&](std::string url, VisitID referring_visit,
-                       VisitID opener_visit, bool is_redirect) {
-    // Each visit should have a unique `visit_time` to avoid deduping visits to
-    // the same URL. The exact times don't matter, but we use increasing
-    // values to make the test cases easy to reason about.
+  const auto add_visit = [&](std::string url, VisitID referring_visit,
+                             VisitID opener_visit, bool is_redirect) {
+    // Each visit should have a unique `visit_time` to avoid deduping visits so
+    // the same URL. The exact times don't matter, but we use increasing values
+    // to make the test cases easy to reason about.
     last_visit_time += base::Milliseconds(1);
-    ui::PageTransition transition =
-        is_redirect ? ui::PageTransition::PAGE_TRANSITION_IS_REDIRECT_MASK
-                    : ui::PageTransition::PAGE_TRANSITION_CHAIN_START;
+    // Use `ui::PAGE_TRANSITION_CHAIN_END` to make the visits user visible and
+    // included in the `GetAnnotatedVisits()` response, even though they're not
+    // actually representing chain end transitions.
+    ui::PageTransition transition = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_CHAIN_END |
+        (is_redirect ? ui::PageTransition::PAGE_TRANSITION_IS_REDIRECT_MASK
+                     : ui::PageTransition::PAGE_TRANSITION_CHAIN_START));
     auto ids = backend_->AddPageVisit(GURL(url), last_visit_time,
                                       referring_visit, transition, false,
                                       SOURCE_BROWSED, false, opener_visit);
@@ -3607,7 +3863,10 @@ TEST_F(HistoryBackendTest, GetRedirectChainStart) {
       {0, 6, 9, 0, 6}, {9, 0, 9, 0, 6},
   };
 
-  auto annotated_visits = GetAnnotatedVisitRowsFromBackend();
+  QueryOptions queryOptions;
+  queryOptions.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  queryOptions.visit_order = QueryOptions::OLDEST_FIRST;
+  auto annotated_visits = backend_->GetAnnotatedVisits(queryOptions);
   ASSERT_EQ(annotated_visits.size(), expectations.size());
   for (size_t i = 0; i < expectations.size(); ++i) {
     VisitID visit_id = i + 1;
@@ -3634,6 +3893,51 @@ TEST_F(HistoryBackendTest, GetRedirectChainStart) {
     EXPECT_EQ(annotated_visit.opener_visit_of_redirect_chain_start,
               expectation.opener_visit_of_redirect_chain_start)
         << "visit id: " << visit_id;
+  }
+}
+
+TEST_F(HistoryBackendTest, GetCluster) {
+  AddAnnotatedVisit(0);
+  AddAnnotatedVisit(1);
+  AddCluster({1, 2});
+
+  VerifyCluster(backend_->GetCluster(1), {1, {2, 1}});
+  VerifyCluster(backend_->GetCluster(2), {2});
+}
+
+TEST_F(HistoryBackendTest, ReplaceClusters) {
+  {
+    SCOPED_TRACE("Add clusters");
+    AddAnnotatedVisit(0);
+    AddAnnotatedVisit(1);
+
+    backend_->ReplaceClusters({}, CreateClusters({{1, 2}, {1, 2}, {}, {1}}));
+    VerifyClusters(backend_->GetMostRecentClusters(base::Time::Min(),
+                                                   base::Time::Max(), 10),
+                   {
+                       {1, {2, 1}},
+                       // Shouldn't check duplicates clusters.
+                       {2, {2, 1}},
+                       // Shouldn't return empty clusters.
+                       // The empty cluster shouldn't increment `cluster_id`.
+                       {3, {1}},
+                   });
+  }
+
+  {
+    SCOPED_TRACE("Replace clusters");
+    AddAnnotatedVisit(2);
+    AddAnnotatedVisit(3);
+
+    backend_->ReplaceClusters({2, 4}, CreateClusters({{1, 3}, {4}}));
+    VerifyClusters(backend_->GetMostRecentClusters(base::Time::Min(),
+                                                   base::Time::Max(), 10),
+                   {
+                       {5, {4}},
+                       {4, {3, 1}},
+                       {1, {2, 1}},
+                       {3, {1}},
+                   });
   }
 }
 

@@ -115,6 +115,51 @@ TEST_F(SubSurfaceTest, PlaceBelow) {
   EXPECT_EQ(surface1->window(), parent->window()->children()[1]);
 }
 
+TEST_F(SubSurfaceTest, ParentDamageOnReorder) {
+  gfx::Size buffer_size(800, 600);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface_tree_host = std::make_unique<SurfaceTreeHost>("SubSurfaceTest");
+  LayerTreeFrameSinkHolder* frame_sink_holder =
+      surface_tree_host->layer_tree_frame_sink_holder();
+
+  auto parent = std::make_unique<Surface>();
+  parent->Attach(buffer.get());
+  // Set the overlay priority hint to low to prevent a texture draw quad from
+  // being used.
+  parent->SetOverlayPriorityHint(OverlayPriority::LOW);
+  auto surface1 = std::make_unique<Surface>();
+  auto surface2 = std::make_unique<Surface>();
+  auto non_sibling_surface = std::make_unique<Surface>();
+  auto sub_surface1 =
+      std::make_unique<SubSurface>(surface1.get(), parent.get());
+  auto sub_surface2 =
+      std::make_unique<SubSurface>(surface2.get(), parent.get());
+
+  sub_surface2->PlaceBelow(surface1.get());
+  parent->Commit();
+
+  viz::CompositorFrame frame1;
+  frame1.render_pass_list.push_back(viz::CompositorRenderPass::Create());
+  parent->AppendSurfaceHierarchyContentsToFrame(
+      gfx::PointF{}, 1, frame_sink_holder->resource_manager(), &frame1);
+
+  // Parent surface damage is extended when sub_surface stacking order changes.
+  EXPECT_FALSE(frame1.render_pass_list.back()->damage_rect.IsEmpty());
+
+  sub_surface1->PlaceAbove(surface2.get());  // no-op
+  sub_surface2->PlaceBelow(surface1.get());  // no-op
+  parent->Commit();
+
+  viz::CompositorFrame frame2;
+  frame2.render_pass_list.push_back(viz::CompositorRenderPass::Create());
+  parent->AppendSurfaceHierarchyContentsToFrame(
+      gfx::PointF{}, 1, frame_sink_holder->resource_manager(), &frame2);
+
+  // Parent surface damage is unaffected.
+  EXPECT_TRUE(frame2.render_pass_list.back()->damage_rect.IsEmpty());
+}
+
 TEST_F(SubSurfaceTest, SetCommitBehavior) {
   auto parent = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(parent.get());

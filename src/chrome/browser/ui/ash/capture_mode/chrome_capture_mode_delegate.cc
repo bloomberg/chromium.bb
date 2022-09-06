@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,10 +17,11 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-#include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_content_manager_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/capture_mode/recording_overlay_view_impl.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
@@ -27,10 +29,13 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "components/drive/file_errors.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/browser/video_capture_service.h"
+#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -120,7 +125,7 @@ void ChromeCaptureModeDelegate::OpenScreenshotInImageEditor(
   web_app::SystemAppLaunchParams params;
   params.launch_paths = {file_path};
   params.launch_source = apps::mojom::LaunchSource::kFromFileManager;
-  web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::MEDIA,
+  web_app::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::MEDIA,
                                    params);
 }
 
@@ -133,13 +138,9 @@ bool ChromeCaptureModeDelegate::Uses24HourFormat() const {
   return base::GetHourClockType() == base::k24HourClock;
 }
 
-bool ChromeCaptureModeDelegate::IsCaptureModeInitRestrictedByDlp() const {
-  return policy::DlpContentManager::Get()->IsCaptureModeInitRestricted();
-}
-
 void ChromeCaptureModeDelegate::CheckCaptureModeInitRestrictionByDlp(
     ash::OnCaptureModeDlpRestrictionChecked callback) {
-  policy::DlpContentManager::Get()->CheckCaptureModeInitRestriction(
+  policy::DlpContentManagerAsh::Get()->CheckCaptureModeInitRestriction(
       std::move(callback));
 }
 
@@ -148,15 +149,8 @@ void ChromeCaptureModeDelegate::CheckCaptureOperationRestrictionByDlp(
     const gfx::Rect& bounds,
     ash::OnCaptureModeDlpRestrictionChecked callback) {
   const ScreenshotArea area = ConvertToScreenshotArea(window, bounds);
-  policy::DlpContentManager::Get()->CheckScreenshotRestriction(
+  policy::DlpContentManagerAsh::Get()->CheckScreenshotRestriction(
       area, std::move(callback));
-}
-
-bool ChromeCaptureModeDelegate::IsCaptureAllowedByDlp(
-    const aura::Window* window,
-    const gfx::Rect& bounds) const {
-  return !policy::DlpContentManager::Get()->IsScreenshotRestricted(
-      ConvertToScreenshotArea(window, bounds));
 }
 
 bool ChromeCaptureModeDelegate::IsCaptureAllowedByPolicy() const {
@@ -167,19 +161,26 @@ void ChromeCaptureModeDelegate::StartObservingRestrictedContent(
     const aura::Window* window,
     const gfx::Rect& bounds,
     base::OnceClosure stop_callback) {
-  // The order here matters, since DlpContentManager::OnVideoCaptureStarted()
+  // The order here matters, since DlpContentManagerAsh::OnVideoCaptureStarted()
   // may call InterruptVideoRecordingIfAny() right away, so the callback must be
   // set first.
   interrupt_video_recording_callback_ = std::move(stop_callback);
-  policy::DlpContentManager::Get()->OnVideoCaptureStarted(
+  policy::DlpContentManagerAsh::Get()->OnVideoCaptureStarted(
       ConvertToScreenshotArea(window, bounds));
 }
 
 void ChromeCaptureModeDelegate::StopObservingRestrictedContent(
     ash::OnCaptureModeDlpRestrictionChecked callback) {
   interrupt_video_recording_callback_.Reset();
-  policy::DlpContentManager::Get()->CheckStoppedVideoCapture(
+  policy::DlpContentManagerAsh::Get()->CheckStoppedVideoCapture(
       std::move(callback));
+}
+
+void ChromeCaptureModeDelegate::OnCaptureImageAttempted(
+    const aura::Window* window,
+    const gfx::Rect& bounds) {
+  policy::DlpContentManagerAsh::Get()->OnImageCapture(
+      ConvertToScreenshotArea(window, bounds));
 }
 
 mojo::Remote<recording::mojom::RecordingService>
@@ -209,7 +210,7 @@ bool ChromeCaptureModeDelegate::GetDriveFsMountPointPath(
 
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(
-          ProfileManager::GetPrimaryUserProfile());
+          ProfileManager::GetActiveUserProfile());
   if (!integration_service || !integration_service->IsMounted())
     return false;
 
@@ -221,8 +222,54 @@ base::FilePath ChromeCaptureModeDelegate::GetAndroidFilesPath() const {
   return file_manager::util::GetAndroidFilesPath();
 }
 
+base::FilePath ChromeCaptureModeDelegate::GetLinuxFilesPath() const {
+  return file_manager::util::GetCrostiniMountDirectory(
+      ProfileManager::GetActiveUserProfile());
+}
+
 std::unique_ptr<ash::RecordingOverlayView>
 ChromeCaptureModeDelegate::CreateRecordingOverlayView() const {
   return std::make_unique<RecordingOverlayViewImpl>(
-      ProfileManager::GetPrimaryUserProfile());
+      ProfileManager::GetActiveUserProfile());
+}
+
+void ChromeCaptureModeDelegate::ConnectToVideoSourceProvider(
+    mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver) {
+  content::GetVideoCaptureService().ConnectToVideoSourceProvider(
+      std::move(receiver));
+}
+
+void ChromeCaptureModeDelegate::GetDriveFsFreeSpaceBytes(
+    ash::OnGotDriveFsFreeSpace callback) {
+  DCHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
+
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(
+          ProfileManager::GetActiveUserProfile());
+  if (!integration_service) {
+    std::move(callback).Run(std::numeric_limits<int64_t>::max());
+    return;
+  }
+
+  integration_service->GetQuotaUsage(
+      base::BindOnce(&ChromeCaptureModeDelegate::OnGetDriveQuotaUsage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+bool ChromeCaptureModeDelegate::IsCameraDisabledByPolicy() const {
+  return policy::SystemFeaturesDisableListPolicyHandler::
+      IsSystemFeatureDisabled(policy::SystemFeature::kCamera,
+                              g_browser_process->local_state());
+}
+
+void ChromeCaptureModeDelegate::OnGetDriveQuotaUsage(
+    ash::OnGotDriveFsFreeSpace callback,
+    drive::FileError error,
+    drivefs::mojom::QuotaUsagePtr usage) {
+  if (error != drive::FileError::FILE_ERROR_OK) {
+    std::move(callback).Run(-1);
+    return;
+  }
+
+  std::move(callback).Run(usage->free_cloud_bytes);
 }

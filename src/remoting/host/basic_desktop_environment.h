@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/protocol/desktop_capturer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -24,6 +25,8 @@ class DesktopCaptureOptions;
 }  // namespace webrtc
 
 namespace remoting {
+
+class DesktopDisplayInfoMonitor;
 
 // Used to create audio/video capturers and event executor that work with
 // the local console.
@@ -39,7 +42,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
   std::unique_ptr<InputInjector> CreateInputInjector() override;
   std::unique_ptr<ScreenControls> CreateScreenControls() override;
-  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  std::unique_ptr<DesktopCapturer> CreateVideoCapturer() override;
+  DesktopDisplayInfoMonitor* GetDisplayInfoMonitor() override;
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       override;
   std::unique_ptr<KeyboardLayoutMonitor> CreateKeyboardLayoutMonitor(
@@ -53,6 +57,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   uint32_t GetDesktopSessionId() const override;
   std::unique_ptr<DesktopAndCursorConditionalComposer>
   CreateComposingVideoCapturer() override;
+  std::unique_ptr<RemoteWebAuthnStateChangeNotifier>
+  CreateRemoteWebAuthnStateChangeNotifier() override;
 
  protected:
   friend class BasicDesktopEnvironmentFactory;
@@ -110,6 +116,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
 
   // Used to send messages directly to the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
+
+  std::unique_ptr<DesktopDisplayInfoMonitor> display_info_monitor_;
 
   DesktopEnvironmentOptions options_;
 };

@@ -13,6 +13,8 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
+#include "base/strings/escape.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -28,7 +30,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -133,7 +134,8 @@ bool TermsOfServiceScreen::MaybeSkip(WizardContext* context) {
   // Only show the Terms of Service when Terms of Service have been specified
   // through policy. In all other cases, advance to the post-ToS part
   // immediately.
-  if (!ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
+  if (context->skip_post_login_screens_for_tests ||
+      !ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
           prefs::kTermsOfServiceURL)) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
@@ -169,7 +171,8 @@ void TermsOfServiceScreen::HideImpl() {
     view_->Hide();
 }
 
-void TermsOfServiceScreen::OnUserAction(const std::string& action_id) {
+void TermsOfServiceScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kBack)
     OnDecline();
   else if (action_id == kAccept)
@@ -177,7 +180,7 @@ void TermsOfServiceScreen::OnUserAction(const std::string& action_id) {
   else if (action_id == kRetry)
     OnRetry();
   else
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
 }
 
 void TermsOfServiceScreen::StartDownload() {
@@ -265,10 +268,10 @@ void TermsOfServiceScreen::OnDownloaded(
   } else {
     // If the Terms of Service were downloaded successfully, sanitize and show
     // them to the user.
-    view_->OnLoadSuccess(net::EscapeForHTML(*response_body));
+    view_->OnLoadSuccess(base::EscapeForHTML(*response_body));
     if (features::IsManagedTermsOfServiceEnabled()) {
       // Update locally saved terms.
-      SaveTos(net::EscapeForHTML(*response_body));
+      SaveTos(base::EscapeForHTML(*response_body));
     }
   }
 }

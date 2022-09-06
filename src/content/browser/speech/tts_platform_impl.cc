@@ -22,7 +22,7 @@ TtsPlatform* TtsPlatform::GetInstance() {
     return result;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // On Chrome OS, the platform TTS definition is provided by the content
   // client.
   //
@@ -57,8 +57,6 @@ void TtsPlatformImpl::SetError(const std::string& error) {
 
 void TtsPlatformImpl::Shutdown() {}
 
-bool TtsPlatformImpl::PreferEngineDelegateVoices() {
-  return false;
-}
+void TtsPlatformImpl::FinalizeVoiceOrdering(std::vector<VoiceData>& voices) {}
 
 }  // namespace content

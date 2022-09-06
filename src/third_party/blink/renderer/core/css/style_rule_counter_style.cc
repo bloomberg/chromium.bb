@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
 
+#include "base/auto_reset.h"
+#include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/css/cascade_layer.h"
 #include "third_party/blink/renderer/core/css/counter_style.h"
 #include "third_party/blink/renderer/core/css/css_counter_style_rule.h"
@@ -100,7 +102,7 @@ bool StyleRuleCounterStyle::NewValueInvalidOrEqual(
     const CSSValue* new_value) {
   Member<const CSSValue>& original_value =
       GetDescriptorReference(descriptor_id);
-  if (DataEquivalent(original_value.Get(), new_value))
+  if (base::ValuesEquivalent(original_value.Get(), new_value))
     return false;
 
   switch (descriptor_id) {

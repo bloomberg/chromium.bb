@@ -7,14 +7,18 @@
 #ifndef CORE_FXGE_CFX_FONTMGR_H_
 #define CORE_FXGE_CFX_FONTMGR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <memory>
+#include <tuple>
 
 #include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/fx_freetype.h"
+#include "core/fxge/freetype/fx_freetype.h"
 #include "third_party/base/span.h"
 
 class CFX_Face;
@@ -57,18 +61,18 @@ class CFX_FontMgr {
       int weight,
       bool bItalic,
       std::unique_ptr<uint8_t, FxFreeDeleter> pData,
-      uint32_t size);
+      size_t size);
 
-  RetainPtr<FontDesc> GetCachedTTCFontDesc(int ttc_size, uint32_t checksum);
+  RetainPtr<FontDesc> GetCachedTTCFontDesc(size_t ttc_size, uint32_t checksum);
   RetainPtr<FontDesc> AddCachedTTCFontDesc(
-      int ttc_size,
+      size_t ttc_size,
       uint32_t checksum,
       std::unique_ptr<uint8_t, FxFreeDeleter> pData,
-      uint32_t size);
+      size_t size);
 
   RetainPtr<CFX_Face> NewFixedFace(const RetainPtr<FontDesc>& pDesc,
                                    pdfium::span<const uint8_t> span,
-                                   int face_index);
+                                   size_t face_index);
 
   // Always present.
   CFX_FontMapper* GetBuiltinMapper() const { return m_pBuiltinMapper.get(); }
@@ -83,7 +87,8 @@ class CFX_FontMgr {
   // Must come before |m_pBuiltinMapper| and |m_FaceMap|.
   ScopedFXFTLibraryRec const m_FTLibrary;
   std::unique_ptr<CFX_FontMapper> m_pBuiltinMapper;
-  std::map<ByteString, ObservedPtr<FontDesc>> m_FaceMap;
+  std::map<std::tuple<ByteString, int, bool>, ObservedPtr<FontDesc>> m_FaceMap;
+  std::map<std::tuple<size_t, uint32_t>, ObservedPtr<FontDesc>> m_TTCFaceMap;
   const bool m_FTLibrarySupportsHinting;
 };
 

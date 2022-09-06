@@ -4,8 +4,10 @@
     color: var(--cros-text-color-alert);
   }
 
-  .queued, .stopped, .skipped {
-    background-color: var(--cros-button-label-color-primary);
+  .queued,
+  .skipped,
+  .stopped {
+    background-color: var(--google-grey-200);
     color: var(--cros-text-color-secondary);
   }
 
@@ -20,19 +22,55 @@
   }
 
   .warning {
-    background-color: #FEF7E0;
+    background-color: var(--google-yellow-50);
     color: var(--cros-text-color-warning);
   }
 
   #textBadge {
-    @apply --diagnostics-text-badge-font;
     border-radius: 4px;
+    font-family: var(--diagnostics-roboto-font-family);
+    font-size: 11px;
+    font-weight: var(--diagnostics-medium-font-weight);
     height: 20px;
     letter-spacing: .8px;
     line-height: 16px;
     padding: 2px 6px;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .error {
+      background-color:
+          rgba(var(--google-red-300-rgb), var(--cros-second-tone-opacity));
+      color: var(--google-red-200);
+    }
+
+    .queued,
+    .skipped,
+    .stopped {
+      background-color:
+          rgba(var(--google-grey-300-rgb), var(--cros-second-tone-opacity));
+      color: var(--google-grey-200);
+    }
+
+    .running {
+      background-color:
+          rgba(var(--google-blue-300-rgb), var(--cros-second-tone-opacity));
+      color: var(--cros-text-color-prominent);
+    }
+
+    .success {
+      background-color:
+          rgba(var(--google-green-300-rgb), var(--cros-second-tone-opacity));
+      color: var(--google-green-200);
+    }
+
+    .warning {
+      background-color:
+        rgba(var(--google-yellow-300-rgb), var(--cros-second-tone-opacity));
+      color: var(--google-yellow-200);
+    }
   }
 </style>
 

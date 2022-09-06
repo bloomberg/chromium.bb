@@ -9,7 +9,7 @@
 #define GrMockOptions_DEFINED
 
 #include "include/gpu/GrTypes.h"
-#include "include/private/GrTypesPriv.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
 
 class GrBackendFormat;
 
@@ -125,7 +125,6 @@ struct GrMockOptions {
     int fMaxRenderTargetSize = 2048;
     int fMaxWindowRectangles = 0;
     int fMaxVertexAttributes = 16;
-    int fMaxTessellationSegments = 0;
     ConfigOptions fConfigOptions[kGrColorTypeCnt];
     ConfigOptions fCompressedOptions[SkImage::kCompressionTypeCount];
 

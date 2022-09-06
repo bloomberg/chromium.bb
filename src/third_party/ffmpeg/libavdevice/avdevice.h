@@ -19,7 +19,13 @@
 #ifndef AVDEVICE_AVDEVICE_H
 #define AVDEVICE_AVDEVICE_H
 
+#include "version_major.h"
+#ifndef HAVE_AV_CONFIG_H
+/* When included as part of the ffmpeg build, only include the major version
+ * to avoid unnecessary rebuilds. When included externally, keep including
+ * the full version information. */
 #include "version.h"
+#endif
 
 /**
  * @file
@@ -457,6 +463,8 @@ void avdevice_capabilities_free(AVDeviceCapabilitiesQuery **caps, AVFormatContex
 typedef struct AVDeviceInfo {
     char *device_name;                   /**< device name, format depends on device */
     char *device_description;            /**< human friendly name */
+    enum AVMediaType *media_types;       /**< array indicating what media types(s), if any, a device can provide. If null, cannot provide any */
+    int nb_media_types;                  /**< length of media_types array, 0 if device cannot provide any media types */
 } AVDeviceInfo;
 
 /**

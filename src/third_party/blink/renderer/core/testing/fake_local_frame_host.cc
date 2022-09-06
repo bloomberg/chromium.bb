@@ -43,7 +43,7 @@ void FakeLocalFrameHost::DidDisplayInsecureContent() {}
 
 void FakeLocalFrameHost::DidContainInsecureFormAction() {}
 
-void FakeLocalFrameHost::DocumentAvailableInMainFrame(
+void FakeLocalFrameHost::MainDocumentElementAvailable(
     bool uses_temporary_zoom_level) {}
 
 void FakeLocalFrameHost::SetNeedsOcclusionTracking(bool needs_tracking) {}
@@ -80,7 +80,7 @@ void FakeLocalFrameHost::HadStickyUserActivationBeforeNavigationChanged(
     bool value) {}
 
 void FakeLocalFrameHost::ScrollRectToVisibleInParentFrame(
-    const gfx::Rect& rect_to_scroll,
+    const gfx::RectF& rect_to_scroll,
     blink::mojom::blink::ScrollIntoViewParamsPtr params) {}
 
 void FakeLocalFrameHost::BubbleLogicalScrollInParentFrame(
@@ -239,5 +239,12 @@ void FakeLocalFrameHost::BindFrameHostReceiver(
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(
       std::move(handle)));
 }
+
+void FakeLocalFrameHost::DidChangeSrcDoc(
+    const blink::FrameToken& child_frame_token,
+    const WTF::String& srcdoc_value) {}
+
+void FakeLocalFrameHost::ReceivedDelegatedCapability(
+    blink::mojom::DelegatedCapability delegated_capability) {}
 
 }  // namespace blink

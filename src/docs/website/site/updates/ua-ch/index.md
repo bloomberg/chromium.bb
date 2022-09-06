@@ -73,7 +73,7 @@ please [file a CR bug](https://crbug.com/new), including \[UA-CH\] in its title.
 Add a comment about it to the following [tracking
 bug](https://bugs.chromium.org/p/chromium/issues/detail?id=1091285).
 
-# **(Depricated) How to identify if a user is in the stable experiment**
+# **(Deprecated) How to identify if a user is in the stable experiment**
 
 **Note:** As of Chrome 89, this feature is rolled out to full population.
 

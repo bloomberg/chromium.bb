@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/value_store/value_store.h"
@@ -83,12 +82,11 @@ OperationResult DecryptData(const std::string& data,
 // |item_id|.
 bool IsItemRegistered(ValueStore* store, const std::string& item_id) {
   ValueStore::ReadResult read = store->Get(kStoreKeyRegisteredItems);
-
-  const base::DictionaryValue* registered_items = nullptr;
-  return read.status().ok() &&
-         read.settings().GetDictionary(kStoreKeyRegisteredItems,
-                                       &registered_items) &&
-         registered_items->HasKey(item_id);
+  if (!read.status().ok())
+    return false;
+  const base::Value* registered_items =
+      read.settings().FindDictKey(kStoreKeyRegisteredItems);
+  return registered_items && registered_items->FindKey(item_id);
 }
 
 // Gets a dictionary value that contains set of all registered data items from
@@ -152,7 +150,7 @@ void RegisterItem(OperationResult* result,
     return;
   }
 
-  if (dict->HasKey(item_id)) {
+  if (dict->FindKey(item_id)) {
     *result = OperationResult::kAlreadyRegistered;
     return;
   }
@@ -252,10 +250,9 @@ void DeleteImpl(OperationResult* result,
     return;
   }
 
-  base::DictionaryValue* registered_items = nullptr;
-  if (!read.settings().GetDictionary(kStoreKeyRegisteredItems,
-                                     &registered_items) ||
-      !registered_items->RemoveKey(item_id)) {
+  base::Value* registered_items =
+      read.settings().FindDictKey(kStoreKeyRegisteredItems);
+  if (!registered_items || !registered_items->RemoveKey(item_id)) {
     *result = OperationResult::kNotFound;
     return;
   }

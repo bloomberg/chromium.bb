@@ -5,6 +5,7 @@
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
 
 #include "base/base64.h"
+#include "base/values.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_utils.h"
@@ -16,6 +17,35 @@
 #include "components/prefs/pref_service.h"
 
 namespace enterprise_connectors {
+
+namespace {
+
+// Runs the `callback` to return the `result` from the data decoder
+// service after it is validated and decoded.
+void OnJsonParsed(DeviceTrustService::ParseJsonChallengeCallback callback,
+                  data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+
+  // Check if json is malformed or it doesn't include the needed field.
+  const std::string* challenge = result.value->FindStringPath("challenge");
+  if (!challenge) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+
+  std::string serialized_signed_challenge;
+  if (!base::Base64Decode(*challenge, &serialized_signed_challenge)) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+  std::move(callback).Run(serialized_signed_challenge);
+  return;
+}
+
+}  // namespace
 
 using CollectSignalsCallback = SignalsService::CollectSignalsCallback;
 
@@ -41,13 +71,29 @@ bool DeviceTrustService::IsEnabled() const {
 
 void DeviceTrustService::BuildChallengeResponse(const std::string& challenge,
                                                 AttestationCallback callback) {
-  GetSignals(base::BindOnce(&DeviceTrustService::OnSignalsCollected,
-                            weak_factory_.GetWeakPtr(), challenge,
-                            std::move(callback)));
+  ParseJsonChallenge(
+      challenge,
+      base::BindOnce(&DeviceTrustService::OnChallengeParsed,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool DeviceTrustService::Watches(const GURL& url) const {
   return connector_ && connector_->Watches(url);
+}
+
+void DeviceTrustService::ParseJsonChallenge(
+    const std::string& challenge,
+    ParseJsonChallengeCallback callback) {
+  data_decoder_.ParseJson(challenge,
+                          base::BindOnce(&OnJsonParsed, std::move(callback)));
+}
+
+void DeviceTrustService::OnChallengeParsed(
+    AttestationCallback callback,
+    const std::string& serialized_signed_challenge) {
+  GetSignals(base::BindOnce(&DeviceTrustService::OnSignalsCollected,
+                            weak_factory_.GetWeakPtr(),
+                            serialized_signed_challenge, std::move(callback)));
 }
 
 void DeviceTrustService::GetSignals(CollectSignalsCallback callback) {
@@ -55,13 +101,13 @@ void DeviceTrustService::GetSignals(CollectSignalsCallback callback) {
 }
 
 void DeviceTrustService::OnSignalsCollected(
-    const std::string& challenge,
+    const std::string& serialized_signed_challenge,
     AttestationCallback callback,
-    std::unique_ptr<SignalsType> signals) {
+    base::Value::Dict signals) {
   LogAttestationFunnelStep(DTAttestationFunnelStep::kSignalsCollected);
 
   attestation_service_->BuildChallengeResponseForVAChallenge(
-      challenge, std::move(signals), std::move(callback));
+      serialized_signed_challenge, std::move(signals), std::move(callback));
 }
 
 }  // namespace enterprise_connectors

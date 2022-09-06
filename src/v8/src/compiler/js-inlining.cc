@@ -533,24 +533,18 @@ Reduction JSInliner::ReduceJSCall(Node* node) {
   // always hold true.
   CHECK(shared_info->is_compiled());
 
-  if (info_->source_positions()) {
-    if (broker()->is_concurrent_inlining()) {
-      if (!shared_info->object()->AreSourcePositionsAvailable(
-              broker()->local_isolate_or_isolate())) {
-        // This case is expected to be very rare, since we generate source
-        // positions for all functions when debugging or profiling are turned
-        // on (see Isolate::NeedsDetailedOptimizedCodeLineInfo). Source
-        // positions should only be missing here if there is a race between 1)
-        // enabling/disabling the debugger/profiler, and 2) this compile job.
-        // In that case, we simply don't inline.
-        TRACE("Not inlining " << *shared_info << " into " << outer_shared_info
-                              << " because source positions are missing.");
-        return NoChange();
-      }
-    } else {
-      SharedFunctionInfo::EnsureSourcePositionsAvailable(isolate(),
-                                                         shared_info->object());
-    }
+  if (info_->source_positions() &&
+      !shared_info->object()->AreSourcePositionsAvailable(
+          broker()->local_isolate_or_isolate())) {
+    // This case is expected to be very rare, since we generate source
+    // positions for all functions when debugging or profiling are turned
+    // on (see Isolate::NeedsDetailedOptimizedCodeLineInfo). Source
+    // positions should only be missing here if there is a race between 1)
+    // enabling/disabling the debugger/profiler, and 2) this compile job.
+    // In that case, we simply don't inline.
+    TRACE("Not inlining " << *shared_info << " into " << outer_shared_info
+                          << " because source positions are missing.");
+    return NoChange();
   }
 
   // Determine the target's feedback vector and its context.
@@ -622,7 +616,7 @@ Reduction JSInliner::ReduceJSCall(Node* node) {
 
   // Inline {JSConstruct} requires some additional magic.
   if (node->opcode() == IrOpcode::kJSConstruct) {
-    STATIC_ASSERT(JSCallOrConstructNode::kHaveIdenticalLayouts);
+    static_assert(JSCallOrConstructNode::kHaveIdenticalLayouts);
     JSConstructNode n(node);
 
     new_target = n.new_target();
@@ -719,16 +713,15 @@ Reduction JSInliner::ReduceJSCall(Node* node) {
     }
   }
 
-  // Insert argument adaptor frame if required. The callees formal parameter
-  // count have to match the number of arguments passed
-  // to the call.
+  // Insert inlined extra arguments if required. The callees formal parameter
+  // count have to match the number of arguments passed to the call.
   int parameter_count =
       shared_info->internal_formal_parameter_count_without_receiver();
   DCHECK_EQ(parameter_count, start.FormalParameterCountWithoutReceiver());
   if (call.argument_count() != parameter_count) {
     frame_state = CreateArtificialFrameState(
         node, frame_state, call.argument_count(), BytecodeOffset::None(),
-        FrameStateType::kArgumentsAdaptor, *shared_info);
+        FrameStateType::kInlinedExtraArguments, *shared_info);
   }
 
   return InlineCall(node, new_target, context, frame_state, start, end,

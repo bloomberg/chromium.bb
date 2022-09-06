@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,7 +26,8 @@ Animation::TimerControl::TimerControl(const base::TimeDelta& offset,
                                       const base::TimeDelta& cycle_duration,
                                       const base::TimeDelta& total_duration,
                                       const base::TimeTicks& start_timestamp,
-                                      bool should_reverse)
+                                      bool should_reverse,
+                                      float playback_speed)
     : start_offset_(offset),
       end_offset_((offset + cycle_duration)),
       cycle_duration_(end_offset_ - start_offset_),
@@ -32,17 +35,24 @@ Animation::TimerControl::TimerControl(const base::TimeDelta& offset,
       previous_tick_(start_timestamp),
       progress_(base::Milliseconds(0)),
       current_cycle_progress_(start_offset_),
-      should_reverse_(should_reverse) {}
+      should_reverse_(should_reverse) {
+  SetPlaybackSpeed(playback_speed);
+}
+
+void Animation::TimerControl::SetPlaybackSpeed(float playback_speed) {
+  DCHECK_GT(playback_speed, 0.f);
+  playback_speed_ = playback_speed;
+}
 
 void Animation::TimerControl::Step(const base::TimeTicks& timestamp) {
-  progress_ += timestamp - previous_tick_;
+  progress_ += (timestamp - previous_tick_) * playback_speed_;
   previous_tick_ = timestamp;
 
   base::TimeDelta completed_cycles_duration =
       completed_cycles_ * cycle_duration_;
   if (progress_ >= completed_cycles_duration + cycle_duration_) {
-    completed_cycles_++;
-    completed_cycles_duration += cycle_duration_;
+    completed_cycles_ = base::ClampFloor(progress_ / cycle_duration_);
+    completed_cycles_duration = cycle_duration_ * completed_cycles_;
   }
 
   current_cycle_progress_ =
@@ -70,20 +80,25 @@ double Animation::TimerControl::GetNormalizedEndOffset() const {
 }
 
 Animation::Animation(scoped_refptr<cc::SkottieWrapper> skottie,
+                     cc::SkottieColorMap color_map,
                      cc::SkottieFrameDataProvider* frame_data_provider)
-    : skottie_(skottie) {
+    : skottie_(skottie),
+      color_map_(std::move(color_map)),
+      text_map_(skottie_->GetCurrentTextPropertyValues()) {
   DCHECK(skottie_);
   bool animation_has_image_assets =
       !skottie_->GetImageAssetMetadata().asset_storage().empty();
   if (animation_has_image_assets) {
     DCHECK(frame_data_provider)
         << "SkottieFrameDataProvider required for animations with image assets";
-    for (const auto& asset_metadata :
+    for (const auto& asset_metadata_pair :
          skottie_->GetImageAssetMetadata().asset_storage()) {
-      const std::string& asset_id = asset_metadata.first;
-      const base::FilePath& asset_path = asset_metadata.second;
+      const std::string& asset_id = asset_metadata_pair.first;
+      const cc::SkottieResourceMetadataMap::ImageAssetMetadata& asset_metadata =
+          asset_metadata_pair.second;
       scoped_refptr<cc::SkottieFrameDataProvider::ImageAsset> new_asset =
-          frame_data_provider->LoadImageAsset(asset_id, asset_path);
+          frame_data_provider->LoadImageAsset(
+              asset_id, asset_metadata.resource_path, asset_metadata.size);
       DCHECK(new_asset);
       image_assets_.emplace(cc::HashSkottieResourceId(asset_id),
                             std::move(new_asset));
@@ -93,9 +108,12 @@ Animation::Animation(scoped_refptr<cc::SkottieWrapper> skottie,
 
 Animation::~Animation() = default;
 
-void Animation::SetAnimationObserver(AnimationObserver* observer) {
-  DCHECK(!observer_ || !observer);
-  observer_ = observer;
+void Animation::AddObserver(AnimationObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Animation::RemoveObserver(AnimationObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 base::TimeDelta Animation::GetAnimationDuration() const {
@@ -183,18 +201,26 @@ float Animation::GetCurrentProgress() const {
 void Animation::Paint(gfx::Canvas* canvas,
                       const base::TimeTicks& timestamp,
                       const gfx::Size& size) {
+  bool animation_cycle_ended = false;
   switch (state_) {
     case PlayState::kStopped:
       return;
     case PlayState::kSchedulePlay:
       InitTimer(timestamp);
       state_ = PlayState::kPlaying;
-      if (observer_)
-        observer_->AnimationWillStartPlaying(this);
+      for (AnimationObserver& obs : observers_) {
+        obs.AnimationWillStartPlaying(this);
+      }
       break;
-    case PlayState::kPlaying:
-      UpdateState(timestamp);
-      break;
+    case PlayState::kPlaying: {
+      DCHECK(timer_control_);
+      int previous_num_cycles = timer_control_->completed_cycles();
+      timer_control_->Step(timestamp);
+      int new_num_cycles = timer_control_->completed_cycles();
+      animation_cycle_ended = new_num_cycles != previous_num_cycles;
+      if (animation_cycle_ended && style_ == Style::kLinear)
+        state_ = PlayState::kEnded;
+    } break;
     case PlayState::kPaused:
       break;
     case PlayState::kScheduleResume:
@@ -206,13 +232,19 @@ void Animation::Paint(gfx::Canvas* canvas,
         // before it started playing.
         InitTimer(timestamp);
       }
-      if (observer_)
-        observer_->AnimationResuming(this);
+      for (AnimationObserver& obs : observers_) {
+        obs.AnimationResuming(this);
+      }
       break;
     case PlayState::kEnded:
       break;
   }
   PaintFrame(canvas, GetCurrentProgress(), size);
+
+  // Notify animation cycle ended after everything is done in case an observer
+  // tries to change the animation's state within its observer implementation.
+  if (animation_cycle_ended)
+    TryNotifyAnimationCycleEnded();
 }
 
 void Animation::PaintFrame(gfx::Canvas* canvas,
@@ -229,7 +261,14 @@ void Animation::PaintFrame(gfx::Canvas* canvas,
   skottie_->Seek(t, base::BindRepeating(&Animation::LoadImageForAsset,
                                         base::Unretained(this), canvas,
                                         std::ref(all_frame_data)));
-  canvas->DrawSkottie(skottie(), gfx::Rect(size), t, std::move(all_frame_data));
+  canvas->DrawSkottie(skottie(), gfx::Rect(size), t, std::move(all_frame_data),
+                      color_map_, text_map_);
+}
+
+void Animation::SetPlaybackSpeed(float playback_speed) {
+  playback_speed_ = playback_speed;
+  if (timer_control_)
+    timer_control_->SetPlaybackSpeed(playback_speed_);
 }
 
 cc::SkottieWrapper::FrameDataFetchResult Animation::LoadImageForAsset(
@@ -241,11 +280,8 @@ cc::SkottieWrapper::FrameDataFetchResult Animation::LoadImageForAsset(
     SkSamplingOptions&) {
   cc::SkottieFrameDataProvider::ImageAsset& image_asset =
       *image_assets_.at(asset_id);
-  absl::optional<cc::SkottieFrameData> frame_data =
-      image_asset.GetFrameData(t, canvas->image_scale());
-  if (frame_data) {
-    all_frame_data.emplace(asset_id, std::move(frame_data.value()));
-  }
+  all_frame_data.emplace(asset_id,
+                         image_asset.GetFrameData(t, canvas->image_scale()));
   // Since this callback is only used for Seek() and not rendering, the output
   // arguments can be ignored and NO_UPDATE can be returned.
   return cc::SkottieWrapper::FrameDataFetchResult::NO_UPDATE;
@@ -255,17 +291,11 @@ void Animation::InitTimer(const base::TimeTicks& timestamp) {
   DCHECK(!timer_control_);
   timer_control_ = std::make_unique<TimerControl>(
       scheduled_start_offset_, scheduled_duration_, GetAnimationDuration(),
-      timestamp, style_ == Style::kThrobbing);
+      timestamp, style_ == Style::kThrobbing, playback_speed_);
 }
 
-void Animation::UpdateState(const base::TimeTicks& timestamp) {
+void Animation::TryNotifyAnimationCycleEnded() const {
   DCHECK(timer_control_);
-  int cycles = timer_control_->completed_cycles();
-  timer_control_->Step(timestamp);
-
-  if (cycles == timer_control_->completed_cycles())
-    return;
-
   bool inform_observer = true;
   switch (style_) {
     case Style::kLoop:
@@ -278,13 +308,14 @@ void Animation::UpdateState(const base::TimeTicks& timestamp) {
         inform_observer = false;
       break;
     case Style::kLinear:
-      state_ = PlayState::kEnded;
       break;
   }
 
   // Inform observer if the cycle has ended.
-  if (observer_ && inform_observer) {
-    observer_->AnimationCycleEnded(this);
+  if (inform_observer) {
+    for (AnimationObserver& obs : observers_) {
+      obs.AnimationCycleEnded(this);
+    }
   }
 }
 

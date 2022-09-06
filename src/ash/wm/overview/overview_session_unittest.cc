@@ -21,6 +21,8 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/frame_throttler/frame_throttling_controller.h"
+#include "ash/frame_throttler/mock_frame_throttling_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -28,9 +30,11 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
+#include "ash/style/close_button.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
@@ -98,8 +102,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
-#include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -176,6 +178,7 @@ class TestDestroyedWidgetObserver : public views::WidgetObserver {
   void OnWidgetDestroyed(views::Widget* widget) override {
     DCHECK(!widget_destroyed_);
     widget_destroyed_ = true;
+    observation_.Reset();
   }
 
   bool widget_destroyed() const { return widget_destroyed_; }
@@ -438,7 +441,6 @@ TEST_P(OverviewSessionTest, MinimizeDuringOverview) {
   WMEvent minimize_event(WM_EVENT_MINIMIZE);
   window_state->OnWMEvent(&minimize_event);
   EXPECT_FALSE(window->IsVisible());
-  EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(WindowStateType::kMinimized,
             WindowState::Get(window.get())->GetStateType());
   ToggleOverview();
@@ -777,7 +779,8 @@ TEST_P(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
 }
 
 // Tests entering overview mode with two windows and selecting one.
-TEST_P(OverviewSessionTest, FullscreenWindow) {
+// TODO(crbug.com/1323145): Flaky.
+TEST_P(OverviewSessionTest, DISABLED_FullscreenWindow) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -814,7 +817,8 @@ TEST_P(OverviewSessionTest, FullscreenWindow) {
 }
 
 // Tests entering overview mode with maximized window.
-TEST_P(OverviewSessionTest, MaximizedWindow) {
+// TODO(crbug.com/1325386): Flaky.
+TEST_P(OverviewSessionTest, DISABLED_MaximizedWindow) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -1850,7 +1854,10 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
   // account.
   const int bounds_left = 200 + 4;
   int expected_x = bounds_left + (400 - (bounds_left)) / 2;
-  const int workarea_bottom_inset = ShelfConfig::Get()->in_app_shelf_size();
+  const int workarea_bottom_inset =
+      ShelfConfig::Get()->in_app_shelf_size() +
+      ShelfConfig::Get()->system_shelf_size() +
+      ShelfConfig::Get()->hotseat_bottom_padding();
   const int expected_y = (300 - workarea_bottom_inset) / 2;
   EXPECT_EQ(gfx::Point(expected_x, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
@@ -3143,6 +3150,11 @@ TEST_P(OverviewSessionTest, FadeOutExit) {
 // Tests that accessibility overrides are set as expected on overview related
 // widgets.
 TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
+  // If desks templates is enabled, the a11y order changes. This is tested in
+  // the desks templates test suite.
+  if (GetParam())
+    return;
+
   auto window3 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(100, 100));
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
@@ -3164,34 +3176,21 @@ TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
   auto* item_widget2 = GetOverviewItemForWindow(window2.get())->item_widget();
   auto* item_widget3 = GetOverviewItemForWindow(window3.get())->item_widget();
 
-  // Helper that takes in a current widget and checks if the accessibility next
-  // and previous focus widgets match the given.
-  auto check_a11y_overrides = [](const std::string& id, views::Widget* widget,
-                                 views::Widget* expected_previous,
-                                 views::Widget* expected_next) -> void {
-    SCOPED_TRACE(id);
-    views::View* contents_view = widget->GetContentsView();
-    views::ViewAccessibility& view_accessibility =
-        contents_view->GetViewAccessibility();
-    EXPECT_EQ(expected_previous, view_accessibility.GetPreviousFocus());
-    EXPECT_EQ(expected_next, view_accessibility.GetNextFocus());
-  };
-
   // Order should be [focus_widget, item_widget1, item_widget2, item_widget3,
   // desk_widget].
-  check_a11y_overrides("focus", focus_widget, desk_widget, item_widget1);
-  check_a11y_overrides("item1", item_widget1, focus_widget, item_widget2);
-  check_a11y_overrides("item2", item_widget2, item_widget1, item_widget3);
-  check_a11y_overrides("item3", item_widget3, item_widget2, desk_widget);
-  check_a11y_overrides("desk", desk_widget, item_widget3, focus_widget);
+  CheckA11yOverrides("focus", focus_widget, desk_widget, item_widget1);
+  CheckA11yOverrides("item1", item_widget1, focus_widget, item_widget2);
+  CheckA11yOverrides("item2", item_widget2, item_widget1, item_widget3);
+  CheckA11yOverrides("item3", item_widget3, item_widget2, desk_widget);
+  CheckA11yOverrides("desk", desk_widget, item_widget3, focus_widget);
 
   // Remove |window2|. The new order should be [focus_widget, item_widget1,
   // item_widget3, desk_widget].
   window2.reset();
-  check_a11y_overrides("focus", focus_widget, desk_widget, item_widget1);
-  check_a11y_overrides("item1", item_widget1, focus_widget, item_widget3);
-  check_a11y_overrides("item3", item_widget3, item_widget1, desk_widget);
-  check_a11y_overrides("desk", desk_widget, item_widget3, focus_widget);
+  CheckA11yOverrides("focus", focus_widget, desk_widget, item_widget1);
+  CheckA11yOverrides("item1", item_widget1, focus_widget, item_widget3);
+  CheckA11yOverrides("item3", item_widget3, item_widget1, desk_widget);
+  CheckA11yOverrides("desk", desk_widget, item_widget3, focus_widget);
 }
 
 // Tests that removing a transient child during overview does not result in a
@@ -3210,16 +3209,34 @@ TEST_P(OverviewSessionTest, RemoveTransientNoCrash) {
 // that closing does not destroy transient children which are ShellSurfaceBase,
 // but this test covers the regular case.
 TEST_P(OverviewSessionTest, ClosingTransientTree) {
-  auto widget = CreateTestWidget();
-  aura::Window* window = widget->GetNativeWindow();
-  auto child_widget = CreateTestWidget();
-  ::wm::AddTransientChild(window, child_widget->GetNativeWindow());
+  // Release ownership as it will get deleted by the transient window manager,
+  // when the associated overview item is closed later.
+  auto* window = CreateAppWindow().release();
 
-  TestDestroyedWidgetObserver widget_observer(widget.get());
-  TestDestroyedWidgetObserver child_widget_observer(child_widget.get());
+  auto* child_window1 = CreateAppWindow().release();
+  wm::AddTransientChild(window, child_window1);
+
+  // Add a second child that is not backed by a widget.
+  auto* child_window2 = CreateTestWindow().release();
+  wm::AddTransientChild(window, child_window2);
+
+  TestDestroyedWidgetObserver widget_observer(
+      views::Widget::GetWidgetForNativeWindow(window));
+  TestDestroyedWidgetObserver child_widget_observer(
+      views::Widget::GetWidgetForNativeWindow(child_window1));
 
   ToggleOverview();
+
+  // There is a uaf that happens after adding a new desk and removing a desk,
+  // which transfers all windows to the new desk, removes the OverviewItem for
+  // the window and then adds a new `OverviewItem` for the window. We replicate
+  // that over here. See crbug.com/1317875.
+  auto* controller = DesksController::Get();
+  controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
+  RemoveDesk(controller->active_desk(), DeskCloseType::kCombineDesks);
+
   OverviewItem* item = GetOverviewItemForWindow(window);
+  ASSERT_TRUE(item);
   item->CloseWindow();
 
   // `NativeWidgetAura::Close()` fires a post task.
@@ -3227,6 +3244,158 @@ TEST_P(OverviewSessionTest, ClosingTransientTree) {
 
   EXPECT_TRUE(widget_observer.widget_destroyed());
   EXPECT_TRUE(child_widget_observer.widget_destroyed());
+}
+
+TEST_P(OverviewSessionTest, FrameThrottlingBrowser) {
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  const int window_count = 5;
+  std::vector<viz::FrameSinkId> ids{
+      {1u, 1u}, {2u, 2u}, {3u, 3u}, {4u, 4u}, {5u, 5u}};
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  windows.reserve(window_count + 1);
+  for (int i = 0; i < window_count; ++i) {
+    windows.emplace_back(
+        CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+    windows[i]->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::BROWSER));
+    windows[i]->SetEmbedFrameSinkId(ids[i]);
+  }
+
+  ToggleOverview();
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+
+  // Add a new window to overview.
+  std::unique_ptr<aura::Window> new_window(
+      CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+  constexpr viz::FrameSinkId new_window_id{6u, 6u};
+  new_window->SetEmbedFrameSinkId(new_window_id);
+  new_window->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::BROWSER));
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  grid->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
+                   /*use_spawn_animation=*/false);
+  windows.push_back(std::move(new_window));
+  ids.push_back(new_window_id);
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+
+  // Remove windows one by one.
+  for (int i = 0; i < window_count + 1; ++i) {
+    aura::Window* window = windows[i].get();
+    ids.erase(ids.begin());
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    grid->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+    EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+                testing::UnorderedElementsAreArray(ids));
+  }
+}
+
+TEST_P(OverviewSessionTest, FrameThrottlingLacros) {
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  const int window_count = 5;
+  std::vector<viz::FrameSinkId> ids{
+      {1u, 1u}, {2u, 2u}, {3u, 3u}, {4u, 4u}, {5u, 5u}};
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  windows.reserve(window_count + 1);
+  for (int i = 0; i < window_count; ++i) {
+    windows.emplace_back(
+        CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+    windows[i]->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::LACROS));
+    windows[i]->SetEmbedFrameSinkId(ids[i]);
+  }
+  for (auto& w : windows)
+    EXPECT_FALSE(w->GetProperty(ash::kFrameRateThrottleKey));
+
+  ToggleOverview();
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+  for (auto& w : windows)
+    EXPECT_TRUE(w->GetProperty(ash::kFrameRateThrottleKey));
+
+  // Add a new window to overview.
+  std::unique_ptr<aura::Window> new_window(
+      CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+  constexpr viz::FrameSinkId new_window_id{6u, 6u};
+  new_window->SetEmbedFrameSinkId(new_window_id);
+  new_window->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::LACROS));
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  grid->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
+                   /*use_spawn_animation=*/false);
+  windows.push_back(std::move(new_window));
+  ids.push_back(new_window_id);
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+  for (auto& w : windows)
+    EXPECT_TRUE(w->GetProperty(ash::kFrameRateThrottleKey));
+
+  // Remove windows one by one.
+  for (int i = 0; i < window_count + 1; ++i) {
+    aura::Window* window = windows[i].get();
+    ids.erase(ids.begin());
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    grid->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+    EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+                testing::UnorderedElementsAreArray(ids));
+    EXPECT_FALSE(window->GetProperty(ash::kFrameRateThrottleKey));
+  }
+}
+
+TEST_P(OverviewSessionTest, FrameThrottlingArc) {
+  testing::NiceMock<MockFrameThrottlingObserver> observer;
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  uint8_t throttled_fps = frame_throttling_controller->throttled_fps();
+  frame_throttling_controller->AddArcObserver(&observer);
+
+  const int window_count = 5;
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  windows.reserve(window_count + 1);
+  for (int i = 0; i < window_count; ++i) {
+    windows.emplace_back(
+        CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+    windows[i]->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::ARC_APP));
+  }
+
+  std::vector<aura::Window*> windows_to_throttle(window_count, nullptr);
+  std::transform(windows.begin(), windows.end(), windows_to_throttle.begin(),
+                 [](std::unique_ptr<aura::Window>& w) { return w.get(); });
+  EXPECT_CALL(observer, OnThrottlingStarted(testing::UnorderedElementsAreArray(
+                                                windows_to_throttle),
+                                            throttled_fps));
+  ToggleOverview();
+
+  // Add a new window to overview.
+  std::unique_ptr<aura::Window> new_window(
+      CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+  new_window->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::ARC_APP));
+  windows_to_throttle.push_back(new_window.get());
+  EXPECT_CALL(observer, OnThrottlingEnded());
+  EXPECT_CALL(observer, OnThrottlingStarted(testing::UnorderedElementsAreArray(
+                                                windows_to_throttle),
+                                            throttled_fps));
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  grid->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
+                   /*use_spawn_animation=*/false);
+  windows.push_back(std::move(new_window));
+
+  // Remove windows one by one. Once one window is out of the overview grid, no
+  // more windows will be throttled.
+  for (int i = 0; i < window_count + 1; ++i) {
+    aura::Window* window = windows[i].get();
+    if (i == 0)
+      EXPECT_CALL(observer, OnThrottlingEnded());
+    EXPECT_CALL(observer, OnThrottlingStarted(testing::_, testing::_)).Times(0);
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    grid->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+  }
+  frame_throttling_controller->RemoveArcObserver(&observer);
 }
 
 INSTANTIATE_TEST_SUITE_P(All, OverviewSessionTest, testing::Bool());
@@ -3531,6 +3700,31 @@ TEST_F(TabletModeOverviewSessionTest, HorizontalScrollingOnOverviewItem) {
 
   GenerateScrollSequence(topleft_window_center, gfx::Point(-500, 50));
   EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
+}
+
+// Tests that dragging a fullscreened window to snap in overview does not result
+// in a u-a-f. Regression test for crbug.com/1330042.
+TEST_F(TabletModeOverviewSessionTest, SnappingFullscreenWindow) {
+  UpdateDisplay("800x600");
+
+  auto window = CreateAppWindow(gfx::Rect(300, 300));
+
+  const WMEvent fullscreen_event(WM_EVENT_FULLSCREEN);
+  WindowState::Get(window.get())->OnWMEvent(&fullscreen_event);
+  EXPECT_TRUE(WindowState::Get(window.get())->IsFullscreen());
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      gfx::ToRoundedPoint(item->target_bounds().CenterPoint()));
+  generator->PressLeftButton();
+  generator->MoveMouseTo(gfx::Point(10, 300));
+  generator->ReleaseLeftButton();
+
+  EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 }
 
 // A unique test class for testing flings in overview as those rely on observing
@@ -4264,6 +4458,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
   gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_short_press_time(base::Milliseconds(1));
   gesture_config->set_show_press_delay_in_ms(1);
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
@@ -4382,11 +4577,14 @@ TEST_F(SplitViewOverviewSessionTest,
   // Verify that when there is a snapped window, the window grid bounds remain
   // constant despite overview items being dragged left and right.
   GetOverviewSession()->Drag(overview_item, left);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
+  EXPECT_EQ(ShrinkBoundsByHotseatInset(GetSplitViewRightWindowBounds()),
+            GetGridBounds());
   GetOverviewSession()->Drag(overview_item, right);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
+  EXPECT_EQ(ShrinkBoundsByHotseatInset(GetSplitViewRightWindowBounds()),
+            GetGridBounds());
   GetOverviewSession()->Drag(overview_item, center);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
+  EXPECT_EQ(ShrinkBoundsByHotseatInset(GetSplitViewRightWindowBounds()),
+            GetGridBounds());
 }
 
 // Tests dragging a unsnappable window.
@@ -5185,6 +5383,7 @@ TEST_F(SplitViewOverviewSessionTest,
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
   gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_short_press_time(base::Milliseconds(1));
   gesture_config->set_show_press_delay_in_ms(1);
 
   std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
@@ -5903,10 +6102,11 @@ TEST_F(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
   EXPECT_EQ(split_view_controller()->default_snap_position(),
             SplitViewController::LEFT);
   EXPECT_TRUE(GetOverviewController()->InOverviewSession());
-  EXPECT_EQ(
-      GetGridBounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(GetGridBounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
 
   split_view_controller()->SwapWindows();
   EXPECT_EQ(split_view_controller()->state(),
@@ -5915,8 +6115,9 @@ TEST_F(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
             SplitViewController::RIGHT);
   EXPECT_EQ(
       GetGridBounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
+      ShrinkBoundsByHotseatInset(
+          split_view_controller()->GetSnappedWindowBoundsInScreen(
+              SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr)));
 }
 
 // Test that in tablet mode, pressing tab key in overview should not crash.
@@ -6524,7 +6725,11 @@ class TestWindowStateDelegate : public WindowStateDelegate {
   ~TestWindowStateDelegate() override = default;
 
   // WindowStateDelegate:
-  void OnDragStarted(int component) override { drag_in_progress_ = true; }
+  std::unique_ptr<PresentationTimeRecorder> OnDragStarted(
+      int component) override {
+    drag_in_progress_ = true;
+    return nullptr;
+  }
   void OnDragFinished(bool cancel, const gfx::PointF& location) override {
     drag_in_progress_ = false;
   }
@@ -6843,7 +7048,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
   const aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
   const display::DisplayIdList display_ids =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
   ASSERT_EQ(2u, display_ids.size());
   ASSERT_EQ(root_windows[0], Shell::GetRootWindowForDisplayId(display_ids[0]));
   ASSERT_EQ(root_windows[1], Shell::GetRootWindowForDisplayId(display_ids[1]));

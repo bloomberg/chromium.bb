@@ -59,6 +59,20 @@ function onTimeRangeBoundary(mousePos: number): 'START'|'END'|null {
   return null;
 }
 
+export interface TrackGroupAttrs {
+  header: AnyAttrsVnode;
+  collapsed: boolean;
+  childTracks: AnyAttrsVnode[];
+}
+
+export class TrackGroup implements m.ClassComponent<TrackGroupAttrs> {
+  view() {
+    // TrackGroup component acts as a holder for a bunch of tracks rendered
+    // together: the actual rendering happens in PanelContainer. In order to
+    // avoid confusion, this method remains empty.
+  }
+}
+
 /**
  * Top-most level component for the viewer page. Holds tracks, brush timeline,
  * panels, and everything else that's part of the main trace viewer page.
@@ -198,7 +212,7 @@ class TraceViewer implements m.ClassComponent {
         globals.frontendLocalState.deselectArea();
         // Full redraw to color track shell.
         globals.rafScheduler.scheduleFullRedraw();
-      }
+      },
     });
   }
 
@@ -209,25 +223,33 @@ class TraceViewer implements m.ClassComponent {
 
   view() {
     const scrollingPanels: AnyAttrsVnode[] = globals.state.scrollingTracks.map(
-        id => m(TrackPanel, {key: id, id, selectable: true}));
+        (id) => m(TrackPanel, {key: id, id, selectable: true}));
 
     for (const group of Object.values(globals.state.trackGroups)) {
-      scrollingPanels.push(m(TrackGroupPanel, {
+      const headerPanel = m(TrackGroupPanel, {
         trackGroupId: group.id,
         key: `trackgroup-${group.id}`,
         selectable: true,
-      }));
-      if (group.collapsed) continue;
+      });
+
+      const childTracks: AnyAttrsVnode[] = [];
       // The first track is the summary track, and is displayed as part of the
       // group panel, we don't want to display it twice so we start from 1.
-      for (let i = 1; i < group.tracks.length; ++i) {
-        const id = group.tracks[i];
-        scrollingPanels.push(m(TrackPanel, {
-          key: `track-${group.id}-${id}`,
-          id,
-          selectable: true,
-        }));
+      if (!group.collapsed) {
+        for (let i = 1; i < group.tracks.length; ++i) {
+          const id = group.tracks[i];
+          childTracks.push(m(TrackPanel, {
+            key: `track-${group.id}-${id}`,
+            id,
+            selectable: true,
+          }));
+        }
       }
+      scrollingPanels.push(m(TrackGroup, {
+        header: headerPanel,
+        collapsed: group.collapsed,
+        childTracks,
+      } as TrackGroupAttrs));
     }
 
     return m(
@@ -242,7 +264,7 @@ class TraceViewer implements m.ClassComponent {
                   return;
                 }
                 globals.makeSelection(Actions.deselect({}));
-              }
+              },
             },
             m('.pinned-panel-container', m(PanelContainer, {
                 doesScroll: false,
@@ -253,7 +275,7 @@ class TraceViewer implements m.ClassComponent {
                   m(NotesPanel, {key: 'notes'}),
                   m(TickmarkPanel, {key: 'searchTickmarks'}),
                   ...globals.state.pinnedTracks.map(
-                      id => m(TrackPanel, {key: id, id, selectable: true})),
+                      (id) => m(TrackPanel, {key: id, id, selectable: true})),
                 ],
                 kind: 'OVERVIEW',
               })),
@@ -269,5 +291,5 @@ class TraceViewer implements m.ClassComponent {
 export const ViewerPage = createPage({
   view() {
     return m(TraceViewer);
-  }
+  },
 });

@@ -16,11 +16,13 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
+#include "base/time/time.h"
 #include "media/audio/audio_opus_encoder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/muxers/webm_muxer.h"
 #include "media/video/vpx_video_encoder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -35,6 +37,7 @@ class VideoFrame;
 namespace recording {
 
 namespace mojom {
+class DriveFsQuotaDelegate;
 enum class RecordingStatus;
 }  // namespace mojom
 
@@ -76,6 +79,7 @@ class RecordingEncoderMuxer {
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const media::VideoEncoder::Options& video_encoder_options,
       const media::AudioParameters* audio_input_params,
+      mojo::PendingRemote<mojom::DriveFsQuotaDelegate> drive_fs_quota_delegate,
       const base::FilePath& webm_file_path,
       OnFailureCallback on_failure_callback);
 
@@ -126,6 +130,7 @@ class RecordingEncoderMuxer {
   RecordingEncoderMuxer(
       const media::VideoEncoder::Options& video_encoder_options,
       const media::AudioParameters* audio_input_params,
+      mojo::PendingRemote<mojom::DriveFsQuotaDelegate> drive_fs_quota_delegate,
       const base::FilePath& webm_file_path,
       OnFailureCallback on_failure_callback);
   ~RecordingEncoderMuxer();
@@ -135,13 +140,13 @@ class RecordingEncoderMuxer {
 
   // Called when the audio encoder is initialized to provide the |status| of
   // the initialization.
-  void OnAudioEncoderInitialized(media::Status status);
+  void OnAudioEncoderInitialized(media::EncoderStatus status);
 
   // Called when the video |encoder| is initialized to provide the |status| of
   // the initialization. If initialization failed, |on_failure_callback_| will
   // be triggered.
   void OnVideoEncoderInitialized(media::VpxVideoEncoder* encoder,
-                                 media::Status status);
+                                 media::EncoderStatus status);
 
   // Performs the actual encoding of the given audio |frame|. It should never be
   // called before the audio encoder is initialized. Audio frames received
@@ -169,16 +174,18 @@ class RecordingEncoderMuxer {
   // Called when the audio encoder flushes all its buffered frames, at which
   // point we can flush the video encoder. |on_done| will be passed to
   // OnVideoEncoderFlushed()
-  void OnAudioEncoderFlushed(base::OnceClosure on_done, media::Status status);
+  void OnAudioEncoderFlushed(base::OnceClosure on_done,
+                             media::EncoderStatus status);
 
   // Called when the video encoder flushes all its buffered frames, at which
   // point we can flush the muxer. |on_done| will be called to signal that
   // flushing is complete.
-  void OnVideoEncoderFlushed(base::OnceClosure on_done, media::Status status);
+  void OnVideoEncoderFlushed(base::OnceClosure on_done,
+                             media::EncoderStatus status);
 
   // Called by both the audio and video encoders to provide the |status| of
   // encoding tasks.
-  void OnEncoderStatus(bool for_video, media::Status status);
+  void OnEncoderStatus(bool for_video, media::EncoderStatus status);
 
   // Notifies the owner of this object (via |on_failure_callback_|) that a
   // failure noted by |status| has occurred during audio or video encoding, or

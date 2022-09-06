@@ -105,7 +105,7 @@ class CC_EXPORT LayerTreeImpl {
   // layer to consider it as jittering.
   enum : int { kFixedPointHitsThreshold = 3 };
   LayerTreeImpl(
-      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl& host_impl,
       scoped_refptr<SyncedScale> page_scale_factor,
       scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
       scoped_refptr<SyncedBrowserControls> bottom_controls_shown_ratio,
@@ -139,6 +139,7 @@ class CC_EXPORT LayerTreeImpl {
   bool IsPendingTree() const;
   bool IsRecycleTree() const;
   bool IsSyncTree() const;
+  bool HasPendingTree() const;
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
   // TODO(bokan): PinchGestureActive is a layering violation, it's not related
@@ -163,8 +164,10 @@ class CC_EXPORT LayerTreeImpl {
           decoding_mode_map);
   int GetMSAASampleCountForRaster(
       const scoped_refptr<DisplayItemList>& display_list);
-  gfx::ColorSpace GetRasterColorSpace(
+  TargetColorParams GetTargetColorParams(
       gfx::ContentColorUsage content_color_usage) const;
+  bool IsReadyToActivate() const;
+  void RequestImplSideInvalidationForRerasterTiling();
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
@@ -190,7 +193,13 @@ class CC_EXPORT LayerTreeImpl {
   OwnedLayerImplList DetachLayers();
   OwnedLayerImplList DetachLayersKeepingRootLayerForTesting();
 
-  void SetPropertyTrees(PropertyTrees& property_trees);
+  void SetPropertyTrees(const PropertyTrees& property_trees,
+                        PropertyTreesChangeState& change_state,
+                        bool preserve_change_tracking);
+
+  void SetPropertyTrees(PropertyTrees& property_trees,
+                        bool preserve_change_tracking = false);
+
   PropertyTrees* property_trees() {
     // TODO(pdr): We should enable this DCHECK because it will catch uses of
     // stale property trees, but it currently fails too many existing tests.
@@ -200,8 +209,9 @@ class CC_EXPORT LayerTreeImpl {
   const PropertyTrees* property_trees() const { return &property_trees_; }
 
   void PullPropertiesFrom(CommitState& commit_state,
-                          ThreadUnsafeCommitState& unsafe_state);
-  void PullPropertyTreesFrom(Layer* root_layer, PropertyTrees& property_trees);
+                          const ThreadUnsafeCommitState& unsafe_state);
+  void PullPropertyTreesFrom(CommitState& commit_state,
+                             const ThreadUnsafeCommitState& unsafe_state);
   void PullLayerTreePropertiesFrom(CommitState& commit_state);
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
@@ -214,9 +224,14 @@ class CC_EXPORT LayerTreeImpl {
   // Adapts an iterator of std::unique_ptr<LayerImpl> to an iterator of
   // LayerImpl*.
   template <typename Iterator>
-  class IteratorAdapter
-      : public std::iterator<std::forward_iterator_tag, LayerImpl*> {
+  class IteratorAdapter {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = LayerImpl*;
+    using difference_type = std::ptrdiff_t;
+    using pointer = LayerImpl**;
+    using reference = LayerImpl*&;
+
     explicit IteratorAdapter(Iterator it) : it_(it) {}
     bool operator==(IteratorAdapter o) const { return it_ == o.it_; }
     bool operator!=(IteratorAdapter o) const { return !(*this == o); }
@@ -270,6 +285,9 @@ class CC_EXPORT LayerTreeImpl {
   void set_source_frame_number(int frame_number) {
     source_frame_number_ = frame_number;
   }
+
+  uint64_t trace_id() const { return trace_id_; }
+  void set_trace_id(uint64_t val) { trace_id_ = val; }
 
   bool is_first_frame_after_commit() const {
     return source_frame_number_ != is_first_frame_after_commit_tracker_;
@@ -393,12 +411,6 @@ class CC_EXPORT LayerTreeImpl {
     return new_local_surface_id_request_;
   }
 
-  void SetVisualPropertiesUpdateDuration(
-      base::TimeDelta visual_properties_update_duration);
-  base::TimeDelta visual_properties_update_duration() const {
-    return visual_properties_update_duration_;
-  }
-
   void SetDeviceViewportRect(const gfx::Rect& device_viewport_rect);
 
   // TODO(fsamuel): The reason this is not a trivial accessor is because it
@@ -431,11 +443,15 @@ class CC_EXPORT LayerTreeImpl {
   float page_scale_factor_for_scroll() const {
     DCHECK(external_page_scale_factor_ == 1.f ||
            current_page_scale_factor() == 1.f ||
-           !settings().is_layer_tree_for_subframe);
+           settings().is_for_scalable_page);
     return external_page_scale_factor_ * current_page_scale_factor();
   }
   const gfx::DisplayColorSpaces& display_color_spaces() const {
     return display_color_spaces_;
+  }
+
+  const ViewportPropertyIds& viewport_property_ids() const {
+    return viewport_property_ids_;
   }
 
   SyncedElasticOverscroll* elastic_overscroll() {
@@ -491,11 +507,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void ForceRedrawNextActivation() { next_activation_forces_redraw_ = true; }
 
-  void set_has_ever_been_drawn(bool has_drawn) {
-    has_ever_been_drawn_ = has_drawn;
-  }
-  bool has_ever_been_drawn() const { return has_ever_been_drawn_; }
-
   void set_ui_resource_request_queue(UIResourceRequestQueue queue);
 
   const RenderSurfaceList& GetRenderSurfaceList() const;
@@ -512,9 +523,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* LayerByElementId(ElementId element_id) const;
 
   bool IsElementInPropertyTree(ElementId element_id) const;
-
-  void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
-  void RemoveFromElementLayerList(ElementId element_id);
 
   void SetSurfaceRanges(const base::flat_set<viz::SurfaceRange> surface_ranges);
   const base::flat_set<viz::SurfaceRange>& SurfaceRanges() const;
@@ -785,6 +793,17 @@ class CC_EXPORT LayerTreeImpl {
 
   bool HasDocumentTransitionRequests() const;
 
+  void ClearVisualUpdateDurations();
+  void SetVisualUpdateDurations(
+      base::TimeDelta previous_surfaces_visual_update_duration,
+      base::TimeDelta visual_update_duration);
+  base::TimeDelta previous_surfaces_visual_update_duration() const {
+    return previous_surfaces_visual_update_duration_;
+  }
+  base::TimeDelta visual_update_duration() const {
+    return visual_update_duration_;
+  }
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -812,6 +831,7 @@ class CC_EXPORT LayerTreeImpl {
 
   raw_ptr<LayerTreeHostImpl> host_impl_;
   int source_frame_number_;
+  uint64_t trace_id_ = 0;
   int is_first_frame_after_commit_tracker_;
   raw_ptr<HeadsUpDisplayLayerImpl> hud_layer_;
   PropertyTrees property_trees_;
@@ -834,7 +854,6 @@ class CC_EXPORT LayerTreeImpl {
 
   viz::LocalSurfaceId local_surface_id_from_parent_;
   bool new_local_surface_id_request_ = false;
-  base::TimeDelta visual_properties_update_duration_;
   // Contains the physical rect of the device viewport, to be used in
   // determining what needs to be drawn.
   bool device_viewport_rect_changed_ = false;
@@ -899,8 +918,6 @@ class CC_EXPORT LayerTreeImpl {
 
   bool next_activation_forces_redraw_;
 
-  bool has_ever_been_drawn_;
-
   bool handle_visibility_changed_;
 
   std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
@@ -945,6 +962,13 @@ class CC_EXPORT LayerTreeImpl {
   // Document transition requests to be transferred to Viz.
   std::vector<std::unique_ptr<DocumentTransitionRequest>>
       document_transition_requests_;
+
+  // The cumulative time spent performing visual updates for all Surfaces before
+  // this one.
+  base::TimeDelta previous_surfaces_visual_update_duration_;
+  // The cumulative time spent performing visual updates for the current
+  // Surface.
+  base::TimeDelta visual_update_duration_;
 };
 
 }  // namespace cc

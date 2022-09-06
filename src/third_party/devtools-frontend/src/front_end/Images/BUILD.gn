@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/timestamp.gni")
 import("../../config/gni/devtools_image_files.gni")
 import("../../scripts/build/ninja/devtools_pre_built.gni")
 import("../../scripts/build/ninja/node.gni")
+import("../../scripts/build/ninja/vars.gni")
 
 devtools_pre_built("Images") {
   sources = devtools_image_files + devtools_src_svg_files
@@ -14,6 +16,7 @@ node_action("generate_css_vars") {
   script = "front_end/Images/generate-css-vars.js"
 
   args = [
+           build_timestamp,
            rebase_path(target_gen_dir, root_build_dir),
            "optimize_images",
          ] + devtools_image_files + devtools_src_svg_files
@@ -33,6 +36,7 @@ node_action("optimize_images") {
   inputs = [
     _bundled_entrypoint,
     "rollup.config.js",
+    devtools_location_prepend + "node_modules/svgo/package.json",
   ]
   foreach(svg_image, devtools_src_svg_files) {
     inputs += [ "$target_gen_dir/$svg_image" ]

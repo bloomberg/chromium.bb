@@ -30,6 +30,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace flags_ui {
@@ -97,7 +98,7 @@ const FeatureEntry::FeatureVariation kTestVariations2[] = {
 const FeatureEntry::FeatureVariation kTestVariations3[] = {
     {"dummy description 1", kTestVariationOther1, 1, nullptr},
     {"dummy description 2", kTestVariationOther2, 1, nullptr},
-    {"dummy description 3", kTestVariationOther3, 2, nullptr}};
+    {"dummy description 3", kTestVariationOther3, 2, "t123456"}};
 
 const char kTestVariation3Cmdline[] =
     "FeatureName3:param1/value/param%3A%2F3/value";
@@ -174,7 +175,7 @@ class FlagsStateTest : public ::testing::Test,
     prefs_.registry()->RegisterListPref(prefs::kAboutFlagsEntries);
     prefs_.registry()->RegisterDictionaryPref(prefs::kAboutFlagsOriginLists);
 
-    for (size_t i = 0; i < base::size(kEntries); ++i)
+    for (size_t i = 0; i < std::size(kEntries); ++i)
       kEntries[i].supported_platforms = FlagsState::GetCurrentPlatform();
 
     int os_other_than_current = 1;
@@ -247,10 +248,10 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveOne) {
   const base::Value* entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
 
-  ASSERT_EQ(2u, entries_list->GetList().size());
+  ASSERT_EQ(2u, entries_list->GetListDeprecated().size());
 
-  std::string s0 = entries_list->GetList()[0].GetString();
-  std::string s1 = entries_list->GetList()[1].GetString();
+  std::string s0 = entries_list->GetListDeprecated()[0].GetString();
+  std::string s1 = entries_list->GetListDeprecated()[1].GetString();
 
   EXPECT_TRUE(s0 == kFlags1 || s1 == kFlags1);
   EXPECT_TRUE(s0 == kFlags2 || s1 == kFlags2);
@@ -260,8 +261,8 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveOne) {
 
   entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
-  ASSERT_EQ(1u, entries_list->GetList().size());
-  s0 = entries_list->GetList()[0].GetString();
+  ASSERT_EQ(1u, entries_list->GetListDeprecated().size());
+  s0 = entries_list->GetListDeprecated()[0].GetString();
   EXPECT_TRUE(s0 == kFlags1);
 }
 
@@ -276,7 +277,8 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveBoth) {
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, false);
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
   entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
-  EXPECT_TRUE(entries_list == nullptr || entries_list->GetList().size() == 0);
+  EXPECT_TRUE(entries_list == nullptr ||
+              entries_list->GetListDeprecated().size() == 0);
 }
 
 TEST_F(FlagsStateTest, CombineOriginListValues) {
@@ -342,6 +344,11 @@ TEST_F(FlagsStateTest, ConvertFlagsToSwitches) {
   EXPECT_TRUE(command_line3.HasSwitch(kEnableFeatures));
   EXPECT_EQ(command_line3.GetSwitchValueASCII(kEnableFeatures),
             kTestVariation3Cmdline);
+  EXPECT_TRUE(
+      command_line3.HasSwitch(variations::switches::kForceVariationIds));
+  EXPECT_EQ(command_line3.GetSwitchValueASCII(
+                variations::switches::kForceVariationIds),
+            "t123456");
 }
 
 TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
@@ -439,7 +446,7 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParametersWithDefaultTrials) {
 }
 
 base::CommandLine::StringType CreateSwitch(const std::string& value) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return base::ASCIIToWide(value);
 #else
   return value;
@@ -495,7 +502,7 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
       {2, "A,B", "C", "A,B", "C,FeatureName1"},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
         "Test[%" PRIuS "]: %d [%s] [%s]", i, cases[i].enabled_choice,
         cases[i].existing_enable_features ? cases[i].existing_enable_features
@@ -572,10 +579,10 @@ TEST_F(FlagsStateTest, PersistAndPrune) {
   // FeatureEntry 3 should show still be persisted in preferences though.
   const base::Value* entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list);
-  EXPECT_EQ(2U, entries_list->GetList().size());
-  std::string s0 = entries_list->GetList()[0].GetString();
+  EXPECT_EQ(2U, entries_list->GetListDeprecated().size());
+  std::string s0 = entries_list->GetListDeprecated()[0].GetString();
   EXPECT_EQ(kFlags1, s0);
-  std::string s1 = entries_list->GetList()[1].GetString();
+  std::string s1 = entries_list->GetListDeprecated()[1].GetString();
   EXPECT_EQ(kFlags3, s1);
 }
 
@@ -602,7 +609,7 @@ TEST_F(FlagsStateTest, CheckValues) {
   // Confirm that there is no '=' in the command line for simple switches.
   std::string switch1_with_equals =
       std::string("--") + std::string(kSwitch1) + std::string("=");
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   EXPECT_EQ(std::wstring::npos, command_line.GetCommandLineString().find(
                                     base::ASCIIToWide(switch1_with_equals)));
 #else
@@ -613,7 +620,7 @@ TEST_F(FlagsStateTest, CheckValues) {
   // And confirm there is a '=' for switches with values.
   std::string switch2_with_equals =
       std::string("--") + std::string(kSwitch2) + std::string("=");
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   EXPECT_NE(std::wstring::npos, command_line.GetCommandLineString().find(
                                     base::ASCIIToWide(switch2_with_equals)));
 #else
@@ -624,10 +631,10 @@ TEST_F(FlagsStateTest, CheckValues) {
   // And it should persist.
   const base::Value* entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list);
-  EXPECT_EQ(2U, entries_list->GetList().size());
-  std::string s0 = entries_list->GetList()[0].GetString();
+  EXPECT_EQ(2U, entries_list->GetListDeprecated().size());
+  std::string s0 = entries_list->GetListDeprecated()[0].GetString();
   EXPECT_EQ(kFlags1, s0);
-  std::string s1 = entries_list->GetList()[1].GetString();
+  std::string s1 = entries_list->GetListDeprecated()[1].GetString();
   EXPECT_EQ(kFlags2, s1);
 }
 
@@ -798,7 +805,7 @@ TEST_F(FlagsStateTest, FeatureValues) {
       {2, nullptr, "Foo,Bar", "", "Foo,Bar,FeatureName1"},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
         "Test[%" PRIuS "]: %d [%s] [%s]", i, cases[i].enabled_choice,
         cases[i].existing_enable_features ? cases[i].existing_enable_features
@@ -842,7 +849,7 @@ TEST_F(FlagsStateTest, GetFlagFeatureEntries) {
   auto unsupported_count = unsupported_entries.size();
   EXPECT_EQ(11u, supported_count);
   EXPECT_EQ(1u, unsupported_count);
-  EXPECT_EQ(base::size(kEntries), supported_count + unsupported_count);
+  EXPECT_EQ(std::size(kEntries), supported_count + unsupported_count);
 }
 
 }  // namespace flags_ui

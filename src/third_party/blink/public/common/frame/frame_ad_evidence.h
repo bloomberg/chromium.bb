@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_AD_EVIDENCE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_AD_EVIDENCE_H_
 
+#include "base/check_op.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_evidence.mojom-shared.h"
 
@@ -69,6 +70,8 @@ class BLINK_COMMON_EXPORT FrameAdEvidence {
   bool is_complete_ = false;
 
   // Whether the frame's parent is an ad. Not const to allow copy assignment.
+  // Note, for embedded main frames that are a subresource filter child (e.g.
+  // FencedFrame), this will specify if the outer delegate frame is an ad.
   bool parent_is_ad_;
 
   // Whether any URL for this frame has been checked against the filter list

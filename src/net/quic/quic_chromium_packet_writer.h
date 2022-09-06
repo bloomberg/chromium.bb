@@ -14,10 +14,10 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
 #include "net/socket/datagram_client_socket.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_connection.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packet_writer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_types.h"
 
 namespace net {
 
@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
    private:
     ~ReusableIOBuffer() override;
     size_t capacity_;
-    size_t size_;
+    size_t size_ = 0;
   };
   // Delegate interface which receives notifications on socket write events.
   class NET_EXPORT_PRIVATE Delegate {
@@ -65,7 +65,6 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
     virtual void OnWriteUnblocked() = 0;
   };
 
-  QuicChromiumPacketWriter();
   // |socket| and |task_runner| must outlive writer.
   QuicChromiumPacketWriter(DatagramClientSocket* socket,
                            base::SequencedTaskRunner* task_runner);
@@ -94,6 +93,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
                                 quic::PerPacketOptions* options) override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;
+  absl::optional<int> MessageTooBigErrorCode() const override;
   quic::QuicByteCount GetMaxPacketSize(
       const quic::QuicSocketAddress& peer_address) const override;
   bool SupportsReleaseTime() const override;
@@ -111,7 +111,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   void RetryPacketAfterNoBuffers();
   quic::WriteResult WritePacketToSocketImpl();
   raw_ptr<DatagramClientSocket> socket_;  // Unowned.
-  raw_ptr<Delegate> delegate_;            // Unowned.
+  raw_ptr<Delegate> delegate_ = nullptr;  // Unowned.
   // Reused for every packet write for the lifetime of the writer.  Is
   // moved to the delegate in the case of a write error.
   scoped_refptr<ReusableIOBuffer> packet_;
@@ -119,13 +119,13 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   // Whether a write is currently in progress: true if an asynchronous write is
   // in flight, or a retry of a previous write is in progress, or session is
   // handling write error of a previous write.
-  bool write_in_progress_;
+  bool write_in_progress_ = false;
 
   // If ture, IsWriteBlocked() will return true regardless of
   // |write_in_progress_|.
-  bool force_write_blocked_;
+  bool force_write_blocked_ = false;
 
-  int retry_count_;
+  int retry_count_ = 0;
   // Timer set when a packet should be retried after ENOBUFS.
   base::OneShotTimer retry_timer_;
 

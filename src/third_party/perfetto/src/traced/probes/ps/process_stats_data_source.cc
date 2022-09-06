@@ -23,7 +23,6 @@
 
 #include "perfetto/base/task_runner.h"
 #include "perfetto/base/time.h"
-#include "perfetto/ext/base/crash_keys.h"
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/hash.h"
 #include "perfetto/ext/base/metatrace.h"
@@ -51,14 +50,6 @@ namespace perfetto {
 
 namespace {
 
-// Default upper bound on the number of thread cpu frequency keys, used if none
-// was provided in the config. The cache is trimmed if it exceeds this size.
-const size_t kThreadTimeInStateCacheSize = 10000;
-
-// TODO(b/189749310): For debugging of b/189749310. Remove by Jan 2022.
-base::CrashKey g_crash_key_proc_file("proc_file");
-base::CrashKey g_crash_key_proc_count("proc_count");
-
 int32_t ReadNextNumericDir(DIR* dirp) {
   while (struct dirent* dir_ent = readdir(dirp)) {
     if (dir_ent->d_type != DT_DIR)
@@ -84,6 +75,7 @@ inline uint32_t ToU32(const char* str) {
 const ProbesDataSource::Descriptor ProcessStatsDataSource::descriptor = {
     /*name*/ "linux.process_stats",
     /*flags*/ Descriptor::kHandlesIncrementalState,
+    /*fill_descriptor_func*/ nullptr,
 };
 
 ProcessStatsDataSource::ProcessStatsDataSource(
@@ -121,12 +113,6 @@ ProcessStatsDataSource::ProcessStatsDataSource(
     process_stats_cache_ttl_ticks_ =
         std::max(proc_stats_ttl_ms / poll_period_ms_, 1u);
   }
-
-  record_thread_time_in_state_ = cfg.record_thread_time_in_state();
-  thread_time_in_state_cache_size_ = cfg.thread_time_in_state_cache_size();
-  if (thread_time_in_state_cache_size_ == 0)
-    thread_time_in_state_cache_size_ = kThreadTimeInStateCacheSize;
-  thread_time_in_state_cache_.resize(thread_time_in_state_cache_size_);
 }
 
 ProcessStatsDataSource::~ProcessStatsDataSource() = default;
@@ -170,8 +156,10 @@ void ProcessStatsDataSource::WriteAllProcesses() {
       } else {
         // If we are not interested in thread names, there is no need to open
         // a proc file for each thread. We can save time and directly write the
-        // thread record.
-        WriteThread(tid, pid, /*optional_name=*/nullptr);
+        // thread record. Note that we still read proc_status for recording
+        // NSpid entries.
+        std::string proc_status = ReadProcPidFile(tid, "status");
+        WriteThread(tid, pid, /*optional_name=*/nullptr, proc_status);
       }
     }
   }
@@ -225,27 +213,74 @@ void ProcessStatsDataSource::WriteProcessOrThread(int32_t pid) {
   if (proc_status.empty())
     return;
   int tgid = ToInt(ReadProcStatusEntry(proc_status, "Tgid:"));
-  if (tgid <= 0)
+  int tid = ToInt(ReadProcStatusEntry(proc_status, "Pid:"));
+  if (tgid <= 0 || tid <= 0)
     return;
-  if (!seen_pids_.count(tgid))
-    WriteProcess(tgid, proc_status);
+
+  if (!seen_pids_.count(tgid)) {
+    // We need to read the status file if |pid| is non-main thread.
+    const std::string& proc_status_tgid =
+        (tgid == tid ? proc_status : ReadProcPidFile(tgid, "status"));
+    WriteProcess(tgid, proc_status_tgid);
+  }
   if (pid != tgid) {
     PERFETTO_DCHECK(!seen_pids_.count(pid));
     std::string thread_name;
     if (record_thread_names_)
       thread_name = ReadProcStatusEntry(proc_status, "Name:");
-    WriteThread(pid, tgid, thread_name.empty() ? nullptr : thread_name.c_str());
+    WriteThread(pid, tgid, thread_name.empty() ? nullptr : thread_name.c_str(),
+                proc_status);
+  }
+}
+
+void ProcessStatsDataSource::ReadNamespacedTids(int32_t tid,
+                                                const std::string& proc_status,
+                                                TidArray& out) {
+  // If a process has entered a PID namespace, NSpid shows the mapping in
+  // the status file like: NSpid:  28971   2
+  // NStgid: 28971   2
+  // which denotes that the thread (or process) 28971 in the root PID namespace
+  // has PID = 2 in the child PID namespace. This information can be read from
+  // the NSpid entry in /proc/<tid>/status.
+  if (proc_status.empty())
+    return;
+  std::string nspid = ReadProcStatusEntry(proc_status, "NSpid:");
+  if (nspid.empty())
+    return;
+
+  out.fill(0);  // Zero-initialize the array in case the caller doesn't.
+  auto it = out.begin();
+
+  base::StringSplitter ss(std::move(nspid), '\t');
+  ss.Next();  // Skip the 1st element.
+  PERFETTO_DCHECK(base::CStringToInt32(ss.cur_token()) == tid);
+  while (ss.Next()) {
+    PERFETTO_CHECK(it < out.end());
+    auto maybe_int32 = base::CStringToInt32(ss.cur_token());
+    PERFETTO_DCHECK(maybe_int32.has_value());
+    *it++ = *maybe_int32;
   }
 }
 
 void ProcessStatsDataSource::WriteProcess(int32_t pid,
                                           const std::string& proc_status) {
   PERFETTO_DCHECK(ToInt(ReadProcStatusEntry(proc_status, "Tgid:")) == pid);
+  // Assert that |proc_status| is not for a non-main thread.
+  PERFETTO_DCHECK(ToInt(ReadProcStatusEntry(proc_status, "Pid:")) == pid);
   auto* proc = GetOrCreatePsTree()->add_processes();
   proc->set_pid(pid);
   proc->set_ppid(ToInt(ReadProcStatusEntry(proc_status, "PPid:")));
   // Uid will have multiple entries, only return first (real uid).
   proc->set_uid(ToInt(ReadProcStatusEntry(proc_status, "Uid:")));
+
+  // Optionally write namespace-local PIDs.
+  TidArray nspids = {};
+  ReadNamespacedTids(pid, proc_status, nspids);
+  for (auto nspid : nspids) {
+    if (nspid == 0)  // No more elements.
+      break;
+    proc->add_nspid(nspid);
+  }
 
   std::string cmdline = ReadProcPidFile(pid, "cmdline");
   if (!cmdline.empty()) {
@@ -265,12 +300,22 @@ void ProcessStatsDataSource::WriteProcess(int32_t pid,
 
 void ProcessStatsDataSource::WriteThread(int32_t tid,
                                          int32_t tgid,
-                                         const char* optional_name) {
+                                         const char* optional_name,
+                                         const std::string& proc_status) {
   auto* thread = GetOrCreatePsTree()->add_threads();
   thread->set_tid(tid);
   thread->set_tgid(tgid);
   if (optional_name)
     thread->set_name(optional_name);
+
+  // Optionally write namespace-local TIDs.
+  TidArray nstids = {};
+  ReadNamespacedTids(tid, proc_status, nstids);
+  for (auto nstid : nstids) {
+    if (nstid == 0)  // No more elements.
+      break;
+    thread->add_nstid(nstid);
+  }
   seen_pids_.insert(tid);
 }
 
@@ -284,18 +329,11 @@ base::ScopedDir ProcessStatsDataSource::OpenProcDir() {
 std::string ProcessStatsDataSource::ReadProcPidFile(int32_t pid,
                                                     const std::string& file) {
   base::StackString<128> path("/proc/%" PRId32 "/%s", pid, file.c_str());
-  auto scoped_key = g_crash_key_proc_file.SetScoped(path.string_view());
-  g_crash_key_proc_count.Set(g_crash_key_proc_count.int_value() + 1);
   std::string contents;
   contents.reserve(4096);
   if (!base::ReadFile(path.c_str(), &contents))
     return "";
   return contents;
-}
-
-base::ScopedDir ProcessStatsDataSource::OpenProcTaskDir(int32_t pid) {
-  base::StackString<128> task_path("/proc/%d/task", pid);
-  return base::ScopedDir(opendir(task_path.c_str()));
 }
 
 std::string ProcessStatsDataSource::ReadProcStatusEntry(const std::string& buf,
@@ -373,7 +411,6 @@ void ProcessStatsDataSource::Tick(
     base::WeakPtr<ProcessStatsDataSource> weak_this) {
   if (!weak_this)
     return;
-  g_crash_key_proc_count.Clear();
   ProcessStatsDataSource& thiz = *weak_this;
   uint32_t period_ms = thiz.poll_period_ms_;
   uint32_t delay_ms =
@@ -387,9 +424,6 @@ void ProcessStatsDataSource::Tick(
   if (++thiz.cache_ticks_ == thiz.process_stats_cache_ttl_ticks_) {
     thiz.cache_ticks_ = 0;
     thiz.process_stats_cache_.clear();
-    thiz.thread_time_in_state_cache_.clear();
-    thiz.thread_time_in_state_cache_.resize(
-        thiz.thread_time_in_state_cache_size_);
   }
 }
 
@@ -432,15 +466,6 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
       if (counter != cached.oom_score_adj) {
         GetOrCreateStatsProcess(pid)->set_oom_score_adj(counter);
         cached.oom_score_adj = counter;
-      }
-    }
-
-    if (record_thread_time_in_state_ && ShouldWriteThreadStats(pid)) {
-      if (auto task_dir = OpenProcTaskDir(pid)) {
-        while (int32_t tid = ReadNextNumericDir(*task_dir)) {
-          WriteThreadStats(pid, tid);
-          pids.insert(tid);
-        }
       }
     }
 
@@ -564,107 +589,6 @@ bool ProcessStatsDataSource::WriteMemCounters(int32_t pid,
   return proc_status_has_mem_counters;
 }
 
-// Fast check to avoid reading information about all threads of a process.
-// If the total process cpu time has not changed, we can skip reading
-// time_in_state for all its threads.
-bool ProcessStatsDataSource::ShouldWriteThreadStats(int32_t pid) {
-  std::string stat = ReadProcPidFile(pid, "stat");
-  // /proc/pid/stat may contain an additional space inside comm. For example:
-  // 1 (comm foo) 2 3 ...
-  // We strip the prefix including comm. So the result is: 2 3 ...
-  size_t comm_end = stat.rfind(") ");
-  if (comm_end == std::string::npos)
-    return false;
-  std::string stat_after_comm = stat.substr(comm_end + 2);
-
-  // Indices of space separated fields in /proc/pid/stat offset by 2 to make
-  // up for fields removed by stripping the prefix including comm.
-  const uint32_t kStatCTimeIndex = 13 - 2;
-  const uint32_t kStatSTimeIndex = 14 - 2;
-
-  auto stat_parts = base::SplitString(stat_after_comm, " ");
-  if (stat_parts.size() <= kStatSTimeIndex)
-    return false;
-  auto maybe_ctime = base::StringToUInt64(stat_parts[kStatCTimeIndex]);
-  if (!maybe_ctime.has_value())
-    return false;
-  auto maybe_stime = base::StringToUInt64(stat_parts[kStatSTimeIndex]);
-  if (!maybe_stime.has_value())
-    return false;
-  uint64_t current = maybe_ctime.value() + maybe_stime.value();
-  uint64_t& cached = process_stats_cache_[pid].cpu_time;
-  if (current != cached) {
-    cached = current;
-    return true;
-  }
-  return false;
-}
-
-void ProcessStatsDataSource::WriteThreadStats(int32_t pid, int32_t tid) {
-  // Reads /proc/tid/time_in_state, which looks like:
-  // cpu0
-  // 100 0
-  // 200 5
-  // ...
-  // cpu6
-  // 200 0
-  // 300 70
-  // ...
-  // Pairs of CPU frequency and the number of ticks at that frequency.
-  std::string time_in_state = ReadProcPidFile(tid, "time_in_state");
-  // Bail if time_in_state does not have cpuN headings. Parsing this data
-  // without them is more complicated and requires additional information.
-  if (!base::StartsWith(time_in_state, "cpu"))
-    return;
-  protos::pbzero::ProcessStats_Thread* thread = nullptr;
-  base::StringSplitter entries(std::move(time_in_state), '\n');
-  uint32_t last_cpu = 0;
-  // Whether all frequencies with non-zero ticks are added to cpu_freq_indices.
-  bool full = true;
-  while (entries.Next()) {
-    std::string line(entries.cur_token());
-    if (base::StartsWith(line, "cpu")) {
-      last_cpu = base::StringToUInt32(line.substr(3)).value();
-      continue;
-    }
-    base::StringSplitter key_value(&entries, ' ');
-    if (!key_value.Next())
-      continue;
-    uint32_t freq = ToU32(key_value.cur_token());
-    uint32_t freq_index = cpu_freq_info_->GetCpuFreqIndex(last_cpu, freq);
-    if (!key_value.Next())
-      continue;
-    auto maybe_ticks = base::CStringToUInt64(key_value.cur_token());
-    if (!maybe_ticks.has_value())
-      continue;
-    uint64_t ticks = maybe_ticks.value();
-    if (ticks == 0)
-      continue;
-    base::Hash key_hash;
-    key_hash.Update(tid);
-    key_hash.Update(freq_index);
-    size_t key = key_hash.digest() % thread_time_in_state_cache_size_;
-    PERFETTO_DCHECK(thread_time_in_state_cache_.size() ==
-                    thread_time_in_state_cache_size_);
-    TimeInStateCacheEntry& cached = thread_time_in_state_cache_[key];
-    TimeInStateCacheEntry current = {tid, freq_index, ticks};
-    if (current != cached) {
-      cached = current;
-      if (thread == nullptr) {
-        thread = GetOrCreateStatsProcess(pid)->add_threads();
-        thread->set_tid(tid);
-      }
-      thread->add_cpu_freq_indices(freq_index);
-      thread->add_cpu_freq_ticks(ticks);
-    } else {
-      full = false;
-    }
-  }
-  if (full && thread != nullptr) {
-    thread->set_cpu_freq_full(true);
-  }
-}
-
 uint64_t ProcessStatsDataSource::CacheProcFsScanStartTimestamp() {
   if (!cur_procfs_scan_start_timestamp_)
     cur_procfs_scan_start_timestamp_ =
@@ -679,8 +603,6 @@ void ProcessStatsDataSource::ClearIncrementalState() {
 
   cache_ticks_ = 0;
   process_stats_cache_.clear();
-  thread_time_in_state_cache_.clear();
-  thread_time_in_state_cache_.resize(thread_time_in_state_cache_size_);
 
   // Set the relevant flag in the next packet.
   did_clear_incremental_state_ = true;

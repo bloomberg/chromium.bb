@@ -8,7 +8,7 @@
  * chrome/browser/nearby_sharing/nearby_constants.h
  * @enum {number}
  */
-/* #export */ const NearbyShareDataUsage = {
+export const NearbyShareDataUsage = {
   UNKNOWN: 0,
   OFFLINE: 1,
   ONLINE: 2,
@@ -18,17 +18,21 @@
 /**
  * Takes a string and returns a value of the NearbyShareDataUsage enum.
  * @param {string} s string representation of the data usage value
- * @return {!NearbyShareDataUsage} enum value
+ * @return {!nearbyShare.mojom.DataUsage} enum value
  */
-/* #export */ function dataUsageStringToEnum(s) {
-  switch (/** @type {!NearbyShareDataUsage} */ (parseInt(s, 10))) {
+export function dataUsageStringToEnum(s) {
+  switch ((parseInt(s, 10))) {
     case NearbyShareDataUsage.OFFLINE:
-      return NearbyShareDataUsage.OFFLINE;
+      return /** @type {!nearbyShare.mojom.DataUsage} */ (
+          NearbyShareDataUsage.OFFLINE);
     case NearbyShareDataUsage.ONLINE:
-      return NearbyShareDataUsage.ONLINE;
+      return /** @type {!nearbyShare.mojom.DataUsage} */ (
+          NearbyShareDataUsage.ONLINE);
     case NearbyShareDataUsage.WIFI_ONLY:
-      return NearbyShareDataUsage.WIFI_ONLY;
+      return /** @type {!nearbyShare.mojom.DataUsage} */ (
+          NearbyShareDataUsage.WIFI_ONLY);
     default:
-      return NearbyShareDataUsage.UNKNOWN;
+      return /** @type {!nearbyShare.mojom.DataUsage} */ (
+          NearbyShareDataUsage.UNKNOWN);
   }
 }

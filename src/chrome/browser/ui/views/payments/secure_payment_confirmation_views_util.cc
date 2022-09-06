@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/payments/secure_payment_confirmation_views_util.h"
 
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/payments/core/sizes.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -19,14 +21,16 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace payments {
 namespace {
 
 const gfx::VectorIcon& GetPlatformVectorIcon(bool dark_mode) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return dark_mode ? kSecurePaymentConfirmationFaceDarkIcon
                    : kSecurePaymentConfirmationFaceIcon;
 #else
@@ -123,25 +127,79 @@ std::unique_ptr<views::Label> CreateSecurePaymentConfirmationTitleLabel(
       title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
   title_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_label->SetLineHeight(kTitleLineHeight);
-  title_label->SetBorder(views::CreateEmptyBorder(0, 0, kBodyInsets, 0));
+  title_label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kBodyInsets, 0)));
 
   return title_label;
 }
 
 std::unique_ptr<views::ImageView>
-CreateSecurePaymentConfirmationInstrumentIconView(const SkBitmap& bitmap) {
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap).DeepCopy();
-
+CreateSecurePaymentConfirmationInstrumentIconView(const gfx::ImageSkia& image) {
   std::unique_ptr<views::ImageView> icon_view =
       std::make_unique<views::ImageView>();
   icon_view->SetImage(image);
+
+  gfx::Size image_size = image.size();
+  // Resize to a constant height, with a variable width in the acceptable range
+  // based on the aspect ratio.
+  float aspect_ratio =
+      static_cast<float>(image_size.width()) / image_size.height();
+  int preferred_width = static_cast<int>(
+      kSecurePaymentConfirmationInstrumentIconHeightPx * aspect_ratio);
+  int icon_width =
+      std::max(std::min(preferred_width,
+                        kSecurePaymentConfirmationInstrumentIconMaximumWidthPx),
+               kSecurePaymentConfirmationInstrumentIconDefaultWidthPx);
   icon_view->SetImageSize(
-      gfx::Size(kSecurePaymentConfirmationInstrumentIconWidthPx,
-                kSecurePaymentConfirmationInstrumentIconHeightPx));
+      gfx::Size(icon_width, kSecurePaymentConfirmationInstrumentIconHeightPx));
   icon_view->SetPaintToLayer();
   icon_view->layer()->SetFillsBoundsOpaquely(false);
 
   return icon_view;
+}
+
+std::u16string FormatMerchantLabel(
+    const absl::optional<std::u16string>& merchant_name,
+    const absl::optional<std::u16string>& merchant_origin) {
+  DCHECK(merchant_name.has_value() || merchant_origin.has_value());
+
+  if (merchant_name.has_value() && merchant_origin.has_value()) {
+    return base::StrCat(
+        {merchant_name.value(), u" (", merchant_origin.value(), u")"});
+  }
+  return merchant_name.value_or(merchant_origin.value_or(u""));
+}
+
+std::unique_ptr<views::StyledLabel> CreateSecurePaymentConfirmationOptOutView(
+    const std::u16string& relying_party_id,
+    const std::u16string& opt_out_label,
+    const std::u16string& opt_out_link_label,
+    base::RepeatingClosure on_click) {
+  // The opt-out text consists of a base label, filled in with the relying party
+  // ID and a 'call to action' link.
+  std::vector<std::u16string> subst{relying_party_id, opt_out_link_label};
+  std::vector<size_t> offsets;
+  std::u16string opt_out_text =
+      base::ReplaceStringPlaceholders(opt_out_label, subst, &offsets);
+  DCHECK_EQ(2U, offsets.size());
+
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink(on_click);
+
+  return views::Builder<views::StyledLabel>()
+      .SetText(opt_out_text)
+      .SetTextContext(ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL)
+      .SetDefaultTextStyle(views::style::STYLE_SECONDARY)
+      .AddStyleRange(
+          gfx::Range(offsets[1], offsets[1] + opt_out_link_label.length()),
+          link_style)
+      .SetProperty(views::kMarginsKey,
+                   gfx::Insets::TLBR(
+                       kSecondarySmallTextInsets, kSecondarySmallTextInsets,
+                       kSecondarySmallTextInsets, kSecondarySmallTextInsets))
+      .SizeToFit(views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH))
+      .Build();
 }
 
 }  // namespace payments

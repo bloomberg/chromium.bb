@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import type * as Protocol from '../../generated/protocol.js';
+import type * as Platform from '../platform/platform.js';
 
 import type {Target} from './Target.js';
 
@@ -32,11 +33,11 @@ export class ProfileNode {
   }
 
   get scriptId(): Protocol.Runtime.ScriptId {
-    return this.callFrame.scriptId;
+    return String(this.callFrame.scriptId) as Protocol.Runtime.ScriptId;
   }
 
-  get url(): string {
-    return this.callFrame.url;
+  get url(): Platform.DevToolsPath.UrlString {
+    return this.callFrame.url as Platform.DevToolsPath.UrlString;
   }
 
   get lineNumber(): number {

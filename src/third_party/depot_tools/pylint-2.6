@@ -68,4 +68,5 @@ import sys
 
 import pylint_main
 
-sys.exit(pylint_main.main(sys.argv[1:]))
+if __name__ == '__main__':
+  sys.exit(pylint_main.main(sys.argv[1:]))

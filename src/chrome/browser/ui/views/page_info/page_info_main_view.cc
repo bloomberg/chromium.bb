@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
@@ -14,6 +16,8 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_history_controller.h"
+#include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_navigation_handler.h"
 #include "chrome/browser/ui/views/page_info/page_info_security_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
@@ -21,7 +25,9 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/page_info/core/features.h"
+#include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/permission_util.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -36,6 +42,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -48,10 +55,22 @@ constexpr float kMaxPermissionRowCount = 10.5;
 
 }  // namespace
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PageInfoMainView, kCookieButtonElementId);
+
+PageInfoMainView::ContainerView::ContainerView() {
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+}
+
+void PageInfoMainView::ContainerView::Update() {
+  PreferredSizeChanged();
+}
+
 PageInfoMainView::PageInfoMainView(
     PageInfo* presenter,
     ChromePageInfoUiDelegate* ui_delegate,
     PageInfoNavigationHandler* navigation_handler,
+    PageInfoHistoryController* history_controller,
     base::OnceClosure initialized_callback)
     : presenter_(presenter),
       ui_delegate_(ui_delegate),
@@ -69,9 +88,9 @@ PageInfoMainView::PageInfoMainView(
 
   AddChildView(CreateBubbleHeaderView())
       ->SetProperty(views::kMarginsKey,
-                    gfx::Insets(0, 0, hover_list_spacing, 0));
+                    gfx::Insets::TLBR(0, 0, hover_list_spacing, 0));
 
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VR)
   page_feature_info_view_ = AddChildView(std::make_unique<views::View>());
 #endif
 
@@ -99,7 +118,12 @@ PageInfoMainView::PageInfoMainView(
         std::u16string(), PageInfoViewFactory::GetLaunchIcon()));
   }
 
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoHistoryDesktop)) {
+    history_controller->InitRow(AddChildView(CreateContainerView()));
+  }
+
+  if (page_info::IsAboutThisSiteFeatureEnabled(
+          g_browser_process->GetApplicationLocale())) {
     about_this_site_section_ = AddChildView(CreateContainerView());
   }
 
@@ -132,7 +156,15 @@ void PageInfoMainView::EnsureCookieInfo() {
             PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
             tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon())
             .release();
+    cookie_button_->SetProperty(views::kElementIdentifierKey,
+                                kCookieButtonElementId);
     site_settings_view_->AddChildView(cookie_button_.get());
+
+    if (base::FeatureList::IsEnabled(
+            privacy_sandbox::kPrivacySandboxSettings3)) {
+      ads_personalization_section_ =
+          site_settings_view_->AddChildView(CreateContainerView());
+    }
   }
 }
 
@@ -258,7 +290,7 @@ void PageInfoMainView::SetPermissionInfo(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   reset_button_->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(controls_spacing, side_offset, controls_spacing, 0));
+      gfx::Insets::TLBR(controls_spacing, side_offset, controls_spacing, 0));
   reset_button_->SetID(
       PageInfoViewFactory::VIEW_ID_PAGE_INFO_RESET_PERMISSIONS_BUTTON);
 
@@ -323,7 +355,8 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
     // Show "About this site" section only if connection is secure, because
     // security information has higher priority.
-    if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+    if (page_info::IsAboutThisSiteFeatureEnabled(
+            g_browser_process->GetApplicationLocale())) {
       auto info = ui_delegate_->GetAboutThisSiteInfo();
       presenter_->SetAboutThisSiteShown(info.has_value());
       if (info.has_value()) {
@@ -344,7 +377,7 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
 }
 
 void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VR)
   // For now, this has only VR settings.
   if (!info.is_vr_presentation_in_headset)
     return;
@@ -368,7 +401,8 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   const int icon_label_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
-  label->SetProperty(views::kMarginsKey, gfx::Insets(0, icon_label_spacing));
+  label->SetProperty(views::kMarginsKey,
+                     gfx::Insets::VH(0, icon_label_spacing));
   label->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
@@ -391,7 +425,7 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
   // Set views::kInternalPaddingKey for flex layout to account for internal
   // button padding when calculating margins.
   exit_button->SetProperty(views::kInternalPaddingKey,
-                           gfx::Insets(exit_button->GetInsets().top(), 0));
+                           gfx::Insets::VH(exit_button->GetInsets().top(), 0));
   content_view->AddChildView(std::move(exit_button));
 
   flex_layout->SetInteriorMargin(layout_provider->GetInsetsMetric(
@@ -404,10 +438,27 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
       2;
   auto* separator = page_feature_info_view_->AddChildView(
       std::make_unique<views::Separator>());
-  separator->SetProperty(views::kMarginsKey, gfx::Insets(separator_spacing, 0));
+  separator->SetProperty(views::kMarginsKey,
+                         gfx::Insets::VH(separator_spacing, 0));
 
   PreferredSizeChanged();
 #endif
+}
+
+void PageInfoMainView::SetAdPersonalizationInfo(
+    const AdPersonalizationInfo& info) {
+  EnsureCookieInfo();
+  if (!ads_personalization_section_)
+    return;
+
+  ads_personalization_section_->RemoveAllChildViews();
+
+  if (info.is_empty())
+    return;
+
+  ads_personalization_section_->AddChildView(CreateAdPersonalizationSection());
+
+  PreferredSizeChanged();
 }
 
 void PageInfoMainView::OnPermissionChanged(
@@ -427,10 +478,7 @@ void PageInfoMainView::OnChosenObjectDeleted(
 }
 
 std::unique_ptr<views::View> PageInfoMainView::CreateContainerView() {
-  auto container_view = std::make_unique<views::View>();
-  container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-  return container_view;
+  return std::make_unique<ContainerView>();
 }
 
 void PageInfoMainView::HandleMoreInfoRequest(views::View* source) {
@@ -468,10 +516,14 @@ gfx::Size PageInfoMainView::CalculatePreferredSize() const {
   return gfx::Size(width, views::View::GetHeightForWidth(width));
 }
 
+void PageInfoMainView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
 std::unique_ptr<views::View> PageInfoMainView::CreateBubbleHeaderView() {
   auto header = std::make_unique<views::View>();
   header->SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetInteriorMargin(gfx::Insets(0, kIconColumnWidth));
+      ->SetInteriorMargin(gfx::Insets::VH(0, kIconColumnWidth));
   title_ = header->AddChildView(std::make_unique<views::Label>(
       std::u16string(), views::style::CONTEXT_DIALOG_TITLE,
       views::style::STYLE_PRIMARY,
@@ -509,17 +561,56 @@ std::unique_ptr<views::View> PageInfoMainView::CreateAboutThisSiteSection(
       ->SetOrientation(views::LayoutOrientation::kVertical);
   about_this_site_section->AddChildView(PageInfoViewFactory::CreateSeparator());
 
-  auto* about_this_site_button = about_this_site_section->AddChildView(
-      std::make_unique<PageInfoHoverButton>(
-          base::BindRepeating(&PageInfoNavigationHandler::OpenAboutThisSitePage,
-                              base::Unretained(navigation_handler_), info),
-          PageInfoViewFactory::GetAboutThisSiteIcon(),
-          IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER, std::u16string(),
-          PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_SITE_TOOLTIP),
-          base::UTF8ToUTF16(info.description().description()),
-          PageInfoViewFactory::GetOpenSubpageIcon()));
-  about_this_site_button->SetSubtitleMultiline(false);
+  PageInfoHoverButton* about_this_site_button = nullptr;
 
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSiteMoreInfo)) {
+    about_this_site_button = about_this_site_section->AddChildView(
+        std::make_unique<PageInfoHoverButton>(
+            // TODO(crbug.com/1318000): Open side-panel instead.
+            base::BindRepeating(
+                &ChromePageInfoUiDelegate::OpenMoreAboutThisPageUrl,
+                base::Unretained(ui_delegate_), GURL(info.more_about().url())),
+            PageInfoViewFactory::GetAboutThisPageIcon(),
+            IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE, std::u16string(),
+            PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_PAGE_TOOLTIP),
+            base::UTF8ToUTF16(info.description().description()),
+            PageInfoViewFactory::GetLaunchIcon()));
+  } else {
+    about_this_site_button = about_this_site_section->AddChildView(
+        std::make_unique<PageInfoHoverButton>(
+            base::BindRepeating(
+                &PageInfoNavigationHandler::OpenAboutThisSitePage,
+                base::Unretained(navigation_handler_), info),
+            PageInfoViewFactory::GetAboutThisSiteIcon(),
+            IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER, std::u16string(),
+            PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_SITE_TOOLTIP),
+            base::UTF8ToUTF16(info.description().description()),
+            PageInfoViewFactory::GetOpenSubpageIcon()));
+  }
+  about_this_site_button->SetSubtitleMultiline(false);
   return about_this_site_section;
+}
+
+std::unique_ptr<views::View>
+PageInfoMainView::CreateAdPersonalizationSection() {
+  auto ads_personalization_section = std::make_unique<views::View>();
+  ads_personalization_section
+      ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+  ads_personalization_section->AddChildView(
+      std::make_unique<PageInfoHoverButton>(
+          base::BindRepeating(
+              [](PageInfoMainView* view) {
+                view->navigation_handler_->OpenAdPersonalizationPage();
+              },
+              this),
+          PageInfoViewFactory::GetAdPersonalizationIcon(),
+          IDS_PAGE_INFO_AD_PERSONALIZATION_HEADER, std::u16string(),
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_AD_PERSONALIZATION_BUTTON,
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_AD_PERSONALIZATION_TOOLTIP),
+          std::u16string(), PageInfoViewFactory::GetOpenSubpageIcon()));
+
+  return ads_personalization_section;
 }

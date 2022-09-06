@@ -15,6 +15,7 @@
   --color-primary-variant: rgb(66 133 244);
   --color-background: rgb(255 255 255);
   --color-background-inverted: rgb(0 0 0);
+  --color-background-inverted-opacity-2: rgb(0 0 0 / 2%);
   --color-background-inverted-opacity-30: rgb(0 0 0 / 30%);
   --color-background-inverted-opacity-50: rgb(0 0 0 / 50%);
   --color-background-opacity-50: rgb(255 255 255 / 50%);
@@ -24,7 +25,7 @@
   --color-background-elevation-2: rgb(222 225 230);
   /** Used when the elevation is visible only on dark theme */
   --color-background-elevation-dark-only: var(--color-background);
-  --color-background-highlight: rgb(202 205 209);
+  --color-background-highlight: rgb(218 220 224);
   /** To draw grid lines behind elements */
   --divider-line: rgb(0 0 0 / 10%);
   /**
@@ -56,6 +57,7 @@
   --color-accent-red: rgb(217 48 37);
   --color-red: rgb(238 68 47);
   --color-accent-green: rgb(24 128 56);
+  --color-accent-green-background: rgb(24 128 56 / 10%);
   --color-green: rgb(99 172 190);
   --color-link: var(--color-primary);
   --color-syntax-1: rgb(200 0 0);
@@ -107,6 +109,7 @@
   --color-error-text: #f00;
   --color-error-border: hsl(0deg 100% 92%);
   --color-error-background: hsl(0deg 100% 97%);
+  --color-checkbox-accent-color: var(--color-primary);
   --color-image-preview-background: rgb(255 255 255);
 
   /* Colors for styling inputs */
@@ -121,9 +124,12 @@
   --color-button-primary-background-hovering: rgb(77 134 225 / 100%);
   --color-button-primary-background-pressed: rgb(88 132 205);
   --color-button-primary-text: rgb(255 255 255);
+  --color-button-primary-text-hover: rgb(218 220 224);
   --color-button-secondary-background-hovering: rgb(26 115 232 / 10%);
   --color-button-secondary-background-pressed: rgb(26 92 178 / 25%);
   --color-button-secondary-border: rgb(218 220 224);
+  --color-iconbutton-hover: rgb(0 0 0 / 10%);
+  --color-iconbutton-pressed: rgb(0 0 0 / 15%);
 
   /* Colors for file icons */
   --color-ic-file-document: rgb(39 116 240);
@@ -153,6 +159,7 @@
   --color-token-meta: rgb(85 85 85);
   --color-token-deleted: rgb(221 68 68);
   --color-token-inserted: rgb(34 153 34);
+  --color-token-pseudo-element: rgb(17 85 204);
 
   /* Colors used by the code editor */
   --color-secondary-cursor: #c0c0c0;
@@ -192,6 +199,7 @@
   --color-primary-variant: rgb(102 157 246);
   --color-background: rgb(32 33 36);
   --color-background-inverted: rgb(255 255 255);
+  --color-background-inverted-opacity-2: rgb(255 255 255 / 2%);
   --color-background-inverted-opacity-30: rgb(255 255 255 / 30%);
   --color-background-inverted-opacity-50: rgb(255 255 255 / 50%);
   --color-background-opacity-50: rgb(32 33 36 / 50%);
@@ -200,7 +208,7 @@
   --color-background-elevation-1: rgb(41 42 45);
   --color-background-elevation-2: rgb(53 54 58);
   --color-background-elevation-dark-only: var(--color-background-elevation-1);
-  --color-background-highlight: rgb(75 76 79);
+  --color-background-highlight: rgb(69 69 69);
   --divider-line: rgb(255 255 255 / 10%);
   --color-background-hover-overlay: rgb(56 121 217 / 10%);
   --color-selection-highlight: rgb(251 202 70 / 20%);
@@ -215,6 +223,7 @@
   --color-accent-red: rgb(242 139 130);
   --color-red: rgb(237 78 76);
   --color-accent-green: rgb(129 201 149);
+  --color-accent-green-background: rgb(129 201 149 / 20%);
   --color-link: var(--color-primary);
   --color-syntax-1: rgb(53 212 199);
   --color-syntax-2: rgb(93 176 215);
@@ -254,7 +263,7 @@
   --color-error-background: hsl(0deg 100% 8%);
   --color-checkbox-accent-color: rgb(255 165 0);
   /* Colors for styling inputs */
-  --color-input-outline: rgb(189 193 198);
+  --color-input-outline: rgb(60 64 67);
   --color-input-outline-active: rgb(138 180 248);
   --color-input-outline-error: rgb(242 139 130);
   --color-input-outline-disabled: rgba(189 193 198 / 20%);
@@ -264,9 +273,12 @@
   --color-button-primary-background-hovering: rgb(174 203 250 / 100%);
   --color-button-primary-background-pressed: rgb(210 227 252 / 100%);
   --color-button-primary-text: rgb(0 0 0);
+  --color-button-primary-text-hover: rgb(60 61 65);
   --color-button-secondary-background-hovering: rgb(138 180 248 / 15%);
   --color-button-secondary-background-pressed: rgb(138 180 248 / 23%);
   --color-button-secondary-border: rgb(60 61 65);
+  --color-iconbutton-hover: rgb(255 255 255 / 12%);
+  --color-iconbutton-pressed: rgb(255 255 255 / 20%);
 
   /* Colors for file icons */
   --color-ic-file-document: rgb(39 116 240);
@@ -292,8 +304,9 @@
   --color-token-comment: rgb(137 137 137);
   --color-token-tag: rgb(93 176 215);
   --color-token-attribute: rgb(155 187 220);
-  --color-token-attribute-value: rgb(1 200 1);
+  --color-token-attribute-value: rgb(242 151 102);
   --color-token-meta: rgb(221 251 85);
+  --color-token-pseudo-element: rgb(237 119 229);
 
   /* Colors used by the code editor */
   --color-secondary-cursor: rgb(63 63 63);

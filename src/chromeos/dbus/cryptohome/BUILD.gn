@@ -16,7 +16,7 @@ component("cryptohome") {
     ":attestation_proto",
     ":cryptohome_proto",
     "//base",
-    "//chromeos/dbus:common",
+    "//chromeos/dbus/common",
     "//components/policy/proto",
     "//dbus",
   ]
@@ -38,13 +38,6 @@ proto_library("cryptohome_proto") {
     "//third_party/cros_system_api/dbus/cryptohome/key.proto",
     "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
   ]
-
-  proto_out_dir = "chromeos/dbus/cryptohome"
-}
-
-proto_library("cryptohome_signkey_proto") {
-  sources =
-      [ "//third_party/cros_system_api/dbus/cryptohome/signed_secret.proto" ]
 
   proto_out_dir = "chromeos/dbus/cryptohome"
 }

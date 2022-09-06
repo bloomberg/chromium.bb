@@ -124,7 +124,15 @@ v8::Maybe<v8::PropertyAttribute> DebugPropertyIterator::attributes() {
   // If you are running into this problem, check your embedder implementation
   // and verify that the data from both sides matches. If there is a mismatch,
   // V8 will crash.
-  DCHECK(result.FromJust() != ABSENT);
+
+#if DEBUG
+  base::ScopedVector<char> property_message(128);
+  base::ScopedVector<char> name_buffer(100);
+  raw_name()->NameShortPrint(name_buffer);
+  v8::base::SNPrintF(property_message, "Invalid result for property \"%s\"\n",
+                     name_buffer.begin());
+  DCHECK_WITH_MSG(result.FromJust() != ABSENT, property_message.begin());
+#endif
   return Just(static_cast<v8::PropertyAttribute>(result.FromJust()));
 }
 
@@ -176,8 +184,9 @@ bool DebugPropertyIterator::FillKeysForCurrentPrototypeAndStage() {
   }
   PropertyFilter filter =
       stage_ == kEnumerableStrings ? ENUMERABLE_STRINGS : ALL_PROPERTIES;
-  if (KeyAccumulator::GetKeys(receiver, KeyCollectionMode::kOwnOnly, filter,
-                              GetKeysConversion::kConvertToString, false,
+  if (KeyAccumulator::GetKeys(isolate_, receiver, KeyCollectionMode::kOwnOnly,
+                              filter, GetKeysConversion::kConvertToString,
+                              false,
                               skip_indices_ || receiver->IsJSTypedArray())
           .ToHandle(&current_keys_)) {
     current_keys_length_ = current_keys_->length();

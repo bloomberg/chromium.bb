@@ -10,7 +10,7 @@ set -e # exit if fail
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: "$0" (android|android_extra|android_small|cast|chromeos|common|flutter|ios)" >&2
+  echo "Usage: "$0" (android|cast|chromeos|common|flutter|ios)" >&2
   exit 1
 fi
 
@@ -51,22 +51,38 @@ function copy_data {
   echo "Done with copying pre-built ICU data file for $1."
 }
 
-function copy_android_extra {
-  echo "Copying icudtl_extra.dat for AndroidExtra"
+function copy_hash_data {
+  echo "Copying icudtl.dat.hash for $1"
 
-  LD_LIBRARY_PATH=lib/ bin/icupkg -r \
-    "${TOPSRC}/filters/android-extra-removed-resources.txt" \
-    --ignore-deps \
-    "data/out/tmp/icudt${VERSION}l.dat"
+  rm -f "${TOPSRC}/$2/icudtl.dat.hash"
+  cp "data/out/tmp/icudt${VERSION}l.dat.hash" "${TOPSRC}/$2/icudtl.dat.hash"
 
-  echo "AFTER strip out the content is"
-  LD_LIBRARY_PATH=lib/ bin/icupkg -l --ignore-deps \
-    "data/out/tmp/icudt${VERSION}l.dat"
+  echo "Done with copying icudtl.dat.hash for $1."
+}
 
-  rm "${TOPSRC}/android_small/icudtl_extra.dat"
-  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/android_small/icudtl_extra.dat"
+function align_data {
+  echo "Aligning files in icudtl.dat for $1"
 
-  echo "Done with copying pre-built ICU data file for AndroidExtra."
+  local ORIGINAL="data/out/tmp/icudt${VERSION}l.dat"
+  local ALIGNED="data/out/tmp/icudt${VERSION}l-aligned.dat"
+
+  rm -f "${ALIGNED}"
+  "${TOPSRC}/scripts/icualign.py" "${ORIGINAL}" "${ALIGNED}"
+  mv "${ALIGNED}" "${ORIGINAL}"
+
+  echo "Done with aligning files in icudtl.dat for $1."
+}
+
+function hash_data {
+  echo "Hashing icudtl.dat for $1"
+
+  local DATA_FILE="data/out/tmp/icudt${VERSION}l.dat"
+  local HASH_FILE="data/out/tmp/icudt${VERSION}l.dat.hash"
+
+  rm -f "${HASH_FILE}"
+  "$TOPSRC/scripts/icuhash.py" "${DATA_FILE}" "${HASH_FILE}"
+
+  echo "Done with hashing icudtl.dat for $1."
 }
 
 
@@ -79,7 +95,10 @@ function backup_outdir {
 
 case "$1" in
   "chromeos")
+    align_data ChromeOS
+    hash_data ChromeOS
     copy_data ChromeOS $1
+    copy_hash_data ChromeOS $1
     backup_outdir $1
     ;;
   "common")
@@ -88,14 +107,6 @@ case "$1" in
     ;;
   "android")
     copy_data Android $1
-    backup_outdir $1
-    ;;
-  "android_small")
-    copy_data AndroidSmall $1
-    backup_outdir $1
-    ;;
-  "android_extra")
-    copy_android_extra
     backup_outdir $1
     ;;
   "ios")

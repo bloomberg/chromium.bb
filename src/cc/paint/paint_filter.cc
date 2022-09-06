@@ -8,7 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/values_equivalent.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/paint/draw_image.h"
@@ -19,6 +21,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkMath.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkImageFilters.h"
@@ -30,7 +33,7 @@ namespace cc {
 namespace {
 const bool kHasNoDiscardableImages = false;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 struct StretchShaderUniforms {
   // multiplier to apply to scale effect
   float uMaxStretchIntensity;
@@ -247,12 +250,6 @@ sk_sp<SkRuntimeEffect> getStretchEffect() {
   return effect->effect;
 }
 #endif
-
-bool AreFiltersEqual(const PaintFilter* one, const PaintFilter* two) {
-  if (!one || !two)
-    return !one && !two;
-  return *one == *two;
-}
 
 bool AreScalarsEqual(SkScalar one, SkScalar two) {
   return PaintOp::AreEqualEvenIfNaN(one, two);
@@ -496,7 +493,7 @@ bool ColorFilterPaintFilter::operator==(
     const ColorFilterPaintFilter& other) const {
   return PaintOp::AreSkFlattenablesEqual(color_filter_.get(),
                                          other.color_filter_.get()) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 BlurPaintFilter::BlurPaintFilter(SkScalar sigma_x,
@@ -534,7 +531,7 @@ bool BlurPaintFilter::operator==(const BlurPaintFilter& other) const {
   return PaintOp::AreEqualEvenIfNaN(sigma_x_, other.sigma_x_) &&
          PaintOp::AreEqualEvenIfNaN(sigma_y_, other.sigma_y_) &&
          tile_mode_ == other.tile_mode_ &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 DropShadowPaintFilter::DropShadowPaintFilter(SkScalar dx,
@@ -588,7 +585,7 @@ bool DropShadowPaintFilter::operator==(
          PaintOp::AreEqualEvenIfNaN(sigma_x_, other.sigma_x_) &&
          PaintOp::AreEqualEvenIfNaN(sigma_y_, other.sigma_y_) &&
          color_ == other.color_ && shadow_mode_ == other.shadow_mode_ &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 MagnifierPaintFilter::MagnifierPaintFilter(const SkRect& src_rect,
@@ -621,7 +618,7 @@ sk_sp<PaintFilter> MagnifierPaintFilter::SnapshotWithImagesInternal(
 bool MagnifierPaintFilter::operator==(const MagnifierPaintFilter& other) const {
   return PaintOp::AreSkRectsEqual(src_rect_, other.src_rect_) &&
          PaintOp::AreEqualEvenIfNaN(inset_, other.inset_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 ComposePaintFilter::ComposePaintFilter(sk_sp<PaintFilter> outer,
@@ -651,8 +648,8 @@ sk_sp<PaintFilter> ComposePaintFilter::SnapshotWithImagesInternal(
 }
 
 bool ComposePaintFilter::operator==(const ComposePaintFilter& other) const {
-  return AreFiltersEqual(outer_.get(), other.outer_.get()) &&
-         AreFiltersEqual(inner_.get(), other.inner_.get());
+  return base::ValuesEquivalent(outer_.get(), other.outer_.get()) &&
+         base::ValuesEquivalent(inner_.get(), other.inner_.get());
 }
 
 AlphaThresholdPaintFilter::AlphaThresholdPaintFilter(const SkRegion& region,
@@ -674,7 +671,8 @@ AlphaThresholdPaintFilter::~AlphaThresholdPaintFilter() = default;
 size_t AlphaThresholdPaintFilter::SerializedSize() const {
   size_t region_size = region_.writeToMemory(nullptr);
   base::CheckedNumeric<size_t> total_size;
-  total_size = BaseSerializedSize() + sizeof(uint64_t) + region_size +
+  total_size = BaseSerializedSize() + sizeof(uint64_t) +
+               base::bits::AlignUp(region_size, PaintOpWriter::Alignment()) +
                sizeof(inner_min_) + sizeof(outer_max_);
   total_size += GetFilterSize(input_.get());
   return total_size.ValueOrDefault(0u);
@@ -692,7 +690,7 @@ bool AlphaThresholdPaintFilter::operator==(
   return region_ == other.region_ &&
          PaintOp::AreEqualEvenIfNaN(inner_min_, other.inner_min_) &&
          PaintOp::AreEqualEvenIfNaN(outer_max_, other.outer_max_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 XfermodePaintFilter::XfermodePaintFilter(SkBlendMode blend_mode,
@@ -730,8 +728,8 @@ sk_sp<PaintFilter> XfermodePaintFilter::SnapshotWithImagesInternal(
 
 bool XfermodePaintFilter::operator==(const XfermodePaintFilter& other) const {
   return blend_mode_ == other.blend_mode_ &&
-         AreFiltersEqual(background_.get(), other.background_.get()) &&
-         AreFiltersEqual(foreground_.get(), other.foreground_.get());
+         base::ValuesEquivalent(background_.get(), other.background_.get()) &&
+         base::ValuesEquivalent(foreground_.get(), other.foreground_.get());
 }
 
 ArithmeticPaintFilter::ArithmeticPaintFilter(float k1,
@@ -784,8 +782,8 @@ bool ArithmeticPaintFilter::operator==(
          PaintOp::AreEqualEvenIfNaN(k3_, other.k3_) &&
          PaintOp::AreEqualEvenIfNaN(k4_, other.k4_) &&
          enforce_pm_color_ == other.enforce_pm_color_ &&
-         AreFiltersEqual(background_.get(), other.background_.get()) &&
-         AreFiltersEqual(foreground_.get(), other.foreground_.get());
+         base::ValuesEquivalent(background_.get(), other.background_.get()) &&
+         base::ValuesEquivalent(foreground_.get(), other.foreground_.get());
 }
 
 MatrixConvolutionPaintFilter::MatrixConvolutionPaintFilter(
@@ -845,7 +843,7 @@ bool MatrixConvolutionPaintFilter::operator==(
          kernel_offset_ == other.kernel_offset_ &&
          tile_mode_ == other.tile_mode_ &&
          convolve_alpha_ == other.convolve_alpha_ &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 DisplacementMapEffectPaintFilter::DisplacementMapEffectPaintFilter(
@@ -891,8 +889,9 @@ bool DisplacementMapEffectPaintFilter::operator==(
     const DisplacementMapEffectPaintFilter& other) const {
   return channel_x_ == other.channel_x_ && channel_y_ == other.channel_y_ &&
          PaintOp::AreEqualEvenIfNaN(scale_, other.scale_) &&
-         AreFiltersEqual(displacement_.get(), other.displacement_.get()) &&
-         AreFiltersEqual(color_.get(), other.color_.get());
+         base::ValuesEquivalent(displacement_.get(),
+                                other.displacement_.get()) &&
+         base::ValuesEquivalent(color_.get(), other.color_.get());
 }
 
 ImagePaintFilter::ImagePaintFilter(PaintImage image,
@@ -1102,7 +1101,7 @@ bool MergePaintFilter::operator==(const MergePaintFilter& other) const {
   if (inputs_->size() != other.inputs_->size())
     return false;
   for (size_t i = 0; i < inputs_->size(); ++i) {
-    if (!AreFiltersEqual(inputs_[i].get(), other.inputs_[i].get()))
+    if (!base::ValuesEquivalent(inputs_[i].get(), other.inputs_[i].get()))
       return false;
   }
   return true;
@@ -1151,7 +1150,7 @@ bool MorphologyPaintFilter::operator==(
     const MorphologyPaintFilter& other) const {
   return morph_type_ == other.morph_type_ && radius_x_ == other.radius_x_ &&
          radius_y_ == other.radius_y_ &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 OffsetPaintFilter::OffsetPaintFilter(SkScalar dx,
@@ -1184,7 +1183,7 @@ sk_sp<PaintFilter> OffsetPaintFilter::SnapshotWithImagesInternal(
 bool OffsetPaintFilter::operator==(const OffsetPaintFilter& other) const {
   return PaintOp::AreEqualEvenIfNaN(dx_, other.dx_) &&
          PaintOp::AreEqualEvenIfNaN(dy_, other.dy_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 TilePaintFilter::TilePaintFilter(const SkRect& src,
@@ -1216,7 +1215,7 @@ sk_sp<PaintFilter> TilePaintFilter::SnapshotWithImagesInternal(
 bool TilePaintFilter::operator==(const TilePaintFilter& other) const {
   return PaintOp::AreSkRectsEqual(src_, other.src_) &&
          PaintOp::AreSkRectsEqual(dst_, other.dst_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 TurbulencePaintFilter::TurbulencePaintFilter(TurbulenceType turbulence_type,
@@ -1372,7 +1371,7 @@ sk_sp<PaintFilter> MatrixPaintFilter::SnapshotWithImagesInternal(
 bool MatrixPaintFilter::operator==(const MatrixPaintFilter& other) const {
   return PaintOp::AreSkMatricesEqual(matrix_, other.matrix_) &&
          filter_quality_ == other.filter_quality_ &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 LightingDistantPaintFilter::LightingDistantPaintFilter(
@@ -1432,7 +1431,7 @@ bool LightingDistantPaintFilter::operator==(
          PaintOp::AreEqualEvenIfNaN(surface_scale_, other.surface_scale_) &&
          PaintOp::AreEqualEvenIfNaN(kconstant_, other.kconstant_) &&
          PaintOp::AreEqualEvenIfNaN(shininess_, other.shininess_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 LightingPointPaintFilter::LightingPointPaintFilter(LightingType lighting_type,
@@ -1491,7 +1490,7 @@ bool LightingPointPaintFilter::operator==(
          PaintOp::AreEqualEvenIfNaN(surface_scale_, other.surface_scale_) &&
          PaintOp::AreEqualEvenIfNaN(kconstant_, other.kconstant_) &&
          PaintOp::AreEqualEvenIfNaN(shininess_, other.shininess_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 LightingSpotPaintFilter::LightingSpotPaintFilter(LightingType lighting_type,
@@ -1563,7 +1562,7 @@ bool LightingSpotPaintFilter::operator==(
          PaintOp::AreEqualEvenIfNaN(surface_scale_, other.surface_scale_) &&
          PaintOp::AreEqualEvenIfNaN(kconstant_, other.kconstant_) &&
          PaintOp::AreEqualEvenIfNaN(shininess_, other.shininess_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 StretchPaintFilter::StretchPaintFilter(SkScalar stretch_x,
@@ -1578,7 +1577,7 @@ StretchPaintFilter::StretchPaintFilter(SkScalar stretch_x,
       width_(width),
       height_(height),
       input_(std::move(input)) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   float normOverScrollDistX = stretch_x_;
   float normOverScrollDistY = stretch_y_;
   float distanceStretchedX =
@@ -1609,10 +1608,10 @@ StretchPaintFilter::StretchPaintFilter(SkScalar stretch_x,
   sk_sp<SkData> uniformVals = SkData::MakeWithCopy(&uniforms, sizeof(uniforms));
   cached_sk_filter_ = SkMakeRuntimeImageFilter(getStretchEffect(), uniformVals,
                                                GetSkFilter(input_.get()));
-#else   // defined(OS_ANDROID)
+#else   // BUILDFLAG(IS_ANDROID)
   // Stretch filter is only used on android and removed from other platforms
   // to reduce size. See https://crbug.com/1226170.
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 StretchPaintFilter::~StretchPaintFilter() = default;
@@ -1637,7 +1636,7 @@ bool StretchPaintFilter::operator==(const StretchPaintFilter& other) const {
          PaintOp::AreEqualEvenIfNaN(stretch_y_, other.stretch_y_) &&
          PaintOp::AreEqualEvenIfNaN(width_, other.width_) &&
          PaintOp::AreEqualEvenIfNaN(height_, other.height_) &&
-         AreFiltersEqual(input_.get(), other.input_.get());
+         base::ValuesEquivalent(input_.get(), other.input_.get());
 }
 
 }  // namespace cc

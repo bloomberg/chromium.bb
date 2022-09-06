@@ -37,10 +37,9 @@ void StressConcurrentAllocatorTask::RunInternal() {
     AllocationResult result = local_heap.AllocateRaw(
         kSmallObjectSize, AllocationType::kOld, AllocationOrigin::kRuntime,
         AllocationAlignment::kTaggedAligned);
-    if (!result.IsRetry()) {
-      heap->CreateFillerObjectAtBackground(
-          result.ToAddress(), kSmallObjectSize,
-          ClearFreedMemoryMode::kDontClearFreedMemory);
+    if (!result.IsFailure()) {
+      heap->CreateFillerObjectAtBackground(result.ToAddress(),
+                                           kSmallObjectSize);
     } else {
       local_heap.TryPerformCollection();
     }
@@ -48,10 +47,9 @@ void StressConcurrentAllocatorTask::RunInternal() {
     result = local_heap.AllocateRaw(kMediumObjectSize, AllocationType::kOld,
                                     AllocationOrigin::kRuntime,
                                     AllocationAlignment::kTaggedAligned);
-    if (!result.IsRetry()) {
-      heap->CreateFillerObjectAtBackground(
-          result.ToAddress(), kMediumObjectSize,
-          ClearFreedMemoryMode::kDontClearFreedMemory);
+    if (!result.IsFailure()) {
+      heap->CreateFillerObjectAtBackground(result.ToAddress(),
+                                           kMediumObjectSize);
     } else {
       local_heap.TryPerformCollection();
     }
@@ -59,10 +57,9 @@ void StressConcurrentAllocatorTask::RunInternal() {
     result = local_heap.AllocateRaw(kLargeObjectSize, AllocationType::kOld,
                                     AllocationOrigin::kRuntime,
                                     AllocationAlignment::kTaggedAligned);
-    if (!result.IsRetry()) {
-      heap->CreateFillerObjectAtBackground(
-          result.ToAddress(), kLargeObjectSize,
-          ClearFreedMemoryMode::kDontClearFreedMemory);
+    if (!result.IsFailure()) {
+      heap->CreateFillerObjectAtBackground(result.ToAddress(),
+                                           kLargeObjectSize);
     } else {
       local_heap.TryPerformCollection();
     }
@@ -105,6 +102,11 @@ void ConcurrentAllocator::MarkLinearAllocationAreaBlack() {
   Address limit = lab_.limit();
 
   if (top != kNullAddress && top != limit) {
+    base::Optional<CodePageHeaderModificationScope> optional_rwx_write_scope;
+    if (space_->identity() == CODE_SPACE) {
+      optional_rwx_write_scope.emplace(
+          "Marking Code objects requires write access to the Code page header");
+    }
     Page::FromAllocationAreaAddress(top)->CreateBlackAreaBackground(top, limit);
   }
 }
@@ -114,6 +116,11 @@ void ConcurrentAllocator::UnmarkLinearAllocationArea() {
   Address limit = lab_.limit();
 
   if (top != kNullAddress && top != limit) {
+    base::Optional<CodePageHeaderModificationScope> optional_rwx_write_scope;
+    if (space_->identity() == CODE_SPACE) {
+      optional_rwx_write_scope.emplace(
+          "Marking Code objects requires write access to the Code page header");
+    }
     Page::FromAllocationAreaAddress(top)->DestroyBlackAreaBackground(top,
                                                                      limit);
   }
@@ -122,11 +129,11 @@ void ConcurrentAllocator::UnmarkLinearAllocationArea() {
 AllocationResult ConcurrentAllocator::AllocateInLabSlow(
     int object_size, AllocationAlignment alignment, AllocationOrigin origin) {
   if (!EnsureLab(origin)) {
-    return AllocationResult::Retry(space_->identity());
+    return AllocationResult::Failure();
   }
 
   AllocationResult allocation = lab_.AllocateRawAligned(object_size, alignment);
-  DCHECK(!allocation.IsRetry());
+  DCHECK(!allocation.IsFailure());
 
   return allocation;
 }
@@ -145,7 +152,7 @@ bool ConcurrentAllocator::EnsureLab(AllocationOrigin origin) {
   HeapObject object = HeapObject::FromAddress(result->first);
   LocalAllocationBuffer saved_lab = std::move(lab_);
   lab_ = LocalAllocationBuffer::FromResult(
-      local_heap_->heap(), AllocationResult(object), result->second);
+      space_->heap(), AllocationResult::FromObject(object), result->second);
   DCHECK(lab_.IsValid());
   if (!lab_.TryMerge(&saved_lab)) {
     saved_lab.CloseAndMakeIterable();
@@ -157,7 +164,7 @@ AllocationResult ConcurrentAllocator::AllocateOutsideLab(
     int object_size, AllocationAlignment alignment, AllocationOrigin origin) {
   auto result = space_->RawRefillLabBackground(local_heap_, object_size,
                                                object_size, alignment, origin);
-  if (!result) return AllocationResult::Retry(space_->identity());
+  if (!result) return AllocationResult::Failure();
 
   HeapObject object = HeapObject::FromAddress(result->first);
 
@@ -166,7 +173,7 @@ AllocationResult ConcurrentAllocator::AllocateOutsideLab(
                                                               object_size);
   }
 
-  return AllocationResult(object);
+  return AllocationResult::FromObject(object);
 }
 
 bool ConcurrentAllocator::IsBlackAllocationEnabled() const {

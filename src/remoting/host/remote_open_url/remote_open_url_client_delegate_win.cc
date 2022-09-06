@@ -6,23 +6,21 @@
 
 #include <windows.h>
 
-#include <shlwapi.h>
-
 #include <ios>
 #include <string>
 
-#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
+#include "base/win/default_apps_util.h"
+#include "base/win/shlwapi.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/user_settings.h"
 #include "remoting/host/remote_open_url/remote_open_url_constants.h"
 #include "remoting/host/user_setting_keys.h"
 #include "remoting/host/win/core_resource.h"
-#include "remoting/host/win/default_apps_util.h"
 #include "remoting/host/win/simple_task_dialog.h"
 
 namespace remoting {
@@ -32,7 +30,7 @@ namespace {
 std::wstring GetLaunchBrowserCommand(const std::wstring& browser_prog_id,
                                      const GURL& url) {
   wchar_t open_cmd_buf[MAX_PATH];
-  DWORD open_cmd_buf_len = base::size(open_cmd_buf);
+  DWORD open_cmd_buf_len = std::size(open_cmd_buf);
   HRESULT hr =
       AssocQueryString(ASSOCF_NONE, ASSOCSTR_COMMAND, browser_prog_id.c_str(),
                        L"open", open_cmd_buf, &open_cmd_buf_len);
@@ -58,7 +56,7 @@ void ShowIncorrectConfigurationPrompt() {
   task_dialog.set_default_button(IDOK);
   absl::optional<int> result = task_dialog.Show();
   DCHECK_EQ(IDOK, *result);
-  LaunchDefaultAppsSettingsModernDialog();
+  base::win::LaunchDefaultAppsSettingsModernDialog(/*protocol=*/std::wstring());
 }
 
 }  // namespace

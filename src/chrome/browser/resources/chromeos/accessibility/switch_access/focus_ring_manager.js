@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MenuManager} from './menu_manager.js';
-import {SAChildNode, SARootNode} from './nodes/switch_access_node.js';
-import {SwitchAccess} from './switch_access.js';
-import {SAConstants} from './switch_access_constants.js';
+import {MenuManager} from '/switch_access/menu_manager.js';
+import {SAChildNode, SARootNode} from '/switch_access/nodes/switch_access_node.js';
+import {SwitchAccess} from '/switch_access/switch_access.js';
+import {SAConstants} from '/switch_access/switch_access_constants.js';
 
 /**
  * Class to handle focus rings.
@@ -56,43 +56,6 @@ export class FocusRingManager {
       return;
     }
     manager.rings_.forEach((ring) => ring.color = color);
-  }
-
-  /**
-   * Set state of recording macro and switch colors of the focus rings.
-   * @param {boolean} isRecording
-   */
-  static setIsRecording(isRecording) {
-    // If the feature flag is not enabled, escape.
-    if (!SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
-      return;
-    }
-
-    const manager = FocusRingManager.instance;
-
-    if (isRecording) {
-      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).color =
-          SAConstants.Focus.PRIMARY_COLOR_RECORDING_MACRO;
-      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).secondaryColor =
-          SAConstants.Focus.OUTER_COLOR_RECORDING_MACRO;
-
-      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).color =
-          SAConstants.Focus.PREVIEW_COLOR_RECORDING_MACRO;
-      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).secondaryColor =
-          SAConstants.Focus.OUTER_COLOR_RECORDING_MACRO;
-    } else {
-      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).color =
-          SAConstants.Focus.PRIMARY_COLOR;
-      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).secondaryColor =
-          SAConstants.Focus.OUTER_COLOR;
-
-      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).color =
-          SAConstants.Focus.PREVIEW_COLOR;
-      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).secondaryColor =
-          SAConstants.Focus.OUTER_COLOR;
-    }
-
-    manager.updateFocusRings_(null, null);
   }
 
   /**

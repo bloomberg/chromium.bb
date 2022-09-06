@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
-#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -33,11 +33,20 @@
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/crosapi/mojom/app_service_types.mojom.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/lacros_extensions_util.h"
+#include "extensions/browser/extension_registry.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS)
 namespace {
 // Use manual mapping for launch container and window open disposition because
 // we cannot use mojom traits for crosapi::mojom::LaunchParams yet. Move to auto
@@ -85,6 +94,7 @@ crosapi::mojom::WindowOpenDisposition ConvertWindowOpenDispositionToCrosapi(
     case WindowOpenDisposition::NEW_WINDOW:
       return crosapi::mojom::WindowOpenDisposition::kNewWindow;
     case WindowOpenDisposition::SINGLETON_TAB:
+    case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
     case WindowOpenDisposition::NEW_POPUP:
     case WindowOpenDisposition::SAVE_TO_DISK:
     case WindowOpenDisposition::OFF_THE_RECORD:
@@ -116,20 +126,20 @@ WindowOpenDisposition ConvertWindowOpenDispositionFromCrosapi(
 }
 
 apps::mojom::LaunchContainer ConvertWindowModeToAppLaunchContainer(
-    apps::mojom::WindowMode window_mode) {
+    apps::WindowMode window_mode) {
   switch (window_mode) {
-    case apps::mojom::WindowMode::kBrowser:
+    case apps::WindowMode::kBrowser:
       return apps::mojom::LaunchContainer::kLaunchContainerTab;
-    case apps::mojom::WindowMode::kWindow:
-    case apps::mojom::WindowMode::kTabbedWindow:
+    case apps::WindowMode::kWindow:
+    case apps::WindowMode::kTabbedWindow:
       return apps::mojom::LaunchContainer::kLaunchContainerWindow;
-    case apps::mojom::WindowMode::kUnknown:
+    case apps::WindowMode::kUnknown:
       return apps::mojom::LaunchContainer::kLaunchContainerNone;
   }
 }
 
 }  // namespace
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace apps {
 
@@ -142,7 +152,7 @@ std::vector<base::FilePath> GetLaunchFilesFromCommandLine(
 
   launch_files.reserve(command_line.GetArgs().size());
   for (const auto& arg : command_line.GetArgs()) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     GURL url(base::AsStringPiece16(arg));
 #else
     GURL url(arg);
@@ -214,7 +224,6 @@ apps::AppLaunchParams CreateAppLaunchParamsForIntent(
       app_id, event_flags, launch_source, display_id, fallback_container);
 
   if (intent->url.has_value()) {
-    params.launch_source = apps::mojom::LaunchSource::kFromIntentUrl;
     params.override_url = intent->url.value();
   }
 
@@ -224,12 +233,18 @@ apps::AppLaunchParams CreateAppLaunchParamsForIntent(
   if (intent->files.has_value()) {
     std::vector<GURL> file_urls;
     for (const auto& intent_file : *intent->files) {
+      if (intent_file->url.SchemeIsFile()) {
+        DCHECK(file_urls.empty());
+        break;
+      }
       file_urls.push_back(intent_file->url);
     }
-    std::vector<storage::FileSystemURL> file_system_urls =
-        GetFileSystemURL(profile, file_urls);
-    for (const auto& file_system_url : file_system_urls) {
-      params.launch_files.push_back(file_system_url.path());
+    if (!file_urls.empty()) {
+      std::vector<storage::FileSystemURL> file_system_urls =
+          GetFileSystemURL(profile, file_urls);
+      for (const auto& file_system_url : file_system_urls) {
+        params.launch_files.push_back(file_system_url.path());
+      }
     }
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -354,12 +369,28 @@ arc::mojom::WindowInfoPtr MakeArcWindowInfo(
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 crosapi::mojom::LaunchParamsPtr ConvertLaunchParamsToCrosapi(
     const apps::AppLaunchParams& params,
     Profile* profile) {
   auto crosapi_params = crosapi::mojom::LaunchParams::New();
-  crosapi_params->app_id = params.app_id;
+
+  std::string id = params.app_id;
+  // In Lacros, all platform apps must be converted to use a muxed id.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // During testing, the profile could be nullptr.
+  if (profile) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    const extensions::Extension* extension =
+        registry->GetExtensionById(id, extensions::ExtensionRegistry::ENABLED);
+    if (extension && extension->is_platform_app()) {
+      id = lacros_extensions_util::MuxId(profile, extension);
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  crosapi_params->app_id = id;
   crosapi_params->launch_source = params.launch_source;
 
   // Both launch_files and override_url will be represent by intent in crosapi
@@ -398,13 +429,12 @@ apps::AppLaunchParams ConvertCrosapiToLaunchParams(
   }
 
   if (crosapi_params->intent->url.has_value()) {
-    params.launch_source = apps::mojom::LaunchSource::kFromIntentUrl;
     params.override_url = crosapi_params->intent->url.value();
   }
 
   if (crosapi_params->intent->files.has_value()) {
     for (const auto& file : crosapi_params->intent->files.value()) {
-      params.launch_files.push_back(std::move(file->file_path));
+      params.launch_files.push_back(file->file_path);
     }
   }
 
@@ -419,7 +449,7 @@ crosapi::mojom::LaunchParamsPtr CreateCrosapiLaunchParamsWithEventFlags(
     int event_flags,
     apps::mojom::LaunchSource launch_source,
     int64_t display_id) {
-  apps::mojom::WindowMode window_mode = apps::mojom::WindowMode::kUnknown;
+  WindowMode window_mode = WindowMode::kUnknown;
   proxy->AppRegistryCache().ForOneApp(
       app_id, [&window_mode](const apps::AppUpdate& update) {
         window_mode = update.WindowMode();
@@ -430,6 +460,6 @@ crosapi::mojom::LaunchParamsPtr CreateCrosapiLaunchParamsWithEventFlags(
       ConvertWindowModeToAppLaunchContainer(window_mode));
   return apps::ConvertLaunchParamsToCrosapi(launch_params, proxy->profile());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace apps

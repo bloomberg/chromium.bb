@@ -6,10 +6,9 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_LOGGING_H_
 
 #include "base/allocator/partition_allocator/allocation_guard.h"
-#include "base/logging.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
 
-namespace base {
-namespace internal {
+namespace partition_alloc::internal {
 
 // Logging requires allocations. This logger allows reentrant allocations to
 // happen within the allocator context.
@@ -18,9 +17,9 @@ struct LoggerWithAllowedAllocations : ScopedAllowAllocations,
   using logging::LogMessage::LogMessage;
 };
 
-#define PA_PCSCAN_VLOG_STREAM(verbose_level)                         \
-  ::base::internal::LoggerWithAllowedAllocations(__FILE__, __LINE__, \
-                                                 -(verbose_level))   \
+#define PA_PCSCAN_VLOG_STREAM(verbose_level)                 \
+  ::partition_alloc::internal::LoggerWithAllowedAllocations( \
+      __FILE__, __LINE__, -(verbose_level))                  \
       .stream()
 
 // Logging macro that is meant to be used inside *Scan. Generally, reentrancy
@@ -31,10 +30,10 @@ struct LoggerWithAllowedAllocations : ScopedAllowAllocations,
 // the inner free() call must be non-reentrant).  However, these sorts of things
 // are tricky to enforce and easy to mess up with. Since verbose *Scan logging
 // is essential for debugging, we choose to provide support for it inside *Scan.
-#define PA_PCSCAN_VLOG(verbose_level) \
-  LAZY_STREAM(PA_PCSCAN_VLOG_STREAM(verbose_level), VLOG_IS_ON(verbose_level))
+#define PA_PCSCAN_VLOG(verbose_level)                  \
+  PA_LAZY_STREAM(PA_PCSCAN_VLOG_STREAM(verbose_level), \
+                 PA_VLOG_IS_ON(verbose_level))
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_LOGGING_H_

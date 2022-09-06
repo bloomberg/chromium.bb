@@ -8,7 +8,8 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 
@@ -27,17 +28,28 @@ void ViewSourceBrowserAgent::ViewSourceForActiveWebState() {
   web::WebState* web_state = browser_->GetWebStateList()->GetActiveWebState();
   DCHECK(web_state);
 
-  NSString* script = @"document.documentElement.outerHTML;";
-  auto completionHandlerBlock = ^(id result, NSError*) {
-    if (!web_state)
-      return;
-    if (![result isKindOfClass:[NSString class]])
-      result = @"Not an HTML page";
-    InsertSourceViewTab(result, web_state);
-  };
-  [web_state->GetJSInjectionReceiver()
-      executeJavaScript:script
-      completionHandler:completionHandlerBlock];
+  web::WebFrame* web_frame = web::GetMainFrame(web_state);
+  static const char16_t kScript[] = u"document.documentElement.outerHTML;";
+
+  web_frame->ExecuteJavaScript(
+      kScript,
+      base::BindOnce(
+          &ViewSourceBrowserAgent::OnHandleViewSourceForActiveWebStateResult,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ViewSourceBrowserAgent::OnHandleViewSourceForActiveWebStateResult(
+    const base::Value* value) {
+  web::WebState* web_state = browser_->GetWebStateList()->GetActiveWebState();
+  DCHECK(web_state);
+
+  NSString* result;
+  if (value->is_string()) {
+    result = base::SysUTF8ToNSString(value->GetString());
+  } else {
+    result = @"Not an HTML page";
+  }
+  InsertSourceViewTab(result, web_state);
 }
 
 void ViewSourceBrowserAgent::InsertSourceViewTab(NSString* source,
@@ -54,5 +66,6 @@ void ViewSourceBrowserAgent::InsertSourceViewTab(NSString* source,
       TabInsertionBrowserAgent::FromBrowser(browser_);
   insertionAgent->InsertWebState(
       loadParams, web_state, true, TabInsertion::kPositionAutomatically,
-      /*in_background=*/false, /*inherit_opener=*/false);
+      /*in_background=*/false, /*inherit_opener=*/false,
+      /*should_show_start_surface=*/false, /*filtered_param_count=*/0);
 }

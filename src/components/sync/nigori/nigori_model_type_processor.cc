@@ -4,10 +4,10 @@
 
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
+#include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -144,7 +144,7 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
       entity_ = ProcessorEntity::CreateNew(
           kNigoriStorageKey, ClientTagHash::FromHashed(kRawNigoriClientTagHash),
           updates[0].entity.id, updates[0].entity.creation_time);
-      entity_->RecordAcceptedUpdate(updates[0]);
+      entity_->RecordAcceptedRemoteUpdate(updates[0], /*trimmed_specifics=*/{});
       error = bridge_->MergeSyncData(std::move(updates[0].entity));
     }
     if (error) {
@@ -172,11 +172,11 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   if (entity_->IsUnsynced()) {
     // Remote update always win in case of conflict, because bridge takes care
     // of reapplying pending local changes after processing the remote update.
-    entity_->RecordForcedUpdate(updates[0]);
+    entity_->RecordForcedRemoteUpdate(updates[0], /*trimmed_specifics=*/{});
     error = bridge_->ApplySyncChanges(std::move(updates[0].entity));
   } else if (!entity_->MatchesData(updates[0].entity)) {
     // Inform the bridge of the new or updated data.
-    entity_->RecordAcceptedUpdate(updates[0]);
+    entity_->RecordAcceptedRemoteUpdate(updates[0], /*trimmed_specifics=*/{});
     error = bridge_->ApplySyncChanges(std::move(updates[0].entity));
   }
 
@@ -263,12 +263,13 @@ void NigoriModelTypeProcessor::GetAllNodesForDebugging(
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
   // data node.
-  root_node->SetString("PARENT_ID", "r");
-  root_node->SetString("UNIQUE_SERVER_TAG", "Nigori");
-  root_node->SetString("modelType", ModelTypeToString(NIGORI));
+  root_node->SetStringKey("PARENT_ID", "r");
+  root_node->SetStringKey("UNIQUE_SERVER_TAG", "Nigori");
+  root_node->SetStringKey("modelType", ModelTypeToDebugString(NIGORI));
 
   auto all_nodes = std::make_unique<base::ListValue>();
-  all_nodes->Append(std::move(root_node));
+  all_nodes->GetList().Append(
+      base::Value::FromUniquePtrValue(std::move(root_node)));
   std::move(callback).Run(syncer::NIGORI, std::move(all_nodes));
 }
 
@@ -339,7 +340,7 @@ void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
     return;
   }
 
-  entity_->MakeLocalChange(std::move(entity_data));
+  entity_->RecordLocalUpdate(std::move(entity_data), /*trimmed_specifics=*/{});
   NudgeForCommitIfNeeded();
 }
 
@@ -422,24 +423,12 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncNigoriRemoveMetadataOnCacheGuidMismatch)) {
-    if (model_type_state_.initial_sync_done() &&
-        model_type_state_.cache_guid() != activation_request_.cache_guid) {
-      ClearMetadataAndReset();
-      DCHECK(model_ready_to_sync_);
-    }
-
-    model_type_state_.set_cache_guid(activation_request_.cache_guid);
-  } else {
-    // Legacy logic.
-    if (!model_type_state_.has_cache_guid()) {
-      model_type_state_.set_cache_guid(activation_request_.cache_guid);
-    } else if (model_type_state_.cache_guid() !=
-               activation_request_.cache_guid) {
-      // Not implemented in legacy codepath.
-    }
+  if (model_type_state_.initial_sync_done() &&
+      model_type_state_.cache_guid() != activation_request_.cache_guid) {
+    ClearMetadataAndReset();
+    DCHECK(model_ready_to_sync_);
   }
+  model_type_state_.set_cache_guid(activation_request_.cache_guid);
 
   // Cache GUID verification earlier above guarantees the user is the same.
   model_type_state_.set_authenticated_account_id(

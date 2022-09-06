@@ -19,8 +19,16 @@
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/ios/shared_password_controller.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/url_formatter/elide_url.h"
 #include "google_apis/google_api_keys.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_client.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_query_manager.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_tab_helper.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/favicon/favicon_url.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -49,6 +57,7 @@
 #import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
+#import "ios/web_view/internal/safe_browsing/web_view_safe_browsing_client_factory.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -346,6 +355,12 @@ BOOL gChromeContextMenuEnabled = NO;
   _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
 }
 
+- (void)setNavigationDelegate:(id<CWVNavigationDelegate>)navigationDelegate {
+  _navigationDelegate = navigationDelegate;
+
+  [self attachSecurityInterstitialHelpersToWebStateIfNecessary];
+}
+
 #pragma mark - UIResponder
 
 - (BOOL)becomeFirstResponder {
@@ -502,6 +517,18 @@ BOOL gChromeContextMenuEnabled = NO;
   }
 }
 
+- (web::WebState*)webState:(web::WebState*)webState
+         openURLWithParams:(const web::WebState::OpenURLParams&)params {
+  web::NavigationManager::WebLoadParams load_params(params.url);
+  load_params.referrer = params.referrer;
+  load_params.transition_type = params.transition;
+  load_params.is_renderer_initiated = params.is_renderer_initiated;
+  load_params.virtual_url = params.virtual_url;
+  _webState->GetNavigationManager()->LoadURLWithParams(load_params);
+  [self updateCurrentURLs];
+  return _webState.get();
+}
+
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
   return _javaScriptDialogPresenter.get();
@@ -519,7 +546,7 @@ BOOL gChromeContextMenuEnabled = NO;
     CWVHTMLElement* HTMLElement =
         [[CWVHTMLElement alloc] initWithHyperlink:hyperlink
                                       mediaSource:mediaSource
-                                             text:params.link_text];
+                                             text:params.text];
 
     [_UIDelegate webView:self
         contextMenuConfigurationForElement:HTMLElement
@@ -758,6 +785,7 @@ BOOL gChromeContextMenuEnabled = NO;
     *createdWebView = webView;
   }
 
+  [self attachSecurityInterstitialHelpersToWebStateIfNecessary];
   WebViewHolder::CreateForWebState(_webState.get());
   WebViewHolder::FromWebState(_webState.get())->set_web_view(self);
 
@@ -867,6 +895,41 @@ BOOL gChromeContextMenuEnabled = NO;
         [[CWVSSLStatus alloc] initWithInternalStatus:visibleItem->GetSSL()];
   } else {
     self.visibleSSLStatus = nil;
+  }
+}
+
+- (void)attachSecurityInterstitialHelpersToWebStateIfNecessary {
+  if (!_webState) {
+    return;
+  }
+
+  // Lookalike URLs should only be intercepted if handled by the delegate.
+  if ([_navigationDelegate respondsToSelector:@selector
+                           (webView:handleLookalikeURLWithHandler:)]) {
+    LookalikeUrlTabHelper::CreateForWebState(_webState.get());
+    LookalikeUrlTabAllowList::CreateForWebState(_webState.get());
+    LookalikeUrlContainer::CreateForWebState(_webState.get());
+  } else {
+    LookalikeUrlTabHelper::RemoveFromWebState(_webState.get());
+    LookalikeUrlTabAllowList::RemoveFromWebState(_webState.get());
+    LookalikeUrlContainer::RemoveFromWebState(_webState.get());
+  }
+
+  // Unsafe URLs should only be intercepted if handled by the delegate.
+  if ([_navigationDelegate
+          respondsToSelector:@selector(webView:handleUnsafeURLWithHandler:)]) {
+    SafeBrowsingClient* client =
+        ios_web_view::WebViewSafeBrowsingClientFactory::GetForBrowserState(
+            _webState->GetBrowserState());
+    SafeBrowsingQueryManager::CreateForWebState(_webState.get(), client);
+    SafeBrowsingTabHelper::CreateForWebState(_webState.get(), client);
+    SafeBrowsingUrlAllowList::CreateForWebState(_webState.get());
+    SafeBrowsingUnsafeResourceContainer::CreateForWebState(_webState.get());
+  } else {
+    SafeBrowsingQueryManager::RemoveFromWebState(_webState.get());
+    SafeBrowsingTabHelper::RemoveFromWebState(_webState.get());
+    SafeBrowsingUrlAllowList::RemoveFromWebState(_webState.get());
+    SafeBrowsingUnsafeResourceContainer::RemoveFromWebState(_webState.get());
   }
 }
 

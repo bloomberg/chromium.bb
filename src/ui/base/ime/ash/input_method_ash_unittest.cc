@@ -86,6 +86,10 @@ class TestableInputMethodAsh : public InputMethodAsh {
     text_committed_ = text;
   }
 
+  void SetEditableSelectionRange(gfx::Range range) {
+    GetTextInputClient()->SetEditableSelectionRange(range);
+  }
+
   void ResetCallCount() { process_key_event_post_ime_call_count_ = 0; }
 
   const ProcessKeyEventPostIMEArgs& process_key_event_post_ime_args() const {
@@ -219,8 +223,6 @@ class InputMethodAshTest : public internal::InputMethodDelegate,
   ~InputMethodAshTest() override = default;
 
   void SetUp() override {
-    IMEBridge::Initialize();
-
     mock_ime_engine_handler_ = std::make_unique<ash::MockIMEEngineHandler>();
     IMEBridge::Get()->SetCurrentEngineHandler(mock_ime_engine_handler_.get());
 
@@ -245,7 +247,6 @@ class InputMethodAshTest : public internal::InputMethodDelegate,
     IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
     mock_ime_engine_handler_.reset();
     mock_ime_candidate_window_handler_.reset();
-    IMEBridge::Shutdown();
     ash::input_method::InputMethodManager::Shutdown();
 
     ResetFlags();
@@ -317,9 +318,9 @@ class InputMethodAshTest : public internal::InputMethodDelegate,
     return true;
   }
   bool SetAutocorrectRange(const gfx::Range& range) override {
-    // TODO(crbug.com/1148157): This is a workaround to ensure that the range is
-    // valid in the text. Change this class to a proper fake so that the text
-    // contents can be queried accurately.
+    // TODO(crbug.com/1277388): This is a workaround to ensure that the range is
+    // valid in the text. Change to use FakeTextInputClient instead of
+    // DummyTextInputClient so that the text contents can be queried accurately.
     if (!inserted_text_.empty() || inserted_char_ != 0) {
       DummyTextInputClient::SetAutocorrectRange(range);
       return true;
@@ -1008,7 +1009,7 @@ TEST_F(InputMethodAshKeyEventTest, KeyEventDelayResponseTest) {
           u"A",
           TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
 
-  EXPECT_EQ(0, inserted_char_);
+  EXPECT_EQ(u"", inserted_text_);
 
   // Do callback.
   std::move(mock_ime_engine_handler_->last_passed_callback()).Run(true);
@@ -1021,7 +1022,7 @@ TEST_F(InputMethodAshKeyEventTest, KeyEventDelayResponseTest) {
   EXPECT_EQ(kFlags, stored_event.flags());
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 
-  EXPECT_EQ(L'A', inserted_char_);
+  EXPECT_EQ(u"A", inserted_text_);
 }
 
 TEST_F(InputMethodAshKeyEventTest, MultiKeyEventDelayResponseTest) {
@@ -1188,7 +1189,7 @@ TEST_F(InputMethodAshKeyEventTest, SetAutocorrectRangeRunsAfterCommitText) {
   std::move(mock_ime_engine_handler_->last_passed_callback())
       .Run(/*handled=*/true);
 
-  EXPECT_EQ(L'a', inserted_char_);
+  EXPECT_EQ(u"a", inserted_text_);
   EXPECT_EQ(gfx::Range(0, 1), GetAutocorrectRange());
 }
 
@@ -1328,11 +1329,15 @@ TEST_F(InputMethodAshTest, GetsGrammarFragments) {
   GrammarFragment fragment(gfx::Range(0, 5), "fake");
   ime_->AddGrammarFragments({fragment});
 
-  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(3, 3)), fragment);
-  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(2, 4)), fragment);
+  ime_->SetEditableSelectionRange(gfx::Range(3, 3));
+  EXPECT_EQ(ime_->GetGrammarFragmentAtCursor(), fragment);
+  ime_->SetEditableSelectionRange(gfx::Range(2, 4));
+  EXPECT_EQ(ime_->GetGrammarFragmentAtCursor(), fragment);
 
-  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(7, 7)), absl::nullopt);
-  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(4, 7)), absl::nullopt);
+  ime_->SetEditableSelectionRange(gfx::Range(7, 7));
+  EXPECT_EQ(ime_->GetGrammarFragmentAtCursor(), absl::nullopt);
+  ime_->SetEditableSelectionRange(gfx::Range(4, 7));
+  EXPECT_EQ(ime_->GetGrammarFragmentAtCursor(), absl::nullopt);
 }
 
 }  // namespace ui

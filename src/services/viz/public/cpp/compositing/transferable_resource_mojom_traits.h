@@ -19,6 +19,16 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<viz::mojom::SynchronizationType,
+                  viz::TransferableResource::SynchronizationType> {
+  static viz::mojom::SynchronizationType ToMojom(
+      viz::TransferableResource::SynchronizationType type);
+
+  static bool FromMojom(viz::mojom::SynchronizationType input,
+                        viz::TransferableResource::SynchronizationType* out);
+};
+
+template <>
 struct StructTraits<viz::mojom::TransferableResourceDataView,
                     viz::TransferableResource> {
   static const viz::ResourceId& id(const viz::TransferableResource& resource) {
@@ -42,9 +52,9 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
     return resource.mailbox_holder;
   }
 
-  static bool read_lock_fences_enabled(
+  static viz::TransferableResource::SynchronizationType synchronization_type(
       const viz::TransferableResource& resource) {
-    return resource.read_lock_fences_enabled;
+    return resource.synchronization_type;
   }
 
   static bool is_software(const viz::TransferableResource& resource) {
@@ -57,7 +67,7 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
 
   static bool is_backed_by_surface_texture(
       const viz::TransferableResource& resource) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // TransferableResource has this in an #ifdef, but mojo doesn't let us.
     // TODO(https://crbug.com/671901)
     return resource.is_backed_by_surface_texture;
@@ -67,7 +77,7 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
   }
 
   static bool wants_promotion_hint(const viz::TransferableResource& resource) {
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
     // TransferableResource has this in an #ifdef, but mojo doesn't let us.
     // TODO(https://crbug.com/671901)
     return resource.wants_promotion_hint;

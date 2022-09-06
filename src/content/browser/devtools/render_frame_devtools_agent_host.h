@@ -18,11 +18,11 @@
 #include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/android/view_android.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace cc {
 class RenderFrameMetadata;
@@ -76,7 +76,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   static void AttachToWebContents(WebContents* web_contents);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
       const cc::RenderFrameMetadata& frame_metadata);
@@ -140,7 +140,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void FrameDeleted(int frame_tree_node_id) override;
   void RenderFrameDeleted(RenderFrameHost* rfh) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
-  void OnPageScaleFactorChanged(float page_scale_factor) override;
 
   // RenderProcessHostObserver overrides.
   void RenderProcessExited(RenderProcessHost* host,
@@ -156,7 +155,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   bool ShouldAllowSession(DevToolsSession* session);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
   void SynchronousSwapCompositorFrame(
       const cc::RenderFrameMetadata& frame_metadata);
@@ -164,7 +163,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void UpdateResourceLoaderFactories();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
@@ -178,8 +177,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;
-
-  double page_scale_factor_ = 1;
 };
 
 // Returns the ancestor FrameTreeNode* for which a RenderFrameDevToolsAgentHost

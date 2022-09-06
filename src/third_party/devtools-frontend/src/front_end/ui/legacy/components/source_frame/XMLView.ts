@@ -28,11 +28,9 @@ export class XMLView extends UI.Widget.Widget implements UI.SearchableView.Searc
 
   constructor(parsedXML: Document) {
     super(true);
-    // eslint-disable-next-line no-restricted-syntax -- Should import styles https://crbug.com/1106746
     this.registerRequiredCSS(xmlViewStyles);
     this.contentElement.classList.add('shadow-xml-view', 'source-code');
     this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    // eslint-disable-next-line no-restricted-syntax -- Should import styles https://crbug.com/1106746
     this.treeOutline.registerRequiredCSS(xmlTreeStyles);
     this.contentElement.appendChild(this.treeOutline.element);
     this.currentSearchFocusIndex = 0;
@@ -78,7 +76,7 @@ export class XMLView extends UI.Widget.Widget implements UI.SearchableView.Searc
     if (!this.searchConfig) {
       return;
     }
-    const regex = this.searchConfig.toSearchRegex(true);
+    const {regex} = this.searchConfig.toSearchRegex(true);
     const previousFocusElement = this.currentSearchTreeElements[this.currentSearchFocusIndex];
     if (previousFocusElement) {
       previousFocusElement.setSearchRegex(regex);
@@ -119,7 +117,7 @@ export class XMLView extends UI.Widget.Widget implements UI.SearchableView.Searc
     const previousSearchFocusElement = this.currentSearchTreeElements[newIndex];
     this.innerSearchCanceled();
     this.currentSearchTreeElements = [];
-    const regex = this.searchConfig.toSearchRegex(true);
+    const {regex} = this.searchConfig.toSearchRegex(true);
 
     for (let element: (UI.TreeOutline.TreeElement|null) =
              (this.treeOutline.rootElement() as UI.TreeOutline.TreeElement | null);

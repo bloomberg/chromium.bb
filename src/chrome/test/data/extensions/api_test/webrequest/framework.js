@@ -8,8 +8,10 @@ var expectedEventData;
 var capturedEventData;
 var capturedUnexpectedData;
 var expectedEventOrder;
+var mparchEnabled;
 var tabId;
 var tabIdMap;
+var documentIdMap;
 var frameIdMap;
 var testWebSocketPort;
 var testWebTransportPort;
@@ -62,8 +64,11 @@ function runTestsForTab(tests, tab) {
 // Creates an "about:blank" tab and runs |tests| with this tab as default.
 function runTests(tests) {
   chrome.test.getConfig(function(config) {
-    if (config.customArg == 'debug')
-      debug = true;
+    if (config.customArg) {
+      let args = JSON.parse(config.customArg);
+      debug = args.debug;
+      mparchEnabled = args.mparch;
+    }
 
     var waitForAboutBlank = function(_, info, tab) {
       if (debug) {
@@ -188,6 +193,7 @@ function expect(data, order, filter, extraInfoSpec) {
   }
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
   frameIdMap = {"-1": -1, "0": 0};
+  documentIdMap = [];
   removeListeners();
   resetDeclarativeRules();
   initListeners(filter || {urls: ["<all_urls>"]}, extraInfoSpec || []);
@@ -211,6 +217,18 @@ function expect(data, order, filter, extraInfoSpec) {
     if ('initiator' in expectedEventData[i].details &&
         expectedEventData[i].details.initiator == undefined) {
       delete expectedEventData[i].details.initiator;
+    }
+    if (expectedEventData[i].details.frameId >= 0) {
+      if (!('documentLifecycle' in expectedEventData[i].details)) {
+        expectedEventData[i].details.documentLifecycle = "active";
+      }
+      if (!('frameType' in expectedEventData[i].details)) {
+        expectedEventData[i].details.frameType = "outermost_frame";
+      }
+    }
+    if ('documentId' in expectedEventData[i].details &&
+        expectedEventData[i].details.documentId == undefined) {
+      delete expectedEventData[i].details.documentId;
     }
   }
 }
@@ -332,6 +350,23 @@ function captureEvent(name, details, callback) {
   }
   details.frameId = frameIdMap[details.frameId];
   details.parentFrameId = frameIdMap[details.parentFrameId];
+
+  // Since the parentDocumentId & documentId is a unique random identifier it
+  // is not useful to tests. Normalize it so that test cases can assert
+  // against a fixed number.
+  if ('parentDocumentId' in details) {
+    if (documentIdMap[details.parentDocumentId] === undefined) {
+      documentIdMap[details.parentDocumentId] =
+          Object.keys(documentIdMap).length + 1;
+    }
+    details.parentDocumentId = documentIdMap[details.parentDocumentId];
+  }
+  if ('documentId' in details) {
+    if (documentIdMap[details.documentId] === undefined) {
+      documentIdMap[details.documentId] = Object.keys(documentIdMap).length + 1;
+    }
+    details.documentId = documentIdMap[details.documentId];
+  }
 
   // This assigns unique IDs to newly opened tabs. However, the new IDs are only
   // deterministic, if the order in which the tabs are opened is deterministic.

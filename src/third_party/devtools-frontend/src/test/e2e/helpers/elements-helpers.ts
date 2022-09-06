@@ -5,7 +5,19 @@ import {assert} from 'chai';
 import {performance} from 'perf_hooks';
 import type * as puppeteer from 'puppeteer';
 
-import {$, $$, click, getBrowserAndPages, pressKey, step, timeout, typeText, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
+import {
+  $,
+  $$,
+  click,
+  getBrowserAndPages,
+  pressKey,
+  step,
+  timeout,
+  typeText,
+  waitFor,
+  waitForAria,
+  waitForFunction,
+} from '../../shared/helper.js';
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
 const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
@@ -165,6 +177,22 @@ export const waitForChildrenOfSelectedElementNode = async () => {
   await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li`);
 };
 
+export const waitForAndClickTreeElementWithPartialText = async (text: string) =>
+    waitForFunction(async () => clickTreeElementWithPartialText(text));
+
+export const clickTreeElementWithPartialText = async (text: string) => {
+  const tree = await waitFor('Page DOM[role="tree"]', undefined, undefined, 'aria');
+  const elements = await $$('[role="treeitem"]', tree, 'aria');
+  for (const handle of elements) {
+    const match = await handle.evaluate((element, text) => element.textContent?.includes(text), text);
+    if (match) {
+      await click(handle);
+      return true;
+    }
+  }
+  throw false;
+};
+
 export const clickNthChildOfSelectedElementNode = async (childIndex: number) => {
   assert(childIndex > 0, 'CSS :nth-child() selector indices are 1-based.');
   const element = await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li:nth-child(${childIndex})`);
@@ -190,8 +218,8 @@ export const waitForElementsComputedSection = async () => {
 };
 
 export const getContentOfComputedPane = async () => {
-  const pane = await waitFor('.computed-properties');
-  const tree = await waitFor('.tree-outline', pane);
+  const pane = await waitFor('Computed panel', undefined, undefined, 'aria');
+  const tree = await waitFor('[role="tree"]', pane, undefined, 'aria');
   return await tree.evaluate(node => node.textContent as string);
 };
 
@@ -205,8 +233,8 @@ export const waitForComputedPaneChange = async (initialValue: string) => {
 export const getAllPropertiesFromComputedPane = async () => {
   const properties = await $$(COMPUTED_PROPERTY_SELECTOR);
   return (await Promise.all(properties.map(elem => elem.evaluate(node => {
-           const name = node.querySelector('[slot="property-name"]');
-           const value = node.querySelector('[slot="property-value"]');
+           const name = node.shadowRoot?.querySelector('.property-name');
+           const value = node.shadowRoot?.querySelector('.property-value');
 
            return (!name || !value) ? null : {
              name: name.textContent ? name.textContent.trim().replace(/:$/, '') : '',
@@ -219,17 +247,14 @@ export const getAllPropertiesFromComputedPane = async () => {
 export const getPropertyFromComputedPane = async (name: string) => {
   const properties = await $$(COMPUTED_PROPERTY_SELECTOR);
   for (const property of properties) {
-    const matchingProperty = await property.evaluateHandle((node, name) => {
-      const nameEl = node.querySelector('[slot="property-name"]');
-      if (nameEl && nameEl.textContent === name) {
-        return node;
-      }
-      return undefined;
+    const matchingProperty = await property.evaluate((node, name) => {
+      const nameEl = node.shadowRoot?.querySelector('.property-name');
+      return nameEl?.textContent?.trim().replace(/:$/, '') === name;
     }, name);
     // Note that evaluateHandle always returns a handle, even if it points to an undefined remote object, so we need to
     // check it's defined here or continue iterating.
-    if (await matchingProperty.evaluate(n => Boolean(n))) {
-      return matchingProperty as puppeteer.ElementHandle;
+    if (matchingProperty) {
+      return property;
     }
   }
   return undefined;
@@ -284,6 +309,25 @@ export const getComputedStylesForDomNode = async (elementSelector: string, style
   }, elementSelector, styleAttribute);
 };
 
+export const waitForNumberOfComputedProperties = async (numberToWaitFor: number) => {
+  const computedPane = await getComputedPanel();
+  return waitForFunction(
+      async () => numberToWaitFor ===
+          await computedPane.$$eval('pierce/' + COMPUTED_PROPERTY_SELECTOR, properties => properties.length));
+};
+
+export const getComputedPanel = async () => waitFor(COMPUTED_STYLES_PANEL_SELECTOR);
+
+export const filterComputedProperties = async (filterString: string) => {
+  const initialContent = await getContentOfComputedPane();
+
+  const computedPanel = await waitFor(COMPUTED_STYLES_PANEL_SELECTOR);
+  const filterInput = await waitFor('[aria-label="Filter Computed Styles"]', computedPanel);
+  await click(filterInput);
+  await typeText(filterString);
+  await waitForComputedPaneChange(initialContent);
+};
+
 export const toggleShowAllComputedProperties = async () => {
   const initialContent = await getContentOfComputedPane();
 
@@ -334,19 +378,72 @@ export const waitForStyleRule = async (expectedSelector: string) => {
   });
 };
 
+export const getComputedStyleProperties = async () => {
+  const computedPanel = await getComputedPanel();
+  const allProperties = await computedPanel.$$('pierce/[role="treeitem"][aria-level="1"]');
+  const properties = [];
+  for (const prop of allProperties) {
+    const name = await prop.$eval('pierce/' + CSS_PROPERTY_NAME_SELECTOR, element => element.textContent);
+    const value = await prop.$eval('pierce/' + CSS_PROPERTY_VALUE_SELECTOR, element => element.textContent);
+    const traceElements = await prop.$$('pierce/devtools-computed-style-trace');
+    const trace = await Promise.all(traceElements.map(async element => {
+      const value = await element.$eval('pierce/.value', element => element.textContent);
+      const selector = await element.$eval('pierce/.trace-selector', element => element.textContent);
+      const link = await element.$eval('pierce/.trace-link', element => element.textContent);
+      return {value, selector, link};
+    }));
+    properties.push({name, value, trace});
+  }
+  return properties;
+};
+
+export const getDisplayedStyleRulesCompact = async () => {
+  const compactRules = [];
+  for (const rule of await getDisplayedStyleRules()) {
+    compactRules.push(
+        {selectorText: rule.selectorText, propertyNames: rule.propertyData.map(data => data.propertyName)});
+  }
+  return compactRules;
+};
+
 export const getDisplayedStyleRules = async () => {
   const allRuleSelectors = await $$(CSS_STYLE_RULE_SELECTOR);
   const rules = [];
   for (const ruleSelector of allRuleSelectors) {
-    const propertyNames = await getDisplayedCSSPropertyNames(ruleSelector);
+    const propertyData = await getDisplayedCSSPropertyData(ruleSelector);
     const selectorText = await ruleSelector.evaluate(node => {
       const attribute = node.getAttribute('aria-label') || '';
       return attribute.substring(0, attribute.lastIndexOf(', css selector'));
     });
-    rules.push({selectorText, propertyNames});
+    rules.push({selectorText, propertyData});
   }
 
   return rules;
+};
+
+/**
+ * @param propertiesSection - The element containing this properties section.
+ * @returns an array with an entry for each property in the section. Each entry has:
+ * - propertyName: The name of this property.
+ * - isOverloaded: True if this is an inherited properties section, and this property is overloaded by a child node.
+ *                 The property will be shown as crossed out in the style pane.
+ * - isInherited: True if this is an inherited properties section, and this property is a non-inherited CSS property.
+ *                The property will be shown as grayed-out in the style pane.
+ */
+export const getDisplayedCSSPropertyData = async (propertiesSection: puppeteer.ElementHandle<Element>) => {
+  const cssPropertyNames = await $$(CSS_PROPERTY_NAME_SELECTOR, propertiesSection);
+  const propertyNamesData =
+      (await Promise.all(cssPropertyNames.map(
+           async node => {
+             return {
+               propertyName: await node.evaluate(n => n.textContent),
+               isOverLoaded: await node.evaluate(n => n.parentElement && n.parentElement.matches('.overloaded')),
+               isInherited: await node.evaluate(n => n.parentElement && n.parentElement.matches('.inherited')),
+             };
+           },
+           )))
+          .filter(c => Boolean(c.propertyName));
+  return propertyNamesData;
 };
 
 export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.ElementHandle<Element>) => {

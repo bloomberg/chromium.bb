@@ -26,12 +26,13 @@
 #include "third_party/blink/renderer/core/html/forms/html_button_element.h"
 
 #include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
-#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
-#include "third_party/blink/renderer/core/html/html_popup_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -110,11 +111,6 @@ void HTMLButtonElement::ParseAttribute(
 
 void HTMLButtonElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kDOMActivate) {
-    Element* popupElement =
-        GetDocument().getElementById(getAttribute(html_names::kPopupAttr));
-    if (popupElement && IsA<HTMLPopupElement>(popupElement)) {
-      To<HTMLPopupElement>(popupElement)->Invoke(this);
-    }
     if (!IsDisabledFormControl()) {
       if (Form() && type_ == kSubmit) {
         Form()->PrepareForSubmission(&event, this);
@@ -163,7 +159,7 @@ void HTMLButtonElement::AppendToFormData(FormData& form_data) {
 
 void HTMLButtonElement::AccessKeyAction(
     SimulatedClickCreationScope creation_scope) {
-  focus();
+  Focus();
   DispatchSimulatedClick(nullptr, creation_scope);
 }
 

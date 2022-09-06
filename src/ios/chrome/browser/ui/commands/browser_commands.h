@@ -8,9 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/commands/infobar_commands.h"
+#import "ios/chrome/browser/ui/commands/lens_commands.h"
+#import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -19,23 +19,27 @@
 
 class GURL;
 @class ReadingListAddCommand;
-@class SearchImageWithLensCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
-// TODO(crbug.com/906662) : Extract BrowserCoordinatorCommands from
-// BrowserCommands.
-@protocol BrowserCommands <NSObject,
-                           ActivityServiceCommands,
-                           BrowserCoordinatorCommands,
-                           InfobarCommands,
-                           PageInfoCommands,
-                           PopupMenuCommands,
-                           QRScannerCommands,
-                           SnackbarCommands,
-                           DefaultPromoCommands>
+@protocol BrowserCommands <
+    NSObject,
+    // TODO(crbug.com/906662) : Remove BrowserCoordinatorCommands conformance.
+    BrowserCoordinatorCommands,
+    // TODO(crbug.com/1323758):Remove PageInfoCommands conformance.
+    PageInfoCommands,
+    // TODO(crbug.com/1323764): Remove PopupMenuCommands conformance.
+    PopupMenuCommands,
+    // TODO(crbug.com/1323775): Remove QRScannerCommands conformance.
+    QRScannerCommands,
+    // TODO(crbug.com/1323778): Remove SnackbarCommands conformance.
+    SnackbarCommands,
+    // TODO(crbug.com/1323783): Remove LensCommands conformance.
+    LensCommands>
 
 // Closes the current tab.
+// TODO(crbug.com/1272498): Refactor this command away; call sites should close
+// via the WebStateList.
 - (void)closeCurrentTab;
 
 // Bookmarks the current page.
@@ -43,11 +47,8 @@ class GURL;
 - (void)bookmarkCurrentPage;
 
 // Adds a page to the reading list using data in |command|.
+// TODO(crbug.com/1272540): Remove this command.
 - (void)addToReadingList:(ReadingListAddCommand*)command;
-
-// Shows an IPH pointing to where the Reading List entry point is, if
-// applicable.
-- (void)showReadingListIPH;
 
 // Preloads voice search on the current BVC.
 - (void)preloadVoiceSearch;
@@ -67,25 +68,12 @@ class GURL;
 // Shows the dialog for sending the current tab between a user's devices.
 - (void)showSendTabToSelfUI;
 
-// Requests the "desktop" version of the current page in the active tab.
-- (void)requestDesktopSite;
-
-// Requests the "mobile" version of the current page in the active tab.
-- (void)requestMobileSite;
-
 // Prepares the browser to display a popup menu.
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type;
 
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
 - (void)focusFakebox;
-
-// Search for an image with Lens, using |command| parameters.
-- (void)searchImageWithLens:(SearchImageWithLensCommand*)command;
-
-// Shows/Hides the activity indicator overlay that appears over the view to
-// prevent interaction with the web page.
-- (void)showActivityOverlay:(BOOL)show;
 
 @end
 

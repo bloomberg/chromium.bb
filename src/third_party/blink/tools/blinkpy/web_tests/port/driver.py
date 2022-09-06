@@ -120,7 +120,7 @@ class DriverOutput(object):
                  test_time=0,
                  measurements=None,
                  timeout=False,
-                 error='',
+                 error=b'',
                  crashed_process_name='??',
                  crashed_pid=None,
                  crash_log=None,
@@ -509,11 +509,11 @@ class Driver(object):
             image_hash=None,
             args=per_test_args)
         output = self._run_one_input(startup_input, start_time=time.time())
-        if output.text and 'PASS 000_run_me_first' in output.text:
+        if output.text and b'PASS 000_run_me_first' in output.text:
             return True, None
 
-        output.text = ('Failed to initialize WebGPU adapter at startup via '
-                       'wpt_internal_webgpu/000_run_me_first.https.html:\n' +
+        output.text = (b'Failed to initialize WebGPU adapter at startup via '
+                       b'wpt_internal_webgpu/000_run_me_first.https.html:\n' +
                        output.text)
         return False, output
 

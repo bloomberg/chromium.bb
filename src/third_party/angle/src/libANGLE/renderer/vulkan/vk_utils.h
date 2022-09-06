@@ -12,6 +12,7 @@
 
 #include <atomic>
 #include <limits>
+#include <queue>
 
 #include "GLSLANG/ShaderLang.h"
 #include "common/FixedVector.h"
@@ -55,6 +56,7 @@ class ShareGroup;
 namespace gl
 {
 class MockOverlay;
+class ProgramExecutable;
 struct RasterizerState;
 struct SwizzleState;
 struct VertexAttribute;
@@ -107,6 +109,7 @@ enum class TextureDimension
 // A maximum offset of 4096 covers almost every Vulkan driver on desktop (80%) and mobile (99%). The
 // next highest values to meet native drivers are 16 bits or 32 bits.
 constexpr uint32_t kAttributeOffsetMaxBits = 15;
+constexpr uint32_t kInvalidMemoryTypeIndex = UINT32_MAX;
 
 namespace vk
 {
@@ -115,7 +118,7 @@ class PackedAttachmentIndex final
 {
   public:
     explicit constexpr PackedAttachmentIndex(uint32_t index) : mAttachmentIndex(index) {}
-    constexpr PackedAttachmentIndex(const PackedAttachmentIndex &other) = default;
+    constexpr PackedAttachmentIndex(const PackedAttachmentIndex &other)            = default;
     constexpr PackedAttachmentIndex &operator=(const PackedAttachmentIndex &other) = default;
 
     constexpr uint32_t get() const { return mAttachmentIndex; }
@@ -194,19 +197,38 @@ class Context : angle::NonCopyable
     VkDevice getDevice() const;
     RendererVk *getRenderer() const { return mRenderer; }
 
+    const angle::VulkanPerfCounters &getPerfCounters() const { return mPerfCounters; }
+    angle::VulkanPerfCounters &getPerfCounters() { return mPerfCounters; }
+
   protected:
     RendererVk *const mRenderer;
+    angle::VulkanPerfCounters mPerfCounters;
 };
 
 class RenderPassDesc;
 
-#if ANGLE_USE_CUSTOM_VULKAN_CMD_BUFFERS
-using CommandBuffer = priv::SecondaryCommandBuffer;
+#if ANGLE_USE_CUSTOM_VULKAN_OUTSIDE_RENDER_PASS_CMD_BUFFERS
+using OutsideRenderPassCommandBuffer = priv::SecondaryCommandBuffer;
 #else
-using CommandBuffer                          = VulkanSecondaryCommandBuffer;
+using OutsideRenderPassCommandBuffer         = VulkanSecondaryCommandBuffer;
+#endif
+#if ANGLE_USE_CUSTOM_VULKAN_RENDER_PASS_CMD_BUFFERS
+using RenderPassCommandBuffer = priv::SecondaryCommandBuffer;
+#else
+using RenderPassCommandBuffer                = VulkanSecondaryCommandBuffer;
 #endif
 
-using SecondaryCommandBufferList = std::vector<CommandBuffer>;
+struct SecondaryCommandBufferList
+{
+    std::vector<OutsideRenderPassCommandBuffer> outsideRenderPassCommandBuffers;
+    std::vector<RenderPassCommandBuffer> renderPassCommandBuffers;
+};
+
+struct SecondaryCommandPools
+{
+    CommandPool outsideRenderPassPool;
+    CommandPool renderPassPool;
+};
 
 VkImageAspectFlags GetDepthStencilAspectFlags(const angle::Format &format);
 VkImageAspectFlags GetFormatAspectFlags(const angle::Format &format);
@@ -256,6 +278,12 @@ template <typename T>
 GetImplType<T> *GetImpl(const T *glObject)
 {
     return GetImplAs<GetImplType<T>>(glObject);
+}
+
+template <typename T>
+GetImplType<T> *SafeGetImpl(const T *glObject)
+{
+    return SafeGetImplAs<GetImplType<T>>(glObject);
 }
 
 template <>
@@ -344,7 +372,7 @@ using GarbageAndSerial = ObjectAndSerial<GarbageList>;
 
 // Houses multiple lists of garbage objects. Each sub-list has a different lifetime. They should be
 // sorted such that later-living garbage is ordered later in the list.
-using GarbageQueue = std::vector<GarbageAndSerial>;
+using GarbageQueue = std::queue<GarbageAndSerial>;
 
 class MemoryProperties final : angle::NonCopyable
 {
@@ -371,51 +399,6 @@ class MemoryProperties final : angle::NonCopyable
 
   private:
     VkPhysicalDeviceMemoryProperties mMemoryProperties;
-};
-
-class BufferMemory : angle::NonCopyable
-{
-  public:
-    BufferMemory();
-    ~BufferMemory();
-    angle::Result initExternal(void *clientBuffer);
-    angle::Result init();
-
-    void destroy(RendererVk *renderer);
-
-    angle::Result map(ContextVk *contextVk, VkDeviceSize size, uint8_t **ptrOut)
-    {
-        if (mMappedMemory == nullptr)
-        {
-            ANGLE_TRY(mapImpl(contextVk, size));
-        }
-        *ptrOut = mMappedMemory;
-        return angle::Result::Continue;
-    }
-    void unmap(RendererVk *renderer);
-    void flush(RendererVk *renderer,
-               VkMemoryMapFlags memoryPropertyFlags,
-               VkDeviceSize offset,
-               VkDeviceSize size);
-    void invalidate(RendererVk *renderer,
-                    VkMemoryMapFlags memoryPropertyFlags,
-                    VkDeviceSize offset,
-                    VkDeviceSize size);
-
-    bool isExternalBuffer() const { return mClientBuffer != nullptr; }
-
-    uint8_t *getMappedMemory() const { return mMappedMemory; }
-    DeviceMemory *getExternalMemoryObject() { return &mExternalMemory; }
-    Allocation *getMemoryObject() { return &mAllocation; }
-
-  private:
-    angle::Result mapImpl(ContextVk *contextVk, VkDeviceSize size);
-
-    Allocation mAllocation;        // use mAllocation if isExternalBuffer() is false
-    DeviceMemory mExternalMemory;  // use mExternalMemory if isExternalBuffer() is true
-
-    void *mClientBuffer;
-    uint8_t *mMappedMemory;
 };
 
 // Similar to StagingImage, for Buffers.
@@ -503,7 +486,7 @@ enum class RecordingMode
 // Helper class to handle RAII patterns for initialization. Requires that T have a destroy method
 // that takes a VkDevice and returns void.
 template <typename T>
-class DeviceScoped final : angle::NonCopyable
+class ANGLE_NO_DISCARD DeviceScoped final : angle::NonCopyable
 {
   public:
     DeviceScoped(VkDevice device) : mDevice(device) {}
@@ -519,10 +502,27 @@ class DeviceScoped final : angle::NonCopyable
     T mVar;
 };
 
+template <typename T>
+class ANGLE_NO_DISCARD AllocatorScoped final : angle::NonCopyable
+{
+  public:
+    AllocatorScoped(const Allocator &allocator) : mAllocator(allocator) {}
+    ~AllocatorScoped() { mVar.destroy(mAllocator); }
+
+    const T &get() const { return mVar; }
+    T &get() { return mVar; }
+
+    T &&release() { return std::move(mVar); }
+
+  private:
+    const Allocator &mAllocator;
+    T mVar;
+};
+
 // Similar to DeviceScoped, but releases objects instead of destroying them. Requires that T have a
 // release method that takes a ContextVk * and returns void.
 template <typename T>
-class ContextScoped final : angle::NonCopyable
+class ANGLE_NO_DISCARD ContextScoped final : angle::NonCopyable
 {
   public:
     ContextScoped(ContextVk *contextVk) : mContextVk(contextVk) {}
@@ -539,7 +539,7 @@ class ContextScoped final : angle::NonCopyable
 };
 
 template <typename T>
-class RendererScoped final : angle::NonCopyable
+class ANGLE_NO_DISCARD RendererScoped final : angle::NonCopyable
 {
   public:
     RendererScoped(RendererVk *renderer) : mRenderer(renderer) {}
@@ -778,6 +778,7 @@ class Recycler final : angle::NonCopyable
         {
             object.destroy(device);
         }
+        mObjectFreeList.clear();
     }
 
     bool empty() const { return mObjectFreeList.empty(); }
@@ -789,10 +790,10 @@ class Recycler final : angle::NonCopyable
 ANGLE_ENABLE_STRUCT_PADDING_WARNINGS
 struct SpecializationConstants final
 {
-    VkBool32 lineRasterEmulation;
-    uint32_t surfaceRotation;
+    VkBool32 surfaceRotation;
     float drawableWidth;
     float drawableHeight;
+    uint32_t dither;
 };
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 
@@ -851,32 +852,38 @@ class ClearValuesArray final
     X(ImageOrBufferView)      \
     X(Sampler)
 
-#define ANGLE_DEFINE_VK_SERIAL_TYPE(Type)                                     \
-    class Type##Serial                                                        \
-    {                                                                         \
-      public:                                                                 \
-        constexpr Type##Serial() : mSerial(kInvalid) {}                       \
-        constexpr explicit Type##Serial(uint32_t serial) : mSerial(serial) {} \
-                                                                              \
-        constexpr bool operator==(const Type##Serial &other) const            \
-        {                                                                     \
-            ASSERT(mSerial != kInvalid);                                      \
-            ASSERT(other.mSerial != kInvalid);                                \
-            return mSerial == other.mSerial;                                  \
-        }                                                                     \
-        constexpr bool operator!=(const Type##Serial &other) const            \
-        {                                                                     \
-            ASSERT(mSerial != kInvalid);                                      \
-            ASSERT(other.mSerial != kInvalid);                                \
-            return mSerial != other.mSerial;                                  \
-        }                                                                     \
-        constexpr uint32_t getValue() const { return mSerial; }               \
-        constexpr bool valid() const { return mSerial != kInvalid; }          \
-                                                                              \
-      private:                                                                \
-        uint32_t mSerial;                                                     \
-        static constexpr uint32_t kInvalid = 0;                               \
-    };                                                                        \
+#define ANGLE_DEFINE_VK_SERIAL_TYPE(Type)                                  \
+    class Type##Serial                                                     \
+    {                                                                      \
+      public:                                                              \
+        constexpr Type##Serial() : mSerial(kInvalid)                       \
+        {}                                                                 \
+        constexpr explicit Type##Serial(uint32_t serial) : mSerial(serial) \
+        {}                                                                 \
+                                                                           \
+        constexpr bool operator==(const Type##Serial &other) const         \
+        {                                                                  \
+            ASSERT(mSerial != kInvalid || other.mSerial != kInvalid);      \
+            return mSerial == other.mSerial;                               \
+        }                                                                  \
+        constexpr bool operator!=(const Type##Serial &other) const         \
+        {                                                                  \
+            ASSERT(mSerial != kInvalid || other.mSerial != kInvalid);      \
+            return mSerial != other.mSerial;                               \
+        }                                                                  \
+        constexpr uint32_t getValue() const                                \
+        {                                                                  \
+            return mSerial;                                                \
+        }                                                                  \
+        constexpr bool valid() const                                       \
+        {                                                                  \
+            return mSerial != kInvalid;                                    \
+        }                                                                  \
+                                                                           \
+      private:                                                             \
+        uint32_t mSerial;                                                  \
+        static constexpr uint32_t kInvalid = 0;                            \
+    };                                                                     \
     static constexpr Type##Serial kInvalid##Type##Serial = Type##Serial();
 
 ANGLE_VK_SERIAL_OP(ANGLE_DEFINE_VK_SERIAL_TYPE)
@@ -898,6 +905,333 @@ class ResourceSerialFactory final : angle::NonCopyable
     std::atomic<uint32_t> mCurrentUniqueSerial;
 };
 
+// BufferBlock
+class BufferBlock final : angle::NonCopyable
+{
+  public:
+    BufferBlock();
+    BufferBlock(BufferBlock &&other);
+    ~BufferBlock();
+
+    void destroy(RendererVk *renderer);
+    angle::Result init(Context *context,
+                       Buffer &buffer,
+                       vma::VirtualBlockCreateFlags flags,
+                       DeviceMemory &deviceMemory,
+                       VkMemoryPropertyFlags memoryPropertyFlags,
+                       VkDeviceSize size);
+    void initWithoutVirtualBlock(Context *context,
+                                 Buffer &buffer,
+                                 DeviceMemory &deviceMemory,
+                                 VkMemoryPropertyFlags memoryPropertyFlags,
+                                 VkDeviceSize size);
+
+    BufferBlock &operator=(BufferBlock &&other);
+
+    const Buffer &getBuffer() const { return mBuffer; }
+    const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
+    DeviceMemory &getDeviceMemory() { return mDeviceMemory; }
+    BufferSerial getBufferSerial() const { return mSerial; }
+
+    VkMemoryPropertyFlags getMemoryPropertyFlags() const;
+    VkDeviceSize getMemorySize() const;
+
+    VkResult allocate(VkDeviceSize size, VkDeviceSize alignment, VkDeviceSize *offsetOut);
+    void free(VkDeviceSize offset);
+    VkBool32 isEmpty();
+
+    bool hasVirtualBlock() const { return mVirtualBlock.valid(); }
+    bool isHostVisible() const;
+    bool isCoherent() const;
+    bool isMapped() const;
+    VkResult map(const VkDevice device);
+    void unmap(const VkDevice device);
+    uint8_t *getMappedMemory() const;
+
+    // This should be called whenever this found to be empty. The total number of count of empty is
+    // returned.
+    int32_t getAndIncrementEmptyCounter();
+    void calculateStats(vma::StatInfo *pStatInfo) const;
+
+  private:
+    // Protect multi-thread access to mVirtualBlock, which could be possible when asyncCommandQueue
+    // is enabled.
+    mutable ConditionalMutex mVirtualBlockMutex;
+    VirtualBlock mVirtualBlock;
+
+    Buffer mBuffer;
+    DeviceMemory mDeviceMemory;
+    VkMemoryPropertyFlags mMemoryPropertyFlags;
+    VkDeviceSize mSize;
+    uint8_t *mMappedMemory;
+    BufferSerial mSerial;
+    // Heuristic information for pruneEmptyBuffer. This tracks how many times (consecutively) this
+    // buffer block is found to be empty when pruneEmptyBuffer is called. This gets reset whenever
+    // it becomes non-empty.
+    int32_t mCountRemainsEmpty;
+};
+using BufferBlockPointerVector = std::vector<std::unique_ptr<BufferBlock>>;
+
+// BufferSuballocation
+class BufferSuballocation final : angle::NonCopyable
+{
+  public:
+    BufferSuballocation();
+
+    BufferSuballocation(BufferSuballocation &&other);
+    BufferSuballocation &operator=(BufferSuballocation &&other);
+
+    void destroy(RendererVk *renderer);
+
+    void init(VkDevice device, BufferBlock *block, VkDeviceSize offset, VkDeviceSize size);
+    void initWithEntireBuffer(Context *context,
+                              Buffer &buffer,
+                              DeviceMemory &deviceMemory,
+                              VkMemoryPropertyFlags memoryPropertyFlags,
+                              VkDeviceSize size);
+
+    const Buffer &getBuffer() const;
+    VkDeviceSize getSize() const;
+    const DeviceMemory &getDeviceMemory() const;
+    VkMemoryMapFlags getMemoryPropertyFlags() const;
+    bool isHostVisible() const;
+    bool isCoherent() const;
+    bool isMapped() const;
+    uint8_t *getMappedMemory() const;
+    void flush(const VkDevice &device);
+    void invalidate(const VkDevice &device);
+    VkDeviceSize getOffset() const;
+    bool valid() const;
+    VkResult map(Context *context);
+    BufferSerial getBlockSerial() const;
+    uint8_t *getBlockMemory() const;
+    VkDeviceSize getBlockMemorySize() const;
+    bool isSuballocated() const { return mBufferBlock->hasVirtualBlock(); }
+
+  private:
+    // Only used by DynamicBuffer where DynamicBuffer does the actual suballocation and pass the
+    // offset/size to this object. Since DynamicBuffer does not have a VMA virtual allocator, they
+    // will be ignored at destroy time. The offset/size is set here mainly for easy retrieval when
+    // the BufferHelper object is passed around.
+    friend class BufferHelper;
+    void setOffsetAndSize(VkDeviceSize offset, VkDeviceSize size);
+
+    BufferBlock *mBufferBlock;
+    VkDeviceSize mOffset;
+    VkDeviceSize mSize;
+};
+
+// BufferBlock implementation.
+ANGLE_INLINE VkMemoryPropertyFlags BufferBlock::getMemoryPropertyFlags() const
+{
+    return mMemoryPropertyFlags;
+}
+
+ANGLE_INLINE VkDeviceSize BufferBlock::getMemorySize() const
+{
+    return mSize;
+}
+
+ANGLE_INLINE VkBool32 BufferBlock::isEmpty()
+{
+    std::lock_guard<ConditionalMutex> lock(mVirtualBlockMutex);
+    return vma::IsVirtualBlockEmpty(mVirtualBlock.getHandle());
+}
+
+ANGLE_INLINE bool BufferBlock::isHostVisible() const
+{
+    return (mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0;
+}
+
+ANGLE_INLINE bool BufferBlock::isCoherent() const
+{
+    return (mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
+}
+
+ANGLE_INLINE bool BufferBlock::isMapped() const
+{
+    return mMappedMemory != nullptr;
+}
+
+ANGLE_INLINE uint8_t *BufferBlock::getMappedMemory() const
+{
+    ASSERT(mMappedMemory != nullptr);
+    return mMappedMemory;
+}
+
+ANGLE_INLINE VkResult BufferBlock::allocate(VkDeviceSize size,
+                                            VkDeviceSize alignment,
+                                            VkDeviceSize *offsetOut)
+{
+    std::lock_guard<ConditionalMutex> lock(mVirtualBlockMutex);
+    mCountRemainsEmpty = 0;
+    return mVirtualBlock.allocate(size, alignment, offsetOut);
+}
+
+// BufferSuballocation implementation.
+ANGLE_INLINE BufferSuballocation::BufferSuballocation()
+    : mBufferBlock(nullptr), mOffset(0), mSize(0)
+{}
+
+ANGLE_INLINE BufferSuballocation::BufferSuballocation(BufferSuballocation &&other)
+    : BufferSuballocation()
+{
+    *this = std::move(other);
+}
+
+ANGLE_INLINE BufferSuballocation &BufferSuballocation::operator=(BufferSuballocation &&other)
+{
+    std::swap(mBufferBlock, other.mBufferBlock);
+    std::swap(mSize, other.mSize);
+    std::swap(mOffset, other.mOffset);
+    return *this;
+}
+
+ANGLE_INLINE bool BufferSuballocation::valid() const
+{
+    return mBufferBlock != nullptr;
+}
+
+ANGLE_INLINE void BufferSuballocation::destroy(RendererVk *renderer)
+{
+    if (valid())
+    {
+        ASSERT(mBufferBlock);
+        if (mBufferBlock->hasVirtualBlock())
+        {
+            mBufferBlock->free(mOffset);
+            mBufferBlock = nullptr;
+        }
+        else
+        {
+            // When virtual block is invalid, this is the standalone buffer that are created by
+            // BufferSuballocation::initWithEntireBuffer call. In this case, vmaBufferSuballocation
+            // owns block, we must properly delete the block object.
+            mBufferBlock->destroy(renderer);
+            SafeDelete(mBufferBlock);
+        }
+        mOffset = 0;
+        mSize   = 0;
+    }
+}
+
+ANGLE_INLINE void BufferSuballocation::init(VkDevice device,
+                                            BufferBlock *block,
+                                            VkDeviceSize offset,
+                                            VkDeviceSize size)
+{
+    ASSERT(!valid());
+    ASSERT(block != nullptr);
+    ASSERT(offset != VK_WHOLE_SIZE);
+    mBufferBlock = block;
+    mOffset      = offset;
+    mSize        = size;
+}
+
+ANGLE_INLINE void BufferSuballocation::initWithEntireBuffer(
+    Context *context,
+    Buffer &buffer,
+    DeviceMemory &deviceMemory,
+    VkMemoryPropertyFlags memoryPropertyFlags,
+    VkDeviceSize size)
+{
+    ASSERT(!valid());
+
+    std::unique_ptr<BufferBlock> block = std::make_unique<BufferBlock>();
+    block->initWithoutVirtualBlock(context, buffer, deviceMemory, memoryPropertyFlags, size);
+
+    mBufferBlock = block.release();
+    mOffset      = 0;
+    mSize        = mBufferBlock->getMemorySize();
+}
+
+ANGLE_INLINE const Buffer &BufferSuballocation::getBuffer() const
+{
+    return mBufferBlock->getBuffer();
+}
+
+ANGLE_INLINE VkDeviceSize BufferSuballocation::getSize() const
+{
+    return mSize;
+}
+
+ANGLE_INLINE const DeviceMemory &BufferSuballocation::getDeviceMemory() const
+{
+    return mBufferBlock->getDeviceMemory();
+}
+
+ANGLE_INLINE VkMemoryMapFlags BufferSuballocation::getMemoryPropertyFlags() const
+{
+    return mBufferBlock->getMemoryPropertyFlags();
+}
+
+ANGLE_INLINE bool BufferSuballocation::isHostVisible() const
+{
+    return mBufferBlock->isHostVisible();
+}
+ANGLE_INLINE bool BufferSuballocation::isCoherent() const
+{
+    return mBufferBlock->isCoherent();
+}
+ANGLE_INLINE bool BufferSuballocation::isMapped() const
+{
+    return mBufferBlock->isMapped();
+}
+ANGLE_INLINE uint8_t *BufferSuballocation::getMappedMemory() const
+{
+    return mBufferBlock->getMappedMemory() + getOffset();
+}
+
+ANGLE_INLINE void BufferSuballocation::flush(const VkDevice &device)
+{
+    if (!isCoherent())
+    {
+        VkMappedMemoryRange mappedRange = {};
+        mappedRange.sType               = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        mappedRange.memory              = mBufferBlock->getDeviceMemory().getHandle();
+        mappedRange.offset              = getOffset();
+        mappedRange.size                = mSize;
+        mBufferBlock->getDeviceMemory().flush(device, mappedRange);
+    }
+}
+
+ANGLE_INLINE void BufferSuballocation::invalidate(const VkDevice &device)
+{
+    if (!isCoherent())
+    {
+        VkMappedMemoryRange mappedRange = {};
+        mappedRange.sType               = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        mappedRange.memory              = mBufferBlock->getDeviceMemory().getHandle();
+        mappedRange.offset              = getOffset();
+        mappedRange.size                = mSize;
+        mBufferBlock->getDeviceMemory().invalidate(device, mappedRange);
+    }
+}
+
+ANGLE_INLINE VkDeviceSize BufferSuballocation::getOffset() const
+{
+    return mOffset;
+}
+
+ANGLE_INLINE void BufferSuballocation::setOffsetAndSize(VkDeviceSize offset, VkDeviceSize size)
+{
+    mOffset = offset;
+    mSize   = size;
+}
+
+ANGLE_INLINE uint8_t *BufferSuballocation::getBlockMemory() const
+{
+    return mBufferBlock->getMappedMemory();
+}
+ANGLE_INLINE VkDeviceSize BufferSuballocation::getBlockMemorySize() const
+{
+    return mBufferBlock->getMemorySize();
+}
+ANGLE_INLINE BufferSerial BufferSuballocation::getBlockSerial() const
+{
+    ASSERT(valid());
+    return mBufferBlock->getBufferSerial();
+}
 #if defined(ANGLE_ENABLE_PERF_COUNTER_OUTPUT)
 constexpr bool kOutputCumulativePerfCounters = ANGLE_ENABLE_PERF_COUNTER_OUTPUT;
 #else
@@ -908,12 +1242,21 @@ constexpr bool kOutputCumulativePerfCounters = false;
 struct RenderPassPerfCounters
 {
     // load/storeOps. Includes ops for resolve attachment. Maximum value = 2.
-    uint8_t depthClears;
-    uint8_t depthLoads;
-    uint8_t depthStores;
-    uint8_t stencilClears;
-    uint8_t stencilLoads;
-    uint8_t stencilStores;
+    uint8_t colorLoadOpClears;
+    uint8_t colorLoadOpLoads;
+    uint8_t colorLoadOpNones;
+    uint8_t colorStoreOpStores;
+    uint8_t colorStoreOpNones;
+    uint8_t depthLoadOpClears;
+    uint8_t depthLoadOpLoads;
+    uint8_t depthLoadOpNones;
+    uint8_t depthStoreOpStores;
+    uint8_t depthStoreOpNones;
+    uint8_t stencilLoadOpClears;
+    uint8_t stencilLoadOpLoads;
+    uint8_t stencilLoadOpNones;
+    uint8_t stencilStoreOpStores;
+    uint8_t stencilStoreOpNones;
     // Number of unresolve and resolve operations.  Maximum value for color =
     // gl::IMPLEMENTATION_MAX_DRAW_BUFFERS and for depth/stencil = 1 each.
     uint8_t colorAttachmentUnresolves;
@@ -926,38 +1269,29 @@ struct RenderPassPerfCounters
     uint8_t readOnlyDepthStencil;
 };
 
-struct PerfCounters
-{
-    uint32_t primaryBuffers;
-    uint32_t renderPasses;
-    uint32_t writeDescriptorSets;
-    uint32_t flushedOutsideRenderPassCommandBuffers;
-    uint32_t resolveImageCommands;
-    uint32_t depthClears;
-    uint32_t depthLoads;
-    uint32_t depthStores;
-    uint32_t stencilClears;
-    uint32_t stencilLoads;
-    uint32_t stencilStores;
-    uint32_t colorAttachmentUnresolves;
-    uint32_t depthAttachmentUnresolves;
-    uint32_t stencilAttachmentUnresolves;
-    uint32_t colorAttachmentResolves;
-    uint32_t depthAttachmentResolves;
-    uint32_t stencilAttachmentResolves;
-    uint32_t readOnlyDepthStencilRenderPasses;
-    uint32_t descriptorSetAllocations;
-    uint32_t shaderBuffersDescriptorSetCacheHits;
-    uint32_t shaderBuffersDescriptorSetCacheMisses;
-    uint32_t buffersGhosted;
-    uint32_t vertexArraySyncStateCalls;
-};
-
 // A Vulkan image level index.
 using LevelIndex = gl::LevelIndexWrapper<uint32_t>;
 
 // Ensure viewport is within Vulkan requirements
 void ClampViewport(VkViewport *viewport);
+
+constexpr bool IsDynamicDescriptor(VkDescriptorType descriptorType)
+{
+    switch (descriptorType)
+    {
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+        case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+            return true;
+        default:
+            return false;
+    }
+}
+
+void ApplyPipelineCreationFeedback(Context *context, const VkPipelineCreationFeedback &feedback);
+
+angle::Result SetDebugUtilsObjectName(ContextVk *contextVk,
+                                      uint64_t handle,
+                                      const std::string &label);
 
 }  // namespace vk
 
@@ -1012,6 +1346,15 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance);
 // VK_KHR_shared_presentable_image
 void InitGetSwapchainStatusKHRFunctions(VkDevice device);
 
+// VK_EXT_extended_dynamic_state
+void InitExtendedDynamicStateEXTFunctions(VkDevice device);
+
+// VK_EXT_extended_dynamic_state2
+void InitExtendedDynamicState2EXTFunctions(VkDevice device);
+
+// VK_KHR_fragment_shading_rate
+void InitFragmentShadingRateKHRFunctions(VkDevice device);
+
 #endif  // !defined(ANGLE_SHARED_LIBVULKAN)
 
 GLenum CalculateGenerateMipmapFilter(ContextVk *contextVk, angle::FormatID formatID);
@@ -1029,6 +1372,7 @@ VkFrontFace GetFrontFace(GLenum frontFace, bool invertCullFace);
 VkSampleCountFlagBits GetSamples(GLint sampleCount);
 VkComponentSwizzle GetSwizzle(const GLenum swizzle);
 VkCompareOp GetCompareOp(const GLenum compareFunc);
+VkStencilOp GetStencilOp(const GLenum compareOp);
 
 constexpr gl::ShaderMap<VkShaderStageFlagBits> kShaderStageMap = {
     {gl::ShaderType::Vertex, VK_SHADER_STAGE_VERTEX_BIT},
@@ -1125,6 +1469,7 @@ enum class RenderPassClosureReason
     XfbWriteThenComputeRead,
     XfbWriteThenIndirectDispatchBuffer,
     ImageAttachmentThenComputeRead,
+    GraphicsTextureImageAccessThenComputeAccess,
     GetQueryResult,
     BeginNonRenderPassQuery,
     EndNonRenderPassQuery,
@@ -1159,9 +1504,7 @@ enum class RenderPassClosureReason
     PrepareForImageCopy,
     TemporaryForImageClear,
     TemporaryForImageCopy,
-
-    // Misc
-    OverlayFontCreation,
+    TemporaryForOverlayDraw,
 
     InvalidEnum,
     EnumCount = InvalidEnum,

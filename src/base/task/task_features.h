@@ -48,7 +48,7 @@ extern const BASE_EXPORT Feature kWakeUpStrategyFeature;
 extern const BASE_EXPORT base::FeatureParam<WakeUpStrategy>
     kWakeUpStrategyParam;
 
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 #define HAS_NATIVE_THREAD_POOL() 1
 #else
 #define HAS_NATIVE_THREAD_POOL() 0
@@ -70,6 +70,22 @@ extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
 
 // Controls whether or not canceled delayed tasks are removed from task queues.
 extern const BASE_EXPORT base::Feature kRemoveCanceledTasksInTaskQueue;
+
+// Under this feature, a non-zero leeway is added to delayed tasks. Along with
+// DelayPolicy, this affects the time at which a delayed task runs.
+extern const BASE_EXPORT Feature kAddTaskLeewayFeature;
+extern const BASE_EXPORT base::FeatureParam<TimeDelta> kTaskLeewayParam;
+
+// Under this feature, wake ups are aligned at a 4ms boundary when allowed per
+// DelayPolicy.
+extern const BASE_EXPORT base::Feature kAlignWakeUps;
+
+// Under this feature, tasks that need high resolution timer are determined
+// based on explicit DelayPolicy rather than based on a threshold.
+extern const BASE_EXPORT base::Feature kExplicitHighResolutionTimerWin;
+
+// Feature to run tasks by batches before pumping out messages.
+extern const BASE_EXPORT base::Feature kRunTasksByBatches;
 
 }  // namespace base
 

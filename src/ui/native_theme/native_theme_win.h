@@ -61,6 +61,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                         State state,
                         const ExtraParams& extra) const override;
   void Paint(cc::PaintCanvas* canvas,
+             const ui::ColorProvider* color_provider,
              Part part,
              State state,
              const gfx::Rect& rect,
@@ -81,10 +82,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // NativeTheme:
   void ConfigureWebInstance() override;
-  bool AllowColorPipelineRedirection(ColorScheme color_scheme) const override;
-  SkColor GetSystemColorDeprecated(ColorId color_id,
-                                   ColorScheme color_scheme,
-                                   bool apply_processing) const override;
 
   NativeThemeWin(bool configure_web_instance, bool should_only_use_dark_colors);
   ~NativeThemeWin() override;
@@ -101,14 +98,14 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // Painting functions that paint to PaintCanvas.
   void PaintMenuSeparator(cc::PaintCanvas* canvas,
-                          const MenuSeparatorExtraParams& params,
-                          ColorScheme color_scheme) const;
+                          const ColorProvider* color_provider,
+                          const MenuSeparatorExtraParams& params) const;
   void PaintMenuGutter(cc::PaintCanvas* canvas,
-                       const gfx::Rect& rect,
-                       ColorScheme color_scheme) const;
+                       const ColorProvider* color_provider,
+                       const gfx::Rect& rect) const;
   void PaintMenuBackground(cc::PaintCanvas* canvas,
-                           const gfx::Rect& rect,
-                           ColorScheme color_scheme) const;
+                           const ColorProvider* color_provider,
+                           const gfx::Rect& rect) const;
 
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* destination_canvas,
@@ -199,10 +196,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   void RegisterThemeRegkeyObserver();
   void UpdateDarkModeStatus();
-
-  // Returns the platform provided high contrast color for the given
-  // |color_id|.
-  absl::optional<SkColor> GetPlatformHighContrastColor(ColorId color_id) const;
 
   // Dark Mode registry key.
   base::win::RegKey hkcu_themes_regkey_;

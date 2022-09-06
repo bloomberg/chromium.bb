@@ -70,9 +70,9 @@ using FormGroupValues = std::vector<FormGroupValue>;
 
 using RandomizeFrame = base::StrongAlias<struct RandomizeFrameTag, bool>;
 
-// Creates non-empty LocalFrameToken. If `randomize` is true, the
-// LocalFrameToken is generated randomly, otherwise it is stable.
-LocalFrameToken GetLocalFrameToken(
+// Creates non-empty LocalFrameToken. If `randomize` is false, the
+// LocalFrameToken is stable across multiple calls.
+LocalFrameToken MakeLocalFrameToken(
     RandomizeFrame randomize = RandomizeFrame(false));
 
 // Creates new, pairwise distinct FormRendererIds.
@@ -82,7 +82,8 @@ FormRendererId MakeFormRendererId();
 FieldRendererId MakeFieldRendererId();
 
 // Creates new, pairwise distinct FormGlobalIds. If `randomize` is true, the
-// LocalFrameToken is generated randomly, otherwise it is stable.
+// LocalFrameToken is generated randomly, otherwise it is stable across multiple
+// calls.
 FormGlobalId MakeFormGlobalId(
     RandomizeFrame randomize_frame = RandomizeFrame(false));
 
@@ -216,12 +217,17 @@ CreditCard GetIncompleteCreditCard();
 
 // Returns a masked server card full of dummy info.
 CreditCard GetMaskedServerCard();
+CreditCard GetMaskedServerCardWithNonLegacyId();
+CreditCard GetMaskedServerCardWithLegacyId();
 CreditCard GetMaskedServerCardAmex();
 CreditCard GetMaskedServerCardWithNickname();
 CreditCard GetMaskedServerCardWithInvalidNickname();
 
 // Returns a full server card full of dummy info.
 CreditCard GetFullServerCard();
+
+// Returns a virtual card full of dummy info.
+CreditCard GetVirtualCard();
 
 // Returns a randomly generated credit card of |record_type|. Note that the
 // card is not guaranteed to be valid/sane from a card validation standpoint.
@@ -234,18 +240,21 @@ CreditCardCloudTokenData GetCreditCardCloudTokenData1();
 // one above.
 CreditCardCloudTokenData GetCreditCardCloudTokenData2();
 
-// Returns an Autofill card-linked offer data full of dummy info.
-AutofillOfferData GetCardLinkedOfferData1();
+// Returns an Autofill card-linked offer data full of dummy info. Use
+// |offer_id| to optionally set the offer id.
+AutofillOfferData GetCardLinkedOfferData1(int64_t offer_id = 111);
 
 // Returns an Autofill card-linked offer data full of dummy info, different from
-// the one above.
-AutofillOfferData GetCardLinkedOfferData2();
+// the one above. Use |offer_id| to optionally set the offer id.
+AutofillOfferData GetCardLinkedOfferData2(int64_t offer_id = 222);
 
 // Returns an Autofill promo code offer data full of dummy info, using |origin|
-// if provided and expired if |is_expired| is true.
+// if provided and expired if |is_expired| is true. Use |offer_id| to optionally
+// set the offer id.
 AutofillOfferData GetPromoCodeOfferData(
     GURL origin = GURL("http://www.example.com"),
-    bool is_expired = false);
+    bool is_expired = false,
+    int64_t offer_id = 333);
 
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with

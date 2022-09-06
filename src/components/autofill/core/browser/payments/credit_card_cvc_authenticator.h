@@ -17,6 +17,10 @@
 
 namespace autofill {
 
+namespace metrics {
+class AutofillMetricsBaseTest;
+}
+
 // Authenticates credit card unmasking through CVC verification.
 class CreditCardCVCAuthenticator
     : public payments::FullCardRequest::ResultDelegate,
@@ -66,7 +70,7 @@ class CreditCardCVCAuthenticator
     virtual void OnCVCAuthenticationComplete(
         const CVCAuthenticationResponse& response) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Returns whether or not the user, while on the CVC prompt, should be
     // offered to switch to FIDO authentication for card unmasking. This will
     // always be false for Desktop since FIDO authentication is offered as a
@@ -109,7 +113,7 @@ class CreditCardCVCAuthenticator
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(
       AutofillClient::PaymentsRpcResult result) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   bool ShouldOfferFidoAuth() const override;
   bool UserOptedInToFidoFromSettingsPageOnMobile() const override;
 #endif
@@ -123,6 +127,7 @@ class CreditCardCVCAuthenticator
   friend class AutofillAssistantTest;
   friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
+  friend class metrics::AutofillMetricsBaseTest;
   friend class CreditCardAccessManagerTest;
   friend class CreditCardCVCAuthenticatorTest;
 

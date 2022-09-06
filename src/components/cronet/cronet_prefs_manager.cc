@@ -156,10 +156,10 @@ class NetworkQualitiesPrefDelegateImpl
   ~NetworkQualitiesPrefDelegateImpl() override {}
 
   // net::NetworkQualitiesPrefsManager::PrefDelegate implementation.
-  void SetDictionaryValue(const base::DictionaryValue& value) override {
+  void SetDictionaryValue(const base::Value::Dict& dict) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    pref_service_->Set(kNetworkQualitiesPref, value);
+    pref_service_->SetDict(kNetworkQualitiesPref, dict.Clone());
     if (lossy_prefs_writing_task_posted_)
       return;
 
@@ -179,11 +179,13 @@ class NetworkQualitiesPrefDelegateImpl
             weak_ptr_factory_.GetWeakPtr()),
         base::Seconds(kUpdatePrefsDelaySeconds));
   }
-  std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
+
+  base::Value::Dict GetDictionaryValue() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.ReadCount", 1, 2);
     return pref_service_->GetDictionary(kNetworkQualitiesPref)
-        ->CreateDeepCopy();
+        ->GetDict()
+        .Clone();
   }
 
  private:
@@ -220,7 +222,7 @@ CronetPrefsManager::CronetPrefsManager(
   DCHECK(network_task_runner->BelongsToCurrentThread());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::FilePath storage_file_path(
       base::FilePath::FromUTF8Unsafe(storage_path));
 #else

@@ -22,7 +22,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RESOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RESOLVER_H_
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/text/bidi_character_run.h"
 #include "third_party/blink/renderer/platform/text/bidi_context.h"
 #include "third_party/blink/renderer/platform/text/bidi_run_list.h"
@@ -1019,7 +1021,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             case WTF::unicode::kCommonNumberSeparator:
               if (status_.eor == WTF::unicode::kEuropeanNumber)
                 break;
-              FALLTHROUGH;
+              [[fallthrough]];
             case WTF::unicode::kEuropeanNumberTerminator:
             case WTF::unicode::kBoundaryNeutral:
             case WTF::unicode::kBlockSeparator:
@@ -1074,7 +1076,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
             direction_ = WTF::unicode::kLeftToRight;
           break;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
       case WTF::unicode::kArabicNumber:
         dir_current = WTF::unicode::kArabicNumber;
         switch (status_.last) {
@@ -1093,7 +1095,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
           case WTF::unicode::kCommonNumberSeparator:
             if (status_.eor == WTF::unicode::kArabicNumber)
               break;
-            FALLTHROUGH;
+            [[fallthrough]];
           case WTF::unicode::kEuropeanNumberSeparator:
           case WTF::unicode::kEuropeanNumberTerminator:
           case WTF::unicode::kBoundaryNeutral:

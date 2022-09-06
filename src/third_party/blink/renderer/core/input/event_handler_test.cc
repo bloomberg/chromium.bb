@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -1164,7 +1165,7 @@ TEST_F(EventHandlerTooltipTest, mouseLeaveClearsTooltip) {
 }
 
 // macOS doesn't have keyboard-triggered tooltips.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FocusSetFromTabUpdatesTooltip \
   DISABLED_FocusSetFromTabUpdatesTooltip
 #else
@@ -1202,7 +1203,7 @@ TEST_F(EventHandlerTooltipTest, MAYBE_FocusSetFromTabUpdatesTooltip) {
 }
 
 // macOS doesn't have keyboard-triggered tooltips.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FocusSetFromAccessKeyUpdatesTooltip \
   DISABLED_FocusSetFromAccessKeyUpdatesTooltip
 #else
@@ -1231,7 +1232,7 @@ TEST_F(EventHandlerTooltipTest, MAYBE_FocusSetFromAccessKeyUpdatesTooltip) {
 }
 
 // macOS doesn't have keyboard-triggered tooltips.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FocusSetFromMouseDoesntUpdateTooltip \
   DISABLED_FocusSetFromMouseDoesntUpdateTooltip
 #else
@@ -1265,7 +1266,7 @@ TEST_F(EventHandlerTooltipTest, MAYBE_FocusSetFromMouseDoesntUpdateTooltip) {
 }
 
 // macOS doesn't have keyboard-triggered tooltips.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FocusSetFromScriptDoesntUpdateTooltip \
   DISABLED_FocusSetFromScriptDoesntUpdateTooltip
 #else
@@ -1284,14 +1285,14 @@ TEST_F(EventHandlerTooltipTest, MAYBE_FocusSetFromScriptDoesntUpdateTooltip) {
   EXPECT_EQ(gfx::Rect(), LastToolTipBounds());
 
   Element* element = GetDocument().getElementById("b");
-  element->focus();
+  element->Focus();
 
   EXPECT_TRUE(LastToolTipText().IsNull());
   EXPECT_EQ(gfx::Rect(), LastToolTipBounds());
 }
 
 // macOS doesn't have keyboard-triggered tooltips.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FocusSetScriptInitiatedFromKeypressUpdatesTooltip \
   DISABLED_FocusSetScriptInitiatedFromKeypressUpdatesTooltip
 #else
@@ -1354,12 +1355,12 @@ TEST_F(EventHandlerTooltipTest,
   // But when the Element::Focus() is called outside of a keypress context,
   // no tooltip is shown.
   element = GetDocument().getElementById("b1");
-  element->focus(FocusOptions::Create());
+  element->Focus(FocusOptions::Create());
   EXPECT_TRUE(LastToolTipText().IsNull());
 }
 
 // macOS doesn't have keyboard-triggered tooltips.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FocusSetFromScriptClearsKeyboardTriggeredTooltip \
   DISABLED_FocusSetFromScriptClearsKeyboardTriggeredTooltip
 #else
@@ -1400,7 +1401,7 @@ TEST_F(EventHandlerTooltipTest,
 
   // Then, programmatically move the focus to another button that has no title
   // text. This should hide the tooltip.
-  element->focus();
+  element->Focus();
 
   EXPECT_TRUE(LastToolTipText().IsNull());
   EXPECT_EQ(gfx::Rect(), LastToolTipBounds());
@@ -1445,7 +1446,7 @@ TEST_F(EventHandlerTooltipTest,
 
   // Then, programmatically move the focus to another element.
   Element* element = GetDocument().getElementById("b2");
-  element->focus();
+  element->Focus();
 
   EXPECT_EQ("tooltip", LastToolTipText());
 }
@@ -1684,7 +1685,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
 }
 
 // https://crbug.com/976557 tracks the fix for re-enabling this test on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_GestureTapWithScrollSnaps DISABLED_GestureTapWithScrollSnaps
 #else
 #define MAYBE_GestureTapWithScrollSnaps GestureTapWithScrollSnaps

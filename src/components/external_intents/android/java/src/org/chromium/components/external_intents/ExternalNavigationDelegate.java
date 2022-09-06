@@ -55,45 +55,11 @@ public interface ExternalNavigationDelegate {
 
     /**
      * Dispatches the intent through a proxy activity, so that startActivityForResult can be used
-     * and the intent recipient can verify the caller. Will be invoked only in flows where
-     * ExternalNavigationDelegate#isIntentForInstantApp() returns true for |intent|. In particular,
-     * if that method always returns false in the given embedder, then the embedder's implementation
-     * of this method will never be invoked and can just assert false.
+     * and the intent recipient can verify the caller. Will be invoked only in delegates where
+     * ExternalNavigationDelegate#handlesInstantAppLaunchingInternally() returns true.
      * @param intent The bare intent we were going to send.
      */
     void dispatchAuthenticatedIntent(Intent intent);
-
-    /**
-     * Informs the delegate that an Activity was started for an external intent (some embedders wish
-     * to log this information, primarily for testing purposes).
-     */
-    void didStartActivity(Intent intent);
-
-    /**
-     * Used by maybeHandleStartActivityIfNeeded() below.
-     */
-    @IntDef({StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START,
-            StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START,
-            StartActivityIfNeededResult.DID_NOT_HANDLE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface StartActivityIfNeededResult {
-        int HANDLED_WITH_ACTIVITY_START = 0;
-        int HANDLED_WITHOUT_ACTIVITY_START = 1;
-        int DID_NOT_HANDLE = 2;
-    }
-
-    /**
-     * Gives the embedder the opportunity to handle starting an activity for the intent. Used for
-     * intents that may be handled internally or externally. If the embedder handles this intent,
-     * this method should return StartActivityIfNeededResult.HANDLED_{WITH, WITHOUT}_ACTIVITY_START
-     * as appropriate. To have ExternalNavigationHandler handle this intent, return
-     * StartActivityIfNeededResult.NOT_HANDLED.
-     * @param intent The intent we want to send.
-     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
-     *              used by Instant Apps intents).
-     */
-    @StartActivityIfNeededResult
-    int maybeHandleStartActivityIfNeeded(Intent intent, boolean proxy);
 
     /**
      * Loads a URL as specified by |loadUrlParams| if possible. May fail in exceptional conditions
@@ -199,12 +165,6 @@ public interface ExternalNavigationDelegate {
     boolean isIntentForTrustedCallingApp(Intent intent);
 
     /**
-     * @param intent The intent to launch.
-     * @return Whether the Intent points to an instant app.
-     */
-    boolean isIntentToInstantApp(Intent intent);
-
-    /**
      * @param intent The intent to launch
      * @return Whether the Intent points to Autofill Assistant
      */
@@ -255,7 +215,14 @@ public interface ExternalNavigationDelegate {
 
     /**
      * Whether the Activity launch should be aborted if the disambiguation prompt is going to be
-     * shown.
+     * shown and Chrome is able to handle the navigation.
      */
     boolean shouldAvoidDisambiguationDialog(Intent intent);
+
+    /**
+     * Whether navigations started by the embedder (i.e. not by the renderer) should stay in the
+     * browser by default. Note that there are many exceptions to this, like redirects off of the
+     * navigation still being allowed to leave the browser.
+     */
+    boolean shouldEmbedderInitiatedNavigationsStayInBrowser();
 }

@@ -26,27 +26,23 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
-#include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
-#include "third_party/blink/renderer/core/html/conversion_measurement_parsing.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -55,6 +51,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -63,6 +60,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace blink {
 
@@ -173,8 +171,8 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
 
   // The coordinates sent in the query string are relative to the height and
   // width of the image element, ignoring CSS transform/zoom.
-  gfx::PointF map_point = layout_object->AbsoluteToLocalPoint(
-      gfx::PointF(mouse_event->AbsoluteLocation()));
+  gfx::PointF map_point =
+      layout_object->AbsoluteToLocalPoint(mouse_event->AbsoluteLocation());
 
   // The origin (0,0) is at the upper left of the content area, inside the
   // padding and border.
@@ -227,19 +225,6 @@ void HTMLAnchorElement::SetActive(bool active) {
 void HTMLAnchorElement::AttributeChanged(
     const AttributeModificationParams& params) {
   HTMLElement::AttributeChanged(params);
-  if (params.name == html_names::kRegisterattributionsourceAttr &&
-      !params.new_value.IsNull() && HasImpression()) {
-    absl::optional<WebImpression> impression = GetImpressionForAnchor(this);
-    if (impression) {
-      mojo::AssociatedRemote<mojom::blink::ConversionHost> conversion_host;
-      GetDocument()
-          .GetFrame()
-          ->GetRemoteNavigationAssociatedInterfaces()
-          ->GetInterface(&conversion_host);
-      conversion_host->RegisterImpression(
-          ConvertWebImpressionToImpression(*impression));
-    }
-  }
 
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
@@ -376,11 +361,6 @@ bool HTMLAnchorElement::IsLiveLink() const {
   return IsLink() && !HasEditableStyle(*this);
 }
 
-bool HTMLAnchorElement::HasImpression() const {
-  return hasAttribute(html_names::kAttributionsourceeventidAttr) &&
-         hasAttribute(html_names::kAttributiondestinationAttr);
-}
-
 void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
   const AtomicString& ping_value = FastGetAttribute(html_names::kPingAttr);
   if (ping_value.IsNull() || !GetDocument().GetSettings() ||
@@ -477,6 +457,24 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       return;
     }
 
+    if (auto* navigation_api = NavigationApi::navigation(*window)) {
+      NavigationApi::DispatchParams params(completed_url,
+                                           NavigateEventType::kCrossDocument,
+                                           WebFrameLoadType::kStandard);
+      if (event.isTrusted())
+        params.involvement = UserNavigationInvolvement::kActivation;
+      params.download_filename = download_attr;
+      if (navigation_api->DispatchNavigateEvent(params) !=
+          NavigationApi::DispatchResult::kContinue) {
+        return;
+      }
+      // A download will never notify blink about its completion. Tell the
+      // NavigationApi that the navigation was dropped, so that it doesn't
+      // leave the frame thinking it is loading indefinitely.
+      navigation_api->InformAboutCanceledNavigation(
+          CancelNavigationReason::kDropped);
+    }
+
     request.SetSuggestedFilename(download_attr);
     request.SetRequestContext(mojom::blink::RequestContextType::DOWNLOAD);
     request.SetRequestorOrigin(window->GetSecurityOrigin());
@@ -503,7 +501,6 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
   if (HasRel(kRelationNoOpener) ||
       (EqualIgnoringASCIICase(target, "_blank") && !HasRel(kRelationOpener) &&
-       RuntimeEnabledFeatures::TargetBlankImpliesNoOpenerEnabled() &&
        frame->GetSettings()
            ->GetTargetBlankImpliesNoOpenerEnabledWillBeRemoved())) {
     frame_request.SetNoOpener();
@@ -517,7 +514,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   frame->MaybeLogAdClickNavigation();
 
-  if (request.HasUserGesture() && HasImpression()) {
+  if (request.HasUserGesture() &&
+      FastHasAttribute(html_names::kAttributionsrcAttr)) {
     // An impression must be attached prior to the
     // FindOrCreateFrameForNavigation() call, as that call may result in
     // performing a navigation if the call results in creating a new window with
@@ -527,9 +525,25 @@ void HTMLAnchorElement::HandleClick(Event& event) {
     // set `target_frame` to `frame`, but end up targeting a new window.
     // Attach the impression regardless, the embedder will be able to drop
     // impressions for subframe navigations.
-    absl::optional<WebImpression> impression = GetImpressionForAnchor(this);
-    if (impression)
-      frame_request.SetImpression(*impression);
+
+    const AtomicString& attribution_src_value =
+        FastGetAttribute(html_names::kAttributionsrcAttr);
+    if (!attribution_src_value.IsEmpty()) {
+      frame_request.SetImpression(
+          frame->GetAttributionSrcLoader()->RegisterNavigation(
+              GetDocument().CompleteURL(attribution_src_value), this));
+    }
+
+    // If the impression could not be set, or if the value was null, mark that
+    // the frame request is eligible for attribution by adding an impression.
+    if (!frame_request.Impression() &&
+        CanRegisterAttributionInContext(
+            frame, this,
+            /*request_id=*/absl::nullopt,
+            AttributionSrcLoader::RegisterContext::kAttributionSrc,
+            /*log_issues=*/false)) {
+      frame_request.SetImpression(blink::Impression());
+    }
   }
 
   Frame* target_frame =

@@ -23,7 +23,7 @@
 #include "extensions/browser/process_manager.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
 #else
 #include "chrome/browser/devtools/devtools_window.h"
@@ -146,7 +146,7 @@ WebContentsType PageLoadMetricsWebContentsObserver::GetWebContentsType() {
 }
 
 bool PageLoadMetricsWebContentsObserver::IsTab() const {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return !!TabAndroid::FromWebContents(web_contents());
 #else
   return !!chrome::FindBrowserWithWebContents(web_contents());
@@ -172,7 +172,7 @@ bool PageLoadMetricsWebContentsObserver::IsPrerender() const {
 }
 
 bool PageLoadMetricsWebContentsObserver::IsDevTools() const {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return false;
 #else
   return DevToolsWindow::IsDevToolsWindow(web_contents());
@@ -271,15 +271,15 @@ void PageLoadMetricsWebContentsObserver::DidStopLoading() {
 
 void PageLoadMetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1190112): Support non-primary FrameTrees.
+  // We don't record metrics for prerendering pages.
   if (!navigation_handle->HasCommitted() ||
-      !navigation_handle->GetRenderFrameHost()->GetPage().IsPrimary()) {
+      !navigation_handle->GetRenderFrameHost()->IsActive()) {
     return;
   }
 
   DCHECK(is_loading_);
 
-  if (navigation_handle->IsInMainFrame() &&
+  if (navigation_handle->IsInPrimaryMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     RecordUKM();
     ukm_source_id_ = ukm::ConvertToSourceId(
@@ -288,12 +288,12 @@ void PageLoadMetricsWebContentsObserver::DidFinishNavigation(
 
   NavigationType navigation_type;
   if (navigation_handle->IsSameDocument()) {
-    if (navigation_handle->IsInMainFrame())
+    if (navigation_handle->IsInPrimaryMainFrame())
       navigation_type = NavigationType::kMainFrameSameDocument;
     else
       navigation_type = NavigationType::kSubFrameSameDocument;
   } else {
-    if (navigation_handle->IsInMainFrame())
+    if (navigation_handle->IsInPrimaryMainFrame())
       navigation_type = NavigationType::kMainFrameDifferentDocument;
     else
       navigation_type = NavigationType::kSubFrameDifferentDocument;

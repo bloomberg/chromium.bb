@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
@@ -104,26 +103,6 @@ void RecordAuthenticationMethod(AuthMethod method) {
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.AuthenticationMethod", method);
 }
 
-base::ScopedFD MakeFdWithContents(const std::string& contents) {
-  const size_t content_size = contents.size();
-
-  base::ScopedFD read_fd;
-  base::ScopedFD write_fd;
-  if (!base::CreatePipe(&read_fd, &write_fd, true /* non_blocking */)) {
-    LOG(ERROR) << "Unable to create pipe";
-    return {};
-  }
-  bool success =
-      base::WriteFileDescriptor(
-          write_fd.get(), base::as_bytes(base::make_span(&content_size, 1))) &&
-      base::WriteFileDescriptor(write_fd.get(), contents);
-  if (!success) {
-    PLOG(ERROR) << "Unable to write contents to pipe";
-    return {};
-  }
-  return read_fd;
-}
-
 }  // namespace
 
 bool SmbService::disable_share_discovery_for_testing_ = false;
@@ -150,11 +129,12 @@ SmbService::SmbService(Profile* profile,
   KerberosCredentialsManager* credentials_manager =
       KerberosCredentialsManagerFactory::GetExisting(profile);
   if (credentials_manager && credentials_manager->IsKerberosEnabled()) {
-    smb_credentials_updater_ = std::make_unique<SmbKerberosCredentialsUpdater>(
-        credentials_manager,
-        base::BindRepeating(&SmbService::UpdateKerberosCredentials,
-                            AsWeakPtr()));
-    SetupKerberos(smb_credentials_updater_->active_account_name());
+    kerberos_credentials_updater_ =
+        std::make_unique<SmbKerberosCredentialsUpdater>(
+            credentials_manager,
+            base::BindRepeating(&SmbService::UpdateKerberosCredentials,
+                                AsWeakPtr()));
+    SetupKerberos(kerberos_credentials_updater_->active_account_name());
     return;
   }
 
@@ -329,7 +309,7 @@ void SmbService::Mount(const std::string& display_name,
 
   std::vector<uint8_t> salt;
   if (save_credentials && !password.empty()) {
-    // Only generate a salt if threre's a password and we've been asked to save
+    // Only generate a salt if there's a password and we've been asked to save
     // credentials. If there is no password, there's nothing for smbfs to store
     // and the salt is unused.
     salt.resize(kSaltLength);
@@ -395,11 +375,11 @@ void SmbService::MountInternal(
           absl::make_optional<SmbFsShare::KerberosOptions>(
               SmbFsShare::KerberosOptions::Source::kActiveDirectory,
               user->GetAccountId().GetObjGuid());
-    } else if (smb_credentials_updater_) {
+    } else if (kerberos_credentials_updater_) {
       smbfs_options.kerberos_options =
           absl::make_optional<SmbFsShare::KerberosOptions>(
               SmbFsShare::KerberosOptions::Source::kKerberos,
-              smb_credentials_updater_->active_account_name());
+              kerberos_credentials_updater_->active_account_name());
     } else {
       LOG(WARNING) << "No Kerberos credential source available";
       std::move(callback).Run(SmbMountResult::kAuthenticationFailed, {});
@@ -512,8 +492,8 @@ void SmbService::OnMountPreconfiguredShareDone(
 }
 
 bool SmbService::IsKerberosEnabledViaPolicy() const {
-  return smb_credentials_updater_ &&
-         smb_credentials_updater_->IsKerberosEnabled();
+  return kerberos_credentials_updater_ &&
+         kerberos_credentials_updater_->IsKerberosEnabled();
 }
 
 void SmbService::SetupKerberos(const std::string& account_identifier) {
@@ -645,7 +625,7 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
   const base::Value* preconfigured_shares = profile_->GetPrefs()->GetList(
       prefs::kNetworkFileSharesPreconfiguredShares);
 
-  for (const base::Value& info : preconfigured_shares->GetList()) {
+  for (const base::Value& info : preconfigured_shares->GetListDeprecated()) {
     // |info| is a dictionary with entries for |share_url| and |mode|.
     const base::Value* share_url = info.FindKey(kShareUrlKey);
     const base::Value* mode = info.FindKey(kModeKey);

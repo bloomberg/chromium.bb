@@ -35,10 +35,10 @@
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/background_sync_parameters.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_permission_manager.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_background_sync_controller.h"
@@ -48,10 +48,13 @@
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
+
+using blink::PermissionType;
 
 namespace content {
 
@@ -122,13 +125,14 @@ class BackgroundSyncManagerTest
     std::unique_ptr<MockPermissionManager> mock_permission_manager(
         new testing::NiceMock<MockPermissionManager>());
     ON_CALL(*mock_permission_manager,
-            GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
+            GetPermissionStatusForWorker(PermissionType::BACKGROUND_SYNC, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
     ON_CALL(*mock_permission_manager,
-            GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC, _, _))
+            GetPermissionStatusForWorker(
+                PermissionType::PERIODIC_BACKGROUND_SYNC, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
     ON_CALL(*mock_permission_manager,
-            GetPermissionStatus(PermissionType::NOTIFICATIONS, _, _))
+            GetPermissionStatusForWorker(PermissionType::NOTIFICATIONS, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::DENIED));
     helper_->browser_context()->SetPermissionControllerDelegate(
         std::move(mock_permission_manager));
@@ -139,6 +143,8 @@ class BackgroundSyncManagerTest
         helper_->browser_context()->GetStoragePartitionForUrl(
             GURL("https://example.com")));
     helper_->context_wrapper()->set_storage_partition(storage_partition_impl_);
+    render_process_host_ =
+        std::make_unique<MockRenderProcessHost>(helper_->browser_context());
 
     SetMaxSyncAttemptsAndRestartManager(1);
 
@@ -147,12 +153,14 @@ class BackgroundSyncManagerTest
     base::RunLoop().RunUntilIdle();
     RegisterServiceWorkers();
 
-    storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+    static_cast<DevToolsBackgroundServicesContextImpl*>(
+        storage_partition_impl_->GetDevToolsBackgroundServicesContext())
         ->AddObserver(this);
   }
 
   void TearDown() override {
-    storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+    static_cast<DevToolsBackgroundServicesContextImpl*>(
+        storage_partition_impl_->GetDevToolsBackgroundServicesContext())
         ->RemoveObserver(this);
     // Restore the network observer functionality for subsequent tests.
     background_sync_test_util::SetIgnoreNetworkChanges(false);
@@ -301,7 +309,8 @@ class BackgroundSyncManagerTest
         base::MakeRefCounted<TestBackgroundSyncContext>();
     background_sync_context_->Init(
         helper_->context_wrapper(),
-        storage_partition_impl_->GetDevToolsBackgroundServicesContext());
+        static_cast<DevToolsBackgroundServicesContextImpl*>(
+            storage_partition_impl_->GetDevToolsBackgroundServicesContext()));
     base::RunLoop().RunUntilIdle();
 
     storage_partition_impl_->ShutdownBackgroundSyncContextForTesting();
@@ -366,14 +375,14 @@ class BackgroundSyncManagerTest
     if (GetBackgroundSyncType(options) ==
         blink::mojom::BackgroundSyncType::ONE_SHOT) {
       test_background_sync_manager()->Register(
-          sw_registration_id, options,
+          sw_registration_id, render_process_host_->GetID(), options,
           base::BindOnce(&BackgroundSyncManagerTest::
                              StatusAndOneShotSyncRegistrationCallback,
                          base::Unretained(this), &was_called));
       callback_status = &one_shot_sync_callback_status_;
     } else {
       test_background_sync_manager()->Register(
-          sw_registration_id, options,
+          sw_registration_id, render_process_host_->GetID(), options,
           base::BindOnce(&BackgroundSyncManagerTest::
                              StatusAndPeriodicSyncRegistrationCallback,
                          base::Unretained(this), &was_called));
@@ -665,7 +674,7 @@ class BackgroundSyncManagerTest
 
   void SetRelyOnAndroidNetworkDetectionAndRestartManager(
       bool rely_on_android_network_detection) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     BackgroundSyncParameters* parameters =
         GetController()->background_sync_parameters();
     parameters->rely_on_android_network_detection =
@@ -747,6 +756,7 @@ class BackgroundSyncManagerTest
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   raw_ptr<StoragePartitionImpl> storage_partition_impl_;
+  std::unique_ptr<RenderProcessHost> render_process_host_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   base::SimpleTestClock test_clock_;
   std::unique_ptr<TestBackgroundSyncProxy> test_proxy_;
@@ -838,7 +848,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
   InitSyncEventTest();
   bool was_called = false;
   test_background_sync_manager()->Register(
-      sw_registration_id_1_, sync_options_1_,
+      sw_registration_id_1_, render_process_host_->GetID(), sync_options_1_,
       base::BindOnce(
           &BackgroundSyncManagerTest::StatusAndOneShotSyncRegistrationCallback,
           base::Unretained(this), &was_called));
@@ -861,7 +871,7 @@ TEST_F(BackgroundSyncManagerTest, ResolveInvalidRegistration) {
   InitSyncEventTest();
   bool was_called = false;
   test_background_sync_manager()->Register(
-      sw_registration_id_1_, sync_options_1_,
+      sw_registration_id_1_, render_process_host_->GetID(), sync_options_1_,
       base::BindOnce(
           &BackgroundSyncManagerTest::StatusAndOneShotSyncRegistrationCallback,
           base::Unretained(this), &was_called));
@@ -933,20 +943,20 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
       GetPermissionControllerDelegate();
 
   EXPECT_CALL(*mock_permission_manager,
-              GetPermissionStatus(PermissionType::NOTIFICATIONS,
-                                  expected_origin, expected_origin))
+              GetPermissionStatusForWorker(PermissionType::NOTIFICATIONS, _,
+                                           expected_origin))
       .Times(2);
 
   EXPECT_CALL(*mock_permission_manager,
-              GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
-                                  expected_origin, expected_origin))
+              GetPermissionStatusForWorker(PermissionType::BACKGROUND_SYNC, _,
+                                           expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
   EXPECT_FALSE(Register(sync_options_1_));
 
   sync_options_2_.min_interval = 36000;
   EXPECT_CALL(*mock_permission_manager,
-              GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC,
-                                  expected_origin, expected_origin))
+              GetPermissionStatusForWorker(
+                  PermissionType::PERIODIC_BACKGROUND_SYNC, _, expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
   EXPECT_FALSE(Register(sync_options_2_));
 }
@@ -957,20 +967,20 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
       GetPermissionControllerDelegate();
 
   EXPECT_CALL(*mock_permission_manager,
-              GetPermissionStatus(PermissionType::NOTIFICATIONS,
-                                  expected_origin, expected_origin))
+              GetPermissionStatusForWorker(PermissionType::NOTIFICATIONS, _,
+                                           expected_origin))
       .Times(2);
 
   EXPECT_CALL(*mock_permission_manager,
-              GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
-                                  expected_origin, expected_origin))
+              GetPermissionStatusForWorker(PermissionType::BACKGROUND_SYNC, _,
+                                           expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::GRANTED));
   EXPECT_TRUE(Register(sync_options_1_));
 
   sync_options_2_.min_interval = 36000;
   EXPECT_CALL(*mock_permission_manager,
-              GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC,
-                                  expected_origin, expected_origin))
+              GetPermissionStatusForWorker(
+                  PermissionType::PERIODIC_BACKGROUND_SYNC, _, expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::GRANTED));
   EXPECT_TRUE(Register(sync_options_2_));
 }
@@ -1153,7 +1163,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool register_called = false;
   bool get_registrations_called = false;
   test_background_sync_manager()->Register(
-      sw_registration_id_1_, sync_options_1_,
+      sw_registration_id_1_, render_process_host_->GetID(), sync_options_1_,
       base::BindOnce(
           &BackgroundSyncManagerTest::StatusAndOneShotSyncRegistrationCallback,
           base::Unretained(this), &register_called));
@@ -1196,7 +1206,7 @@ TEST_F(BackgroundSyncManagerTest,
   test_background_sync_manager()->set_delay_backend(true);
   bool callback_called = false;
   test_background_sync_manager()->Register(
-      sw_registration_id_1_, sync_options_2_,
+      sw_registration_id_1_, render_process_host_->GetID(), sync_options_2_,
       base::BindOnce(
           &BackgroundSyncManagerTest::StatusAndPeriodicSyncRegistrationCallback,
           base::Unretained(this), &callback_called));
@@ -1968,7 +1978,7 @@ TEST_F(BackgroundSyncManagerTest, RelyOnAndroidNetworkDetection) {
   EXPECT_TRUE(Register(sync_options_1_));
   SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(0, sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 #else
@@ -2332,7 +2342,8 @@ TEST_F(BackgroundSyncManagerTest, DispatchPeriodicSyncEvent) {
 TEST_F(BackgroundSyncManagerTest, EventsLoggedForRegistration) {
   // Note that the dispatch is mocked out, so those events are not registered
   // by these tests.
-  storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+  static_cast<DevToolsBackgroundServicesContextImpl*>(
+      storage_partition_impl_->GetDevToolsBackgroundServicesContext())
       ->StartRecording(devtools::proto::BACKGROUND_SYNC);
 
   SetMaxSyncAttemptsAndRestartManager(3);
@@ -2370,7 +2381,8 @@ TEST_F(BackgroundSyncManagerTest, EventsLoggedForRegistration) {
 }
 
 TEST_F(BackgroundSyncManagerTest, EventsLoggedForPeriodicSyncRegistration) {
-  storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+  static_cast<DevToolsBackgroundServicesContextImpl*>(
+      storage_partition_impl_->GetDevToolsBackgroundServicesContext())
       ->StartRecording(devtools::proto::PERIODIC_BACKGROUND_SYNC);
 
   SetMaxSyncAttemptsAndRestartManager(3);
@@ -2469,7 +2481,7 @@ TEST_F(BackgroundSyncManagerTest, MaxSyncAttemptsWithNotificationPermission) {
 
   {
     ON_CALL(*mock_permission_manager,
-            GetPermissionStatus(PermissionType::NOTIFICATIONS, _, _))
+            GetPermissionStatusForWorker(PermissionType::NOTIFICATIONS, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
     EXPECT_TRUE(Register(sync_options_2_));
     EXPECT_EQ(callback_one_shot_sync_registration_->max_attempts(),

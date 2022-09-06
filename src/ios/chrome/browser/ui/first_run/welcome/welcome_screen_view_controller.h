@@ -5,21 +5,31 @@
 #ifndef IOS_CHROME_BROWSER_UI_FIRST_RUN_WELCOME_WELCOME_SCREEN_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_FIRST_RUN_WELCOME_WELCOME_SCREEN_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/first_run/welcome/welcome_screen_consumer.h"
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 
 @protocol TOSCommands;
 
-// Extends the base delegate protocol to handle taps on the custom button.
+// Extends the base delegate protocol to handle taps on the "Accept and
+// continue" button.
 @protocol WelcomeScreenViewControllerDelegate <PromoStyleViewControllerDelegate>
 
 // Returns whether the metrics reporting consent checkbox should be selected or
 // not by default.
 - (BOOL)isCheckboxSelectedByDefault;
 
+// Called when the user taps on "Manage" related to metric reporting.
+- (void)showUMADialog;
+
+// Logs scrollability metric on view appears.
+- (void)logScrollButtonVisible:(BOOL)scrollButtonVisible
+        withUMACheckboxVisible:(BOOL)umaCheckboxVisible;
+
 @end
 
 // View controller of welcome screen.
-@interface WelcomeScreenViewController : PromoStyleViewController
+@interface WelcomeScreenViewController
+    : PromoStyleViewController <WelcomeScreenConsumer>
 
 @property(nonatomic, weak) id<WelcomeScreenViewControllerDelegate> delegate;
 

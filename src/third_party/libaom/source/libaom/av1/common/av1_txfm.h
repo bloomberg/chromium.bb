@@ -81,7 +81,7 @@ static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
                                int bit) {
   int64_t result_64 = (int64_t)(w0 * in0) + (int64_t)(w1 * in1);
   int64_t intermediate = result_64 + (1LL << (bit - 1));
-  // NOTE(david.barker): The value 'result_64' may not necessarily fit
+  // NOTE(rachelbarker): The value 'result_64' may not necessarily fit
   // into 32 bits. However, the result of this function is nominally
   // ROUND_POWER_OF_TWO_64(result_64, bit)
   // and that is required to fit into stage_range[stage] many bits

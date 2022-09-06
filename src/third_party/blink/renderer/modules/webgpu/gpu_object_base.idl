@@ -5,5 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 interface mixin GPUObjectBase {
-  attribute USVString? label;
+  attribute USVString label;
 };

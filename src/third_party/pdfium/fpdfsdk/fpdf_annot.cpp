@@ -5,6 +5,7 @@
 #include "public/fpdf_annot.h"
 
 #include <memory>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -23,19 +24,21 @@
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
+#include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "core/fpdfdoc/cpdf_color_utils.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fpdfdoc/cpdf_generateap.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/fx_string_wrappers.h"
 #include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_color.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "third_party/base/check.h"
-#include "third_party/base/cxx17_backports.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -170,7 +173,7 @@ void UpdateContentStream(CPDF_Form* pForm, CPDF_Stream* pStream) {
   DCHECK(pStream);
 
   CPDF_PageContentGenerator generator(pForm);
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   generator.ProcessPageObjects(&buf);
   pStream->SetDataFromStringstreamAndRemoveFilter(&buf);
 }
@@ -346,9 +349,7 @@ FPDFPage_CreateAnnot(FPDF_PAGE page, FPDF_ANNOTATION_SUBTYPE subtype) {
   auto pNewAnnot = std::make_unique<CPDF_AnnotContext>(
       pDict.Get(), IPDFPageFromFPDFPage(page));
 
-  CPDF_Array* pAnnotList = pPage->GetDict()->GetArrayFor("Annots");
-  if (!pAnnotList)
-    pAnnotList = pPage->GetDict()->SetNewFor<CPDF_Array>("Annots");
+  CPDF_Array* pAnnotList = GetOrCreateArray(pPage->GetDict(), "Annots");
   pAnnotList->Append(pDict);
 
   // Caller takes ownership.
@@ -361,7 +362,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_GetAnnotCount(FPDF_PAGE page) {
     return 0;
 
   const CPDF_Array* pAnnots = pPage->GetDict()->GetArrayFor("Annots");
-  return pAnnots ? pAnnots->size() : 0;
+  return pAnnots ? fxcrt::CollectionSize<int>(*pAnnots) : 0;
 }
 
 FPDF_EXPORT FPDF_ANNOTATION FPDF_CALLCONV FPDFPage_GetAnnot(FPDF_PAGE page,
@@ -408,7 +409,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_GetAnnotIndex(FPDF_PAGE page,
   if (it == locker.end())
     return -1;
 
-  return it - locker.begin();
+  return pdfium::base::checked_cast<int>(it - locker.begin());
 }
 
 FPDF_EXPORT void FPDF_CALLCONV FPDFPage_CloseAnnot(FPDF_ANNOTATION annot) {
@@ -489,10 +490,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFAnnot_AddInkStroke(FPDF_ANNOTATION annot,
 
   CPDF_Dictionary* annot_dict = GetAnnotDictFromFPDFAnnotation(annot);
 
-  CPDF_Array* inklist = annot_dict->GetArrayFor("InkList");
-  if (!inklist)
-    inklist = annot_dict->SetNewFor<CPDF_Array>("InkList");
-
+  CPDF_Array* inklist = GetOrCreateArray(annot_dict, "InkList");
   FX_SAFE_SIZE_T safe_ink_size = inklist->size();
   safe_ink_size += 1;
   if (!safe_ink_size.IsValid<int32_t>())
@@ -580,7 +578,8 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFAnnot_GetObjectCount(FPDF_ANNOTATION annot) {
 
     pAnnot->SetForm(pStream);
   }
-  return pAnnot->GetForm()->GetPageObjectCount();
+  return pdfium::base::checked_cast<int>(
+      pAnnot->GetForm()->GetPageObjectCount());
 }
 
 FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV
@@ -849,7 +848,8 @@ FPDFAnnot_GetVertices(FPDF_ANNOTATION annot,
     return 0;
 
   // Truncate to an even number.
-  unsigned long points_len = vertices->size() / 2;
+  const unsigned long points_len =
+      fxcrt::CollectionSize<unsigned long>(*vertices) / 2;
   if (buffer && length >= points_len) {
     for (unsigned long i = 0; i < points_len; ++i) {
       buffer[i].x = vertices->GetNumberAt(i * 2);
@@ -862,7 +862,7 @@ FPDFAnnot_GetVertices(FPDF_ANNOTATION annot,
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAnnot_GetInkListCount(FPDF_ANNOTATION annot) {
   const CPDF_Array* ink_list = GetInkList(annot);
-  return ink_list ? ink_list->size() : 0;
+  return ink_list ? fxcrt::CollectionSize<unsigned long>(*ink_list) : 0;
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV
@@ -879,7 +879,8 @@ FPDFAnnot_GetInkListPath(FPDF_ANNOTATION annot,
     return 0;
 
   // Truncate to an even number.
-  unsigned long points_len = path->size() / 2;
+  const unsigned long points_len =
+      fxcrt::CollectionSize<unsigned long>(*path) / 2;
   if (buffer && length >= points_len) {
     for (unsigned long i = 0; i < points_len; ++i) {
       buffer[i].x = path->GetNumberAt(i * 2);
@@ -981,7 +982,8 @@ FPDFAnnot_SetStringValue(FPDF_ANNOTATION annot,
   if (!pAnnotDict)
     return false;
 
-  pAnnotDict->SetNewFor<CPDF_String>(key, WideStringFromFPDFWideString(value));
+  pAnnotDict->SetNewFor<CPDF_String>(
+      key, WideStringFromFPDFWideString(value).AsStringView());
   return true;
 }
 
@@ -1029,10 +1031,9 @@ FPDFAnnot_SetAP(FPDF_ANNOTATION annot,
     return false;
 
   static constexpr const char* kModeKeyForMode[] = {"N", "R", "D"};
-  static_assert(
-      pdfium::size(kModeKeyForMode) == FPDF_ANNOT_APPEARANCEMODE_COUNT,
-      "length of kModeKeyForMode should be equal to "
-      "FPDF_ANNOT_APPEARANCEMODE_COUNT");
+  static_assert(std::size(kModeKeyForMode) == FPDF_ANNOT_APPEARANCEMODE_COUNT,
+                "length of kModeKeyForMode should be equal to "
+                "FPDF_ANNOT_APPEARANCEMODE_COUNT");
   const char* modeKey = kModeKeyForMode[appearanceMode];
 
   CPDF_Dictionary* pApDict = pAnnotDict->GetDictFor(pdfium::annotation::kAP);
@@ -1057,7 +1058,7 @@ FPDFAnnot_SetAP(FPDF_ANNOTATION annot,
     CPDF_Stream* pNewIndirectStream = pDoc->NewIndirect<CPDF_Stream>();
 
     ByteString newAPStream =
-        PDF_EncodeText(WideStringFromFPDFWideString(value));
+        PDF_EncodeText(WideStringFromFPDFWideString(value).AsStringView());
     pNewIndirectStream->SetData(newAPStream.raw_span());
 
     CPDF_Dictionary* pStreamDict = pNewIndirectStream->GetDict();

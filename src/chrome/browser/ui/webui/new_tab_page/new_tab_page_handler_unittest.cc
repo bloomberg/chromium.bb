@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/new_tab_page/promos/promo_data.h"
@@ -14,34 +15,51 @@
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_observer.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_observer.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
+#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 #include "components/search_provider_logos/logo_common.h"
 #include "components/search_provider_logos/logo_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/theme_provider.h"
+#include "ui/color/color_mixer.h"
+#include "ui/color/color_provider_source.h"
+#include "ui/color/color_recipe.h"
+#include "ui/color/color_transform.h"
 #include "ui/gfx/color_palette.h"
 #include "url/gurl.h"
 
 namespace {
 
+using testing::_;
 using testing::DoAll;
+using testing::ElementsAre;
+using testing::Optional;
+using testing::SaveArg;
 
 class MockPage : public new_tab_page::mojom::Page {
  public:
@@ -57,6 +75,7 @@ class MockPage : public new_tab_page::mojom::Page {
 
   MOCK_METHOD1(SetTheme, void(new_tab_page::mojom::ThemePtr));
   MOCK_METHOD2(SetDisabledModules, void(bool, const std::vector<std::string>&));
+  MOCK_METHOD1(SetModulesFreVisibility, void(bool));
 
   mojo::Receiver<new_tab_page::mojom::Page> receiver_{this};
 };
@@ -67,6 +86,30 @@ class MockLogoService : public search_provider_logos::LogoService {
   MOCK_METHOD1(GetLogo, void(search_provider_logos::LogoObserver*));
 };
 
+class MockColorProviderSource : public ui::ColorProviderSource {
+ public:
+  MockColorProviderSource() { color_provider_.GenerateColorMap(); }
+  MockColorProviderSource(const MockColorProviderSource&) = delete;
+  MockColorProviderSource& operator=(const MockColorProviderSource&) = delete;
+  ~MockColorProviderSource() override = default;
+
+  const ui::ColorProvider* GetColorProvider() const override {
+    return &color_provider_;
+  }
+
+  void SetColor(ui::ColorId id, SkColor color) {
+    color_provider_.SetColorForTesting(id, color);
+  }
+
+ protected:
+  ui::ColorProviderManager::Key GetColorProviderKey() const override {
+    return ui::ColorProviderManager::Key();
+  }
+
+ private:
+  ui::ColorProvider color_provider_;
+};
+
 class MockThemeProvider : public ui::ThemeProvider {
  public:
   MOCK_CONST_METHOD1(GetImageSkiaNamed, gfx::ImageSkia*(int));
@@ -75,7 +118,6 @@ class MockThemeProvider : public ui::ThemeProvider {
   MOCK_CONST_METHOD1(GetDisplayProperty, int(int));
   MOCK_CONST_METHOD0(ShouldUseNativeFrame, bool());
   MOCK_CONST_METHOD1(HasCustomImage, bool(int));
-  MOCK_CONST_METHOD1(HasCustomColor, bool(int));
   MOCK_CONST_METHOD2(GetRawData,
                      base::RefCountedMemory*(int, ui::ResourceScaleFactor));
 };
@@ -111,7 +153,8 @@ class MockPromoService : public PromoService {
   MOCK_METHOD(void, Refresh, (), (override));
 };
 
-std::unique_ptr<TestingProfile> MakeTestingProfile() {
+std::unique_ptr<TestingProfile> MakeTestingProfile(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   TestingProfile::Builder profile_builder;
   profile_builder.AddTestingFactory(
       PromoServiceFactory::GetInstance(),
@@ -119,7 +162,12 @@ std::unique_ptr<TestingProfile> MakeTestingProfile() {
                               -> std::unique_ptr<KeyedService> {
         return std::make_unique<testing::NiceMock<MockPromoService>>();
       }));
-  return profile_builder.Build();
+  profile_builder.SetSharedURLLoaderFactory(url_loader_factory);
+  auto profile = profile_builder.Build();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile.get(),
+      base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
+  return profile;
 }
 
 }  // namespace
@@ -127,7 +175,9 @@ std::unique_ptr<TestingProfile> MakeTestingProfile() {
 class NewTabPageHandlerTest : public testing::Test {
  public:
   NewTabPageHandlerTest()
-      : profile_(MakeTestingProfile()),
+      : profile_(MakeTestingProfile(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_))),
         mock_ntp_custom_background_service_(profile_.get()),
         mock_promo_service_(*static_cast<MockPromoService*>(
             PromoServiceFactory::GetForProfile(profile_.get()))),
@@ -149,12 +199,13 @@ class NewTabPageHandlerTest : public testing::Test {
     EXPECT_CALL(mock_page_, SetTheme).Times(1);
     EXPECT_CALL(mock_ntp_custom_background_service_, RefreshBackgroundIfNeeded)
         .Times(1);
+    webui::SetThemeProviderForTesting(&mock_theme_provider_);
+    web_contents_->SetColorProviderSource(&mock_color_provider_source_);
     handler_ = std::make_unique<NewTabPageHandler>(
         mojo::PendingReceiver<new_tab_page::mojom::PageHandler>(),
         mock_page_.BindAndGetRemote(), profile_.get(),
         &mock_ntp_custom_background_service_, &mock_theme_service_,
-        &mock_logo_service_, &mock_theme_provider_, web_contents_,
-        base::Time::Now());
+        &mock_logo_service_, web_contents_, base::Time::Now());
     mock_page_.FlushForTesting();
     EXPECT_EQ(handler_.get(), theme_service_observer_);
     EXPECT_EQ(handler_.get(), ntp_custom_background_service_observer_);
@@ -196,11 +247,13 @@ class NewTabPageHandlerTest : public testing::Test {
   testing::NiceMock<MockPage> mock_page_;
   // NOTE: The initialization order of these members matters.
   content::BrowserTaskEnvironment task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingProfile> profile_;
   testing::NiceMock<MockNtpCustomBackgroundService>
       mock_ntp_custom_background_service_;
   testing::NiceMock<MockThemeService> mock_theme_service_;
   MockLogoService mock_logo_service_;
+  MockColorProviderSource mock_color_provider_source_;
   testing::NiceMock<MockThemeProvider> mock_theme_provider_;
   MockPromoService& mock_promo_service_;
   content::TestWebContentsFactory factory_;
@@ -221,17 +274,17 @@ TEST_F(NewTabPageHandlerTest, SetTheme) {
       }));
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
       .WillByDefault(testing::Return(absl::optional<CustomBackground>()));
-  ON_CALL(mock_theme_provider_, GetColor(ThemeProperties::COLOR_NTP_BACKGROUND))
-      .WillByDefault(testing::Return(SkColorSetRGB(0, 0, 1)));
-  ON_CALL(mock_theme_provider_, GetColor(ThemeProperties::COLOR_NTP_TEXT))
-      .WillByDefault(testing::Return(SkColorSetRGB(0, 0, 2)));
+  mock_color_provider_source_.SetColor(kColorNewTabPageBackground,
+                                       SkColorSetRGB(0, 0, 1));
+  mock_color_provider_source_.SetColor(kColorNewTabPageText,
+                                       SkColorSetRGB(0, 0, 2));
   ON_CALL(mock_theme_service_, UsingDefaultTheme())
       .WillByDefault(testing::Return(false));
   ON_CALL(mock_theme_provider_,
           GetDisplayProperty(ThemeProperties::NTP_LOGO_ALTERNATE))
       .WillByDefault(testing::Return(1));
-  ON_CALL(mock_theme_provider_, GetColor(ThemeProperties::COLOR_NTP_LOGO))
-      .WillByDefault(testing::Return(SkColorSetRGB(0, 0, 3)));
+  mock_color_provider_source_.SetColor(kColorNewTabPageLogo,
+                                       SkColorSetRGB(0, 0, 3));
   ON_CALL(mock_theme_service_, GetThemeID())
       .WillByDefault(testing::Return("bar"));
   ON_CALL(mock_theme_provider_,
@@ -244,8 +297,8 @@ TEST_F(NewTabPageHandlerTest, SetTheme) {
       .WillByDefault(testing::Return(true));
   ON_CALL(mock_theme_provider_, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillByDefault(testing::Return(true));
-  ON_CALL(mock_theme_provider_, GetColor(ThemeProperties::COLOR_NTP_SHORTCUT))
-      .WillByDefault(testing::Return(SkColorSetRGB(0, 0, 4)));
+  mock_color_provider_source_.SetColor(
+      kColorNewTabPageMostVisitedTileBackground, SkColorSetRGB(0, 0, 4));
   ON_CALL(mock_theme_provider_,
           GetColor(ThemeProperties::COLOR_OMNIBOX_BACKGROUND))
       .WillByDefault(testing::Return(SkColorSetRGB(0, 0, 5)));
@@ -348,19 +401,25 @@ TEST_F(NewTabPageHandlerTest, SetCustomBackground) {
   custom_background.collection_id = "baz collection";
   ON_CALL(mock_ntp_custom_background_service_, GetCustomBackground())
       .WillByDefault(testing::Return(absl::make_optional(custom_background)));
+  mock_color_provider_source_.SetColor(kColorNewTabPageBackground,
+                                       SkColorSetRGB(0, 0, 1));
+  mock_color_provider_source_.SetColor(kColorNewTabPageTextUnthemed,
+                                       SkColorSetRGB(0, 0, 2));
+  mock_color_provider_source_.SetColor(kColorNewTabPageLogoUnthemedLight,
+                                       SkColorSetRGB(0, 0, 3));
+  mock_color_provider_source_.SetColor(
+      kColorNewTabPageMostVisitedTileBackgroundUnthemed,
+      SkColorSetRGB(0, 0, 4));
 
   ntp_custom_background_service_observer_->OnCustomBackgroundImageUpdated();
   mock_page_.FlushForTesting();
 
   ASSERT_TRUE(theme);
   EXPECT_TRUE(theme->is_custom_background);
-  EXPECT_EQ(gfx::kGoogleGrey050, theme->text_color);
-  EXPECT_EQ(ThemeProperties::GetDefaultColor(
-                ThemeProperties::COLOR_NTP_SHORTCUT, false),
-            theme->most_visited->background_color);
-  EXPECT_EQ(
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_NTP_LOGO, false),
-      theme->logo_color);
+  EXPECT_EQ(SkColorSetRGB(0, 0, 1), theme->background_color);
+  EXPECT_EQ(SkColorSetRGB(0, 0, 2), theme->text_color);
+  EXPECT_EQ(SkColorSetRGB(0, 0, 3), theme->logo_color);
+  EXPECT_EQ(SkColorSetRGB(0, 0, 4), theme->most_visited->background_color);
   EXPECT_EQ("https://foo.com/img.png", theme->background_image->url);
   EXPECT_EQ("foo line", theme->background_image_attribution_1);
   EXPECT_EQ("bar line", theme->background_image_attribution_2);
@@ -389,6 +448,22 @@ TEST_F(NewTabPageHandlerTest, Histograms) {
       std::string(NewTabPageHandler::kModuleRestoredHistogram) +
           ".kaleidoscope",
       1);
+
+  // NewTabPage.Modules.FreOptIn and NewTabPage.Modules.FreOptOut log how many
+  // times the FRE is shown, so we increment the shown count to make sure the
+  // histogram is logging correctly
+  handler_->IncrementModulesShownCount();
+  handler_->LogModulesFreOptInStatus(
+      new_tab_page::mojom::OptInStatus::kExplicitOptIn);
+  histogram_tester_.ExpectTotalCount("NewTabPage.Modules.FreExplicitOptIn", 1);
+  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
+                   "NewTabPage.Modules.FreExplicitOptIn", 1));
+
+  handler_->IncrementModulesShownCount();
+  handler_->LogModulesFreOptInStatus(new_tab_page::mojom::OptInStatus::kOptOut);
+  histogram_tester_.ExpectTotalCount("NewTabPage.Modules.FreOptOut", 1);
+  ASSERT_EQ(
+      1, histogram_tester_.GetBucketCount("NewTabPage.Modules.FreOptOut", 2));
 }
 
 TEST_F(NewTabPageHandlerTest, GetAnimatedDoodle) {
@@ -541,4 +616,157 @@ TEST_F(NewTabPageHandlerTest, GetPromo) {
   const auto& text = promo->middle_slot_parts[2]->get_text();
   EXPECT_EQ("green", text->color);
   EXPECT_EQ("blub", text->text);
+}
+
+TEST_F(NewTabPageHandlerTest, OnDoodleImageClicked) {
+  handler_->OnDoodleImageClicked(
+      /*type=*/new_tab_page::mojom::DoodleImageType::kCta,
+      /*log_url=*/GURL("https://doodle.com/log"));
+
+  histogram_tester_.ExpectTotalCount("NewTabPage.LogoClick", 1);
+  EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+      "https://doodle.com/log", ""));
+}
+
+TEST_F(NewTabPageHandlerTest, OnDoodleImageRendered) {
+  base::MockCallback<NewTabPageHandler::OnDoodleImageRenderedCallback> callback;
+  absl::optional<std::string> image_click_params;
+  absl::optional<GURL> interaction_log_url;
+  absl::optional<std::string> shared_id;
+  EXPECT_CALL(callback, Run(_, _, _))
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&image_click_params),
+                      SaveArg<1>(&interaction_log_url),
+                      SaveArg<2>(&shared_id)));
+
+  handler_->OnDoodleImageRendered(
+      /*type=*/new_tab_page::mojom::DoodleImageType::kStatic,
+      /*time=*/0,
+      /*log_url=*/GURL("https://doodle.com/log"), callback.Get());
+
+  EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+      "https://doodle.com/log", R"()]}'
+  {
+    "ddllog": {
+      "target_url_params": "foo params",
+      "interaction_log_url": "/bar_log",
+      "encoded_ei": "baz ei"
+    }
+  })"));
+  EXPECT_THAT(image_click_params, Optional(std::string("foo params")));
+  EXPECT_THAT(interaction_log_url,
+              Optional(GURL("https://www.google.com/bar_log")));
+  EXPECT_THAT(shared_id, Optional(std::string("baz ei")));
+  histogram_tester_.ExpectTotalCount("NewTabPage.LogoShown", 1);
+  histogram_tester_.ExpectTotalCount("NewTabPage.LogoShown.FromCache", 1);
+  histogram_tester_.ExpectTotalCount("NewTabPage.LogoShownTime2", 1);
+}
+
+TEST_F(NewTabPageHandlerTest, OnDoodleShared) {
+  handler_->OnDoodleShared(new_tab_page::mojom::DoodleShareChannel::kEmail,
+                           "food_id", "bar_id");
+
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(
+      "https://www.google.com/"
+      "gen_204?atype=i&ct=doodle&ntp=2&cad=sh,5,ct:food_id&ei=bar_id"));
+}
+
+TEST_F(NewTabPageHandlerTest, GetModulesOrder) {
+  std::vector<std::string> module_ids;
+  base::MockCallback<NewTabPageHandler::GetModulesOrderCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(1).WillOnce(SaveArg<0>(&module_ids));
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{ntp_features::kNtpModulesOrder,
+        {{ntp_features::kNtpModulesOrderParam, "bar,baz"}}},
+       {ntp_features::kNtpModulesDragAndDrop, {}}},
+      {});
+  base::Value module_ids_value(base::Value::Type::LIST);
+  module_ids_value.Append("foo");
+  module_ids_value.Append("bar");
+  profile_->GetPrefs()->Set(prefs::kNtpModulesOrder, module_ids_value);
+
+  handler_->GetModulesOrder(callback.Get());
+  EXPECT_THAT(module_ids, ElementsAre("foo", "bar", "baz"));
+}
+
+TEST_F(NewTabPageHandlerTest, UpdateNtpModulesFreVisibility) {
+  bool expected_visibility = true;
+  profile_->GetPrefs()->SetBoolean(prefs::kNtpModulesFreVisible,
+                                   expected_visibility);
+
+  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
+            expected_visibility);
+
+  expected_visibility = false;
+  EXPECT_CALL(mock_page_, SetModulesFreVisibility)
+      .Times(1)
+      .WillOnce(testing::Invoke(
+          [&](bool arg) { EXPECT_EQ(expected_visibility, arg); }));
+
+  handler_->SetModulesFreVisible(expected_visibility);
+
+  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
+            expected_visibility);
+
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest, IncrementModulesShownCount) {
+  EXPECT_EQ(profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount), 0);
+  EXPECT_EQ(profile_->GetPrefs()->GetTime(prefs::kNtpModulesFirstShownTime),
+            base::Time());
+
+  handler_->IncrementModulesShownCount();
+
+  EXPECT_EQ(profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount), 1);
+  EXPECT_NE(profile_->GetPrefs()->GetTime(prefs::kNtpModulesFirstShownTime),
+            base::Time());
+
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest,
+       UpdateModulesFreVisibilityUsingModulesShownCount) {
+  handler_->SetModulesFreVisible(true);
+  profile_->GetPrefs()->SetInteger(prefs::kNtpModulesShownCount, 7);
+
+  handler_->UpdateModulesFreVisibility();
+
+  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
+            true);
+
+  profile_->GetPrefs()->SetInteger(prefs::kNtpModulesShownCount, 8);
+
+  handler_->UpdateModulesFreVisibility();
+
+  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
+            false);
+  histogram_tester_.ExpectTotalCount("NewTabPage.Modules.FreImplicitOptIn", 1);
+  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
+                   "NewTabPage.Modules.FreImplicitOptIn", true));
+
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest,
+       UpdateModulesFreVisibilityUsingModulesFirstShownTime) {
+  handler_->SetModulesFreVisible(true);
+  profile_->GetPrefs()->SetTime(prefs::kNtpModulesFirstShownTime,
+                                base::Time::Now());
+
+  handler_->UpdateModulesFreVisibility();
+
+  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
+            true);
+
+  profile_->GetPrefs()->SetTime(prefs::kNtpModulesFirstShownTime,
+                                base::Time::Now() - base::Days(2));
+
+  handler_->UpdateModulesFreVisibility();
+
+  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
+            false);
+
+  mock_page_.FlushForTesting();
 }

@@ -9,21 +9,23 @@
 #include <string>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/policy/core/device_policy_builder.h"
+#include "chrome/browser/ash/settings/device_settings_provider.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -142,7 +144,7 @@ class CrosSettingsTest : public testing::Test {
       content::BrowserTaskEnvironment::IO_MAINLOOP};
 
   ScopedTestingLocalState local_state_;
-  chromeos::ScopedStubInstallAttributes scoped_install_attributes_;
+  ScopedStubInstallAttributes scoped_install_attributes_;
   ScopedTestDeviceSettingsService scoped_test_device_settings_;
   ScopedTestCrosSettings scoped_test_cros_settings_;
 
@@ -152,6 +154,7 @@ class CrosSettingsTest : public testing::Test {
       base::MakeRefCounted<ownership::MockOwnerKeyUtil>()};
   policy::DevicePolicyBuilder device_policy_;
   std::unique_ptr<TestingProfile> profile_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(CrosSettingsTest, GetAndSetPref) {
@@ -261,6 +264,55 @@ TEST_F(CrosSettingsTest, ConsumerOwnedDefaultState) {
   allowlist.Append(kOwner);
   ExpectPref(kAccountsPrefUsers, allowlist);
   ExpectPref(kAccountsPrefAllowNewUser, base::Value(true));
+}
+
+// It's possible for the user_allowlist to be not present, and for the
+// user_whitelist to be present instead. This test simulates this by
+// doing something similar to the "RestrictSignInToAListOfUsers" test
+// but using user_whitelist instead
+TEST_F(CrosSettingsTest, WhitelistUsedWhenAllowlistNotPresent) {
+  // clear user_allowlist
+  device_policy_.payload().clear_user_allowlist();
+  // set non-empty user_whitelist
+  device_policy_.payload().mutable_user_whitelist()->add_user_whitelist(kOwner);
+  // Set allow_new_users to false.
+  device_policy_.payload().mutable_allow_new_users()->set_allow_new_users(
+      false);
+  StoreDevicePolicy();
+
+  histogram_tester_.ExpectUniqueSample(kAllowlistCOILFallbackHistogram, true,
+                                       1);
+
+  // Expect the same - a non-empty allowlist and no new users allowed.
+  base::Value allowlist(base::Value::Type::LIST);
+  allowlist.Append(kOwner);
+  ExpectPref(kAccountsPrefUsers, allowlist);
+  ExpectPref(kAccountsPrefAllowNewUser, base::Value(false));
+}
+
+// In cases where both the user_allowlist and the user_whitelist are present,
+// we should use the user_allowlist. This test simulates this by
+// doing something similar to the "RestrictSignInToAListOfUsers" test
+// but providing both user_allowlist and user_whitelist, and asserting that
+// user_allowlist is being used.
+TEST_F(CrosSettingsTest, AllowlistUsedWhenAllowlistAndWhitelistPresent) {
+  // clear user_allowlist
+  device_policy_.payload().mutable_user_allowlist()->add_user_allowlist(kUser1);
+  // set non-empty user_whitelist
+  device_policy_.payload().mutable_user_whitelist()->add_user_whitelist(kOwner);
+  // Set allow_new_users to false.
+  device_policy_.payload().mutable_allow_new_users()->set_allow_new_users(
+      false);
+  StoreDevicePolicy();
+
+  histogram_tester_.ExpectUniqueSample(kAllowlistCOILFallbackHistogram, false,
+                                       1);
+
+  // Expect the same - a non-empty allowlist and no new users allowed.
+  base::Value allowlist(base::Value::Type::LIST);
+  allowlist.Append(kUser1);
+  ExpectPref(kAccountsPrefUsers, allowlist);
+  ExpectPref(kAccountsPrefAllowNewUser, base::Value(false));
 }
 
 TEST_F(CrosSettingsTest, FindEmailInList) {
