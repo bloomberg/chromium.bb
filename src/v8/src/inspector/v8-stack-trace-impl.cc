@@ -283,7 +283,7 @@ V8StackTraceImpl::V8StackTraceImpl(
   if (!s_stackCaptureControlledByInspector &&
       !s_enabledStackCaptureInConstructor && isolate) {
     isolate->SetCaptureStackTraceForUncaughtExceptions(
-        true, V8StackTraceImpl::maxCallStackSizeToCapture, stackTraceOptions);
+        true, V8StackTraceImpl::kDefaultMaxCallStackSizeToCapture, stackTraceOptions);
     s_enabledStackCaptureInConstructor = true;
   }
 }
