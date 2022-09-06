@@ -266,6 +266,9 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(
   return V8StackTraceImpl::create(debugger, v8StackTrace, maxStackSize);
 }
 
+static bool s_enabledStackCaptureInConstructor = false;
+bool V8StackTrace::s_stackCaptureControlledByInspector = true;
+
 V8StackTraceImpl::V8StackTraceImpl(
     std::vector<std::shared_ptr<StackFrame>> frames, int maxAsyncDepth,
     std::shared_ptr<AsyncStackTrace> asyncParent,
@@ -273,7 +276,17 @@ V8StackTraceImpl::V8StackTraceImpl(
     : m_frames(std::move(frames)),
       m_maxAsyncDepth(maxAsyncDepth),
       m_asyncParent(std::move(asyncParent)),
-      m_externalParent(externalParent) {}
+      m_externalParent(externalParent) {
+  // If this is true, then callstack capturing will be enabled by
+  // InspectorConsoleAgent.
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  if (!s_stackCaptureControlledByInspector &&
+      !s_enabledStackCaptureInConstructor && isolate) {
+    isolate->SetCaptureStackTraceForUncaughtExceptions(
+        true, V8StackTraceImpl::kDefaultMaxCallStackSizeToCapture, stackTraceOptions);
+    s_enabledStackCaptureInConstructor = true;
+  }
+}
 
 V8StackTraceImpl::~V8StackTraceImpl() = default;
 

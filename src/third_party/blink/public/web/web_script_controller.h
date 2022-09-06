@@ -47,6 +47,11 @@ class WebScriptController {
   // v8 contexts initialized after this call.
   BLINK_EXPORT static void RegisterExtension(std::unique_ptr<v8::Extension>);
 
+  // By default, stack capture is controlled by inspector.  Set this to false
+  // to make stack capture happen regardless of inspector.  This needs to be
+  // be called before any ScriptControllers are constructed.
+  BLINK_EXPORT static void SetStackCaptureControlledByInspector(bool);
+
  private:
   WebScriptController() = delete;
 };

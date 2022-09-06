@@ -854,6 +854,11 @@ void V8Debugger::setAsyncCallStackDepth(V8DebuggerAgentImpl* agent, int depth) {
 
 void V8Debugger::setMaxCallStackSizeToCapture(V8RuntimeAgentImpl* agent,
                                               int size) {
+
+  if (!V8StackTrace::s_stackCaptureControlledByInspector) {
+    return;
+  }
+
   if (size < 0) {
     m_maxCallStackSizeToCaptureMap.erase(agent);
   } else {
