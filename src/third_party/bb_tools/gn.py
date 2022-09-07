@@ -129,10 +129,6 @@ def get_chromium_version():
 def get_config(is_component_mode, is_debug_mode, cpu, defines):
   chromium_version = get_chromium_version()
   initial_config = {
-    # Disable PGO by default because it requires profiling data.  When
-    # profiling data is added to .nongit files, then remove this setting.
-    'chrome_pgo_phase': 0,
-
     # Enable proprietary codecs.
     'proprietary_codecs': True,
     'ffmpeg_branding': 'Chrome',
