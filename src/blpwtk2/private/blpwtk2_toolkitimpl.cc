@@ -46,6 +46,7 @@
 #include "base/feature_list.h"
 #include <base/command_line.h>
 #include <base/task/single_thread_task_executor.h>
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include <base/path_service.h>
 #include <base/process/memory.h>
 #include <base/synchronization/waitable_event.h>
@@ -690,6 +691,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     startMessageLoop(sandboxInfo);
 
     if (Statics::isRendererMainThreadMode()) {
+        if (!isHost) {
+            base::ThreadPoolInstance::Create("Renderer");
+        }
+
         // Initialize the renderer.
         DCHECK(!currentHostChannel.empty());
         ContentBrowserClientImpl* pBrowserClientImpl = d_mainDelegate.GetContentBrowserClientImpl();
