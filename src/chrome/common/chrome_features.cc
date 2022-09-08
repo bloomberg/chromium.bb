@@ -377,7 +377,7 @@ const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
 // of the Looper's queue.
 const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks = {
     "ElidePrioritizationOfPreNativeBootstrapTasks",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables all registered system web apps, regardless of their respective
