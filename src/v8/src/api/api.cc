@@ -171,8 +171,10 @@ namespace v8 {
 // shared library export table in Release builds.
 #ifdef _WIN64
 #pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPEAV1234@_KPEAVTraceWriter@234@@Z")
+#pragma comment(linker, "/include:?NewDefaultPlatform@platform@v8@@YAPEAVPlatform@2@HW4IdleTaskSupport@12@W4InProcessStackDumping@12@PEAVTracingController@2@@Z")
 #else
 #pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPAV1234@IPAVTraceWriter@234@@Z")
+#pragma comment(linker, "/include:?NewDefaultPlatform@platform@v8@@YAPAVPlatform@2@HW4IdleTaskSupport@12@W4InProcessStackDumping@12@PAVTracingController@2@@Z")
 #endif
 
 // Redefine LegacyOOMErrorCallback here for internal usage. We still need to
