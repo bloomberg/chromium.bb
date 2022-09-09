@@ -61,6 +61,7 @@
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
+#include <content/public/common/content_features.h>
 #include <content/public/common/content_switches.h>
 #include <content/common/in_process_child_thread_params.h>
 #include <content/child/field_trial.h>
@@ -625,7 +626,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
     if (isHost) {
         base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-        command_line->AppendSwitchASCII("enable-features", "NetworkServiceInProcess");
+        command_line->AppendSwitchASCII("enable-features", features::kNetworkServiceInProcess.name);
     }
     // Create a process host if we necessary.
     args = concateCmdLineFeatureSwitches(args);
