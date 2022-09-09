@@ -29,6 +29,10 @@
 
 # patch section: docprinter
 
+
+# patch section: renderer-ui
+
+
 group("chrome_blpwtk2") {
   deps = [
 
@@ -39,6 +43,10 @@ group("chrome_blpwtk2") {
 
 
      # patch section: docprinter
+
+
+     # patch section: renderer-ui
+
 
      "//base:base",
      "//chrome/utility:utility",
