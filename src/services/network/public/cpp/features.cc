@@ -254,12 +254,12 @@ const base::Feature kCorsNonWildcardRequestHeadersSupport{
 // Whether the sync client optimization is used for communication between the
 // CorsURLLoader and URLLoader.
 const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Don't wait for database write before responding to
 // RestrictedCookieManager::SetCookieFromString.
 const base::Feature kFasterSetCookie{"FasterSetCookie",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow batching SimpleURLLoaders when the underlying network state is
 // inactive.
