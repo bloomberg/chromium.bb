@@ -61,8 +61,6 @@ def _get_bin_files(version):
     'blpwtk2_subprocess.exe',
     'libEGL.dll',
     'libGLESv2.dll',
-    'swiftshader/libEGL.dll',
-    'swiftshader/libGLESv2.dll',
     'vk_swiftshader.dll',
     'vulkan-1.dll',
   ]
