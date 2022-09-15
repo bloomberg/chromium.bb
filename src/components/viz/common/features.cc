@@ -143,6 +143,9 @@ const base::Feature kUseRealVideoColorSpaceForDisplay{
     "UseRealVideoColorSpaceForDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kbbUseSurfaceLayerForVideoDefault{
+    "bbUseSurfaceLayerForVideoDefault", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used by CC to throttle frame production of older surfaces. Used by the
 // Browser to batch SurfaceSync calls sent to the Renderer for properties can
 // change in close proximity to each other.
@@ -284,7 +287,7 @@ bool UseSurfaceLayerForVideo() {
   }
   return base::FeatureList::IsEnabled(kUseSurfaceLayerForVideoDefault);
 #else
-  return true;
+  return base::FeatureList::IsEnabled(kbbUseSurfaceLayerForVideoDefault);
 #endif
 }
 
