@@ -47,6 +47,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kUsePlatformDelegatedInk;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSurfaceLayerForVideoDefault;
 VIZ_COMMON_EXPORT extern const base::Feature kWebViewNewInvalidateHeuristic;
 #endif
+VIZ_COMMON_EXPORT extern const base::Feature bbUseSurfaceLayerForVideoDefault;
 VIZ_COMMON_EXPORT extern const base::Feature kSurfaceSyncThrottling;
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForDraw;
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForClients;
