@@ -6256,7 +6256,6 @@ if (is_component_build) {
       ":v8_snapshot",
       "//blpwtk2:blpwtk2_generate_sources",
       "//base:base",
-      "//base/allocator",
       "//base/allocator:buildflags",
     ]
     public_deps += [ ":v8_initializers" ]
@@ -6286,7 +6285,6 @@ if (is_component_build) {
       ":v8_snapshot",
       "//blpwtk2:blpwtk2_generate_sources",
       "//base:base",
-      "//base/allocator",
     ]
 
     configs = [ ":internal_config" ]

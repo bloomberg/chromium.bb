@@ -30,10 +30,10 @@ enum class EmbedderStateTag : uint8_t {
 // pushed on the isolate stack.
 class EmbedderStateScope {
  public:
-  EmbedderStateScope(Isolate* isolate, Local<v8::Context> context,
+  V8_EXPORT EmbedderStateScope(Isolate* isolate, Local<v8::Context> context,
                      EmbedderStateTag tag);
 
-  ~EmbedderStateScope();
+  V8_EXPORT ~EmbedderStateScope();
 
  private:
   // Declaring operator new and delete as deleted is not spec compliant.
