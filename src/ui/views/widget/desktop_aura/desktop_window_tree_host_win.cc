@@ -1017,6 +1017,17 @@ void DesktopWindowTreeHostWin::HandleFrameChanged() {
 void DesktopWindowTreeHostWin::HandleNativeFocus(HWND last_focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
 
+  // blptwk2: For detecting the case where focus has been lost when WM_SETFOCUS is received.
+  // I.e., racing ::SetFocus on different HWNDs of the same window hierarchy by multiple browsers.
+  HWND hwnd = GetHWND();
+  HWND currentFocus = ::GetFocus();
+  if (hwnd != currentFocus) {
+    LOG(WARNING) << "Focus of hwnd=" << std::hex << hwnd
+      << " is lost, current focused hwnd=" << currentFocus
+      << ", last_focused_window=" << last_focused_window;
+    return;
+  }
+
   // If our HWND has WS_CHILD, treat WM_SETFOCUS like an activation change.
   if (GetWindowLong(GetHWND(), GWL_STYLE) & WS_CHILD)
     HandleActivationChanged(true);
