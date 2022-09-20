@@ -70,18 +70,8 @@ action("remoting_me2me_host_archive") {
     "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
     "$root_out_dir/remoting/com.google.chrome.remote_desktop-firefox.json",
     "$root_out_dir/remoting/com.google.chrome.remote_webauthn.json",
+    "$root_out_dir/icudtl${bb_data_file_suffix}.dat"
   ]
-
-  if (bb_version == "") {
-    inputs += [
-      "$root_out_dir/icudtl.dat"
-    ]
-
-  } else {
-    inputs += [
-      "$root_out_dir/icudtl.$bb_version.dat"
-    ]
-  }
 
   _generated_files = rebase_path(inputs, root_build_dir)
   _generated_files +=

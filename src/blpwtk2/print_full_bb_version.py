@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Bloomberg L.P. All rights reserved.
+# Copyright (C) 2022 Bloomberg L.P. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -21,43 +21,43 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-declare_args() {
-  # Whether we're building blpwtk2
-  is_blpwtk2 = true
 
-  blpwtk2_include_tests = !is_official_build
+import os
+import sys
 
-  bb_versioned_data_files = false
-  bb_generate_map_files = false
 
-  blpwtk2_products_h = "blpwtk2/public/blpwtk2_products.h"
-  version_h = "blpwtk2/public/blpwtk2_version.h"
-  version_cc = "blpwtk2/public/blpwtk2_version.cc"
+def main(argv):
+  src_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+  chrome_version_path = os.path.join(src_dir, 'chrome', 'VERSION')
+  bb_version_path = os.path.join(src_dir, 'BB_VERSION')
 
-  v8_toolset_for_d8 = "host"
-}
+  with open(chrome_version_path) as f:
+    lines = f.readlines()
+    lines = [x[6:] for x in lines]  # strip MAJOR=,MINOR=,etc
+    chromium_version = [int(x) for x in lines]
 
-_chrome_version_file = "//chrome/VERSION"
-_bb_version_file = "//BB_VERSION"
+  if os.path.exists(bb_version_path):
+    with open(bb_version_path) as f:
+      lines = f.readlines()
+      lines = [x[5:] for x in lines]  # strip TRML=,BBNO=
+      bb_version = [int(x) for x in lines]
+      assert(bb_version[1] < 100)
+  else:
+    bb_version = [0, 0]
 
-# src/BB_VERSION only exists in the release branch
-_has_bb_version = exec_script("//third_party/angle/scripts/file_exists.py",
-                              [rebase_path(_bb_version_file, root_build_dir)],
-                              "value")
+  bb_version_number = bb_version[0] * 100 + bb_version[1]
+  bb_version_str = str(bb_version_number)
+  if bb_version_number < 10:
+    bb_version_str = '0' + bb_version_str
+  bb_version_str = 'bb' + bb_version_str
 
-_version_dependencies = [_chrome_version_file]
-if (_has_bb_version) {
-  _version_dependencies += [_bb_version_file]
-}
+  print('"%d.%d.%d.%d_%s"' % (chromium_version[0],
+                              chromium_version[1],
+                              chromium_version[2],
+                              chromium_version[3],
+                              bb_version_str))
+  return 0
 
-full_bb_version = exec_script("print_full_bb_version.py",
-                              [],
-                              "value",
-                              _version_dependencies)
 
-if (bb_versioned_data_files) {
-  bb_data_file_suffix = ".${full_bb_version}"
-}
-else {
-  bb_data_file_suffix = ""
-}
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))

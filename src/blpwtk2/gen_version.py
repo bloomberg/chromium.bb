@@ -21,6 +21,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import argparse
 import hashlib
 import os
 import subprocess
@@ -33,19 +34,9 @@ ROOT_DIR = os.path.normpath(os.path.join(SCRIPT_DIR,
                                          os.path.pardir))
 
 
-def getVersionParts(contentShellVersion, version):
-  components = version.split('_')
-  if len(components) == 2:
-    if components[0] != contentShellVersion:
-      raise Exception("bb_version does not match chromium version: " \
-          + "bb_version(" + components[0] + ") contentShellVersion(" \
-          + contentShellVersion + ")")
-    bbPatch = components[1]
-  else:
-    bbPatch = "bb0"
-    version = contentShellVersion + "_" + bbPatch
-
-  return version, contentShellVersion, bbPatch
+def getVersionParts(version):
+  chromiumVersion, bbPatch = version.split('_')
+  return chromiumVersion, bbPatch
 
 
 def getHeaderHash():
@@ -74,12 +65,8 @@ def getHeaderHash():
   return sha1.hexdigest()
 
 
-def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
-  productAppend = ""
-  if version != "":
-    productAppend = "." + version
-
-  version, chromiumVersion, bbPatch = getVersionParts(contentShellVersion, version)
+def writeBlpwtk2ProductsFile(f, version, dataFileSuffix):
+  chromiumVersion, bbPatch = getVersionParts(version)
   chromiumVersionNumbers = chromiumVersion.split('.')
   bbPatchNumber = int(bbPatch[2:])
 
@@ -114,18 +101,17 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
                                                                  bbPatchNumber))
   f.write('#define BLPWTK2_DLL_NAME "blpwtk2.dll"\n')
   f.write('#define BLPWTK2_SUBPROCESS_EXE_NAME "blpwtk2_subprocess.exe"\n')
-  f.write('#define BLPWTK2_PAK_NAME "blpwtk2{}.pak"\n'.format(productAppend))
-  f.write('#define BLPWTK2_ICUDTL_DAT_NAME "icudtl{}.dat"\n'.format(productAppend))
-  f.write('#define BLPWTK2_ICUDTL_EXT_DAT_NAME "icudtl_extra{}.dat"\n'.format(productAppend))
-  f.write('#define BLPWTK2_CONTEXT_SNAPSHOT_NAME "v8_context_snapshot{}.bin"\n'.format(productAppend))
+  f.write('#define BLPWTK2_PAK_NAME "blpwtk2{}.pak"\n'.format(dataFileSuffix))
+  f.write('#define BLPWTK2_ICUDTL_DAT_NAME "icudtl{}.dat"\n'.format(dataFileSuffix))
+  f.write('#define BLPWTK2_CONTEXT_SNAPSHOT_NAME "v8_context_snapshot{}.bin"\n'.format(dataFileSuffix))
   f.write('\n')
   f.write('#define IDS_BLPWTK2_DEVKIT_HEADER_HASH 10051\n')
   f.write('#define BLPWTK2_DEVKIT_HEADER_HASH "{}"\n'.format(headerHash))
   f.write('\n')
   f.write('#endif  // INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
 
-def writeVersionFiles(fH, fCC, contentShellVersion, version):
-  version, chromiumVersion, bbPatch = getVersionParts(contentShellVersion, version)
+def writeVersionFiles(fH, fCC, version):
+  chromiumVersion, bbPatch = getVersionParts(version)
 
   fH.write('// generated file -- DO NOT EDIT\n')
   fH.write('#ifndef INCLUDED_GENERATED_BLPWTK2_VERSION\n')
@@ -154,39 +140,22 @@ def writeVersionFiles(fH, fCC, contentShellVersion, version):
   fCC.write('}  // blpwtk2\n')
 
 
-def doMain(args):
-  blpwtk2ProductsFile = None
-  versionHFile = None
-  versionCCFile = None
-  version = None
-  contentShellVersion = None
+def doMain(argv):
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--output-blpwtk2-products', required=True)
+  parser.add_argument('--output-version-h', required=True)
+  parser.add_argument('--output-version-cc', required=True)
+  parser.add_argument('--version', required=True)
+  parser.add_argument('--data-file-suffix', required=True)
+  args = parser.parse_args(argv[1:])
 
-  for i in range(len(args)):
-    if args[i] == '--content-shell-version':
-      contentShellVersion = args[i+1]
-    elif args[i] == '--output-blpwtk2-products':
-      blpwtk2ProductsFile = args[i+1]
-    elif args[i] == '--output-version-h':
-      versionHFile = args[i+1]
-    elif args[i] == '--output-version-cc':
-      versionCCFile = args[i+1]
-    elif args[i] == '--version':
-      if i+1 < len(args):
-        version = args[i+1]
+  with open(args.output_blpwtk2_products, 'w') as f:
+    writeBlpwtk2ProductsFile(f, args.version, args.data_file_suffix)
 
-  assert(blpwtk2ProductsFile != None)
-  assert(versionHFile != None)
-  assert(versionCCFile != None)
-  if version == None:
-    version = ''
+  with open(args.output_version_h, 'w') as fH:
+    with open(args.output_version_cc, 'w') as fCC:
+      writeVersionFiles(fH, fCC, args.version)
 
-  with open(blpwtk2ProductsFile, 'w') as f:
-    writeBlpwtk2ProductsFile(f, contentShellVersion, version)
-
-  with open(versionHFile, 'w') as fH:
-    with open(versionCCFile, 'w') as fCC:
-      writeVersionFiles(fH, fCC, contentShellVersion, version)
 
 if __name__ == '__main__':
   doMain(sys.argv)
-
