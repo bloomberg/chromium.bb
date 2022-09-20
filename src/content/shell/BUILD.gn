@@ -34,7 +34,8 @@ shell_use_toolkit_views = toolkit_views && !is_chromecast
 
 declare_args() {
   content_shell_product_name = "Content Shell"
-# blpwtk2: declaration of content_shell_version is moved into blpwtk2.gni
+  content_shell_version = "999.77.34.5"
+  content_shell_major_version = "999"
 }
 
 config("content_shell_lib_warnings") {

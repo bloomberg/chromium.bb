@@ -389,18 +389,11 @@ if (icu_use_data_file) {
       outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   } else {
+    bb_data_bundle = "${data_bundle_prefix}${bb_data_file_suffix}.dat"
     copy("icudata") {
       sources = [ "$data_dir/$data_bundle" ]
-
-      if (bb_version == "") {
-        outputs = [ "$root_out_dir/$data_bundle" ]
-        data = [ "$root_out_dir/$data_bundle" ]
-
-      } else {
-        bb_data_bundle = "${data_bundle_prefix}.$bb_version.dat"
-        outputs = [ "$root_out_dir/$bb_data_bundle" ]
-        data = [ "$root_out_dir/$bb_data_bundle" ]
-      }
+      outputs = [ "$root_out_dir/$bb_data_bundle" ]
+      data = [ "$root_out_dir/$bb_data_bundle" ]
     }
   }
 

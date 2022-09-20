@@ -66,8 +66,6 @@ action("blpwtk2_generate_sources") {
   ]
 
   args = [
-    "--content-shell-version",
-    content_shell_version,
     "--output-blpwtk2-products",
     rebase_path(_output_blpwtk2_products_h, root_build_dir),
     "--output-version-h",
@@ -75,7 +73,8 @@ action("blpwtk2_generate_sources") {
     "--output-version-cc",
     rebase_path(_output_version_cc, root_build_dir),
     "--version",
-    bb_version,
+    full_bb_version,
+    "--data-file-suffix=$bb_data_file_suffix",
   ]
 }
 
@@ -90,11 +89,7 @@ mojom("interfaces") {
 }
 
 repack("pak") {
-  if (bb_version != "") {
-    output = "${root_out_dir}/blpwtk2.$bb_version.pak"
-  } else {
-    output = "${root_out_dir}/blpwtk2.pak"
-  }
+  output = "${root_out_dir}/blpwtk2${bb_data_file_suffix}.pak"
 
   sources = [
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",

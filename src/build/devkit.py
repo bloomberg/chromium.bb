@@ -36,12 +36,12 @@ def build_targets():
 def gn_defines(version):
   return {
     'bb_generate_map_files': True,
-    'bb_version': version,
+    'bb_versioned_data_files': True,
     'is_official_build': True,
   }
 
 
-def _get_bin_files(version):
+def _get_bin_files(bb_data_file_suffix, bb_generate_map_files):
   """Return a list of files to copy to the bin/<config> directory."""
 
   files = [
@@ -51,9 +51,9 @@ def _get_bin_files(version):
     'd3dcompiler_47.dll',
     'd8.exe',
     'vk_swiftshader_icd.json',
-    f'blpwtk2.{version}.pak',
-    f'icudtl.{version}.dat',
-    f'v8_context_snapshot.{version}.bin',
+    f'blpwtk2{bb_data_file_suffix}.pak',
+    f'icudtl{bb_data_file_suffix}.dat',
+    f'v8_context_snapshot{bb_data_file_suffix}.bin',
   ]
 
   modules = [
@@ -65,8 +65,11 @@ def _get_bin_files(version):
     'vulkan-1.dll',
   ]
 
-  for m in modules:
-    files += [ m, m + '.pdb', m[:-3] + 'map' ]
+  files.extend(modules)
+  files.extend([m + '.pdb' for m in modules])
+
+  if bb_generate_map_files:
+    files.extend([m[:-3] + 'map' for m in modules])
 
   return files
 
@@ -82,9 +85,23 @@ def _get_include_files(src_dir):
       yield os.path.join(relpath, f)
 
 
-def _get_bin_file_copies(src_dir, dest_dir, version):
-  return [(os.path.join(src_dir, x), os.path.join('bin', dest_dir, x))
-          for x in _get_bin_files(version)]
+def _get_bin_file_copies(out_dir, dest_dir, version):
+  bb_generate_map_files = False
+  bb_versioned_data_files = False
+
+  with open(os.path.join(out_dir, 'args.gn'), 'r', encoding='utf-8') as f:
+    lines = f.readlines()
+  for line in lines:
+    key, value = line.strip().split('=', 1)
+    if key == 'bb_generate_map_files':
+      bb_generate_map_files = value == 'true'
+    elif key == 'bb_versioned_data_files':
+      bb_versioned_data_files = value == 'true'
+
+  bb_data_file_suffix = f'.{version}' if bb_versioned_data_files else ''
+
+  return [(os.path.join(out_dir, x), os.path.join('bin', dest_dir, x))
+          for x in _get_bin_files(bb_data_file_suffix, bb_generate_map_files)]
 
 
 def _get_include_file_copies(src_dir, dest_dir):
