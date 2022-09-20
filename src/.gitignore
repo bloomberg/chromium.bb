@@ -143,7 +143,6 @@ vs-chromium-project.txt
 /chrome/common/extensions/api/ledger/
 /chrome/installer/linux/internal
 /chrome/installer/mac/internal
-/chrome/installer/mac/third_party/xz/xz
 /chrome/installer/mini_installer.xml
 /chrome/installer/mini_installer/mini_installer.aps
 /chrome/installer/mini_installer/support
@@ -172,8 +171,6 @@ vs-chromium-project.txt
 /chrome/test/data/layout_tests
 /chrome/test/data/password/captured_sites
 /chrome/test/data/pdf_private
-/chrome/test/data/perf/canvas_bench
-/chrome/test/data/perf/frame_rate/content
 /chrome/test/data/perf/frame_rate/private
 /chrome/test/data/perf/private/
 /chrome/test/data/perf/third_party/
@@ -181,7 +178,6 @@ vs-chromium-project.txt
 /chrome/test/data/vr/
 /chrome/test/data/webrtc/resources
 /chrome/test/data/xr/ar_playback_datasets/*.mp4
-/chrome/test/data/xr/webvr_info/
 /chrome/test/media_router/internal
 /chrome/test/python_tests/
 /chrome/tools/memory
@@ -228,7 +224,6 @@ vs-chromium-project.txt
 /data
 /delegate_execute
 /device/serial/device_serial_mojo.xml
-/docs/website
 /google_apis/gcm/gcm.xml
 /google_apis/internal
 /googleurl
@@ -255,7 +250,6 @@ vs-chromium-project.txt
 /libinteraction
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
-/media/cdm/api
 /media/media_mojo_bindings.xml
 /media/test/data/internal
 /metro_driver
@@ -266,7 +260,6 @@ vs-chromium-project.txt
 /net/net_unittests_run.xml
 /net/Release
 /net/testserver.log
-/net/third_party/quiche/src
 /orderfiles
 /out*/
 /ppapi/native_client/nacl_irt.xml
@@ -318,7 +311,6 @@ vs-chromium-project.txt
 /tools/metrics/histograms/metadata/*.before.pretty-print.xml
 /tools/metrics/histograms/metadata/*/*.before.pretty-print.xml
 /tools/metrics/histograms/enums.before.pretty-print.xml
-/tools/page_cycler/acid3
 /tools/reclient
 /tools/skia_goldctl/
 /tools/tryserver
@@ -328,7 +320,6 @@ vs-chromium-project.txt
 /ui/surface/surface.xml
 /ui/surface/surface_gpu_tests.xml
 /ui/webui/internal
-/v8
 /webkit/data
 /webpagereplay_logs/
 /x86-generic_out/

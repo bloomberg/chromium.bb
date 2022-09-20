@@ -44,7 +44,6 @@
 /third_party/depot_tools
 /third_party/fuchsia-sdk
 /third_party/gles1_conform
-/third_party/glmark2/src
 /third_party/googletest
 /third_party/ijar
 /third_party/jdk/current
@@ -63,12 +62,10 @@
 /third_party/qemu-linux-x64
 /third_party/qemu-mac-x64
 /third_party/r8/lib
-/third_party/rapidjson/src
 /third_party/requests/src
 /third_party/six
 /third_party/SwiftShader
 /third_party/turbine/*.jar
-/third_party/VK-GL-CTS/src
 /third_party/vulkan-deps
 /third_party/vulkan_memory_allocator
 /third_party/wayland
