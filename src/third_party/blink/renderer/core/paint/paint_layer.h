@@ -866,8 +866,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool is_destroyed_ = false;
 #endif
 
-  unsigned suppress_needs_compositing_inputs_update_ : 1;
-
   const Member<LayoutBoxModelObject> layout_object_;
 
   Member<PaintLayer> parent_;

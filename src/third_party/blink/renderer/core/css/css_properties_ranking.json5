@@ -744,7 +744,6 @@
 
 
         // patch section: suppress-needs-compositing-input-update
-        "-bb-suppress-needs-compositing-input-update",
 
 
 
