@@ -60,6 +60,9 @@ class BLPWTK2_EXPORT ToolkitDelegate {
 
     // patch section: renderer ui
 
+
+    // patch section: focus
+
 };
 
                         // =========================
