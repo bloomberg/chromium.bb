@@ -46,6 +46,7 @@
 #include "base/feature_list.h"
 #include <base/command_line.h>
 #include <base/task/single_thread_task_executor.h>
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include <base/path_service.h>
 #include <base/process/memory.h>
 #include <base/synchronization/waitable_event.h>
@@ -60,6 +61,7 @@
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
+#include <content/public/common/content_features.h>
 #include <content/public/common/content_switches.h>
 #include <content/common/in_process_child_thread_params.h>
 #include <content/child/field_trial.h>
@@ -624,7 +626,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
     if (isHost) {
         base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-        command_line->AppendSwitchASCII("enable-features", "NetworkServiceInProcess");
+        command_line->AppendSwitchASCII("enable-features", features::kNetworkServiceInProcess.name);
     }
     // Create a process host if we necessary.
     args = concateCmdLineFeatureSwitches(args);
@@ -690,6 +692,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     startMessageLoop(sandboxInfo);
 
     if (Statics::isRendererMainThreadMode()) {
+        if (!isHost) {
+            base::ThreadPoolInstance::Create("Renderer");
+        }
+
         // Initialize the renderer.
         DCHECK(!currentHostChannel.empty());
         ContentBrowserClientImpl* pBrowserClientImpl = d_mainDelegate.GetContentBrowserClientImpl();

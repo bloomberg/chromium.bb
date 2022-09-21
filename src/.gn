@@ -153,6 +153,9 @@ exec_script_whitelist =
       # in the Chromium repo outside of //build.
       "//build_overrides/build.gni",
 
+      # To detect presence of BB_VERSION file.
+      "//blpwtk2/blpwtk2.gni",
+
       "//chrome/android/webapk/shell_apk/prepare_upload_dir/BUILD.gn",
 
       # TODO(dgn): Layer violation but breaks the build otherwise, see

@@ -41,10 +41,8 @@ declare_args() {
     } else {
       v8_context_snapshot_filename = "v8_context_snapshot_64.bin"
     }
-  } else if (bb_version == "") {
-    v8_context_snapshot_filename = "v8_context_snapshot.bin"
   } else {
-    v8_context_snapshot_filename = "v8_context_snapshot.$bb_version.bin"
+    v8_context_snapshot_filename = "v8_context_snapshot${bb_data_file_suffix}.bin"
   }
 }
 

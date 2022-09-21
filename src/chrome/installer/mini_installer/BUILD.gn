@@ -203,11 +203,7 @@ action("mini_installer_archive") {
   }
 
   if (icu_use_data_file) {
-    if (bb_version == "") {
-      inputs += [ "$root_out_dir/icudtl.dat" ]
-    } else {
-      inputs += [ "$root_out_dir/icudtl.$bb_version.dat" ]
-    }
+    inputs += [ "$root_out_dir/icudtl${bb_data_file_suffix}.dat" ]
   } else {
     inputs += [ "$root_out_dir/icudt.dll" ]
   }

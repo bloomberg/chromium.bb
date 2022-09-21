@@ -27,10 +27,7 @@ declare_args() {
 
   blpwtk2_include_tests = !is_official_build
 
-  content_shell_version = "999.77.34.5"
-  content_shell_major_version = "999"
-
-  bb_version = ""
+  bb_versioned_data_files = false
   bb_generate_map_files = false
 
   blpwtk2_products_h = "blpwtk2/public/blpwtk2_products.h"
@@ -38,4 +35,29 @@ declare_args() {
   version_cc = "blpwtk2/public/blpwtk2_version.cc"
 
   v8_toolset_for_d8 = "host"
+}
+
+_chrome_version_file = "//chrome/VERSION"
+_bb_version_file = "//BB_VERSION"
+
+# src/BB_VERSION only exists in the release branch
+_has_bb_version = exec_script("//third_party/angle/scripts/file_exists.py",
+                              [rebase_path(_bb_version_file, root_build_dir)],
+                              "value")
+
+_version_dependencies = [_chrome_version_file]
+if (_has_bb_version) {
+  _version_dependencies += [_bb_version_file]
+}
+
+full_bb_version = exec_script("print_full_bb_version.py",
+                              [],
+                              "value",
+                              _version_dependencies)
+
+if (bb_versioned_data_files) {
+  bb_data_file_suffix = ".${full_bb_version}"
+}
+else {
+  bb_data_file_suffix = ""
 }
