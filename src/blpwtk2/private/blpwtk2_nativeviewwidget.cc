@@ -23,6 +23,8 @@
 #include <blpwtk2_nativeviewwidget.h>
 
 #include <blpwtk2_nativeviewwidgetdelegate.h>
+#include <blpwtk2_statics.h>
+#include <blpwtk2_toolkitcreateparams.h>
 
 #include <ui/views/controls/native/native_view_host.h>
 #include <ui/views/layout/fill_layout.h>
@@ -138,6 +140,11 @@ bool NativeViewWidget::focus()
 {
     DCHECK(d_impl);
     HWND hwnd = views::HWNDForWidget(d_impl);
+    ToolkitDelegate *tkDelegate = Statics::toolkitDelegate;
+    if(tkDelegate && tkDelegate->handleSetFocus(hwnd)) {
+        return false;
+    }
+
     HWND oldFocusedHwnd = ::GetFocus();
     if(::SetFocus(hwnd) != oldFocusedHwnd) {
         PLOG(WARNING) << "::SetFocus for HWND " << hwnd << " failed";
