@@ -62,6 +62,11 @@ class BLPWTK2_EXPORT ToolkitDelegate {
 
 
     // patch section: focus
+    // Allow the embedder to handle SetFocus call.
+    // return:
+    //   true:  SetFocus is handled by the delegate
+    //   false: SetFocus is not handled by the delegate
+    virtual bool handleSetFocus(HWND hwnd);
 
 };
 

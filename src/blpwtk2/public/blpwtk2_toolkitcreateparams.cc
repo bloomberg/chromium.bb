@@ -36,6 +36,13 @@ namespace blpwtk2 {
 
 ToolkitDelegate::ToolkitDelegate() = default;
 
+
+bool ToolkitDelegate::handleSetFocus(HWND hwnd)
+{
+    return false;
+}
+
+
                         // ==============================
                         // struct ToolkitCreateParamsImpl
                         // ==============================

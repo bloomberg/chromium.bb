@@ -43,6 +43,7 @@
 
 // feature 0
 #define BLPWTK2_FEATURE_FOCUS
+#define BLPWTK2_FEATURE_HANDLE_SET_FOCUS
 // feature 1
 // feature 2
 // feature 3
