@@ -564,7 +564,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 #if defined(BLPWTK2_FEATURE_FOCUS)
                 // Focus on mouse button down:
                 if (d_properties.takeKeyboardFocusOnMouseDown) {
-                    SetFocus(d_hwnd.get());
+                    takeKeyboardFocus();
                 }
 #endif
 
@@ -1364,8 +1364,14 @@ void RenderWebView::takeKeyboardFocus()
         LOG(INFO) << "routingId=?" << ", takeKeyboardFocus";
     }
 
+#ifdef BLPWTK2_FEATURE_HANDLE_SET_FOCUS
+    ToolkitDelegate *tkDelegate = Statics::toolkitDelegate;
+    if (tkDelegate && tkDelegate->handleSetFocus(d_hwnd.get())) {
+        return;
+    }
+#endif
 
-    SetFocus(d_hwnd.get());
+    ::SetFocus(d_hwnd.get());
 }
 
 void RenderWebView::setLogicalFocus(bool focused)
