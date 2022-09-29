@@ -93,7 +93,8 @@
 // patch section: embedder ipc
 #include <gin/v8_initializer.h>
 #include <v8/include/v8-cppgc.h>
-
+#include <gin/public/wrapper_info.h>
+#include <gin/public/gin_embedders.h>
 
 // patch section: multi-heap tracer
 
@@ -104,6 +105,8 @@ namespace blpwtk2 {
 static ToolkitImpl *g_instance;
 constexpr size_t EXIT_TIME_OUT_MS{1000};
 constexpr size_t TERMINATE_LOG_WAIT_TIME_MS{200};
+static const int kV8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
+static const int kV8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
 
                         // ===============
                         // class ScopeExitGuard
@@ -731,7 +734,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
             realPlatform,
             {
                 {},
-                v8::WrapperDescriptor(0, 1, 10)
+                v8::WrapperDescriptor(kV8DOMWrapperTypeIndex, kV8DOMWrapperObjectIndex, gin::kEmbedderBlink)
             });
         d_isolateHolder->isolate()->AttachCppHeap(d_cppHeap.get());
     }
