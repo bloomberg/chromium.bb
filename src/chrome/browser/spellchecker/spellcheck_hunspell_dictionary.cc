@@ -8,6 +8,8 @@
 
 #include <utility>
 
+#include "base/logging.h"
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
@@ -145,6 +147,7 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 void SpellcheckHunspellDictionary::Load() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  LOG(INFO) << "Dictionary " << GetLanguage() << " is loading ";
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker() &&
       spellcheck_platform::SpellCheckerAvailable() && HasPlatformSupport()) {
@@ -453,6 +456,9 @@ void SpellcheckHunspellDictionary::SaveDictionaryDataComplete(
 void SpellcheckHunspellDictionary::InformListenersOfInitialization() {
   for (Observer& observer : observers_)
     observer.OnHunspellDictionaryInitialized(language_);
+
+  LOG(INFO) << "Dictionary " << GetLanguage() << " is loaded with platform spellcheck "
+            <<  (use_browser_spellchecker_ ? "enabled" : "disabled");
 }
 
 void SpellcheckHunspellDictionary::InformListenersOfDownloadFailure() {
