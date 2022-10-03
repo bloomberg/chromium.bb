@@ -18,7 +18,7 @@
 namespace skia {
 
 // blpwtk2: should clear memory or not when allocating canvas memory
-bool g_clear_canvas_memory_at_creation = false;
+static bool g_clear_canvas_memory_at_creation = false;
 
 bool ReadSkString(base::PickleIterator* iter, SkString* str) {
   int reply_length;
