@@ -27,14 +27,18 @@
 #include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_webviewproxy.h>
+#include <base/command_line.h>
 #include <base/run_loop.h>
 #include <cc/trees/layer_tree_host.h>
 #include <content/browser/blob_storage/chrome_blob_storage_context.h>
 #include <content/browser/renderer_host/data_transfer_util.h>
 #include <content/public/browser/browser_task_traits.h>
+#include <content/public/common/content_switches.h>
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/render_view_impl.h>
 #include <content/renderer/render_frame_impl.h>
+#include <skia/ext/skia_utils_base.h>
+#include <third_party/abseil-cpp/absl/types/optional.h>
 #include <third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h>
 #include <third_party/blink/public/mojom/frame/frame.mojom.h>
 #include <third_party/blink/public/mojom/input/input_handler.mojom.h>
@@ -103,6 +107,22 @@ void GetNativeViewScreenInfo(display::ScreenInfo* screen_info,
         screen_info,
         screen->GetDisplayMatching(
             gfx::Rect(monitor_info.rcMonitor)));
+}
+
+void SetSkiaCanvasFlag() {
+    static absl::optional<bool> shouldClearCanvasMemory;
+    if (!shouldClearCanvasMemory.has_value()) {
+        const base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+        bool disableGPU = command_line.HasSwitch(switches::kDisableGpu);
+        bool disableGPUCompositing = command_line.HasSwitch(switches::kDisableGpuCompositing);
+        shouldClearCanvasMemory = disableGPU || disableGPUCompositing;
+        LOG(INFO) << "RenderWebView disableGPU = " << disableGPU
+                  << ", disableGPUCompositing=" << disableGPUCompositing
+                  << ", shouldClearCanvasMemory = " << *shouldClearCanvasMemory;
+        if (*shouldClearCanvasMemory) {
+            skia::SetShouldClearCanvasMemoryAtCreation(true);
+        }
+    }
 }
 
 constexpr base::TimeDelta kDefaultMouseWheelLatchingTransaction =
@@ -251,6 +271,7 @@ RenderWebView::RenderWebView(WebViewDelegate          *delegate,
     , mojo_frame_widget_host_impl_(std::make_unique<MojoFrameWidgetHostImpl>(this))
     , mojo_popup_widget_host_impl_(std::make_unique<MojoPopupWidgetHostImpl>(this))
 {
+    SetSkiaCanvasFlag();
     initializeBrowserLike();
 }
 
