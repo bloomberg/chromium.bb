@@ -125,12 +125,16 @@ def get_file_copies(chromium_dir, x86, x64, version):
             os.path.join(out_dir, 'gen/blpwtk2/blpwtk2/public'), 'blpwtk2')
     copies.append((os.path.join(out_dir, f'blpwtk2.dll.lib'),
                    f'lib/release/blpwtk2.dll.lib'))
+    copies.append((os.path.join(out_dir, 'gen/v8/include/v8-gn.h'),
+                  'include/v8-x86/v8-gn.h'))
 
   if x64:
     out_dir = os.path.join(chromium_dir, 'src/out/static_release64')
     copies += _get_bin_file_copies(out_dir, 'release64', version)
     copies.append((os.path.join(out_dir, f'blpwtk2.dll.lib'),
                    f'lib/release64/blpwtk2.dll.lib'))
+    copies.append((os.path.join(out_dir, 'gen/v8/include/v8-gn.h'),
+                  'include/v8-x64/v8-gn.h'))
 
     if not x86:
       copies += _get_include_file_copies(
