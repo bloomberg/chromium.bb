@@ -324,7 +324,7 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 // patch section: printing
 void ProfileImpl::setDefaultPrinter(const StringRef& name)
 {
-    printing::PrintRenderFrameHelper::UseDefaultPrintSettings();
+    printing::PrintRenderFrameHelper::UseDefaultPrintSettings(!name.isEmpty());
     d_hostPtr->setDefaultPrinter(std::string(name.data(), name.size()));
 }
 
