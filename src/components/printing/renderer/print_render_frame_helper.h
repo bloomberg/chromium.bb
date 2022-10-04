@@ -151,7 +151,7 @@ class PrintRenderFrameHelper
   static void DisablePreview();
 
   // Uses the default print settings instead of asking the user everytime.
-  static void UseDefaultPrintSettings();
+  static void UseDefaultPrintSettings(bool enable);
 
   static Delegate* CreateEmptyDelegate();
 

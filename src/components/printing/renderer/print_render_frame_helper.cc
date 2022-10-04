@@ -1243,8 +1243,8 @@ PrintRenderFrameHelper::GetPrintManagerHost() {
 }
 
 // static
-void PrintRenderFrameHelper::UseDefaultPrintSettings() {
-  g_use_default_print_settings_ = true;
+void PrintRenderFrameHelper::UseDefaultPrintSettings(bool enable) {
+  g_use_default_print_settings_ = enable;
 }
 
 // static

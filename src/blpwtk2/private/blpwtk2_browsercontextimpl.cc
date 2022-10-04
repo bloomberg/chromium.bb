@@ -534,7 +534,7 @@ void BrowserContextImpl::removeCustomWords(const StringRef *words,
 // patch section: printing
 void BrowserContextImpl::setDefaultPrinter(const StringRef& name)
 {
-    printing::PrintRenderFrameHelper::UseDefaultPrintSettings();
+    printing::PrintRenderFrameHelper::UseDefaultPrintSettings(!name.isEmpty());
     printing::PrintBackend::SetUserDefaultPrinterName(
             std::string(name.data(), name.size()));
 }
