@@ -150,6 +150,10 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     # Disable print content analysis
     'enable_print_content_analysis': False,
 
+    # Generates a header that embedders can use to correctly configure V8
+    # features.
+    'v8_generate_external_defines_header': True,
+
     # Apply the content shell version.
     'content_shell_version': chromium_version,
     'content_shell_major_version': chromium_version.split('.')[0],
