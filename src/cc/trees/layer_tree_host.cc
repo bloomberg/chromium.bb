@@ -231,6 +231,23 @@ void LayerTreeHost::SetUIResourceManagerForTesting(
   ui_resource_manager_ = std::move(ui_resource_manager);
 }
 
+ThreadUnsafeCommitState& LayerTreeHost::thread_unsafe_commit_state() {
+  DCHECK(IsMainThread());
+  static uint64_t nCompleted = 0;
+  static uint64_t nTimedOut = 0;
+  if (TimedWaitForProtectedSequenceCompletion()) {
+    nCompleted++;
+  } else {
+    nTimedOut++;
+    if (nTimedOut % 100 == 1) {
+      LOG(INFO) << "routingId=" << routing_id_
+                << ", timed out on waiting for commit completion. nCompleted="
+                << nCompleted << ", nTimedOut=" << nTimedOut;
+    }
+  }
+  return thread_unsafe_commit_state_;
+}
+
 void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
   DCHECK(task_runner_provider_);
@@ -446,6 +463,12 @@ void LayerTreeHost::WaitForProtectedSequenceCompletion() const {
   WaitForCommitCompletion(/* for_protected_sequence */ true);
 }
 
+bool LayerTreeHost::TimedWaitForProtectedSequenceCompletion() const {
+  if (compositor_mode_ == CompositorMode::SINGLE_THREADED)
+    return true;
+  return TimedWaitForCommitCompletion(/* for_protected_sequence */ true);
+}
+
 void LayerTreeHost::WaitForCommitCompletion(bool for_protected_sequence) const {
   DCHECK(IsMainThread());
   if (commit_completion_event_) {
@@ -459,6 +482,23 @@ void LayerTreeHost::WaitForCommitCompletion(bool for_protected_sequence) const {
           "Compositing.MainThreadBlockedDuringCommitTime", timer.Elapsed());
     }
   }
+}
+
+bool LayerTreeHost::TimedWaitForCommitCompletion(bool for_protected_sequence) const {
+  DCHECK(IsMainThread());
+  if (commit_completion_event_) {
+    base::ElapsedTimer timer;
+    bool completed = 
+      commit_completion_event_->TimedWait(base::Milliseconds(100));
+    commit_completion_event_ = nullptr;
+    if (for_protected_sequence) {
+      waited_for_protected_sequence_ = true;
+      base::UmaHistogramMicrosecondsTimes(
+          "Compositing.MainThreadBlockedDuringCommitTime", timer.Elapsed());
+    }
+    return completed;
+  }
+  return true;
 }
 
 void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
