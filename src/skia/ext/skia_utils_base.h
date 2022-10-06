@@ -59,6 +59,10 @@ SK_API bool SkBitmapToN32OpaqueOrPremul(const SkBitmap& in, SkBitmap* out);
 // Returns hex string representation for the |color| in "#FFFFFF" format.
 SK_API std::string SkColorToHexString(SkColor color);
 
+// blpwtk2: should clear memory or not when allocating canvas memory
+SK_API void SetShouldClearCanvasMemoryAtCreation(bool shouldClear);
+SK_API bool GetShouldClearCanvasMemoryAtCreation();
+
 }  // namespace skia
 
 #endif  // SKIA_EXT_SKIA_UTILS_BASE_H_

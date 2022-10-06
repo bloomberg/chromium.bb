@@ -17,6 +17,9 @@
 
 namespace skia {
 
+// blpwtk2: should clear memory or not when allocating canvas memory
+static bool g_clear_canvas_memory_at_creation = false;
+
 bool ReadSkString(base::PickleIterator* iter, SkString* str) {
   int reply_length;
   const char* reply_text;
@@ -120,4 +123,13 @@ std::string SkColorToHexString(SkColor color) {
   return base::StringPrintf("#%02X%02X%02X", SkColorGetR(color),
                             SkColorGetG(color), SkColorGetB(color));
 }
+
+void SetShouldClearCanvasMemoryAtCreation(bool shouldClear) {
+  g_clear_canvas_memory_at_creation = shouldClear;
+}
+
+bool GetShouldClearCanvasMemoryAtCreation() {
+  return g_clear_canvas_memory_at_creation;
+}
+
 }  // namespace skia
