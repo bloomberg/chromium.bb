@@ -1,0 +1,6 @@
+versions:
+    "*":
+      folder: "all"
+profiles:
+  - vs2019_32_staticCRT_Release
+  - vs2019_staticCRT_Release
