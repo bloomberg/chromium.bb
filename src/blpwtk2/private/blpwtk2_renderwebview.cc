@@ -35,6 +35,7 @@
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/render_view_impl.h>
 #include <content/renderer/render_frame_impl.h>
+#include <skia/ext/skia_utils_base.h>
 #include <third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h>
 #include <third_party/blink/public/mojom/frame/frame.mojom.h>
 #include <third_party/blink/public/mojom/input/input_handler.mojom.h>
@@ -251,6 +252,7 @@ RenderWebView::RenderWebView(WebViewDelegate          *delegate,
     , mojo_frame_widget_host_impl_(std::make_unique<MojoFrameWidgetHostImpl>(this))
     , mojo_popup_widget_host_impl_(std::make_unique<MojoPopupWidgetHostImpl>(this))
 {
+    skia::SetShouldClearCanvasMemoryAtCreation(true);
     initializeBrowserLike();
 }
 

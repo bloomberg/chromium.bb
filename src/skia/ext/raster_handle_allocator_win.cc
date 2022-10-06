@@ -14,6 +14,7 @@
 #include "base/win/win_util.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/skia_utils_base.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -136,7 +137,11 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
   // shared memory as the bitmap.
   if (base::win::IsUser32AndGdi32Available()) {
     SkRasterHandleAllocator::Rec rec;
-    if (Create(width, height, shared_section, false, &rec))
+
+    // blpwtk2
+    bool bDoClear = GetShouldClearCanvasMemoryAtCreation();
+
+    if (Create(width, height, shared_section, bDoClear, &rec))
       return SkRasterHandleAllocator::MakeCanvas(
           std::make_unique<GDIAllocator>(), info, &rec);
   } else {
