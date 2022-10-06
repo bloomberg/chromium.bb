@@ -40,13 +40,16 @@ class BLPWTK2Conan(ConanFile):
 
     def package(self):
         bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
+        v8_arch_suffix = "x64" if "64" in str(self.settings.arch) else "x86"
         self.copy(f"bin/release{bitness_path_suffix}/*", keep_path=True)
         self.copy(f"lib/release{bitness_path_suffix}/*", keep_path=True)
         self.copy("include/blpwtk2/*", keep_path=True)
         self.copy("include/v8/*", keep_path=True)
+        self.copy(f"include/v8-{v8_arch_suffix}/*", keep_path=True)
 
     def package_info(self):
         bitness_path_suffix = "64" if "64" in str(self.settings.arch) else ""
+        v8_arch_suffix = "x64" if "64" in str(self.settings.arch) else "x86"
         bindir = f"bin/release{bitness_path_suffix}"
         libdir = f"lib/release{bitness_path_suffix}"
 
@@ -64,12 +67,12 @@ class BLPWTK2Conan(ConanFile):
             "USING_BLPWTK2_SHARED",
             "USING_V8_SHARED",
             "USING_BLPWTK2V8",
+            "V8_GN_HEADER",
         ]
-        if "64" in str(self.settings.arch):
-            self.cpp_info.components[label].defines.append("V8_COMPRESS_POINTERS")
         self.cpp_info.components[label].includedirs = [
             "include/blpwtk2",
             "include/v8",
+            f"include/v8-{v8_arch_suffix}",
         ]
         self.user_info.version = self.version
 
@@ -84,12 +87,12 @@ class BLPWTK2Conan(ConanFile):
         self.cpp_info.components["v8"].defines = [
             "USING_V8_SHARED",
             "USING_BLPWTK2V8",
+            "V8_GN_HEADER",
         ]
-        if "64" in str(self.settings.arch):
-            self.cpp_info.components["v8"].defines.append("V8_COMPRESS_POINTERS")
         self.cpp_info.components["v8"].includedirs = [
             "include/blpwtk2",
             "include/v8",
+            f"include/v8-{v8_arch_suffix}",
         ]
         self.cpp_info.components["v8"].requires = [
             "blpwtk2-component",
