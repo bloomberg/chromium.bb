@@ -757,6 +757,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // If commit is currently running on the impl thread, this will block until
   // commit is finished.
   void WaitForProtectedSequenceCompletion() const override;
+  bool TimedWaitForProtectedSequenceCompletion() const;
 
   // MutatorHostClient implementation.
   bool IsElementInPropertyTrees(ElementId element_id,
@@ -887,11 +888,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     DCHECK(task_runner_provider_->IsMainThread());
     return pending_commit_state_.get();
   }
-  ThreadUnsafeCommitState& thread_unsafe_commit_state() {
-    DCHECK(IsMainThread());
-    WaitForProtectedSequenceCompletion();
-    return thread_unsafe_commit_state_;
-  }
+  ThreadUnsafeCommitState& thread_unsafe_commit_state();
 
   void OnCommitForSwapPromises();
 
@@ -933,7 +930,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool DoUpdateLayers();
 
-  void WaitForCommitCompletion(bool for_protected_sequence) const;
+  bool WaitForCommitCompletion(bool for_protected_sequence, bool use_timed_wait = false) const;
 
   void UpdateDeferMainFrameUpdateInternal();
 
