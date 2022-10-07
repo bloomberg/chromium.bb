@@ -466,39 +466,29 @@ void LayerTreeHost::WaitForProtectedSequenceCompletion() const {
 bool LayerTreeHost::TimedWaitForProtectedSequenceCompletion() const {
   if (compositor_mode_ == CompositorMode::SINGLE_THREADED)
     return true;
-  return TimedWaitForCommitCompletion(/* for_protected_sequence */ true);
+  return WaitForCommitCompletion(/* for_protected_sequence */ true, true);
 }
 
-void LayerTreeHost::WaitForCommitCompletion(bool for_protected_sequence) const {
+bool LayerTreeHost::WaitForCommitCompletion(bool for_protected_sequence,
+                                            bool use_timed_wait) const {
   DCHECK(IsMainThread());
+  bool completed = true;
   if (commit_completion_event_) {
     TRACE_EVENT0("cc", "LayerTreeHost::WaitForCommitCompletion");
     base::ElapsedTimer timer;
-    commit_completion_event_->Wait();
-    commit_completion_event_ = nullptr;
+    if (use_timed_wait) {
+      completed = commit_completion_event_->TimedWait(base::Milliseconds(100));
+    } else {
+      commit_completion_event_->Wait();
+      commit_completion_event_ = nullptr;
+    }
     if (for_protected_sequence) {
       waited_for_protected_sequence_ = true;
       base::UmaHistogramMicrosecondsTimes(
           "Compositing.MainThreadBlockedDuringCommitTime", timer.Elapsed());
     }
   }
-}
-
-bool LayerTreeHost::TimedWaitForCommitCompletion(bool for_protected_sequence) const {
-  DCHECK(IsMainThread());
-  if (commit_completion_event_) {
-    base::ElapsedTimer timer;
-    bool completed = 
-      commit_completion_event_->TimedWait(base::Milliseconds(100));
-    commit_completion_event_ = nullptr;
-    if (for_protected_sequence) {
-      waited_for_protected_sequence_ = true;
-      base::UmaHistogramMicrosecondsTimes(
-          "Compositing.MainThreadBlockedDuringCommitTime", timer.Elapsed());
-    }
-    return completed;
-  }
-  return true;
+  return completed;
 }
 
 void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {

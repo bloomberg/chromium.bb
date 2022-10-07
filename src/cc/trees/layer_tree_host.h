@@ -927,8 +927,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool DoUpdateLayers();
 
-  void WaitForCommitCompletion(bool for_protected_sequence) const;
-  bool TimedWaitForCommitCompletion(bool for_protected_sequence) const;
+  bool WaitForCommitCompletion(bool for_protected_sequence, bool use_timed_wait = false) const;
 
   void UpdateDeferMainFrameUpdateInternal();
 
