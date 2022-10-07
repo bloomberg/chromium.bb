@@ -480,8 +480,8 @@ bool LayerTreeHost::WaitForCommitCompletion(bool for_protected_sequence,
       completed = commit_completion_event_->TimedWait(base::Milliseconds(100));
     } else {
       commit_completion_event_->Wait();
-      commit_completion_event_ = nullptr;
     }
+    commit_completion_event_ = nullptr;
     if (for_protected_sequence) {
       waited_for_protected_sequence_ = true;
       base::UmaHistogramMicrosecondsTimes(
