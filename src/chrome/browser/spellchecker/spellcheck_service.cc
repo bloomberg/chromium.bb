@@ -565,18 +565,17 @@ void SpellcheckService::OnCustomWordsChanged(
     words_removed_copy.insert(word);
   }
 
-  auto process_hosts(content::RenderProcessHost::AllHostsIterator());
   std::vector<std::string> additions(words_added_copy.begin(), words_added_copy.end());
   std::vector<std::string> deletions(words_removed_copy.begin(), words_removed_copy.end());
 
-  while (!process_hosts.IsAtEnd()) {
-    content::RenderProcessHost* process = process_hosts.GetCurrentValue();
+  for (content::RenderProcessHost::iterator it(
+           content::RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    content::RenderProcessHost* process = it.GetCurrentValue();
     if (!process->IsInitializedAndNotDead())
       continue;
-
     GetSpellCheckerForProcess(process)->CustomDictionaryChanged(additions,
                                                                 deletions);
-    process_hosts.Advance();
   }
 }
 
