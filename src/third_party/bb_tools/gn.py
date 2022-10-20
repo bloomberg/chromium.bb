@@ -141,10 +141,6 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     # workstations.
     'com_init_check_hook_disabled': True,
 
-    # Disable dcheck by default.
-    # TODO: fix all the DCHECK failures to remove this.
-    'dcheck_always_on': False,
-
     # Apply the content shell version.
     'content_shell_version': chromium_version,
     'content_shell_major_version': chromium_version.split('.')[0],
