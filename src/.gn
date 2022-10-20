@@ -40,6 +40,19 @@ default_args = {
   # TODO: fix all the DCHECK failures to remove this.
   dcheck_always_on = false
 
+  # Disable field-trial testing feature.
+  disable_fieldtrial_testing_config = true
+
+  # Disable multicast DNS support.
+  enable_mdns = false
+
+  # Disable print content analysis
+  enable_print_content_analysis = false
+
+  # Generates a header that embedders can use to correctly configure V8
+  # features.
+  v8_generate_external_defines_header = true
+
   # Don't include webrtc's builtin task queue implementation.
   rtc_link_task_queue_impl = false
 
