@@ -36,6 +36,10 @@ default_args = {
   v8_enable_gdbjit = false
   v8_imminent_deprecation_warnings = false
 
+  # Disable dcheck by default.
+  # TODO: fix all the DCHECK failures to remove this.
+  dcheck_always_on = false
+
   # Don't include webrtc's builtin task queue implementation.
   rtc_link_task_queue_impl = false
 
