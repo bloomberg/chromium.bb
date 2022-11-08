@@ -35,8 +35,16 @@ bool DesktopFocusRules::CanActivateWindow(const aura::Window* window) const {
 
 bool DesktopFocusRules::CanFocusWindow(const aura::Window* window,
                                        const ui::Event* event) const {
-  return BaseFocusRules::CanFocusWindow(window, event) ||
-         wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED);
+  if (BaseFocusRules::CanFocusWindow(window, event)) {
+    return true;
+  }
+
+  const aura::Window* root = window->GetRootWindow();
+  if (!root) {
+    return false;
+  }
+
+  return wm::WindowStateIs(root, ui::SHOW_STATE_MINIMIZED);
 }
 
 bool DesktopFocusRules::SupportsChildActivation(
