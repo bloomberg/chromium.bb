@@ -67,7 +67,7 @@ const base::Feature kDurationEstimatesInCompositorTimingHistory{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNonBlockingCommit{"NonBlockingCommit",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSlidingWindowForDroppedFrameCounter{
     "SlidingWindowForDroppedFrameCounter", base::FEATURE_DISABLED_BY_DEFAULT};
