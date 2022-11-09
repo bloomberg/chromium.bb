@@ -60,7 +60,8 @@ bool LayoutBox::MayIntersect(const HitTestResult& result,
     overflow_box = PhysicalVisualOverflowRectIncludingFilters();
   } else {
     overflow_box = PhysicalBorderBoxRect();
-    if (!ShouldClipOverflowAlongBothAxis() && HasVisualOverflow()) {
+    if (!ShouldClipOverflowAlongBothAxis() && HasVisualOverflow() &&
+        StyleRef().BbSimpleOverflowClip() != EBbSimpleOverflowClip::kAuto) {
       // PhysicalVisualOverflowRect is an approximation of
       // PhsyicalLayoutOverflowRect excluding self-painting descendants (which
       // hit test by themselves), with false-positive (which won't cause any
