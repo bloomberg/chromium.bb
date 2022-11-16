@@ -461,7 +461,7 @@ std::unique_ptr<CommitState> LayerTreeHost::ActivateCommitState() {
 void LayerTreeHost::WaitForProtectedSequenceCompletion() const {
   if (compositor_mode_ == CompositorMode::SINGLE_THREADED)
     return;
-  WaitForCommitCompletion(/* for_protected_sequence */ true);
+  WaitForCommitCompletion(/* for_protected_sequence */ true, true);
 }
 
 bool LayerTreeHost::TimedWaitForProtectedSequenceCompletion() const {
