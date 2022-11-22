@@ -4690,9 +4690,11 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
 
 ChildProcessTerminationInfo RenderProcessHostImpl::GetChildTerminationInfo(
     bool already_dead) {
-  DCHECK(child_process_launcher_);
-
   ChildProcessTerminationInfo info;
+  if (!child_process_launcher_.get()) {
+    info.exit_code = 0;
+    return info;
+  }
 
   info = child_process_launcher_->GetChildTerminationInfo(already_dead);
   if (already_dead && info.status == base::TERMINATION_STATUS_STILL_RUNNING) {
