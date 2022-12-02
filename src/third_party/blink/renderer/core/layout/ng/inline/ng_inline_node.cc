@@ -183,7 +183,7 @@ class ReusingTextShaper final {
         reusable_items_(reusable_items),
         shaper_(data->text_content) {}
 
-  scoped_refptr<ShapeResult> Shape(const NGInlineItem& start_item,
+  scoped_refptr<const ShapeResult> Shape(const NGInlineItem& start_item,
                                    const Font& font,
                                    unsigned end_offset) {
     const unsigned start_offset = start_item.StartOffset();
@@ -267,7 +267,7 @@ class ReusingTextShaper final {
     return shape_results;
   }
 
-  scoped_refptr<ShapeResult> Reshape(const NGInlineItem& start_item,
+  scoped_refptr<const ShapeResult> Reshape(const NGInlineItem& start_item,
                                      const Font& font,
                                      unsigned start_offset,
                                      unsigned end_offset) {
@@ -281,7 +281,34 @@ class ReusingTextShaper final {
     RunSegmenter::RunSegmenterRange range =
         start_item.CreateRunSegmenterRange();
     range.end = end_offset;
-    return shaper_.Shape(&font, direction, start_offset, end_offset, range);
+    ShapeCache* cache = font.GetShapeCache();
+    TextRun run{shaper_.GetText()};
+    run = run.SubRun(start_offset, end_offset - start_offset);
+    ShapeCacheEntry* entry = cache->Add(run, ShapeCacheEntry{});
+
+    if (entry && *entry) {
+      if (UNLIKELY((*entry)->Direction() != start_item.Direction())) {
+        // If the direction doesn't match, we opt out of the cache. It's not
+        // clear which conditions can trigger this, but it seems it can happen.
+        entry = nullptr;
+      } else if (UNLIKELY((*entry)->StartIndex() != start_offset)) {
+        // This can happen if the inline items text content has changed but this
+        // substring hasn't. Other than the offset, the shape result is valid,
+        // so we return a result built from the cached entry. TKS doesn't seem
+        // to hit this codepath, so we don't bother to replace the cache entry.
+        return (*entry)->CopyAdjustedOffset(start_offset);
+      } else {
+        return *entry;
+      }
+    }
+
+    scoped_refptr<const ShapeResult> result =
+        shaper_.Shape(&font, direction, start_offset, end_offset, range);
+    if (!result)
+      return nullptr;
+    if (entry)
+      *entry = result;
+    return result;
   }
 
   NGInlineItemsData& data_;
@@ -1464,7 +1491,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     }
 
     // Shape each item with the full context of the entire node.
-    scoped_refptr<ShapeResult> shape_result;
+    scoped_refptr<const ShapeResult> shape_result;
     if (MutableData() && MutableData()->IsShapingDeferred() &&
         font.PrimaryFont()) {
       unsigned length = end_offset - start_item.StartOffset();
@@ -1477,7 +1504,11 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription()))) {
       DCHECK(!IsTextCombine()) << GetLayoutBlockFlow();
-      shape_result->ApplySpacing(spacing);
+      scoped_refptr<ShapeResult> cloned = ShapeResult::Create(*shape_result);
+      cloned->ApplySpacing(spacing);
+      shape_result = cloned;
+
+
       if (spacing.LetterSpacing() &&
           ShouldReportLetterSpacingUseCounter(
               start_item.GetLayoutObject(),
