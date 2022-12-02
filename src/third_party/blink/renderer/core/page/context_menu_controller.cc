@@ -33,6 +33,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
@@ -687,29 +688,42 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         // SpellingMenuObserver::InitMenu on the browser process side to avoid a
         // blocking IPC here).
         size_t misspelled_offset, misspelled_length;
-        WebVector<WebString> web_suggestions;
+        WebVector<WebString> web_suggestions_hunspell;
         spell_checker.GetTextCheckerClient()->CheckSpelling(
             WebString::FromUTF16(data.misspelled_word), misspelled_offset,
-            misspelled_length, &web_suggestions);
-        WebVector<std::u16string> suggestions(web_suggestions.size());
-        std::transform(web_suggestions.begin(), web_suggestions.end(),
-                       suggestions.begin(),
+            misspelled_length, &web_suggestions_hunspell);
+
+        std::vector<std::u16string> hunspell_sugguestions(web_suggestions_hunspell.size());
+
+        std::transform(web_suggestions_hunspell.begin(),
+                       web_suggestions_hunspell.end(),
+                       hunspell_sugguestions.begin(),
                        [](const WebString& s) { return s.Utf16(); });
-        data.dictionary_suggestions = suggestions.ReleaseVector();
 
-        if (data.dictionary_suggestions.size() == 0) {
-          WebVector<WebString> web_suggestions;
+        WebVector<WebString> web_suggestions_native_spellcheck;
+        spell_checker.GetTextCheckerClient()->RequestSuggestionsFromBrowser(
+          WebString::FromUTF16(data.misspelled_word),
+          &web_suggestions_native_spellcheck
+        );
 
-          spell_checker.GetTextCheckerClient()->RequestSuggestionsFromBrowser(
-            WebString::FromUTF16(data.misspelled_word),
-            &web_suggestions
-          );
-          WebVector<std::u16string> suggestions(web_suggestions.size());
-          std::transform(web_suggestions.begin(), web_suggestions.end(),
-                        suggestions.begin(),
-                        [](const WebString& s) { return s.Utf16(); });
-          data.dictionary_suggestions = suggestions.ReleaseVector();
-        }
+        std::vector<std::u16string> native_spellcheck_sugguestions(
+          web_suggestions_native_spellcheck.size()
+        );
+
+        std::transform(web_suggestions_native_spellcheck.begin(),
+                      web_suggestions_native_spellcheck.end(),
+                      native_spellcheck_sugguestions.begin(),
+                      [](const WebString& s) { return s.Utf16(); });
+
+        // Prioritize the platform results, since presumably the first user language
+        // will have a Windows language pack installed. Treat the Hunspell suggestions
+        // as if a single language.
+        std::vector<std::vector<std::u16string>> suggestions_list = {
+          native_spellcheck_sugguestions,
+          hunspell_sugguestions
+        };
+
+        spellcheck::FillSuggestions(suggestions_list, &data.dictionary_suggestions);
       }
     }
   }
