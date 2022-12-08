@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+
 
 namespace blink {
 
@@ -46,6 +48,11 @@ void WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(
   if (!value.As<v8::Object>()->GetCreationContext().ToLocal(&context))
     return;
 
+  if (UNLIKELY(!ScriptState::AccessCheck(context))) {
+      const String& message = "Value created in invalid context";
+      V8ThrowException::ThrowAccessError(v8::Isolate::GetCurrent(), message);
+      return;
+  }
   ScriptState* script_state = ScriptState::From(context);
   CHECK_EQ(&world, &script_state->World());
 }
