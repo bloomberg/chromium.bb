@@ -191,7 +191,6 @@ class ProfileImpl final : public Profile {
 
 
     // patch section: memory diagnostics
-    std::size_t getDiscardableSharedMemoryBytes() override;
 
 
     // patch section: gpu

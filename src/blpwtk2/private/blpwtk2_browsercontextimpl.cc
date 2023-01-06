@@ -52,7 +52,6 @@
 #include <components/prefs/pref_service.h>
 #include <base/threading/thread_restrictions.h>
 #include <chrome/common/pref_names.h>
-#include <components/discardable_memory/service/discardable_shared_memory_manager.h>
 #include <components/language/core/browser/pref_names.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
@@ -464,14 +463,6 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: memory diagnostics
-std::size_t BrowserContextImpl::getDiscardableSharedMemoryBytes()
-{
-    std::size_t bytes = 0;
-    if (auto* man = discardable_memory::DiscardableSharedMemoryManager::Get()) {
-        bytes = man->GetBytesAllocated();
-    }
-    return bytes;
-}
 
 
 // patch section: gpu

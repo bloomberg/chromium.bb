@@ -145,7 +145,6 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: memory diagnostics
-    std::size_t getDiscardableSharedMemoryBytes() override;
 
 
     // patch section: gpu
