@@ -1351,9 +1351,6 @@ bool WebViewImpl::StopObservingGpuCompositor() {
 }
 
 
-// patch section: memory diagnostics
-
-
 
 }  // close namespace blpwtk2
 

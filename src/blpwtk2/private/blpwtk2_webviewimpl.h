@@ -339,9 +339,6 @@ class WebViewImpl final : public WebView,
     String printToPDF() override;
 
 
-    // patch section: memory diagnostics
-
-
 
 };
 

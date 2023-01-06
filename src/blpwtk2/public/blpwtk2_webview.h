@@ -344,9 +344,6 @@ class WebView
         // TODO(imran)
 
 
-    // patch section: memory diagnostics
-
-
 
   protected:
     virtual ~WebView();

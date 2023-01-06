@@ -314,9 +314,6 @@ class ToolkitCreateParams
     // patch section: log message handler
 
 
-    // patch section: memory diagnostics
-
-
 
     BLPWTK2_EXPORT void setLogThrottleType(LogThrottleType throttleType);
 

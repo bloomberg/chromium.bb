@@ -84,9 +84,6 @@ struct ToolkitCreateParamsImpl final
     size_t d_discardableSharedMemorySizeLimit;
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: embedder ipc
     bool d_browserV8Enabled;
 
@@ -132,9 +129,6 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
     // patch section: discardable sharedmem
     , d_discardableSharedMemorySizeLimit(0)
-
-
-    // patch section: memory diagnostics
 
 
     // patch section: embedder ipc
@@ -539,9 +533,6 @@ StringRef ToolkitCreateParams::getTempFolderPath() const
 {
     return d_impl->d_tempFolderPath;
 }
-
-
-// patch section: memory diagnostics
 
 
 // patch section: embedder ipc

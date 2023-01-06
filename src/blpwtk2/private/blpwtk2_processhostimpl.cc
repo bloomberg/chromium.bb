@@ -548,9 +548,6 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
 
 
 
-// patch section: memory diagnostics
-
-
 // patch section: spellcheck
 void ProcessHostImpl::enableSpellCheck(bool enabled)
 {

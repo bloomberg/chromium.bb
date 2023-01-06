@@ -167,9 +167,6 @@ interface ProcessHost {
         // host compositor output.
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
     [Sync]
     getGpuMode() => (GpuMode mode, GpuMode startupMode, int32 crashCount);

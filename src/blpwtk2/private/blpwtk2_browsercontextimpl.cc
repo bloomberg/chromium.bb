@@ -580,9 +580,6 @@ void BrowserContextImpl::clearWebCache()
 }
 
 
-// patch section: memory diagnostics
-
-
 // patch section: gpu
 void BrowserContextImpl::getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const
 {

@@ -163,9 +163,6 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     void clearWebCache() override;
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
     void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const override;
 

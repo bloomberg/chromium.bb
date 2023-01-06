@@ -246,9 +246,6 @@ class ToolkitImpl : public Toolkit {
     // patch section: multi-heap tracer
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
     void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const override;
 

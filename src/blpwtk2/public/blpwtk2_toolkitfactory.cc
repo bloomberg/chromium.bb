@@ -139,9 +139,6 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
 
 
 
-    // patch section: memory diagnostic
-
-
 
     std::string tempFolderPath = params.getTempFolderPath().toStdString();
 

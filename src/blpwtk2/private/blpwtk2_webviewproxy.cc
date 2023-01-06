@@ -954,9 +954,6 @@ void WebViewProxy::devToolsAgentHostDetached()
 }
 
 
-// patch section: memory diagnostics
-
-
 
 }  // close namespace blpwtk2
 

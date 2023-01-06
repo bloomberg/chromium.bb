@@ -221,9 +221,6 @@ class ProfileImpl final : public Profile, public mojom::ProcessClient {
     void clearWebCache() override;
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
     void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const override;
 

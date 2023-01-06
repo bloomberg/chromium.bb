@@ -991,9 +991,6 @@ int ToolkitImpl::setTimeZone(const StringRef& zoneId)
 }
 
 
-// patch section: memory diagnostics
-
-
 // patch section: embedder ipc
 void ToolkitImpl::opaqueMessageToRendererAsync(int pid, const StringRef &message)
 {

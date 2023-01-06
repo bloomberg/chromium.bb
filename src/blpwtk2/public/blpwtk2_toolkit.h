@@ -212,9 +212,6 @@ class Toolkit {
     // patch section: multi-heap tracer
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
     virtual void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const = 0;
         // Get the current Gpu mode, the startup Gpu mode, GPU process crash count

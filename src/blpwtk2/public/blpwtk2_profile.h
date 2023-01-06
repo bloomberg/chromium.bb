@@ -196,9 +196,6 @@ class Profile
     virtual void clearWebCache() = 0;
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
     virtual void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const = 0;
 

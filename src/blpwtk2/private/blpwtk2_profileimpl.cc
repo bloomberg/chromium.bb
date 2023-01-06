@@ -504,9 +504,6 @@ void ProfileImpl::clearWebCache()
 }
 
 
-// patch section: memory diagnostics
-
-
 // patch section: gpu
 void ProfileImpl::getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const
 {
