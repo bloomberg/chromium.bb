@@ -1026,9 +1026,6 @@ void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
 // patch section: gpu
 
 
-// patch section: memory diagnostics
-
-
 
 }  // close namespace blpwtk2
 

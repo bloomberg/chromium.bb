@@ -171,9 +171,6 @@ class ProcessHostImpl final : public mojom::ProcessHost
     // patch section: renderer ui
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
 
 

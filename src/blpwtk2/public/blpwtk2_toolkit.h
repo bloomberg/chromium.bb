@@ -198,9 +198,6 @@ class Toolkit {
     // patch section: multi-heap tracer
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
 
 

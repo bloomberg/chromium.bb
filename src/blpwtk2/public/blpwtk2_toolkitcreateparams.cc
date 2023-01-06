@@ -74,9 +74,6 @@ struct ToolkitCreateParamsImpl final
     // patch section: discardable sharedmem
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: embedder ipc
 
 
@@ -116,9 +113,6 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: discardable sharedmem
-
-
-    // patch section: memory diagnostics
 
 
     // patch section: embedder ipc
@@ -471,9 +465,6 @@ StringRef ToolkitCreateParams::getTempFolderPath() const
 {
     return d_impl->d_tempFolderPath;
 }
-
-
-// patch section: memory diagnostics
 
 
 // patch section: embedder ipc

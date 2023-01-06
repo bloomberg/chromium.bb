@@ -131,9 +131,6 @@ interface ProcessHost {
     // patch section: renderer ui
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
 
 
