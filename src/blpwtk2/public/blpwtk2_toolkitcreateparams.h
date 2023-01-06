@@ -264,9 +264,6 @@ class ToolkitCreateParams
     // patch section: log message handler
 
 
-    // patch section: memory diagnostics
-
-
 
     // ACCESSORS
     ThreadMode threadMode() const;

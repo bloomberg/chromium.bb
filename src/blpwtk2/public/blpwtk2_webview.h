@@ -240,9 +240,6 @@ class WebView
     // patch section: doc printer
 
 
-    // patch section: memory diagnostics
-
-
 
   protected:
     virtual ~WebView();

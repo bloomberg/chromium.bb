@@ -698,9 +698,6 @@ bool WebViewProxy::validateClient()
 // patch section: devtools integration
 
 
-// patch section: memory diagnostics
-
-
 
 }  // close namespace blpwtk2
 

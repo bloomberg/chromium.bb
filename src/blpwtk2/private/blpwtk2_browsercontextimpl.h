@@ -144,9 +144,6 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     // patch section: web cache
 
 
-    // patch section: memory diagnostics
-
-
     // patch section: gpu
 
 

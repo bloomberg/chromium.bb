@@ -880,9 +880,6 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 // patch section: custom timezone
 
 
-// patch section: memory diagnostics
-
-
 // patch section: embedder ipc
 
 

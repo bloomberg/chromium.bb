@@ -332,9 +332,6 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 // patch section: web cache
 
 
-// patch section: memory diagnostics
-
-
 // patch section: gpu
 
 
