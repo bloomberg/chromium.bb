@@ -168,8 +168,6 @@ interface ProcessHost {
 
 
     // patch section: memory diagnostics
-    [Sync]
-    getDiscardableSharedMemoryBytes() => (uint32 bytes);
 
 
     // patch section: gpu

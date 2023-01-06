@@ -505,11 +505,6 @@ void ProfileImpl::clearWebCache()
 
 
 // patch section: memory diagnostics
-std::size_t ProfileImpl::getDiscardableSharedMemoryBytes()
-{
-    uint32_t bytes;
-    return d_hostPtr->getDiscardableSharedMemoryBytes(&bytes) ? bytes: 0;
-}
 
 
 // patch section: gpu

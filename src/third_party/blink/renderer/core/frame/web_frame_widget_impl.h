@@ -639,11 +639,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Ask compositor to create the shared memory for smoothness ukm region.
   base::ReadOnlySharedMemoryRegion CreateSharedMemoryForSmoothnessUkm();
 
-  std::size_t getTileMemoryBytes() const override;
-  std::size_t getDefaultTileMemoryLimit() const override;
-  void overrideTileMemoryLimit(std::size_t limit) override;
-  void setTag(std::string tag) override;
-
  protected:
   // WidgetBaseClient overrides:
   void ScheduleAnimation() override;

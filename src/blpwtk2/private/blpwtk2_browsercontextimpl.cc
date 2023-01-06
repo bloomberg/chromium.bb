@@ -56,7 +56,6 @@
 #include <base/threading/thread_restrictions.h>
 #include <chrome/browser/spellchecker/spellcheck_factory.h>
 #include <chrome/common/pref_names.h>
-#include <components/discardable_memory/service/discardable_shared_memory_manager.h>
 #include <components/language/core/browser/pref_names.h>
 #include <components/spellcheck/common/spellcheck_common.h>
 #include <components/spellcheck/browser/pref_names.h>
@@ -582,14 +581,6 @@ void BrowserContextImpl::clearWebCache()
 
 
 // patch section: memory diagnostics
-std::size_t BrowserContextImpl::getDiscardableSharedMemoryBytes()
-{
-    std::size_t bytes = 0;
-    if (auto* man = discardable_memory::DiscardableSharedMemoryManager::Get()) {
-        bytes = man->GetBytesAllocated();
-    }
-    return bytes;
-}
 
 
 // patch section: gpu

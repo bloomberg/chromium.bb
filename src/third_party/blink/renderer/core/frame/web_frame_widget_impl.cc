@@ -4426,21 +4426,4 @@ void WebFrameWidgetImpl::NotifyZoomLevelChanged(LocalFrame* root) {
   }
 }
 
-
-std::size_t WebFrameWidgetImpl::getTileMemoryBytes() const {
-  return widget_base_->LayerTreeHost()->proxy() ? widget_base_->LayerTreeHost()->proxy()->getTileMemoryBytes() : 0;
-}
-
-std::size_t WebFrameWidgetImpl::getDefaultTileMemoryLimit() const {
-  return widget_base_->LayerTreeHost()->proxy()->getDefaultTileMemoryLimit();
-}
-
-void WebFrameWidgetImpl::overrideTileMemoryLimit(std::size_t limit) {
-  return widget_base_->LayerTreeHost()->proxy()->overrideTileMemoryLimit(limit);
-}
-
-void WebFrameWidgetImpl::setTag(std::string tag) {
-  return widget_base_->LayerTreeHost()->proxy()->setTag(std::move(tag));
-}
-
 }  // namespace blink

@@ -992,13 +992,6 @@ int ToolkitImpl::setTimeZone(const StringRef& zoneId)
 
 
 // patch section: memory diagnostics
-std::size_t ToolkitImpl::getDiscardableSharedMemoryBytes() const
-{
-    if(Profile* prof = ProfileImpl::anyInstance()) {
-        return prof->getDiscardableSharedMemoryBytes();
-    }
-    return 0;
-}
 
 
 // patch section: embedder ipc

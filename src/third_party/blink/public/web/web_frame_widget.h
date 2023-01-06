@@ -220,11 +220,6 @@ class WebFrameWidget : public WebWidget {
   // `FrameWidgetTestHelper::CreateTestWebFrameWidget()`.
   virtual FrameWidgetTestHelper* GetFrameWidgetTestHelperForTesting() = 0;
 
-  virtual std::size_t getTileMemoryBytes() const = 0;
-  virtual std::size_t getDefaultTileMemoryLimit() const = 0;
-  virtual void overrideTileMemoryLimit(std::size_t limit) = 0;
-  virtual void setTag(std::string tag) =0;
-
  private:
   // This is a private virtual method so we don't expose cc::LayerTreeHost
   // outside of this class. Friend classes may be added in order to access it.

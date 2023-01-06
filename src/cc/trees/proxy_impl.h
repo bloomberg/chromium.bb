@@ -89,11 +89,6 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void ClearHistory() override;
   size_t CommitDurationSampleCountForTesting() const override;
 
-  std::size_t  getTileMemoryBytes() const;
-  std::size_t getDefaultTileMemoryLimit() const;
-  void overrideTileMemoryLimit(std::size_t limit);
-  void setTag(std::string tag);
-
  private:
   // LayerTreeHostImplClient implementation
   void DidLoseLayerTreeFrameSinkOnImplThread() override;
